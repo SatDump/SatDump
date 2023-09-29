@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     mh_strs[47] = (char *)buf + 5034;
 
     // for (int i = 0; i < 48; i++)
-    //     logger->debug("L{:d} {:s}", i, mh_strs[i].substr(0, mh_strs[i].size() - 1));
+    //     logger->debug("L%d %s", i, mh_strs[i].substr(0, mh_strs[i].size() - 1));
 
     // IMG Size
     int vis_ir_x_size, vis_ir_y_size;
@@ -109,8 +109,8 @@ int main(int argc, char *argv[])
     sscanf(mh_strs[46].c_str(), "NumberLinesHRV              : %d", &hrv_y_size);
     sscanf(mh_strs[47].c_str(), "NumberColumnsHRV            : %d", &hrv_x_size);
 
-    logger->warn("VIS/IR Size : {:d}x{:d}", vis_ir_x_size, vis_ir_y_size);
-    logger->warn("HRV    Size : {:d}x{:d}", hrv_x_size, hrv_y_size);
+    logger->warn("VIS/IR Size : %dx%d", vis_ir_x_size, vis_ir_y_size);
+    logger->warn("HRV    Size : %dx%d", hrv_x_size, hrv_y_size);
 
     // Other data
     long int headerpos, datapos, trailerpos;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
                 // uint16_t seq_cnt = (data_ptr + 16)[0] << 8 | (data_ptr + 16)[1];
                 uint32_t pkt_len = (data_ptr + 18)[0] << 24 | (data_ptr + 18)[1] << 16 | (data_ptr + 18)[2] << 8 | (data_ptr + 18)[3];
 
-                // logger->info("PKT {:d} CHANNEL {:d} SEQ {:d} LEN {:d}", line, channel, seq_cnt, pkt_len);
+                // logger->info("PKT %d CHANNEL %d SEQ %d LEN %d", line, channel, seq_cnt, pkt_len);
 
                 int datasize = pkt_len - 15 - 27;
 
@@ -167,22 +167,22 @@ int main(int argc, char *argv[])
         if (bandsel[channel] != 'X')
             continue;
 
-        std::string path = "SEVIRI_" + std::to_string(channel + 1) + ".png";
+        std::string path = "SEVIRI_" + std::to_string(channel + 1);
 
         vis_ir_imgs[channel].mirror(true, true);
 
         logger->info("Saving " + path);
-        vis_ir_imgs[channel].save_png(path);
+        vis_ir_imgs[channel].save_img(path);
     }
 
-    std::string path = "SEVIRI_321.png";
-
+    std::string path = "SEVIRI_321";
     image::Image<uint16_t> compo_321(vis_ir_x_size, vis_ir_y_size, 3);
+    compo_321.append_ext(&path);
 
     compo_321.draw_image(0, vis_ir_imgs[2]);
     compo_321.draw_image(1, vis_ir_imgs[1]);
     compo_321.draw_image(2, vis_ir_imgs[0]);
 
     logger->info("Saving " + path);
-    compo_321.save_png(path);
+    compo_321.save_img(path);
 }

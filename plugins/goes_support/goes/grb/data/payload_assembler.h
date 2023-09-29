@@ -14,7 +14,7 @@ namespace goes
         {
             bool valid = true;
             bool in_progress = false;
-            int apid;
+            int apid = 0;
             GRBSecondaryHeader sec_header;
             std::vector<uint8_t> payload;
         };

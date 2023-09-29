@@ -54,8 +54,23 @@ namespace lrit
             uint16_t crc = pkt.payload.data()[pkt.payload.size() - 2] << 8 | pkt.payload.data()[pkt.payload.size() - 1];
             if (d_check_crc ? !(crc == computeCRC(pkt.payload.data(), pkt.payload.size() - 2)) : false)
             {
-                logger->error("LRIT CRC is invalid... Skipping.");
-                current_file.file_in_progress = false;
+                //If this is the middle of a file, we have the header, and it's an image, continue on failure
+                if (current_file.file_in_progress && pkt.header.sequence_flag == 0 && current_file.header_parsed)
+                {
+                    PrimaryHeader primary_header = current_file.getHeader<PrimaryHeader>();
+                    current_file.needs_fixed = primary_header.file_type_code == 0 && current_file.hasHeader<ImageStructureRecord>();
+                }
+
+                if (current_file.needs_fixed)
+                {
+                    logger->warn("LRIT CRC is invalid, but file can be recovered");
+                    processLRITData(current_file, pkt); //Push anyway - there's probably some good pixels in there
+                }
+                else
+                {
+                    logger->error("LRIT CRC is invalid... Skipping.");
+                    current_file.file_in_progress = false;
+                }
                 continue;
             }
 
@@ -121,6 +136,14 @@ namespace lrit
 
     void LRITDemux::finalizeLRITData(LRITFile &file)
     {
+        if (file.needs_fixed)
+        {
+            //Must be image data due to guard above; no need to check again here
+            PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
+            ImageStructureRecord image_header = file.getHeader<ImageStructureRecord>();
+            file.lrit_data.resize(image_header.lines_count * image_header.columns_count + primary_header.total_header_length, 0);
+            file.needs_fixed = false;
+        }
         files.push_back(file);
     }
 };

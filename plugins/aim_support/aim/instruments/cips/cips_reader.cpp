@@ -1,6 +1,7 @@
 #include "cips_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
+#include <cmath>
 
 #include "logger.h"
 

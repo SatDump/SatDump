@@ -46,20 +46,11 @@ namespace fengyun_svissr
 
         std::string disk_folder = buffer.directory + "/" + timestamp;
 
-        logger->info("Channel 1... " + getSvissrFilename(timeReadable, "1") + ".png");
-        buffer.image5.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1") + ".png").c_str());
-
-        logger->info("Channel 2... " + getSvissrFilename(timeReadable, "2") + ".png");
-        buffer.image1.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2") + ".png").c_str());
-
-        logger->info("Channel 3... " + getSvissrFilename(timeReadable, "3") + ".png");
-        buffer.image2.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3") + ".png").c_str());
-
-        logger->info("Channel 4... " + getSvissrFilename(timeReadable, "4") + ".png");
-        buffer.image3.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4") + ".png").c_str());
-
-        logger->info("Channel 5... " + getSvissrFilename(timeReadable, "5") + ".png");
-        buffer.image4.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5") + ".png").c_str());
+        buffer.image5.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1")).c_str());
+        buffer.image1.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2")).c_str());
+        buffer.image2.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3")).c_str());
+        buffer.image3.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4")).c_str());
+        buffer.image4.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5")).c_str());
 
         // We are done with all channels but 1 and 4. Clear others to free up memory!
         buffer.image1.clear();
@@ -101,8 +92,7 @@ namespace fengyun_svissr
                     compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
             }
 
-            logger->info("False color... " + getSvissrFilename(timeReadable, "FC") + ".png");
-            compoImage.save_png(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC") + ".png").c_str());
+            compoImage.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC")).c_str());
         }
         else
         {
@@ -268,7 +258,7 @@ namespace fengyun_svissr
             {
                 lastTime = time(NULL);
                 logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) +
-                             "%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%");
+                             "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
             }
         }
 

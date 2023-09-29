@@ -22,7 +22,7 @@ void PlutoSDRSource::set_gains()
     {
         iio_channel_attr_write(iio_device_find_channel(phy, "voltage0", false), "gain_control_mode", pluto_gain_mode[gain_mode]);
         iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "hardwaregain", round(gain));
-        logger->debug("Set PlutoSDR gain to {:d}, mode {:s}", gain, pluto_gain_mode[gain_mode]);
+        logger->debug("Set PlutoSDR gain to %d, mode %s", gain, pluto_gain_mode[gain_mode]);
     }
 }
 
@@ -58,14 +58,11 @@ void PlutoSDRSource::open()
         is_open = true;
 
     // Get available samplerates
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     for (int sr = 1000000; sr <= 20000000; sr += 500000)
         available_samplerates.push_back(sr);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void PlutoSDRSource::start()
@@ -92,7 +89,7 @@ void PlutoSDRSource::set_frequency(uint64_t frequency)
     if (is_open && is_started)
     {
         iio_channel_attr_write_longlong(iio_device_find_channel(phy, "altvoltage0", true), "frequency", round(frequency));
-        logger->debug("Set PlutoSDR frequency to {:d}", frequency);
+        logger->debug("Set PlutoSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -100,49 +97,39 @@ void PlutoSDRSource::set_frequency(uint64_t frequency)
 void PlutoSDRSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    samplerate_widget.render();
 
     if (!is_usb)
     {
-        ImGui::InputText("Address", &ip_address);
-        ImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
+        RImGui::InputText("Address", &ip_address);
+        RImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
     }
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     if (gain_mode == 0)
     {
         // Gain settings
-        if (ImGui::SliderInt("Gain", &gain, 0, 76))
+        if (RImGui::SliderInt("Gain", &gain, 0, 76))
             set_gains();
     }
 
-    if (ImGui::Combo("Gain Mode", &gain_mode, "Manual\0Fast Attack\0Slow Attack\0Hybrid\0"))
+    if (RImGui::Combo("Gain Mode", &gain_mode, "Manual\0Fast Attack\0Slow Attack\0Hybrid\0"))
         set_gains();
 }
 
 void PlutoSDRSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unsupported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 61.44e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t PlutoSDRSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
@@ -150,7 +137,7 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
     std::vector<dsp::SourceDescriptor> results;
 
 #ifndef __ANDROID__
-    results.push_back({"plutosdr", "PlutoSDR IP", 0});
+    results.push_back({"plutosdr", "PlutoSDR IP", 0, false});
 
     // Try to find local USB devices
     iio_scan_context *scan_ctx = iio_create_scan_context("usb", 0);
@@ -186,6 +173,8 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 
 void PlutoSDRSource::sdr_startup()
 {
+    uint64_t current_samplerate = samplerate_widget.get_value();
+
 #ifndef __ANDROID__
     if (is_usb)
     {

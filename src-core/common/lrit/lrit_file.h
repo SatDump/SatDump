@@ -107,6 +107,7 @@ namespace lrit
 
         bool file_in_progress = false;
         bool header_parsed = false;
+        bool needs_fixed = false;
 
         std::map<int, int> custom_flags;
 

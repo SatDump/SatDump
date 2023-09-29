@@ -76,7 +76,7 @@ namespace ziq2
         if (bit_depth == 8)
             scale = 127.0f / mag_buf[max_index];
         else if (bit_depth == 16)
-            scale = 65535.0f / mag_buf[max_index];
+            scale = 32767.0f / mag_buf[max_index];
 
         hdr->bit_depth = bit_depth;
         hdr->scale = scale;

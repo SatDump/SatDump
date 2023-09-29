@@ -1,6 +1,7 @@
 #include "mersi_histmatch.h"
 #include "common/image/histogram_utils.h"
 #include "logger.h"
+#include <cstring>
 
 namespace fengyun3
 {

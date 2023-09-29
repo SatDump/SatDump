@@ -12,6 +12,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/miniz/*.c
     libs/libtom/*.c
     libs/jpeg/*.c
+    libs/jpeg12/*.c
     libs/dlfcn/dlfcn.c
     common/map/maidenhead.c
     libs/correct/*.c
@@ -28,10 +29,12 @@ add_library(satdump_core SHARED ${SatDump_core_CPPS})
 target_include_directories(satdump_core PUBLIC .)
 
 # Set the resources path
-if(MSVC)
+if(MSVC OR BUILD_MSVC)
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
 else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/lib/satdump/")
 endif()
 
 # We have to... For MSVC
@@ -61,6 +64,7 @@ if(BUILD_ZIQ2)
 endif()
 
 if(MSVC)
+    target_link_libraries(satdump_core PUBLIC shlwapi)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
@@ -72,6 +76,7 @@ if(MSVC)
     endif()
 
     target_include_directories(satdump_core PUBLIC libs/lua)
+    target_link_libraries(satdump_core PUBLIC ws2_32)
 elseif(ANDROID)
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
@@ -84,7 +89,7 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC fftw)
 
     # NNG
-    target_link_libraries(satdump_core PUBLIC nng)
+    target_link_libraries(satdump_core PUBLIC nng mbedtls mbedtlscrypto mbedtlsx509)
 
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)
@@ -163,6 +168,10 @@ else()
             target_compile_definitions(satdump_core PUBLIC VOLK_NO_volk_32fc_x2_add_32fc="1")
         endif()
     endif()
+endif()
+
+if(APPLE)
+    target_link_libraries(satdump_core PUBLIC "-framework CoreGraphics")
 endif()
 
 install(TARGETS satdump_core DESTINATION lib)

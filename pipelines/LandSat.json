@@ -1,0 +1,65 @@
+{
+    "landsat_ldcm_tlm": {
+        "name": "LandSat 8/9 S-band",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 1.067e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "oqpsk_mode": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    },
+    "landsat_ldcm_link": {
+        "name": "LandSat 8/9 X-band",
+        "samplerate": 300e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 220.4e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_ldpc_decoder": {
+                    "constellation": "oqpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": true,
+                    "internal_cadu_size": 8272,
+                    "internal_asm": "0x352EF853"
+                }
+            },
+            "products": {
+                "ldcm_instruments": {}
+            }
+        }
+    }
+}

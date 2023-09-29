@@ -1,5 +1,6 @@
 #include "windrad_reader.h"
 #include "logger.h"
+#include <cmath>
 
 namespace fengyun3
 {
@@ -33,20 +34,13 @@ namespace fengyun3
                 if (lastMarker2 == 21)
                 {
                     imgCount++;
-
-                    logger->info("Channel 1...");
-                    getChannel(0).save_png(std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
-
-                    logger->info("Channel 2...");
-                    getChannel(1).save_png(std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
+                    getChannel(0).save_img(std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount)).c_str());
+                    getChannel(1).save_img(std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount)).c_str());
                 }
                 else
                 {
-                    logger->info("Channel 1...");
-                    getChannel(0).save_png(std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
-
-                    logger->info("Channel 2...");
-                    getChannel(1).save_png(std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount) + ".png").c_str());
+                    getChannel(0).save_img(std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount)).c_str());
+                    getChannel(1).save_img(std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount)).c_str());
                 }
 
                 lines = 0;
@@ -70,7 +64,7 @@ namespace fengyun3
 
                 test /= 500;
 
-                // logger->critical("{:f} - S {:d} - E {:f} - S {:f}", test, (int)sign, exponent - 15, significand);
+                // logger->critical("%f - S %d - E %f - S %f", test, (int)sign, exponent - 15, significand);
                 if (test < 0)
                     test = 0;
                 if (test > 65535)

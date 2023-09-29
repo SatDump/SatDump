@@ -126,7 +126,7 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
     }
     catch (std::exception &e)
     {
-        logger->warn("Correlator can't use GPU : {:s}", e.what());
+        logger->warn("Correlator can't use GPU : %s", e.what());
     }
 #endif
 }

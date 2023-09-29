@@ -1,0 +1,84 @@
+{
+    "viasat3_tlm": {
+        "name": "ViaSat-3 TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 4e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 32e3
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 4096,
+                    "ccsds": false,
+                    "nrzm": true,
+                    "derandomize": false,
+                    "asm": "0xfaf3200d",
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    },
+    "viasat3_tlm_12200": {
+        "name": "ViaSat-3 12.2GHz TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 4e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 32e3
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 4096,
+                    "ccsds": false,
+                    "nrzm": true,
+                    "derandomize": false,
+                    "asm": "0xfaf3203b",
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    }
+}

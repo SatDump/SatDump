@@ -6,4 +6,5 @@ Terminal=false
 Exec=@CMAKE_INSTALL_PREFIX@/bin/satdump-ui
 Name=SatDump
 Icon=@CMAKE_INSTALL_PREFIX@/share/satdump/icon.png
-Categories=
+StartupWMClass=SatDump v@SATDUMP_VERSION@
+Categories=HamRadio

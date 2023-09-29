@@ -55,7 +55,7 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
                         else // Otherwse, cast to an integer
                             parameters[flag] = (long long)integral;
                     }
-                    catch (std::exception &e) // If it fails, parse to a string
+                    catch (std::exception&) // If it fails, parse to a string
                     {
                         parameters[flag] = value;
                     }

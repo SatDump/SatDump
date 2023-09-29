@@ -19,7 +19,7 @@ namespace meteor
                               // day_time == 0 && us_time == 0;
             }
 
-            Segment::Segment(uint8_t *data, int length)
+            Segment::Segment(uint8_t *data, int length, bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode)
             {
                 // buffer = new bool[length * 8];
                 buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p)
@@ -34,7 +34,11 @@ namespace meteor
                     day_time = data[0] << 8 | data[1];
                     ms_time = data[2] << 24 | data[3] << 16 | data[4] << 8 | data[5];
                     us_time = data[6] << 8 | data[7];
-                    timestamp = ccsds::parseCCSDSTimeFullRaw(data, 0); // Parse ignoring the day
+
+                    if (meteorm2x_mode)
+                        timestamp = ccsds::parseCCSDSTimeFullRaw(data, 11322); // Parse WITH the day
+                    else
+                        timestamp = ccsds::parseCCSDSTimeFullRaw(data, 0); // Parse ignoring the day
 
                     MCUN = data[8];
                     QT = data[9];
@@ -51,7 +55,7 @@ namespace meteor
                 }
             }
 
-            Segment::Segment()
+            Segment::Segment() : meteorm2x_mode(false) // We don't care if invalid
             {
                 valid = false;
             }

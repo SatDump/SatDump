@@ -57,7 +57,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -66,6 +66,38 @@
                     "nrzm": true,
                     "rs_i": 4,
                     "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
+    },
+    "oceansat3_dump": {
+        "name": "OceanSat-3 X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 60e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 80e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0189
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 16352,
+                    "nrzm": false,
+                    "rs_i": 8,
+                    "rs_type": "rs239"
                 }
             },
             "products": {}

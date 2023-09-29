@@ -20,7 +20,7 @@ void AirspyHFSource::set_atte()
         return;
 
     airspyhf_set_hf_att(airspyhf_dev_obj, attenuation / 6.0f);
-    logger->debug("Set AirspyHF HF Attentuation to {:d}", attenuation);
+    logger->debug("Set AirspyHF HF Attentuation to %d", attenuation);
 }
 
 void AirspyHFSource::set_lna()
@@ -29,7 +29,7 @@ void AirspyHFSource::set_lna()
         return;
 
     airspyhf_set_hf_lna(airspyhf_dev_obj, hf_lna_enabled);
-    logger->debug("Set AirspyHF HF LNA to {:d}", (int)hf_lna_enabled);
+    logger->debug("Set AirspyHF HF LNA to %d", (int)hf_lna_enabled);
 }
 
 void AirspyHFSource::set_agcs()
@@ -39,7 +39,7 @@ void AirspyHFSource::set_agcs()
 
     airspyhf_set_hf_agc(airspyhf_dev_obj, agc_mode != 0);
     airspyhf_set_hf_agc_threshold(airspyhf_dev_obj, agc_mode - 1);
-    logger->debug("Set AirspyHF HF AGC Mode to {:d}", (int)agc_mode);
+    logger->debug("Set AirspyHF HF AGC Mode to %d", (int)agc_mode);
 }
 
 void AirspyHFSource::open_sdr()
@@ -91,17 +91,14 @@ void AirspyHFSource::open()
     uint32_t dev_samplerates[10];
     airspyhf_get_samplerates(airspyhf_dev_obj, &samprate_cnt, 0);
     airspyhf_get_samplerates(airspyhf_dev_obj, dev_samplerates, samprate_cnt);
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     for (int i = samprate_cnt - 1; i >= 0; i--)
     {
-        logger->trace("AirspyHF device has samplerate {:d} SPS", dev_samplerates[i]);
+        logger->trace("AirspyHF device has samplerate %d SPS", dev_samplerates[i]);
         available_samplerates.push_back(dev_samplerates[i]);
     }
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true);
     airspyhf_close(airspyhf_dev_obj);
 }
 
@@ -109,6 +106,8 @@ void AirspyHFSource::start()
 {
     DSPSampleSource::start();
     open_sdr();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     logger->debug("Set AirspyHF samplerate to " + std::to_string(current_samplerate));
     airspyhf_set_samplerate(airspyhf_dev_obj, current_samplerate);
@@ -144,7 +143,7 @@ void AirspyHFSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         airspyhf_set_freq(airspyhf_dev_obj, frequency);
-        logger->debug("Set AirspyHF frequency to {:d}", frequency);
+        logger->debug("Set AirspyHF frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -152,42 +151,34 @@ void AirspyHFSource::set_frequency(uint64_t frequency)
 void AirspyHFSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
-    if (is_started)
-        style::endDisabled();
+        RImGui::beginDisabled();
 
-    if (ImGui::SliderInt("Attenuation", &attenuation, 0, 48))
+    samplerate_widget.render();
+
+    if (is_started)
+        RImGui::endDisabled();
+
+    if (RImGui::SliderInt("Attenuation", &attenuation, 0, 48))
         set_atte();
 
-    if (ImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
+    if (RImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
                                             "LOW\0"
                                             "HIGH\0"))
         set_agcs();
 
-    if (ImGui::Checkbox("HF LNA", &hf_lna_enabled))
+    if (RImGui::Checkbox("HF LNA", &hf_lna_enabled))
         set_lna();
 }
 
 void AirspyHFSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 3.2e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspyHFSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> AirspyHFSource::getAvailableSources()

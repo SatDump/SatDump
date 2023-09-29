@@ -1,4 +1,5 @@
 #include "sdrplay_sdr.h"
+#include <thread>
 
 namespace sdrplay_settings
 {
@@ -28,10 +29,10 @@ void SDRPlaySource::set_gains()
 
     // Gains
     channel_params->tunerParams.gain.LNAstate = (max_gain - 1) - lna_gain;
-    channel_params->tunerParams.gain.gRdB = (59 - 1) - if_gain;
+    channel_params->tunerParams.gain.gRdB = 59 - (if_gain - 20);
     sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_Gr, sdrplay_api_Update_Ext1_None);
-    logger->debug("Set SDRPlay LNA to {:d}", lna_gain);
-    logger->debug("Set SDRPlay IF gain to {:d}", if_gain);
+    logger->debug("Set SDRPlay LNA to %d", channel_params->tunerParams.gain.LNAstate);
+    logger->debug("Set SDRPlay IF gain to %d", channel_params->tunerParams.gain.gRdB);
 }
 
 void SDRPlaySource::set_bias()
@@ -43,19 +44,25 @@ void SDRPlaySource::set_bias()
     {
         channel_params->rsp1aTunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_BiasTControl, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay bias to {:d}", (int)bias);
+        logger->debug("Set SDRPlay bias to %d", (int)bias);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
     {
         channel_params->rsp2TunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_BiasTControl, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay bias to {:d}", (int)bias);
+        logger->debug("Set SDRPlay bias to %d", (int)bias);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
     {
         dev_params->devParams->rspDxParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
-        logger->debug("Set SDRPlay bias to {:d}", (int)bias);
+        logger->debug("Set SDRPlay bias to %d", (int)bias);
+    }
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID) // RSPduo
+    {
+        channel_params->rspDuoTunerParams.biasTEnable = bias;
+        sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_BiasTControl, sdrplay_api_Update_Ext1_None);
+        logger->debug("Set SDRPlay bias to %d", (int)bias);
     }
 }
 
@@ -82,8 +89,8 @@ void SDRPlaySource::set_others()
         dev_params->devParams->rsp1aParams.rfDabNotchEnable = dab_notch;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_RfNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_RfDabNotchControl, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
-        logger->debug("Set SDRPlay DAB Notch to {:d}", (int)dab_notch);
+        logger->debug("Set SDRPlay FM Notch to %d", (int)fm_notch);
+        logger->debug("Set SDRPlay DAB Notch to %d", (int)dab_notch);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
     {
@@ -93,8 +100,8 @@ void SDRPlaySource::set_others()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_RfNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_AntennaControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_AmPortSelect, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
-        logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
+        logger->debug("Set SDRPlay FM Notch to %d", (int)fm_notch);
+        logger->debug("Set SDRPlay Antenna to %d", antenna_input);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID) // RSPDuo
     {
@@ -106,10 +113,10 @@ void SDRPlaySource::set_others()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_Tuner1AmNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_RfDabNotchControl, sdrplay_api_Update_Ext1_None);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_RspDuo_AmPortSelect, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
-        logger->debug("Set SDRPlay AM Notch to {:d}", (int)am_notch);
-        logger->debug("Set SDRPlay DAB Notch to {:d}", (int)dab_notch);
-        logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
+        logger->debug("Set SDRPlay FM Notch to %d", (int)fm_notch);
+        logger->debug("Set SDRPlay AM Notch to %d", (int)am_notch);
+        logger->debug("Set SDRPlay DAB Notch to %d", (int)dab_notch);
+        logger->debug("Set SDRPlay Antenna to %d", antenna_input);
     }
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
     {
@@ -119,9 +126,9 @@ void SDRPlaySource::set_others()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_RfNotchControl);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_AntennaControl);
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_RfDabNotchControl);
-        logger->debug("Set SDRPlay FM Notch to {:d}", (int)fm_notch);
-        logger->debug("Set SDRPlay DAB Notch to {:d}", (int)dab_notch);
-        logger->debug("Set SDRPlay Antenna to {:d}", antenna_input);
+        logger->debug("Set SDRPlay FM Notch to %d", (int)fm_notch);
+        logger->debug("Set SDRPlay DAB Notch to %d", (int)dab_notch);
+        logger->debug("Set SDRPlay Antenna to %d", antenna_input);
     }
 }
 
@@ -190,7 +197,7 @@ void SDRPlaySource::open()
     is_open = true;
 
     // Set available samplerates
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     available_samplerates.push_back(2000000);
     available_samplerates.push_back(3000000);
     available_samplerates.push_back(4000000);
@@ -201,10 +208,7 @@ void SDRPlaySource::open()
     available_samplerates.push_back(9000000);
     available_samplerates.push_back(10000000);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, false);
 
     // Set max gain
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1_ID) // RSP1
@@ -223,6 +227,8 @@ void SDRPlaySource::open()
 void SDRPlaySource::start()
 {
     DSPSampleSource::start();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
         set_duo_tuner();
@@ -322,7 +328,7 @@ void SDRPlaySource::set_frequency(uint64_t frequency)
     {
         channel_params->tunerParams.rfFreq.rfHz = frequency;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Tuner_Frf, sdrplay_api_Update_Ext1_None);
-        logger->debug("Set SDRPlay frequency to {:d}", d_frequency);
+        logger->debug("Set SDRPlay frequency to %d", d_frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -330,113 +336,105 @@ void SDRPlaySource::set_frequency(uint64_t frequency)
 void SDRPlaySource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+        RImGui::beginDisabled();
+
+    samplerate_widget.render();
+
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     if (!is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain);
-    gain_changed |= ImGui::SliderInt("IF Gain", &if_gain, 20, 59);
+    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain - 1);
+    gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 20, 59);
     if (gain_changed)
         set_gains();
 
-    if (ImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
-                                            "5HZ\0"
-                                            "50HZ\0"
-                                            "100HZ\0"))
+    if (RImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
+                                             "5HZ\0"
+                                             "50HZ\0"
+                                             "100HZ\0"))
         set_agcs();
 
     // RSP1A-specific settings
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID)
     {
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("DAB Notch", &dab_notch))
+        if (RImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     // RSP2-specific settings
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID)
     {
-        if (ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                    "Antenna A (Hi-Z)\0"
-                                                    "Antenna B\0"))
+        if (RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                     "Antenna A (Hi-Z)\0"
+                                                     "Antenna B\0"))
             set_others();
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     // RSPDuo-specific settings
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID)
     {
         if (is_started)
-            style::beginDisabled();
+            RImGui::beginDisabled();
         else
-            style::endDisabled();
-        ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                "Antenna A (Hi-Z)\0"
-                                                "Antenna B\0");
+            RImGui::endDisabled();
+        RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                 "Antenna A (Hi-Z)\0"
+                                                 "Antenna B\0");
         if (is_started)
-            style::endDisabled();
+            RImGui::endDisabled();
         else
-            style::beginDisabled();
+            RImGui::beginDisabled();
 
-        if (ImGui::Checkbox("AM Notch", &am_notch))
+        if (RImGui::Checkbox("AM Notch", &am_notch))
             set_others();
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("DAB Notch", &dab_notch))
+        if (RImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     // RSPDx-specific settings
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID)
     {
-        if (ImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
-                                                    "Atenna B\0"
-                                                    "Atenna C\0"))
+        if (RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
+                                                     "Atenna B\0"
+                                                     "Atenna C\0"))
             set_others();
-        if (ImGui::Checkbox("DAB Notch", &dab_notch))
+        if (RImGui::Checkbox("DAB Notch", &dab_notch))
             set_others();
-        if (ImGui::Checkbox("FM Notch", &fm_notch))
+        if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
-        if (ImGui::Checkbox("Bias", &bias))
+        if (RImGui::Checkbox("Bias", &bias))
             set_bias();
     }
     else
     {
-        ImGui::Text("This device is not supported yet,\n or perhaps a clone!");
+        RImGui::Text("This device is not supported yet,\n or perhaps a clone!");
     }
     if (!is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 }
 
 void SDRPlaySource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 10e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t SDRPlaySource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()

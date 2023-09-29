@@ -4,21 +4,28 @@
 #include "common/utils.h"
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/sub.h>
+#include "common/net/udp.h"
 
 namespace network
 {
     NetworkClientModule::NetworkClientModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : ProcessingModule(input_file, output_file_hint, parameters)
     {
-        if (parameters.count("pkt_size") > 0)
-            pkt_size = parameters["pkt_size"].get<int>();
-        else
-            throw std::runtime_error("pkt_size parameter must be present!");
+        if (parameters.contains("client_mode"))
+            mode = parameters["client_mode"].get<std::string>();
 
-        if (parameters.count("server_address") > 0)
-            address = parameters["server_address"].get<std::string>();
-        else
-            throw std::runtime_error("server_address parameter must be present!");
+        if (mode == "default")
+        {
+            if (parameters.count("pkt_size") > 0)
+                pkt_size = parameters["pkt_size"].get<int>();
+            else
+                throw std::runtime_error("pkt_size parameter must be present!");
+
+            if (parameters.count("server_address") > 0)
+                address = parameters["server_address"].get<std::string>();
+            else
+                throw std::runtime_error("server_address parameter must be present!");
+        }
 
         if (parameters.count("server_port") > 0)
             port = parameters["server_port"].get<int>();
@@ -45,27 +52,40 @@ namespace network
 
     void NetworkClientModule::process()
     {
-        nng_socket sock;
-        nng_dialer dialer;
-
-        logger->info("Opening TCP socket on " + std::string("tcp://" + address + ":" + std::to_string(port)));
-
-        nng_sub0_open_raw(&sock);
-        nng_dialer_create(&dialer, sock, std::string("tcp://" + address + ":" + std::to_string(port)).c_str());
-        nng_dialer_start(dialer, (int)0);
-
-        while (input_active.load())
+        if (mode == "default")
         {
-            size_t lpkt_size;
-            nng_recv(sock, buffer, &lpkt_size, (int)0);
+            nng_socket sock;
+            nng_dialer dialer;
 
-            if (pkt_size != (int)lpkt_size)
-                continue;
+            logger->info("Opening TCP socket on " + std::string("tcp://" + address + ":" + std::to_string(port)));
 
-            output_fifo->write(buffer, pkt_size);
+            nng_sub0_open_raw(&sock);
+            nng_dialer_create(&dialer, sock, std::string("tcp://" + address + ":" + std::to_string(port)).c_str());
+            nng_dialer_start(dialer, (int)0);
+
+            while (input_active.load())
+            {
+                size_t lpkt_size;
+                nng_recv(sock, buffer, &lpkt_size, (int)0);
+
+                if (pkt_size != (int)lpkt_size)
+                    continue;
+
+                output_fifo->write(buffer, pkt_size);
+            }
+
+            nng_dialer_close(dialer);
         }
+        else if (mode == "udp_listen")
+        {
+            net::UDPServer udp_server(port);
 
-        nng_dialer_close(dialer);
+            while (input_active.load())
+            {
+                int lpkt_size = udp_server.recv(buffer, pkt_size);
+                output_fifo->write(buffer, lpkt_size);
+            }
+        }
     }
 
     void NetworkClientModule::drawUI(bool window)

@@ -5,6 +5,7 @@
 #include "common/image/jpeg_utils.h"
 #include "imgui/imgui_image.h"
 #include "common/image/j2k_utils.h"
+#include <filesystem>
 
 namespace fy4
 {
@@ -152,8 +153,7 @@ namespace fy4
                                 current_filename = image_id;
 
                                 wip_img->imageStatus = SAVING;
-                                logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                                segmentedDecoder.image.save_png(directory + "/IMAGES/" + current_filename + ".png");
+                                segmentedDecoder.image.save_img(directory + "/IMAGES/" + current_filename);
                                 wip_img->imageStatus = RECEIVING;
                             }
 
@@ -182,8 +182,7 @@ namespace fy4
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
-                            logger->info("Writing image " + directory + "/IMAGES/" + current_filename + ".png" + "...");
-                            segmentedDecoder.image.save_png(directory + "/IMAGES/" + current_filename + ".png");
+                            segmentedDecoder.image.save_img(directory + "/IMAGES/" + current_filename);
                             segmentedDecoder = SegmentedLRITImageDecoder();
                             wip_img->imageStatus = IDLE;
                         }
@@ -195,9 +194,8 @@ namespace fy4
                         if (!std::filesystem::exists(directory + "/IMAGES/" + img_type))
                             std::filesystem::create_directory(directory + "/IMAGES/" + img_type);
 
-                        logger->info("Writing image " + directory + "/IMAGES/" + img_type + "/" + image_id + ".png" + "...");
                         image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                        image.save_png(directory + "/IMAGES/" + img_type + "/" + image_id + ".png");
+                        image.save_img(directory + "/IMAGES/" + img_type + "/" + image_id);
                     }
                 }
                 else

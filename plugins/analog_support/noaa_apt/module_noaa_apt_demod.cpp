@@ -28,7 +28,7 @@ namespace noaa_apt
 
     void NOAAAPTDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         // Resampler to BW
         res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
@@ -82,7 +82,7 @@ namespace noaa_apt
         }
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = qua->output_stream->read();
 
@@ -126,7 +126,7 @@ namespace noaa_apt
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
             }
         }
 

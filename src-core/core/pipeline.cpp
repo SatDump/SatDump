@@ -101,13 +101,9 @@ namespace satdump
                 }
 
                 std::thread module1_thread([m1]()
-                                           {
-                                           m1->process();
-                                           logger->info("MODULE 1 DONE"); });
+                                           { m1->process(); });
                 std::thread module2_thread([m2]()
-                                           {
-                                           m2->process();
-                                           logger->info("MODULE 2 DONE"); });
+                                           { m2->process(); });
 
                 if (module1_thread.joinable())
                     module1_thread.join();
@@ -141,11 +137,11 @@ namespace satdump
             if (!foundLevel)
             {
                 foundLevel = step.level_name == input_level;
-                logger->warn("Data is already at level " + step.level_name + ", skipping");
+                logger->info("Data is already at level " + step.level_name + ", skipping");
                 continue;
             }
 
-            logger->warn("Processing data to level " + step.level_name);
+            logger->info("Processing data to level " + step.level_name);
 
             std::vector<std::string> files;
 
@@ -226,6 +222,8 @@ namespace satdump
 
             module.reset();
         }
+
+        satdump::eventBus->fire_event<events::PipelineDoneProcessingEvent>({name, output_directory});
     }
 
     nlohmann::json Pipeline::prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params)
@@ -322,7 +320,7 @@ namespace satdump
                 {
                     newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"].get<std::vector<std::pair<int, int>>>();
                 }
-                catch (std::exception &e)
+                catch (std::exception &)
                 {
                     newPipeline.live_cfg.normal_live = pipelineConfig.value()["live_cfg"]["default"].get<std::vector<std::pair<int, int>>>();
                     if (pipelineConfig.value()["live_cfg"].contains("server"))

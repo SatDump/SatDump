@@ -31,6 +31,7 @@ namespace satdump
         bool median_blur = false;
         bool rotate_image = false;
         bool equalize_image = false;
+        bool individual_equalize_image = false;
         bool invert_image = false;
         bool correct_image = false;
         bool normalize_image = false;
@@ -40,15 +41,25 @@ namespace satdump
         bool cities_overlay = false;
 
         int cities_size = 50;
+        int cities_type = 0;
+        int cities_scale_rank = 3;
 
         // GUI
         bool range_window = false;
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
+
+        // Calibration
         bool is_temp = false;
         bool show_scale = false;
         image::Image<uint16_t> scale_image; // 512x25
         ImageViewWidget scale_view;
+
+        // LUT
+        bool using_lut = false;
+        image::Image<uint16_t> lut_image;
+
+        // Geo-Correction
         std::vector<int> correction_factors;
 
         // RGB Handling
@@ -71,6 +82,11 @@ namespace satdump
         ImVec4 color_borders = {0, 1, 0, 1};
         ImVec4 color_cities = {1, 0, 0, 1};
 
+        // Utils
+        void updateScaleImage();
+        void updateCorrectionFactors(bool first = false);
+
+        // The Rest
         void init();
         void updateImage();
 

@@ -26,8 +26,40 @@ static int GetAssetData(const char *filename, void **out_data);
 #include "logger.h"
 #include "init.h"
 #include "main_ui.h"
+#include "loading_screen.h"
+#include "core/style.h"
 
 bool was_init = false;
+
+float get_dpi(struct android_app* app)
+{
+    JavaVM* java_vm = app->activity->vm;
+    JNIEnv* java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        throw std::runtime_error("Could not get JNI environement");
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not attach to thread");
+
+    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
+    if (native_activity_clazz == NULL)
+        throw std::runtime_error("Could not get MainActivity class");
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()F");
+    if (method_id == NULL)
+        throw std::runtime_error("Could not get methode ID");
+
+    jfloat jflt = java_env->CallFloatMethod(app->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not detach from thread");
+
+    return jflt;
+}
 
 void init(struct android_app *app)
 {
@@ -94,7 +126,31 @@ void init(struct android_app *app)
         // ImGui::StyleColorsDark();
         // ImGui::StyleColorsClassic();
 
-        satdump::initMainUI();
+        float display_scale = get_dpi(app);
+        initLogger();
+        style::setFonts(display_scale);
+        std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface, display_scale);
+        logger->add_sink(loading_screen_sink);
+
+        satdump::tle_do_update_on_init = false;
+        satdump::initSatdump();
+        satdump::initMainUI(display_scale);
+
+        //Shut down loading screen
+        logger->del_sink(loading_screen_sink);
+        loading_screen_sink.reset();
+
+        //Set font again to adjust for DPI
+        style::setFonts();
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+
+        // TLE
+        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
+            satdump::ui_thread_pool.push([&](int)
+                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt");
+                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
+
         was_init = true;
     }
 
@@ -110,7 +166,6 @@ void tick()
     // Our state
     static bool show_demo_window = true;
     static bool show_another_window = false;
-    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Poll Unicode characters via JNI
     // FIXME: do not call this every frame because of JNI overhead
@@ -237,12 +292,48 @@ std::string getAppFilesDir(struct android_app *app)
     return str;
 }
 
+std::string getPluginsDir(struct android_app *app)
+{
+    JavaVM *java_vm = app->activity->vm;
+    JNIEnv *java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        throw std::runtime_error("Could not get JNI environement");
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not attach to thread");
+
+    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
+    if (native_activity_clazz == NULL)
+        throw std::runtime_error("Could not get MainActivity class");
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_plugins_directory", "()Ljava/lang/String;");
+    if (method_id == NULL)
+        throw std::runtime_error("Could not get methode ID");
+
+    jstring jstr = (jstring)java_env->CallObjectMethod(app->activity->clazz, method_id);
+
+    const char *_str = java_env->GetStringUTFChars(jstr, NULL);
+    std::string str(_str);
+    java_env->ReleaseStringUTFChars(jstr, _str);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not detach from thread");
+
+    return str;
+}
+
 #include <unistd.h>
 
 void bindImageTextureFunctions();
 
 struct android_app *a_app;
 extern struct android_app *android_app_ptr;
+
+extern std::string android_plugins_dir;
 
 void android_main(struct android_app *app)
 {
@@ -252,18 +343,9 @@ void android_main(struct android_app *app)
         bindImageTextureFunctions();
 
         std::string path = getAppFilesDir(app);
+        android_plugins_dir = getPluginsDir(app);
 
         chdir(path.c_str());
-
-        initLogger();
-        satdump::tle_do_update_on_init = false;
-        satdump::initSatdump();
-
-        // TLE
-        if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
-            satdump::ui_thread_pool.push([&](int)
-                                         {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
-                                            satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
     }
 
     app->onAppCmd = handleAppCmd;

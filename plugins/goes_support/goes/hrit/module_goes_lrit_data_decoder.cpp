@@ -17,7 +17,8 @@ namespace goes
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
                                                                                                                                                 write_dcs(parameters["write_dcs"].get<bool>()),
-                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>()),
+                                                                                                                                                write_lrit(parameters["write_lrit"].get<bool>())
         {
             goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
@@ -65,7 +66,8 @@ namespace goes
             if (input_data_type == DATA_FILE)
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+            directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+            goes_r_fc_composer_full_disk->directory = goes_r_fc_composer_meso1->directory = goes_r_fc_composer_meso2->directory = directory;
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -80,8 +82,6 @@ namespace goes
             logger->info("Demultiplexing and deframing...");
 
             ::lrit::LRITDemux lrit_demux;
-
-            this->directory = directory;
 
             lrit_demux.onParseHeader =
                 [this](::lrit::LRITFile &file) -> void
@@ -168,7 +168,11 @@ namespace goes
                 std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
+                {
                     processLRITFile(file);
+                    if(write_lrit)
+                        saveLRITFile(file, directory + "/LRIT");
+                }
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -176,7 +180,7 @@ namespace goes
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -185,18 +189,15 @@ namespace goes
             for (auto &segmentedDecoder : segmentedDecoders)
             {
                 if (segmentedDecoder.second.image.size())
-                {
-                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.filename + ".png" + "...");
-                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename + ".png").c_str());
-                }
+                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename).c_str());
             }
 
             if (goes_r_fc_composer_full_disk->hasData)
-                goes_r_fc_composer_full_disk->save(directory);
+                goes_r_fc_composer_full_disk->save();
             if (goes_r_fc_composer_meso1->hasData)
-                goes_r_fc_composer_meso1->save(directory);
+                goes_r_fc_composer_meso1->save();
             if (goes_r_fc_composer_meso2->hasData)
-                goes_r_fc_composer_meso2->save(directory);
+                goes_r_fc_composer_meso2->save();
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
@@ -391,12 +392,12 @@ namespace goes
 
         std::vector<std::string> GOESLRITDataDecoderModule::getParameters()
         {
-            return {"write_images", "write_emwin", "write_messages", "write_dcs", "write_unknown"};
+            return {"write_images", "write_emwin", "write_messages", "write_lrit", "write_dcs", "write_unknown"};
         }
 
         std::shared_ptr<ProcessingModule> GOESLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GOESLRITDataDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace hrit
+} // namespace goes

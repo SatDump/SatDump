@@ -22,7 +22,7 @@ namespace terra
 
     void TerraDBDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
         rrc = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate * 2, 0.5f, 31));
         pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.004, 2);
         rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(pll->output_stream, ((float)final_samplerate / (float)d_symbolrate) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.0001f);
@@ -48,7 +48,7 @@ namespace terra
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".soft");
-        logger->info("Buffer size : {:d}", d_buffer_size);
+        logger->info("Buffer size : %d", d_buffer_size);
 
         time_t lastTime = 0;
 
@@ -59,7 +59,7 @@ namespace terra
         rec->start();
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = rec->output_stream->read();
 
@@ -97,7 +97,7 @@ namespace terra
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 

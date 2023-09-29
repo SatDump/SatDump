@@ -108,8 +108,8 @@ public:
 	{
 		if (initialized)
 		{
-			free(bnl);
-			free(pty);
+			volk_free(bnl);
+			volk_free(pty);
 			delete[] cnc;
 			delete[] pos;
 		}
@@ -171,8 +171,8 @@ public:
 	{
 		if (initialized)
 		{
-			free(bnl);
-			free(pty);
+			volk_free(bnl);
+			volk_free(pty);
 			delete[] cnc;
 			delete[] pos;
 		}

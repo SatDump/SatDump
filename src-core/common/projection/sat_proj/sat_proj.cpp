@@ -48,6 +48,9 @@ namespace satdump
         float pitch_offset;
         float yaw_offset;
 
+        float yaw_offset_asc;
+        float yaw_offset_des;
+
         // Pre-computed stuff
         std::vector<geodetic::geodetic_coords_t> sat_positions;
         std::vector<double> az_angles;
@@ -74,6 +77,9 @@ namespace satdump
             roll_offset = getValueOrDefault(cfg["roll_offset"], 0.0);
             pitch_offset = getValueOrDefault(cfg["pitch_offset"], 0.0);
             yaw_offset = getValueOrDefault(cfg["yaw_offset"], 0.0);
+
+            yaw_offset_asc = getValueOrDefault(cfg["yaw_offset_asc"], 0.0);
+            yaw_offset_des = getValueOrDefault(cfg["yaw_offset_des"], 0.0);
 
             img_size_x = image_width;
             img_size_y = timestamps.size();
@@ -111,6 +117,13 @@ namespace satdump
             geodetic::euler_coords_t satellite_pointing;
             if (rotate_yaw)
             {
+                if (yaw_offset_asc != 0 || yaw_offset_des != 0)
+                {
+                    if (ascending)
+                        yaw_offset = yaw_offset_asc;
+                    else
+                        yaw_offset = yaw_offset_des;
+                }
                 satellite_pointing.roll = roll_offset;
                 satellite_pointing.pitch = pitch_offset;
                 satellite_pointing.yaw = (90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle + -(((final_x - (image_width / 2.0)) / image_width) * scan_angle);
@@ -308,7 +321,7 @@ namespace satdump
                 spline_pitch.add_point(px, 0, p_v);
                 spline_yaw.add_point(px, 0, y_v);
 
-                logger->critical("{:d} {:f} {:f} {:f} ", px, roll, pitch, yaw);
+                logger->critical("%d %f %f %f ", px, roll, pitch, yaw);
             }
 
             spline_roll.solve();
@@ -326,7 +339,7 @@ namespace satdump
                 double rp_v[2] = {roll, pitch};
                 spline_roll_pitch.add_point(px, px, rp_v);
 
-                // logger->critical("{:d} {:f} {:f} {:f} ", px, roll, pitch, yaw);
+                // logger->critical("%d %f %f %f ", px, roll, pitch, yaw);
             }
 
             spline_roll_pitch.solve();
@@ -382,7 +395,7 @@ namespace satdump
             satellite_pointing.pitch = roll_pitch_v[1];
             satellite_pointing.yaw = 90 + (yaw_swap ? (!ascending ? yaw_offset : -yaw_offset) : yaw_offset) - az_angle;
 
-            // logger->critical("{:f} {:f} {:f} ", satellite_pointing.roll, satellite_pointing.pitch, satellite_pointing.yaw);
+            // logger->critical("%f %f %f ", satellite_pointing.roll, satellite_pointing.pitch, satellite_pointing.yaw);
 
             geodetic::geodetic_coords_t ground_position;
             int ret = geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);

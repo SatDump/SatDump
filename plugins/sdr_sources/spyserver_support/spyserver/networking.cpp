@@ -1,5 +1,6 @@
 #include "networking.h"
 #include <assert.h>
+#include <stdexcept>
 
 namespace net
 {
@@ -363,7 +364,7 @@ namespace net
                 }
                 entry.handler(std::move(client), entry.ctx);
             }
-            catch (std::exception &e)
+            catch (std::exception&)
             {
                 listening = false;
                 return;

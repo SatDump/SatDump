@@ -51,7 +51,7 @@ namespace dvb
 
     void DVBSDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         // RRC
         rrc = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
@@ -108,7 +108,7 @@ namespace dvb
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".ts");
-        logger->info("Buffer size : {:d}", d_buffer_size);
+        logger->info("Buffer size : %d", d_buffer_size);
 
         time_t lastTime = 0;
 
@@ -128,7 +128,7 @@ namespace dvb
         dvbs::DVBSScrambling scrambler;
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             // Handle outputs
             // Get rate
@@ -160,7 +160,7 @@ namespace dvb
                 lastTime = time(NULL);
 
                 std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
 
             // Read data
@@ -311,6 +311,8 @@ namespace dvb
 
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+
+        drawStopButton();
 
         ImGui::End();
 

@@ -7,8 +7,8 @@
 #include <libhackrf/hackrf.h>
 #endif
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
+#include "common/widgets/double_list.h"
 
 class HackRFSource : public dsp::DSPSampleSource
 {
@@ -17,11 +17,7 @@ protected:
     hackrf_device *hackrf_dev_obj;
     static int _rx_callback(hackrf_transfer *t);
 
-    int selected_samplerate = 0;
-    bool enable_experimental_samplerates = false;
-    std::string samplerate_option_str, samplerate_option_str_exp;
-    std::vector<uint64_t> available_samplerates, available_samplerates_exp;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     int lna_gain = 0;
     int vga_gain = 0;
@@ -33,7 +29,9 @@ protected:
     void set_bias();
 
 public:
-    HackRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}
+    HackRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    {
+    }
 
     ~HackRFSource()
     {

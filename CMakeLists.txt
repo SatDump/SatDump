@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+endif()
+
 project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
@@ -74,14 +78,25 @@ else()
 endif()
 
 if(MSVC OR BUILD_MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244") # Speed up this to object-level
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244") # Speed up this to object-level
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
+
+    # Speed up this to object-level, Suppress type conversion warnings, suppress
+    # POSIX function warnings, suppress warnings about DLL-exported functions, and
+    # Suppress warnings about template methods defined in another C++ file
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244 /wd4273 /wd4661")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244 /wd4273 /wd4661")
+
+    #Suppress pointless (to us) warnings about DLL-exported functions
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4286,4217")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4286,4217")
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286,4217")
+
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/x64-windows/include)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project(SatDump VERSION "1.1.0")
+project(SatDump VERSION "1.1.1")
 
 # Check if the current commit has a tag
 execute_process(
@@ -102,11 +117,12 @@ execute_process(
 # Set version
 if(GIT_HAS_TAG STREQUAL "undefined")
     message("-- Commit has no tag (${GIT_HAS_TAG}). Assume dev build")
-    add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}-${GIT_HASH}")
+    set(SATDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
 else()
     message("-- Commit has no tag (${GIT_HAS_TAG}). Assume release build")
-    add_compile_definitions(SATDUMP_VERSION="${PROJECT_VERSION}")
+    set(SATDUMP_VERSION "${PROJECT_VERSION}")
 endif()
+add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
 
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
@@ -132,6 +148,10 @@ endif()
 
 # For good measure
 if(BUILD_ZIQ)
+    message("Building with ZIQ Support")
+endif()
+
+if(BUILD_ZIQ2)
     message("Building with ZIQ Support")
 endif()
 
@@ -203,17 +223,54 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+    if(MSVC OR BUILD_MSVC)
+        set(CPACK_PACKAGING_INSTALL_PREFIX "/")
+    else()
+        set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+    endif()
 
-    set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-    set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-    set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+    #set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+    #set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+    #set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+    set(CPACK_PACKAGE_VERSION ${SATDUMP_VERSION})
 
-    set(CPACK_GENERATOR DEB)
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+    if(MSVC OR BUILD_MSVC)
+        # Customize NSIS template
+        file(READ "${CMAKE_ROOT}/Modules/Internal/CPack/NSIS.template.in" NSIS_template)
+        set(CREATE_ICONS_REPLACE "  SetOutPath \"$INSTDIR\\bin\"\n@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@\n  SetOutPath \"$INSTDIR\"")
+        string(REPLACE "@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@" "${CREATE_ICONS_REPLACE}" NSIS_template "${NSIS_template}")
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in" "${NSIS_template}")
+        set(CPACK_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+
+        # Generate Installer
+        set(CPACK_GENERATOR NSIS)
+        set(CPACK_PACKAGE_INSTALL_DIRECTORY SatDump)
+        set(CPACK_NSIS_MANIFEST_DPI_AWARE ON)
+        set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+        set(CPACK_NSIS_MODIFY_PATH ON)
+        set(CPACK_NSIS_BRANDING_TEXT "SatDump - General Purpose Satellite Data Processor")
+        set(CPACK_NSIS_MUI_HEADERIMAGE "${PROJECT_SOURCE_DIR}\\\\windows\\\\installer-header.bmp")
+        set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\windows\\\\icon.ico")
+        if(BUILD_GUI)
+            set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\satdump-ui.exe")
+            set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump-ui" "SatDump")
+            list(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA "CreateShortCut \\\"$DESKTOP\\\\SatDump.lnk\\\" \\\"$INSTDIR\\\\bin\\\\satdump-ui.exe\\\"")
+            list(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA "Delete \\\"$DESKTOP\\\\SatDump.lnk\\\"")
+        endif()
+        if(PLUGIN_REMOTE_SDR_SUPPORT)
+            set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump_sdr_server" "SatDump SDR Server")
+        endif()
+        file(GLOB_RECURSE SATDUMP_WINDOWS_DEPENDENCIES ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/bin/*.dll)
+        install(FILES ${SATDUMP_WINDOWS_DEPENDENCIES} DESTINATION bin)
+        install(TARGETS satdump_core DESTINATION bin)
+    else()
+        set(CPACK_GENERATOR DEB)
+        set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+        set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+        set(CPACK_DEB_COMPONENT_INSTALL ON)
+    endif()
+
     set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
-    set(CPACK_DEB_COMPONENT_INSTALL ON)
 
     include(CPack)
 endif()

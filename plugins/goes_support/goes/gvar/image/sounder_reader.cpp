@@ -1,4 +1,5 @@
 #include "sounder_reader.h"
+#include <cstring>
 
 #define WIDTH 1758
 #define HEIGHT 1577

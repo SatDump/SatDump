@@ -67,11 +67,11 @@ void AaroniaSource::set_gains()
     // Set the reference level of the receiver
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/reflevel") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, d_level);
-    logger->debug("Set Aaronia reflevel to {:f}", d_level);
+    logger->debug("Set Aaronia reflevel to %f", d_level);
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/gaincontrol") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_agc_str(d_agc_mode).c_str());
-    logger->debug("Set Aaronia AGC mode to {:d}", d_agc_mode);
+    logger->debug("Set Aaronia AGC mode to %d", d_agc_mode);
 }
 
 void AaroniaSource::set_others()
@@ -81,13 +81,14 @@ void AaroniaSource::set_others()
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/usbcompression") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_usbcomp_str(d_usb_compression).c_str());
-    logger->debug("Set Aaronia USB compression mode to {:d}", d_usb_compression);
+    logger->debug("Set Aaronia USB compression mode to %d", d_usb_compression);
 }
 
 void AaroniaSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
 
+    d_rx_channel = getValueOrDefault(d_settings["rx_channel"], d_rx_channel);
     d_level = getValueOrDefault(d_settings["ref_level"], d_level);
     d_usb_compression = getValueOrDefault(d_settings["usb_compression"], d_usb_compression);
     d_agc_mode = getValueOrDefault(d_settings["agc_mode"], d_agc_mode);
@@ -104,6 +105,7 @@ void AaroniaSource::set_settings(nlohmann::json settings)
 
 nlohmann::json AaroniaSource::get_settings()
 {
+    d_settings["rx_channel"] = d_rx_channel;
     d_settings["ref_level"] = d_level;
     d_settings["usb_compression"] = d_level;
     d_settings["agc_mode"] = d_agc_mode;
@@ -118,6 +120,13 @@ void AaroniaSource::open()
 {
     // Get available samplerates
     available_samplerates.clear();
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 128);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 64);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 32);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 16);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 8);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 4);
+    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 2);
     available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M);
     available_samplerates.push_back(SPECTRAN_SAMPLERATE_122M);
     available_samplerates.push_back(SPECTRAN_SAMPLERATE_184M);
@@ -126,7 +135,7 @@ void AaroniaSource::open()
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+        samplerate_option_str += format_notated(samplerate, "sps") + '\0';
 
     is_open = true;
 }
@@ -140,8 +149,11 @@ void AaroniaSource::start()
     if (AARTSAAPI_RescanDevices(&aaronia_handle, 2000) != AARTSAAPI_OK)
         throw std::runtime_error("Could not scan for Aaronia Devices!");
 
-    if (AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", 0, &aaronia_dinfo) != AARTSAAPI_OK)
-        throw std::runtime_error("Could not enum Aaronia Devices!");
+    // if (AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", 0, &aaronia_dinfo) != AARTSAAPI_OK)
+    for (uint64_t i = 0; AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
+        goto got_device;
+    throw std::runtime_error("Could not enum Aaronia Devices!");
+got_device:
 
     if (AARTSAAPI_OpenDevice(&aaronia_handle, &aaronia_device, L"spectranv6/raw", aaronia_dinfo.serialNumber) != AARTSAAPI_OK)
         throw std::runtime_error("Could not open Aaronia Device!");
@@ -152,17 +164,60 @@ void AaroniaSource::start()
         throw std::runtime_error("Could not get Aaronia ConfigRoot!");
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverchannel") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Rx1");
+    {
+        if (d_rx_channel == 0)
+            AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Rx1");
+        else if (d_rx_channel == 1)
+            AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Rx2");
+    }
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/outputformat") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"iq");
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate).c_str());
-    logger->info("Set Spectran receiver clock to {:s}", ws2s(get_spectran_samplerate_str(current_samplerate)).c_str());
+        AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_92M ? SPECTRAN_SAMPLERATE_92M : current_samplerate).c_str());
+    logger->info("Set Spectran receiver clock to %s", ws2s(get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_92M ? SPECTRAN_SAMPLERATE_92M : current_samplerate)).c_str());
 
+    int current_decimation = 1;
+    if (current_samplerate < SPECTRAN_SAMPLERATE_92M)
+    {
+        int decim = 1;
+        while (decim <= 128)
+        {
+            uint64_t samprate = SPECTRAN_SAMPLERATE_92M / decim;
+            logger->info("%llu %llu", current_samplerate, samprate);
+            if (samprate == current_samplerate)
+            {
+                current_decimation = decim;
+                break;
+            }
+            decim *= 2;
+        }
+    }
+    std::wstring decimation_str = L"Full";
+    if (current_decimation <= 1)
+        decimation_str = L"Full";
+    else if (current_decimation == 2)
+        decimation_str = L"1 / 2";
+    else if (current_decimation == 4)
+        decimation_str = L"1 / 4";
+    else if (current_decimation == 8)
+        decimation_str = L"1 / 8";
+    else if (current_decimation == 16)
+        decimation_str = L"1 / 16";
+    else if (current_decimation == 32)
+        decimation_str = L"1 / 32";
+    else if (current_decimation == 64)
+        decimation_str = L"1 / 64";
+    else if (current_decimation == 128)
+        decimation_str = L"1 / 128";
+    else if (current_decimation == 256)
+        decimation_str = L"1 / 256";
+    else if (current_decimation == 512)
+        decimation_str = L"1 / 512";
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/decimation") == AARTSAAPI_OK)
-        AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Full");
+        AARTSAAPI_ConfigSetString(&aaronia_device, &config, decimation_str.c_str());
+    logger->info("Set Spectran decimation to %d", current_decimation);
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"calibration/rffilter") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"Auto Extended");
@@ -178,7 +233,7 @@ void AaroniaSource::start()
         throw std::runtime_error("Could not start Aaronia device!");
 
     // Wait
-    logger->info("Waiting for devide to stream...");
+    logger->info("Waiting for device to stream...");
 
     AARTSAAPI_Packet packet;
     while (AARTSAAPI_GetPacket(&aaronia_device, 0, 0, &packet) == AARTSAAPI_EMPTY)
@@ -224,7 +279,7 @@ void AaroniaSource::set_frequency(uint64_t frequency)
         // Set frequency
         if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/centerfreq") == AARTSAAPI_OK)
             AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, frequency);
-        logger->debug("Set Aaronia frequency to {:d}", frequency);
+        logger->debug("Set Aaronia frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -232,31 +287,39 @@ void AaroniaSource::set_frequency(uint64_t frequency)
 void AaroniaSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+        RImGui::beginDisabled();
+
+    RImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
+
+    // Channel
+    if (RImGui::RadioButton("Rx1", d_rx_channel == 0))
+        d_rx_channel = 0;
+    else if (RImGui::RadioButton("Rx2", d_rx_channel == 1))
+        d_rx_channel = 1;
+
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // USB Compression
-    if (ImGui::Combo("USB Compression##aaronia_usb_comp", &d_usb_compression, "Auto\0"
-                                                                              "Raw\0"
-                                                                              "Compressed\0"))
+    if (RImGui::Combo("USB Compression##aaronia_usb_comp", &d_usb_compression, "Auto\0"
+                                                                               "Raw\0"
+                                                                               "Compressed\0"))
         set_others();
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
-    gain_changed |= ImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
-                                                                            "Peak\0"
-                                                                            "Power\0");
-    gain_changed |= ImGui::Checkbox("Amp##aaronia_amp", &d_enable_amp);
-    gain_changed |= ImGui::Checkbox("Preamp##aaronia_preamp", &d_enable_preamp);
+    gain_changed |= RImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
+    gain_changed |= RImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
+                                                                             "Peak\0"
+                                                                             "Power\0");
+    gain_changed |= RImGui::Checkbox("Amp##aaronia_amp", &d_enable_amp);
+    gain_changed |= RImGui::Checkbox("Preamp##aaronia_preamp", &d_enable_preamp);
     if (gain_changed)
         set_gains();
 
     // Rescaling
-    ImGui::Checkbox("Rescale##aaronia_rescale", &d_rescale);
+    RImGui::Checkbox("Rescale##aaronia_rescale", &d_rescale);
 }
 
 void AaroniaSource::set_samplerate(uint64_t samplerate)
@@ -291,11 +354,11 @@ std::vector<dsp::SourceDescriptor> AaroniaSource::getAvailableSources()
 
     AARTSAAPI_DeviceInfo dinfo;
 
-    if (AARTSAAPI_EnumDevice(&h, L"spectranv6", 0, &dinfo) == AARTSAAPI_OK)
+    for (uint64_t i = 0; AARTSAAPI_EnumDevice(&h, L"spectranv6", i, &dinfo) == AARTSAAPI_OK; i++)
     {
         std::stringstream ss;
         ss << std::hex << dinfo.serialNumber;
-        results.push_back({"aaronia", "Spectran V6 " + ss.str(), 0});
+        results.push_back({"aaronia", "Spectran V6 " + ss.str(), i});
     }
 
     AARTSAAPI_Close(&h);

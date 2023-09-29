@@ -3,8 +3,8 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include <sdrplay_api.h>
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
+#include "common/widgets/double_list.h"
 
 class SDRPlaySource : public dsp::DSPSampleSource
 {
@@ -20,10 +20,7 @@ protected:
 
     int max_gain;
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     int lna_gain = 0;
     int if_gain = 20;
@@ -43,7 +40,9 @@ protected:
     void set_duo_channel();
 
 public:
-    SDRPlaySource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}
+    SDRPlaySource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    {
+    }
 
     ~SDRPlaySource()
     {

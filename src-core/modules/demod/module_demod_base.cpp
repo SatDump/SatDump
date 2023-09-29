@@ -40,7 +40,7 @@ namespace demod
         showWaterfall = satdump::config::main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
     }
 
-    void BaseDemodModule::init(bool resample_here)
+    void BaseDemodModule::initb(bool resample_here)
     {
         float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
         resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample
@@ -67,11 +67,11 @@ namespace demod
 
         final_sps = final_samplerate / (float)d_symbolrate;
 
-        logger->debug("Input SPS : {:f}", input_sps);
+        logger->debug("Input SPS : %f", input_sps);
         logger->debug("Resample : " + std::to_string(resample));
-        logger->debug("Samplerate : {:f}", final_samplerate);
-        logger->debug("Dec factor : {:f}", decimation_factor);
-        logger->debug("Final SPS : {:f}", final_sps);
+        logger->debug("Samplerate : %f", final_samplerate);
+        logger->debug("Dec factor : %f", decimation_factor);
+        logger->debug("Final SPS : %f", final_sps);
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
@@ -194,6 +194,8 @@ namespace demod
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
+        drawStopButton();
+
         ImGui::End();
 
         drawFFT();
@@ -204,24 +206,55 @@ namespace demod
         if (show_fft && !streamingInput)
         {
             ImGui::SetNextWindowSize({400 * (float)ui_scale, (float)(showWaterfall ? 400 : 200) * (float)ui_scale});
-            ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize);
-            fft_plot->draw({float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0)});
-            float min = 1000;
-            for (int i = 0; i < 8192; i++)
-                if (fft_proc->output_stream->writeBuf[i] < min)
-                    min = fft_proc->output_stream->writeBuf[i];
-            float max = -1000;
-            for (int i = 0; i < 8192; i++)
-                if (fft_proc->output_stream->writeBuf[i] > max)
-                    max = fft_proc->output_stream->writeBuf[i];
+            if (ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
+            {
+                fft_plot->draw({ float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0) });
 
-            waterfall_plot->scale_min = fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
-            waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
+                //Find "actual" left edge of FFT, before frequency shift.
+                //Inset by 10% (819), then account for > 100% freq shifts via modulo
+                int pos = (abs((float)d_frequency_shift / (float)d_samplerate) * (float)8192) + 819;
+                pos %= 8192;
 
-            if (showWaterfall)
-                waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 40 * ui_scale) / 2});
+                //Compute min and max of the middle 80% of original baseband
+                float min = 1000;
+                float max = -1000;
+                for (int i = 0; i < 6554; i++) //8192 * 80% = 6554
+                {
+                    if (fft_proc->output_stream->writeBuf[pos] < min)
+                        min = fft_proc->output_stream->writeBuf[pos];
+                    if (fft_proc->output_stream->writeBuf[pos] > max)
+                        max = fft_proc->output_stream->writeBuf[pos];
+                    pos++;
+                    if (pos >= 8192)
+                        pos = 0;
+                }
+
+                waterfall_plot->scale_min = fft_plot->scale_min = fft_plot->scale_min * 0.99 + min * 0.01;
+                waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
+
+                if (showWaterfall)
+                    waterfall_plot->draw({ ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2 });
+            }
 
             ImGui::End();
+        }
+    }
+
+    void BaseDemodModule::drawStopButton()
+    {
+        if (input_data_type != DATA_FILE)
+            return;
+
+        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+        {
+            ImGui::SetCursorPos({ImGui::GetCursorPos().x + ImGui::GetWindowWidth() - 55 * ui_scale,
+                                 ImGui::GetCursorPos().y - 25 * ui_scale});
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(255, 0, 0, 255));
+            if (ImGui::Button("Abort##demodstop"))
+                demod_should_stop = true;
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("This Abort button will simulate the \ndemodulation being finished. \nProcessing will carry on!");
         }
     }
 

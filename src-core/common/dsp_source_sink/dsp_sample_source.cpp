@@ -7,12 +7,15 @@ namespace dsp
 {
     std::map<std::string, RegisteredSource> dsp_sources_registry;
 
-    std::vector<SourceDescriptor> getAllAvailableSources()
+    std::vector<SourceDescriptor> getAllAvailableSources(bool remote)
     {
         std::vector<SourceDescriptor> all_sources;
 
         for (std::pair<std::string, RegisteredSource> source : dsp_sources_registry)
         {
+            if (remote)
+                if (source.first == "remote")
+                    continue;
             std::vector<SourceDescriptor> devices = source.second.getSources();
             all_sources.insert(all_sources.end(), devices.begin(), devices.end());
         }

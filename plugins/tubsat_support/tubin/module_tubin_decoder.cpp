@@ -62,7 +62,7 @@ namespace tubin
                                        (uint64_t)cadu[33] << 8 |
                                        (uint64_t)cadu[34];
 
-                    // logger->info("{:d} {:d}", chunk_counter, file_id);
+                    // logger->info("%d %d", chunk_counter, file_id);
 
                     if (all_files_vis.count(file_id) == 0)
                         all_files_vis.insert({file_id, std::vector<uint8_t>()});
@@ -86,7 +86,7 @@ namespace tubin
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
             }
         }
 
@@ -130,7 +130,7 @@ namespace tubin
             image::Image<uint16_t> image;
             image.load_png(out.data(), out.size());
 
-            logger->info("New image is {:d}x{:d}", image.width(), image.height());
+            logger->info("New image is %dx%d", image.width(), image.height());
 
             if (image.size() > 0)
             {
@@ -170,10 +170,10 @@ namespace tubin
                 // tubin_products.set_timestamps(avhrr_reader.timestamps);
                 // tubin_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
-                tubin_products.images.push_back({"TUBIN-1.png", "1", image_ch1});
-                tubin_products.images.push_back({"TUBIN-2.png", "2", image_ch2});
-                tubin_products.images.push_back({"TUBIN-3.png", "3", image_ch3});
-                tubin_products.images.push_back({"TUBIN-4.png", "4", image_ch4});
+                tubin_products.images.push_back({"TUBIN-1", "1", image_ch1});
+                tubin_products.images.push_back({"TUBIN-2", "2", image_ch2});
+                tubin_products.images.push_back({"TUBIN-3", "3", image_ch3});
+                tubin_products.images.push_back({"TUBIN-4", "4", image_ch4});
 
                 tubin_products.save(directory);
                 dataset.products_list.push_back(product_name);

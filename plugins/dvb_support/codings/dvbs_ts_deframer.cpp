@@ -54,7 +54,7 @@ namespace deframing
                 errors_inv += compare_8(i == 0 ? 0x47 : 0xB8, sync_bytes[i]);
             }
 
-            // logger->critical("{:d} {:d}", errors_nor, errors_inv);
+            // logger->critical("%d %d", errors_nor, errors_inv);
 
             if (errors_nor <= 8)
             {

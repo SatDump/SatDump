@@ -33,10 +33,10 @@ namespace inmarsat
             d_aero_info_size = d_aero_interleaver_block_size * d_aero_interleaver_blocks;
             d_aero_total_frm_size = d_aero_sync_size + d_aero_hdr_size + d_aero_info_size;
 
-            logger->info("Aero Sync Size : {:d}", d_aero_sync_size);
-            logger->info("Aero Header Size : {:d}", d_aero_hdr_size);
-            logger->info("Aero Info Size : {:d}", d_aero_info_size);
-            logger->info("Aero Frame Size : {:d}", d_aero_total_frm_size);
+            logger->info("Aero Sync Size : %d", d_aero_sync_size);
+            logger->info("Aero Header Size : %d", d_aero_hdr_size);
+            logger->info("Aero Info Size : %d", d_aero_info_size);
+            logger->info("Aero Frame Size : %d", d_aero_total_frm_size);
 
             if (is_c_channel)
             {
@@ -248,7 +248,7 @@ namespace inmarsat
                 {
                     lastTime = time(NULL);
                     std::string lock_state = correlator_locked ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Lock : " + lock_state + ", Viterbi BER : " + std::to_string(viterbi->ber() * 100) + "%, Lock : " + lock_state);
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Lock : " + lock_state + ", Viterbi BER : " + std::to_string(viterbi->ber() * 100) + "%%, Lock : " + lock_state);
                 }
             }
 

@@ -1,0 +1,45 @@
+{
+    "tianwen1_link": {
+        "name": "Tianwen-1 Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 16384,
+                    "pll_bw": 0.002,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.001,
+                    "subcarrier_offset": 65536,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2048,
+                    "viterbi_ber_thresold": 0.390,
+                    "viterbi_outsync_after": 100,
+                    "derandomize": true,
+                    "rs_i": 1,
+                    "rs_dualbasis": false,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
+    }
+}

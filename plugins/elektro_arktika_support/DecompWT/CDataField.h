@@ -360,7 +360,7 @@ namespace Util
 		unsigned short m_NL; // Number of lines.
 		unsigned char m_NR;	 // Number of bits per pixel (representation).
 
-	private:
+	public:
 		// Description:	Prevents use of CDataField::resize().
 		// Returns:		Nothing.
 		CDataField Resize(
@@ -370,6 +370,9 @@ namespace Util
 		{
 			return *this;
 		}
+
+	private:
+    	using Util::CDataField::Resize;
 
 	public:
 		// INTERFACES:

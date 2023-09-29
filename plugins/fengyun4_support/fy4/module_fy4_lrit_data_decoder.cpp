@@ -176,20 +176,15 @@ namespace fy4
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
             data_in.close();
 
             for (auto &segmentedDecoder : segmentedDecoders)
-            {
                 if (segmentedDecoder.second.image_id != "")
-                {
-                    logger->info("Writing image " + directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png" + "...");
-                    segmentedDecoder.second.image.save_png(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id + ".png").c_str());
-                }
-            }
+                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
         }
 
         void FY4LRITDataDecoderModule::drawUI(bool window)

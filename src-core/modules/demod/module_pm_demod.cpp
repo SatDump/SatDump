@@ -56,7 +56,7 @@ namespace demod
 
     void PMDemodModule::init()
     {
-        BaseDemodModule::init(!d_resample_after_pll);
+        BaseDemodModule::initb(!d_resample_after_pll);
 
         // PLL
         pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
@@ -99,7 +99,7 @@ namespace demod
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".soft");
-        logger->info("Buffer size : {:d}", d_buffer_size);
+        logger->info("Buffer size : %d", d_buffer_size);
 
         time_t lastTime = 0;
 
@@ -112,7 +112,7 @@ namespace demod
         rec->start();
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = rec->output_stream->read();
 
@@ -158,7 +158,7 @@ namespace demod
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 

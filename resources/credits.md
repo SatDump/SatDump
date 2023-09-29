@@ -62,7 +62,7 @@ And additionally, on the UI side :
 **Fonts :**
 - [Roboto](https://fonts.google.com/specimen/Roboto), for text
 - [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols  
-*Both fonts were merge into a single font.ttf*
+*Both fonts were merged into a single font.ttf*
 
 # Contributors
 
@@ -84,6 +84,8 @@ And additionally, on the UI side :
 - Blobtoe
 - lego11
 - crosswalkersam
+- Scott Tilley (VE7TIL)
+- Jamie Vital
 
 # Thanks
 

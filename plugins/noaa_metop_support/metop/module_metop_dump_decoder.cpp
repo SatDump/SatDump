@@ -116,7 +116,7 @@ namespace metop
             {
                 lastTime = time(NULL);
                 std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Lock : " + lock_state);
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Lock : " + lock_state);
             }
         }
 

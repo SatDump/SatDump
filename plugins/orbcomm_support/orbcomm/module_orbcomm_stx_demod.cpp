@@ -21,7 +21,7 @@ namespace orbcomm
 
     void OrbcommSTXDemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         // Quadrature demod
         qua = std::make_shared<dsp::QuadratureDemodBlock>(agc->output_stream, 1);
@@ -82,7 +82,7 @@ namespace orbcomm
         uint8_t *frames = new uint8_t[d_buffer_size * 2];
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = rec->output_stream->read();
 
@@ -122,7 +122,7 @@ namespace orbcomm
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
             }
         }
 
@@ -186,6 +186,8 @@ namespace orbcomm
 
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+
+        drawStopButton();
 
         ImGui::End();
 

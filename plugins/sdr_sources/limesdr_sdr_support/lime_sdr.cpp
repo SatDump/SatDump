@@ -18,13 +18,22 @@ void LimeSDRSource::set_gains()
     if (!is_started)
         return;
 
-#ifndef __ANDROID__
-    LMS_SetGaindB(limeDevice, 0, 0, gain);
-#else
-    limeDevice->SetGain(false, 0, gain, "");
-#endif
+    lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
 
-    logger->debug("Set LimeSDR Gain to {:d}", gain);
+    if (gain_mode_manual)
+    {
+        lms->SetGain(false, channel_id, gain_lna, "LNA");
+        lms->SetGain(false, channel_id, gain_tia, "TIA");
+        lms->SetGain(false, channel_id, gain_pga, "PGA");
+        logger->debug("Set LimeSDR (LNA) Gain to %d", gain_lna);
+        logger->debug("Set LimeSDR (TIA) Gain to %d", gain_tia);
+        logger->debug("Set LimeSDR (PGA) Gain to %d", gain_pga);
+    }
+    else
+    {
+        lms->SetGain(false, channel_id, gain, "");
+        logger->debug("Set LimeSDR (auto) Gain to %d", gain);
+    }
 }
 
 void LimeSDRSource::set_settings(nlohmann::json settings)
@@ -32,6 +41,11 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
     d_settings = settings;
 
     gain = getValueOrDefault(d_settings["gain"], gain);
+    gain_lna = getValueOrDefault(d_settings["lna_gain"], gain_lna);
+    gain_tia = getValueOrDefault(d_settings["tia_gain"], gain_tia);
+    gain_pga = getValueOrDefault(d_settings["pga_gain"], gain_pga);
+    path_id = getValueOrDefault(d_settings["path_id"], path_id);
+    channel_id = getValueOrDefault(d_settings["channel_id"], channel_id);
 
     if (is_started)
     {
@@ -42,6 +56,11 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
 nlohmann::json LimeSDRSource::get_settings()
 {
     d_settings["gain"] = gain;
+    d_settings["lna_gain"] = gain_lna;
+    d_settings["tia_gain"] = gain_tia;
+    d_settings["pga_gain"] = gain_pga;
+    d_settings["path_id"] = path_id;
+    d_settings["channel_id"] = channel_id;
 
     return d_settings;
 }
@@ -51,18 +70,18 @@ void LimeSDRSource::open()
     is_open = true;
 
     // Set available samplerates
+    std::vector<double> available_samplerates;
     for (int i = 1; i < 81; i++)
         available_samplerates.push_back(i * 1e6);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void LimeSDRSource::start()
 {
     DSPSampleSource::start();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     if (!is_started)
     {
@@ -103,7 +122,7 @@ void LimeSDRSource::start()
 
 #ifdef __ANDROID__
     limeDevice->EnableChannel(false, 0, true);
-    limeDevice->SetPath(false, 0, 3);
+    limeDevice->SetPath(false, 0, path_id);
 
     limeConfig.align = false;
     limeConfig.isTx = false;
@@ -132,20 +151,20 @@ void LimeSDRSource::start()
     limeStream = limeStreamID;
     limeStream->Start();
 #else
-    LMS_EnableChannel(limeDevice, false, 0, true);
-    LMS_SetAntenna(limeDevice, false, 0, 3);
+    LMS_EnableChannel(limeDevice, false, channel_id, true);
+    LMS_SetAntenna(limeDevice, false, channel_id, path_id);
 
     // limeStream.align = false;
     limeStream.isTx = false;
     limeStream.throughputVsLatency = 0.5;
     limeStream.fifoSize = 8192 * 10; // auto
     limeStream.dataFmt = limeStream.LMS_FMT_F32;
-    limeStream.channel = 0;
+    limeStream.channel = channel_id;
 
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
     LMS_SetSampleRate(limeDevice, current_samplerate, 0);
-    LMS_SetLPFBW(limeDevice, false, 0, current_samplerate);
-    LMS_SetLPF(limeDevice, false, 0, true);
+    LMS_SetLPFBW(limeDevice, false, channel_id, current_samplerate);
+    LMS_SetLPF(limeDevice, false, channel_id, true);
 
     is_started = true;
 
@@ -176,7 +195,7 @@ void LimeSDRSource::stop()
 #ifndef __ANDROID__
         LMS_StopStream(&limeStream);
         LMS_DestroyStream(limeDevice, &limeStream);
-        LMS_EnableChannel(limeDevice, false, 0, false);
+        LMS_EnableChannel(limeDevice, false, channel_id, false);
         LMS_Close(limeDevice);
 #else
         limeStream->Stop();
@@ -195,11 +214,11 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
 #ifndef __ANDROID__
-        LMS_SetLOFrequency(limeDevice, false, 0, frequency);
+        LMS_SetLOFrequency(limeDevice, false, channel_id, frequency);
 #else
-        limeDevice->SetFrequency(false, 0, frequency);
+        limeDevice->SetFrequency(false, channel_id, frequency);
 #endif
-        logger->debug("Set LimeSDR frequency to {:d}", frequency);
+        logger->debug("Set LimeSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -207,15 +226,47 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
 void LimeSDRSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+        RImGui::beginDisabled();
+
+    samplerate_widget.render();
+
+    // Channel setting
+    RImGui::Combo("Channel####limesdrchannel", &channel_id, "Channel 1\0"
+                                                            "Channel 2\0");
+
+    RImGui::Combo("Path####limesdrpath", &path_id, "NONE\0"
+                                                   "LNAH\0"
+                                                   "LNAL\0"
+                                                   "LNAW\0");
+
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 73);
+
+    if (RImGui::RadioButton("Auto", !gain_mode_manual))
+    {
+        gain_mode_manual = false;
+        gain_changed = true;
+    }
+    RImGui::SameLine();
+    if (RImGui::RadioButton("Manual", gain_mode_manual))
+    {
+        gain_mode_manual = true;
+        gain_changed = true;
+    }
+
+    if (gain_mode_manual)
+    {
+        gain_changed |= RImGui::SliderInt("LNA Gain", &gain_lna, 0, 30);
+        gain_changed |= RImGui::SliderInt("TIA Gain", &gain_tia, 0, 12);
+        gain_changed |= RImGui::SliderInt("PGA Gain", &gain_pga, -12, 19);
+    }
+    else
+    {
+        gain_changed |= RImGui::SliderInt("Gain", &gain, 0, 73);
+    }
 
     if (gain_changed)
         set_gains();
@@ -223,22 +274,13 @@ void LimeSDRSource::drawControlUI()
 
 void LimeSDRSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 100e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t LimeSDRSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()

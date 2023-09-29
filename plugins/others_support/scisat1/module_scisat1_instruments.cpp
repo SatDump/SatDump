@@ -78,7 +78,7 @@ namespace scisat1
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -89,18 +89,18 @@ namespace scisat1
                 fts_status = SAVING;
 
                 logger->info("----------- FTS");
-                logger->info("Lines : {:d}", fts_reader.lines);
+                logger->info("Lines : %d", fts_reader.lines);
 
                 std::string fts_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/FTS";
 
                 if (!std::filesystem::exists(fts_directory))
                     std::filesystem::create_directory(fts_directory);
 
-                fts_reader.getImg().save_img(fts_directory + "/FTS.png");
+                fts_reader.getImg().save_img(fts_directory + "/FTS");
 
                 auto img = fts_reader.getImg();
                 img.resize_bilinear(img.width() / 10, img.height() * 10);
-                img.save_img(fts_directory + "/FTS_scaled.png");
+                img.save_img(fts_directory + "/FTS_scaled");
 
                 fts_status = DONE;
             }
@@ -110,16 +110,16 @@ namespace scisat1
                 maestro_status = SAVING;
 
                 logger->info("----------- MAESTRO");
-                logger->info("Lines (1) : {:d}", maestro_reader.lines_1);
-                logger->info("Lines (2) : {:d}", maestro_reader.lines_2);
+                logger->info("Lines (1) : %d", maestro_reader.lines_1);
+                logger->info("Lines (2) : %d", maestro_reader.lines_2);
 
                 std::string maestro_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MAESTRO";
 
                 if (!std::filesystem::exists(maestro_directory))
                     std::filesystem::create_directory(maestro_directory);
 
-                maestro_reader.getImg1().save_img(maestro_directory + "/MAESTRO_1.png");
-                maestro_reader.getImg2().save_img(maestro_directory + "/MAESTRO_2.png");
+                maestro_reader.getImg1().save_img(maestro_directory + "/MAESTRO_1");
+                maestro_reader.getImg2().save_img(maestro_directory + "/MAESTRO_2");
 
                 maestro_status = DONE;
             }

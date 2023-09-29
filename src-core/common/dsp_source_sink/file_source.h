@@ -1,13 +1,12 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "logger.h"
 #include "imgui/imgui.h"
-#include "core/style.h"
 #include <fstream>
 #include "common/dsp/io/baseband_interface.h"
 #include <thread>
 #include "imgui/pfd/widget.h"
+#include "common/widgets/notated_num.h"
 #include <chrono>
 
 class FileSource : public dsp::DSPSampleSource
@@ -15,17 +14,16 @@ class FileSource : public dsp::DSPSampleSource
 protected:
     bool is_open = false, is_started = false;
 
-    int current_samplerate = 0;
-
     std::chrono::steady_clock::time_point start_time_point;
     std::chrono::duration<double> sample_time_period;
     int buffer_size = 8192;
     std::string file_path;
-    bool iq_swap = false;
+    bool iq_swap = false, fast_playback = false;
 
-    long total_samples = 0;
+    unsigned long long total_samples = 0;
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
+    widgets::NotatedNum<int> samplerate_input = widgets::NotatedNum("Samplerate", 0, "sps");
 
     int select_sample_format;
     std::string baseband_type = "f32";
@@ -42,20 +40,8 @@ protected:
     bool is_ui = false;
 
 public:
-    FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
-    {
-        should_run = true;
-        work_thread = std::thread(&FileSource::run_thread, this);
-    }
-
-    ~FileSource()
-    {
-        stop();
-        close();
-        should_run = false;
-        if (work_thread.joinable())
-            work_thread.join();
-    }
+    FileSource(dsp::SourceDescriptor source);
+    ~FileSource();
 
     void set_settings(nlohmann::json settings);
     nlohmann::json get_settings();

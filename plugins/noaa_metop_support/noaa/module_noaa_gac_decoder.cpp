@@ -111,12 +111,15 @@ namespace noaa
                 data_out.write((char *)frm, 4159);
             }
 
+            // Update module stats
+            module_stats["frame_count"] = frame_count / 11090;
+
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Frames : " + std::to_string(frame_count / 11090));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Frames : " + std::to_string(frame_count));
             }
         }
 

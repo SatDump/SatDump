@@ -47,7 +47,7 @@ namespace proba
 
             if (hrc_images.count(img_tag) == 0)
             {
-                logger->info("New HRC image with tag {:d}!", img_tag);
+                logger->info("New HRC image with tag %d!", img_tag);
                 hrc_images.insert({img_tag, std::make_shared<HRCImage>()});
             }
 
@@ -75,12 +75,11 @@ namespace proba
         {
             for (auto &imgh : hrc_images)
             {
-                logger->info("Finished HRC image! Saving as HRC-" + std::to_string(imgh.first) + ".png");
                 image::Image<uint16_t> img = imgh.second->getImg();
-                img.save_png(output_folder + "/HRC-" + std::to_string(imgh.first) + ".png");
+                img.save_img(output_folder + "/HRC-" + std::to_string(imgh.first));
                 img.normalize();
                 img.equalize();
-                img.save_png(output_folder + "/HRC-" + std::to_string(imgh.first) + "-EQU.png");
+                img.save_img(output_folder + "/HRC-" + std::to_string(imgh.first) + "-EQU");
             }
         }
     } // namespace hrc

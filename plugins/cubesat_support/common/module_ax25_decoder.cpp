@@ -96,7 +96,7 @@ namespace ax25
                 int ctrl = frm[14];
                 int pid = frm[15];
 
-                logger->trace("AX.25 Frame - SRC : " + source_callsign + ",{:d} DST : " + destination_callsign + ",{:d} CTRL : {:d} PID : {:d}",
+                logger->trace("AX.25 Frame - SRC : " + source_callsign + ",%d DST : " + destination_callsign + ",%d CTRL : %d PID : %d",
                               source_ssid, target_ssid, ctrl, pid);
 
                 // Add a custom header to ease up forwarding to the next stuff
@@ -121,7 +121,7 @@ namespace ax25
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Frames " + std::to_string(frm_cnt));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Frames " + std::to_string(frm_cnt));
             }
         }
 

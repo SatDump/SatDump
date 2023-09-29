@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <limits>
 #include <utility>
+#include <cmath>
 
 #include "logger.h"
 

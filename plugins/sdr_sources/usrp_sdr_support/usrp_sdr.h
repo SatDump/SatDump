@@ -5,9 +5,9 @@
 #include <uhd/device.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class USRPSource : public dsp::DSPSampleSource
 {
@@ -20,10 +20,7 @@ protected:
 
     bool use_device_rates = false;
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     std::string channel_option_str;
     std::vector<std::string> usrp_antennas;
@@ -46,7 +43,7 @@ protected:
     {
         uhd::rx_metadata_t meta;
 
-        int buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {
@@ -54,12 +51,14 @@ protected:
             if (cnt > 0)
                 output_stream->swap(cnt);
             if (meta.error_code != meta.ERROR_CODE_NONE)
-                logger->error("USRP Stream error {:s}", meta.strerror().c_str());
+                logger->error("USRP Stream error %s", meta.strerror().c_str());
         }
     }
 
 public:
-    USRPSource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}
+    USRPSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    {
+    }
 
     ~USRPSource()
     {

@@ -1,0 +1,56 @@
+{
+    "geonetcast": {
+        "name": "GeoNetCast",
+        "live": true,
+        "live_cfg": {
+            "pkt_size": 9400,
+            "default": [
+                [
+                    1,
+                    0
+                ]
+            ],
+            "server": [
+                [
+                    1,
+                    0
+                ]
+            ],
+            "client": [
+                [
+                    2,
+                    0
+                ]
+            ]
+        },
+        "parameters": {
+            "ts_input": {
+                "type": "bool",
+                "value": false,
+                "name": "TS Input",
+                "description": "Input TS instead of BBFrame"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 30e6,
+                    "rrc_alpha": 0.2,
+                    "pll_bw": 0.01,
+                    "modcod": 15,
+                    "shortframes": false,
+                    "pilots": true,
+                    //"sof_thresold": 10, // Disable locking
+                    "freq_prop_factor": 0.01
+                }
+            },
+            "products": {
+                "geonetcast_decoder": {
+                    "ts_input": false,
+                    "process_goes_abi": false
+                }
+            }
+        }
+    }
+}

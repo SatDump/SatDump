@@ -45,10 +45,30 @@ namespace image
                 {
                     for (int i = 0; i < corrected_width; i++)
                     {
+#if 1
+                        // printf("%d %f %f %d %d\n", i, correction_factors[i], fmod(correction_factors[i], 1), (int)correction_factors[i], (int)correction_factors[i] + 1);
+                        int currPixel = correction_factors[i];
+                        int nextPixel = correction_factors[i] + 1;
+                        float fractionalPx = fmod(correction_factors[i], 1);
+
+                        if (nextPixel >= corrected_width)
+                            nextPixel = corrected_width - 1;
+
+                        int px1 = image[channel_offset + row * image.width() + currPixel];
+                        int px2 = image[channel_offset + row * image.width() + nextPixel];
+
+                        int px = px1 * (1.0 - fractionalPx) + px2 * fractionalPx;
+
+                        output_image[channel_offset_output + row * corrected_width + i] = px;
+
+                        if (foward_table != nullptr)
+                            foward_table[currPixel] = i;
+#else
                         int pixel_to_use = correction_factors[i];                                                                                     // Input pixel to use, will get rounder automatically
                         output_image[channel_offset_output + row * corrected_width + i] = image[channel_offset + row * image.width() + pixel_to_use]; // Copy over that pixel!
                         if (foward_table != nullptr)
                             foward_table[pixel_to_use] = i;
+#endif
                     }
                 }
             }

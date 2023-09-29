@@ -39,8 +39,7 @@ namespace himawari
                 segmented_decoders[channel_name].image.normalize();
                 if (!std::filesystem::exists(directory + "/" + channel_name))
                     std::filesystem::create_directory(directory + "/" + channel_name);
-                logger->info("Saving " + (std::string)directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
-                segmented_decoders[channel_name].image.save_png(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
+                segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
                 // segmented_decoders[channel_name].image.clear();
                 // segmented_decoders.erase(channel_name);
                 // segmented_decoders_filenames.erase(channel_name);
@@ -139,7 +138,7 @@ namespace himawari
             int ts_cnt = 1;
             uint8_t mpeg_ts_all[188 * 1000];
             mpeg_ts::TSDemux ts_demux;
-            fazzt::FazztProcessor fazzt_processor;
+            fazzt::FazztProcessor fazzt_processor(1411);
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -294,15 +293,14 @@ namespace himawari
                                                 int segment = std::stoi(current_filename.substr(current_filename.size() - 3, current_filename.size())) - 1;
                                                 long id = std::stoll(current_filename.substr(12, 12));
 
-                                                logger->debug("Channel {:s} segment {:d} id {:d}", channel_name.c_str(), segment, id);
+                                                logger->debug("Channel %s segment %d id %d", channel_name.c_str(), segment, id);
 
                                                 if (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete())
                                                 {
                                                     segmented_decoders[channel_name].image.normalize();
                                                     if (!std::filesystem::exists(directory + "/" + channel_name))
                                                         std::filesystem::create_directory(directory + "/" + channel_name);
-                                                    logger->info("Saving " + (std::string)directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
-                                                    segmented_decoders[channel_name].image.save_png(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4) + ".png");
+                                                    segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
                                                     segmented_decoders[channel_name].image.clear();
                                                     segmented_decoders.erase(channel_name);
                                                     segmented_decoders_filenames.erase(channel_name);
@@ -329,7 +327,7 @@ namespace himawari
                                 }
                                 catch (std::exception &e)
                                 {
-                                    logger->error("Error processing HimawariCast file {:s}", e.what());
+                                    logger->error("Error processing HimawariCast file %s", e.what());
                                 }
                             }
                         }
@@ -342,7 +340,7 @@ namespace himawari
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 

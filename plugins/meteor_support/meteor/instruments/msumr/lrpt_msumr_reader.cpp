@@ -1,19 +1,21 @@
 #include "lrpt_msumr_reader.h"
 #include <ctime>
 
+#define SEG_CNT 20000 // 12250
+
 namespace meteor
 {
     namespace msumr
     {
         namespace lrpt
         {
-            MSUMRReader::MSUMRReader()
+            MSUMRReader::MSUMRReader(bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode)
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    channels[i] = new unsigned char[20000 * 1568];
+                    channels[i] = new unsigned char[((SEG_CNT / 14) * 8) * 1568];
                     lines[i] = 0;
-                    segments[i] = new Segment[200000];
+                    segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
                     lastSeg[i] = 0;
                     segCount[i] = 0;
@@ -57,7 +59,7 @@ namespace meteor
                 else
                     return;
 
-                Segment newSeg(&packet.payload.data()[0], packet.payload.size());
+                Segment newSeg(&packet.payload.data()[0], packet.payload.size(), meteorm2x_mode);
 
                 if (!newSeg.isValid())
                     return;
@@ -65,7 +67,7 @@ namespace meteor
                 uint16_t sequence = packet.header.packet_sequence_count;
                 uint32_t mcuNumber = newSeg.MCUN;
 
-                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 16000 && sequence < 1000)
+                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 10000 && sequence < 1000)
                 {
                     rollover[currentChannel] += 16384;
                 }
@@ -133,7 +135,10 @@ namespace meteor
 
                                 if (!hasDoneTimestamps)
                                 {
-                                    timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
+                                    if (meteorm2x_mode)
+                                        timestamps.push_back(segments[channel][x + j].timestamp);
+                                    else
+                                        timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
                                     hasDoneTimestamps = true;
                                 }
                             }

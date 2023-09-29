@@ -12,6 +12,8 @@
 
 #include "common/wav.h"
 
+#define MAX_WEDGE_DIFF_VALID 7000
+
 namespace noaa_apt
 {
     NOAAAPTDecoderModule::NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -21,6 +23,9 @@ namespace noaa_apt
             d_audio_samplerate = parameters["audio_samplerate"].get<long>();
         else
             throw std::runtime_error("Audio samplerate parameter must be present!");
+
+        if (parameters.count("autocrop_wedges") > 0)
+            d_autocrop_wedges = parameters["autocrop_wedges"].get<bool>();
     }
 
     NOAAAPTDecoderModule::~NOAAAPTDecoderModule()
@@ -41,6 +46,8 @@ namespace noaa_apt
 
         bool is_stereo = false;
 
+        int autodetected_sat = -1;
+
         std::ifstream data_in;
         if (input_data_type == DATA_FILE)
         {
@@ -56,7 +63,34 @@ namespace noaa_apt
 
             wav::FileMetadata md = wav::tryParseFilenameMetadata(d_input_file, true);
             if (md.timestamp != 0 && (d_parameters.contains("start_timestamp") ? d_parameters["start_timestamp"] == -1 : 1))
+            {
                 d_parameters["start_timestamp"] = md.timestamp;
+                logger->trace("Has timestamp %d", md.timestamp);
+            }
+            else
+            {
+                logger->warn("Couldn't automatically determine the timestamp, in case of unexpected results, please verify you have specified the correct timestamp manually");
+            }
+
+            if (abs(md.frequency - 137.1e6) < 1e4)
+            {
+                autodetected_sat = 19;
+                logger->info("Detected NOAA-19");
+            }
+            else if (abs(md.frequency - 137.9125e6) < 1e4)
+            {
+                autodetected_sat = 18;
+                logger->info("Detected NOAA-18");
+            }
+            else if (abs(md.frequency - 137.62e6) < 1e4)
+            {
+                autodetected_sat = 15;
+                logger->info("Detected NOAA-15");
+            }
+            else
+            {
+                logger->warn("Couldn't automatically determine the satellite, in case of unexpected results, please verify you have specified the correct satellite manually");
+            }
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
         }
@@ -94,7 +128,7 @@ namespace noaa_apt
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
             delete[] s16_buf;
@@ -150,17 +184,19 @@ namespace noaa_apt
             }
         }
 
-        if (feeder_thread.joinable())
-            feeder_thread.join();
-
         // Stop everything
         input_stream->clearReadStop();
         input_stream->clearWriteStop();
+        input_stream->stopReader();
+        input_stream->stopWriter();
         rtc->stop();
         frs->stop();
         rsp->stop();
         lpf->stop();
         ctm->stop();
+
+        if (feeder_thread.joinable())
+            feeder_thread.join();
 
         if (input_data_type == DATA_FILE)
             data_in.close();
@@ -169,7 +205,7 @@ namespace noaa_apt
 
         // Line mumbers
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
-        logger->info("Got {:d} lines...", line_cnt);
+        logger->info("Got %d lines...", line_cnt);
 
         // WB
         logger->info("White balance...");
@@ -179,30 +215,124 @@ namespace noaa_apt
         logger->info("Synchronize...");
         image::Image<uint16_t> wip_apt_image_sync = synchronize(line_cnt);
 
+        // Parse wedges
+        auto wedge_1 = wip_apt_image_sync.crop_to(996, 996 + 43);
+        auto wedge_2 = wip_apt_image_sync.crop_to(2036, 2036 + 43);
+
+        // wedge_1.save_png("wedge1.png");
+        // wedge_2.save_png("wedge2.png");
+
+        logger->trace("Wedge 1");
+        auto wedges1 = parse_wedge_full(wedge_1);
+        logger->trace("Wedge 2");
+        auto wedges2 = parse_wedge_full(wedge_2);
+
+        // If possible, calibrate using wedges are a reference
+        int new_white = 0, new_white1 = 0;
+        int new_black = 0, new_black1 = 0;
+        get_calib_values_wedge(wedges1, new_white, new_black);
+        get_calib_values_wedge(wedges2, new_white1, new_black1);
+
+        if (new_white != 0 && new_black != 0 && new_white1 != 0 && new_black1 != 0)
+        {
+            logger->info("Calibrating...");
+
+            new_white = (new_white + new_white1) / 2;
+            new_black = (new_black + new_black1) / 2;
+
+            for (int l = 0; l < wip_apt_image_sync.height(); l++)
+            {
+                for (int x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
+                {
+                    float init_val = wip_apt_image_sync[l * wip_apt_image_sync.width() + x];
+                    init_val -= new_black;
+                    float vval = init_val / new_white;
+                    vval *= 65535;
+                    if (vval < 0)
+                        vval = 0;
+                    if (vval > 65535)
+                        vval = 65535;
+                    wip_apt_image_sync[l * wip_apt_image_sync.width() + x] = vval;
+                }
+            }
+        }
+
+        int first_valid_line = 0;
+        int last_valid_line = wip_apt_image_sync.height();
+
+        if (d_autocrop_wedges)
+        {
+            logger->info("Autocropping using wedges...");
+
+            int first_valid_wedge = 1e9;
+            int last_valid_wedge = 0;
+
+            for (int i = 0; i < wedges1.size(); i++)
+            {
+                if (wedges1[i].max_diff < 30e3)
+                {
+                    if (first_valid_wedge > wedges1[i].start_line)
+                        first_valid_wedge = wedges1[i].start_line;
+                    if (last_valid_wedge < wedges1[i].end_line)
+                        last_valid_wedge = wedges1[i].end_line;
+                }
+            }
+
+            for (int i = 0; i < wedges2.size(); i++)
+            {
+                if (wedges2[i].max_diff < 30e3)
+                {
+                    if (first_valid_wedge > wedges2[i].start_line)
+                        first_valid_wedge = wedges2[i].start_line;
+                    if (last_valid_wedge < wedges2[i].end_line)
+                        last_valid_wedge = wedges2[i].end_line;
+                }
+            }
+
+            logger->trace("Valid lines %d %d", first_valid_wedge, last_valid_wedge);
+
+            if (abs(first_valid_wedge - last_valid_wedge) > 0)
+            {
+                first_valid_line = first_valid_wedge;
+                last_valid_line = last_valid_wedge;
+                wip_apt_image_sync.crop(0, first_valid_line,
+                                        wip_apt_image_sync.width(), last_valid_line);
+            }
+            else
+            {
+                logger->error("Not enough valid wedges to autocrop!");
+            }
+        }
+
         // Save
         std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
         apt_status = SAVING;
-
-        logger->info("Saving...");
-        wip_apt_image_sync.save_png(main_dir + "/raw.png");
+        wip_apt_image_sync.save_img(main_dir + "/raw");
 
         // Products ARE not yet being processed properly. Need to parse the wedges!
         int norad = 0;
         std::string sat_name = "NOAA";
         std::optional<satdump::TLE> satellite_tle;
 
-        if (d_parameters.contains("satellite_number"))
+        if (d_parameters.contains("satellite_number") || autodetected_sat != -1)
         {
             double number = 0;
 
-            try
+            if (autodetected_sat == -1)
             {
-                number = d_parameters["satellite_number"];
+                try
+                {
+                    number = d_parameters["satellite_number"];
+                }
+                catch (std::exception&)
+                {
+                    number = std::stoi(d_parameters["satellite_number"].get<std::string>());
+                }
             }
-            catch (std::exception &e)
+            else
             {
-                number = std::stoi(d_parameters["satellite_number"].get<std::string>());
+                number = autodetected_sat;
             }
 
             if (number == 15)
@@ -230,10 +360,35 @@ namespace noaa_apt
                 logger->info("Name  : " + sat_name);
             }
         }
+        else
+        {
+            logger->warn("Could not get satellite number from parameters or filename!");
+        }
+
+        double start_tt = -1;
+        if (d_parameters.contains("start_timestamp") && norad != 0)
+            start_tt = d_parameters["start_timestamp"];
 
         satdump::ProductDataSet dataset;
         dataset.satellite_name = sat_name;
-        dataset.timestamp = time(0);
+        dataset.timestamp = start_tt;
+
+        if (sat_name == "NOAA-15" && start_tt != -1)
+        {
+            time_t noaa15_age = dataset.timestamp - 895074720;
+            int seconds = noaa15_age % 60;
+            int minutes = (noaa15_age % 3600) / 60;
+            int hours = (noaa15_age % 86400) / 3600;
+            int days = noaa15_age / 86400;
+            logger->warn("Congratulations for receiving NOAA 15 on APT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
+            if (dataset.timestamp > 0)
+            {
+                time_t tttime = dataset.timestamp;
+                std::tm *timeReadable = gmtime(&tttime);
+                if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
+                    logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
+            }
+        }
 
         // AVHRR
         {
@@ -246,17 +401,15 @@ namespace noaa_apt
 
             // std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             // for (int i = 0; i < 6; i++)
-            //     avhrr_products.images.push_back({"AVHRR-" + names[i] + ".png", names[i], avhrr_reader.getChannel(i)});
+            //     avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
-                double start_tt = d_parameters["start_timestamp"];
-
                 if (start_tt != -1)
                 {
                     std::vector<double> timestamps;
 
-                    for (int i = 0; i < line_cnt; i++)
+                    for (int i = first_valid_line; i < last_valid_line; i++)
                         timestamps.push_back(start_tt + (double(i) * 0.5));
 
                     avhrr_products.has_timestamps = true;
@@ -276,8 +429,8 @@ namespace noaa_apt
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
-            avhrr_products.images.push_back({"APT-A.png", "a", cha});
-            avhrr_products.images.push_back({"APT-B.png", "b", chb});
+            avhrr_products.images.push_back({"APT-A", "a", cha});
+            avhrr_products.images.push_back({"APT-B", "b", chb});
 
             avhrr_products.save(main_dir);
             dataset.products_list.push_back(".");
@@ -325,12 +478,172 @@ namespace noaa_apt
                 }
             }
 
-            // logger->critical("Line {:d} Pos {:d} Cor {:d}", line, best_pos, best_cor);
+            // logger->critical("Line %d Pos %d Cor %d", line, best_pos, best_cor);
             for (int i = 0; i < APT_IMG_WIDTH; i++)
                 wip_apt_image_sync[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + best_pos + i * APT_IMG_OVERS];
         }
 
         return wip_apt_image_sync;
+    }
+
+    std::vector<APTWedge> NOAAAPTDecoderModule::parse_wedge_full(image::Image<uint16_t> &wedge)
+    {
+        std::vector<uint8_t> sync_wedge = {31, 63, 95, 127, 159, 191, 224, 255, 0};
+        std::vector<APTWedge> wedges;
+
+        std::vector<int> final_sync_wedge;
+        for (int i = 0; i < 9; i++)
+            for (int f = 0; f < 8; f++)
+                final_sync_wedge.push_back(sync_wedge[i]);
+
+        std::vector<uint16_t> wedge_a;
+        for (int line = 0; line < wedge.height(); line++)
+        {
+            int val = 0;
+            for (int x = 0; x < 43; x++)
+                val += wedge[line * wedge.width() + x];
+            val /= 43;
+            wedge_a.push_back(val);
+        }
+
+        for (int line = 0; line < wedge_a.size() / (16 * 8); line++)
+        {
+            int best_cor = 160 * 255;
+            int best_pos = 0;
+            for (int pos = 0; pos < 16 * 8; pos++)
+            {
+                int cor = 0;
+                for (int i = 0; i < 9 * 8; i++)
+                {
+                    cor += abs(int((wedge_a[line * 16 * 8 + pos + i] >> 8) - final_sync_wedge[i]));
+                }
+
+                if (cor < best_cor)
+                {
+                    best_cor = cor;
+                    best_pos = pos;
+                }
+            }
+
+            uint16_t final_wedge[16];
+
+            for (int i = 0; i < 16; i++)
+            {
+                int val = 0;
+                for (int v = 0; v < 8; v++)
+                    val += wedge_a[line * 16 * 8 + best_pos + i * 8 + v];
+                val /= 8;
+                final_wedge[i] = val;
+            }
+
+            APTWedge wed;
+
+            wed.start_line = line * 16 * 8 + best_pos;
+            wed.end_line = (line + 1) * 16 * 8 + best_pos;
+
+            wed.ref1 = final_wedge[0];
+            wed.ref2 = final_wedge[1];
+            wed.ref3 = final_wedge[2];
+            wed.ref4 = final_wedge[3];
+            wed.ref5 = final_wedge[4];
+            wed.ref6 = final_wedge[5];
+            wed.ref7 = final_wedge[6];
+            wed.ref8 = final_wedge[7];
+            wed.zero_mod_ref = final_wedge[8];
+            wed.therm_temp1 = final_wedge[9];
+            wed.therm_temp2 = final_wedge[10];
+            wed.therm_temp3 = final_wedge[11];
+            wed.therm_temp4 = final_wedge[12];
+            wed.patch_temp = final_wedge[13];
+            wed.back_scan = final_wedge[14];
+            wed.channel = final_wedge[15];
+
+            if (wed.end_line < wedge.height())
+            {
+                wed.max_diff = 0;
+                for (int c = 0; c < 16; c++)
+                {
+                    int max_point = 0;
+                    int min_point = 1e9;
+                    for (int x = 0; x < 43; x++)
+                    {
+                        for (int y = 0; y < 8; y++)
+                        {
+                            int v = wedge[(wed.start_line + c * 8 + y) * wedge.width() + x];
+                            if (max_point < v)
+                                max_point = v;
+                            if (min_point > v)
+                                min_point = v;
+                        }
+                    }
+                    // logger->debug("Max %d Min %d Diff %d",
+                    //               max_point, min_point, max_point - min_point);
+                    wed.max_diff += max_point - min_point;
+                }
+                wed.max_diff /= 16;
+                // logger->trace("Diff %d", wed.max_diff);
+            }
+            else
+            {
+                wed.max_diff = 1e7;
+            }
+
+            /////////////////////////////////////
+            int min_diff = 1e9;
+            int best_wedge = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                int diff = abs((int)final_wedge[i] - (int)wed.channel);
+                if (min_diff > diff)
+                {
+                    best_wedge = i + 1;
+                    min_diff = diff;
+                }
+            }
+            /////////////////////////////////////
+
+            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d Diff %d CH %d VALID %d",
+                          line, best_pos, best_cor,
+                          wed.ref1, wed.ref2, wed.ref3, wed.ref4, wed.ref5, wed.ref6, wed.ref7, wed.ref8,
+                          wed.channel, wed.max_diff,
+                          best_wedge,
+                          int(wed.max_diff < MAX_WEDGE_DIFF_VALID));
+
+            wedges.push_back(wed);
+        }
+
+        return wedges;
+    }
+
+    void NOAAAPTDecoderModule::get_calib_values_wedge(std::vector<APTWedge> &wedges, int &new_white, int &new_black)
+    {
+        std::vector<uint16_t> calib_white;
+        std::vector<uint16_t> calib_black;
+
+        for (auto &wedge : wedges)
+        {
+            if (wedge.max_diff < MAX_WEDGE_DIFF_VALID)
+            {
+                calib_white.push_back(wedge.ref8);
+                calib_black.push_back(wedge.zero_mod_ref);
+            }
+        }
+
+        new_white = 0;
+        if (calib_white.size() > 2) // At least 3 wedges "valid"
+        {
+            for (auto &v : calib_white)
+                new_white += v;
+            new_white /= calib_white.size();
+        }
+
+        new_black = 0;
+        if (calib_black.size() > 2) // At least 3 wedges "valid"
+        {
+            for (auto &v : calib_black)
+                new_black += v;
+            new_black /= calib_black.size();
+        }
     }
 
     void NOAAAPTDecoderModule::drawUI(bool window)

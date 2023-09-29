@@ -20,3 +20,4 @@ enum thread_priority_t
 };
 
 void setThreadPriority(std::thread &th, thread_priority_t priority);
+void setLowestThreadPriority(std::thread &th);

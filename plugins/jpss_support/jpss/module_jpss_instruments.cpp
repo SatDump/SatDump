@@ -115,7 +115,7 @@ namespace jpss
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -179,7 +179,7 @@ namespace jpss
                 atms_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json")));
 
                 for (int i = 0; i < 22; i++)
-                    atms_products.images.push_back({"ATMS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), atms_reader.getChannel(i)});
+                    atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
 
                 atms_products.save(directory);
                 dataset.products_list.push_back("ATMS");
@@ -200,8 +200,7 @@ namespace jpss
 
                 for (int i = 0; i < 339; i++)
                 {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(omps_nadir_reader.getChannel(i), directory + "/OMPS-NADIR-" + std::to_string(i + 1) + ".png");
+                    WRITE_IMAGE(omps_nadir_reader.getChannel(i), directory + "/OMPS-NADIR-" + std::to_string(i + 1));
                 }
                 omps_nadir_status = DONE;
             }
@@ -219,8 +218,7 @@ namespace jpss
 
                 for (int i = 0; i < 135; i++)
                 {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(omps_limb_reader.getChannel(i), directory + "/OMPS-LIMB-" + std::to_string(i + 1) + ".png");
+                    WRITE_IMAGE(omps_limb_reader.getChannel(i), directory + "/OMPS-LIMB-" + std::to_string(i + 1));
                 }
                 omps_limb_status = DONE;
             }
@@ -271,7 +269,7 @@ namespace jpss
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_moderate_status[i] = SAVING;
 
-                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1) + ".png",
+                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),
                                                          "m" + std::to_string(i + 1),
                                                          viirs_image,
                                                          viirs_reader_moderate[i].timestamps,
@@ -289,7 +287,7 @@ namespace jpss
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_imaging_status[i] = SAVING;
 
-                        viirs_products.images.push_back({"VIIRS-I" + std::to_string(i + 1) + ".png",
+                        viirs_products.images.push_back({"VIIRS-I" + std::to_string(i + 1),
                                                          "i" + std::to_string(i + 1),
                                                          viirs_image,
                                                          viirs_reader_imaging[i].timestamps,
@@ -303,7 +301,7 @@ namespace jpss
                 {
                     logger->info("DNB...");
 
-                    viirs_products.images.push_back({"VIIRS-DNB.png",
+                    viirs_products.images.push_back({"VIIRS-DNB",
                                                      "dnb",
                                                      viirs_reader_dnb[0].getImage(),
                                                      viirs_reader_dnb[0].timestamps,
@@ -314,7 +312,7 @@ namespace jpss
                 {
                     logger->info("DNB MGS...");
 
-                    viirs_products.images.push_back({"VIIRS-DNB-MGS.png",
+                    viirs_products.images.push_back({"VIIRS-DNB-MGS",
                                                      "dnbmgs",
                                                      viirs_reader_dnb[1].getImage(),
                                                      viirs_reader_dnb[1].timestamps,
@@ -325,7 +323,7 @@ namespace jpss
                 {
                     logger->info("DNB LGS...");
 
-                    viirs_products.images.push_back({"VIIRS-DNB-LGS.png",
+                    viirs_products.images.push_back({"VIIRS-DNB-LGS",
                                                      "dnblgs",
                                                      viirs_reader_dnb[2].getImage(),
                                                      viirs_reader_dnb[2].timestamps,

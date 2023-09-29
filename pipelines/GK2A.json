@@ -53,7 +53,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -107,7 +107,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -179,7 +179,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -194,6 +194,41 @@
                     "write_images": true,
                     "write_additional": true,
                     "write_unknown": true
+                }
+            }
+        }
+    },
+    "gk2a_cdas": {
+        "name": "GK-2A CDAS",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "samplerate": 6e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 3.096e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10112,
+                    "rs_i": 5,
+                    "rs_fill_bytes": 3,
+                    "rs_type": "rs223"
                 }
             }
         }

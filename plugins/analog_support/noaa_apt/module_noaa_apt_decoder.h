@@ -16,6 +16,32 @@
 
 namespace noaa_apt
 {
+    struct APTWedge
+    {
+        // Info about the wedge
+        int start_line; // Start line
+        int end_line;   // End Line
+        int max_diff;   // Maximum difference (noise est.)
+
+        // Values
+        int ref1;
+        int ref2;
+        int ref3;
+        int ref4;
+        int ref5;
+        int ref6;
+        int ref7;
+        int ref8;
+        int zero_mod_ref;
+        int therm_temp1;
+        int therm_temp2;
+        int therm_temp3;
+        int therm_temp4;
+        int patch_temp;
+        int back_scan;
+        int channel;
+    };
+
     class NOAAAPTDecoderModule : public ProcessingModule
     {
     protected:
@@ -23,6 +49,7 @@ namespace noaa_apt
         std::atomic<size_t> progress;
 
         long d_audio_samplerate;
+        bool d_autocrop_wedges = false;
 
         std::shared_ptr<dsp::RealToComplexBlock> rtc;
         std::shared_ptr<dsp::FreqShiftBlock> frs;
@@ -40,6 +67,10 @@ namespace noaa_apt
 
         // Functions
         image::Image<uint16_t> synchronize(int line_cnt);
+
+    protected: // Wedge parsing
+        std::vector<APTWedge> parse_wedge_full(image::Image<uint16_t> &wedge);
+        void get_calib_values_wedge(std::vector<APTWedge> &wedges, int &new_white, int &new_black);
 
     public:
         NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

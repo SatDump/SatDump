@@ -23,7 +23,7 @@ namespace ax25
 
             if (consecutive_ones < 5) // Other data
             {
-                if (pos_in_pkt > d_len_max)
+                if (pos_in_pkt > (int)d_len_max)
                 {
                     pos_in_pkt = 0;
                     bitpos = 0;
@@ -42,7 +42,7 @@ namespace ax25
             {
                 if (bit)
                 {
-                    if (pos_in_pkt >= d_len_min)
+                    if (pos_in_pkt >= (int)d_len_min)
                     {
                         // CRC Check
                         uint16_t crc = wip_pkt[pos_in_pkt - 1] << 8 | wip_pkt[pos_in_pkt - 2];

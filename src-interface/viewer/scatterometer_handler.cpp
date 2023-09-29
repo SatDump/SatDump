@@ -4,6 +4,11 @@
 #include "common/projection/reprojector.h"
 #include "core/style.h"
 #include "common/map/map_drawer.h"
+#include "imgui/pfd/pfd_utils.h"
+
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
 
 namespace satdump
 {
@@ -107,24 +112,39 @@ namespace satdump
 
             if (ImGui::Button("Save"))
             {
+                std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
+                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+#ifdef _MSC_VER
+                if (default_path == ".")
+                {
+                    char* cwd;
+                    cwd = _getcwd(NULL, 0);
+                    if (cwd != 0)
+                        default_path = cwd;
+                }
+                default_path += "\\";
+#else
+                default_path += "/";
+#endif
                 std::string ch_normal = std::to_string(select_channel_image_id);
                 std::string ch_ascatp = std::to_string(ascat_select_channel_id);
-                std::string default_name = products->instrument_name + "_" + ((selected_visualization_id == 1 && current_scat_type == SCAT_ASCAT) ? ch_ascatp : ch_normal) + ".png";
+                std::string default_name = default_path + products->instrument_name + "_" +
+                    ((selected_visualization_id == 1 && current_scat_type == SCAT_ASCAT) ? ch_ascatp : ch_normal) + "." + default_ext;
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, {"*.png"});
+                auto result = pfd::save_file("Save Image", default_name, get_file_formats(default_ext));
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
                 if (result.result().size() > 0)
                 {
                     std::string path = result.result();
-                    logger->info("Saving current image at {:s}", path.c_str());
+                    logger->info("Saving current image at %s", path.c_str());
                     current_img.save_img(path);
                 }
 #else
                 std::string path = "/storage/emulated/0/" + default_name;
-                logger->info("Saving current image at {:s}", path.c_str());
+                logger->info("Saving current image at %s", path.c_str());
                 current_img.save_img("" + path);
 #endif
             }

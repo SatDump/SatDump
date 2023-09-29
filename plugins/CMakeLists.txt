@@ -9,6 +9,14 @@ option(PLUGINS_ALL "Enable all plugins by default" ON)
 
 option(PLUGIN_SPACEX "Enable the SpaceX support plugin" OFF)
 
+# ######################
+option(PLUGIN_SCRIPTING "Enable the scripting support plugin (EXPERIMENTAL)" OFF)
+
+if(PLUGIN_SCRIPTING) # OR PLUGINS_ALL)
+    add_subdirectory(scripting_support)
+endif()
+
+# ######################
 if(PLUGIN_SPACEX OR PLUGINS_ALL)
     add_subdirectory(spacex_support)
 endif()
@@ -121,6 +129,12 @@ if(PLUGIN_HIMAWARI OR PLUGINS_ALL)
     add_subdirectory(himawari_support)
 endif()
 
+option(PLUGIN_GEONETCAST "Enable the GeoNetCast support plugin" OFF)
+
+if(PLUGIN_GEONETCAST OR PLUGINS_ALL)
+    add_subdirectory(geonetcast_support)
+endif()
+
 option(PLUGIN_BLUEWALKER3 "Enable the BlueWalker-3 support plugin" OFF)
 
 if(PLUGIN_BLUEWALKER3 OR PLUGINS_ALL)
@@ -149,6 +163,24 @@ option(PLUGIN_TUBSAT "Enable the support plugin for the TUBSAT satellites (TUBIN
 
 if(PLUGIN_TUBSAT OR PLUGINS_ALL)
     add_subdirectory(tubsat_support)
+endif()
+
+option(PLUGIN_UMKA "Enable the support plugin for the UmKA satellite" OFF)
+
+if(PLUGIN_UMKA OR PLUGINS_ALL)
+    add_subdirectory(umka_support)
+endif()
+
+option(PLUGIN_DSCOVR "Enable the DSCOVR support plugin" OFF)
+
+if(PLUGIN_DSCOVR OR PLUGINS_ALL)
+    add_subdirectory(dscovr_support)
+endif()
+
+option(PLUGIN_STEREO "Enable the support plugin for the STEREO probes" OFF)
+
+if(PLUGIN_STEREO OR PLUGINS_ALL)
+    add_subdirectory(stereo_support)
 endif()
 
 option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" OFF)
@@ -292,6 +324,18 @@ if(PLUGIN_RTAUDIO_SDR_SUPPORT)
     add_subdirectory(sdr_sources/rtaudio_sdr_support)
 endif()
 
+option(PLUGIN_UDP_SOURCE_SDR_SUPPORT "Enable UDP Source Support plugin" ON)
+
+if(PLUGIN_UDP_SOURCE_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/udp_source_support)
+endif()
+
+option(PLUGIN_REMOTE_SDR_SUPPORT "Enable Remote SDR Support plugin (WIP!)" ON)
+
+if(PLUGIN_REMOTE_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/remote_sdr_support)
+endif()
+
 # Disable by default, sort of experimental
 option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plugin" OFF)
 
@@ -300,7 +344,7 @@ if(PLUGIN_SDDC_SDR_SUPPORT)
 endif()
 
 # ######################
-option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" ON)
+option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" OFF)
 
 if(PLUGIN_RTAUDIO_SINK)
     add_subdirectory(audio_sinks/rtaudio_audio_sink)

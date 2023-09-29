@@ -1,6 +1,6 @@
 #include "map.h"
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 #include "common/utils.h"
 #include <filesystem>
 #include <chrono>

@@ -21,7 +21,7 @@ if(USB_LIBRARY OR MSVC OR ANDROID)
 
     target_include_directories(mirisdr_sdr_support PUBLIC src)
 
-    install(TARGETS mirisdr_sdr_support DESTINATION share/satdump/plugins)
+    install(TARGETS mirisdr_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("MiriSDR Library could not be found! Not building.")
 endif()

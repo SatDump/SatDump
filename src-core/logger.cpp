@@ -11,6 +11,12 @@ static char ag_LogTag[] = "SatDump";
 #include <windows.h>
 #include <wincon.h>
 #endif
+#ifdef __APPLE__
+#include <sysdir.h>
+#include <glob.h>
+#endif
+
+#include "init.h"
 
 // Logger and sinks. We got a console sink and file sink
 #ifdef __ANDROID__
@@ -33,30 +39,62 @@ namespace slog
                                   "\033[31m\033[1m",
                                   "\033[1m\033[41m"};
 
+    template <typename... T>
+    std::string vformat(const char *fmt, T &&...args)
+    {
+        // Allocate a buffer on the stack that's big enough for us almost
+        // all the time.
+        size_t size = 1024;
+        std::vector<char> buf;
+        buf.resize(size);
+
+        // Try to vsnprintf into our buffer.
+        size_t needed = snprintf((char *)&buf[0], size, fmt, args...);
+        // NB. On Windows, vsnprintf returns -1 if the string didn't fit the
+        // buffer.  On Linux & OSX, it returns the length it would have needed.
+
+        if (needed <= size)
+        {
+            // It fit fine the first time, we're done.
+            return std::string(&buf[0]);
+        }
+        else
+        {
+            // vsnprintf reported that it wanted to write more characters
+            // than we allotted.  So do a malloc of the right size and try again.
+            // This doesn't happen very often if we chose our initial size
+            // well.
+            size = needed;
+            buf.resize(size);
+            needed = snprintf((char *)&buf[0], size, fmt, args...);
+            return std::string(&buf[0]);
+        }
+    }
+
     std::string LoggerSink::format_log(LogMsg m, bool color, int *cpos)
     {
         time_t ct = time(0);
         std::tm *tmr = gmtime(&ct);
 
         std::string timestamp =
-            (tmr->tm_hour < 10 ? "0" : "") + std::to_string(tmr->tm_hour) + ":" + // Hour
-            (tmr->tm_min < 10 ? "0" : "") + std::to_string(tmr->tm_min) + ":" +   // Min
-            (tmr->tm_sec < 10 ? "0" : "") + std::to_string(tmr->tm_sec) + " - " + // Sec
-            (tmr->tm_mday < 10 ? "0" : "") + std::to_string(tmr->tm_mday) + "/" + // Day
-            (tmr->tm_mon < 10 ? "0" : "") + std::to_string(tmr->tm_mon) + "/" +   // Mon
-            (tmr->tm_year < 10 ? "0" : "") + std::to_string(tmr->tm_year + 1900); // Year
+            (tmr->tm_hour < 10 ? "0" : "") + std::to_string(tmr->tm_hour) + ":" +       // Hour
+            (tmr->tm_min < 10 ? "0" : "") + std::to_string(tmr->tm_min) + ":" +         // Min
+            (tmr->tm_sec < 10 ? "0" : "") + std::to_string(tmr->tm_sec) + " - " +       // Sec
+            (tmr->tm_mday < 10 ? "0" : "") + std::to_string(tmr->tm_mday) + "/" +       // Day
+            (tmr->tm_mon + 1 < 10 ? "0" : "") + std::to_string(tmr->tm_mon + 1) + "/" + // Mon
+            (tmr->tm_year < 10 ? "0" : "") + std::to_string(tmr->tm_year + 1900);       // Year
 
         if (cpos != nullptr)
             *cpos = timestamp.size() + 3;
 
         if (color)
-            return fmt::format("[{:s}] {:s}({:s}) {:s}\033[m\n",
-                               timestamp.c_str(),
-                               colors[m.lvl].c_str(), log_schar[m.lvl].c_str(), m.str.c_str());
+            return vformat("[%s] %s(%s) %s\033[m\n",
+                           timestamp.c_str(),
+                           colors[m.lvl].c_str(), log_schar[m.lvl].c_str(), m.str.c_str());
         else
-            return fmt::format("[{:s}] ({:s}) {:s}\n",
-                               timestamp.c_str(),
-                               log_schar[m.lvl].c_str(), m.str.c_str());
+            return vformat("[%s] (%s) %s\n",
+                           timestamp.c_str(),
+                           log_schar[m.lvl].c_str(), m.str.c_str());
     }
 
     void StdOutSink::receive(LogMsg log)
@@ -143,6 +181,28 @@ namespace slog
         sink_mtx.unlock();
     }
 
+    void Logger::logf(LogLevel lvl, std::string fmt, va_list args)
+    {
+        std::string output;
+        output.resize(1024);
+
+        va_list argscopy;
+        va_copy(argscopy, args);
+
+        size_t size = vsnprintf((char *)output.c_str(), output.size(), fmt.c_str(), args);
+
+        if (output.size() <= size)
+        {
+            log(lvl, output);
+        }
+        else
+        {
+            output.resize(size + 1);
+            size = vsnprintf((char *)output.c_str(), output.size(), fmt.c_str(), argscopy);
+            log(lvl, output);
+        }
+    }
+
 #ifdef __ANDROID__
     const android_LogPriority log_lvls_a[] = {
         ANDROID_LOG_VERBOSE,
@@ -178,9 +238,8 @@ namespace slog
     void Logger::del_sink(std::shared_ptr<LoggerSink> sink)
     {
         sink_mtx.lock();
-        auto it = std::find_if(sinks.rbegin(), sinks.rend(), [&sink](std::shared_ptr<LoggerSink> &c)
-                               { return sink.get() == c.get(); })
-                      .base();
+        auto it = std::find_if(sinks.begin(), sinks.end(), [&sink](std::shared_ptr<LoggerSink>& c)
+            { return sink.get() == c.get(); });
         if (it != sinks.end())
             sinks.erase(it);
         sink_mtx.unlock();
@@ -222,7 +281,21 @@ void initFileSink()
 {
     try
     {
-        file_sink = std::make_shared<slog::FileSink>("satdump.logs");
+#ifdef __APPLE__
+        char library_glob[PATH_MAX];
+        glob_t globbuf;
+        sysdir_search_path_enumeration_state search_state = sysdir_start_search_path_enumeration(SYSDIR_DIRECTORY_LIBRARY, SYSDIR_DOMAIN_MASK_USER);
+        sysdir_get_next_search_path_enumeration(search_state, library_glob);
+        glob(library_glob, GLOB_TILDE, nullptr, &globbuf);
+        std::string log_path = std::string(globbuf.gl_pathv[0]) + "/Logs/satdump.log";
+        globfree(&globbuf);
+#elif defined(_WIN32)
+        std::string log_path = satdump::user_path + "/satdump.log";
+#else
+        std::string log_path = "satdump.log";
+#endif
+
+        file_sink = std::make_shared<slog::FileSink>(log_path);
         logger->add_sink(file_sink);
         // file_sink->set_pattern("[%D - %T] (%L) %v");
         file_sink->set_level(slog::LOG_TRACE);

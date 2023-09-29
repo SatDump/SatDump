@@ -76,11 +76,13 @@ namespace meteor
             if (input_data_type == DATA_FILE)
                 progress = data_in.tellg();
 
+            module_stats["deframer_lock"] = def->getState() == 12;
+
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
                 std::string deframer_state = def->getState() == 0 ? "NOSYNC" : (def->getState() == 2 || def->getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
             }
         }
 

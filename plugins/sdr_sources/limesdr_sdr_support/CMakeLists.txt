@@ -20,7 +20,7 @@ if(LIMESDR_LIBRARY OR MSVC OR ANDROID)
 
     target_include_directories(limesdr_sdr_support PUBLIC src)
 
-    install(TARGETS limesdr_sdr_support DESTINATION share/satdump/plugins)
+    install(TARGETS limesdr_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("LimeSDR Library could not be found! Not building.")
 endif()

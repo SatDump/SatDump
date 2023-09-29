@@ -114,7 +114,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -131,7 +131,8 @@
                     "write_emwin": true,
                     "write_messages": true,
                     "write_dcs": true,
-                    "write_unknown": false
+                    "write_unknown": false,
+                    "write_lrit": false
                 }
             }
         }
@@ -171,7 +172,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -370,7 +371,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -505,6 +506,33 @@
             },
             "products": {
                 "goes_sd_image_decoder": {}
+            }
+        }
+    },
+    "goesr_raw": {
+        "name": "GOES-R Raw Data",
+        "samplerate": 20e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 60e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.001
+                }
+            },
+            "cadu": {
+                "ccsds_ldpc_decoder": {
+                    "constellation": "oqpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": false,
+                    "internal_cadu_size": 0
+                }
+            },
+            "products": {
+                "goesr_instruments": {}
             }
         }
     }

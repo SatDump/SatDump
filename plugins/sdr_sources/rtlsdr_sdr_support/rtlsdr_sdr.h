@@ -7,9 +7,9 @@
 #include <rtl-sdr.h>
 #endif
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class RtlSdrSource : public dsp::DSPSampleSource
 {
@@ -18,10 +18,8 @@ protected:
     rtlsdr_dev *rtlsdr_dev_obj;
     static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
+    widgets::NotatedNum<int> ppm_widget;
 
     int gain = 0;
     bool bias_enabled = false;
@@ -29,6 +27,7 @@ protected:
 
     void set_gains();
     void set_bias();
+    void set_ppm();
 
     std::thread work_thread;
 
@@ -36,7 +35,7 @@ protected:
 
     void mainThread()
     {
-        int buffer_size = std::min<int>(roundf(current_samplerate / (250 * 512)) * 512, dsp::STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(roundf(samplerate_widget.get_value() / (250 * 512)) * 512, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {
@@ -45,7 +44,7 @@ protected:
     }
 
 public:
-    RtlSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    RtlSdrSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), ppm_widget("Correction##ppm", 0, "ppm")
     {
     }
 

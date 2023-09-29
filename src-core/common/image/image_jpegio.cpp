@@ -1,6 +1,8 @@
 #include "image.h"
+#include "logger.h"
 #include <cstring>
 #include <csetjmp>
+#include <filesystem>
 extern "C"
 {
 #include "libs/jpeg/jpeglib.h"
@@ -24,6 +26,9 @@ namespace image
     template <typename T>
     void Image<T>::load_jpeg(std::string file)
     {
+        if (!std::filesystem::exists(file))
+            return;
+
         FILE *fp = fopen(file.c_str(), "rb");
         if (!fp)
             abort();
@@ -153,6 +158,12 @@ namespace image
     template <typename T>
     void Image<T>::save_jpeg(std::string file)
     {
+        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        {
+            logger->trace("Tried to save empty JPEG!");
+            return;
+        }
+
         FILE *fp = fopen(file.c_str(), "wb");
         if (!fp)
             abort();
@@ -182,6 +193,7 @@ namespace image
         cinfo.input_components = jpeg_channels;
         cinfo.in_color_space = jpeg_channels == 3 ? JCS_RGB : JCS_GRAYSCALE;
         jpeg_set_defaults(&cinfo);
+        jpeg_set_quality(&cinfo, 90, true);
         jpeg_start_compress(&cinfo, true);
 
         // Init output buffer

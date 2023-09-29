@@ -21,6 +21,12 @@
         "parameters": {
             "samplerate": {
                 "value": 3e6
+            },
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired in case you are not\nprocessing your file on the same Mocow day."
             }
         },
         "work": {
@@ -41,7 +47,7 @@
         }
     },
     "meteor_m2_lrpt": {
-        "name": "METEOR M2 LRPT",
+        "name": "METEOR M2 LRPT 72k",
         "live": true,
         "live_cfg": [
             [
@@ -85,12 +91,14 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {}
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": false
+                }
             }
         }
     },
     "meteor_m2-x_lrpt": {
-        "name": "METEOR M2-x LRPT",
+        "name": "METEOR M2-x LRPT 72k",
         "live": true,
         "live_cfg": [
             [
@@ -124,17 +132,137 @@
                     "constellation": "oqpsk",
                     "symbolrate": 72e3,
                     "rrc_alpha": 0.6,
-                    "pll_bw": 0.004
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                /*"meteor_lrpt_decoder": {
+                    "diff_decode": true
+                }*/
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "oqpsk_mode": true,
+                    "nrzm": true,
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_dualbasis": false,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": true
+                }
+            }
+        }
+    },
+    "meteor_m2-x_lrpt_80k": {
+        "name": "METEOR M2-x LRPT 80k",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.9e6
+            ],
+            [
+                "Backup",
+                137.1e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 80e3,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.002
                 }
             },
             "cadu": {
                 "meteor_lrpt_decoder": {
-                    "diff_decode": true
+                    "m2x_mode": true,
+                    "interleaved": true,
+                    "diff_decode": true,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {}
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": true
+                }
             }
+        }
+    },
+    // TEST
+    "meteor_m_dump_narrow": {
+        "name": "METEOR-M Narrow Dump (WIP!)",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 15.36e6,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {
+                "meteor_dump_decoder": {}
+            },
+            "products": {
+                "meteor_dump_instruments": {}
+            }
+        }
+    },
+    "meteor_m_dump_wide": {
+        "name": "METEOR-M Wide Dump (WIP!)",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 61.4e6,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {}
         }
     }
 }

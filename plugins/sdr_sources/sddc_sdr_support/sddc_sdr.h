@@ -3,8 +3,7 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include "lib/libsddc/libsddc.h"
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 #include "common/dsp/rational_resampler.h"
 
 class SDDCSource : public dsp::DSPSampleSource

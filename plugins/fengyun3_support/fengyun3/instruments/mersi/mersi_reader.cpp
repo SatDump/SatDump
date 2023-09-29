@@ -31,28 +31,50 @@ namespace fengyun3
 
             // Recompose and parse timestamp
             uint8_t timestamp[8];
+            double currentTime = 0;
 
-            timestamp[0] = (current_frame[12] & 0b1111) << 4 | current_frame[13] >> 4;
-            timestamp[1] = (current_frame[13] & 0b1111) << 4 | (current_frame[11] >> 4);
-            timestamp[2] = (current_frame[11] & 0b1111) << 4 | current_frame[12] >> 4;
+            if (!timestamp3g_mode)
+            {
+                timestamp[0] = (current_frame[12] & 0b1111) << 4 | current_frame[13] >> 4;
+                timestamp[1] = (current_frame[13] & 0b1111) << 4 | (current_frame[11] >> 4);
+                timestamp[2] = (current_frame[11] & 0b1111) << 4 | current_frame[12] >> 4;
 
-            timestamp[3] = (current_frame[9] & 0b1111) << 4 | current_frame[10] >> 4;
-            timestamp[4] = (current_frame[10] & 0b1111) << 4 | (current_frame[8] >> 4);
+                timestamp[3] = (current_frame[9] & 0b1111) << 4 | current_frame[10] >> 4;
+                timestamp[4] = (current_frame[10] & 0b1111) << 4 | (current_frame[8] >> 4);
 
-            timestamp[5] = (current_frame[8] & 0b1111) << 4 | current_frame[9] >> 4;
+                timestamp[5] = (current_frame[8] & 0b1111) << 4 | current_frame[9] >> 4;
 
-            timestamp[6] = (current_frame[19] & 0b1111) << 4 | current_frame[20] >> 4;
-            timestamp[7] = (current_frame[20] & 0b1111) << 4 | (current_frame[18] >> 4);
+                timestamp[6] = (current_frame[19] & 0b1111) << 4 | current_frame[20] >> 4;
+                timestamp[7] = (current_frame[20] & 0b1111) << 4 | (current_frame[18] >> 4);
 
-            uint16_t days = timestamp[0] << 8 | timestamp[1];
-            uint64_t milliseconds_of_day = timestamp[2] << 24 | timestamp[3] << 16 | timestamp[4] << 8 | timestamp[5];
-            uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
+                uint16_t days = timestamp[0] << 8 | timestamp[1];
+                uint64_t milliseconds_of_day = timestamp[2] << 24 | timestamp[3] << 16 | timestamp[4] << 8 | timestamp[5];
+                uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
 
-            double currentTime = double(10957 + days) * 86400.0 +
-                                 double(milliseconds_of_day) / ms_scale +
-                                 double(subsecond_cnt) / 3950 + 12 * 3600;
+                currentTime = double(10957 + days) * 86400.0 +
+                              double(milliseconds_of_day) / ms_scale +
+                              double(subsecond_cnt) / 3950 + 12 * 3600;
+            }
+            else
+            {
+                timestamp[0] = current_frame[9];
+                timestamp[1] = current_frame[10];
+                timestamp[2] = current_frame[11];
+                timestamp[3] = current_frame[12];
+                timestamp[4] = current_frame[13];
+                timestamp[5] = current_frame[14];
+                timestamp[6] = current_frame[241 - 6];
+                timestamp[7] = current_frame[242 - 6];
 
-            // printf("%f\n",currentTime);
+                uint16_t days = timestamp[0] << 8 | timestamp[1];
+                uint64_t milliseconds_of_day = timestamp[2] << 24 | timestamp[3] << 16 | timestamp[4] << 8 | timestamp[5];
+                // uint16_t subsecond_cnt = (current_frame[19] & 0b1111) << 8 | current_frame[17];
+
+                currentTime = double(10957 + days) * 86400.0 +
+                              double(milliseconds_of_day) / ms_scale +
+                              double(timestamp[6] << 8 | timestamp[7]) / 55695 +
+                              12 * 3600;
+            }
 
             last_timestamp = currentTime;
         }

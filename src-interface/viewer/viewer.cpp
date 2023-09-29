@@ -5,7 +5,6 @@
 #include "core/config.h"
 #include "products/dataset.h"
 #include "common/utils.h"
-#include "error.h"
 #include "resources.h"
 
 void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komówki w tabelii na wybrany kolor w RGBA
@@ -35,6 +34,12 @@ namespace satdump
             if (config::main_cfg["user"]["viewer_state"].contains("projections"))
                 deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
         }
+
+        std::string default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
+        projection_new_layer_file.setDefaultDir(default_dir);
+        projection_new_layer_cfg.setDefaultDir(default_dir);
+        select_dataset_dialog.setDefaultDir(default_dir);
+        select_products_dialog.setDefaultDir(default_dir);
 
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
@@ -78,7 +83,16 @@ namespace satdump
 
         std::string pro_directory = std::filesystem::path(path).parent_path().string();
         for (std::string pro_path : dataset.products_list)
-            loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
+        {
+            try
+            {
+                loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not open " + pro_path + " in viewer! : %s", e.what());
+            }
+        }
     }
 
     void ViewerApplication::loadProductsInViewer(std::string path, std::string dataset_name)
@@ -92,7 +106,7 @@ namespace satdump
             if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
                 instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][products->instrument_name];
             else
-                logger->error("Unknown instrument : {:s}!", products->instrument_name);
+                logger->error("Unknown instrument : %s!", products->instrument_name.c_str());
 
             // Init Handler
             std::string handler_id;
@@ -104,7 +118,7 @@ namespace satdump
                 handler_id = "radiation_handler";
             else if (products->contents["type"] == "scatterometer")
                 handler_id = "scatterometer_handler";
-            logger->debug("Using handler {:s} for instrument {:s}", handler_id, products->instrument_name);
+            logger->debug("Using handler %s for instrument %s", handler_id.c_str(), products->instrument_name.c_str());
             std::shared_ptr<ViewerHandler> handler = viewer_handlers_registry[handler_id]();
 
             handler->products = products.get();
@@ -152,7 +166,7 @@ namespace satdump
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
-                logger->warn("Closing products " + label);
+                logger->info("Closing products " + label);
                 ph.marked_for_close = true;
             }
             ImGui::PopStyleColor();
@@ -206,7 +220,7 @@ namespace satdump
                                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                                 if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {
-                                    logger->warn("Closing datset " + dataset_name);
+                                    logger->info("Closing datset " + dataset_name);
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
                                         if (products_and_handlers[i]->dataset_name == dataset_name)
                                             products_and_handlers[i]->marked_for_close = true;
@@ -276,7 +290,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            error::set_error("Error opening dataset!", e.what());
+                            logger->error("Error opening dataset - %s", e.what());
                         }
                     }
                     ImGui::Text("Load Products :");
@@ -288,7 +302,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            error::set_error("Error opening products!", e.what());
+                            logger->error("Error opening products - %s", e.what());
                         }
                     }
                 }
@@ -375,7 +389,7 @@ namespace satdump
 
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
 
-        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_NoPadInnerX | ImGuiTableFlags_Resizable))
+        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable))
         {
             ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, viewer_size.x * panel_ratio);
             ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);

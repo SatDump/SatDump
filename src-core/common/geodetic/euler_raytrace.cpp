@@ -122,6 +122,57 @@ namespace geodetic
         };
     };
 
+    // Must already be in radians!
+    void lla2xyz(geodetic_coords_t lla, raytrace_to_earth_namespace::vector &position)
+    {
+#if 0
+        double asq = WGS84::a * WGS84::a;
+        double esq = WGS84::e * WGS84::e;
+        double N = WGS84::a / sqrt(1 - esq * pow(sin(lla.lat), 2));
+        position.x = (N + lla.alt) * cos(lla.lat) * cos(lla.lon);
+        position.y = (N + lla.alt) * cos(lla.lat) * sin(lla.lon);
+        position.z = ((1 - esq) * N + lla.alt) * sin(lla.lat);
+#else
+        double N = pow(WGS84::a, 2) / sqrt(pow(WGS84::a, 2) * pow(cos(lla.lat), 2) + pow(WGS84::b, 2) * pow(sin(lla.lat), 2));
+        position.x = (N + lla.alt) * cos(lla.lat) * cos(lla.lon);
+        position.y = (N + lla.alt) * cos(lla.lat) * sin(lla.lon);
+        position.z = ((pow(WGS84::b, 2) / pow(WGS84::a, 2)) * N + lla.alt) * sin(lla.lat);
+#endif
+    }
+
+    // Output in radians!
+    void xyz2lla(raytrace_to_earth_namespace::vector position, geodetic_coords_t &lla)
+    {
+#if 0
+        double asq = WGS84::a * WGS84::a;
+        double esq = WGS84::e * WGS84::e;
+
+        double b = sqrt(asq * (1 - esq));
+        double bsq = b * b;
+        double ep = sqrt((asq - bsq) / bsq);
+        double p = sqrt(position.x * position.x + position.y * position.y);
+        double th = atan2(WGS84::a * position.z, b * p);
+        double lon = atan2(position.y, position.x);
+        double lat = atan2((position.z + ep * ep * b * pow(sin(th), 3)), (p - esq * WGS84::a * pow(cos(th), 3)));
+        double N = WGS84::a / (sqrt(1 - esq * pow(sin(lat), 2)));
+
+        raytrace_to_earth_namespace::vector g;
+        lla2xyz(geodetic_coords_t(lat, lon, 0, true), g);
+
+        double gm = sqrt(g.x * g.x + g.y * g.y + g.z * g.z);
+        double am = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
+        double alt = am - gm;
+
+        lla = geodetic::geodetic_coords_t(lat, lon, alt, true);
+#else
+        double p = sqrt(pow(position.x, 2) + pow(position.y, 2));
+        double phi = atan2(position.z * WGS84::a, p * WGS84::b);
+        double lat = atan2(position.z + pow(WGS84::e2, 2) * WGS84::b * pow(sin(phi), 3), p - pow(WGS84::e, 2) * WGS84::a * pow(cos(phi), 3));
+        double lon = atan2(position.y, position.x);
+        lla = geodetic::geodetic_coords_t(lat, lon, 0, true);
+#endif
+    }
+
     /*
     I initially wrote this function in a much, much less elegant way...
     But during my research for some examples of cleaner ways, I stumbled
@@ -159,10 +210,7 @@ namespace geodetic
         // Geodetic coordinates to vector
         raytrace_to_earth_namespace::vector position;
 
-        double N = pow(WGS84::a, 2) / sqrt(pow(WGS84::a, 2) * pow(cos(position_geo.lat), 2) + pow(WGS84::b, 2) * pow(sin(position_geo.lat), 2));
-        position.x = (N + position_geo.alt) * cos(position_geo.lat) * cos(position_geo.lon);
-        position.y = (N + position_geo.alt) * cos(position_geo.lat) * sin(position_geo.lon);
-        position.z = ((pow(WGS84::b, 2) / pow(WGS84::a, 2)) * N + position_geo.alt) * sin(position_geo.lat);
+        lla2xyz(position_geo, position);
 
         // Matrices
         raytrace_to_earth_namespace::matrix look_matrix;
@@ -220,12 +268,7 @@ namespace geodetic
         position.z += d * w;
 
         // To geodetic
-        double p = sqrt(pow(position.x, 2) + pow(position.y, 2));
-        double phi = atan2(position.z * WGS84::a, p * WGS84::b);
-        double lat = atan2(position.z + pow(WGS84::e2, 2) * WGS84::b * pow(sin(phi), 3), p - pow(WGS84::e, 2) * WGS84::a * pow(cos(phi), 3));
-        double lon = atan2(position.y, position.x);
-
-        earth_point = geodetic::geodetic_coords_t(lat, lon, 0, true);
+        xyz2lla(position, earth_point);
 
         return 0;
     }

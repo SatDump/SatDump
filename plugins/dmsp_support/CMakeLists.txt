@@ -7,4 +7,4 @@ add_library(dmsp_support SHARED ${dmsp_support_CPPS})
 target_link_libraries(dmsp_support PUBLIC satdump_core)
 target_include_directories(dmsp_support PUBLIC src .)
 
-install(TARGETS dmsp_support DESTINATION share/satdump/plugins)
+install(TARGETS dmsp_support DESTINATION lib/satdump/plugins)

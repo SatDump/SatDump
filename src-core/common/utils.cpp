@@ -58,21 +58,21 @@ bool isStringPresent(std::string searched, std::string keyword)
 int perform_http_request(std::string url_str, std::string &result)
 {
     nng_http_client *client;
-    nng_http_conn *conn;
     nng_url *url;
     nng_aio *aio;
     nng_http_req *req;
     nng_http_res *res;
-    const char *hdr;
     int rv;
-    int len;
-    char *data;
-    nng_iov iov;
 
-    if (((rv = nng_url_parse(&url, url_str.c_str())) != 0) || ((rv = nng_http_client_alloc(&client, url)) != 0) ||
-        ((rv = nng_http_req_alloc(&req, url)) != 0) || ((rv = nng_http_res_alloc(&res)) != 0) ||
-        ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
+    int return_val = 0;
+
+    if (((rv = nng_url_parse(&url, url_str.c_str())) != 0) ||
+        ((rv = nng_http_client_alloc(&client, url)) != 0))
+    {
+        if (rv == NNG_ENOTSUP)
+            logger->trace("Protocol not supported!");
         return 1;
+    }
 
 // HTTPS
 #if defined(NNG_OPT_TLS_CONFIG)
@@ -82,85 +82,51 @@ int perform_http_request(std::string url_str, std::string &result)
     nng_http_client_set_tls(client, tls_config);
 #endif
 
+    if (((rv = nng_http_req_alloc(&req, url)) != 0) ||
+        ((rv = nng_http_res_alloc(&res)) != 0) ||
+        ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
+        return 1;
+
+    nng_aio_set_timeout(aio, 30000);
+
     nng_http_req_add_header(req, "User-Agent", std::string("SatDump/v" + (std::string)SATDUMP_VERSION).c_str());
 
-    // Start connection process...
-    nng_http_client_connect(client, aio);
-
-    // Wait for it to finish.
-    nng_aio_wait(aio);
-    if ((rv = nng_aio_result(aio)) != 0)
-        return 1;
-
-    // Get the connection, at the 0th output.
-    conn = (nng_http_conn *)nng_aio_get_output(aio, 0);
-
-    nng_http_conn_write_req(conn, req, aio);
-    nng_aio_wait(aio);
-
-    if ((rv = nng_aio_result(aio)) != 0)
-        return 1;
-
-    // Read a response.
-    nng_http_conn_read_res(conn, res, aio);
-    nng_aio_wait(aio);
-
-    if ((rv = nng_aio_result(aio)) != 0)
-        return 1;
+    // Start operation
+    nng_http_client_transact(client, req, res, aio);
 
     if (nng_http_res_get_status(res) != NNG_HTTP_STATUS_OK)
     {
-        logger->error("HTTP Server Responded: {:d} {:s}", nng_http_res_get_status(res), nng_http_res_get_reason(res));
+        logger->trace("HTTP Server Responded: %d %s", nng_http_res_get_status(res), nng_http_res_get_reason(res));
         return 1;
     }
-
-    // This only supports regular transfer encoding (no Chunked-Encoding,
-    // and a Content-Length header is required.)
-    if ((hdr = nng_http_res_get_header(res, "Content-Length")) == NULL)
-    {
-        logger->error("Missing Content-Length header.");
-        return 1;
-    }
-
-    len = atoi(hdr);
-    if (len == 0)
-        return 1;
-
-    // Allocate a buffer to receive the body data.
-    data = (char *)malloc(len);
-
-    // Set up a single iov to point to the buffer.
-    iov.iov_len = len;
-    iov.iov_buf = data;
-
-    // Following never fails with fewer than 5 elements.
-    nng_aio_set_iov(aio, 1, &iov);
-
-    // Now attempt to receive the data.
-    nng_http_conn_read_all(conn, aio);
 
     // Wait for it to complete.
     nng_aio_wait(aio);
 
     if ((rv = nng_aio_result(aio)) != 0)
     {
-        // fatal(rv);
-        logger->info("error");
+        logger->trace("HTTP Request Error!");
+        return_val = 1;
     }
 
-    result = std::string(data, &data[len]);
+    // Load result
+    char *data_ptr;
+    size_t data_sz = 0;
+    nng_http_res_get_data(res, (void **)&data_ptr, &data_sz);
 
+    result = std::string(data_ptr, &data_ptr[data_sz]);
+
+    // Free everything
     nng_http_client_free(client);
     nng_aio_free(aio);
     nng_http_res_free(res);
     nng_http_req_free(req);
-    free(data);
 
 #if defined(NNG_OPT_TLS_CONFIG)
     nng_tls_config_free(tls_config);
 #endif
 
-    return 0;
+    return return_val;
 }
 
 std::string timestamp_to_string(double timestamp)

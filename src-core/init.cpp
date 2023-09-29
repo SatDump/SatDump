@@ -34,7 +34,10 @@ namespace satdump
         logger->info("");
 
 #ifdef _WIN32
-        user_path = ".";
+        if (std::filesystem::exists("satdump_cfg.json"))
+            user_path = ".";
+        else 
+            user_path = std::string(getenv("APPDATA")) + "/satdump";
 #elif __ANDROID__
         user_path = ".";
 #else
@@ -71,6 +74,9 @@ namespace satdump
         }
 
         loadPlugins();
+
+        // Let plugins know we started
+        eventBus->fire_event<config::RegisterPluginConfigHandlersEvent>({config::plugin_config_handlers});
 
         registerModules();
 
@@ -121,7 +127,7 @@ namespace satdump
                 int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
                 dsp::STREAM_BUFFER_SIZE = new_sz;
                 dsp::RING_BUF_SZ = new_sz;
-                logger->warn("DSP Buffer size was changed to {:d}", new_sz);
+                logger->warn("DSP Buffer size was changed to %d", new_sz);
             }
         }
 

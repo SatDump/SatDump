@@ -52,7 +52,7 @@ namespace satdump
                     settings_general.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
 
-            params = satdump::config::main_cfg["satdump_output_directories"];
+            params = satdump::config::main_cfg["satdump_directories"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             {
@@ -159,6 +159,14 @@ namespace satdump
                 }
             }
 
+            for (auto &plugin_hdl : config::plugin_config_handlers)
+            {
+                if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
+                {
+                    plugin_hdl.render();
+                }
+            }
+
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
@@ -174,7 +182,11 @@ namespace satdump
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
                     satdump::config::main_cfg["satdump_general"][p.first]["value"] = p.second.getValue();
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
-                    satdump::config::main_cfg["satdump_output_directories"][p.first]["value"] = p.second.getValue();
+                    satdump::config::main_cfg["satdump_directories"][p.first]["value"] = p.second.getValue();
+
+                for (auto &plugin_hdl : config::plugin_config_handlers)
+                    plugin_hdl.save();
+
                 config::saveUserConfig();
             }
 

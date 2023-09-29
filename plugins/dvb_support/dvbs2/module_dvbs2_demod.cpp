@@ -76,7 +76,7 @@ namespace dvb
 
     void DVBS2DemodModule::init()
     {
-        BaseDemodModule::init();
+        BaseDemodModule::initb();
 
         float g1 = 0, g2 = 0;
 
@@ -127,7 +127,7 @@ namespace dvb
         descramber = std::make_unique<dvbs2::BBFrameDescrambler>(s2_framesize, s2_coderate);
 
         // Info
-        logger->info("Output bbframe bits : {:d}", bch_decoder->dataSize());
+        logger->info("Output bbframe bits : %d", bch_decoder->dataSize());
     }
 
     DVBS2DemodModule::~DVBS2DemodModule()
@@ -147,10 +147,10 @@ namespace dvb
             d_output_files.push_back(d_output_file_hint + ".bbframe");
         }
 
-        logger->info("MODCOD : {:d}", d_modcod);
+        logger->info("MODCOD : %d", d_modcod);
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".bbframe");
-        logger->info("Buffer size : {:d}", d_buffer_size);
+        logger->info("Buffer size : %d", d_buffer_size);
 
         time_t lastTime = 0;
 
@@ -172,7 +172,7 @@ namespace dvb
             process_bch_th = std::thread(&DVBS2DemodModule::process_s2_bch, this);
 
         int dat_size = 0;
-        while (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load())
+        while (demod_should_run())
         {
             dat_size = s2_bb_to_soft->output_stream->read();
 
@@ -207,7 +207,7 @@ namespace dvb
             // Propagate frequency to an earlier rotator, slowly
             current_freq -= s2_pll->getFreq() * freq_propagation_factor;
             freq_sh->set_freq_raw(current_freq);
-            // logger->info("Freq {:f}, PLFreq {:f}", current_freq, s2_pll->getFreq());
+            // logger->info("Freq %f, PLFreq %f", current_freq, s2_pll->getFreq());
 
             // Update module stats
             module_stats["snr"] = snr;
@@ -221,7 +221,7 @@ namespace dvb
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 
@@ -397,6 +397,8 @@ namespace dvb
 
         if (!streamingInput)
             ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+
+        drawStopButton();
 
         ImGui::End();
 

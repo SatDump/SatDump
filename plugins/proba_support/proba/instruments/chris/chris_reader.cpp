@@ -143,7 +143,7 @@ namespace proba
         {
             int height_detected = (max_value * 7680) / current_width;
             int final_height = height_detected > current_height ? height_detected : current_height;
-            logger->trace("CHRIS Image size : {:d}x{:d}", current_width, final_height);
+            logger->trace("CHRIS Image size : %dx%d", current_width, final_height);
 
             CHRISImagesT ret;
             ret.mode = mode;
@@ -183,14 +183,13 @@ namespace proba
 
                     // Save Half alone
                     std::string image_name = std::to_string(img_tag) + "_Half_" + (is_2nd_half ? "2" : "1");
-                    logger->info("Finished CHRIS image! Saving as CHRIS-" + image_name + ".png. Mode " + getModeName(chris_img.mode));
 
                     std::string dir_path = output_folder + "/CHRIS-" + image_name;
 
                     if (!std::filesystem::exists(dir_path))
                         std::filesystem::create_directories(dir_path);
 
-                    chris_img.raw.save_png(dir_path + "/RAW.png");
+                    chris_img.raw.save_img(dir_path + "/RAW");
 
                     satdump::ImageProducts chris_products;
                     chris_products.instrument_name = "chris";
@@ -201,7 +200,7 @@ namespace proba
                     {
                         image::Image<uint16_t> ch = chris_img.channels[i];
                         ch.resize(ch.width() * 2, ch.height());
-                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
+                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch});
                     }
 
                     chris_products.save(dir_path);
@@ -234,14 +233,13 @@ namespace proba
 
                     // Save Full frame
                     std::string image_name = std::to_string(currentPair.first) + "_Full";
-                    logger->info("Got Full CHRIS image! Saving as CHRIS-" + image_name + ".png. Mode " + getModeName(chris_img.mode));
 
                     std::string dir_path = output_folder + "/CHRIS-" + image_name;
 
                     if (!std::filesystem::exists(dir_path))
                         std::filesystem::create_directories(dir_path);
 
-                    chris_img.raw.save_png(dir_path + "/RAW.png");
+                    chris_img.raw.save_img(dir_path + "/RAW");
 
                     satdump::ImageProducts chris_products;
                     chris_products.instrument_name = "chris";
@@ -251,7 +249,7 @@ namespace proba
                     for (int i = 0; i < (int)chris_img.channels.size(); i++)
                     {
                         image::Image<uint16_t> ch = chris_img.channels[i];
-                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), ch});
+                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch});
                     }
 
                     chris_products.save(dir_path);

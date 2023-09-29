@@ -50,7 +50,7 @@ namespace satdump
         {
             int value = (double(products.channel_counts[channel][samplec] - cfg.min) / cfg.max) * lut_size;
 
-            // logger->info("{:d} {:d}", products.channel_counts[channel][samplec], value);
+            // logger->info("%d %d", products.channel_counts[channel][samplec], value);
 
             if (value < 0)
                 value = 0;

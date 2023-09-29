@@ -5,6 +5,7 @@
 #include "resources.h"
 #include "core/opencl.h"
 #include <chrono>
+#include <cmath>
 
 namespace satdump
 {
@@ -48,11 +49,11 @@ namespace satdump
                 }
             }
 
-            logger->info("Solving TPS equations for {:d} GCPs...", gcps.size());
+            logger->info("Solving TPS equations for %d GCPs...", gcps.size());
             auto solve_start = std::chrono::system_clock::now();
             bool solved = spline_transform->solve() != 0;
             if (solved)
-                logger->info("Solved! Took {:f}", (std::chrono::system_clock::now() - solve_start).count() / 1e9);
+                logger->info("Solved! Took %f", (std::chrono::system_clock::now() - solve_start).count() / 1e9);
             else
                 logger->error("Failure solving!");
 
@@ -166,7 +167,7 @@ namespace satdump
                 }
             }
             auto cpu_time = (std::chrono::system_clock::now() - cpu_start);
-            logger->debug("CPU Processing Time {:f}", cpu_time.count() / 1e9);
+            logger->debug("CPU Processing Time %f", cpu_time.count() / 1e9);
         }
 
 #ifdef USE_OPENCL
@@ -242,7 +243,7 @@ namespace satdump
                 clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &size_wg, NULL);
                 clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &compute_units, NULL);
 
-                logger->debug("Workgroup size {:d}", size_wg * compute_units);
+                logger->debug("Workgroup size %d", size_wg * compute_units);
 
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
@@ -268,7 +269,7 @@ namespace satdump
                 clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
-            logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
+            logger->debug("GPU Processing Time %f", gpu_time.count() / 1e9);
         }
 
         void ImageWarper::warpOnGPU_fp32(WarpResult &result)
@@ -349,7 +350,7 @@ namespace satdump
                 clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &size_wg, NULL);
                 clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &compute_units, NULL);
 
-                logger->debug("Workgroup size {:d}", size_wg * compute_units);
+                logger->debug("Workgroup size %d", size_wg * compute_units);
 
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
@@ -375,7 +376,7 @@ namespace satdump
                 clReleaseCommandQueue(queue);
             }
             auto gpu_time = (std::chrono::system_clock::now() - gpu_start);
-            logger->debug("GPU Processing Time {:f}", gpu_time.count() / 1e9);
+            logger->debug("GPU Processing Time %f", gpu_time.count() / 1e9);
         }
 #endif
 
@@ -407,7 +408,7 @@ namespace satdump
             }
             catch (std::runtime_error &e)
             {
-                logger->error("Error warping on GPU : {:s}", e.what());
+                logger->error("Error warping on GPU : %s", e.what());
             }
 #endif
 

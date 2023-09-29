@@ -64,7 +64,7 @@ namespace ldcm
                         else if (pkt.header.apid == 1794)
                             tirs_reader3.work(pkt);
                         // else
-                        //     logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
+                        //     logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
                     }
                 }
 #if 0
@@ -73,7 +73,7 @@ namespace ldcm
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        logger->error("{:d}  {:d}", pkt.header.apid, pkt.payload.size());
+                        logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
 
                         if (pkt.header.apid == 299)
                         {
@@ -103,7 +103,7 @@ namespace ldcm
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -138,11 +138,11 @@ namespace ldcm
                 // tirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), tirs_reader1.getChannel(i)});
+                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 1), std::to_string(i + 1), tirs_reader1.getChannel(i)});
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 4) + ".png", std::to_string(i + 4), tirs_reader2.getChannel(i)});
+                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 4), std::to_string(i + 4), tirs_reader2.getChannel(i)});
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 7) + ".png", std::to_string(i + 7), tirs_reader3.getChannel(i)});
+                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 7), std::to_string(i + 7), tirs_reader3.getChannel(i)});
 
                 tirs_products.save(directory);
                 dataset.products_list.push_back("TIRS");

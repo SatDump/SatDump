@@ -1,12 +1,30 @@
+#include "logger.h"
+#include "core/config.h"
+#include "core/style.h"
 #include "file_source.h"
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "common/detect_header.h"
 
+FileSource::FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+{
+    file_input.setDefaultDir(satdump::config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>());
+    should_run = true;
+    work_thread = std::thread(&FileSource::run_thread, this);
+}
+
+FileSource::~FileSource()
+{
+    stop();
+    close();
+    should_run = false;
+    if (work_thread.joinable())
+        work_thread.join();
+}
+
 void FileSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
-
     iq_swap = getValueOrDefault(d_settings["iq_swap"], iq_swap);
     buffer_size = getValueOrDefault(d_settings["buffer_size"], buffer_size);
     file_path = getValueOrDefault(d_settings["file_path"], file_path);
@@ -31,6 +49,8 @@ void FileSource::run_thread()
         {
             int read = baseband_reader.read_samples(output_stream->writeBuf, buffer_size);
 
+            output_stream->getDataSize();
+
             if (iq_swap)
                 for (int i = 0; i < read; i++)
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
@@ -38,12 +58,22 @@ void FileSource::run_thread()
             output_stream->swap(read);
             file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
 
-            total_samples += read;
-            auto now = std::chrono::steady_clock::now();
-            auto expected_time = start_time_point + sample_time_period * total_samples;
+            if (!fast_playback)
+            {
+                total_samples += read;
+                auto now = std::chrono::steady_clock::now();
+                auto expected_time = start_time_point + sample_time_period * total_samples;
 
-            if (expected_time > now)
-                std::this_thread::sleep_until(expected_time);
+                if (expected_time < now)
+                {
+                    // We got behind, either because we're slow or fast
+                    // mode stopped. Reset counters and carry on.
+                    start_time_point = now;
+                    total_samples = 0;
+                }
+                else
+                    std::this_thread::sleep_until(expected_time);
+            }
         }
         else
         {
@@ -62,10 +92,10 @@ void FileSource::start()
     if (is_ui)
         file_path = file_input.getPath();
 
-    buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, current_samplerate / 200));
+    buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
 
     DSPSampleSource::start();
-    sample_time_period = std::chrono::duration<double>(1.0 / (double)current_samplerate);
+    sample_time_period = std::chrono::duration<double>(1.0 / (double)samplerate_input.get());
     start_time_point = std::chrono::steady_clock::now();
     total_samples = 0;
 
@@ -73,7 +103,7 @@ void FileSource::start()
     baseband_reader.set_file(file_path, baseband_type_e);
     baseband_reader.should_repeat = true;
 
-    logger->debug("Opening {:s} filesize {:d}", file_path.c_str(), baseband_reader.filesize);
+    logger->debug("Opening %s filesize %d", file_path.c_str(), baseband_reader.filesize);
 
     is_started = true;
 }
@@ -87,6 +117,7 @@ void FileSource::close()
 {
     if (is_open)
     {
+        is_open = false;
     }
 }
 
@@ -122,14 +153,14 @@ void FileSource::drawControlUI()
                 else if (hdr.type == "ziq2")
                     select_sample_format = 5;
 
-                current_samplerate = hdr.samplerate;
+                samplerate_input.set(hdr.samplerate);
 
                 update_format = true;
             }
         }
     }
 
-    ImGui::InputInt("Samplerate", &current_samplerate, 0);
+    samplerate_input.draw();
     if (ImGui::Combo("Format###basebandplayerformat", &select_sample_format, "f32\0"
                                                                              "s16\0"
                                                                              "s8\0"
@@ -161,10 +192,11 @@ void FileSource::drawControlUI()
     if (is_started)
         style::endDisabled();
 
-#ifdef BUILD_ZIQ
-    if (select_sample_format == 4)
-        style::beginDisabled();
-#endif
+    ImGui::SameLine(0.0, 15.0);
+    ImGui::Checkbox("Fast", &fast_playback);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Play/demod the baseband as fast as your PC can handle it");
+
     if (!is_started)
         style::beginDisabled();
     if (ImGui::SliderFloat("Progress", &file_progress, 0, 100))
@@ -173,28 +205,25 @@ void FileSource::drawControlUI()
         style::endDisabled();
 #ifdef BUILD_ZIQ
     if (select_sample_format == 4)
-    {
-        ImGui::TextColored(ImColor(255, 0, 0), "Scrolling not\navailable on ZIQ!");
-        style::endDisabled();
-    }
+        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking may be slow!");
 #endif
 }
 
 void FileSource::set_samplerate(uint64_t samplerate)
 {
-    current_samplerate = samplerate;
+    samplerate_input.set(samplerate);
 }
 
 uint64_t FileSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_input.get();
 }
 
 std::vector<dsp::SourceDescriptor> FileSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"file", "File Source", 0});
+    results.push_back({"file", "File Source", 0, false});
 
     return results;
 }

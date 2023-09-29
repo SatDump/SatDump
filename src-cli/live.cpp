@@ -85,7 +85,7 @@ int main_live(int argc, char *argv[])
                 live_pipeline->updateModuleStats();
                 return live_pipeline->stats.dump(4);
             };
-            logger->info("Start webserver on {:s}", http_addr.c_str());
+            logger->info("Start webserver on %s", http_addr.c_str());
             webserver::start(http_addr);
         }
 
@@ -129,7 +129,7 @@ int main_live(int argc, char *argv[])
         }
         catch (std::exception &e)
         {
-            logger->error("Error parsing arguments! {:s}", e.what());
+            logger->error("Error parsing arguments! %s", e.what());
             return 1;
         }
 
@@ -153,7 +153,18 @@ int main_live(int argc, char *argv[])
             {
                 if (parameters.contains("source_id"))
                 {
+#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
+                    char cmp_buff1[100];
+                    char cmp_buff2[100];
+
+                    snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
+                    std::string cmp1 = cmp_buff1;
+                    snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
+                    std::string cmp2 = cmp_buff2;
+                    if (cmp1 == cmp2)
+#else
                     if (hdl_dev_id == src.unique_id)
+#endif
                     {
                         selected_src = src;
                         src_found = true;
@@ -169,7 +180,7 @@ int main_live(int argc, char *argv[])
 
         if (!src_found)
         {
-            logger->error("Could not find a handler for source type : {:s}!", handler_id.c_str());
+            logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
             return 1;
         }
 
@@ -216,7 +227,7 @@ int main_live(int argc, char *argv[])
 
                 if (abs(final_shift) > (samplerate / 2))
                 {
-                    logger->error("Frequency shift for VFO {:s} is outside of samplerate range!", cfg.key().c_str());
+                    logger->error("Frequency shift for VFO %s is outside of samplerate range!", cfg.key().c_str());
                     exit(1);
                 }
 
@@ -239,7 +250,7 @@ int main_live(int argc, char *argv[])
                 splitter_vfo->set_vfo_enabled(cfg.key(), true);
 
                 all_pipelines.emplace(cfg.key(), live_pipeline);
-                logger->info("Added VFO for " + cfg.key() + " at {:f}", final_shift);
+                logger->info("Added VFO for " + cfg.key() + " at %f", final_shift);
             }
 
             // If requested, boot up webserver
@@ -257,7 +268,7 @@ int main_live(int argc, char *argv[])
                     }
                     return stats.dump(4);
                 };
-                logger->info("Start webserver on {:s}", http_addr.c_str());
+                logger->info("Start webserver on %s", http_addr.c_str());
                 webserver::start(http_addr);
             }
 
@@ -273,7 +284,7 @@ int main_live(int argc, char *argv[])
                     uint64_t elapsed_time = time(0) - start_time;
                     if (elapsed_time >= timeout)
                     {
-                        logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
+                        logger->warn("Timeout is over! (%ds >= %ds) Stopping.", elapsed_time, timeout);
                         break;
                     }
 
@@ -380,7 +391,7 @@ int main_live(int argc, char *argv[])
                         live_pipeline->updateModuleStats();
                         return live_pipeline->stats.dump(4);
                     };
-                logger->info("Start webserver on {:s}", http_addr.c_str());
+                logger->info("Start webserver on %s", http_addr.c_str());
                 webserver::start(http_addr);
             }
 
@@ -396,7 +407,7 @@ int main_live(int argc, char *argv[])
                     uint64_t elapsed_time = time(0) - start_time;
                     if (elapsed_time >= timeout)
                     {
-                        logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
+                        logger->warn("Timeout is over! (%ds >= %ds) Stopping.", elapsed_time, timeout);
                         break;
                     }
 
@@ -422,21 +433,25 @@ int main_live(int argc, char *argv[])
             live_pipeline->stop();
 
             if ((parameters.contains("finish_processing") ? parameters["finish_processing"].get<bool>() : false) &&
-                live_pipeline->getOutputFiles().size() > 0 &&
                 !server_mode)
             {
-                std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
-                std::string input_file = live_pipeline->getOutputFiles()[0];
-                int start_level = pipeline->live_cfg.normal_live[pipeline->live_cfg.normal_live.size() - 1].first;
-                std::string input_level = pipeline->steps[start_level].level_name;
+                if (live_pipeline->getOutputFiles().size() > 0 || std::filesystem::exists(output_file + "/dataset.json"))
+                {
+                    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
+                    std::string input_file = live_pipeline->getOutputFiles().size() > 0 ? live_pipeline->getOutputFiles()[0] : (output_file + "/dataset.json");
+                    int start_level = pipeline->live_cfg.normal_live[pipeline->live_cfg.normal_live.size() - 1].first;
+                    std::string input_level = pipeline->steps[start_level].level_name;
 
-                try
-                {
-                    pipeline.value().run(input_file, output_file, parameters, input_level);
-                }
-                catch (std::exception &e)
-                {
-                    logger->error("Fatal error running pipeline : " + std::string(e.what()));
+                    logger->critical(input_level);
+
+                    try
+                    {
+                        pipeline.value().run(input_file, output_file, parameters, input_level);
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Fatal error running pipeline : " + std::string(e.what()));
+                    }
                 }
             }
 

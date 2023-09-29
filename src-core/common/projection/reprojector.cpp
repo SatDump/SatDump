@@ -114,7 +114,7 @@ namespace satdump
 
                         if (progress != nullptr)
                             *progress = float(currentScan) / float(image.height());
-                        // logger->critical("{:d}/{:d}", currentScan, image.height());
+                        // logger->critical("%d/%d", currentScan, image.height());
                     }
                 }
             }
@@ -189,7 +189,7 @@ namespace satdump
                     operation.output_width = l_width;
                     operation.output_height = l_width / 2;
 
-                    logger->trace("Warping size {:d}x{:d}", l_width, l_width / 2);
+                    logger->trace("Warping size %dx%d", l_width, l_width / 2);
 
                     satdump::warp::ImageWarper warper;
                     warper.op = operation;
@@ -230,14 +230,24 @@ namespace satdump
                                 continue;
 
                             if (warped_image.channels() == 4)
+                            {
                                 for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
+                            }
                             else if (warped_image.channels() == 3)
+                            {
                                 for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(c)[y2 * warped_image.width() + x2];
+                                if (projected_image.channels() == 4)
+                                    projected_image.channel(3)[y * projected_image.width() + x] = 65535;
+                            }
                             else
+                            {
                                 for (int c = 0; c < warped_image.channels(); c++)
                                     projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(0)[y2 * warped_image.width() + x2];
+                                if (projected_image.channels() == 4)
+                                    projected_image.channel(3)[y * projected_image.width() + x] = 65535;
+                            }
                         }
 
                         if (progress != nullptr)
@@ -423,7 +433,7 @@ namespace satdump
             {
                 geodetic::projection::AzimuthalEquidistantProjection eqaz_proj;
                 eqaz_proj.init(width, height, params["lon"].get<float>(), params["lat"].get<float>());
-                return [eqaz_proj, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [eqaz_proj, rotate](float lat, float lon, int /*map_height*/, int /*map_width*/) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     eqaz_proj.forward(lon, lat, x, y);

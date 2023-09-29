@@ -38,7 +38,7 @@ if(NEON_FOUND)
         endif()
     endforeach()
 
-    install(TARGETS simd_neon DESTINATION share/satdump/plugins)
+    install(TARGETS simd_neon DESTINATION lib/satdump/plugins)
 else()
     message("NEON Features not found! This is only an error on x86 CPUs that should support NEON")
 endif()

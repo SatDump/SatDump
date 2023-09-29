@@ -57,102 +57,6 @@
             "products": {}
         }
     },
-    "sentinel6_dump": {
-        "name": "Sentinel-6 Dump",
-        "samplerate": 20e6,
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "oqpsk",
-                    "symbolrate": 75e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.006
-                }
-            },
-            "cadu": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "qpsk",
-                    "cadu_size": 10232,
-                    "nrzm": false,
-                    "derandomize": true,
-                    "rs_i": 5,
-                    "rs_type": "rs223"
-                }
-            }
-        }
-    },
-    "sentinel6_tlm": {
-        "name": "Sentinel 6 S-Band TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "frequencies": [
-            [
-                "Main",
-                2256.75e6
-            ]
-        ],
-        "parameters": {
-            "samplerate": {
-                "value": 6e6
-            }
-        },
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "oqpsk",
-                    "symbolrate": 500e3,
-                    "rrc_alpha": 0.6,
-                    "pll_bw": 0.001
-                }
-            },
-            "cadu": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "qpsk",
-		    "oqpsk_mode": true,
-                    "cadu_size": 10232,
-                    "nrzm": false,
-                    "derandomize": true,
-                    "rs_i": 5,
-                    "rs_type": "rs223"
-                }
-            }
-        }
-    },
-    "iris_dump": {
-        "name": "IRIS X-Band Dump",
-        "samplerate": 20e6,
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "oqpsk",
-                    "symbolrate": 7.5e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.006
-                }
-            },
-            "cadu": {
-                "ccsds_ldpc_decoder": {
-                    "constellation": "oqpsk",
-                    "ldpc_rate": "7/8",
-                    "ldpc_iterations": 10,
-                    "internal_stream": true,
-                    "internal_cadu_size": 14304
-                }
-            }
-        }
-    },
     "smap_s_link": {
         "name": "SMAP S-Band Link",
         "live": true,
@@ -275,6 +179,17 @@
     "grace_fo_link": {
         "name": "Grace-FO Dump",
         "samplerate": 20e6,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
@@ -321,41 +236,6 @@
             }
         }
     },
-    "gk2a_cdas": {
-        "name": "GK-2A CDAS",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "samplerate": 6e6,
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "qpsk",
-                    "symbolrate": 3.096e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.006
-                }
-            },
-            "cadu": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "qpsk",
-                    "cadu_size": 10112,
-                    "rs_i": 5,
-                    "rs_fill_bytes": 3,
-                    "rs_type": "rs223"
-                }
-            }
-        }
-    },
     "eumetcast_africa": {
         "name": "EUMETCAST Africa",
         "live": true,
@@ -379,51 +259,6 @@
                     "freq_prop_factor": 0.01
                 }
             }
-        }
-    },
-    "hinode_s_dump": {
-        "name": "Hinode S-Band dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "frequencies": [
-            [
-                "Main",
-                2256.22e6
-            ]
-        ],
-        "parameters": {},
-        "work": {
-            "baseband": {},
-            "soft": {
-                "pm_demod": {
-                    "symbolrate": 262e3,
-                    "agc_rate": 0.001,
-                    "pll_bw": 0.01,
-                    "pll_max_offset": 0.5,
-                    "rrc_alpha": 0.6,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.005,
-                    "clock_omega_relative_limit": 0.005
-                }
-            },
-            "cadu": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "bpsk",
-                    "cadu_size": 8192,
-                    "rs_i": 4,
-                    "rs_type": "rs223"
-                }
-            },
-            "products": {}
         }
     },
     "smos_tlm": {
@@ -457,7 +292,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.250,
@@ -495,7 +330,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.250,
@@ -581,7 +416,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 8952,
                     "viterbi_ber_thresold": 0.300,
@@ -590,50 +425,6 @@
                     "iq_invert": true,
                     "nrzm": false,
                     "rs_i": 0
-                }
-            }
-        }
-    },
-    "iris_s_dump": {
-        "name": "IRIS S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "frequencies": [
-            [
-                "Main",
-                2220.8e6
-            ]
-        ],
-        "samplerate": 6e6,
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "bpsk",
-                    "symbolrate": 512e3,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.003
-                }
-            },
-            "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
-                    "constellation": "bpsk_90",
-                    "cadu_size": 14304,
-                    "nrzm": true,
-                    "viterbi_ber_thresold": 0.300,
-                    "viterbi_outsync_after": 20,
-                    "derandomize": true,
-                    "rs_i": 0,
-                    "rs_type": "rs223"
                 }
             }
         }
@@ -673,7 +464,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "oqpsk_mode": true,
@@ -726,47 +517,6 @@
                 }
             },
             "products": {}
-        }
-    },
-    "orion_link": {
-        "name": "Orion S-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "frequencies": [
-            [
-                "Main",
-                2214e6
-            ]
-        ],
-        "samplerate": 6e6,
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "oqpsk",
-                    "symbolrate": 2e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.005
-                }
-            },
-            "cadu": {
-                "ccsds_ldpc_decoder": {
-                    "constellation": "oqpsk",
-                    "ldpc_rate": "1/2",
-                    "ldpc_block_size": 1024,
-                    "ldpc_iterations": 10
-                    //"derandomize": false
-                }
-            }
         }
     },
     "paz_s_tlm": {
@@ -859,6 +609,34 @@
                     "rs_type": "rs223"
                 }
             }
+        }
+    },
+    "cosmos_2518_sband": {
+        "name": "Cosmos-2518 S-Band link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 16e3,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.008
+                }
+            },
+            "cadu": {}
         }
     }
 }

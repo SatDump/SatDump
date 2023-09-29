@@ -93,7 +93,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
         imagePosX /= ui_scale * img_scale;
         imagePosY /= ui_scale * img_scale;
 
-        logger->info("X {:f}, Y {:f}   MOUSE {:f} {:f},    MOUSEPOS {:f} {:f}", window->Scroll.x, window->Scroll.y,
+        logger->info("X %f, Y %f   MOUSE %f %f,    MOUSEPOS %f %f", window->Scroll.x, window->Scroll.y,
                      ImGui::GetMousePos().x - window->Pos.x, ImGui::GetMousePos().y - window->Pos.y,
                      imagePosX, imagePosY);
 

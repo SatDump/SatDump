@@ -3,6 +3,7 @@
 #include <sstream>
 #include "common/codings/crc/crc_generic.h"
 #include "logger.h"
+#include <cmath>
 
 extern "C"
 {
@@ -35,7 +36,7 @@ namespace gk2a
 
             int header_len = 8;
             int data_len = 540;
-            int crc_len = 2;
+            // int crc_len = 2;
 
             uint8_t *data = km_bytes + header_len;
             uint8_t *crc = km_bytes + header_len + data_len;
@@ -63,7 +64,7 @@ namespace gk2a
             std::string appSecS = km_hex.substr(12, 4);
             int appSec = round(std::stoi(appSecS) / 1000); // kmHeaderHex[12:16]
 
-            logger->info("Application Time header: {:s} ({:s}/{:s}/{:s} {:s}:{:s}:{:d})", km_hex.c_str(), appDay.c_str(), appMonth.c_str(), appYear.c_str(), appHour.c_str(), appMin.c_str(), appSec);
+            logger->info("Application Time header: %s (%s/%s/%s %s:%s:%d)", km_hex.c_str(), appDay.c_str(), appMonth.c_str(), appYear.c_str(), appHour.c_str(), appMin.c_str(), appSec);
 
             // Encrypted keys
             std::vector<uint16_t> indexes;
@@ -74,14 +75,14 @@ namespace gk2a
                 int offset = i * 18;                                                            // 18 bytes per index/key pair
                 indexes.push_back(data[offset] << 8 | data[offset + 1]);                        // Bytes 0-1: Key index
                 encKeys.push_back(std::vector<uint8_t>(&data[offset + 2], &data[offset + 18])); // Bytes 2-17: Encrypted key
-                logger->info("({:s}) = {:s}", to_hex_str((uint8_t *)&indexes[i], 1).c_str(), to_hex_str(encKeys[i].data(), 16).c_str());
+                logger->info("(%s) = %s", to_hex_str((uint8_t *)&indexes[i], 1).c_str(), to_hex_str(encKeys[i].data(), 16).c_str());
             }
 
             // Decrypt
             logger->info("\nDecrypting...");
 
             uint64_t mac_bin = 0;
-            uint64_t mac_bin2 = std::stoul(mac_address, nullptr, 16) << 16; //;
+            uint64_t mac_bin2 = std::stoull(mac_address, nullptr, 16) << 16;
 
             for (int i = 0; i < 8; i++)
             {
@@ -101,7 +102,7 @@ namespace gk2a
                 des_ecb_decrypt(encKeys[i].data(), decKeys[i].data(), &sk);
                 des_ecb_decrypt(encKeys[i].data(), decKeys[i].data(), &sk);
                 //  encKeys[i].erase(encKeys.begin() + )
-                logger->info("({:s}) = {:s}", to_hex_str((uint8_t *)&indexes[i], 1).c_str(), to_hex_str(decKeys[i].data(), 8).c_str());
+                logger->info("(%s) = %s", to_hex_str((uint8_t *)&indexes[i], 1).c_str(), to_hex_str(decKeys[i].data(), 8).c_str());
             }
 
             std::ofstream file_decrypted(decrypted, std::ios::binary);

@@ -22,19 +22,19 @@ void AirspySource::set_gains()
     if (gain_type == 0)
     {
         airspy_set_sensitivity_gain(airspy_dev_obj, general_gain);
-        logger->debug("Set Airspy gain (sensitive) to {:d}", general_gain);
+        logger->debug("Set Airspy gain (sensitive) to %d", general_gain);
     }
     else if (gain_type == 1)
     {
         airspy_set_linearity_gain(airspy_dev_obj, general_gain);
-        logger->debug("Set Airspy gain (linear) to {:d}", general_gain);
+        logger->debug("Set Airspy gain (linear) to %d", general_gain);
     }
     else if (gain_type == 2)
     {
         airspy_set_lna_gain(airspy_dev_obj, manual_gains[0]);
         airspy_set_mixer_gain(airspy_dev_obj, manual_gains[1]);
         airspy_set_vga_gain(airspy_dev_obj, manual_gains[2]);
-        logger->debug("Set Airspy gain (manual) to {:d}, {:d}, {:d}", manual_gains[0], manual_gains[1], manual_gains[2]);
+        logger->debug("Set Airspy gain (manual) to %d, %d, %d", manual_gains[0], manual_gains[1], manual_gains[2]);
     }
 }
 
@@ -44,7 +44,7 @@ void AirspySource::set_bias()
         return;
 
     airspy_set_rf_bias(airspy_dev_obj, bias_enabled);
-    logger->debug("Set Airspy bias to {:d}", (int)bias_enabled);
+    logger->debug("Set Airspy bias to %d", (int)bias_enabled);
 }
 
 void AirspySource::set_agcs()
@@ -54,8 +54,8 @@ void AirspySource::set_agcs()
 
     airspy_set_lna_agc(airspy_dev_obj, lna_agc_enabled);
     airspy_set_mixer_agc(airspy_dev_obj, mixer_agc_enabled);
-    logger->debug("Set Airspy LNA AGC to {:d}", (int)lna_agc_enabled);
-    logger->debug("Set Airspy Mixer AGC to {:d}", (int)mixer_agc_enabled);
+    logger->debug("Set Airspy LNA AGC to %d", (int)lna_agc_enabled);
+    logger->debug("Set Airspy Mixer AGC to %d", (int)mixer_agc_enabled);
 }
 
 void AirspySource::open_sdr()
@@ -119,11 +119,11 @@ void AirspySource::open()
     uint32_t dev_samplerates[10];
     airspy_get_samplerates(airspy_dev_obj, &samprate_cnt, 0);
     airspy_get_samplerates(airspy_dev_obj, dev_samplerates, samprate_cnt);
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     bool has_10msps = false;
     for (int i = samprate_cnt - 1; i >= 0; i--)
     {
-        logger->trace("Airspy device has samplerate {:d} SPS", dev_samplerates[i]);
+        logger->trace("Airspy device has samplerate %d SPS", dev_samplerates[i]);
         available_samplerates.push_back(dev_samplerates[i]);
         if (dev_samplerates[i] == 10e6)
             has_10msps = true;
@@ -132,10 +132,8 @@ void AirspySource::open()
     if (!has_10msps)
         available_samplerates.push_back(10e6);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, false);
+
     airspy_close(airspy_dev_obj);
 }
 
@@ -143,6 +141,8 @@ void AirspySource::start()
 {
     DSPSampleSource::start();
     open_sdr();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     airspy_set_sample_type(airspy_dev_obj, AIRSPY_SAMPLE_FLOAT32_IQ);
 
@@ -179,7 +179,7 @@ void AirspySource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         airspy_set_freq(airspy_dev_obj, frequency);
-        logger->debug("Set Airspy frequency to {:d}", frequency);
+        logger->debug("Set Airspy frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -187,62 +187,64 @@ void AirspySource::set_frequency(uint64_t frequency)
 void AirspySource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+        RImGui::beginDisabled();
+
+    samplerate_widget.render();
+
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::RadioButton("Sensitive", &gain_type, 0);
-    // ImGui::SameLine();
-    gain_changed |= ImGui::RadioButton("Linear", &gain_type, 1);
-    // ImGui::SameLine();
-    gain_changed |= ImGui::RadioButton("Manual", &gain_type, 2);
+    if (RImGui::RadioButton("Sensitive", gain_type == 0))
+    {
+        gain_type = 0;
+        gain_changed = true;
+    }
+    if (RImGui::RadioButton("Linear", gain_type == 1))
+    {
+        gain_type = 1;
+        gain_changed = true;
+    }
+    if (RImGui::RadioButton("Manual", gain_type == 22))
+    {
+        gain_type = 2;
+        gain_changed = true;
+    }
 
     if (gain_type == 2)
     {
-        gain_changed |= ImGui::SliderInt("LNA Gain", &manual_gains[0], 0, 15);
-        gain_changed |= ImGui::SliderInt("Mixer Gain", &manual_gains[1], 0, 15);
-        gain_changed |= ImGui::SliderInt("VGA Gain", &manual_gains[2], 0, 15);
+        gain_changed |= RImGui::SliderInt("LNA Gain", &manual_gains[0], 0, 15);
+        gain_changed |= RImGui::SliderInt("Mixer Gain", &manual_gains[1], 0, 15);
+        gain_changed |= RImGui::SliderInt("VGA Gain", &manual_gains[2], 0, 15);
     }
     else
     {
-        gain_changed |= ImGui::SliderInt("Gain", &general_gain, 0, 21);
+        gain_changed |= RImGui::SliderInt("Gain", &general_gain, 0, 21);
     }
 
     if (gain_changed)
         set_gains();
 
-    if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
+    if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 
-    if (ImGui::Checkbox("LNA AGC", &lna_agc_enabled))
+    if (RImGui::Checkbox("LNA AGC", &lna_agc_enabled))
         set_agcs();
 
-    if (ImGui::Checkbox("Mixer AGC", &mixer_agc_enabled))
+    if (RImGui::Checkbox("Mixer AGC", &mixer_agc_enabled))
         set_agcs();
 }
 
 void AirspySource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 10e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspySource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> AirspySource::getAvailableSources()

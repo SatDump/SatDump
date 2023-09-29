@@ -20,7 +20,7 @@ public:
             logger->error("Could not open the SDRPlay API, perhaps the service is not running?");
             return;
         }
-        logger->info("SDRPlay APi is ready!");
+        logger->info("SDRPlay API is ready!");
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)

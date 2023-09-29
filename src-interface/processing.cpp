@@ -2,7 +2,6 @@
 #include "processing.h"
 #include "logger.h"
 #include "core/pipeline.h"
-#include "error.h"
 
 #include "core/config.h"
 #include "main_ui.h"
@@ -36,6 +35,10 @@ namespace satdump
             // Get pipeline
             std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
 
+            ui_call_list_mutex->lock();
+            ui_call_list->clear();
+            ui_call_list_mutex->unlock();
+
             if (pipeline.has_value())
             {
                 try
@@ -45,8 +48,8 @@ namespace satdump
                 catch (std::exception &e)
                 {
                     logger->error("Fatal error running pipeline : " + std::string(e.what()));
-                    error::set_error("Pipeline Error", e.what());
                     is_processing = false;
+                    processing_mutex.unlock();
                     return;
                 }
             }
@@ -65,6 +68,7 @@ namespace satdump
                     viewer_app->loadDatasetInViewer(output_file + "/dataset.json");
                 }
             }
+
             processing_mutex.unlock();
         }
 

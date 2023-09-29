@@ -1,5 +1,4 @@
 #include "viewer.h"
-#include "error.h"
 #include "common/map/map_drawer.h"
 #include "common/projection/reprojector.h"
 #include "logger.h"
@@ -9,10 +8,15 @@
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
 #include "libs/tiny-regex-c/re.h"
+#include "imgui/pfd/pfd_utils.h"
+
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
 
 namespace satdump
 {
-    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|)");
+    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
     int osm_url_regex_len = 0;
 
     void ViewerApplication::drawProjectionPanel()
@@ -39,7 +43,6 @@ namespace satdump
                                                                              "Satellite (TPERS)\0"
                                                                              "Azimuthal Equidistant\0");
 
-                                                                             
             if (projections_current_selected_proj == 0)
             {
                 ImGui::Text("Top Left Coordinates :");
@@ -70,7 +73,8 @@ namespace satdump
                 ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
                 ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
                 ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
-            }else if (projections_current_selected_proj == 4)
+            }
+            else if (projections_current_selected_proj == 4)
             {
                 ImGui::Text("Center Coordinates :");
                 ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
@@ -104,22 +108,36 @@ namespace satdump
 
             if (ImGui::Button("Save Projected Image"))
             {
-                std::string default_name = "./projection.png";
+                std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
+                std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
+#ifdef _MSC_VER
+                if (default_path == ".")
+                {
+                    char* cwd;
+                    cwd = _getcwd(NULL, 0);
+                    if (cwd != 0)
+                        default_path = cwd;
+                }
+                default_path += "\\";
+#else
+                default_path += "/";
+#endif
+                std::string default_name = default_path + "projection." + default_ext;
 
 #ifndef __ANDROID__
-                auto result = pfd::save_file("Save Projection", default_name, {"*.png"});
+                auto result = pfd::save_file("Save Image", default_name, get_file_formats(default_ext));
                 while (!result.ready(1000))
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
                 if (result.result().size() > 0)
                 {
                     std::string path = result.result();
-                    logger->info("Saving current projection at {:s}", path.c_str());
+                    logger->info("Saving current projection at %s", path.c_str());
                     projected_image_result.save_img(path);
                 }
 #else
                 std::string path = "/storage/emulated/0/" + default_name;
-                logger->info("Saving current projection at {:s}", path.c_str());
+                logger->info("Saving current projection at %s", path.c_str());
                 projected_image_result.save_img("" + path);
 #endif
             }
@@ -185,8 +203,8 @@ namespace satdump
                             projection_new_layer_cfg.draw("Projection Config File");
                     }
 
-                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.file_valid &&
-                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.file_valid))))
+                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.isValid() &&
+                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.isValid()))))
                     {
                         if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
                         {
@@ -283,7 +301,7 @@ namespace satdump
                     ImGui::Text("%s", label.c_str());
                     if (ImGui::IsItemHovered() && layer.type == 0)
                     {
-                        ImGui::SetTooltip(layer.viewer_prods->dataset_name.c_str());
+                        ImGui::SetTooltip("%s", layer.viewer_prods->dataset_name.c_str());
                     }
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);

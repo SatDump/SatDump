@@ -12,7 +12,7 @@ namespace fengyun3
         class MWRIRMReader
         {
         private:
-            ResizeableBuffer<unsigned short> channels[26];
+            std::vector<unsigned short> channels[26];
 
         public:
             MWRIRMReader();

@@ -248,7 +248,7 @@ namespace image
                     for (int c = 0; c < std::min(3, lut.channels()); c++)
                         rgb_output.channel(c)[line * f.img_width + pixel] = lut.channel(c)[position_y * lut.width() + position_x];
 
-                    // logger->critical("{:d}, {:d}, {:d}", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
+                    // logger->critical("%d, %d, %d", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
                 }
             }
 
@@ -332,6 +332,22 @@ namespace image
             { return channelValues[x]; };
             lua["get_channel_values"] = [channelValues, &inputChannels, &channelNumbers, &f](size_t x, size_t y)
             { get_channel_vals(channelValues, inputChannels, channelNumbers, f, y, x); };
+            lua["get_calibrated_image"] = [img_pro](int ch, std::string type, float min, float max)
+            { 
+                satdump::ImageProducts::calib_vtype_t ctype = satdump::ImageProducts::CALIB_VTYPE_AUTO;
+
+                if(type == "auto")
+                    ctype = satdump::ImageProducts::CALIB_VTYPE_AUTO;
+                else if(type == "albedo")
+                    ctype = satdump::ImageProducts::CALIB_VTYPE_ALBEDO;
+                else if(type == "radiance")
+                    ctype = satdump::ImageProducts::CALIB_VTYPE_RADIANCE;
+                else if(type == "temperature")
+                    ctype = satdump::ImageProducts::CALIB_VTYPE_TEMPERATURE;
+
+                return img_pro->get_calibrated_image(ch, nullptr, ctype, {min, max}); };
+            lua["get_calibrated_value"] = [img_pro](int ch, int x, int y)
+            { return img_pro->get_calibrated_value(ch, x, y); };
             lua["set_progress"] = [&progress](float x, float y)
             { if(progress != nullptr) *progress = x / y; };
 
@@ -339,7 +355,7 @@ namespace image
         }
         catch (std::exception &e)
         {
-            logger->error("Error generating composite! {:s}", e.what());
+            logger->error("Error generating composite! %s", e.what());
         }
 
         delete[] channelValues;

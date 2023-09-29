@@ -3,9 +3,9 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include <libbladeRF.h>
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class BladeRFSource : public dsp::DSPSampleSource
 {
@@ -22,10 +22,8 @@ protected:
     int selected_dev_id = 0;
     bladerf_devinfo *devs_list = NULL;
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
+    widgets::DoubleList bandwidth_widget;
 
     int channel_id = 0;
     int gain_mode = 1;
@@ -33,8 +31,13 @@ protected:
 
     bool bias_enabled = false;
 
+    bool extclock_enable = false;
+
+    bool manual_bandwidth = false;
+
     void set_gains();
     void set_bias();
+    void set_others();
 
     int sample_buffer_size = 8192;
 
@@ -79,7 +82,7 @@ protected:
     }
 
 public:
-    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    BladeRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
     {
     }
 

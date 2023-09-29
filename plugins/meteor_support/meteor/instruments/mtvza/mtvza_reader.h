@@ -24,6 +24,8 @@ namespace meteor
 
             void work(uint8_t *data);
             image::Image<uint16_t> getChannel(int channel);
+
+            bool endian_mode = false;
         };
     }
 }

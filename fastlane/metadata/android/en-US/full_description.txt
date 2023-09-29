@@ -1,0 +1,12 @@
+SatDump will allow you to decode a wide range of satellites, exactly as it would on your computer.  
+
+With a compatible SDR device and necessary hardware, most Android devices will be able to receive and process NOAA APT & DSB, LRPT and even HRPT and most S-Band satellites! This includes many weather, science, and other generic missions. If you also happen to be in range of a geostationnary satellite such as GOES, GK-2A or similar you will also be able to do all processing directly on your Android device.  
+
+Especially on a phone, a good usecase is receiving 137Mhz weather satellites on the go.
+
+Supported SDRs :
+- RTL-SDR
+- Airspy
+- Airspy HF
+- MiriSDR
+- LimeSDR Mini

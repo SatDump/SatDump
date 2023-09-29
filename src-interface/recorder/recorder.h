@@ -13,8 +13,12 @@
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 
+#include "common/widgets/constellation.h"
+
 #include "pipeline_selector.h"
 #include "core/live_pipeline.h"
+
+#include "tracking/tracking_widget.h"
 
 namespace satdump
 {
@@ -27,8 +31,10 @@ namespace satdump
         bool show_waterfall = true;
         bool is_started = false, is_recording = false, is_processing = false;
 
+        double xconverter_frequency = 0;
+
         int selected_fft_size = 0;
-        std::vector<int> fft_sizes_lut = {/*65536,*/ 8192, 4096, 2048, 1024};
+        std::vector<int> fft_sizes_lut = {131072, 65536, 16384, 8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
         int fft_rate = 120;
         int waterfall_rate = 60;
@@ -83,6 +89,11 @@ namespace satdump
         void deserialize_config(nlohmann::json in);
         void try_load_sdr_settings();
 
+        TrackingWidget *tracking_widget = nullptr;
+
+        // Debug
+        widgets::ConstellationViewer *constellation_debug = nullptr;
+
     private:
         void start();
         void stop();
@@ -93,7 +104,33 @@ namespace satdump
         void start_recording();
         void stop_recording();
 
-        uint64_t get_samplerate() { return current_samplerate / current_decimation; }
+        uint64_t get_samplerate()
+        {
+            if (current_decimation > 0)
+                return current_samplerate / current_decimation;
+            else
+                return current_samplerate;
+        }
+
+        void set_frequency(double freq_mhz)
+        {
+            double xconv_freq = freq_mhz;
+            if (xconv_freq > xconverter_frequency)
+                xconv_freq -= xconverter_frequency;
+            else
+                xconv_freq = xconverter_frequency - xconv_freq;
+
+            frequency_mhz = freq_mhz;
+            source_ptr->set_frequency(xconv_freq * 1e6);
+            if (fft_plot)
+            {
+                fft_plot->frequency = freq_mhz * 1e6;
+                if (xconverter_frequency == 0)
+                    fft_plot->actual_sdr_freq = -1;
+                else
+                    fft_plot->actual_sdr_freq = xconv_freq * 1e6;
+            }
+        }
 
     public:
         RecorderApplication();

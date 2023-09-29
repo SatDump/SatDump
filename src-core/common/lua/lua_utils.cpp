@@ -25,7 +25,7 @@ namespace lua_utils
                     else
                         l[index] = mapJsonToLua(lua, el.value());
                 }
-                catch (std::exception &e)
+                catch (std::exception&)
                 {
                     if (el.value().is_number_integer())
                         l[el.key()] = el.value().get<int>();
@@ -37,7 +37,7 @@ namespace lua_utils
                         l[el.key()] = mapJsonToLua(lua, el.value());
                 }
             }
-            catch (std::exception &e)
+            catch (std::exception&)
             {
             }
         }
@@ -99,6 +99,8 @@ namespace lua_utils
     {
         bindImageType<uint8_t>(lua, "image8");
         bindImageType<uint16_t>(lua, "image16");
+
+        lua["image8_lut_jet"] = &image::LUT_jet<uint8_t>;
     }
 
     void bindGeoTypes(sol::state &lua)

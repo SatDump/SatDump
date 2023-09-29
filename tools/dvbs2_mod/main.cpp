@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     int bb_data_size = bb_size - 10 * 8;
     int bb_data_size_bytes = bb_data_size / 8;
 
-    logger->warn("PL Slots : {:d}", plframe_slots);
+    logger->warn("PL Slots : %d", plframe_slots);
 
     // Main BB frame buffer
     uint8_t *bbframe_raw = new uint8_t[final_frm_size_bytes];

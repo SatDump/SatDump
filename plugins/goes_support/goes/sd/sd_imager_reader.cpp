@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "common/utils.h"
 #include <filesystem>
+#include <cstring>
 
 #define IMG_WIDTH 40000
 
@@ -46,7 +47,7 @@ namespace goes
 
                 int x = is_shifted ? ((20917 - 70 + 12 - 3 - 8) / 4) : 0;
 
-                for (int y = 0; y < wip_scanline.size() / 48; y++)
+                for (int y = 0; y < (int)wip_scanline.size() / 48; y++)
                 {
                     uint16_t *block = &wip_scanline[y * 48];
 
@@ -117,7 +118,7 @@ namespace goes
 
                 wip_scanline.clear();
 
-                logger->info("Lines {:d}", lines);
+                logger->info("Lines %d", lines);
             }
 
             wip_scanline.insert(wip_scanline.end(), &words[0], &words[48]);
@@ -163,20 +164,11 @@ namespace goes
                 if (!std::filesystem::exists(dir))
                     std::filesystem::create_directories(dir);
 
-                logger->info("Saving VIS...");
-                getChannel(0).save_png(dir + "/VIS.png", false);
-
-                logger->info("Saving IR1...");
-                getChannel(1).save_png(dir + "/IR1.png", false);
-
-                logger->info("Saving IR2...");
-                getChannel(2).save_png(dir + "/IR2.png", false);
-
-                logger->info("Saving IR3...");
-                getChannel(3).save_png(dir + "/IR3.png", false);
-
-                logger->info("Saving IR4...");
-                getChannel(4).save_png(dir + "/IR4.png", false);
+                getChannel(0).save_img(dir + "/VIS", false);
+                getChannel(1).save_img(dir + "/IR1", false);
+                getChannel(2).save_img(dir + "/IR2", false);
+                getChannel(3).save_img(dir + "/IR3", false);
+                getChannel(4).save_img(dir + "/IR4", false);
 
                 lines = 0;
                 image_vis.clear();

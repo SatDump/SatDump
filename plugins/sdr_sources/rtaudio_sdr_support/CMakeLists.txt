@@ -20,7 +20,7 @@ if(RTAUDIO_LIBRARY) # OR MSVC) # OR ANDROID)
 
     target_include_directories(rtaudio_sdr_support PUBLIC src)
 
-    install(TARGETS rtaudio_sdr_support DESTINATION share/satdump/plugins)
+    install(TARGETS rtaudio_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("RtAudio Library could not be found! Not building.")
 endif()

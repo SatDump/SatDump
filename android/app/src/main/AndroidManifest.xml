@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.altillimity.satdump">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:label="SatDump"
         android:allowBackup="false"
         android:fullBackupContent="false"
-        android:hasCode="true">
+        android:hasCode="true"
+        android:extractNativeLibs="true">
         <!--android:requestLegacyExternalStorage="true"-->
 
         <activity
             android:name="com.altillimity.satdump.MainActivity"
             android:icon="@mipmap/ic_launcher_round"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-            android:configChanges="orientation|keyboardHidden|screenSize">
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true">
             <meta-data android:name="android.app.lib_name"
                 android:value="android_imgui" />
 

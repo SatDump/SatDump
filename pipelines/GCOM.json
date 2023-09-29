@@ -19,7 +19,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "oqpsk_mode": true,
                     "cadu_size": 10112,
@@ -51,19 +51,19 @@
                 }
             },
             "cadu": {
-                /*"ccsds_simple_psk_decoder": {
-                "constellation": "qpsk",
-                //  "qpsk_swap_diff": true,
-                "qpsk_swap_iq": true,
-                "cadu_size": 10112,
-                // "oqpsk_method3": true,
-                "nrzm": false,
-                "derandomize": true,
-                "rs_i": 0
-            }*/
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    //  "qpsk_swap_diff": true,
+                    // "qpsk_swap_iq": true,
+                    "cadu_size": 10112,
+                    // "oqpsk_method3": true,
+                    "nrzm": true,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
             },
             "products": {
-                "gcom_amsr2": {}
+                // "gcom_amsr2": {}
             }
         }
     }

@@ -57,7 +57,7 @@ namespace gcom1
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -99,7 +99,7 @@ namespace gcom1
                 // amsr2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 20; i++)
-                    amsr2_products.images.push_back({"AMSR2-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsr2_reader.getChannel(i)});
+                    amsr2_products.images.push_back({"AMSR2-" + std::to_string(i + 1), std::to_string(i + 1), amsr2_reader.getChannel(i)});
 
                 amsr2_products.save(directory);
                 dataset.products_list.push_back("AMSR-2");

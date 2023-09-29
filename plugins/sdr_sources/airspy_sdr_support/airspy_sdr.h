@@ -7,8 +7,8 @@
 #include <libairspy/airspy.h>
 #endif
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
+#include "common/widgets/double_list.h"
 
 class AirspySource : public dsp::DSPSampleSource
 {
@@ -17,10 +17,7 @@ protected:
     airspy_device *airspy_dev_obj;
     static int _rx_callback(airspy_transfer *t);
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
     int gain_type = 0;
     int general_gain = 0;
@@ -37,7 +34,9 @@ protected:
     void open_sdr();
 
 public:
-    AirspySource(dsp::SourceDescriptor source) : DSPSampleSource(source) {}
+    AirspySource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    {
+    }
 
     ~AirspySource()
     {

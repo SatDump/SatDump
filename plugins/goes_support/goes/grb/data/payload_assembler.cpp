@@ -93,7 +93,7 @@ namespace goes
                 fullPkt.insert(fullPkt.end(), &pkt.header.raw[0], &pkt.header.raw[6]);
                 fullPkt.insert(fullPkt.end(), &pkt.payload[0], &pkt.payload[pkt.payload.size() - 4]);
             }
-            catch (std::exception &e)
+            catch (std::exception&)
             {
                 return false;
             }
@@ -103,7 +103,7 @@ namespace goes
             fullPkt.clear(); // Free memory
 
             // if (checksum != sent_checksum)
-            //     logger->critical("CRC CHECK {:d} {:d}", sent_checksum, checksum);
+            //     logger->critical("CRC CHECK %d %d", sent_checksum, checksum);
 
             return checksum == sent_checksum;
         }

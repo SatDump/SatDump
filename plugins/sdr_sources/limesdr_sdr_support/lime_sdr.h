@@ -7,11 +7,12 @@
 #include "ConnectionRegistry/ConnectionRegistry.h"
 #else
 #include <lime/LimeSuite.h>
+#include <lime/lms7_device.h>
 #endif
 #include <thread>
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
+#include "common/rimgui.h"
+#include "common/widgets/double_list.h"
 
 class LimeSDRSource : public dsp::DSPSampleSource
 {
@@ -28,11 +29,14 @@ protected:
     lms_stream_t limeStream;
 #endif
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
 
+    int channel_id = 0;
+
+    int path_id = 3;
+
+    bool gain_mode_manual = false;
+    int gain_lna = 0, gain_tia = 0, gain_pga = 0;
     int gain = 0;
 
     void set_gains();
@@ -47,7 +51,7 @@ protected:
         lms_stream_meta_t md;
 #endif
 
-        int buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
+        int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
 
         while (thread_should_run)
         {
@@ -62,7 +66,7 @@ protected:
     }
 
 public:
-    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
     {
     }
 

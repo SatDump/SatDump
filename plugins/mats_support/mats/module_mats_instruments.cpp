@@ -60,7 +60,7 @@ namespace mats
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -92,7 +92,7 @@ namespace mats
                 // mats_nadir_products.set_timestamps(mhs_reader.timestamps);
                 // mats_nadir_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
-                mats_nadir_products.images.push_back({"MATS-Nadir.png", "1", mats_reader.getNadirImage()});
+                mats_nadir_products.images.push_back({"MATS-Nadir", "1", mats_reader.getNadirImage()});
 
                 mats_nadir_products.save(directory);
                 dataset.products_list.push_back("Nadir");

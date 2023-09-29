@@ -32,11 +32,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import android.widget.RelativeLayout
-import android.widget.EditText
-import android.text.TextWatcher
-import android.text.Editable
-import android.text.InputType
+import android.widget.RelativeLayout;
+import android.widget.EditText;
+import android.text.TextWatcher;
+import android.text.Editable;
+import android.text.InputType;
+
+import android.view.WindowManager;
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -66,7 +68,7 @@ class MainActivity : NativeActivity(), TextWatcher {
     }
 
     // Adapted from Ryzerth's implementation, a lot cleaner than my old Java crap!
-    private var ACTION_USB_PERMISSION = "org.altillimity.satdump.USB_PERMISSION";
+    private var ACTION_USB_PERMISSION = "org.satdump.satdump.USB_PERMISSION";
 
     private var usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -78,7 +80,7 @@ class MainActivity : NativeActivity(), TextWatcher {
                         _this.SDR_conn = _this.usbManager!!.openDevice(_this.SDR_device);
                         
                         _this.SDR_VID = _this.SDR_device!!.getVendorId();
-                        _this.SDR_PID = _this.SDR_device!!.getProductId()
+                        _this.SDR_PID = _this.SDR_device!!.getProductId();
                         _this.SDR_FD = _this.SDR_conn!!.getFileDescriptor();
                         _this.SDR_PATH = _this.SDR_device!!.getDeviceName();
                     }
@@ -117,6 +119,9 @@ class MainActivity : NativeActivity(), TextWatcher {
         // Hide system bars
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
+        // Keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         // Text crap
         mLayout = RelativeLayout(this);
         editText = EditText(this.applicationContext!!);
@@ -139,11 +144,19 @@ class MainActivity : NativeActivity(), TextWatcher {
         val aman = getAssets();
         extractDir(aman, fdir + "/pipelines", "pipelines");
         extractDir(aman, fdir + "/resources", "resources");
-        extractDir(aman, fdir + "/plugins", "plugins");
+        // extractDir(aman, fdir + "/plugins", "plugins");
         extractFile(aman, fdir + "/satdump_cfg.json", "satdump_cfg.json");
         //createIfDoesntExist(fdir + "/plugins");
 
         return fdir;
+    }
+
+    public fun get_plugins_directory() : String {
+        return getApplicationInfo().nativeLibraryDir;
+    }
+
+    public fun get_dpi() : Float {
+        return getResources().getDisplayMetrics().density;
     }
 
     fun showSoftInput() {

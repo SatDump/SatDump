@@ -18,47 +18,58 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3")
 set(CMAKE_C_FLAGS_DEBUG "-O3")
 
 # ##########################################################################################################################################
+include_directories(deps/output/${ANDROID_ABI}/include)
+
 # LIBVOLK
 add_library(volk STATIC IMPORTED)
-set_target_properties(volk PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/volk/${ANDROID_ABI}/libvolk.a)
-include_directories(deps/volk/jni/)
+set_target_properties(volk PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libvolk.a)
+# include_directories(deps/volk/jni/)
 
 # LIBFFTW3
 add_library(fftw STATIC IMPORTED)
-set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/fftw3/${ANDROID_ABI}/libfftw3f.a)
-include_directories(deps/fftw3/jni)
+set_target_properties(fftw PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libfftw3f.a)
+# include_directories(deps/fftw3/jni)
 
 # LIBPNG
 add_library(png STATIC IMPORTED)
-set_target_properties(png PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/libpng/${ANDROID_ABI}/libpng.a)
+set_target_properties(png PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libpng.a)
 
 # target_link_libraries(png zlib)
-include_directories(deps/libpng/jni/)
+# include_directories(deps/libpng/jni/)
 
 # LIBCPPFEATURES
 add_library(cpufeatures STATIC IMPORTED)
-set_target_properties(cpufeatures PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/volk/${ANDROID_ABI}/libcpu_features.a)
-include_directories(deps/volk/jni/)
+set_target_properties(cpufeatures PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libcpu_features.a)
+# include_directories(deps/volk/jni/)
 
 # ZLIB
 add_library(zlib STATIC IMPORTED)
-set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/zlib/${ANDROID_ABI}/libz.a)
-include_directories(deps/zlib/jni/)
+set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libz.a)
+# include_directories(deps/zlib/jni/)
 
 # LIBJPEG
-add_library(jpeg STATIC IMPORTED)
-set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
-include_directories(deps/jpeg/jni)
+# add_library(jpeg STATIC IMPORTED)
+# set_target_properties(jpeg PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/jpeg/${ANDROID_ABI}/libjpeg.a)
+# include_directories(deps/jpeg/jni)
+
+# MBed-TLS
+add_library(mbedtls STATIC IMPORTED)
+set_target_properties(mbedtls PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedtls.a)
+add_library(mbedtlscrypto STATIC IMPORTED)
+set_target_properties(mbedtlscrypto PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedcrypto.a)
+add_library(mbedtlsx509 STATIC IMPORTED)
+set_target_properties(mbedtlsx509 PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedx509.a)
+
 
 # NNG
 add_library(nng STATIC IMPORTED)
-set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/nng/${ANDROID_ABI}/libnng.a)
-include_directories(deps/nng/jni/)
+set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libnng.a)
+# include_directories(deps/nng/jni/)
 
 # ZSTD
 add_library(zstd STATIC IMPORTED)
-set_target_properties(zstd PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/zstd/${ANDROID_ABI}/libzstd.a)
-include_directories(deps/zstd/jni/)
+set_target_properties(zstd PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libzstd.a)
+# include_directories(deps/zstd/jni/)
 
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
@@ -117,6 +128,7 @@ add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 
 add_library(android_imgui SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/loading_screen.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_image.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_android.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_opengl3.cpp

@@ -74,7 +74,7 @@ namespace aim
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -86,8 +86,8 @@ namespace aim
                 {
                     cips_status[i] = SAVING;
 
-                    logger->info("----------- CIPS {:d}", i + 1);
-                    logger->info("Images : {:d}", cips_readers[i].images.size());
+                    logger->info("----------- CIPS %d", i + 1);
+                    logger->info("Images : %d", cips_readers[i].images.size());
 
                     std::string cips_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CIPS-" + std::to_string(i + 1);
 
@@ -97,7 +97,7 @@ namespace aim
                     int img_cnt = 0;
                     for (auto &img : cips_readers[i].images)
                     {
-                        img.save_png(cips_directory + "/CIPS_" + std::to_string(img_cnt++ + 1) + ".png");
+                        img.save_img(cips_directory + "/CIPS_" + std::to_string(img_cnt++ + 1));
                     }
 
                     cips_status[i] = DONE;

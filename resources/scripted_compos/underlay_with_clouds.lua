@@ -11,11 +11,11 @@ function init()
     cfg_offset = lua_vars["minoffset"]
     cfg_scalar = lua_vars["scalar"]
     cfg_thresold = lua_vars["thresold"]
+    cfg_blend = lua_vars["blend"]
     return 3
 end
 
 function process()
-
     pos = geodetic_coords_t.new()
 
     for x = 0, rgb_output:width() - 1, 1 do
@@ -29,25 +29,42 @@ function process()
 
                 mappos = y2 * img_background:width() + x2
 
-                if cfg_thresold == 0 then
+                if mappos >= (img_background:height() * img_background:width()) then
+                    mappos = (img_background:height() * img_background:width()) - 1
+                end
+
+                if mappos < 0 then
+                    mappos = 0
+                end
+
+                if cfg_blend == 1 then
                     for c = 0, 2, 1 do
                         mval = img_background:get(img_background:width() * img_background:height() * c + mappos) / 255.0
-                        fval = mval * 0.4 + val * 0.6;
+                        fval = mval * (1.0 - val) + val * val;
                         set_img_out(c, x, y, fval)
                     end
                 else
-                    if val < cfg_thresold then
-                        for c = 0, 2, 1 do
-                            fval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
-                                255.0
-                            set_img_out(c, x, y, fval)
-                        end
-                    else
+                    if cfg_thresold == 0 then
                         for c = 0, 2, 1 do
                             mval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
                                 255.0
                             fval = mval * 0.4 + val * 0.6;
                             set_img_out(c, x, y, fval)
+                        end
+                    else
+                        if val < cfg_thresold then
+                            for c = 0, 2, 1 do
+                                fval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
+                                    255.0
+                                set_img_out(c, x, y, fval)
+                            end
+                        else
+                            for c = 0, 2, 1 do
+                                mval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
+                                    255.0
+                                fval = mval * 0.4 + val * 0.6;
+                                set_img_out(c, x, y, fval)
+                            end
                         end
                     end
                 end

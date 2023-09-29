@@ -1,0 +1,158 @@
+{
+    "chandrayaan3_link_1k": {
+        "name": "Chandrayaan-3 1k Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 1e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 32e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 1816,
+                    "nrzm": false,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    },
+    "chandrayaan3_link_4k": {
+        "name": "Chandrayaan-3 4k Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 4e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 64e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 1816,
+                    "nrzm": false,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    },
+    "chandrayaan3_link_2k": {
+        "name": "Chandrayaan-3 2k Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 2e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 32e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 223,
+                    "turbo_iters": 10
+                }
+            },
+            "products": {}
+        }
+    },
+    "chandrayaan3_link_8k": {
+        "name": "Chandrayaan-3 8k Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 8e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 64e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 223,
+                    "turbo_iters": 10
+                }
+            },
+            "products": {}
+        }
+    }
+}

@@ -6,7 +6,7 @@
 #include <functional>
 #include <memory>
 #include "nlohmann/json_utils.h"
-#include "samplerate_to_string.h"
+#include "format_notated.h"
 
 namespace dsp
 {
@@ -15,6 +15,11 @@ namespace dsp
         std::string source_type;
         std::string name;
         uint64_t unique_id;
+
+        bool remote_ok = true;
+
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(SourceDescriptor,
+                                       source_type, name, unique_id)
     };
 
     class DSPSampleSource
@@ -66,6 +71,6 @@ namespace dsp
 
     extern std::map<std::string, RegisteredSource> dsp_sources_registry;
     void registerAllSources();
-    std::vector<SourceDescriptor> getAllAvailableSources();
+    std::vector<SourceDescriptor> getAllAvailableSources(bool remote = false);
     std::shared_ptr<DSPSampleSource> getSourceFromDescriptor(SourceDescriptor descriptor);
 }

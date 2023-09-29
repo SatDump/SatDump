@@ -47,7 +47,7 @@ namespace cloudsat
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -61,9 +61,7 @@ namespace cloudsat
                 std::filesystem::create_directory(directory);
 
             image::Image<uint16_t> image = reader.getChannel();
-
-            logger->info("Image...");
-            WRITE_IMAGE(image, directory + "/CPR.png");
+            WRITE_IMAGE(image, directory + "/CPR");
 
             image::Image<uint8_t> clut = image::scale_lut<uint8_t>(65536, 0, 65536, image::LUT_jet<uint8_t>());
             image::Image<uint8_t> rain(image.width(), image.height(), 3);
@@ -77,7 +75,7 @@ namespace cloudsat
                 rain.channel(2)[i] = clut.channel(2)[index];
             }
 
-            WRITE_IMAGE(rain, directory + "/CPR-LUT.png");
+            WRITE_IMAGE(rain, directory + "/CPR-LUT");
         }
 
         void CloudSatCPRDecoderModule::drawUI(bool window)

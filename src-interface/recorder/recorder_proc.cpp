@@ -1,6 +1,7 @@
 #include "recorder.h"
 
 #include "main_ui.h"
+#include "logger.h"
 #include "processing.h"
 
 namespace satdump
@@ -61,7 +62,7 @@ namespace satdump
 
     void RecorderApplication::start()
     {
-        source_ptr->set_frequency(frequency_mhz * 1e6);
+        set_frequency(frequency_mhz);
         try
         {
             source_ptr->start();
@@ -77,6 +78,8 @@ namespace satdump
 
             fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
             waterfall_plot->set_rate(fft_rate, waterfall_rate);
+            fft_plot->bandwidth = current_samplerate / current_decimation;
+            // fft_plot->frequency = frequency_mhz * 1e6;
 
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
@@ -100,6 +103,8 @@ namespace satdump
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
         config::saveUserConfig();
     }
 
@@ -117,22 +122,30 @@ namespace satdump
                     {
                         source_ptr->set_samplerate(cfg["samplerate"]);
                     }
-                    catch (std::exception &e)
+                    catch (std::exception&)
                     {
                     }
                 }
                 if (cfg.contains("frequency"))
                 {
                     frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
-                    source_ptr->set_frequency(frequency_mhz * 1e6);
+                    set_frequency(frequency_mhz);
                 }
+                if (cfg.contains("xconverter_frequency"))
+                    xconverter_frequency = cfg["xconverter_frequency"].get<double>();
+                else
+                    xconverter_frequency = 0;
+                if (cfg.contains("decimation"))
+                    current_decimation = cfg["decimation"].get<int>();
+                else
+                    current_decimation = 1;
             }
         }
     }
 
     void RecorderApplication::start_processing()
     {
-        if (pipeline_selector.outputdirselect.file_valid || automated_live_output_dir)
+        if (pipeline_selector.outputdirselect.isValid() || automated_live_output_dir)
         {
             logger->trace("Start pipeline...");
             pipeline_params = pipeline_selector.getParameters();
@@ -150,7 +163,7 @@ namespace satdump
                                         (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
                                         (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                                         (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                pipeline_output_dir = config::main_cfg["satdump_output_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
+                pipeline_output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
                                       timestamp + "_" +
                                       pipelines[pipeline_selector.pipeline_id].name + "_" +
                                       std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
@@ -162,12 +175,20 @@ namespace satdump
                 pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
             }
 
-            live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
-            splitter->reset_output("live");
-            live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
-            splitter->set_enabled("live", true);
+            try
+            {
+                live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
+                splitter->reset_output("live");
+                live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
+                splitter->set_enabled("live", true);
 
-            is_processing = true;
+                is_processing = true;
+            }
+            catch (std::runtime_error &e)
+            {
+                error = e.what();
+                logger->error(e.what());
+            }
         }
         else
         {
@@ -202,7 +223,15 @@ namespace satdump
     {
         splitter->set_enabled("record", true);
 
-        const time_t timevalue = time(0);
+        double timeValue_precise = 0;
+        {
+            auto time = std::chrono::system_clock::now();
+            auto since_epoch = time.time_since_epoch();
+            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
+            timeValue_precise = millis.count() / 1e3;
+        }
+
+        const time_t timevalue = timeValue_precise;
         std::tm *timeReadable = gmtime(&timevalue);
         std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                 (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
@@ -211,7 +240,16 @@ namespace satdump
                                 (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
-        std::string filename = config::main_cfg["satdump_output_directories"]["recording_path"]["value"].get<std::string>() +
+        if (config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
+        {
+            std::ostringstream ss;
+
+            double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
+            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0')  << ms_val;
+            timestamp += ss.str();
+        }
+
+        std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
                                "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
                                std::to_string(long(frequency_mhz * 1e6)) + "Hz";
 

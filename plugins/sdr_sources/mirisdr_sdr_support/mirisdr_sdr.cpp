@@ -31,7 +31,7 @@ void MiriSdrSource::set_gains()
 
     mirisdr_set_tuner_gain_mode(mirisdr_dev_obj, 1);
     mirisdr_set_tuner_gain(mirisdr_dev_obj, gain * 10);
-    logger->debug("Set MiriSDR Gain to {:d}", gain);
+    logger->debug("Set MiriSDR Gain to %d", gain);
 }
 
 void MiriSdrSource::set_bias()
@@ -39,7 +39,7 @@ void MiriSdrSource::set_bias()
     if (!is_started)
         return;
     mirisdr_set_bias(mirisdr_dev_obj, bias_enabled);
-    logger->debug("Set MiriSDR Bias to {:d}", (int)bias_enabled);
+    logger->debug("Set MiriSDR Bias to %d", (int)bias_enabled);
 }
 
 void MiriSdrSource::set_settings(nlohmann::json settings)
@@ -69,7 +69,7 @@ void MiriSdrSource::open()
     is_open = true;
 
     // Set available samplerate
-    available_samplerates.clear();
+    std::vector<double> available_samplerates;
     available_samplerates.push_back(2e6);
     available_samplerates.push_back(3e6);
     available_samplerates.push_back(4e6);
@@ -80,10 +80,7 @@ void MiriSdrSource::open()
     available_samplerates.push_back(9e6);
     available_samplerates.push_back(10e6);
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void MiriSdrSource::start()
@@ -99,6 +96,8 @@ void MiriSdrSource::start()
     if (mirisdr_open_fd(&mirisdr_dev_obj, 0, fd) != 0)
         throw std::runtime_error("Could not open MiriSDR device!");
 #endif
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     mirisdr_set_hw_flavour(mirisdr_dev_obj, MIRISDR_HW_DEFAULT);
 
@@ -119,7 +118,7 @@ void MiriSdrSource::start()
     else
         bit_depth = 8;
 
-    logger->info("Using MiriSDR bit depth {:d}", bit_depth);
+    logger->info("Using MiriSDR bit depth %d", bit_depth);
 
     if (bit_depth == 8)
         mirisdr_set_sample_format(mirisdr_dev_obj, (char *)"504_S8");
@@ -171,7 +170,7 @@ void MiriSdrSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         mirisdr_set_center_freq(mirisdr_dev_obj, frequency);
-        logger->debug("Set MiriSDR frequency to {:d}", frequency);
+        logger->debug("Set MiriSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -179,37 +178,29 @@ void MiriSdrSource::set_frequency(uint64_t frequency)
 void MiriSdrSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
-    if (is_started)
-        style::endDisabled();
+        RImGui::beginDisabled();
 
-    if (ImGui::SliderInt("LNA Gain", &gain, 0, 10))
+    samplerate_widget.render();
+
+    if (is_started)
+        RImGui::endDisabled();
+
+    if (RImGui::SliderInt("LNA Gain", &gain, 0, 10))
         set_gains();
 
-    if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
+    if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 }
 
 void MiriSdrSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 20e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t MiriSdrSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> MiriSdrSource::getAvailableSources()

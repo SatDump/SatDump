@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include <thread>
+#include "common/widgets/double_list.h"
 
 class RTLTCPSource : public dsp::DSPSampleSource
 {
@@ -13,10 +14,8 @@ protected:
     bool is_open = false, is_started = false;
     RTLTCPClient client;
 
-    int selected_samplerate = 0;
-    std::string samplerate_option_str;
-    std::vector<uint64_t> available_samplerates;
-    uint64_t current_samplerate = 0;
+    widgets::DoubleList samplerate_widget;
+    widgets::NotatedNum<int> ppm_widget;
 
     std::string ip_address = "0.0.0.0";
     int port = 1234;
@@ -26,6 +25,7 @@ protected:
 
     void set_gains();
     void set_bias();
+    void set_ppm();
 
     std::thread work_thread;
 
@@ -36,15 +36,15 @@ protected:
         uint8_t in_buf[8192];
         while (thread_should_run)
         {
-                client.receiveData(in_buf, 8192);
-                for (int i = 0; i < (int)8192 / 2; i++)
-                    output_stream->writeBuf[i] = complex_t((in_buf[i * 2 + 0] - 127.0f) / 128.0f, (in_buf[i * 2 + 1] - 127.0f) / 128.0f);
-                output_stream->swap(8192 / 2);
+            client.receiveData(in_buf, 8192);
+            for (int i = 0; i < (int)8192 / 2; i++)
+                output_stream->writeBuf[i] = complex_t((in_buf[i * 2 + 0] - 127.0f) / 128.0f, (in_buf[i * 2 + 1] - 127.0f) / 128.0f);
+            output_stream->swap(8192 / 2);
         }
     }
 
 public:
-    RTLTCPSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    RTLTCPSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), ppm_widget("Correction##ppm", 0, "ppm")
     {
     }
 

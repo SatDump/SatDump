@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.0.0)
 
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+    enable_language("RC")
+    set (WIN32_RESOURCES ../windows/resource.rc)
+endif()
+
 file(GLOB_RECURSE SatDump_ui_CPPS *.cpp)
 
-add_executable(satdump-ui ${SatDump_ui_CPPS})
+add_executable(satdump-ui ${SatDump_ui_CPPS} ${WIN32_RESOURCES})
 target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
-
-# Set the resources path
-if(MSVC)
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
-else()
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
-endif()
 
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)

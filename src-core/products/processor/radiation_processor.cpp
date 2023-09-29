@@ -15,7 +15,7 @@ namespace satdump
         if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
             instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][products->instrument_name];
         else
-            logger->error("Unknown instrument : {:s}!", products->instrument_name);
+            logger->error("Unknown instrument : %s!", products->instrument_name.c_str());
 
         // TMP
         if (instrument_viewer_settings.contains("radiation_maps"))
@@ -30,12 +30,9 @@ namespace satdump
                 RadiationMapCfg cfg = compo.value().get<RadiationMapCfg>();
                 image::Image<uint16_t> rad_map = satdump::make_radiation_map(*rad_products, cfg);
 
-                std::string name = products->instrument_name +
-                                   "_map_" +
-                                   initial_name + ".png";
+                std::string name = products->instrument_name + "_map_" + initial_name;
 
-                logger->info("Saving " + product_path + "/" + name);
-                rad_map.save_png(product_path + "/" + name);
+                rad_map.save_img(product_path + "/" + name);
             }
         }
     }

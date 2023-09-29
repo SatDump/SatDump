@@ -54,7 +54,7 @@ namespace ccsds
                                                                                                 : unsigned_to_bitvec<uint64_t>(0x034776c7272895b0),
                                                          d_ldpc_frame_size);
 
-        logger->trace("LDPC Frame size {:d}, SIMD {:d}", d_ldpc_frame_size, d_ldpc_simd);
+        logger->trace("LDPC Frame size %d, SIMD %d", d_ldpc_frame_size, d_ldpc_simd);
 
         // Parse internal sync marker if set
         if (d_internal_stream)
@@ -252,7 +252,7 @@ namespace ccsds
                 std::string deframer_state;
                 if (d_internal_stream)
                     deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%, Lock : " + lock_state + (d_internal_stream ? (", Deframer : " + deframer_state) : ""));
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Lock : " + lock_state + (d_internal_stream ? (", Deframer : " + deframer_state) : ""));
             }
         }
 

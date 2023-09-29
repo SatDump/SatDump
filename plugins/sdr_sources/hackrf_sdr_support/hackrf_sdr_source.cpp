@@ -22,9 +22,9 @@ void HackRFSource::set_gains()
     hackrf_set_amp_enable(hackrf_dev_obj, amp_enabled);
     hackrf_set_lna_gain(hackrf_dev_obj, lna_gain);
     hackrf_set_vga_gain(hackrf_dev_obj, vga_gain);
-    logger->debug("Set HackRF AMP to {:d}", (int)amp_enabled);
-    logger->debug("Set HackRF LNA gain to {:d}", lna_gain);
-    logger->debug("Set HackRF VGA gain to {:d}", vga_gain);
+    logger->debug("Set HackRF AMP to %d", (int)amp_enabled);
+    logger->debug("Set HackRF LNA gain to %d", lna_gain);
+    logger->debug("Set HackRF VGA gain to %d", vga_gain);
 }
 
 void HackRFSource::set_bias()
@@ -32,7 +32,7 @@ void HackRFSource::set_bias()
     if (!is_started)
         return;
     hackrf_set_antenna_enable(hackrf_dev_obj, bias_enabled);
-    logger->debug("Set HackRF bias to {:d}", (int)bias_enabled);
+    logger->debug("Set HackRF bias to %d", (int)bias_enabled);
 }
 
 void HackRFSource::set_settings(nlohmann::json settings)
@@ -68,21 +68,13 @@ void HackRFSource::open()
     is_open = true;
 
     // Set available samplerates
+    std::vector<double> available_samplerates;
     for (int i = 1; i < 21; i++)
     {
         available_samplerates.push_back(i * 1e6);
-        available_samplerates_exp.push_back(i * 1e6);
     }
 
-    for (int i = 21; i < 38; i++)
-        available_samplerates_exp.push_back(i * 1e6);
-
-    // Init UI stuff
-    samplerate_option_str = samplerate_option_str_exp = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
-    for (uint64_t samplerate : available_samplerates_exp)
-        samplerate_option_str_exp += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, true);
 }
 
 void HackRFSource::start()
@@ -101,6 +93,8 @@ void HackRFSource::start()
     if (hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
         throw std::runtime_error("Could not open HackRF device!");
 #endif
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     // hackrf_reset(hackrf_dev_obj);
 
@@ -138,7 +132,7 @@ void HackRFSource::set_frequency(uint64_t frequency)
     if (is_open && is_started)
     {
         hackrf_set_freq(hackrf_dev_obj, frequency);
-        logger->debug("Set HackRF frequency to {:d}", frequency);
+        logger->debug("Set HackRF frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -146,46 +140,35 @@ void HackRFSource::set_frequency(uint64_t frequency)
 void HackRFSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
-    ImGui::Combo("Samplerate", &selected_samplerate, enable_experimental_samplerates ? samplerate_option_str_exp.c_str() : samplerate_option_str.c_str());
-    current_samplerate = enable_experimental_samplerates ? available_samplerates_exp[selected_samplerate] : available_samplerates[selected_samplerate];
-    ImGui::Checkbox("Exp. Samplerates", &enable_experimental_samplerates);
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Enable unsupported samplerates.\nThe HackRF can (normally) also run at those,\nbut not without sampledrops.\nHence, they are mostly good for experiments.");
+        RImGui::beginDisabled();
+
+    samplerate_widget.render();
+
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= ImGui::Checkbox("Amp", &amp_enabled);
-    gain_changed |= ImGui::SliderInt("LNA Gain", &lna_gain, 0, 49);
-    gain_changed |= ImGui::SliderInt("VGA Gain", &vga_gain, 0, 49);
+    gain_changed |= RImGui::Checkbox("Amp", &amp_enabled);
+    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, 49);
+    gain_changed |= RImGui::SliderInt("VGA Gain", &vga_gain, 0, 49);
 
     if (gain_changed)
         set_gains();
 
-    if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
+    if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 }
 
 void HackRFSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 40e6))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t HackRFSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()

@@ -11,6 +11,7 @@
 #include "main_ui.h"
 #include "satdump_vars.h"
 
+#include "loading_screen.h"
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
 
@@ -19,6 +20,14 @@ extern bool recorder_running;
 static void glfw_error_callback(int error, const char *description)
 {
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
+}
+
+void window_content_scale_callback(GLFWwindow*, float xscale, float)
+{
+    satdump::updateUI(xscale / style::macos_framebuffer_scale());
+    style::setFonts();
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 
 void bindImageTextureFunctions();
@@ -68,6 +77,10 @@ int main(int argc, char *argv[])
     // Initialize GLFW
     GLFWwindow *window = nullptr;
     int final_gl_version = 0;
+
+#if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+#endif
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -124,7 +137,7 @@ int main(int argc, char *argv[])
             final_gl_version = 2;
             if (window == NULL)
             {
-                logger->critical("Could not init GLFW Window with OpenGL 3.2 with {:s}", gl_override_rpi);
+                logger->critical("Could not init GLFW Window with OpenGL 3.2 with %s", gl_override_rpi);
                 exit(1);
             }
         }
@@ -149,7 +162,7 @@ int main(int argc, char *argv[])
             window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
             final_gl_version = i;
             if (window == NULL)
-                logger->critical("Could not init GLFW Window with OpenGL {:d}.{:d}", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
+                logger->critical("Could not init GLFW Window with OpenGL %d.%d", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
             else
                 break;
         }
@@ -157,8 +170,8 @@ int main(int argc, char *argv[])
 #endif
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
+    glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
+                         // Vsync slows down init process when items are logged quickly
     if (glewInit() != GLEW_OK)
     {
         logger->critical("Failed to initialize OpenGL loader!");
@@ -172,15 +185,11 @@ int main(int argc, char *argv[])
     (void)io;
     io.IniFilename = NULL;
 
-    logger->debug("Starting with OpenGL {:s}", (char *)glGetString(GL_VERSION));
+    logger->debug("Starting with OpenGL %s", (char *)glGetString(GL_VERSION));
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
-
-    // Init SatDump
-    satdump::tle_do_update_on_init = false;
-    satdump::initSatdump();
 
     // Setup Icon
     GLFWimage img;
@@ -192,18 +201,62 @@ int main(int argc, char *argv[])
         img.height = image.height();
         img.width = image.width();
 
-        for (int y = 0; y < (int)image.height(); y++)
-            for (int x = 0; x < (int)image.width(); x++)
-                for (int c = 0; c < 3; c++)
-                    px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        if (image.channels() == 4)
+        {
+            for (int y = 0; y < (int)image.height(); y++)
+                for (int x = 0; x < (int)image.width(); x++)
+                    for (int c = 0; c < 4; c++)
+                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        }
+        else if (image.channels() == 3)
+        {
+            for (int y = 0; y < (int)image.height(); y++)
+                for (int x = 0; x < (int)image.width(); x++)
+                    for (int c = 0; c < 3; c++)
+                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        }
         image.clear();
 
         img.pixels = px;
     }
+
+#ifndef _WIN32
     glfwSetWindowIcon(window, 1, &img);
+#endif
+
+    //Handle DPI changes
+    float display_scale;
+#if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
+    glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
+    glfwGetWindowContentScale(window, &display_scale, nullptr);
+    display_scale /= style::macos_framebuffer_scale();
+#else
+    display_scale = 1.0f;
+#endif
+
+    //Set font
+    style::setFonts(display_scale);
+
+    // Init Loading Screen
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img);
+    logger->add_sink(loading_screen_sink);
+
+    // Init SatDump
+    satdump::tle_do_update_on_init = false;
+    satdump::initSatdump();
 
     // Init UI
-    satdump::initMainUI();
+    satdump::initMainUI(display_scale);
+
+    //Shut down loading screen
+    logger->del_sink(loading_screen_sink);
+    loading_screen_sink.reset();
+    glfwSwapInterval(1); // Enable vsync for the rest of the program
+
+    //Set font again to adjust for DPI
+    style::setFonts();
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
 
     if (satdump::processing::is_processing)
     {
@@ -221,7 +274,8 @@ int main(int argc, char *argv[])
     do
     {
         glfwPollEvents();
-        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED)){
+        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
+        {
             glfwRestoreWindow(window);
             glfwWaitEvents();
             glfwPollEvents();
@@ -233,8 +287,8 @@ int main(int argc, char *argv[])
         ImGui::NewFrame();
 
         int wwidth, wheight;
-        glfwGetFramebufferSize(window, &wwidth, &wheight);
-        //std::cout<<wwidth<<std::endl;
+        glfwGetWindowSize(window, &wwidth, &wheight);
+        // std::cout<<wwidth<<std::endl;
 
         // User rendering
         satdump::renderMainUI(wwidth, wheight);

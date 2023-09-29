@@ -113,7 +113,7 @@ namespace cryosat
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -125,7 +125,7 @@ namespace cryosat
 
             {
                 image::Image<uint8_t> outputImage(fftImage.buf, 243, lines, 1);
-                WRITE_IMAGE(outputImage, directory + "/SIRAL.png");
+                WRITE_IMAGE(outputImage, directory + "/SIRAL");
             }
 
             fftImage.destroy();

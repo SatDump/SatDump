@@ -55,7 +55,7 @@ void RtAudioSource::open()
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+        samplerate_option_str += format_notated(samplerate, "sps") + '\0';
 }
 
 void RtAudioSource::start()
@@ -101,30 +101,29 @@ void RtAudioSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         // No Freq for audio!
-        logger->debug("Set RtAudio frequency to {:d}", frequency);
+        logger->debug("Set RtAudio frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
 
 void RtAudioSource::drawControlUI()
 {
-
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
+    RImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
     current_samplerate = available_samplerates[selected_samplerate];
 
     if (channel_count >= 2)
     {
-        if (ImGui::RadioButton("Mono##rtaudiomono", channel_mode == 1))
+        if (RImGui::RadioButton("Mono##rtaudiomono", channel_mode == 1))
             channel_mode = 1;
-        if (ImGui::RadioButton("Stereo##rtaudiomono", channel_mode == 2))
+        if (RImGui::RadioButton("Stereo##rtaudiomono", channel_mode == 2))
             channel_mode = 2;
     }
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 }
 
 void RtAudioSource::set_samplerate(uint64_t samplerate)

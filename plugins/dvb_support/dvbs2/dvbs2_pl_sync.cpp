@@ -25,7 +25,7 @@ namespace dvbs2
 
             raw_frame_size += pilot_cnt * 36;
 
-            logger->info("Pilots size (PLSYNC) : {:d}", raw_frame_size);
+            logger->info("Pilots size (PLSYNC) : %d", raw_frame_size);
         }
 
         correlation_buffer = new complex_t[raw_frame_size];

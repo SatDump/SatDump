@@ -7,6 +7,7 @@
 #include "common/repack.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
+#include <filesystem>
 
 namespace dmsp
 {
@@ -39,7 +40,7 @@ namespace dmsp
         {
             sat_num = d_parameters["satellite_number"];
         }
-        catch (std::exception &e)
+        catch (std::exception&)
         {
             sat_num = std::stoi(d_parameters["satellite_number"].get<std::string>());
         }
@@ -67,7 +68,7 @@ namespace dmsp
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
             }
         }
 
@@ -95,8 +96,8 @@ namespace dmsp
             ols_products.has_timestamps = false;
             ols_products.bit_depth = 8;
 
-            ols_products.images.push_back({"OLS-VIS.png", "vis", ols_reader.getChannelVIS().to16bits()});
-            ols_products.images.push_back({"OLS-IR.png", "ir", ols_reader.getChannelIR().to16bits()});
+            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS().to16bits()});
+            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR().to16bits()});
 
             ols_products.save(directory);
             dataset.products_list.push_back("OLS");

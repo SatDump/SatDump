@@ -73,7 +73,7 @@ namespace jason3
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -92,8 +92,7 @@ namespace jason3
 
                 for (int i = 0; i < 3; i++)
                 {
-                    logger->info("Channel " + std::to_string(i + 1) + "...");
-                    WRITE_IMAGE(amr2_reader.getChannel(i), directory + "/AMR2-" + std::to_string(i + 1) + ".png");
+                    WRITE_IMAGE(amr2_reader.getChannel(i), directory + "/AMR2-" + std::to_string(i + 1));
                 }
                 amr2_status = DONE;
             }

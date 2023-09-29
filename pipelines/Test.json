@@ -79,6 +79,10 @@
             [
                 1,
                 0
+            ],
+            [
+                2,
+                0
             ]
         ],
         "frequencies": [],
@@ -91,8 +95,17 @@
             "baseband": {},
             "soft": {
                 "fsk_demod": {
-                    "symbolrate": 1e6,
+                    "symbolrate": 4.8e3, //16276.0625,
                     "rrc_alpha": 0.35
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "nrzm": false,
+                    "rs_i": 0,
+                    "rs_type": "rs223"
                 }
             }
         }
@@ -141,7 +154,7 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_r2_concat_decoder": {
+                "ccsds_conv_concat_decoder": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -151,6 +164,56 @@
                     "rs_i": 4,
                     "rs_type": "rs223"
                 }
+            }
+        }
+    },
+    "ominous_orb": {
+        "name": "Ominous Rebroadcast (ORB) WIP!!!",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 128e3,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 4,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "orb_decoder_test": {}
             }
         }
     }

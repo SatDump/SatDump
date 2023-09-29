@@ -1,5 +1,6 @@
 #include "live.h"
 #include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/dsp/resamp/smart_resampler.h"
 #include <signal.h>
 #include "logger.h"
 #include "common/cli_utils.h"
@@ -43,6 +44,8 @@ int main_record(int argc, char *argv[])
     uint64_t frequency;
     uint64_t timeout;
     std::string handler_id;
+    uint64_t hdl_dev_id = 0;
+    double decimation = 1;
 
     try
     {
@@ -50,42 +53,68 @@ int main_record(int argc, char *argv[])
         frequency = parameters["frequency"].get<uint64_t>();
         timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
         handler_id = parameters["source"].get<std::string>();
+        if (parameters.contains("decimation"))
+            decimation = parameters["decimation"].get<int>();
+        if (parameters.contains("source_id"))
+            hdl_dev_id = parameters["source_id"].get<uint64_t>();
+        
     }
     catch (std::exception &e)
     {
-        logger->error("Error parsing arguments! {:s}", e.what());
+        logger->error("Error parsing arguments! %s", e.what());
         return 1;
     }
 
     // Create output dir
-    if (!std::filesystem::exists(std::filesystem::path(output_file).parent_path().string()))
-        std::filesystem::create_directories(std::filesystem::path(output_file).parent_path().string());
+    if (std::filesystem::path(output_file).has_parent_path())
+        if (!std::filesystem::exists(std::filesystem::path(output_file).parent_path().string()))
+            std::filesystem::create_directories(std::filesystem::path(output_file).parent_path().string());
 
     // Get all sources
     dsp::registerAllSources();
     std::vector<dsp::SourceDescriptor> source_tr = dsp::getAllAvailableSources();
     dsp::SourceDescriptor selected_src;
 
-    for (dsp::SourceDescriptor src : source_tr)
-        logger->debug("Device " + src.name);
-
     // Try to find it and check it's usable
     bool src_found = false;
     for (dsp::SourceDescriptor src : source_tr)
     {
+        logger->debug("Device " + src.name);
         if (handler_id == src.source_type)
         {
-            selected_src = src;
-            src_found = true;
+            if (parameters.contains("source_id"))
+            {
+#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
+                char cmp_buff1[100];
+                char cmp_buff2[100];
+
+                snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
+                std::string cmp1 = cmp_buff1;
+                snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
+                std::string cmp2 = cmp_buff2;
+                if (cmp1 == cmp2)
+#else
+                if (hdl_dev_id == src.unique_id)
+#endif
+                {
+                    selected_src = src;
+                    src_found = true;
+                }
+            }
+            else
+            {
+                selected_src = src;
+                src_found = true;
+            }
         }
     }
 
     if (!src_found)
     {
-        logger->error("Could not find a handler for source type : {:s}!", handler_id.c_str());
+        logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
         return 1;
     }
-
+ 
     // Init source
     std::shared_ptr<dsp::DSPSampleSource> source_ptr = getSourceFromDescriptor(selected_src);
     source_ptr->open();
@@ -93,6 +122,7 @@ int main_record(int argc, char *argv[])
     source_ptr->set_samplerate(samplerate);
     source_ptr->set_settings(parameters);
 
+    std::unique_ptr<dsp::SmartResamplerBlock<complex_t>> decim;
     std::unique_ptr<dsp::SplitterBlock> splitter;
     std::unique_ptr<dsp::FFTPanBlock> fft;
     bool webserver_already_set = false;
@@ -108,8 +138,15 @@ int main_record(int argc, char *argv[])
         return 1;
     }
 
+    // Decimation if requested
+    if (decimation > 1){
+        decim = std::make_unique<dsp::SmartResamplerBlock<complex_t>>(source_ptr->output_stream, 1, decimation);
+        decim->start();
+        logger->info("Setting up resampler...");
+    }
+
     // Optional FFT
-    std::shared_ptr<dsp::stream<complex_t>> final_stream = source_ptr->output_stream;
+    std::shared_ptr<dsp::stream<complex_t>> final_stream = decimation > 1 ? decim->output_stream : source_ptr->output_stream;
 
     int fft_size = 0;
     if (parameters.contains("fft_enable"))
@@ -122,7 +159,7 @@ int main_record(int argc, char *argv[])
         splitter->set_enabled("fft", true);
         final_stream = splitter->output_stream;
         fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
-        fft->set_fft_settings(fft_size, samplerate, fft_rate);
+        fft->set_fft_settings(fft_size, samplerate / decimation, fft_rate);
         if (parameters.contains("fft_avg"))
             fft->avg_rate = parameters["fft_avg"].get<float>();
         splitter->start();
@@ -152,7 +189,7 @@ int main_record(int argc, char *argv[])
         ziq_bit_depth = parameters["ziq_depth"].get<int>();
 
     if (parameters["baseband_format"].get<std::string>() == "ziq")
-        logger->info("Using ZIQ Depth {:d}", ziq_bit_depth);
+        logger->info("Using ZIQ Depth %d", ziq_bit_depth);
 
     if (parameters.contains("baseband_format"))
     {
@@ -165,7 +202,7 @@ int main_record(int argc, char *argv[])
     }
 
     file_sink->start();
-    file_sink->start_recording(output_file, samplerate, ziq_bit_depth);
+    file_sink->start_recording(output_file, samplerate / decimation, ziq_bit_depth);
 
     // If requested, boot up webserver
     if (parameters.contains("http_server"))
@@ -179,7 +216,7 @@ int main_record(int argc, char *argv[])
                 stats["written_raw"] = file_sink->get_written_raw();
                 return stats.dump(4);
             };
-        logger->info("Start webserver on {:s}", http_addr.c_str());
+        logger->info("Start webserver on %s", http_addr.c_str());
         webserver::start(http_addr);
     }
 
@@ -196,7 +233,7 @@ int main_record(int argc, char *argv[])
         {
             if (elapsed_time >= timeout)
             {
-                logger->warn("Timeout is over! ({:d}s >= {:d}s) Stopping.", elapsed_time, timeout);
+                logger->warn("Timeout is over! (%ds >= %ds) Stopping.", elapsed_time, timeout);
                 break;
             }
         }
@@ -210,9 +247,9 @@ int main_record(int argc, char *argv[])
         if (int(elapsed_time) % 2 == 0)
         {
             if (parameters["baseband_format"].get<std::string>() == "ziq")
-                logger->info("Wrote {:d} MB, raw {:d} MB", int(file_sink->get_written() / 1e6), int(file_sink->get_written_raw() / 1e6));
+                logger->info("Wrote %d MB, raw %d MB", int(file_sink->get_written() / 1e6), int(file_sink->get_written_raw() / 1e6));
             else
-                logger->info("Wrote {:d} MB", int(file_sink->get_written() / 1e6));
+                logger->info("Wrote %d MB", int(file_sink->get_written() / 1e6));
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

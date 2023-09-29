@@ -1,15 +1,15 @@
 {
     "type": "normal_single_line",
-    "scan_angle": 80,
+    "scan_angle": 72,
     "roll_offset": 0,
     "pitch_offset": -53.3,
-    "yaw_offset": -32,
+    "yaw_offset": -27,
     "rotate_yaw": true,
-    "invert_scan": true,
+    "invert_scan": false,
     "image_width": 100,
     "gcp_spacing_x": 10,
     "gcp_spacing_y": 10,
-    "timestamp_offset": -20,
+    "timestamp_offset": -10,
     ///////////////////////
     "timefilter": {
         "type": "simple",

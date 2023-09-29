@@ -68,4 +68,13 @@ namespace satdump
 
     void loadPipelines(std::string filepath);
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline);
+
+    namespace events
+    {
+        struct PipelineDoneProcessingEvent
+        {
+            std::string pipeline_id;
+            std::string output_directory;
+        };
+    }
 }

@@ -6,7 +6,7 @@ void USRPSource::set_gains()
         return;
 
     usrp_device->set_rx_gain(gain, channel);
-    logger->debug("Set USRP gain to {:f}", gain);
+    logger->debug("Set USRP gain to %f", gain);
 }
 
 void USRPSource::open_sdr()
@@ -31,10 +31,12 @@ void USRPSource::open_channel()
     if (channel >= (int)usrp_device->get_rx_num_channels())
         throw std::runtime_error("Channel " + std::to_string(channel) + " is invalid!");
 
-    logger->info("Using USRP channel {:d}", channel);
+    logger->info("Using USRP channel %d", channel);
 
     if (usrp_device->get_master_clock_rate_range().start() != usrp_device->get_master_clock_rate_range().stop())
         use_device_rates = true;
+
+    std::vector<double> available_samplerates;
 
     if (use_device_rates)
     {
@@ -79,10 +81,7 @@ void USRPSource::open_channel()
         }
     }
 
-    // Init UI stuff
-    samplerate_option_str = "";
-    for (uint64_t samplerate : available_samplerates)
-        samplerate_option_str += formatSamplerateToString(samplerate) + '\0';
+    samplerate_widget.set_list(available_samplerates, false);
 
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);
@@ -139,6 +138,8 @@ void USRPSource::start()
     DSPSampleSource::start();
     open_sdr();
     open_channel();
+
+    uint64_t current_samplerate = samplerate_widget.get_value();
 
     logger->debug("Set USRP samplerate to " + std::to_string(current_samplerate));
     if (use_device_rates)
@@ -201,7 +202,7 @@ void USRPSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
         usrp_device->set_rx_freq(frequency, channel);
-        logger->debug("Set USRP frequency to {:d}", frequency);
+        logger->debug("Set USRP frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -209,9 +210,9 @@ void USRPSource::set_frequency(uint64_t frequency)
 void USRPSource::drawControlUI()
 {
     if (is_started)
-        style::beginDisabled();
+        RImGui::beginDisabled();
 
-    if (ImGui::Combo("Channel", &channel, channel_option_str.c_str()))
+    if (RImGui::Combo("Channel", &channel, channel_option_str.c_str()))
     {
         open_sdr();
         open_channel();
@@ -219,13 +220,12 @@ void USRPSource::drawControlUI()
         usrp_device.reset();
     }
 
-    ImGui::Combo("Antenna", &antenna, antenna_option_str.c_str());
+    RImGui::Combo("Antenna", &antenna, antenna_option_str.c_str());
 
-    ImGui::Combo("Samplerate", &selected_samplerate, samplerate_option_str.c_str());
-    current_samplerate = available_samplerates[selected_samplerate];
+    samplerate_widget.render();
 
-    if (ImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
-                                                       "16-bits\0"))
+    if (RImGui::Combo("Bit depth", &selected_bit_depth, "8-bits\0"
+                                                        "16-bits\0"))
     {
         if (selected_bit_depth == 0)
             bit_depth = 8;
@@ -234,31 +234,22 @@ void USRPSource::drawControlUI()
     }
 
     if (is_started)
-        style::endDisabled();
+        RImGui::endDisabled();
 
     // Gain settings
-    if (ImGui::SliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
+    if (RImGui::SliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
         set_gains();
 }
 
 void USRPSource::set_samplerate(uint64_t samplerate)
 {
-    for (int i = 0; i < (int)available_samplerates.size(); i++)
-    {
-        if (samplerate == available_samplerates[i])
-        {
-            selected_samplerate = i;
-            current_samplerate = samplerate;
-            return;
-        }
-    }
-
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    if (!samplerate_widget.set_value(samplerate, 0))
+        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t USRPSource::get_samplerate()
 {
-    return current_samplerate;
+    return samplerate_widget.get_value();
 }
 
 std::vector<dsp::SourceDescriptor> USRPSource::getAvailableSources()

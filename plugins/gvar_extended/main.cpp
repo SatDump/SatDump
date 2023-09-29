@@ -49,7 +49,7 @@ private:
 
     static void gvarSaveChannelImagesHandler(const goes::gvar::events::GVARSaveChannelImagesEvent &evt)
     {
-        logger->info("Preview... preview.png");
+        logger->info("Preview...");
         image::Image<uint8_t> preview(1300, 948, 1);
         image::Image<uint8_t> previewImage;
 
@@ -133,7 +133,7 @@ private:
             previewImage.draw_image(0, preview, 0, bar_height);
         }
 
-        previewImage.save_png(std::string(evt.directory + "/preview.png").c_str());
+        previewImage.save_img(std::string(evt.directory + "/preview").c_str());
 
         /*
                // calibrated temperature measurement based on NOAA LUTs (https://www.ospo.noaa.gov/Operations/GOES/calibration/gvar-conversion.html)
@@ -217,14 +217,14 @@ private:
                image::Image<uint16_t> mapProj = cropIR(evt.images.image3);
                drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
                mapProj.crop(500, 50, 500 + 1560, 50 + 890);
-               logger->info("Europe IR crop.. europe_IR.png");
-               mapProj.to8bits().save_png(std::string(evt.directory + "/europe_IR.png").c_str());
+               logger->info("Europe IR crop..");
+               mapProj.to8bits().save_img(std::string(evt.directory + "/europe_IR").c_str());
 
                mapProj = cropVIS(evt.images.image5);
                drawMapOverlay(evt.images.sat_number, evt.timeUTC, mapProj);
                mapProj.crop(1348, 240, 1348 + 5928, 240 + 4120);
-               logger->info("Europe VIS crop.. europe_VIS.png");
-               mapProj.to8bits().save_png(std::string(evt.directory + "/europe_VIS.png").c_str());
+               logger->info("Europe VIS crop.. europe_VIS");
+               mapProj.to8bits().save_img(std::string(evt.directory + "/europe_VIS").c_str());
                mapProj.clear();
                */
     }
@@ -233,13 +233,13 @@ private:
     {
         if (evt.sat_number == 13)
         {
-            logger->info("Europe crop... europe.png");
+            logger->info("Europe crop...");
             image::Image<uint8_t> crop = evt.false_color_image;
             if (crop.width() == 20836)
                 crop.crop(3198, 240, 3198 + 5928, 240 + 4120);
             else
                 crop.crop(1348, 240, 1348 + 5928, 240 + 4120);
-            crop.save_png(std::string(evt.directory + "/europe.png").c_str());
+            crop.save_img(std::string(evt.directory + "/europe").c_str());
         }
     }
 

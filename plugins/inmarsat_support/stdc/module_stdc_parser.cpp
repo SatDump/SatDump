@@ -69,7 +69,7 @@ namespace inmarsat
                     }
                     catch (std::exception &e)
                     {
-                        logger->error("Error sending to UDP! {:s}", e.what());
+                        logger->error("Error sending to UDP! %s", e.what());
                     }
                 }
             }
@@ -227,7 +227,7 @@ namespace inmarsat
                 }
                 catch (std::exception &e)
                 {
-                    logger->error("Error processing STD-C frame {:s}", e.what());
+                    logger->error("Error processing STD-C frame %s", e.what());
                 }
 
                 if (input_data_type == DATA_FILE)
@@ -236,7 +236,7 @@ namespace inmarsat
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -293,7 +293,7 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(2);
                             ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                         }
-                        catch (std::exception &e)
+                        catch (std::exception&)
                         {
                         }
                     }
@@ -322,7 +322,7 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(2);
                             ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
                         }
-                        catch (std::exception &e)
+                        catch (std::exception&)
                         {
                         }
                     }
@@ -374,7 +374,7 @@ namespace inmarsat
                                 ImGui::TextColored(ImColor(255, 255, 255), "%s", msg.dump().c_str());
                             }
                         }
-                        catch (std::exception &e)
+                        catch (std::exception&)
                         {
                         }
                     }

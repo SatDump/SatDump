@@ -2,6 +2,7 @@
 #include <cstring>
 #include <png.h>
 #include "logger.h"
+#include <filesystem>
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
 
@@ -83,6 +84,9 @@ namespace image
     template <typename T>
     void Image<T>::load_png(std::string file, bool disableIndexing)
     {
+        if (!std::filesystem::exists(file))
+            return;
+
         FILE *fp = fopen(file.c_str(), "rb");
 
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);

@@ -29,18 +29,18 @@ namespace meteor
                     else if (nsamples == 4)
                         sample_position += i;
 
-                    channels[ch_start + ch][lines * 100 + counter * 8 + 0 + i] = (data[8 + sample_position * 2 + 1] << 8 | data[8 + sample_position * 2 + 0]) - 32768;
-                    channels[ch_start + ch][lines * 100 + counter * 8 + 4 + i] = (data[128 + sample_position * 2 + 1] << 8 | data[128 + sample_position * 2 + 0]) - 32768;
+                    channels[ch_start + ch][lines * 100 + counter * 8 + 0 + i] = (data[8 + sample_position * 2 + (endian_mode ? 0 : 1)] << 8 | data[8 + sample_position * 2 + (endian_mode ? 1 : 0)]) - 32768;
+                    channels[ch_start + ch][lines * 100 + counter * 8 + 4 + i] = (data[128 + sample_position * 2 + (endian_mode ? 0 : 1)] << 8 | data[128 + sample_position * 2 + (endian_mode ? 1 : 0)]) - 32768;
                 }
             }
         }
 
         void MTVZAReader::work(uint8_t *data)
         {
-            if (data[4] != 255)
+            if (data[endian_mode ? 5 : 4] != 255)
                 return;
 
-            int counter = data[5]; // Counter, scan position
+            int counter = data[endian_mode ? 4 : 5]; // Counter, scan position
 
             if (counter > 26 || counter < 2)
                 return;
@@ -48,6 +48,8 @@ namespace meteor
             parse_samples(data, 0, 0, 5, 1, counter - 2);   // Parse 5 low-resolution channels
             parse_samples(data, 5, 5, 2, 4, counter - 2);   // Parse 2 full-resolution channels
             parse_samples(data, 7, 13, 23, 2, counter - 2); // Parse 23 medium-resolution channels
+
+            // printf("%d\n", counter);
 
             // Frame counter
             if (counter == 26)

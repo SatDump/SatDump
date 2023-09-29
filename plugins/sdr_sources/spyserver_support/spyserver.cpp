@@ -23,8 +23,8 @@ void SpyServerSource::set_gains()
     if (digital_gain == 0)
         digital_gain = client->computeDigitalGain(depth_to_format(bit_depth), gain, stage_to_use);
     client->setSetting(SPYSERVER_SETTING_IQ_DIGITAL_GAIN, digital_gain);
-    logger->debug("Set SpyServer gain (device) to {:d}", gain);
-    logger->debug("Set SpyServer gain (digital) to {:d}", digital_gain);
+    logger->debug("Set SpyServer gain (device) to %d", gain);
+    logger->debug("Set SpyServer gain (digital) to %d", digital_gain);
 }
 
 void SpyServerSource::set_settings(nlohmann::json settings)
@@ -104,7 +104,7 @@ void SpyServerSource::set_frequency(uint64_t frequency)
     if (is_open && is_connected)
     {
         client->setSetting(SPYSERVER_SETTING_IQ_FREQUENCY, frequency);
-        logger->debug("Set SpyServer frequency to {:d}", frequency);
+        logger->debug("Set SpyServer frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
 }
@@ -143,7 +143,7 @@ void SpyServerSource::drawControlUI()
             }
             catch (std::exception &e)
             {
-                logger->error("Error connecting to SpyServer {:s}", e.what());
+                logger->error("Error connecting to SpyServer %s", e.what());
                 error = e.what();
             }
         }
@@ -220,7 +220,7 @@ std::vector<dsp::SourceDescriptor> SpyServerSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"spyserver", "SpyServer", 0});
+    results.push_back({"spyserver", "SpyServer", 0, false});
 
     return results;
 }

@@ -68,10 +68,10 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/xrit/module_goesrecv_publisher.h"
 #include "modules/xrit/module_s2udp_xrit_cadu_extractor.h"
 
-#include "modules/ccsds/module_ccsds_conv_r2_concat_decoder.h"
+#include "modules/ccsds/module_ccsds_conv_concat_decoder.h"
 #include "modules/ccsds/module_ccsds_simple_psk_decoder.h"
 #include "modules/ccsds/module_ccsds_ldpc_decoder.h"
-#include "modules/ccsds/module_ccsds_turbo_r6_k8920_decoder.h"
+#include "modules/ccsds/module_ccsds_turbo_decoder.h"
 
 #include "modules/products/module_products_processor.h"
 
@@ -94,10 +94,10 @@ void registerModules()
     REGISTER_MODULE(xrit::S2UDPxRITCADUextractor);
 
     // CCSDS
-    REGISTER_MODULE(ccsds::CCSDSConvR2ConcatDecoderModule);
+    REGISTER_MODULE(ccsds::CCSDSConvConcatDecoderModule);
     REGISTER_MODULE(ccsds::CCSDSSimplePSKDecoderModule);
     REGISTER_MODULE(ccsds::CCSDSLDPCDecoderModule);
-    REGISTER_MODULE(ccsds::CCSDSTurboR6K8920DecoderModule);
+    REGISTER_MODULE(ccsds::CCSDSTurboDecoderModule);
 
     // Products Processor. This one is a bit different!
     REGISTER_MODULE(products::ProductsProcessorModule);

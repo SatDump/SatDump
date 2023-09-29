@@ -11,6 +11,8 @@ namespace network
     protected:
         uint8_t *buffer;
 
+        std::string mode = "default";
+
         std::ofstream data_out;
 
         int pkt_size;

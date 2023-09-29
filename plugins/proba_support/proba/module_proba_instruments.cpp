@@ -155,7 +155,7 @@ namespace proba
                             }
                         }
                         // if (pkt.header.apid != 2047)
-                        //    logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
+                        //    logger->info("%d, %d", pkt.header.apid, pkt.payload.size());
 
                         // if (pkt.header.apid == 103)
                         // {
@@ -164,7 +164,7 @@ namespace proba
                         // }
 
                         // if (pkt.header.apid != 2047)
-                        //     logger->info("{:d}, {:d}", pkt.header.apid, pkt.payload.size());
+                        //     logger->info("%d, %d", pkt.header.apid, pkt.payload.size());
 
                         // if (pkt.header.apid == 18)
                         //{
@@ -240,7 +240,7 @@ namespace proba
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%");
+                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
                 }
             }
 
@@ -252,7 +252,7 @@ namespace proba
                 chris_status = SAVING;
 
                 logger->info("----------- CHRIS");
-                logger->info("Images : {:d}", chris_reader->cnt());
+                logger->info("Images : %d", chris_reader->cnt());
 
                 chris_reader->save();
 
@@ -265,7 +265,7 @@ namespace proba
                 hrc_status = SAVING;
 
                 logger->info("----------- HRC");
-                logger->info("Images : {:d}", hrc_reader->getCount());
+                logger->info("Images : %d", hrc_reader->getCount());
 
                 hrc_reader->save();
 
@@ -278,7 +278,7 @@ namespace proba
                 swap_status = SAVING;
 
                 logger->info("----------- SWAP");
-                logger->info("Images : {:d}", swap_reader->count);
+                logger->info("Images : %d", swap_reader->count);
 
                 swap_reader->save();
 
@@ -293,25 +293,25 @@ namespace proba
                     for (int y = 0; y < 6; y++)
                         vegs_status[i][y] = SAVING;
 
-                    logger->info("----------- Vegetation {:d}", i + 1);
-                    logger->info("Lines (1) : {:d}", vegs_readers[i][0]->lines);
-                    logger->info("Lines (2) : {:d}", vegs_readers[i][1]->lines);
-                    logger->info("Lines (3) : {:d}", vegs_readers[i][2]->lines);
-                    logger->info("Lines (4) : {:d}", vegs_readers[i][3]->lines);
-                    logger->info("Lines (5) : {:d}", vegs_readers[i][4]->lines);
-                    logger->info("Lines (6) : {:d}", vegs_readers[i][5]->lines);
+                    logger->info("----------- Vegetation %d", i + 1);
+                    logger->info("Lines (1) : %d", vegs_readers[i][0]->lines);
+                    logger->info("Lines (2) : %d", vegs_readers[i][1]->lines);
+                    logger->info("Lines (3) : %d", vegs_readers[i][2]->lines);
+                    logger->info("Lines (4) : %d", vegs_readers[i][3]->lines);
+                    logger->info("Lines (5) : %d", vegs_readers[i][4]->lines);
+                    logger->info("Lines (6) : %d", vegs_readers[i][5]->lines);
 
                     std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
 
-                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1.png");
-                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2.png");
+                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1");
+                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2");
                     auto img3 = vegs_readers[i][2]->getImg();
                     img3.mirror(true, false);
-                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3.png");
+                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3");
                     img3.clear();
-                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4.png");
-                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5.png");
-                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6.png");
+                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4");
+                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5");
+                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6");
 
                     for (int y = 0; y < 6; y++)
                         vegs_status[i][y] = DONE;
