@@ -17,7 +17,6 @@ namespace satdump
             nlohmann::json target_prj_info;
             image::Image<uint16_t> img;
             int output_width, output_height;
-            bool use_draw_algorithm;
             TLE img_tle;                 // Only if required
             std::vector<double> img_tim; // Only if required
         };

@@ -30,9 +30,7 @@ namespace satdump
         op.output_height = proj_settings["height"].get<int>();
         op.img_tle = img_products.get_tle();
         op.img_tim = timestamps;
-        if (proj_settings.contains("old_algo"))
-            op.use_draw_algorithm = proj_settings["old_algo"];
-
+        
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
                 op.img.equalize();

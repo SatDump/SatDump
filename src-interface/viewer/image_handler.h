@@ -75,7 +75,6 @@ namespace satdump
         nlohmann::json current_proj_metadata;
 
         // Projections
-        bool use_draw_proj_algo = false;
         bool projection_ready = false, should_project = false;
         image::Image<uint16_t> projected_img;
 

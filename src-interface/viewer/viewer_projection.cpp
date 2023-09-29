@@ -553,7 +553,6 @@ namespace satdump
         op.img = ep->img;
         op.output_width = width;
         op.output_height = height;
-        op.use_draw_algorithm = false;
         reprojection::ProjectionResult res = reprojection::reproject(op, progress);
         return res.img;
     }

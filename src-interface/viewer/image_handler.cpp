@@ -62,9 +62,6 @@ namespace satdump
 
 #ifdef USE_OPENCL
         opencl::initOpenCL();
-        use_draw_proj_algo = opencl::getAllDevices().size() == 0;
-#else
-        use_draw_proj_algo = true;
 #endif
     }
 
@@ -692,13 +689,6 @@ namespace satdump
                 if (!canBeProjected())
                     style::endDisabled();
 
-                ImGui::SameLine();
-
-                if (!should_project)
-                    style::beginDisabled();
-                ImGui::Checkbox("Old algorithm", &use_draw_proj_algo);
-                if (!should_project)
-                    style::endDisabled();
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 {
@@ -707,16 +697,7 @@ namespace satdump
                         ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
                     else if (correct_image)
                         ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
-                    else
-                        ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
-                                                                 "deal with bad (noisy) data\n"
-                                                                 "better, and is also faster \n"
-                                                                 "if you do not have an\n"
-                                                                 "OpenCL-compatible Graphics\n"
-                                                                 "Card.\n"
-                                                                 "The new one is preferred if\n"
-                                                                 "possible though, as results\n"
-                                                                 "are a lot nicer! :-)");
+
                     ImGui::EndTooltip();
                 }
             }
@@ -831,7 +812,6 @@ namespace satdump
                 op.img.mirror(true, true);
             op.output_width = width;
             op.output_height = height;
-            op.use_draw_algorithm = use_draw_proj_algo;
             op.img_tle = products->get_tle();
             op.img_tim = current_timestamps;
             reprojection::ProjectionResult res = reprojection::reproject(op, progess);
