@@ -807,22 +807,29 @@ namespace satdump
     {
         if (canBeProjected())
         {
-            reprojection::ReprojectionOperation op;
-            op.source_prj_info = products->get_proj_cfg();
-            op.source_prj_info["metadata"] = current_proj_metadata;
-            op.target_prj_info = settings;
-            op.img = current_image;
-            if (rotate_image)
-                op.img.mirror(true, true);
-            op.output_width = width;
-            op.output_height = height;
-            if (products->has_tle())
-                op.source_prj_info["metadata"]["tle"] = products->get_tle();
-            if (products->has_timestamps())
-                op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
-            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-            projected_img = res.img;
-            projection_ready = true;
+            try
+            {
+                reprojection::ReprojectionOperation op;
+                op.source_prj_info = products->get_proj_cfg();
+                op.source_prj_info["metadata"] = current_proj_metadata;
+                op.target_prj_info = settings;
+                op.img = current_image;
+                if (rotate_image)
+                    op.img.mirror(true, true);
+                op.output_width = width;
+                op.output_height = height;
+                if (products->has_tle())
+                    op.source_prj_info["metadata"]["tle"] = products->get_tle();
+                if (products->has_timestamps())
+                    op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
+                reprojection::ProjectionResult res = reprojection::reproject(op, progess);
+                projected_img = res.img;
+                projection_ready = true;
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not project image! %s", e.what());
+            }
         }
         else
         {
