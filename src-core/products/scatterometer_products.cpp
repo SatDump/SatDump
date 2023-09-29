@@ -108,11 +108,7 @@ namespace satdump
                 operation.output_width = 2048 * 4;
                 operation.output_height = 1024 * 4;
 
-                satdump::warp::ImageWarper warper;
-                warper.op = operation;
-                warper.update();
-
-                result1 = warper.warp();
+                result1 = satdump::warp::performSmartWarp(operation);
             }
 
             { // Warp second
@@ -128,11 +124,7 @@ namespace satdump
                 operation.output_width = 2048 * 4;
                 operation.output_height = 1024 * 4;
 
-                satdump::warp::ImageWarper warper;
-                warper.op = operation;
-                warper.update();
-
-                result2 = warper.warp();
+                result2 = satdump::warp::performSmartWarp(operation);
             }
 
             int final_size_x = result1.output_image.width() + result2.output_image.width();
