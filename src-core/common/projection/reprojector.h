@@ -13,12 +13,9 @@ namespace satdump
         struct ReprojectionOperation
         {
             nlohmann::json source_prj_info;
-            nlohmann::json source_mtd_info;
             nlohmann::json target_prj_info;
             image::Image<uint16_t> img;
             int output_width, output_height;
-            TLE img_tle;                 // Only if required
-            std::vector<double> img_tim; // Only if required
         };
 
         struct ProjectionResult
@@ -31,9 +28,6 @@ namespace satdump
 
         std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
                                                                                            nlohmann::json params,
-                                                                                           nlohmann::json metad,
-                                                                                           TLE tle = TLE(),
-                                                                                           std::vector<double> timestamps = std::vector<double>(),
                                                                                            bool rotate = false);
     }
 }

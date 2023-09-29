@@ -6,8 +6,22 @@ namespace satdump
 {
     namespace gcp_compute
     {
-        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, nlohmann::json mtd, TLE tle, nlohmann::ordered_json timestamps, int width, int height)
+        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, int width, int height)
         {
+            nlohmann::ordered_json mtd = cfg.contains("metadata") ? cfg["metadata"] : nlohmann::ordered_json();
+
+            TLE tle;
+            if (mtd.contains("tle"))
+                tle = mtd["tle"];
+            else
+                throw std::runtime_error("Could not get TLE!");
+
+            nlohmann::ordered_json timestamps;
+            if (mtd.contains("timestamps"))
+                timestamps = mtd["timestamps"];
+            else
+                throw std::runtime_error("Could not get timestamps!");
+
             std::vector<satdump::projection::GCP> gcps;
 
             std::shared_ptr<SatelliteProjection> projection = get_sat_proj(cfg, tle, timestamps);

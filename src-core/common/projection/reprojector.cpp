@@ -90,7 +90,7 @@ namespace satdump
             else // Means it's a TPS-handled warp.
             {
                 warp::WarpOperation operation;
-                operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.source_mtd_info, op.img_tle, op.img_tim, op.img.width(), op.img.height());
+                operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img.width(), op.img.height());
                 operation.input_image = op.img;
                 operation.output_rgba = true;
                 // TODO : CHANGE!!!!!!
@@ -239,9 +239,6 @@ namespace satdump
 
         std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
                                                                                            nlohmann::json params,
-                                                                                           nlohmann::json metad,
-                                                                                           TLE tle,
-                                                                                           std::vector<double> timestamps,
                                                                                            bool rotate)
         {
             if (params["type"] == "equirectangular")
@@ -354,7 +351,7 @@ namespace satdump
             }
             else
             {
-                auto gcps = gcp_compute::compute_gcps(params, metad, tle, timestamps, width, height);
+                auto gcps = gcp_compute::compute_gcps(params, width, height);
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 transform->init(gcps, true, false);
                 return [transform, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>

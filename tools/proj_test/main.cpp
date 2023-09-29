@@ -55,9 +55,9 @@ int main(int /*argc*/, char *argv[])
     logger->trace("\n" + img_pro.contents.dump(4));
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch10,1-ch10,1-ch10";
+    //  rgb_cfg.equation = "1-ch10,1-ch10,1-ch10";
     //   rgb_cfg.equation = "1-ch37";
-    //  rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.individual_equalize = true;
     rgb_cfg.white_balance = true;
 
@@ -70,10 +70,10 @@ int main(int /*argc*/, char *argv[])
     std::vector<double> final_tt;
     operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt);
     // operation_t.input_image.median_blur();
-    operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
-                                                                           {}, // TMP
-                                                                           img_pro.get_tle(),
-                                                                           final_tt,
+    nlohmann::json proj_cfg = loadJsonFile(argv[2]);
+    proj_cfg["metadata"]["tle"] = img_pro.get_tle();
+    proj_cfg["metadata"]["timestamps"] = final_tt;
+    operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
                                                                            operation_t.input_image.width(),
                                                                            operation_t.input_image.height());
     operation_t.output_width = 2048 * 5;

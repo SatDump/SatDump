@@ -4,6 +4,11 @@
 #include "common/projection/projs/equirectangular.h"
 #include "common/geodetic/vincentys_calculations.h"
 
+#define MAX_IMAGE_RAM_USAGE 4e9      // 4GB of RAM max
+#define SEGMENT_SIZE_KM 3000         // Average segment size to try and keep as max
+#define MIN_POLE_DISTANCE 1000       // Maximum distance at which to consider we're working over a pole
+#define SEGMENT_CUT_DISTANCE_KM 2000 // Distance at which we consider a segment needs to be cut. TODO : tune!
+
 namespace satdump
 {
     namespace warp
@@ -59,7 +64,7 @@ namespace satdump
 
             double media_dist = distances[distances.size() / 2];
 
-            nsegs = int((media_dist * gcps_curr.size()) / 3000);
+            nsegs = int((media_dist * gcps_curr.size()) / SEGMENT_SIZE_KM);
             if (nsegs == 0)
                 nsegs = 1;
 
@@ -172,12 +177,12 @@ namespace satdump
                         auto south_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(-90, 0, 0));
                         auto north_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(90, 0, 0));
 
-                        if (south_dis.distance < 1000)
+                        if (south_dis.distance < MIN_POLE_DISTANCE)
                         {
                             scfg.shift_lon = 0;
                             scfg.shift_lat = -90;
                         }
-                        if (north_dis.distance < 1000)
+                        if (north_dis.distance < MIN_POLE_DISTANCE)
                         {
                             scfg.shift_lon = 0;
                             scfg.shift_lat = 90;
@@ -225,7 +230,7 @@ namespace satdump
                 for (int y = 0; y < gcps_curr.size() - 1; y++)
                     if (geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcps_curr[y].lat, gcps_curr[y].lon, 0),
                                                     geodetic::geodetic_coords_t(gcps_curr[y + 1].lat, gcps_curr[y + 1].lon, 0))
-                            .distance > 2000)
+                            .distance > SEGMENT_CUT_DISTANCE_KM)
                         cutPosition = gcps_curr[y + 1].y;
 
                 // Generate, handling cuts
@@ -251,7 +256,7 @@ namespace satdump
             satdump::warp::WarpCropSettings crop_set = choseCropArea(operation_t);
             int nchannels = operation_t.output_rgba ? 4 : operation_t.input_image.channels();
 
-            ensureMemoryLimit(crop_set, operation_t, nchannels, 4e9);
+            ensureMemoryLimit(crop_set, operation_t, nchannels, MAX_IMAGE_RAM_USAGE);
 
             // Prepare the output
             result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
