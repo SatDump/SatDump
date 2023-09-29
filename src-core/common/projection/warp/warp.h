@@ -120,6 +120,6 @@ namespace satdump
             WarpResult warp();
         };
 
-        WarpResult performSmartWarp(WarpOperation op);
+        WarpResult performSmartWarp(WarpOperation op, float *progress = nullptr);
     }
 }

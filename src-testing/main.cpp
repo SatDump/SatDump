@@ -12,16 +12,33 @@
 
 #include "logger.h"
 
-#include "common/image/earth_curvature.h"
+#include "common/dsp/utils/random.h"
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image<uint16_t> image1;
-    image1.load_png(argv[1]);
+    std::ifstream data_in(argv[1], std::ios::binary);
+    std::ofstream data_out(argv[2], std::ios::binary);
 
-    auto image2 = image::earth_curvature::correct_earth_curvature(image1, 820, 2800, 1);
+    uint8_t buffer1[1024];
+    int8_t buffer2[8192];
 
-    image2.save_png(argv[2]);
+    dsp::Random gaussian;
+
+    while (!data_in.eof()) //&& lines_img < 500)
+    {
+        data_in.read((char *)buffer1, 1024);
+
+        int bit2pos = 0;
+        for (int i = 0; i < 1024; i++)
+            for (int x = 6; x >= 0; x -= 2)
+            {
+                buffer2[bit2pos++] = (((buffer1[i] >> (x + 0)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
+                buffer2[bit2pos++] = (((buffer1[i] >> (x + 1)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
+            }
+
+        data_out.write((char *)buffer2, bit2pos);
+    }
 }

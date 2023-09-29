@@ -8,12 +8,39 @@ namespace satdump
 {
     namespace warp
     {
-        WarpResult performSmartWarp(WarpOperation operation_t)
+        WarpResult performSmartWarp(WarpOperation operation_t, float *progress)
         {
-            image::Image<uint16_t> final_image(operation_t.output_width, operation_t.output_height,
-                                               operation_t.output_rgba ? 4 : operation_t.input_image.channels());
+            auto crop_set = choseCropArea(operation_t);
+
+            int nchannels = operation_t.output_rgba ? 4 : operation_t.input_image.channels();
+
+            {
+            recheck_memory:
+                size_t memory_usage = (size_t)abs(crop_set.x_min - crop_set.x_max) * (size_t)abs(crop_set.y_min - crop_set.y_max) * (size_t)nchannels * sizeof(uint16_t);
+
+                if (memory_usage > 4e9)
+                {
+                    operation_t.output_height *= 0.9;
+                    operation_t.output_width *= 0.9;
+                    crop_set = choseCropArea(operation_t);
+                    logger->critical("TOO MUCH MEMORY %llu", memory_usage);
+                    goto recheck_memory;
+                }
+            }
+
+            WarpResult result;
+
+            // Prepare the output
+            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
+                                                         nchannels);
+            result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
+            result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
+            result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1
+            result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_min}; // 1,1
+
+            auto &final_image = result.output_image;
             geodetic::projection::EquirectangularProjection projector_final;
-            projector_final.init(final_image.width(), final_image.height(), -180, 90, 180, -90);
+            projector_final.init(final_image.width(), final_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
 
             double nsegs = 1;
 
@@ -320,14 +347,15 @@ namespace satdump
                     }
                 }
 
-                // result.output_image.save_img("projtest/test" + std::to_string((scnt++) + 1));
+                scnt++;
+                if (progress != nullptr)
+                    *progress = (float)scnt / (float)segmentConfigs.size();
+
+                /////////// DEBUG
+                // result.output_image.save_img("projtest/test" + std::to_string((scnt) + 1));
             }
 
-            return {final_image,
-                    {0, 0, -180, 90},
-                    {final_image.width() - 1, 0, 180, 90},
-                    {final_image.width() - 1, final_image.height() - 1, 180, -90},
-                    {0, final_image.height() - 1, -180, -90}};
+            return result;
         }
     }
 }

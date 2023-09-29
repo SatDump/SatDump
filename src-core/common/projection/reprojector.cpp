@@ -198,7 +198,7 @@ namespace satdump
 
                     satdump::warp::WarpResult result = warper.warp();
 #else
-                    satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation);
+                    satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation, progress);
 #endif
 
                     warped_image = result.output_image;
