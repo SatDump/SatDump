@@ -146,8 +146,10 @@ namespace satdump
             current_image.to_rgb(); // Ensure this is RGB!!
             nlohmann::json proj_cfg = products->get_proj_cfg();
             proj_cfg["metadata"] = current_proj_metadata;
-            proj_cfg["metadata"]["tle"] = products->get_tle();
-            proj_cfg["metadata"]["timestamps"] = current_timestamps;
+            if (products->has_tle())
+                proj_cfg["metadata"]["tle"] = products->get_tle();
+            if (products->has_timestamps())
+                proj_cfg["metadata"]["timestamps"] = current_timestamps;
             auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
                                                                             pre_corrected_height,
                                                                             proj_cfg,
@@ -784,9 +786,10 @@ namespace satdump
     bool ImageViewerHandler::canBeProjected()
     {
         return products->has_proj_cfg() &&
-               products->has_tle() &&
-               products->has_proj_cfg() &&
-               current_timestamps.size() > 0 &&
+               // products->has_tle() &&
+               // products->has_proj_cfg() &&
+               // current_timestamps.size() > 0 &&
+               // Perhaps we need to check based on the projection type or such?
                !correct_image;
     }
 
@@ -813,8 +816,10 @@ namespace satdump
                 op.img.mirror(true, true);
             op.output_width = width;
             op.output_height = height;
-            op.source_prj_info["metadata"]["tle"] = products->get_tle();
-            op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
+            if (products->has_tle())
+                op.source_prj_info["metadata"]["tle"] = products->get_tle();
+            if (products->has_timestamps())
+                op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
             reprojection::ProjectionResult res = reprojection::reproject(op, progess);
             projected_img = res.img;
             projection_ready = true;
