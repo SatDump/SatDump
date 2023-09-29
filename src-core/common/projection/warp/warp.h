@@ -45,7 +45,8 @@ namespace satdump
         Initialize the Thin Plate Spline transform we need for warping
         imagery.
         */
-        std::unique_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op);
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op);
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat);
 
         /*
         More or less internal structs that holds the required area to
@@ -86,7 +87,7 @@ namespace satdump
         {
         private:
             WarpCropSettings crop_set;
-            std::unique_ptr<projection::VizGeorefSpline2D> tps;
+            std::shared_ptr<projection::VizGeorefSpline2D> tps;
 
         private:
             // Slower, generic CPU implementation
@@ -110,7 +111,13 @@ namespace satdump
 
         public:
             // Call this if the GCPs or height/width in the WarpOperation changed. Has to be called at least once.
-            void update();
+            void update(bool skip_tps = false);
+
+            // Set TPS externally if it was already processed
+            void set_tps(std::shared_ptr<projection::VizGeorefSpline2D> tps)
+            {
+                this->tps = tps;
+            }
 
             // Warp and return result.
             // This will if possible try to use a graphics accelerator

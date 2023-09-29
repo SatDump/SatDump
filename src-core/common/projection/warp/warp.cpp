@@ -45,21 +45,24 @@ namespace satdump
             *lat = atan2(z2, hyp) * RAD_TO_DEG;
         }
 
-        std::unique_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
         {
-            std::unique_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_unique<projection::VizGeorefSpline2D>(2);
+            return initTPSTransform(op.ground_control_points, op.shift_lon, op.shift_lat);
+        }
 
-            std::vector<projection::GCP> gcps = op.ground_control_points;
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat)
+        {
+            std::shared_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_shared<projection::VizGeorefSpline2D>(2);
 
             // Attach (non-redundant) points to the transformation.
             std::map<std::pair<double, double>, int> oMapPixelLineToIdx;
             std::map<std::pair<double, double>, int> oMapXYToIdx;
             for (int iGCP = 0; iGCP < (int)gcps.size(); iGCP++)
             {
-                double final_lon = lon_shift(gcps[iGCP].lon, op.shift_lon);
+                double final_lon = lon_shift(gcps[iGCP].lon, shift_lon);
                 double final_lat = gcps[iGCP].lat;
 
-                shift_latlon_by_lat(&final_lat, &final_lon, op.shift_lat);
+                shift_latlon_by_lat(&final_lat, &final_lon, shift_lat);
 
                 const double afPL[2] = {gcps[iGCP].x, gcps[iGCP].y};
                 const double afXY[2] = {final_lon, final_lat};
@@ -422,9 +425,10 @@ namespace satdump
         }
 #endif
 
-        void ImageWarper::update()
+        void ImageWarper::update(bool skip_tps)
         {
-            tps = initTPSTransform(op);
+            if (!skip_tps)
+                tps = initTPSTransform(op);
             crop_set = choseCropArea(op);
         }
 
