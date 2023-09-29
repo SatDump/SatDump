@@ -119,11 +119,12 @@ namespace satdump
     void RecorderApplication::drawUI()
     {
         ImVec2 recorder_size = ImGui::GetContentRegionAvail();
-        // recorder_size.y -= ImGui::GetCursorPosY();
-        if (ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable))
+        float new_ratio = panel_ratio;
+
+        if (ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
         {
-            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, recorder_size.x * panel_ratio);
-            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, recorder_size.x * panel_ratio);
+            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, recorder_size.x * (1.0f - panel_ratio));
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
 
@@ -517,13 +518,11 @@ namespace satdump
             ImGui::EndChild();
             ImGui::EndGroup();
 
-            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != recorder_size.x)
-                panel_ratio = ImGui::GetColumnWidth() / recorder_size[0];
-            last_width = recorder_size.x;
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                new_ratio = ImGui::GetColumnWidth() / recorder_size.x;
+
             ImGui::TableNextColumn();
-
             ImGui::SameLine();
-
             ImGui::BeginGroup();
             ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * (1.0 - panel_ratio)), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
@@ -563,6 +562,8 @@ namespace satdump
             ImGui::EndChild();
             ImGui::EndGroup();
             ImGui::EndTable();
+
+            panel_ratio = new_ratio;
         }
 
         if (is_processing)

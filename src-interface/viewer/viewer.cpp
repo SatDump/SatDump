@@ -388,20 +388,22 @@ namespace satdump
         */
 
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
+        float new_ratio = panel_ratio;
 
-        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable))
+        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
         {
-            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, viewer_size.x * panel_ratio);
-            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, viewer_size.x * panel_ratio);
+            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, viewer_size.x * (1.0f - panel_ratio));
             ImGui::TableNextColumn();
             ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * panel_ratio), float(viewer_size.y - 10)}, false);
             {
                 drawPanel();
             }
             ImGui::EndChild();
-            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != viewer_size.x)
-                panel_ratio = ImGui::GetColumnWidth() / viewer_size[0];
-            last_width = viewer_size.x;
+
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                new_ratio = ImGui::GetColumnWidth() / viewer_size.x;
+
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
             if (current_selected_tab == 0)
@@ -421,6 +423,7 @@ namespace satdump
             }
             ImGui::EndGroup();
             ImGui::EndTable();
+            panel_ratio = new_ratio;
         }
     }
 
