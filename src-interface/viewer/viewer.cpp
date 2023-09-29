@@ -389,7 +389,7 @@ namespace satdump
 
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
 
-        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_NoPadInnerX | ImGuiTableFlags_Resizable))
+        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable))
         {
             ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, viewer_size.x * panel_ratio);
             ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);
