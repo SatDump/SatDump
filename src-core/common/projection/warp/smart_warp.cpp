@@ -250,6 +250,9 @@ namespace satdump
 
         WarpResult performSmartWarp(WarpOperation operation_t, float *progress)
         {
+            if (operation_t.input_image.size() == 0)
+                throw std::runtime_error("Can't warp an empty image!");
+
             WarpResult result; // Final output
 
             // Prepare crop area, and check it can fit in RAM

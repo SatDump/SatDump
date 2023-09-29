@@ -23,6 +23,9 @@ namespace satdump
         {
             ProjectionResult result_prj;
 
+            if (op.img.size() == 0)
+                throw std::runtime_error("Can't reproject an empty image!");
+
             result_prj.img.init(op.output_width, op.output_height, 4);
             result_prj.settings = op.target_prj_info;
 
