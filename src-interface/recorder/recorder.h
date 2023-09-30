@@ -48,6 +48,7 @@ namespace satdump
 
         bool dragging_panel = false;
         float panel_ratio = 0.2;
+        float last_width = -1.0f;
 
         std::string recorder_filename;
         int select_sample_format = 0;

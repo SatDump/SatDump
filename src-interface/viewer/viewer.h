@@ -51,6 +51,7 @@ namespace satdump
 
         bool dragging_panel = false;
         float panel_ratio = 0.23;
+        float last_width = -1.0f;
 
         FileSelectWidget select_dataset_dialog = FileSelectWidget("Dataset", "Select Dataset");
         FileSelectWidget select_products_dialog = FileSelectWidget("Products", "Select Products");
