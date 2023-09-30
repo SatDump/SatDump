@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-#if 0
+#if 1
     std::ifstream data_in(argv[1], std::ios::binary);
     std::ofstream data_out(argv[2], std::ios::binary);
 
@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
         for (int i = 0; i < 1024; i++)
             for (int x = 6; x >= 0; x -= 2)
             {
-                buffer2[bit2pos++] = (((buffer1[i] >> (x + 0)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
-                buffer2[bit2pos++] = (((buffer1[i] >> (x + 1)) & 1) ? 70 : -70) + gaussian.gasdev() * 10;
+                buffer2[bit2pos++] = (((buffer1[i] >> (x + 1)) & 1) ? 70 : -70); //+ gaussian.gasdev() * 10;
+                buffer2[bit2pos++] = (((buffer1[i] >> (x + 0)) & 1) ? 70 : -70); //+ gaussian.gasdev() * 10;
             }
 
         data_out.write((char *)buffer2, bit2pos);

@@ -261,6 +261,8 @@ namespace satdump
 
             ensureMemoryLimit(crop_set, operation_t, nchannels, MAX_IMAGE_RAM_USAGE);
 
+            logger->trace("Smart Warp using %d %d, full size %d %d", crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, operation_t.output_width, operation_t.output_height);
+
             // Prepare the output
             result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
                                                          nchannels);

@@ -67,6 +67,9 @@ namespace satdump
                             continue;
                         }
 
+                        if (position.lon != position.lon || position.lat != position.lat)
+                            continue; // Check for NAN
+
                         gcps.push_back({(double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat});
                     }
 
