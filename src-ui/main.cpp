@@ -273,14 +273,6 @@ int main(int argc, char *argv[])
     // Main loop
     do
     {
-        glfwPollEvents();
-        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
-        {
-            glfwRestoreWindow(window);
-            glfwWaitEvents();
-            glfwPollEvents();
-        }
-
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -309,6 +301,7 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
+        glfwPollEvents();
     } while (!glfwWindowShouldClose(window));
 
     satdump::exitMainUI();

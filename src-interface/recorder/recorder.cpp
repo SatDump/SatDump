@@ -119,16 +119,22 @@ namespace satdump
     void RecorderApplication::drawUI()
     {
         ImVec2 recorder_size = ImGui::GetContentRegionAvail();
-        // recorder_size.y -= ImGui::GetCursorPosY();
-        if (ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable))
-        {
-            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, recorder_size.x * panel_ratio);
-            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableNextColumn();
-            ImGui::BeginGroup();
 
+        if (ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
+        {
+            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, recorder_size.x * panel_ratio);
+            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, recorder_size.x * (1.0f - panel_ratio));
+            ImGui::TableNextColumn();
+
+            float left_width = ImGui::GetColumnWidth(0);
+            float right_width = recorder_size.x - left_width;
+            if (left_width != last_width && last_width != -1)
+                panel_ratio = left_width / recorder_size.x;
+            last_width = left_width;
+
+            ImGui::BeginGroup();
             float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
-            ImGui::BeginChild("RecorderChildPanel", {float(recorder_size.x * panel_ratio), wf_size}, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
+            ImGui::BeginChild("RecorderChildPanel", { left_width, wf_size }, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
             {
                 if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
                 {
@@ -517,15 +523,10 @@ namespace satdump
             ImGui::EndChild();
             ImGui::EndGroup();
 
-            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != recorder_size.x)
-                panel_ratio = ImGui::GetColumnWidth() / recorder_size[0];
-            last_width = recorder_size.x;
             ImGui::TableNextColumn();
-
             ImGui::SameLine();
-
             ImGui::BeginGroup();
-            ImGui::BeginChild("RecorderFFT", {float(recorder_size.x * (1.0 - panel_ratio)), wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("RecorderFFT", { right_width, wf_size }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
@@ -535,19 +536,19 @@ namespace satdump
 #else
                 int offset = 30;
 #endif
-                ImGui::SetNextWindowSizeConstraints(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), 50), ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), wf_size));
-                ImGui::SetNextWindowSize(ImVec2((recorder_size.x * (1.0 - panel_ratio) + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
-                ImGui::SetNextWindowPos(ImVec2(recorder_size.x * panel_ratio, 25 * ui_scale));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
+                ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
+                ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8 * ui_scale);
-                    fft_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale), fft_height});
+                    fft_plot->draw({float(right_width - 8 * ui_scale), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered())
                     {
                         ImVec2 mouse_pos = ImGui::GetMousePos();
-                        float ratio = (mouse_pos.x - recorder_size.x * panel_ratio - 16 * ui_scale) / (recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale) - 0.5;
+                        float ratio = (mouse_pos.x - left_width - 16 * ui_scale) / (right_width - 8 * ui_scale) - 0.5;
                         ImGui::SetTooltip("%s", ((ratio >= 0 ? "" : "- ") + format_notated(abs(ratio) * get_samplerate(), "Hz\n") +
                                                  format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz"))
                                                     .c_str());
@@ -557,7 +558,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
-                    waterfall_plot->draw({float(recorder_size.x * (1.0 - panel_ratio) - 8 * ui_scale), wf_height}, is_started);
+                    waterfall_plot->draw({float(right_width - 8 * ui_scale), wf_height}, is_started);
                 }
             }
             ImGui::EndChild();
