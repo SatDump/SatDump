@@ -216,7 +216,7 @@ namespace satdump
                 {
                     auto gcps_curr_bkp = gcps_curr;
                     gcps_curr.clear();
-                    for (int y = 0; y < gcps_curr_bkp.size() - 1; y++)
+                    for (int y = 0; y < gcps_curr_bkp.size() - 1 && gcps_curr_bkp.size() > 1; y++)
                     {
                         auto gcp1 = gcps_curr[y];
                         auto gcp2 = gcps_curr[y + 1];
@@ -227,7 +227,7 @@ namespace satdump
 
                 // Check if this segment is cut (eg, los of signal? Different recorded dump?)
                 int cutPosition = -1;
-                for (int y = 0; y < gcps_curr.size() - 1; y++)
+                for (int y = 0; y < gcps_curr.size() - 1 && gcps_curr.size() > 1; y++)
                     if (geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcps_curr[y].lat, gcps_curr[y].lon, 0),
                                                     geodetic::geodetic_coords_t(gcps_curr[y + 1].lat, gcps_curr[y + 1].lon, 0))
                             .distance > SEGMENT_CUT_DISTANCE_KM)
