@@ -1,6 +1,11 @@
 #include "amsu_reader.h"
 
 #include "common/ccsds/ccsds_time.h"
+#include "common/utils.h"
+#include "resources.h"
+#include "common/calibration.h"
+
+#include <iostream>
 
 namespace noaa_metop
 {
@@ -35,11 +40,11 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 26; c += 2)
-                calibration_views_A1[c/2].push_back((view_pair){(((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1201 + c] << 8) | buffer[1202 + c])) / 2,
-                                                              (((buffer[1060 + c] << 8) | buffer[1061 + c]) + ((buffer[1073 + c] << 8) | buffer[1074 + c])) / 2});
+                calibration_views_A1[c / 2].push_back((view_pair){static_cast<uint16_t>((((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1214 + c] << 8) | buffer[1215 + c])) / 2),
+                                                                  static_cast<uint16_t>((((buffer[1036 + c] << 8) | buffer[1037 + c]) + ((buffer[1062 + c] << 8) | buffer[1063 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 90; n += 2)
-                temperature_counts_A1[n/2].push_back((buffer[1089 + n] << 8) | buffer[1089 + n + 1]);
+                temperature_counts_A1[n / 2].push_back((buffer[1089 + n] << 8) | buffer[1089 + n + 1]);
         }
 
         void AMSUReader::work_A2(uint8_t *buffer)
@@ -57,16 +62,19 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 4; c += 2)
-                calibration_views_A2[c/2].push_back((view_pair){(uint16_t)(((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2,
-                                                              (uint16_t)(((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2});
+                calibration_views_A2[c / 2].push_back((view_pair){static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
+                                                                  static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 38; n += 2)
-                temperature_counts_A2[n/2].push_back((buffer[261 + n] << 8) | buffer[261 + n + 1]);
+                temperature_counts_A2[n / 2].push_back((buffer[261 + n] << 8) | buffer[261 + n + 1]);
         }
 
         void AMSUReader::work_noaa(uint8_t *buffer)
         {
             uint8_t lines_since_timestamp = buffer[5] & 3;
+
+            if (lines_since_timestamp > 3)
+                lines_since_timestamp = 1;
 
             std::vector<uint8_t> amsuA2words;
             std::vector<uint8_t> amsuA1words;
@@ -117,7 +125,7 @@ namespace noaa_metop
                 if (packet.payload.size() < 2096)
                     return;
                 std::vector<uint8_t> filtered;
-                for (unsigned int i = 13; i < packet.payload.size()-2; i += 2)
+                for (unsigned int i = 13; i < packet.payload.size() - 2; i += 2)
                 {
                     uint16_t word = (packet.payload[i + 1] << 8) | packet.payload[i + 2];
                     if (word != 1)
@@ -134,7 +142,7 @@ namespace noaa_metop
                 if (packet.payload.size() < 1136)
                     return;
                 std::vector<uint8_t> filtered;
-                for (unsigned int i = 13; i < packet.payload.size()-2; i += 2)
+                for (unsigned int i = 13; i < packet.payload.size() - 2; i += 2)
                 {
                     uint16_t word = (packet.payload[i + 1] << 8) | packet.payload[i + 2];
                     if (word != 1)
@@ -147,8 +155,96 @@ namespace noaa_metop
                 timestamps_A2.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
             }
         }
-        void AMSUReader::calibrate(nlohmann::json coefs){
-            
+        void AMSUReader::calibrate(nlohmann::json calib_coefs)
+        {
+            calib = calib_coefs;
+            calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+
+            double temps_A1[45];
+            double temps_A2[19];
+
+            bool PLL = calib["A1"]["PLL"].get<bool>();
+
+            // A1
+            for (int l = 0; l < linesA1; l++)
+            {
+                for (int i = 0; i < 45; i++)
+                {
+                    temps_A1[i] = 0;
+                    for (int j = 0; j < 4; j++)
+                    {
+                        uint16_t count = temperature_counts_A1[i][l];
+                        temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>()*pow(count, j);
+                    }
+                }
+
+                double Tw1 = 0;
+                double Tw2 = 0;
+
+                int sum1 = 0;
+                int sum2 = 0;
+                for (int i = 0; i < 5; i++){
+                    Tw1 += temps_A1[i + 35] * calib["A1-1"]["wf"][i].get<int>();
+                    sum1 += calib["A1-1"]["wf"][i].get<int>();
+
+                    Tw2 += temps_A1[i + 40] * calib["A1-2"]["wf"][i].get<int>();
+                    sum2 += calib["A1-2"]["wf"][i].get<int>();
+                }
+                Tw1 /= sum1;
+                Tw2 /= sum2;
+
+                nlohmann::json ln;
+
+                ln[0]["a0"] = 0;
+                ln[0]["a1"] = 0;
+                ln[0]["a2"] = 0;
+                ln[1]["a0"] = 0;
+                ln[1]["a1"] = 0;
+                ln[1]["a2"] = 0;
+
+                for (int c = 0; c < 13; c++){
+                    int index = calib["all"]["module"][c+2].get<std::string>() == "A1-1" ? (PLL ? 2 : calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()) : calib["A1"]["instrument_temerature_sensor_backup"].get<bool>();
+                    double Rw = temperature_to_radiance((calib["all"]["module"][c+2].get<std::string>() == "A1-1" ? Tw1 : Tw2) + extrapolate(
+                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["warm_corr"][PLL][0][c].get<double>()},
+                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][1].get<double>(), calib["A1"]["warm_corr"][PLL][1][c].get<double>()},
+                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["warm_corr"][PLL][2][c].get<double>()},
+                        temps_A1[calib["A1"]["instrument_temerature_sensor_id"][calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]), calib["all"]["wavenumber"][c+2].get<double>());
+
+                    double Rc = temperature_to_radiance(2.73 + calib["A1"]["cold_corr"][PLL][c].get<double>(), calib["all"]["wavenumber"][c+2].get<double>());
+
+                    double G = (calibration_views_A1[c][l].blackbody - calibration_views_A1[c][l].space)/(Rw-Rc);
+
+                    double u = extrapolate(
+                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["u"][PLL][0][c].get<double>()},
+                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][1].get<double>(), calib["A1"]["u"][PLL][1][c].get<double>()},
+                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["u"][PLL][2][c].get<double>()},
+                        temps_A1[calib["A1"]["instrument_temerature_sensor_id"][calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
+
+                    ln[c+2]["a0"] = Rw - (calibration_views_A1[c][l].blackbody/G) + u*(calibration_views_A1[c][l].blackbody * calibration_views_A1[c][l].space)/(G*G);
+                    ln[c+2]["a1"] = 1/G-u*(calibration_views_A1[c][l].blackbody + calibration_views_A1[c][l].space)/(G*G);
+                    ln[c+2]["a2"] = u/(G*G);
+                }
+
+                calib_out["lua_vars"]["perLine_perChannel"].push_back(ln);
+                calib_out["wavenumbers"] = calib["all"]["wavenumber"];
+
+            }
+
+            //A2
+            /*
+            for (int l = 0; l < linesA2; l++){
+                for (int i = 0; i < 19; i++)
+                {
+                    temps_A2[i] = 0;
+                    for (int j = 0; j < 3; j++)
+                    {
+                        uint16_t count = temperature_counts_A2[i][l];
+                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>();
+                    }
+                    temps_A2[i] /= 3.0;
+                }
+            }
+            */
         }
     }
 }

@@ -27,14 +27,17 @@ namespace noaa_metop
                 uint16_t space;
             };
             std::vector<uint16_t> channels[15];
-            def::SimpleDeframer amsuA1Deframer = def::SimpleDeframer(0xFFFFFF, 24, 9920, 0);
-            def::SimpleDeframer amsuA2Deframer = def::SimpleDeframer(0xFFFFFF, 24, 2496, 0);
+            def::SimpleDeframer amsuA1Deframer = def::SimpleDeframer(0xFFFFFF, 24, 9920, 0, true);
+            def::SimpleDeframer amsuA2Deframer = def::SimpleDeframer(0xFFFFFF, 24, 2496, 0, true);
             std::vector<std::vector<uint8_t>> amsuA2Data;
             std::vector<std::vector<uint8_t>> amsuA1Data;
             std::vector<view_pair> calibration_views_A1[13];
             std::vector<view_pair> calibration_views_A2[2];
             std::vector<uint16_t> temperature_counts_A1[45];
             std::vector<uint16_t> temperature_counts_A2[19];
+
+            //calib stuff
+            nlohmann::json calib;
 
         public:
             AMSUReader();
@@ -49,6 +52,8 @@ namespace noaa_metop
             }
             void calibrate(nlohmann::json coefs);
 
+            nlohmann::json calib_out;
+
         private:
             void work_A1(uint8_t *buffer);
             void work_A2(uint8_t *buffer);
@@ -61,6 +66,14 @@ namespace noaa_metop
                         return true;
                 }
                 return false;
+            }
+
+            double extrapolate(std::pair<double, double> A, std::pair<double, double> B, std::pair<double, double> C, double x){
+                if (x < B.first){
+                    return (B.second - A.second)/(B.first - A.second) * (x - A.first) + A.second;
+                } else {
+                    return (C.second - B.second)/(C.first - B.second) * (x - B.first) + B.second;
+                }
             }
         };
     }; // namespace amsu
