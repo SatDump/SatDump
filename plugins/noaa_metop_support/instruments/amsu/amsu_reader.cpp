@@ -165,7 +165,9 @@ namespace noaa_metop
 
             bool PLL = calib["A1"]["PLL"].get<bool>();
 
-            // A1
+            // ##############
+            // ##### A1 #####
+            // ##############
             for (int l = 0; l < linesA1; l++)
             {
                 for (int i = 0; i < 45; i++)
@@ -174,7 +176,7 @@ namespace noaa_metop
                     for (int j = 0; j < 4; j++)
                     {
                         uint16_t count = temperature_counts_A1[i][l];
-                        temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>()*pow(count, j);
+                        temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>() * pow(count, j);
                     }
                 }
 
@@ -183,7 +185,8 @@ namespace noaa_metop
 
                 int sum1 = 0;
                 int sum2 = 0;
-                for (int i = 0; i < 5; i++){
+                for (int i = 0; i < 5; i++)
+                {
                     Tw1 += temps_A1[i + 35] * calib["A1-1"]["wf"][i].get<int>();
                     sum1 += calib["A1-1"]["wf"][i].get<int>();
 
@@ -195,56 +198,93 @@ namespace noaa_metop
 
                 nlohmann::json ln;
 
-                ln[0]["a0"] = 0;
-                ln[0]["a1"] = 0;
-                ln[0]["a2"] = 0;
-                ln[1]["a0"] = 0;
-                ln[1]["a1"] = 0;
-                ln[1]["a2"] = 0;
+                for (int c = 0; c < 13; c++)
+                {
+                    int index = calib["all"]["module"][c + 2].get<std::string>() == "A1-1" ? (PLL ? 2 : calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()) : calib["A1"]["instrument_temerature_sensor_backup"].get<bool>();
+                    double Rw = temperature_to_radiance((calib["all"]["module"][c + 2].get<std::string>() == "A1-1" ? Tw1 : Tw2) + extrapolate(
+                                                                                                                                       {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["warm_corr"][PLL][0][c].get<double>()},
+                                                                                                                                       {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][1].get<double>(), calib["A1"]["warm_corr"][PLL][1][c].get<double>()},
+                                                                                                                                       {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["warm_corr"][PLL][2][c].get<double>()},
+                                                                                                                                       temps_A1[calib["A1"]["instrument_temerature_sensor_id"][calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]),
+                                                        calib["all"]["wavenumber"][c + 2].get<double>());
 
-                for (int c = 0; c < 13; c++){
-                    int index = calib["all"]["module"][c+2].get<std::string>() == "A1-1" ? (PLL ? 2 : calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()) : calib["A1"]["instrument_temerature_sensor_backup"].get<bool>();
-                    double Rw = temperature_to_radiance((calib["all"]["module"][c+2].get<std::string>() == "A1-1" ? Tw1 : Tw2) + extrapolate(
-                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["warm_corr"][PLL][0][c].get<double>()},
-                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][1].get<double>(), calib["A1"]["warm_corr"][PLL][1][c].get<double>()},
-                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["warm_corr"][PLL][2][c].get<double>()},
-                        temps_A1[calib["A1"]["instrument_temerature_sensor_id"][calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]), calib["all"]["wavenumber"][c+2].get<double>());
+                    double Rc = temperature_to_radiance(2.73 + calib["A1"]["cold_corr"][PLL][c].get<double>(), calib["all"]["wavenumber"][c + 2].get<double>());
 
-                    double Rc = temperature_to_radiance(2.73 + calib["A1"]["cold_corr"][PLL][c].get<double>(), calib["all"]["wavenumber"][c+2].get<double>());
-
-                    double G = (calibration_views_A1[c][l].blackbody - calibration_views_A1[c][l].space)/(Rw-Rc);
+                    double G = (calibration_views_A1[c][l].blackbody - calibration_views_A1[c][l].space) / (Rw - Rc);
 
                     double u = extrapolate(
-                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["u"][PLL][0][c].get<double>()},
-                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][1].get<double>(), calib["A1"]["u"][PLL][1][c].get<double>()},
-                        {calib[calib["all"]["module"][c+2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["u"][PLL][2][c].get<double>()},
+                        {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["u"][PLL][0][c].get<double>()},
+                        {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][1].get<double>(), calib["A1"]["u"][PLL][1][c].get<double>()},
+                        {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["u"][PLL][2][c].get<double>()},
                         temps_A1[calib["A1"]["instrument_temerature_sensor_id"][calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
 
-                    ln[c+2]["a0"] = Rw - (calibration_views_A1[c][l].blackbody/G) + u*(calibration_views_A1[c][l].blackbody * calibration_views_A1[c][l].space)/(G*G);
-                    ln[c+2]["a1"] = 1/G-u*(calibration_views_A1[c][l].blackbody + calibration_views_A1[c][l].space)/(G*G);
-                    ln[c+2]["a2"] = u/(G*G);
+                    ln[c + 2]["a0"] = Rw - (calibration_views_A1[c][l].blackbody / G) + u * (calibration_views_A1[c][l].blackbody * calibration_views_A1[c][l].space) / (G * G);
+                    ln[c + 2]["a1"] = 1 / G - u * (calibration_views_A1[c][l].blackbody + calibration_views_A1[c][l].space) / (G * G);
+                    ln[c + 2]["a2"] = u / (G * G);
                 }
 
                 calib_out["lua_vars"]["perLine_perChannel"].push_back(ln);
-                calib_out["wavenumbers"] = calib["all"]["wavenumber"];
-
             }
+            // ##############
+            // ##### A1 #####
+            // ##############
 
-            //A2
-            /*
-            for (int l = 0; l < linesA2; l++){
+            // ##############
+            // ##### A2 #####
+            // ##############
+            for (int l = 0; l < linesA2; l++)
+            {
                 for (int i = 0; i < 19; i++)
                 {
                     temps_A2[i] = 0;
-                    for (int j = 0; j < 3; j++)
+                    for (int j = 0; j < 4; j++)
                     {
-                        uint16_t count = temperature_counts_A2[i][l];
-                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>();
+                        uint16_t count = temperature_counts_A1[i][l];
+                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>() * pow(count, j);
                     }
-                    temps_A2[i] /= 3.0;
                 }
+
+                double Tw1 = 0;
+
+                int sum1 = 0;
+                for (int i = 0; i < 7; i++)
+                {
+                    Tw1 += temps_A1[i + 12] * calib["A2"]["wf"][i].get<int>();
+                    sum1 += calib["A2"]["wf"][i].get<int>();
+                }
+                Tw1 /= sum1;
+
+                for (int c = 0; c < 2; c++)
+                {
+                    double Rw = temperature_to_radiance(Tw1 + extrapolate(
+                                                                  {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>(), calib["A2"]["warm_corr"][0][c].get<double>()},
+                                                                  {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["A2"]["warm_corr"][1][c].get<double>()},
+                                                                  {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["A2"]["warm_corr"][2][c].get<double>()},
+                                                                  temps_A2[calib["A2"]["instrument_temerature_sensor_id"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]),
+                                                        calib["all"]["wavenumber"][c].get<double>());
+
+                    double Rc = temperature_to_radiance(2.73 + calib["A2"]["cold_corr"][c].get<double>(), calib["all"]["wavenumber"][c].get<double>());
+
+                    double G = (calibration_views_A2[c][l].blackbody - calibration_views_A2[c][l].space) / (Rw - Rc);
+
+                    double u = extrapolate(
+                        {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>(), calib["A2"]["u"][0][c].get<double>()},
+                        {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["A2"]["u"][1][c].get<double>()},
+                        {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["A2"]["u"][2][c].get<double>()},
+                         temps_A2[calib["A2"]["instrument_temerature_sensor_id"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
+
+                    calib_out["lua_vars"]["perLine_perChannel"][l][c]["a0"] = Rw - (calibration_views_A2[c][l].blackbody / G) + u * (calibration_views_A2[c][l].blackbody * calibration_views_A2[c][l].space) / (G * G);
+                    calib_out["lua_vars"]["perLine_perChannel"][l][c]["a1"] = 1 / G - u * (calibration_views_A2[c][l].blackbody + calibration_views_A2[c][l].space) / (G * G);
+                    calib_out["lua_vars"]["perLine_perChannel"][l][c]["a2"] = u / (G * G);
+                }
+
+                
             }
-            */
+            // ##############
+            // ##### A2 #####
+            // ##############
+
+            calib_out["wavenumbers"] = calib["all"]["wavenumber"];
         }
     }
 }
