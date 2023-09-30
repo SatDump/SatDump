@@ -148,7 +148,7 @@ namespace satdump
             proj_cfg["metadata"] = current_proj_metadata;
             if (products->has_tle())
                 proj_cfg["metadata"]["tle"] = products->get_tle();
-            if (products->has_timestamps())
+            if (products->has_timestamps)
                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
             auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
                                                                             pre_corrected_height,
@@ -820,7 +820,7 @@ namespace satdump
                 op.output_height = height;
                 if (products->has_tle())
                     op.source_prj_info["metadata"]["tle"] = products->get_tle();
-                if (products->has_timestamps())
+                if (products->has_timestamps)
                     op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
                 reprojection::ProjectionResult res = reprojection::reproject(op, progess);
                 projected_img = res.img;
