@@ -1157,23 +1157,10 @@
                         "equation": "ch7",
                         "individual_equalize": true,
                         "apply_lut": true
-<<<<<<< HEAD
-                    }
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    "individual_equalize": true,
-                    "draw_map": true,
-                    "config": {
-                        "type": "equirectangular"
-=======
                     },
                     "AMSU False Color": {
                         "equation": "ch4, ch3, ch1",
                         "individual_equalize": true
->>>>>>> 101997142c3d17ad61e4acdf744b3bad1dea6315
                     }
                 }
             },
@@ -1210,19 +1197,6 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     }
-<<<<<<< HEAD
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    "individual_equalize": true,
-                    "draw_map": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-=======
->>>>>>> 101997142c3d17ad61e4acdf744b3bad1dea6315
                 }
             },
             "mwri_rm": {
@@ -1251,19 +1225,6 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     }
-<<<<<<< HEAD
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    "individual_equalize": true,
-                    "draw_map": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-=======
->>>>>>> 101997142c3d17ad61e4acdf744b3bad1dea6315
                 }
             },
             "mwri2": {
@@ -1284,19 +1245,6 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     }
-<<<<<<< HEAD
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    "individual_equalize": true,
-                    "draw_map": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-=======
->>>>>>> 101997142c3d17ad61e4acdf744b3bad1dea6315
                 }
             },
             "atms": {
@@ -1344,19 +1292,6 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     }
-<<<<<<< HEAD
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    "individual_equalize": true,
-                    "draw_map": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-=======
->>>>>>> 101997142c3d17ad61e4acdf744b3bad1dea6315
                 }
             },
             "amsu_a": {
@@ -1392,19 +1327,6 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     }
-<<<<<<< HEAD
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    "individual_equalize": true,
-                    "draw_map": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-=======
->>>>>>> 101997142c3d17ad61e4acdf744b3bad1dea6315
                 }
             },
             "hirs": {
