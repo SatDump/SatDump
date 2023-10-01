@@ -62,7 +62,7 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 4; c += 2)
-                calibration_views_A2[c / 2].push_back((view_pair){static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
+                calibration_views_A2[c / 2].push_back( view_pair {static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
                                                                   static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 38; n += 2)
