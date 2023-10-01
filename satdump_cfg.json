@@ -1352,7 +1352,8 @@
                 "rgb_composites": {
                     "HIRS False Color": {
                         "equation": "ch5, ch4, ch3",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "white_balance": true
                     },
                     "Clouds Only (N2O Sounding)": {
                         "equation": "ch14, ch13, 1",
