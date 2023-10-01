@@ -479,6 +479,10 @@ namespace fengyun3
                 dataset.timestamp = avg_overflowless(mersi2_reader.timestamps);
             else if (d_satellite == FY_3E)
                 dataset.timestamp = avg_overflowless(mersill_reader.timestamps);
+            else if (d_satellite == FY_3F)
+                dataset.timestamp = avg_overflowless(mersi3_reader.timestamps);
+            else if (d_satellite == FY_3G)
+                dataset.timestamp = avg_overflowless(mersirm_reader.timestamps);
 
             // Satellite ID
             {
@@ -963,7 +967,7 @@ namespace fengyun3
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     // What did you do NSMC.... Why did you turn FY-3G 180 degs!?
-                    if (d_parameters.contains("mersi_rotate") ? d_parameters["mersi_rotate"].get<bool>() : false)
+                    if (d_parameters.contains("satellite_rotated") ? d_parameters["satellite_rotated"].get<bool>() : false)
                     {
                         auto img2 = image;
                         for (int l = 0; l < (int)img2.height() / 10; l++)
@@ -1069,7 +1073,10 @@ namespace fengyun3
                 mwrirm_produducts.bit_depth = 16;
                 mwrirm_produducts.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 mwrirm_produducts.set_timestamps(mwrirm_reader.timestamps);
-                mwrirm_produducts.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mwrirm.json")));
+                auto proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mwrirm.json"));
+                if (d_parameters.contains("satellite_rotated") ? d_parameters["satellite_rotated"].get<bool>() : false)
+                    proj_cfg["yaw_offset"] = proj_cfg["yaw_offset"].get<double>() - 180; // Rotate MWRI around
+                mwrirm_produducts.set_proj_cfg(proj_cfg);
 
                 for (int i = 0; i < 26; i++)
                     mwrirm_produducts.images.push_back({"MWRIRM-" + std::to_string(i + 1), std::to_string(i + 1), mwrirm_reader.getChannel(i)});
