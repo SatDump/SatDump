@@ -334,80 +334,30 @@ namespace satdump
 
     void ViewerApplication::drawUI()
     {
-        /*
-        ImVec2 viewer_size = ImGui::GetContentRegionAvail();
-        ImGui::BeginGroup();
-        ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * panel_ratio), float(viewer_size.y)}, false);
-        {
-            drawPanel();
-        }
-        ImGui::EndChild();
-        ImGui::EndGroup();
-
-        ImVec2 mouse_pos = ImGui::GetMousePos();
-        if ((mouse_pos.x > viewer_size.x * panel_ratio + 15 * ui_scale - 10 * ui_scale &&
-             mouse_pos.x < viewer_size.x * panel_ratio + 15 * ui_scale + 10 * ui_scale &&
-             mouse_pos.y > 35 * ui_scale) ||
-            dragging_panel)
-        {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-            if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-            {
-                float new_x = mouse_pos.x;
-                float new_ratio = new_x / viewer_size.x;
-                if (new_ratio > 0.1 && new_ratio < 0.9)
-                    panel_ratio = new_ratio;
-            }
-            else
-                dragging_panel = false;
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                dragging_panel = true;
-        }
-        else if (ImGui::GetMouseCursor() != ImGuiMouseCursor_ResizeNS)
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-
-        ImGui::SameLine();
-
-        ImGui::BeginGroup();
-        if (current_selected_tab == 0)
-        {
-            if (products_and_handlers.size() > 0)
-                products_and_handlers[current_handler_id]->handler->drawContents({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
-            else
-                ImGui::GetWindowDrawList()
-                    ->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                    ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
-                                           ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
-                                    ImColor::HSV(0, 0, 0));
-        }
-        else if (current_selected_tab == 1)
-        {
-            projection_image_widget.draw({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
-        }
-        ImGui::EndGroup();
-        */
-
         ImVec2 viewer_size = ImGui::GetContentRegionAvail();
 
-        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_NoPadInnerX | ImGuiTableFlags_Resizable))
+        if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
         {
-            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_WidthFixed, viewer_size.x * panel_ratio);
-            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, viewer_size.x * panel_ratio);
+            ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, viewer_size.x * (1.0f - panel_ratio));
             ImGui::TableNextColumn();
-            ImGui::BeginChild("ViewerChildPanel", {float(viewer_size.x * panel_ratio), float(viewer_size.y - 10)}, false);
-            {
-                drawPanel();
-            }
+
+            float left_width = ImGui::GetColumnWidth(0);
+            float right_width = viewer_size.x - left_width;
+            if (left_width != last_width && last_width != -1)
+                panel_ratio = left_width / viewer_size.x;
+            last_width = left_width;
+
+            ImGui::BeginChild("ViewerChildPanel", { left_width, float(viewer_size.y - 10) }, false);
+            drawPanel();
             ImGui::EndChild();
-            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) || last_width != viewer_size.x)
-                panel_ratio = ImGui::GetColumnWidth() / viewer_size[0];
-            last_width = viewer_size.x;
+
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
             if (current_selected_tab == 0)
             {
                 if (products_and_handlers.size() > 0)
-                    products_and_handlers[current_handler_id]->handler->drawContents({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
+                    products_and_handlers[current_handler_id]->handler->drawContents({float(right_width - 4), float(viewer_size.y)});
                 else
                     ImGui::GetWindowDrawList()
                         ->AddRectFilled(ImGui::GetCursorScreenPos(),
@@ -417,7 +367,7 @@ namespace satdump
             }
             else if (current_selected_tab == 1)
             {
-                projection_image_widget.draw({float(viewer_size.x * (1.0 - panel_ratio) - 4), float(viewer_size.y)});
+                projection_image_widget.draw({float(right_width - 4), float(viewer_size.y)});
             }
             ImGui::EndGroup();
             ImGui::EndTable();

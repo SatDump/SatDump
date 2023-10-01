@@ -42,7 +42,7 @@ namespace widgets
         }
         if (new_item)
         {
-            ImGui::SetScrollY(ImGui::GetScrollMaxY());
+            ImGui::SetScrollHereY(1.0f);
             new_item = false;
         }
         if(ImGui::IsWindowAppearing())

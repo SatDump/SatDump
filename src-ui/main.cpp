@@ -170,8 +170,8 @@ int main(int argc, char *argv[])
 #endif
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
+    glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
+                         // Vsync slows down init process when items are logged quickly
     if (glewInit() != GLEW_OK)
     {
         logger->critical("Failed to initialize OpenGL loader!");
@@ -251,6 +251,7 @@ int main(int argc, char *argv[])
     //Shut down loading screen
     logger->del_sink(loading_screen_sink);
     loading_screen_sink.reset();
+    glfwSwapInterval(1); // Enable vsync for the rest of the program
 
     //Set font again to adjust for DPI
     style::setFonts();
@@ -272,14 +273,6 @@ int main(int argc, char *argv[])
     // Main loop
     do
     {
-        glfwPollEvents();
-        if (glfwWindowShouldClose(window) && glfwGetWindowAttrib(window, GLFW_MAXIMIZED))
-        {
-            glfwRestoreWindow(window);
-            glfwWaitEvents();
-            glfwPollEvents();
-        }
-
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -308,6 +301,7 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
+        glfwPollEvents();
     } while (!glfwWindowShouldClose(window));
 
     satdump::exitMainUI();
