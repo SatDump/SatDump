@@ -62,7 +62,7 @@ namespace satdump
 
             std::sort(distances.begin(), distances.end());
 
-            double media_dist = distances[distances.size() / 2];
+            double media_dist = distances[distances.size() * 0.25];
 
             nsegs = int((media_dist * gcps_curr.size()) / SEGMENT_SIZE_KM);
             if (nsegs == 0)
@@ -311,7 +311,7 @@ namespace satdump
                                result2.top_left.lon, result2.top_left.lat,
                                result2.bottom_right.lon, result2.bottom_right.lat);
 
-#if 0 // Draw GCPs, useful for debug
+#if 1 // Draw GCPs, useful for debug
                 {
                     unsigned short color[4] = {0, 65535, 0, 65535};
                     for (auto gcp : operation.ground_control_points)
@@ -360,7 +360,7 @@ namespace satdump
                     *progress = (float)scnt / (float)segmentConfigs.size();
 
                 /////////// DEBUG
-                // result.output_image.save_img("projtest/test" + std::to_string((scnt) + 1));
+                result2.output_image.save_img("projtest/test" + std::to_string((scnt) + 1));
             }
 
             return result;
