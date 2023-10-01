@@ -4,10 +4,10 @@
 #include "common/projection/projs/equirectangular.h"
 #include "common/geodetic/vincentys_calculations.h"
 
-#define MAX_IMAGE_RAM_USAGE 4e9      // 4GB of RAM max
-#define SEGMENT_SIZE_KM 3000         // Average segment size to try and keep as max
-#define MIN_POLE_DISTANCE 1000       // Maximum distance at which to consider we're working over a pole
-#define SEGMENT_CUT_DISTANCE_KM 2000 // Distance at which we consider a segment needs to be cut. TODO : tune!
+#define MAX_IMAGE_RAM_USAGE 4e9 // 4GB of RAM max
+#define SEGMENT_SIZE_KM 3000    // Average segment size to try and keep as max
+#define MIN_POLE_DISTANCE 1000  // Maximum distance at which to consider we're working over a pole
+// #define SEGMENT_CUT_DISTANCE_KM 1000 // Distance at which we consider a segment needs to be cut. TODO : tune!
 
 namespace satdump
 {
@@ -28,7 +28,7 @@ namespace satdump
             }
         }
 
-        int calculateSegmentNumberToSplitInto(WarpOperation &operation_t)
+        int calculateSegmentNumberToSplitInto(WarpOperation &operation_t, double &median_dist)
         {
             int nsegs = 1;
             std::vector<satdump::projection::GCP> gcps_curr = operation_t.ground_control_points;
@@ -62,7 +62,7 @@ namespace satdump
 
             std::sort(distances.begin(), distances.end());
 
-            double media_dist = distances[distances.size() * 0.25];
+            double media_dist = median_dist = distances[distances.size() * 0.25];
 
             nsegs = int((media_dist * gcps_curr.size()) / SEGMENT_SIZE_KM);
             if (nsegs == 0)
@@ -136,7 +136,7 @@ namespace satdump
                 scfg.y_end = operation_t.input_image.height();
         }
 
-        std::vector<SegmentConfig> prepareSegmentsAndSplitCuts(double nsegs, WarpOperation &operation_t)
+        std::vector<SegmentConfig> prepareSegmentsAndSplitCuts(double nsegs, WarpOperation &operation_t, double median_dist)
         {
             std::vector<SegmentConfig> segmentConfigs;
 
@@ -226,18 +226,20 @@ namespace satdump
                 }
 
                 // Check if this segment is cut (eg, los of signal? Different recorded dump?)
-                int cutPosition = -1;
+                std::vector<int> cutPositions;
                 for (int y = 0; y < gcps_curr.size() - 1 && gcps_curr.size() > 1; y++)
                     if (geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcps_curr[y].lat, gcps_curr[y].lon, 0),
                                                     geodetic::geodetic_coords_t(gcps_curr[y + 1].lat, gcps_curr[y + 1].lon, 0))
-                            .distance > SEGMENT_CUT_DISTANCE_KM)
-                        cutPosition = gcps_curr[y + 1].y;
+                            .distance > (8 * median_dist))
+                        cutPositions.push_back(gcps_curr[y + 1].y);
 
                 // Generate, handling cuts
-                if (cutPosition != -1)
+                if (cutPositions.size() > 0)
                 {
-                    generateSeg(y_start, cutPosition, true, false);
-                    generateSeg(cutPosition, y_end, false, true);
+                    generateSeg(y_start, cutPositions[0], true, false);
+                    for (int i = 1; i < cutPositions.size() - 1; i++)
+                        generateSeg(cutPositions[i], y_end, false, false);
+                    generateSeg(cutPositions[cutPositions.size() - 1], y_end, false, true);
                 }
                 else
                 {
@@ -276,10 +278,11 @@ namespace satdump
             projector_final.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
 
             /// Try to calculate the number of segments to split the data into. All an approximation, but it's good enough!
-            int nsegs = calculateSegmentNumberToSplitInto(operation_t);
+            double median_dist = 0;
+            int nsegs = calculateSegmentNumberToSplitInto(operation_t, median_dist);
 
             // Generate all segments
-            std::vector<SegmentConfig> segmentConfigs = prepareSegmentsAndSplitCuts(nsegs, operation_t);
+            std::vector<SegmentConfig> segmentConfigs = prepareSegmentsAndSplitCuts(nsegs, operation_t, median_dist);
 
 #pragma omp parallel for
             //  Solve all TPS transforms, multithreaded
@@ -311,7 +314,7 @@ namespace satdump
                                result2.top_left.lon, result2.top_left.lat,
                                result2.bottom_right.lon, result2.bottom_right.lat);
 
-#if 1 // Draw GCPs, useful for debug
+#if 0 // Draw GCPs, useful for debug
                 {
                     unsigned short color[4] = {0, 65535, 0, 65535};
                     for (auto gcp : operation.ground_control_points)
@@ -360,7 +363,7 @@ namespace satdump
                     *progress = (float)scnt / (float)segmentConfigs.size();
 
                 /////////// DEBUG
-                result2.output_image.save_img("projtest/test" + std::to_string((scnt) + 1));
+                // result2.output_image.save_img("projtest/test" + std::to_string((scnt) + 1));
             }
 
             return result;

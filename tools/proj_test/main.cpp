@@ -53,11 +53,11 @@ int main(int /*argc*/, char *argv[])
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);
 
-    logger->trace("\n" + img_pro.contents.dump(4));
+    printf("\n%s\n", img_pro.contents.dump(4).c_str());
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch4";
-    //   rgb_cfg.equation = "1-ch37";
+    rgb_cfg.equation = "ch5,ch3,ch3";
+    //    rgb_cfg.equation = "1-ch37";
     // rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.individual_equalize = true;
     rgb_cfg.white_balance = true;
