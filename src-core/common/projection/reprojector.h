@@ -16,6 +16,7 @@ namespace satdump
             nlohmann::json target_prj_info;
             image::Image<uint16_t> img;
             int output_width, output_height;
+            bool use_old_algorithm = false;
         };
 
         struct ProjectionResult

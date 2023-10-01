@@ -78,6 +78,8 @@ namespace satdump
         bool projection_ready = false, should_project = false;
         image::Image<uint16_t> projected_img;
 
+        bool project_old_algorithm = false;
+
         ImVec4 color_borders = {0, 1, 0, 1};
         ImVec4 color_cities = {1, 0, 0, 1};
 

@@ -92,16 +92,115 @@ namespace satdump
             }
             else // Means it's a TPS-handled warp.
             {
-                warp::WarpOperation operation;
-                operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img.width(), op.img.height());
-                operation.input_image = op.img;
-                operation.output_rgba = true;
-                // TODO : CHANGE!!!!!!
-                int l_width = std::max<int>(op.img.width(), 512) * 10;
-                operation.output_width = l_width;
-                operation.output_height = l_width / 2;
+                if (op.use_old_algorithm)
+                {
+                    // Source projs
+                    std::shared_ptr<SatelliteProjection> sat_proj_src;
 
-                logger->trace("Warping size %dx%d", l_width, l_width / 2);
+                    // Init
+                    std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(projected_image.width(),
+                                                                                                                            projected_image.height(),
+                                                                                                                            op.target_prj_info,
+                                                                                                                            {});
+
+                    nlohmann::json mtd = op.source_prj_info.contains("metadata") ? op.source_prj_info["metadata"] : nlohmann::json();
+                    int img_x_offset = 0;
+                    if (mtd.contains("img_offset_x"))
+                        img_x_offset = mtd["img_offset_x"];
+
+                    TLE tle;
+                    if (mtd.contains("tle"))
+                        tle = mtd["tle"];
+                    else
+                        throw std::runtime_error("Could not get TLE!");
+
+                    nlohmann::ordered_json timestamps;
+                    if (mtd.contains("timestamps"))
+                        timestamps = mtd["timestamps"];
+                    else
+                        throw std::runtime_error("Could not get timestamps!");
+
+                    // Reproj
+                    // ""TPS""" (Mostly LEO)
+                    {
+                        sat_proj_src = get_sat_proj(op.source_prj_info, tle, timestamps);
+                        bool direction = false;
+
+                        double ratio_x = round((double)sat_proj_src->img_size_x / (double)op.img.width());
+                        double ratio_y = round((double)sat_proj_src->img_size_y / (double)op.img.height());
+
+                        for (int currentScan = 0; currentScan < (int)image.height(); currentScan++)
+                        {
+                            // Now compute each pixel's lat / lon and plot it
+                            for (double px = 0; px < image.width() - 1; px += 1)
+                            {
+                                geodetic::geodetic_coords_t coords1, coords2, coords3;
+                                bool ret1 = sat_proj_src->get_position(px * ratio_x, currentScan * ratio_y, coords1);
+                                bool ret2 = sat_proj_src->get_position((px + 1) * ratio_x, currentScan * ratio_y, coords2);
+                                sat_proj_src->get_position((px - img_x_offset) * ratio_x, (currentScan + 1) * ratio_y, coords3);
+
+                                if (ret1 || ret2)
+                                    continue;
+
+                                direction = coords1.lat > coords3.lat;
+
+                                std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, projected_image.height(), projected_image.width());
+                                std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, projected_image.height(), projected_image.width());
+
+                                uint16_t color[4] = {0, 0, 0, 0};
+                                if (image.channels() >= 3)
+                                {
+                                    color[0] = image.channel(0)[currentScan * image.width() + int(px)];
+                                    color[1] = image.channel(1)[currentScan * image.width() + int(px)];
+                                    color[2] = image.channel(2)[currentScan * image.width() + int(px)];
+                                    color[3] = 65535;
+                                }
+                                else
+                                {
+                                    color[0] = image[currentScan * image.width() + int(px)];
+                                    color[1] = image[currentScan * image.width() + int(px)];
+                                    color[2] = image[currentScan * image.width() + int(px)];
+                                    color[3] = 65535;
+                                }
+
+                                // if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
+                                //     continue;
+
+                                // This seems to glitch out sometimes... Need to check
+                                double maxSize = projected_image.width() / 100.0;
+                                if (abs(map_cc1.first - map_cc2.first) < maxSize && abs(map_cc1.second - map_cc2.second) < maxSize)
+                                {
+                                    /*
+                                    Using a circle and radius from the next sample is most likely not the best way, computing the instrument's
+                                    actual FOV at each pixel and so would be a better approach... But well, this one has the benefit of being
+                                    fast.
+                                    I guess time will tell how reliable that approximation is.
+                                    */
+                                    double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
+                                    projected_image.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
+                                }
+
+                                // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                            }
+
+                            if (progress != nullptr)
+                                *progress = float(currentScan) / float(image.height());
+                            // logger->critical("%d/%d", currentScan, image.height());
+                        }
+                    }
+                }
+                else
+                {
+                    warp::WarpOperation operation;
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img.width(), op.img.height());
+                    operation.input_image = op.img;
+                    operation.output_rgba = true;
+                    // TODO : CHANGE!!!!!!
+                    int l_width = std::max<int>(op.img.width(), 512) * 10;
+                    operation.output_width = l_width;
+                    operation.output_height = l_width / 2;
+
+                    logger->trace("Warping size %dx%d", l_width, l_width / 2);
 
 #if 0
                     satdump::warp::ImageWarper warper;
@@ -110,14 +209,15 @@ namespace satdump
 
                     satdump::warp::WarpResult result = warper.warp();
 #else
-                satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation, progress);
+                    satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation, progress);
 #endif
 
-                warped_image = result.output_image;
-                tl_lon = result.top_left.lon;
-                tl_lat = result.top_left.lat;
-                br_lon = result.bottom_right.lon;
-                br_lat = result.bottom_right.lat;
+                    warped_image = result.output_image;
+                    tl_lon = result.top_left.lon;
+                    tl_lat = result.top_left.lat;
+                    br_lon = result.bottom_right.lon;
+                    br_lat = result.bottom_right.lat;
+                }
             }
 
             logger->info("Reprojecting to target...");

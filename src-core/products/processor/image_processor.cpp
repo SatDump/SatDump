@@ -32,6 +32,9 @@ namespace satdump
         op.source_prj_info["metadata"]["tle"] = img_products.get_tle();
         op.source_prj_info["metadata"]["timestamps"] = timestamps;
 
+        if (proj_settings.contains("old_algo"))
+            op.use_old_algorithm = proj_settings["old_algo"];
+
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
                 op.img.equalize();

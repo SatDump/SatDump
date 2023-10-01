@@ -692,6 +692,14 @@ namespace satdump
                 if (!canBeProjected())
                     style::endDisabled();
 
+                ImGui::SameLine();
+
+                if (!should_project)
+                    style::beginDisabled();
+                ImGui::Checkbox("Old algorithm", &project_old_algorithm);
+                if (!should_project)
+                    style::endDisabled();
+
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 {
@@ -700,6 +708,16 @@ namespace satdump
                         ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
                     else if (correct_image)
                         ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
+                    else
+                        ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
+                                                                 "deal with very bad (noisy) data\n"
+                                                                 "better.\n"
+                                                                 "The new one is preferred if\n"
+                                                                 "possible though, as results\n"
+                                                                 "are a lot nicer! :-)\n"
+                                                                 "If you had to use this\n"
+                                                                 "and the data was not that bad\n"
+                                                                 "please report as a bug!");
 
                     ImGui::EndTooltip();
                 }
@@ -814,6 +832,7 @@ namespace satdump
                 op.source_prj_info["metadata"] = current_proj_metadata;
                 op.target_prj_info = settings;
                 op.img = current_image;
+                op.use_old_algorithm = project_old_algorithm;
                 if (rotate_image)
                     op.img.mirror(true, true);
                 op.output_width = width;
