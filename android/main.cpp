@@ -236,6 +236,9 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
     case APP_CMD_PAUSE:
         shutdown();
         break;
+    case APP_CMD_SAVE_STATE:
+        satdump::recorder_app->save_settings();
+        break;
     }
 }
 
