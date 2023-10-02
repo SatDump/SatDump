@@ -147,6 +147,8 @@ void tick()
     static bool WantTextInputLast = false;
     if (io.WantTextInput && !WantTextInputLast)
         ShowSoftKeyboardInput();
+    if (!io.WantTextInput && WantTextInputLast)
+        HideSoftKeyboardInput();
     WantTextInputLast = io.WantTextInput;
 
     // Start the Dear ImGui frame
