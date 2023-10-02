@@ -103,6 +103,7 @@ void init(struct android_app *app)
         initLogger();
         style::setFonts(display_scale);
         HideSoftKeyboardInput();
+        eglSwapInterval(g_EglDisplay, 0);
         std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface, display_scale);
         logger->add_sink(loading_screen_sink);
 
@@ -115,6 +116,7 @@ void init(struct android_app *app)
         loading_screen_sink.reset();
 
         //Set font again to adjust for DPI
+        eglSwapInterval(g_EglDisplay, 1);
         style::setFonts();
         ImGui_ImplOpenGL3_DestroyFontsTexture();
         ImGui_ImplOpenGL3_CreateFontsTexture();

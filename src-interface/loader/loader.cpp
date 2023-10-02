@@ -33,17 +33,17 @@ namespace satdump
         {
             ImGui::PushFont(style::bigFont);
             ImVec2 title_size = ImGui::CalcTextSize(title.c_str());
-            ImGui::SetCursorPos({((float)width / 2) - (100 * scale), ((float)height / 2) - title_size.y - (215 * scale)});
-            ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(200 * scale, 200 * scale));
-            ImGui::SetCursorPos({((float)width / 2) - (title_size.x / 2), ((float)height / 2) - title_size.y});
+            ImGui::SetCursorPos({((float)width / 2) - (75 * scale), ((float)height / 2) - title_size.y - (90 * scale)});
+            ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(150 * scale, 150 * scale));
+            ImGui::SetCursorPos({((float)width / 2) - (title_size.x / 2), ((float)height / 2) - title_size.y + (75 * scale)});
             ImGui::TextUnformatted(title.c_str());
             ImGui::PopFont();
             ImVec2 slogan_size = ImGui::CalcTextSize(slogan.c_str());
-            ImGui::SetCursorPos({ ((float)width / 2) - (slogan_size.x / 2), ((float)height / 2) + (10 * scale) });
+            ImGui::SetCursorPos({ ((float)width / 2) - (slogan_size.x / 2), ((float)height / 2) + (80 * scale) });
             ImGui::TextUnformatted(slogan.c_str());
-            ImGui::GetWindowDrawList()->AddLine({((float)width / 2) - (slogan_size.x / 2), ((float)height / 2) + (20 * scale) + slogan_size.y}, 
-                {((float)width / 2) + (slogan_size.x / 2), ((float)height / 2) + (20 * scale) + slogan_size.y}, IM_COL32(155, 155, 155, 255));
-            ImGui::SetCursorPos({((float)width / 2) - (ImGui::CalcTextSize(str.c_str()).x / 2), ((float)height / 2) + (25 * scale) + slogan_size.y});
+            ImGui::GetWindowDrawList()->AddLine({((float)width / 2) - (slogan_size.x / 2), ((float)height / 2) + (90 * scale) + slogan_size.y}, 
+                {((float)width / 2) + (slogan_size.x / 2), ((float)height / 2) + (90 * scale) + slogan_size.y}, IM_COL32(155, 155, 155, 255));
+            ImGui::SetCursorPos({((float)width / 2) - (ImGui::CalcTextSize(str.c_str()).x / 2), ((float)height / 2) + (95 * scale) + slogan_size.y});
         }
 
         ImGui::TextDisabled("%s", str.c_str());
