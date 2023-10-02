@@ -132,8 +132,6 @@ class MainActivity : NativeActivity(), TextWatcher {
         editText!!.addTextChangedListener(this);
 
         setContentView(mLayout);
-
-        hideSoftInput();
     }
 
 
