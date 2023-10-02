@@ -163,10 +163,6 @@ void tick()
     if (g_EglDisplay == EGL_NO_DISPLAY)
         return;
 
-    // Our state
-    static bool show_demo_window = true;
-    static bool show_another_window = false;
-
     // Poll Unicode characters via JNI
     // FIXME: do not call this every frame because of JNI overhead
     PollUnicodeChars();
@@ -182,13 +178,8 @@ void tick()
     ImGui_ImplAndroid_NewFrame();
     ImGui::NewFrame();
 
-    EGLint width, height;
-    eglQuerySurface(g_EglDisplay, g_EglSurface, EGL_WIDTH, &width);
-    eglQuerySurface(g_EglDisplay, g_EglSurface, EGL_HEIGHT, &height);
-
-    satdump::renderMainUI(width, height);
-
     // Rendering
+    satdump::renderMainUI((int)io.DisplaySize.x, (int)io.DisplaySize.y);
     ImGui::Render();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
@@ -238,17 +229,12 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
 {
     switch (appCmd)
     {
-    case APP_CMD_SAVE_STATE:
-        break;
     case APP_CMD_INIT_WINDOW:
         init(app);
         break;
     case APP_CMD_TERM_WINDOW:
+    case APP_CMD_PAUSE:
         shutdown();
-        break;
-    case APP_CMD_GAINED_FOCUS:
-        break;
-    case APP_CMD_LOST_FOCUS:
         break;
     }
 }
