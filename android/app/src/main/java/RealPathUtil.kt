@@ -9,6 +9,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
+import android.util.Log
 
 object RealPathUtil {
 
@@ -60,8 +61,12 @@ object RealPathUtil {
                 val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val type = split[0]
 
+                Log.w("SatDump", "Fetching file with ID " + docId);
                 if ("primary".equals(type, ignoreCase = true)) {
                     return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+                }
+                if ("home".equals(type, ignoreCase = true)) {
+                    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/" + split[1]
                 }
             } else if (isDownloadsDocument(uri)) {
                 var cursor: Cursor? = null
@@ -69,7 +74,7 @@ object RealPathUtil {
                     cursor = context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)
                     cursor!!.moveToNext()
                     val fileName = cursor.getString(0)
-                    val path = Environment.getExternalStorageDirectory().toString() + "/Download/" + fileName
+                    val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()  + "/" + fileName
                     if (!TextUtils.isEmpty(path)) {
                         return path
                     }
