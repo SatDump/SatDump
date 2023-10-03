@@ -41,7 +41,7 @@ namespace satdump
             {
                 auto gcps_curr_bkp = gcps_curr;
                 gcps_curr.clear();
-                for (int y = 0; y < gcps_curr_bkp.size() - 1; y++)
+                for (int y = 0; y < (int)gcps_curr_bkp.size() - 1; y++)
                 {
                     auto gcp1 = gcps_curr[y];
                     auto gcp2 = gcps_curr[y + 1];
@@ -51,7 +51,7 @@ namespace satdump
             }
 
             std::vector<double> distances;
-            for (int y = 0; y < gcps_curr.size() - 1; y++)
+            for (int y = 0; y < (int)gcps_curr.size() - 1; y++)
             {
                 auto gcp1 = gcps_curr[y];
                 auto gcp2 = gcps_curr[y + 1];
@@ -62,7 +62,7 @@ namespace satdump
 
             std::sort(distances.begin(), distances.end());
 
-            double media_dist = median_dist = distances[distances.size() * 0.25];
+            double media_dist = median_dist = (distances.size() == 0 ? 0 : distances[distances.size() * 0.25]);
 
             nsegs = int((media_dist * gcps_curr.size()) / SEGMENT_SIZE_KM);
             if (nsegs == 0)
@@ -216,7 +216,7 @@ namespace satdump
                 {
                     auto gcps_curr_bkp = gcps_curr;
                     gcps_curr.clear();
-                    for (int y = 0; y < gcps_curr_bkp.size() - 1 && gcps_curr_bkp.size() > 1; y++)
+                    for (int y = 0; y < (int)gcps_curr_bkp.size() - 1 && gcps_curr_bkp.size() > 1; y++)
                     {
                         auto gcp1 = gcps_curr[y];
                         auto gcp2 = gcps_curr[y + 1];
@@ -227,7 +227,7 @@ namespace satdump
 
                 // Check if this segment is cut (eg, los of signal? Different recorded dump?)
                 std::vector<int> cutPositions;
-                for (int y = 0; y < gcps_curr.size() - 1 && gcps_curr.size() > 1; y++)
+                for (int y = 0; y < (int)gcps_curr.size() - 1 && gcps_curr.size() > 1; y++)
                     if (geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcps_curr[y].lat, gcps_curr[y].lon, 0),
                                                     geodetic::geodetic_coords_t(gcps_curr[y + 1].lat, gcps_curr[y + 1].lon, 0))
                             .distance > (8 * median_dist))
