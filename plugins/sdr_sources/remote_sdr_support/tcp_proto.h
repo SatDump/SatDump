@@ -66,7 +66,7 @@ public:
         if ((bind(serversockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) != 0)
             throw std::runtime_error("Socket bind failed");
         else
-            logger->trace("Socket successfully binded %d", port);
+            logger->trace("Socket successfully bound to TCP port %d", port);
 
         if ((listen(serversockfd, 5)) != 0)
             throw std::runtime_error("Listen failed");
