@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-#if 1
+#if 0
     std::ifstream data_in(argv[1], std::ios::binary);
     std::ofstream data_out(argv[2], std::ios::binary);
 
@@ -48,6 +48,23 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    std::ifstream data_in(argv[1], std::ios::binary);
+    std::ofstream data_out(argv[2], std::ios::binary);
+
+    uint8_t cadu[8192];
+    cadu[0] = 0x1a;
+    cadu[1] = 0xcf;
+    cadu[2] = 0xfc;
+    cadu[3] = 0x1d;
+
+    while (!data_in.eof()) //&& lines_img < 500)
+    {
+        data_in.read((char *)&cadu[4], 892);
+
+        data_out.write((char *)cadu, 1024);
+    }
+
+#if 0
     satdump::ImageProducts msu_gs_products;
     msu_gs_products.instrument_name = "msu_gs";
     msu_gs_products.has_timestamps = false;
@@ -66,4 +83,5 @@ int main(int argc, char *argv[])
     }
 
     msu_gs_products.save("./msu_gs_products_l2_test");
+#endif
 }
