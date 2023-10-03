@@ -84,6 +84,9 @@ bool FileSelectWidget::draw(std::string hint)
             get = get_select_directory_dialog_result();
         if (get != "")
         {
+            if(get == "NO_PATH_SELECTED")
+                waiting_for_res = false;
+            else
             {
 #else
         bool is_ready = (directory ? dirselect->ready(0) : fileselect->ready(0));
