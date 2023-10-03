@@ -432,7 +432,7 @@ namespace satdump
             crop_set = choseCropArea(op);
         }
 
-        WarpResult ImageWarper::warp()
+        WarpResult ImageWarper::warp(bool force_double)
         {
             WarpResult result;
 
@@ -447,9 +447,12 @@ namespace satdump
 #ifdef USE_OPENCL
             try
             {
-                logger->debug("Using GPU!");
+                logger->debug("Using GPU! Double precision requested %d", (int)force_double);
                 satdump::opencl::setupOCLContext();
-                warpOnGPU_fp32(result);
+                if (force_double)
+                    warpOnGPU_fp64(result);
+                else
+                    warpOnGPU_fp32(result);
                 return result;
             }
             catch (std::runtime_error &e)

@@ -82,6 +82,7 @@ namespace satdump
             std::vector<satdump::projection::GCP> gcps;
 
             std::shared_ptr<projection::VizGeorefSpline2D> tps = nullptr;
+            bool force_double = false;
         };
 
         void computeGCPCenter(std::vector<satdump::projection::GCP> &gcps, double &lon, double &lat)
@@ -181,11 +182,13 @@ namespace satdump
                         {
                             scfg.shift_lon = 0;
                             scfg.shift_lat = -90;
+                            scfg.force_double = true;
                         }
                         if (north_dis.distance < MIN_POLE_DISTANCE)
                         {
                             scfg.shift_lon = 0;
                             scfg.shift_lat = 90;
+                            scfg.force_double = true;
                         }
                     }
 
@@ -306,7 +309,7 @@ namespace satdump
                 warper.set_tps(segmentCfg.tps);
                 warper.update(true);
 
-                satdump::warp::WarpResult result2 = warper.warp();
+                satdump::warp::WarpResult result2 = warper.warp(segmentCfg.force_double);
 
                 // Setup projector....
                 geodetic::projection::EquirectangularProjection projector;

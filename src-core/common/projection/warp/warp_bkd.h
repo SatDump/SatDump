@@ -93,7 +93,7 @@ namespace satdump
             // (GPU, iGPU, or CPUs that have OpenCL support),
             // and if not available or in case of a failure, will use
             // a slower CPU function instead.
-            WarpResult warp();
+            WarpResult warp(bool force_double = false);
         };
     }
 }
