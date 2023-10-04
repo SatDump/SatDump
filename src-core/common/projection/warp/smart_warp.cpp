@@ -62,7 +62,7 @@ namespace satdump
 
             std::sort(distances.begin(), distances.end());
 
-            double media_dist = median_dist = (distances.size() == 0 ? 0 : distances[distances.size() * 0.25]);
+            double media_dist = median_dist = (distances.size() == 0 ? 0 : distances[distances.size() * 0.5]);
 
             nsegs = int((media_dist * gcps_curr.size()) / SEGMENT_SIZE_KM);
             if (nsegs == 0)
