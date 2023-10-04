@@ -59,12 +59,13 @@ void ImageViewWidget::draw(ImVec2 win_size)
         }
     }
 
-    ImGui::BeginChild(id_str.c_str(), win_size, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::BeginChild(id_str.c_str(), win_size, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     if (img_width > 0 && img_height > 0)
     {
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
-        if (ImPlot::BeginPlot((id_str + "plot").c_str(), win_size, ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
+        ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
+        if (ImPlot::BeginPlot((id_str + "plot").c_str(), {win_size.x, win_size.y - 16 * ui_scale}, ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
         {
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
             ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)texture_id, {0, 0}, ImVec2(img_width, img_height));
@@ -74,6 +75,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 mouseCallback(pos.x, (img_height - 1) - pos.y);
             ImPlot::EndPlot();
         }
+        ImPlot::PopStyleVar();
         ImPlot::PopStyleVar();
     }
 
