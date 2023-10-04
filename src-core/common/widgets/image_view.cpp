@@ -66,7 +66,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
         if (ImPlot::BeginPlot((id_str + "plot").c_str(), win_size, ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
         {
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
-            ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)texture_id, {0, 0}, {img_width, img_height});
+            ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)texture_id, {0, 0}, ImVec2(img_width, img_height));
             auto pos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
             if (pos.x >= 0 && pos.y >= 0 &&
                 pos.x < img_width && pos.y < img_height)
