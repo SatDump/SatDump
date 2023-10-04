@@ -11,7 +11,7 @@ namespace satdump
 {
     void TrackingWidget::renderPolarPlot()
     {
-        int d_pplot_size = ImGui::GetWindowContentRegionWidth();
+        int d_pplot_size = ImGui::GetWindowContentRegionMax().x;
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
         draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                  ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_size),
@@ -138,7 +138,7 @@ namespace satdump
             size = ImGui::CalcTextSize(buff);
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
             ImGui::TextColored(ImColor(0, 255, 0, 255), "El: %.1f", current_el);
-            
+
             if (next_aos_time > ctime)
                 size = ImGui::CalcTextSize(("AOS in" + time_dis).c_str());
             else
@@ -147,7 +147,7 @@ namespace satdump
             ImGui::SetCursorPosY(cur.y + d_pplot_size - 20 * ui_scale);
             curs = ImGui::GetCursorScreenPos();
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
-            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s in %s", next_aos_time > ctime ? "AOS" : "LOS" , time_dis.c_str());
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s in %s", next_aos_time > ctime ? "AOS" : "LOS", time_dis.c_str());
 
             ImGui::SetCursorPos(cur);
         }
@@ -182,7 +182,7 @@ namespace satdump
             ImGui::EndTable();
         }
 
-        ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth());
+        ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionMax().x);
         if (horizons_mode)
         {
             if (ImGui::BeginCombo("###horizonsselectcombo", horizonsoptions[current_horizons].second.c_str()))

@@ -11,8 +11,8 @@ private:
     unsigned int texture_id = 0;
     std::vector<uint32_t> texture_buffer;
 
-    int img_width;
-    int img_height;
+    int img_width = 0;
+    int img_height = 0;
 
     bool has_to_update = false;
     std::mutex image_mtx;

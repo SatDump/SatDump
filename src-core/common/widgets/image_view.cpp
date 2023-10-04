@@ -2,6 +2,7 @@
 #include "imgui/imgui_image.h"
 #include "core/module.h"
 #include "imgui/imgui_internal.h"
+#include "imgui/implot/implot.h"
 
 ImageViewWidget::ImageViewWidget()
 {
@@ -58,8 +59,23 @@ void ImageViewWidget::draw(ImVec2 win_size)
         }
     }
 
-    ImGui::BeginChild(id_str.c_str(), win_size, false, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::BeginChild(id_str.c_str(), win_size, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
+    if (img_width > 0 && img_height > 0)
+    {
+        if (ImPlot::BeginPlot((id_str + "plot").c_str(), win_size, ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
+        {
+            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
+            ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)texture_id, {0, 0}, {img_width, img_height});
+            auto pos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
+            if (pos.x >= 0 && pos.y >= 0 &&
+                pos.x < img_width && pos.y < img_height)
+                mouseCallback(pos.x, (img_height - 1) - pos.y);
+            ImPlot::EndPlot();
+        }
+    }
+
+#if 0
     ImGui::GetWindowDrawList()
         ->AddRectFilled(ImGui::GetCursorScreenPos(),
                         ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetScrollX() + ImGui::GetContentRegionAvail().x,
@@ -138,6 +154,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
     ImGui::SameLine();
     if (ImGui::Button(" + ##biggerimage"))
         img_scale *= 1.1;
+#endif
 #endif
 
     ImGui::EndChild();
