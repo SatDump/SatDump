@@ -63,6 +63,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
     if (img_width > 0 && img_height > 0)
     {
+        ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
         if (ImPlot::BeginPlot((id_str + "plot").c_str(), win_size, ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
         {
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
@@ -73,6 +74,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 mouseCallback(pos.x, (img_height - 1) - pos.y);
             ImPlot::EndPlot();
         }
+        ImPlot::PopStyleVar();
     }
 
 #if 0
