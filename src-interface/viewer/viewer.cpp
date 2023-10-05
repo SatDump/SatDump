@@ -285,26 +285,30 @@ namespace satdump
                     ImGui::Text("Load Dataset :");
                     if (select_dataset_dialog.draw())
                     {
-                        try
-                        {
-                            loadDatasetInViewer(select_dataset_dialog.getPath());
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error opening dataset - %s", e.what());
-                        }
+                        ui_thread_pool.push([this](int)
+                                            {
+                            try
+                            {
+                                loadDatasetInViewer(select_dataset_dialog.getPath());
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error opening dataset - %s", e.what());
+                            } });
                     }
                     ImGui::Text("Load Products :");
                     if (select_products_dialog.draw())
                     {
-                        try
-                        {
-                            loadProductsInViewer(select_products_dialog.getPath());
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error opening products - %s", e.what());
-                        }
+                        ui_thread_pool.push([this](int) 
+                                            {
+                            try
+                            {
+                                loadProductsInViewer(select_products_dialog.getPath());
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error opening products - %s", e.what());
+                            } });
                     }
                 }
 
