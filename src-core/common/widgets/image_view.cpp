@@ -17,26 +17,102 @@ ImageViewWidget::~ImageViewWidget()
 void ImageViewWidget::update(image::Image<uint16_t> image)
 {
     image_mtx.lock();
-    img_width = image.width();
-    img_height = image.height();
+    if (image.width() <= 8192 && image.height() <= 8192)
+    {
+        img_chunks.resize(1);
+        fimg_width = img_chunks[0].img_width = image.width();
+        fimg_height = img_chunks[0].img_height = image.height();
 
-    texture_buffer.resize(img_width * img_height);
-    ushort_to_rgba(image.data(), texture_buffer.data(), img_width * img_height, image.channels());
+        img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
+        ushort_to_rgba(image.data(), img_chunks[0].texture_buffer.data(), img_chunks[0].img_width * img_chunks[0].img_height, image.channels());
+    }
+    else
+    {
+        fimg_width = image.width();
+        fimg_height = image.height();
+
+        int chunksx = fimg_width / 4096;
+        int chunksy = fimg_height / 4096;
+        if (chunksx == 0)
+            chunksx = 1;
+        if (chunksy == 0)
+            chunksy = 1;
+        img_chunks.resize(chunksx * chunksy);
+
+        for (int ix = 0; ix < chunksx; ix++)
+        {
+            for (int iy = 0; iy < chunksy; iy++)
+            {
+                int i = iy * chunksx + ix;
+                int height_start = ((double)iy / (double)chunksy) * (double)fimg_height;
+                int height_end = (((double)iy + 1.0) / (double)chunksy) * (double)fimg_height;
+                int width_start = ((double)ix / (double)chunksx) * (double)fimg_width;
+                int width_end = (((double)ix + 1.0) / (double)chunksx) * (double)fimg_width;
+
+                img_chunks[i].img_width = width_end - width_start;
+                img_chunks[i].img_height = height_end - height_start;
+
+                img_chunks[i].texture_buffer.resize(img_chunks[i].img_width * img_chunks[i].img_height);
+                auto crop = image.crop_to(width_start, height_start, width_end, height_end);
+                ushort_to_rgba(crop.data(), img_chunks[i].texture_buffer.data(), img_chunks[i].img_width * img_chunks[i].img_height, image.channels());
+
+                img_chunks[i].offset_x = width_start;
+                img_chunks[i].offset_y = fimg_height - height_start;
+            }
+        }
+    }
     has_to_update = true;
-
     image_mtx.unlock();
 }
 
 void ImageViewWidget::update(image::Image<uint8_t> image)
 {
     image_mtx.lock();
-    img_width = image.width();
-    img_height = image.height();
+    if (image.width() <= 8192 && image.height() <= 8192)
+    {
+        img_chunks.resize(1);
+        fimg_width = img_chunks[0].img_width = image.width();
+        fimg_height = img_chunks[0].img_height = image.height();
 
-    texture_buffer.resize(img_width * img_height);
-    uchar_to_rgba(image.data(), texture_buffer.data(), img_width * img_height, image.channels());
+        img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
+        uchar_to_rgba(image.data(), img_chunks[0].texture_buffer.data(), img_chunks[0].img_width * img_chunks[0].img_height, image.channels());
+    }
+    else
+    {
+        fimg_width = image.width();
+        fimg_height = image.height();
+
+        int chunksx = fimg_width / 4096;
+        int chunksy = fimg_height / 4096;
+        if (chunksx == 0)
+            chunksx = 1;
+        if (chunksy == 0)
+            chunksy = 1;
+        img_chunks.resize(chunksx * chunksy);
+
+        for (int ix = 0; ix < chunksx; ix++)
+        {
+            for (int iy = 0; iy < chunksy; iy++)
+            {
+                int i = iy * chunksx + ix;
+                int height_start = ((double)iy / (double)chunksy) * (double)fimg_height;
+                int height_end = (((double)iy + 1.0) / (double)chunksy) * (double)fimg_height;
+                int width_start = ((double)ix / (double)chunksx) * (double)fimg_width;
+                int width_end = (((double)ix + 1.0) / (double)chunksx) * (double)fimg_width;
+
+                img_chunks[i].img_width = width_end - width_start;
+                img_chunks[i].img_height = height_end - height_start;
+
+                img_chunks[i].texture_buffer.resize(img_chunks[i].img_width * img_chunks[i].img_height);
+                auto crop = image.crop_to(width_start, height_start, width_end, height_end);
+                uchar_to_rgba(crop.data(), img_chunks[i].texture_buffer.data(), img_chunks[i].img_width * img_chunks[i].img_height, image.channels());
+
+                img_chunks[i].offset_x = width_start;
+                img_chunks[i].offset_y = fimg_height - height_start;
+            }
+        }
+    }
     has_to_update = true;
-
     image_mtx.unlock();
 }
 
@@ -100,30 +176,38 @@ void ImageViewWidget::draw(ImVec2 win_size)
 {
     image_mtx.lock();
 
-    if (texture_id == 0)
-        texture_id = makeImageTexture();
+    for (auto &chunk : img_chunks)
+        if (chunk.texture_id == 0)
+            chunk.texture_id = makeImageTexture();
 
     if (has_to_update)
     {
-        updateImageTexture(texture_id, texture_buffer.data(), img_width, img_height);
-        texture_buffer.clear();
+        for (auto &chunk : img_chunks)
+        {
+            updateImageTexture(chunk.texture_id, chunk.texture_buffer.data(), chunk.img_width, chunk.img_height);
+            chunk.texture_buffer.clear();
+        }
         has_to_update = false;
     }
 
     ImGui::BeginChild(id_str.c_str(), win_size, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-    if (img_width > 0 && img_height > 0)
+    if (img_chunks.size() > 0)
     {
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
         if (ImPlot::BeginPlot((id_str + "plot").c_str(), ImVec2(win_size.x, win_size.y - 16 * ui_scale), ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
         {
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
-            ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)texture_id, {0, 0}, ImVec2(img_width, img_height));
+
+            for (auto &chunk : img_chunks)
+                ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id,
+                                  {chunk.offset_x, chunk.offset_y}, ImVec2(chunk.offset_x + chunk.img_width, chunk.offset_y + chunk.img_height));
+
             auto pos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
             if (pos.x >= 0 && pos.y >= 0 &&
-                pos.x < img_width && pos.y < img_height)
-                mouseCallback(pos.x, (img_height - 1) - pos.y);
+                pos.x < fimg_width && pos.y < fimg_height)
+                mouseCallback(pos.x, (fimg_height - 1) - pos.y);
 
 #ifdef __ANDROID__
             auto pre_pos = ImGui::GetCursorPos();
