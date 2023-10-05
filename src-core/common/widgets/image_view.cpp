@@ -205,7 +205,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
             for (auto &chunk : img_chunks)
                 ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id,
-                                  {chunk.offset_x, chunk.offset_y}, ImVec2(chunk.offset_x + chunk.img_width, chunk.offset_y + chunk.img_height));
+                                  ImPlotPoint(chunk.offset_x, chunk.offset_y), ImPlotPoint(chunk.offset_x + chunk.img_width, chunk.offset_y + chunk.img_height));
 
             auto pos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
             if (pos.x >= 0 && pos.y >= 0 &&
