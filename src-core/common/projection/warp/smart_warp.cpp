@@ -39,12 +39,12 @@ namespace satdump
                           return el1.y * operation_t.input_image.width() + el1.x < el2.y * operation_t.input_image.width() + el2.x;
                       });
             {
-                auto gcps_curr_bkp = gcps_curr;
+                std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
                 gcps_curr.clear();
                 for (int y = 0; y < (int)gcps_curr_bkp.size() - 1; y++)
                 {
-                    auto gcp1 = gcps_curr[y];
-                    auto gcp2 = gcps_curr[y + 1];
+                    auto gcp1 = gcps_curr_bkp[y];
+                    auto gcp2 = gcps_curr_bkp[y + 1];
                     if (gcp1.y != gcp2.y)
                         gcps_curr.push_back(gcp2);
                 }
@@ -217,12 +217,12 @@ namespace satdump
                               return el1.y * operation_t.input_image.width() + el1.x < el2.y * operation_t.input_image.width() + el2.x;
                           });
                 {
-                    auto gcps_curr_bkp = gcps_curr;
+                    std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
                     gcps_curr.clear();
                     for (int y = 0; y < (int)gcps_curr_bkp.size() - 1 && gcps_curr_bkp.size() > 1; y++)
                     {
-                        auto gcp1 = gcps_curr[y];
-                        auto gcp2 = gcps_curr[y + 1];
+                        auto gcp1 = gcps_curr_bkp[y];
+                        auto gcp2 = gcps_curr_bkp[y + 1];
                         if (gcp1.y != gcp2.y)
                             gcps_curr.push_back(gcp2);
                     }
