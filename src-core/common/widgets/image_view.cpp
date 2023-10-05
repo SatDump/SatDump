@@ -4,6 +4,7 @@
 #include "imgui/imgui_internal.h"
 #include "imgui/implot/implot.h"
 #include "imgui/implot/implot_internal.h"
+#include "logger.h"
 
 ImageViewWidget::ImageViewWidget()
 {
@@ -28,6 +29,7 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
     }
     else
     {
+        logger->trace("Mouse tooltip might have an issue here! (TODO)");
         fimg_width = image.width();
         fimg_height = image.height();
 
@@ -79,6 +81,7 @@ void ImageViewWidget::update(image::Image<uint8_t> image)
     }
     else
     {
+        logger->trace("Mouse tooltip might have an issue here! (TODO)");
         fimg_width = image.width();
         fimg_height = image.height();
 
