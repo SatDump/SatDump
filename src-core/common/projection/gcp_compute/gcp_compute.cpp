@@ -8,6 +8,24 @@ namespace satdump
     {
         std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, int width, int height)
         {
+            if (cfg["type"] == "normal_gcps")
+            {
+                std::vector<satdump::projection::GCP> gcps;
+                int gcpn = cfg["gcp_cnt"];
+                nlohmann::json gcps_cfg = cfg["gcps"];
+                for (int i = 0; i < gcpn; i++)
+                {
+                    satdump::projection::GCP gcp;
+                    gcp.x = gcps_cfg[i]["x"];
+                    gcp.y = gcps_cfg[i]["y"];
+                    gcp.lon = gcps_cfg[i]["lon"];
+                    gcp.lat = gcps_cfg[i]["lat"];
+                    gcps.push_back(gcp);
+                }
+
+                return gcps;
+            }
+
             nlohmann::ordered_json mtd = cfg.contains("metadata") ? cfg["metadata"] : nlohmann::ordered_json();
 
             TLE tle;

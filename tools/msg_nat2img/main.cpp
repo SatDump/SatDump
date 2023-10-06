@@ -100,8 +100,8 @@ int main(int argc, char *argv[])
     mh_strs[46] = (char *)buf + 4954;
     mh_strs[47] = (char *)buf + 5034;
 
-    // for (int i = 0; i < 48; i++)
-    //      logger->debug("L%d %s", i, mh_strs[i].substr(0, mh_strs[i].size() - 1).c_str());
+    for (int i = 0; i < 48; i++)
+        logger->debug("L%d %s", i, mh_strs[i].substr(0, mh_strs[i].size() - 1).c_str());
 
     // IMG Size
     int vis_ir_x_size, vis_ir_y_size;
