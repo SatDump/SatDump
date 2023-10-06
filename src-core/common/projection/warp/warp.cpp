@@ -148,6 +148,11 @@ namespace satdump
             cset.lat_max = ceil(lat_max);
             cset.lon_max = ceil(lon_max);
 
+            if (op.shift_lat == 90)
+                cset.lat_max = 90;
+            if (op.shift_lat == -90)
+                cset.lat_min = -90;
+
             // Compute to pixels
             cset.y_max = op.output_height - ((90.0f + cset.lat_min) / 180.0f) * op.output_height;
             cset.y_min = op.output_height - ((90.0f + cset.lat_max) / 180.0f) * op.output_height;
