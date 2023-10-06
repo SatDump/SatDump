@@ -74,13 +74,19 @@ namespace satdump
                     if (afXY[0] == gcps[oIter->second].lon && afXY[1] == gcps[oIter->second].lat)
                         continue;
                     else
+                    {
                         logger->warn("2 GCPs have the same X,Y!");
+                        continue;
+                    }
                 }
                 else
                     oMapPixelLineToIdx[std::pair<double, double>(afPL[0], afPL[1])] = iGCP;
 
                 if (oMapXYToIdx.find(std::pair<double, double>(afXY[0], afXY[1])) != oMapXYToIdx.end())
+                {
                     logger->warn("2 GCPs have the same Lat,Lon!");
+                    continue;
+                }
                 else
                     oMapXYToIdx[std::pair<double, double>(afXY[0], afXY[1])] = iGCP;
 

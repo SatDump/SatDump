@@ -72,10 +72,10 @@ int main(int /*argc*/, char *argv[])
     nlohmann::json final_mtd;
     operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
     // operation_t.input_image.median_blur();
-    nlohmann::json proj_cfg = img_pro.get_proj_cfg(); // loadJsonFile(argv[2]);
-                                                      // proj_cfg["metadata"] = final_mtd;
-                                                      // proj_cfg["metadata"]["tle"] = img_pro.get_tle();
-                                                      // proj_cfg["metadata"]["timestamps"] = final_tt;
+    nlohmann::json proj_cfg = loadJsonFile(argv[2]);
+    proj_cfg["metadata"] = final_mtd;
+    proj_cfg["metadata"]["tle"] = img_pro.get_tle();
+    proj_cfg["metadata"]["timestamps"] = final_tt;
     operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
                                                                            operation_t.input_image.width(),
                                                                            operation_t.input_image.height());
