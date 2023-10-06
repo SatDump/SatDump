@@ -1,7 +1,7 @@
 #include "gcp_compute.h"
 #include "nlohmann/json_utils.h"
 #include "../sat_proj/sat_proj.h"
-#include "logger.h"
+// #include "logger.h"
 
 namespace satdump
 {
@@ -89,7 +89,7 @@ namespace satdump
                         if (position.lon != position.lon || position.lat != position.lat)
                             continue; // Check for NAN
 
-                        logger->trace("%f %f %f %f", (double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat);
+                        // logger->trace("%f %f %f %f", (double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat);
                         gcps.push_back({(double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat});
                     }
 
