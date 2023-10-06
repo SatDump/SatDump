@@ -28,10 +28,12 @@ namespace satdump
         op.img = img;
         op.output_width = proj_settings["width"].get<int>();
         op.output_height = proj_settings["height"].get<int>();
-        op.img_tle = img_products.get_tle();
-        op.img_tim = timestamps;
+        op.source_prj_info["metadata"] = metadata;
+        op.source_prj_info["metadata"]["tle"] = img_products.get_tle();
+        op.source_prj_info["metadata"]["timestamps"] = timestamps;
+
         if (proj_settings.contains("old_algo"))
-            op.use_draw_algorithm = proj_settings["old_algo"];
+            op.use_old_algorithm = proj_settings["old_algo"];
 
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
@@ -43,7 +45,7 @@ namespace satdump
         {
             if (proj_settings["draw_map"].get<bool>())
             {
-                auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings, metadata);
+                auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
                 logger->info("Drawing map");
                 unsigned short color[3] = {0, 65535, 0};
                 map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
@@ -108,7 +110,8 @@ namespace satdump
                         bool success = false;
                         image::Image<uint16_t> cor;
                         rgb_image_corr = perform_geometric_correction(*img_products, rgb_image, success, corrected_stuff.data());
-                        if (!success) {
+                        if (!success)
+                        {
                             geo_correct = false;
                             corrected_stuff.clear();
                         }
@@ -121,12 +124,13 @@ namespace satdump
                     if (map_overlay || cities_overlay)
                     {
                         rgb_image.to_rgb(); // Ensure this is RGB!!
+                        nlohmann::json proj_cfg = img_products->get_proj_cfg();
+                        proj_cfg["metadata"] = final_metadata;
+                        proj_cfg["metadata"]["tle"] = img_products->get_tle();
+                        proj_cfg["metadata"]["timestamps"] = final_timestamps;
                         proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
                                                                                    rgb_image.height(),
-                                                                                   img_products->get_proj_cfg(),
-                                                                                   final_metadata,
-                                                                                   img_products->get_tle(),
-                                                                                   final_timestamps);
+                                                                                   proj_cfg);
 
                         if (geo_correct)
                         {
@@ -238,7 +242,6 @@ namespace satdump
                                                                         *img_products);
                         ret.img.save_img(product_path + "/rgb_" + name + "_projected");
                     }
-
                 }
                 catch (std::exception &e)
                 {

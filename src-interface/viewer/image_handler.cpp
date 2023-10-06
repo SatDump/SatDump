@@ -62,9 +62,6 @@ namespace satdump
 
 #ifdef USE_OPENCL
         opencl::initOpenCL();
-        use_draw_proj_algo = opencl::getAllDevices().size() == 0;
-#else
-        use_draw_proj_algo = true;
 #endif
     }
 
@@ -147,12 +144,15 @@ namespace satdump
         if (map_overlay || cities_overlay)
         {
             current_image.to_rgb(); // Ensure this is RGB!!
+            nlohmann::json proj_cfg = products->get_proj_cfg();
+            proj_cfg["metadata"] = current_proj_metadata;
+            if (products->has_tle())
+                proj_cfg["metadata"]["tle"] = products->get_tle();
+            if (products->has_timestamps)
+                proj_cfg["metadata"]["timestamps"] = current_timestamps;
             auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
                                                                             pre_corrected_height,
-                                                                            products->get_proj_cfg(),
-                                                                            current_proj_metadata,
-                                                                            products->get_tle(),
-                                                                            current_timestamps,
+                                                                            proj_cfg,
                                                                             !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
 
             if (corrected_stuff.size() != 0 && correct_image)
@@ -609,7 +609,11 @@ namespace satdump
             }
 
             if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
+            {
                 select_rgb_presets = -1; // Editing, NOT the compo anymore!
+                rgb_compo_cfg.lua = "";
+                rgb_compo_cfg.lut = "";
+            }
             if (rgb_processing)
                 style::beginDisabled();
             if (ImGui::Button("Apply") && !rgb_processing)
@@ -696,9 +700,10 @@ namespace satdump
 
                 if (!should_project)
                     style::beginDisabled();
-                ImGui::Checkbox("Old algorithm", &use_draw_proj_algo);
+                ImGui::Checkbox("Old algorithm", &project_old_algorithm);
                 if (!should_project)
                     style::endDisabled();
+
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 {
@@ -709,14 +714,15 @@ namespace satdump
                         ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
                     else
                         ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
-                                                                 "deal with bad (noisy) data\n"
-                                                                 "better, and is also faster \n"
-                                                                 "if you do not have an\n"
-                                                                 "OpenCL-compatible Graphics\n"
-                                                                 "Card.\n"
+                                                                 "deal with very bad (noisy) data\n"
+                                                                 "better.\n"
                                                                  "The new one is preferred if\n"
                                                                  "possible though, as results\n"
-                                                                 "are a lot nicer! :-)");
+                                                                 "are a lot nicer! :-)\n"
+                                                                 "If you had to use this\n"
+                                                                 "and the data was not that bad\n"
+                                                                 "please report as a bug!");
+
                     ImGui::EndTooltip();
                 }
             }
@@ -802,9 +808,10 @@ namespace satdump
     bool ImageViewerHandler::canBeProjected()
     {
         return products->has_proj_cfg() &&
-               products->has_tle() &&
-               products->has_proj_cfg() &&
-               current_timestamps.size() > 0 &&
+               // products->has_tle() &&
+               // products->has_proj_cfg() &&
+               // current_timestamps.size() > 0 &&
+               // Perhaps we need to check based on the projection type or such?
                !correct_image;
     }
 
@@ -822,21 +829,30 @@ namespace satdump
     {
         if (canBeProjected())
         {
-            reprojection::ReprojectionOperation op;
-            op.source_prj_info = products->get_proj_cfg();
-            op.source_mtd_info = current_proj_metadata;
-            op.target_prj_info = settings;
-            op.img = current_image;
-            if (rotate_image)
-                op.img.mirror(true, true);
-            op.output_width = width;
-            op.output_height = height;
-            op.use_draw_algorithm = use_draw_proj_algo;
-            op.img_tle = products->get_tle();
-            op.img_tim = current_timestamps;
-            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-            projected_img = res.img;
-            projection_ready = true;
+            try
+            {
+                reprojection::ReprojectionOperation op;
+                op.source_prj_info = products->get_proj_cfg();
+                op.source_prj_info["metadata"] = current_proj_metadata;
+                op.target_prj_info = settings;
+                op.img = current_image;
+                op.use_old_algorithm = project_old_algorithm;
+                if (rotate_image)
+                    op.img.mirror(true, true);
+                op.output_width = width;
+                op.output_height = height;
+                if (products->has_tle())
+                    op.source_prj_info["metadata"]["tle"] = products->get_tle();
+                if (products->has_timestamps)
+                    op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
+                reprojection::ProjectionResult res = reprojection::reproject(op, progess);
+                projected_img = res.img;
+                projection_ready = true;
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not project image! %s", e.what());
+            }
         }
         else
         {

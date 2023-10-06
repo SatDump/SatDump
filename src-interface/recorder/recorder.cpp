@@ -80,7 +80,6 @@ namespace satdump
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
-        file_sink->set_output_sample_type(dsp::CF_32);
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
@@ -94,6 +93,7 @@ namespace satdump
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
 
+        set_output_sample_format();
         fft_plot->set_size(fft_size);
         waterfall_plot->set_size(fft_size);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
@@ -377,63 +377,8 @@ namespace satdump
                                                                       "ziq2 s16 (WIP)\0"
 #endif
                                      ))
-                    {
-                        int type_lut[] = {
-                            0,
-                            1,
-                            2,
-                            3,
-#ifdef BUILD_ZIQ
-                            4,
-                            5,
-                            6,
-#endif
-#ifdef BUILD_ZIQ2
-                            7,
-                            8,
-#endif
-                        };
+                        set_output_sample_format();
 
-                        int f = type_lut[select_sample_format];
-
-                        if (f == 0)
-                            file_sink->set_output_sample_type(dsp::CF_32);
-                        else if (f == 1)
-                            file_sink->set_output_sample_type(dsp::IS_16);
-                        else if (f == 2)
-                            file_sink->set_output_sample_type(dsp::IS_8);
-                        else if (f == 3)
-                            file_sink->set_output_sample_type(dsp::WAV_16);
-#ifdef BUILD_ZIQ
-                        else if (f == 4)
-                        {
-                            file_sink->set_output_sample_type(dsp::ZIQ);
-                            ziq_bit_depth = 8;
-                        }
-                        else if (f == 5)
-                        {
-                            file_sink->set_output_sample_type(dsp::ZIQ);
-                            ziq_bit_depth = 16;
-                        }
-                        else if (f == 6)
-                        {
-                            file_sink->set_output_sample_type(dsp::ZIQ);
-                            ziq_bit_depth = 32;
-                        }
-#endif
-#ifdef BUILD_ZIQ2
-                        else if (f == 7)
-                        {
-                            file_sink->set_output_sample_type(dsp::ZIQ2);
-                            ziq_bit_depth = 8;
-                        }
-                        else if (f == 8)
-                        {
-                            file_sink->set_output_sample_type(dsp::ZIQ2);
-                            ziq_bit_depth = 16;
-                        }
-#endif
-                    }
                     if (is_recording)
                         style::endDisabled();
 
@@ -524,7 +469,6 @@ namespace satdump
             ImGui::EndGroup();
 
             ImGui::TableNextColumn();
-            ImGui::SameLine();
             ImGui::BeginGroup();
             ImGui::BeginChild("RecorderFFT", { right_width, wf_size }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
@@ -541,14 +485,14 @@ namespace satdump
                 ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
-                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8 * ui_scale);
-                    fft_plot->draw({float(right_width - 8 * ui_scale), fft_height});
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
+                    fft_plot->draw({float(right_width - 9 * ui_scale), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered())
                     {
                         ImVec2 mouse_pos = ImGui::GetMousePos();
-                        float ratio = (mouse_pos.x - left_width - 16 * ui_scale) / (right_width - 8 * ui_scale) - 0.5;
+                        float ratio = (mouse_pos.x - left_width - 16 * ui_scale) / (right_width - 9 * ui_scale) - 0.5;
                         ImGui::SetTooltip("%s", ((ratio >= 0 ? "" : "- ") + format_notated(abs(ratio) * get_samplerate(), "Hz\n") +
                                                  format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz"))
                                                     .c_str());
@@ -558,7 +502,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
-                    waterfall_plot->draw({float(right_width - 8 * ui_scale), wf_height}, is_started);
+                    waterfall_plot->draw({float(right_width - 9 * ui_scale), wf_height}, is_started);
                 }
             }
             ImGui::EndChild();

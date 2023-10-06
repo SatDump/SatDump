@@ -239,7 +239,7 @@ namespace satdump
         {
             ImGui::Spacing();
             int d_pplot_height = (enabled_satellites.size() * 20) * ui_scale;
-            int d_pplot_size = ImGui::GetWindowContentRegionWidth();
+            int d_pplot_size = ImGui::GetWindowContentRegionMax().x;
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
             draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                      ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_height + 20 * ui_scale),
@@ -249,13 +249,13 @@ namespace satdump
             time_t tttime = current_time;
             std::tm *timeReadable = gmtime(&tttime);
             int curr_hour = timeReadable->tm_hour;
-            int offset = d_pplot_size / 12 * (timeReadable->tm_min/60.0);
+            int offset = d_pplot_size / 12 * (timeReadable->tm_min / 60.0);
             ImGui::Dummy(ImVec2(0, 0));
             for (int i = (timeReadable->tm_min < 30 ? 1 : 0); i < (timeReadable->tm_min < 30 ? 12 : 13); i++)
             {
                 ImGui::SameLine();
                 ImGui::SetCursorPosX(i * d_pplot_size / 12 - offset);
-                ImGui::Text("%s%s%s", (curr_hour + i)%24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00");
+                ImGui::Text("%s%s%s", (curr_hour + i) % 24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00");
             }
             float sat_blk_height = ((float)d_pplot_height / (float)enabled_satellites.size());
             for (int i = 0; i < (int)enabled_satellites.size(); i++)
@@ -350,18 +350,18 @@ namespace satdump
                 auto color = ImColor::HSV(fmod(cpass.norad, 10) / 10.0, 1, 1);
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::SetNextItemWidth(100*ui_scale);
+                ImGui::SetNextItemWidth(100 * ui_scale);
                 ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
                 ImGui::TableSetColumnIndex(1);
-                ImGui::SetNextItemWidth(120*ui_scale);
+                ImGui::SetNextItemWidth(120 * ui_scale);
                 ImGui::InputDouble(((std::string) "Frequency##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0, 0, "%f MHz");
                 ImGui::TableSetColumnIndex(2);
-                ImGui::SetNextItemWidth(100*ui_scale);
+                ImGui::SetNextItemWidth(100 * ui_scale);
                 ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + std::to_string(cpass.norad)).c_str(), &cpass.record);
                 // ImGui::TableSetColumnIndex(3);
                 ImGui::Checkbox(((std::string) "Live##objcfgfreq3" + std::to_string(cpass.norad)).c_str(), &cpass.live);
                 ImGui::TableSetColumnIndex(3);
-                ImGui::SetNextItemWidth(300*ui_scale);
+                ImGui::SetNextItemWidth(300 * ui_scale);
                 ImGui::PushID(cpass.norad);
                 if (ImGui::BeginCombo("##pipelinesel", cpass.pipeline_selector->get_name(cpass.pipeline_selector->pipeline_id).c_str(), ImGuiComboFlags_HeightLarge))
                 {

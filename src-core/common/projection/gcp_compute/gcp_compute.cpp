@@ -1,13 +1,46 @@
 #include "gcp_compute.h"
 #include "nlohmann/json_utils.h"
 #include "../sat_proj/sat_proj.h"
+// #include "logger.h"
 
 namespace satdump
 {
     namespace gcp_compute
     {
-        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, nlohmann::json mtd, TLE tle, nlohmann::ordered_json timestamps, int width, int height)
+        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, int width, int height)
         {
+            if (cfg["type"] == "normal_gcps")
+            {
+                std::vector<satdump::projection::GCP> gcps;
+                int gcpn = cfg["gcp_cnt"];
+                nlohmann::json gcps_cfg = cfg["gcps"];
+                for (int i = 0; i < gcpn; i++)
+                {
+                    satdump::projection::GCP gcp;
+                    gcp.x = gcps_cfg[i]["x"];
+                    gcp.y = gcps_cfg[i]["y"];
+                    gcp.lon = gcps_cfg[i]["lon"];
+                    gcp.lat = gcps_cfg[i]["lat"];
+                    gcps.push_back(gcp);
+                }
+
+                return gcps;
+            }
+
+            nlohmann::ordered_json mtd = cfg.contains("metadata") ? cfg["metadata"] : nlohmann::ordered_json();
+
+            TLE tle;
+            if (mtd.contains("tle"))
+                tle = mtd["tle"];
+            else
+                throw std::runtime_error("Could not get TLE!");
+
+            nlohmann::ordered_json timestamps;
+            if (mtd.contains("timestamps"))
+                timestamps = mtd["timestamps"];
+            else
+                throw std::runtime_error("Could not get timestamps!");
+
             std::vector<satdump::projection::GCP> gcps;
 
             std::shared_ptr<SatelliteProjection> projection = get_sat_proj(cfg, tle, timestamps);
@@ -53,6 +86,10 @@ namespace satdump
                             continue;
                         }
 
+                        if (position.lon != position.lon || position.lat != position.lat)
+                            continue; // Check for NAN
+
+                        // logger->trace("%f %f %f %f", (double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat);
                         gcps.push_back({(double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat});
                     }
 

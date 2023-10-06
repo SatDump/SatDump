@@ -14,6 +14,8 @@
 #include "notify_logger_sink.h"
 #include "status_logger_sink.h"
 
+#include "imgui/implot/implot.h"
+
 // #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
 #include "common/widgets/image_view.h"
@@ -37,6 +39,8 @@ namespace satdump
 
     void initMainUI(float device_scale)
     {
+        ImPlot::CreateContext();
+
         audio::registerSinks();
         offline::setup();
         settings::setup();
@@ -60,9 +64,9 @@ namespace satdump
         notify_logger_sink = std::make_shared<NotifyLoggerSink>();
         logger->add_sink(notify_logger_sink);
 
-        //Logger status bar sync
+        // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
-        if(status_logger_sink->is_shown())
+        if (status_logger_sink->is_shown())
             logger->add_sink(status_logger_sink);
     }
 
@@ -130,7 +134,7 @@ namespace satdump
                     }
                 }
             }
-            if(status_bar)
+            if (status_bar)
                 wheight -= status_logger_sink->draw();
 
             ImGui::SetNextWindowPos({0, 0});

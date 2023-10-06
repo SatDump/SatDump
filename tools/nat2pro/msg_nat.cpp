@@ -1,45 +1,10 @@
-/**********************************************************************
- * This file is used for testing random stuff without running the
- * whole of SatDump, which comes in handy for debugging individual
- * elements before putting them all together in modules...
- *
- * If you are an user, ignore this file which will not be built by
- * default, and if you're a developper in need of doing stuff here...
- * Go ahead!
- *
- * Don't judge the code you might see in there! :)
- **********************************************************************/
-
-#include "logger.h"
-#include <fstream>
-#include <vector>
-#include "common/image/image.h"
+#include "main.h"
+#include "products/image_products.h"
 #include "common/repack.h"
+#include "logger.h"
 
-int main(int argc, char *argv[])
+void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
 {
-    initLogger();
-
-    if (argc < 3)
-    {
-        logger->error("Not enough arguments");
-        return 1;
-    }
-
-    std::string msg_native_file = argv[1]; //"/home/alan/Downloads/MSG4-SEVI-MSG15-0100-NA-20220701121243.901000000Z-NA/MSG4-SEVI-MSG15-0100-NA-20220701121243.901000000Z-NA.nat";
-
-    // We will in the future want to decode from memory, so load it all up in RAM
-    std::vector<uint8_t> msg_file;
-    {
-        std::ifstream input_file(msg_native_file);
-        uint8_t byte;
-        while (!input_file.eof())
-        {
-            input_file.read((char *)&byte, 1);
-            msg_file.push_back(byte);
-        }
-    }
-
     uint8_t *buf = msg_file.data();
 
     // Parse header
@@ -98,19 +63,22 @@ int main(int argc, char *argv[])
     mh_strs[46] = (char *)buf + 4954;
     mh_strs[47] = (char *)buf + 5034;
 
-    // for (int i = 0; i < 48; i++)
-    //     logger->debug("L%d %s", i, mh_strs[i].substr(0, mh_strs[i].size() - 1));
+    for (int i = 0; i < 48; i++)
+        logger->debug("L%d %s", i, mh_strs[i].substr(0, mh_strs[i].size() - 1).c_str());
 
     // IMG Size
     int vis_ir_x_size, vis_ir_y_size;
     int hrv_x_size, hrv_y_size;
+    float longitude;
     sscanf(mh_strs[44].c_str(), "NumberLinesVISIR            : %d", &vis_ir_y_size);
     sscanf(mh_strs[45].c_str(), "NumberColumnsVISIR          : %d", &vis_ir_x_size);
     sscanf(mh_strs[46].c_str(), "NumberLinesHRV              : %d", &hrv_y_size);
     sscanf(mh_strs[47].c_str(), "NumberColumnsHRV            : %d", &hrv_x_size);
+    sscanf(mh_strs[14].c_str(), "LLOS                        : %f", &longitude);
 
     logger->warn("VIS/IR Size : %dx%d", vis_ir_x_size, vis_ir_y_size);
     logger->warn("HRV    Size : %dx%d", hrv_x_size, hrv_y_size);
+    logger->warn("Longitude   : %f", longitude);
 
     // Other data
     long int headerpos, datapos, trailerpos;
@@ -162,27 +130,42 @@ int main(int argc, char *argv[])
     }
 
     // Saving
+    satdump::ImageProducts seviri_products;
+    seviri_products.instrument_name = "seviri";
+    seviri_products.has_timestamps = false;
+    seviri_products.bit_depth = 10;
+
+    nlohmann::json proj_cfg;
+    proj_cfg["type"] = "geos";
+    proj_cfg["lon"] = longitude;
+    proj_cfg["alt"] = 35792.74;
+    proj_cfg["scale_x"] = 1.145;
+    proj_cfg["scale_y"] = 1.145;
+    proj_cfg["offset_x"] = -0.0005;
+    proj_cfg["offset_y"] = 0.0005;
+    proj_cfg["sweep_x"] = false;
+    seviri_products.set_proj_cfg(proj_cfg);
+
     for (int channel = 0; channel < 12; channel++)
     {
         if (bandsel[channel] != 'X')
             continue;
-
-        std::string path = "SEVIRI_" + std::to_string(channel + 1);
-
         vis_ir_imgs[channel].mirror(true, true);
-
-        logger->info("Saving " + path);
-        vis_ir_imgs[channel].save_img(path);
+        seviri_products.images.push_back({"SEVIRI-" + std::to_string(channel + 1), std::to_string(channel + 1), vis_ir_imgs[channel]});
     }
 
+    if (!std::filesystem::exists(pro_output_file))
+        std::filesystem::create_directories(pro_output_file);
+    seviri_products.save(pro_output_file);
+
+    // Write composite
     std::string path = "SEVIRI_321";
     image::Image<uint16_t> compo_321(vis_ir_x_size, vis_ir_y_size, 3);
-    compo_321.append_ext(&path);
 
     compo_321.draw_image(0, vis_ir_imgs[2]);
     compo_321.draw_image(1, vis_ir_imgs[1]);
     compo_321.draw_image(2, vis_ir_imgs[0]);
 
     logger->info("Saving " + path);
-    compo_321.save_img(path);
+    compo_321.save_png(path + ".png");
 }

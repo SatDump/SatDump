@@ -15,7 +15,7 @@ namespace satdump
     private:
         void push_frame(std::string str);
         GLFWwindow* window;
-        float scale;
+        float scale, macos_scale;
         GLuint image_texture;
     };
 }

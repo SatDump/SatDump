@@ -18,6 +18,37 @@
   cards) FP32 cores.
 */
 
+#define DEG_TO_RAD (3.14159265359 / 180.0)
+#define RAD_TO_DEG (180.0 / 3.14159265359)
+
+inline float lon_shift(float lon, float shift) {
+  lon += shift;
+  if (lon > 180)
+    lon -= 360;
+  if (lon < -180)
+    lon += 360;
+  return lon;
+}
+
+inline void shift_latlon_by_lat(float *lat, float *lon, float shift) {
+  if (shift == 0)
+    return;
+
+  float x = cos(*lat * DEG_TO_RAD) * cos(*lon * DEG_TO_RAD);
+  float y = cos(*lat * DEG_TO_RAD) * sin(*lon * DEG_TO_RAD);
+  float z = sin(*lat * DEG_TO_RAD);
+
+  float theta = shift * DEG_TO_RAD;
+
+  float x2 = x * cos(theta) + z * sin(theta);
+  float y2 = y;
+  float z2 = z * cos(theta) - x * sin(theta);
+
+  *lon = atan2(y2, x2) * RAD_TO_DEG;
+  float hyp = sqrt(x2 * x2 + y2 * y2);
+  *lat = atan2(z2, hyp) * RAD_TO_DEG;
+}
+
 inline float SQ(const float x) { return x * x; }
 
 inline void VizGeorefSpline2DBase_func4(float *res, const float *pxy,
@@ -56,6 +87,8 @@ void kernel warp_image_thin_plate_spline(
   int img_height = img_settings[3];
   int source_channels = img_settings[4];
   int target_channels = img_settings[5];
+  int lon_shiftv = img_settings[10];
+  int lat_shiftv = img_settings[11];
 
   size_t n = crop_width * crop_height;
 
@@ -86,7 +119,9 @@ void kernel warp_image_thin_plate_spline(
 
     // Perform TPS
     {
-      const float Pxy[2] = {lon - x_mean, lat - y_mean};
+      shift_latlon_by_lat(&lat, &lon, (float)lat_shiftv);
+      const float Pxy[2] = {lon_shift(lon, (float)lon_shiftv) - x_mean,
+                            lat - y_mean};
       for (int v = 0; v < _nof_vars; v++)
         vars[v] = coef[v][0] + coef[v][1] * Pxy[0] + coef[v][2] * Pxy[1];
 

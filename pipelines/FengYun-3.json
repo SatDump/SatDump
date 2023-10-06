@@ -264,11 +264,11 @@
         "live": false,
         "frequencies": [],
         "parameters": {
-            "mersi_rotate": {
+            "satellite_rotated": {
                 "type": "bool",
                 "value": false,
-                "name": "Rotate MERSI",
-                "description": "FengYun-3G sometimes gets rotated.\nWhen this happens, the image will appear very choppy.\nThis option will fix it."
+                "name": "Rotated Satellite",
+                "description": "FengYun-3G sometimes gets rotated.\nWhen this happens, the images will appear very choppy or swapped.\nThis option will fix it."
             },
             "dump_mersi": {
                 "type": "bool",
@@ -299,7 +299,7 @@
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
-                   // "mersi_rotate": false // Not turned 180 anymore
+                    // "mersi_rotate": false // Not turned 180 anymore
                 }
             }
         }
@@ -404,17 +404,57 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "ccsds_ldpc_decoder": {
                     "constellation": "qpsk",
-                    "cadu_size": 8192,
-                    "nrzm": true,
-                    "rs_i": 4,
-                    "rs_type": "rs223"
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": false,
+                    "internal_cadu_size": 0
                 }
             },
             "products": {
                 "fy3_instruments": {
                     "satellite": "fy3e",
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": true
+                }
+            }
+        }
+    },
+    "fengyun3_f_dpt": {
+        "name": "FengYun-3 F DPT",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 225e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "ccsds_ldpc_decoder": {
+                    "constellation": "qpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10,
+                    "internal_stream": false,
+                    "internal_cadu_size": 0
+                }
+            },
+            "products": {
+                "fy3_instruments": {
+                    "satellite": "fy3f",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
                 }

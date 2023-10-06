@@ -99,40 +99,32 @@ namespace satdump
                 satdump::warp::WarpOperation operation;
                 operation.input_image = make_scatterometer_grayscale(products, cfg1);
                 operation.output_rgba = true;
-                operation.ground_control_points = satdump::gcp_compute::compute_gcps(products.get_proj_cfg(cfg1.channel),
-                                                                                     {},
-                                                                                     products.get_tle(),
-                                                                                     products.get_timestamps(cfg1.channel),
+                nlohmann::json proj_cfg = products.get_proj_cfg(cfg1.channel);
+                proj_cfg["metadata"]["tle"] = products.get_tle();
+                proj_cfg["metadata"]["timestamps"] = products.get_timestamps(cfg1.channel);
+                operation.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
                                                                                      operation.input_image.width(),
                                                                                      operation.input_image.height());
                 operation.output_width = 2048 * 4;
                 operation.output_height = 1024 * 4;
 
-                satdump::warp::ImageWarper warper;
-                warper.op = operation;
-                warper.update();
-
-                result1 = warper.warp();
+                result1 = satdump::warp::performSmartWarp(operation);
             }
 
             { // Warp second
                 satdump::warp::WarpOperation operation;
                 operation.input_image = make_scatterometer_grayscale(products, cfg2);
                 operation.output_rgba = true;
-                operation.ground_control_points = satdump::gcp_compute::compute_gcps(products.get_proj_cfg(cfg2.channel),
-                                                                                     {},
-                                                                                     products.get_tle(),
-                                                                                     products.get_timestamps(cfg2.channel),
+                nlohmann::json proj_cfg = products.get_proj_cfg(cfg2.channel);
+                proj_cfg["metadata"]["tle"] = products.get_tle();
+                proj_cfg["metadata"]["timestamps"] = products.get_timestamps(cfg2.channel);
+                operation.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
                                                                                      operation.input_image.width(),
                                                                                      operation.input_image.height());
                 operation.output_width = 2048 * 4;
                 operation.output_height = 1024 * 4;
 
-                satdump::warp::ImageWarper warper;
-                warper.op = operation;
-                warper.update();
-
-                result2 = warper.warp();
+                result2 = satdump::warp::performSmartWarp(operation);
             }
 
             int final_size_x = result1.output_image.width() + result2.output_image.width();

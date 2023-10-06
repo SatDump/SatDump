@@ -23,13 +23,23 @@ namespace satdump
         {
             if (config::main_cfg["user"]["viewer_state"].contains("panel_ratio"))
                 panel_ratio = config::main_cfg["user"]["viewer_state"]["panel_ratio"].get<float>();
-            
-            if (config::main_cfg["user"]["viewer_state"].contains("borders_color")){
+
+            if (config::main_cfg["user"]["viewer_state"].contains("borders_color"))
+            {
                 std::vector<float> color = config::main_cfg["user"]["viewer_state"]["borders_color"].get<std::vector<float>>();
                 color_borders.x = color[0];
                 color_borders.y = color[1];
                 color_borders.z = color[2];
             }
+
+            if (config::main_cfg["user"]["viewer_state"].contains("cities_color"))
+            {
+                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["cities_color"].get<std::vector<float>>();
+                color_cities.x = color[0];
+                color_cities.y = color[1];
+                color_cities.z = color[2];
+            }
+
 
             if (config::main_cfg["user"]["viewer_state"].contains("projections"))
                 deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
@@ -143,7 +153,8 @@ namespace satdump
     ViewerApplication::~ViewerApplication()
     {
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
-        config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};  
+        config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};
+        config::main_cfg["user"]["viewer_state"]["cities_color"] = {color_cities.x, color_cities.y, color_cities.z};
     }
 
     ImRect ViewerApplication::renderHandler(ProductsHandler &ph, int index)
@@ -177,7 +188,7 @@ namespace satdump
 
         if (index == current_handler_id)
         {
-            ImGui::TreePush();
+            ImGui::TreePush(std::string("##HandlerTree" + std::to_string(current_handler_id)).c_str());
             products_and_handlers[current_handler_id]->handler->drawTreeMenu();
             ImGui::TreePop();
         }
@@ -203,7 +214,7 @@ namespace satdump
                         if (products_cnt_in_dataset(dataset_name))
                         {
                             ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-                            ImGui::TreePush();
+                            ImGui::TreePush(std::string("##HandlerTree" + dataset_name).c_str());
                             for (int i = 0; i < (int)products_and_handlers.size(); i++)
                                 if (products_and_handlers[i]->dataset_name == dataset_name && products_and_handlers[i]->handler->shouldProject())
                                 {
@@ -261,7 +272,7 @@ namespace satdump
                     if (products_cnt_in_dataset(""))
                     {
                         ImGui::TreeNodeEx("Others", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-                        ImGui::TreePush();
+                        ImGui::TreePush("##HandlerTreeOthers");
                         for (int i = 0; i < (int)products_and_handlers.size(); i++)
                             if (products_and_handlers[i]->dataset_name == "")
                                 renderHandler(*products_and_handlers[i], i);
@@ -284,26 +295,30 @@ namespace satdump
                     ImGui::Text("Load Dataset :");
                     if (select_dataset_dialog.draw())
                     {
-                        try
-                        {
-                            loadDatasetInViewer(select_dataset_dialog.getPath());
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error opening dataset - %s", e.what());
-                        }
+                        ui_thread_pool.push([this](int)
+                                            {
+                            try
+                            {
+                                loadDatasetInViewer(select_dataset_dialog.getPath());
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error opening dataset - %s", e.what());
+                            } });
                     }
                     ImGui::Text("Load Products :");
                     if (select_products_dialog.draw())
                     {
-                        try
-                        {
-                            loadProductsInViewer(select_products_dialog.getPath());
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error opening products - %s", e.what());
-                        }
+                        ui_thread_pool.push([this](int) 
+                                            {
+                            try
+                            {
+                                loadProductsInViewer(select_products_dialog.getPath());
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error opening products - %s", e.what());
+                            } });
                     }
                 }
 
@@ -348,7 +363,7 @@ namespace satdump
                 panel_ratio = left_width / viewer_size.x;
             last_width = left_width;
 
-            ImGui::BeginChild("ViewerChildPanel", { left_width, float(viewer_size.y - 10) }, false);
+            ImGui::BeginChild("ViewerChildPanel", {left_width, float(viewer_size.y - 10)}, false);
             drawPanel();
             ImGui::EndChild();
 

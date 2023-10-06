@@ -8,19 +8,26 @@
 class ImageViewWidget
 {
 private:
-    unsigned int texture_id = 0;
-    std::vector<uint32_t> texture_buffer;
+    struct ImageContainer
+    {
+        unsigned int texture_id = 0;
+        std::vector<uint32_t> texture_buffer;
 
-    int img_width;
-    int img_height;
+        int img_width = 0;
+        int img_height = 0;
+
+        int offset_x = 0;
+        int offset_y = 0;
+    };
+
+private:
+    std::vector<ImageContainer> img_chunks;
+
+    int fimg_width = 0;
+    int fimg_height = 0;
 
     bool has_to_update = false;
     std::mutex image_mtx;
-
-    float img_scale = 1;
-    bool first_run = true;
-
-    void handleMouseDrag();
 
     std::string id_str;
 
@@ -29,11 +36,12 @@ public:
     ~ImageViewWidget();
 
     std::function<void(int x, int y)> mouseCallback = [](int, int) {}; // Function that can be used to handle mouse events
-    bool allow_zoom_and_move = true;
 
     void update(image::Image<uint16_t> image);
     void update(image::Image<uint8_t> image);
     void draw(ImVec2 win_size);
 
-    unsigned int getTextID() { return texture_id; }
+    unsigned int getTextID() { return img_chunks.size() > 0 ? img_chunks[0].texture_id : 0; }
+
+    bool allow_zoom_and_move = true;
 };

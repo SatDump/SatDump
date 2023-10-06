@@ -20,8 +20,11 @@ static char g_LogTag[] = "SatDump";
 
 // Forward declarations of helper functions
 static int ShowSoftKeyboardInput();
+static int HideSoftKeyboardInput();
 static int PollUnicodeChars();
 static int GetAssetData(const char *filename, void **out_data);
+
+float get_dpi(struct android_app* app);
 
 #include "logger.h"
 #include "init.h"
@@ -30,36 +33,6 @@ static int GetAssetData(const char *filename, void **out_data);
 #include "core/style.h"
 
 bool was_init = false;
-
-float get_dpi(struct android_app* app)
-{
-    JavaVM* java_vm = app->activity->vm;
-    JNIEnv* java_env = NULL;
-
-    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
-    if (jni_return == JNI_ERR)
-        throw std::runtime_error("Could not get JNI environement");
-
-    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
-    if (jni_return != JNI_OK)
-        throw std::runtime_error("Could not attach to thread");
-
-    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
-    if (native_activity_clazz == NULL)
-        throw std::runtime_error("Could not get MainActivity class");
-
-    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()F");
-    if (method_id == NULL)
-        throw std::runtime_error("Could not get methode ID");
-
-    jfloat jflt = java_env->CallFloatMethod(app->activity->clazz, method_id);
-
-    jni_return = java_vm->DetachCurrentThread();
-    if (jni_return != JNI_OK)
-        throw std::runtime_error("Could not detach from thread");
-
-    return jflt;
-}
 
 void init(struct android_app *app)
 {
@@ -129,6 +102,8 @@ void init(struct android_app *app)
         float display_scale = get_dpi(app);
         initLogger();
         style::setFonts(display_scale);
+        HideSoftKeyboardInput();
+        eglSwapInterval(g_EglDisplay, 0);
         std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface, display_scale);
         logger->add_sink(loading_screen_sink);
 
@@ -141,6 +116,7 @@ void init(struct android_app *app)
         loading_screen_sink.reset();
 
         //Set font again to adjust for DPI
+        eglSwapInterval(g_EglDisplay, 1);
         style::setFonts();
         ImGui_ImplOpenGL3_DestroyFontsTexture();
         ImGui_ImplOpenGL3_CreateFontsTexture();
@@ -153,6 +129,8 @@ void init(struct android_app *app)
 
         was_init = true;
     }
+    else
+        HideSoftKeyboardInput();
 
     g_Initialized = true;
 }
@@ -163,10 +141,6 @@ void tick()
     if (g_EglDisplay == EGL_NO_DISPLAY)
         return;
 
-    // Our state
-    static bool show_demo_window = true;
-    static bool show_another_window = false;
-
     // Poll Unicode characters via JNI
     // FIXME: do not call this every frame because of JNI overhead
     PollUnicodeChars();
@@ -175,6 +149,8 @@ void tick()
     static bool WantTextInputLast = false;
     if (io.WantTextInput && !WantTextInputLast)
         ShowSoftKeyboardInput();
+    if (!io.WantTextInput && WantTextInputLast)
+        HideSoftKeyboardInput();
     WantTextInputLast = io.WantTextInput;
 
     // Start the Dear ImGui frame
@@ -182,13 +158,8 @@ void tick()
     ImGui_ImplAndroid_NewFrame();
     ImGui::NewFrame();
 
-    EGLint width, height;
-    eglQuerySurface(g_EglDisplay, g_EglSurface, EGL_WIDTH, &width);
-    eglQuerySurface(g_EglDisplay, g_EglSurface, EGL_HEIGHT, &height);
-
-    satdump::renderMainUI(width, height);
-
     // Rendering
+    satdump::renderMainUI((int)io.DisplaySize.x, (int)io.DisplaySize.y);
     ImGui::Render();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
@@ -238,17 +209,15 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
 {
     switch (appCmd)
     {
-    case APP_CMD_SAVE_STATE:
-        break;
     case APP_CMD_INIT_WINDOW:
         init(app);
         break;
     case APP_CMD_TERM_WINDOW:
+    case APP_CMD_PAUSE:
         shutdown();
         break;
-    case APP_CMD_GAINED_FOCUS:
-        break;
-    case APP_CMD_LOST_FOCUS:
+    case APP_CMD_SAVE_STATE:
+        satdump::recorder_app->save_settings();
         break;
     }
 }
@@ -414,6 +383,36 @@ static int ShowSoftKeyboardInput()
     return 0;
 }
 
+static int HideSoftKeyboardInput()
+{
+    JavaVM *java_vm = g_App->activity->vm;
+    JNIEnv *java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        return -1;
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        return -2;
+
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
+    if (native_activity_clazz == NULL)
+        return -3;
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "hideSoftInput", "()V");
+    if (method_id == NULL)
+        return -4;
+
+    java_env->CallVoidMethod(g_App->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        return -5;
+
+    return 0;
+}
+
 // Unfortunately, the native KeyEvent implementation has no getUnicodeChar() function.
 // Therefore, we implement the processing of KeyEvents in MainActivity.kt and poll
 // the resulting Unicode characters here via JNI and send them to Dear ImGui.
@@ -457,6 +456,36 @@ static int PollUnicodeChars()
         return -5;
 
     return 0;
+}
+
+float get_dpi(struct android_app* app)
+{
+    JavaVM* java_vm = app->activity->vm;
+    JNIEnv* java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        throw std::runtime_error("Could not get JNI environement");
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not attach to thread");
+
+    jclass native_activity_clazz = java_env->GetObjectClass(app->activity->clazz);
+    if (native_activity_clazz == NULL)
+        throw std::runtime_error("Could not get MainActivity class");
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()F");
+    if (method_id == NULL)
+        throw std::runtime_error("Could not get methode ID");
+
+    jfloat jflt = java_env->CallFloatMethod(app->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        throw std::runtime_error("Could not detach from thread");
+
+    return jflt;
 }
 
 // Helper to retrieve data placed into the assets/ directory (android/app/src/main/assets)

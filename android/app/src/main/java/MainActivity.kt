@@ -132,8 +132,6 @@ class MainActivity : NativeActivity(), TextWatcher {
         editText!!.addTextChangedListener(this);
 
         setContentView(mLayout);
-
-        hideSoftInput();
     }
 
 
@@ -302,12 +300,18 @@ class MainActivity : NativeActivity(), TextWatcher {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && requestCode == 1) {
-            select_file_result = data.getFilePath(getApplicationContext());
+        if (requestCode == 1) {
+            if(resultCode == RESULT_OK)
+                select_file_result = data.getFilePath(getApplicationContext());
+            else if(resultCode == RESULT_CANCELED)
+                select_file_result = "NO_PATH_SELECTED";
         }
 
-        if (resultCode == RESULT_OK && requestCode == 2) {
-            select_directory_result = data.getFilePathDir(getApplicationContext()); 
+        if (requestCode == 2) {
+            if(resultCode == RESULT_OK)
+                select_directory_result = data.getFilePathDir(getApplicationContext());
+            else if(resultCode == RESULT_CANCELED)
+                select_directory_result = "NO_PATH_SELECTED";
         }
     }
 }

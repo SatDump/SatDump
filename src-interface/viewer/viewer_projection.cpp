@@ -308,6 +308,8 @@ namespace satdump
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     // if (layer.type == 1)
                     {
+                        if (projections_are_generating)
+                            ImGui::BeginDisabled();
                         // Closing button
                         ImGui::SameLine();
                         ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
@@ -333,8 +335,12 @@ namespace satdump
                             ImGui::PopID();
                             break;
                         }
+                        if (projections_are_generating && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                            ImGui::SetTooltip("Wait for the processing to finish!");
                         ImGui::PopStyleColor();
                         ImGui::PopStyleColor();
+                        if (projections_are_generating)
+                            ImGui::EndDisabled();
                     }
                     if (layer.enabled)
                     {
@@ -553,7 +559,6 @@ namespace satdump
         op.img = ep->img;
         op.output_width = width;
         op.output_height = height;
-        op.use_draw_algorithm = false;
         reprojection::ProjectionResult res = reprojection::reproject(op, progress);
         return res.img;
     }

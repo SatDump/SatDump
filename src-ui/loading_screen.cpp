@@ -3,12 +3,15 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "loading_screen.h"
 #include "loader/loader.h"
+#include "core/style.h"
 
 namespace satdump
 {
     LoadingScreenSink::LoadingScreenSink(GLFWwindow* window, float scale, GLFWimage* img) : window{window},
                                                                                             scale{scale}
     {
+        macos_scale = style::macos_framebuffer_scale();
+
         glGenTextures(1, &image_texture);
         glBindTexture(GL_TEXTURE_2D, image_texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -36,7 +39,7 @@ namespace satdump
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
 
-        draw_loader(display_w, display_h, scale, &image_texture, str);
+        draw_loader(display_w / macos_scale, display_h / macos_scale, scale, &image_texture, str);
 
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);

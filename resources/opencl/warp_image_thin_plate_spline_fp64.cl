@@ -18,6 +18,37 @@
   very high resolution usecases).
 */
 
+#define DEG_TO_RAD (3.14159265359 / 180.0)
+#define RAD_TO_DEG (180.0 / 3.14159265359)
+
+inline double lon_shift(double lon, double shift) {
+  lon += shift;
+  if (lon > 180)
+    lon -= 360;
+  if (lon < -180)
+    lon += 360;
+  return lon;
+}
+
+inline void shift_latlon_by_lat(double *lat, double *lon, double shift) {
+  if (shift == 0)
+    return;
+
+  double x = cos(*lat * DEG_TO_RAD) * cos(*lon * DEG_TO_RAD);
+  double y = cos(*lat * DEG_TO_RAD) * sin(*lon * DEG_TO_RAD);
+  double z = sin(*lat * DEG_TO_RAD);
+
+  double theta = shift * DEG_TO_RAD;
+
+  double x2 = x * cos(theta) + z * sin(theta);
+  double y2 = y;
+  double z2 = z * cos(theta) - x * sin(theta);
+
+  *lon = atan2(y2, x2) * RAD_TO_DEG;
+  double hyp = sqrt(x2 * x2 + y2 * y2);
+  *lat = atan2(z2, hyp) * RAD_TO_DEG;
+}
+
 inline double SQ(const double x) { return x * x; }
 
 inline void VizGeorefSpline2DBase_func4(double *res, const double *pxy,
@@ -56,6 +87,8 @@ void kernel warp_image_thin_plate_spline(
   int img_height = img_settings[3];
   int source_channels = img_settings[4];
   int target_channels = img_settings[5];
+  int lon_shiftv = img_settings[10];
+  int lat_shiftv = img_settings[11];
 
   size_t n = crop_width * crop_height;
 
@@ -86,7 +119,9 @@ void kernel warp_image_thin_plate_spline(
 
     // Perform TPS
     {
-      const double Pxy[2] = {lon - x_mean, lat - y_mean};
+      shift_latlon_by_lat(&lat, &lon, (float)lat_shiftv);
+      const double Pxy[2] = {lon_shift(lon, (double)lon_shiftv) - x_mean,
+                             lat - y_mean};
       for (int v = 0; v < _nof_vars; v++)
         vars[v] = coef[v][0] + coef[v][1] * Pxy[0] + coef[v][2] * Pxy[1];
 

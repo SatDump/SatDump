@@ -1,4 +1,4 @@
-#include "warp.h"
+#include "warp_bkd.h"
 #include "logger.h"
 #include <map>
 #include "common/utils.h"
@@ -7,23 +7,65 @@
 #include <chrono>
 #include <cmath>
 
+#include "common/geodetic/geodetic_coordinates.h"
+
 namespace satdump
 {
     namespace warp
     {
-        std::unique_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
+        double lon_shift(double lon, double shift)
         {
-            std::unique_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_unique<projection::VizGeorefSpline2D>(2);
+            if (shift == 0)
+                return lon;
+            lon += shift;
+            if (lon > 180)
+                lon -= 360;
+            if (lon < -180)
+                lon += 360;
+            return lon;
+        }
 
-            std::vector<projection::GCP> gcps = op.ground_control_points;
+        void shift_latlon_by_lat(double *lat, double *lon, double shift)
+        {
+            if (shift == 0)
+                return;
+
+            double x = cos(*lat * DEG_TO_RAD) * cos(*lon * DEG_TO_RAD);
+            double y = cos(*lat * DEG_TO_RAD) * sin(*lon * DEG_TO_RAD);
+            double z = sin(*lat * DEG_TO_RAD);
+
+            double theta = shift * DEG_TO_RAD;
+
+            double x2 = x * cos(theta) + z * sin(theta);
+            double y2 = y;
+            double z2 = z * cos(theta) - x * sin(theta);
+
+            *lon = atan2(y2, x2) * RAD_TO_DEG;
+            double hyp = sqrt(x2 * x2 + y2 * y2);
+            *lat = atan2(z2, hyp) * RAD_TO_DEG;
+        }
+
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
+        {
+            return initTPSTransform(op.ground_control_points, op.shift_lon, op.shift_lat);
+        }
+
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat)
+        {
+            std::shared_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_shared<projection::VizGeorefSpline2D>(2);
 
             // Attach (non-redundant) points to the transformation.
             std::map<std::pair<double, double>, int> oMapPixelLineToIdx;
             std::map<std::pair<double, double>, int> oMapXYToIdx;
             for (int iGCP = 0; iGCP < (int)gcps.size(); iGCP++)
             {
+                double final_lon = lon_shift(gcps[iGCP].lon, shift_lon);
+                double final_lat = gcps[iGCP].lat;
+
+                shift_latlon_by_lat(&final_lat, &final_lon, shift_lat);
+
                 const double afPL[2] = {gcps[iGCP].x, gcps[iGCP].y};
-                const double afXY[2] = {gcps[iGCP].lon, gcps[iGCP].lat};
+                const double afXY[2] = {final_lon, final_lat};
 
                 std::map<std::pair<double, double>, int>::iterator oIter(oMapPixelLineToIdx.find(std::pair<double, double>(afPL[0], afPL[1])));
 
@@ -32,13 +74,19 @@ namespace satdump
                     if (afXY[0] == gcps[oIter->second].lon && afXY[1] == gcps[oIter->second].lat)
                         continue;
                     else
+                    {
                         logger->warn("2 GCPs have the same X,Y!");
+                        continue;
+                    }
                 }
                 else
                     oMapPixelLineToIdx[std::pair<double, double>(afPL[0], afPL[1])] = iGCP;
 
                 if (oMapXYToIdx.find(std::pair<double, double>(afXY[0], afXY[1])) != oMapXYToIdx.end())
+                {
                     logger->warn("2 GCPs have the same Lat,Lon!");
+                    continue;
+                }
                 else
                     oMapXYToIdx[std::pair<double, double>(afXY[0], afXY[1])] = iGCP;
 
@@ -106,6 +154,11 @@ namespace satdump
             cset.lat_max = ceil(lat_max);
             cset.lon_max = ceil(lon_max);
 
+            if (op.shift_lat == 90)
+                cset.lat_max = 90;
+            if (op.shift_lat == -90)
+                cset.lat_min = -90;
+
             // Compute to pixels
             cset.y_max = op.output_height - ((90.0f + cset.lat_min) / 180.0f) * op.output_height;
             cset.y_min = op.output_height - ((90.0f + cset.lat_max) / 180.0f) * op.output_height;
@@ -139,7 +192,8 @@ namespace satdump
                     double lon = ((double)(x + crop_set.x_min) / (double)op.output_width) * 360 - 180;
 
                     // Perform TPS
-                    tps->get_point(lon, lat, xy);
+                    shift_latlon_by_lat(&lat, &lon, op.shift_lat);
+                    tps->get_point(lon_shift(lon, op.shift_lon), lat, xy);
                     xx = xy[0];
                     yy = xy[1];
 
@@ -205,9 +259,10 @@ namespace satdump
                                       op.input_image.channels(),
                                       result.output_image.channels(),
                                       crop_set.y_min, crop_set.y_max,
-                                      crop_set.x_min, crop_set.x_max};
+                                      crop_set.x_min, crop_set.x_max,
+                                      op.shift_lon, op.shift_lat};
 
-                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 10, NULL, &err);
+                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 12, NULL, &err);
 
                 // Create an OpenCL queue
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
@@ -222,7 +277,7 @@ namespace satdump
                 clEnqueueWriteBuffer(queue, buffer_tps_coefs2, true, 0, sizeof(double) * tps->_nof_eqs, tps->coef[1], 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_xmean, true, 0, sizeof(double), &tps->x_mean, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_ymean, true, 0, sizeof(double), &tps->y_mean, 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 10, img_settings, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 12, img_settings, 0, NULL, NULL);
 
                 // Init the kernel
                 cl_kernel warping_kernel = clCreateKernel(warping_program, "warp_image_thin_plate_spline", &err);
@@ -306,9 +361,10 @@ namespace satdump
                                       op.input_image.channels(),
                                       result.output_image.channels(),
                                       crop_set.y_min, crop_set.y_max,
-                                      crop_set.x_min, crop_set.x_max};
+                                      crop_set.x_min, crop_set.x_max,
+                                      op.shift_lon, op.shift_lat};
 
-                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 10, NULL, &err);
+                cl_mem buffer_img_settings = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 12, NULL, &err);
 
                 // Create an OpenCL queue
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
@@ -329,7 +385,7 @@ namespace satdump
                 clEnqueueWriteBuffer(queue, buffer_tps_coefs2, true, 0, sizeof(float) * tps->_nof_eqs, tps_coef2.data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_xmean, true, 0, sizeof(float), &tps_x_mean, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_ymean, true, 0, sizeof(float), &tps_y_mean, 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 10, img_settings, 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img_settings, true, 0, sizeof(int) * 12, img_settings, 0, NULL, NULL);
 
                 // Init the kernel
                 cl_kernel warping_kernel = clCreateKernel(warping_program, "warp_image_thin_plate_spline", &err);
@@ -380,13 +436,14 @@ namespace satdump
         }
 #endif
 
-        void ImageWarper::update()
+        void ImageWarper::update(bool skip_tps)
         {
-            tps = initTPSTransform(op);
+            if (!skip_tps)
+                tps = initTPSTransform(op);
             crop_set = choseCropArea(op);
         }
 
-        WarpResult ImageWarper::warp()
+        WarpResult ImageWarper::warp(bool force_double)
         {
             WarpResult result;
 
@@ -401,9 +458,12 @@ namespace satdump
 #ifdef USE_OPENCL
             try
             {
-                logger->debug("Using GPU!");
+                logger->debug("Using GPU! Double precision requested %d", (int)force_double);
                 satdump::opencl::setupOCLContext();
-                warpOnGPU_fp32(result);
+                if (force_double)
+                    warpOnGPU_fp64(result);
+                else
+                    warpOnGPU_fp32(result);
                 return result;
             }
             catch (std::runtime_error &e)

@@ -54,6 +54,7 @@ namespace satdump
                     else
                     {
                         logger->warn("2 GCPs have the same X,Y!");
+                        continue;
                     }
                 }
                 else
@@ -65,6 +66,7 @@ namespace satdump
                 if (oIter != oMapXYToIdx.end())
                 {
                     logger->warn("2 GCPs have the same Lat,Lon!");
+                    continue;
                 }
                 else
                 {

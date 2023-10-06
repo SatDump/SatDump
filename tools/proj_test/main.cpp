@@ -10,6 +10,32 @@
 #include "common/projection/projs/equirectangular.h"
 #include "common/utils.h"
 #include "init.h"
+#include "common/geodetic/vincentys_calculations.h"
+
+geodetic::geodetic_coords_t calculate_center_of_points(std::vector<geodetic::geodetic_coords_t> points)
+{
+    double x_total = 0;
+    double y_total = 0;
+    double z_total = 0;
+
+    for (auto &pt : points)
+    {
+        pt.toRads();
+        x_total += cos(pt.lat) * cos(pt.lon);
+        y_total += cos(pt.lat) * sin(pt.lon);
+        z_total += sin(pt.lat);
+    }
+
+    x_total /= points.size();
+    y_total /= points.size();
+    z_total /= points.size();
+
+    double lon = atan2(y_total, x_total);
+    double hyp = sqrt(x_total * x_total + y_total * y_total);
+    double lat = atan2(z_total, hyp);
+
+    return geodetic::geodetic_coords_t(lat, lon, 0, true).toDegs();
+}
 
 int main(int /*argc*/, char *argv[])
 {
@@ -17,6 +43,7 @@ int main(int /*argc*/, char *argv[])
 
     // std::string user_path = std::string(getenv("HOME")) + "/.config/satdump";
     // satdump::config::loadConfig("satdump_cfg.json", user_path);
+    // initFileSink();
 
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_OFF);
@@ -26,11 +53,13 @@ int main(int /*argc*/, char *argv[])
     satdump::ImageProducts img_pro;
     img_pro.load(argv[1]);
 
-    logger->trace("\n" + img_pro.contents.dump(4));
+    printf("\n%s\n", img_pro.contents.dump(4).c_str());
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch14,ch13,ch12"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.equalize = true;
+    rgb_cfg.equation = "ch2,ch2,ch1";
+    //    rgb_cfg.equation = "1-ch37";
+    // rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
+    rgb_cfg.individual_equalize = true;
     rgb_cfg.white_balance = true;
 
     // img_pro.images[0].image.equalize();
@@ -38,55 +67,37 @@ int main(int /*argc*/, char *argv[])
 
     // filter_timestamps_simple(img_pro.get_timestamps(0), 1e4, 10));
 
-    satdump::warp::WarpOperation operation;
+    satdump::warp::WarpOperation operation_t;
     std::vector<double> final_tt;
-    operation.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt);
-    operation.ground_control_points = satdump::gcp_compute::compute_gcps(loadJsonFile(argv[2]),
-                                                                         {}, // TMP
-                                                                         img_pro.get_tle(),
-                                                                         final_tt,
-                                                                         operation.input_image.width(),
-                                                                         operation.input_image.height());
-    operation.output_width = 2048 * 10;
-    operation.output_height = 1024 * 10;
+    nlohmann::json final_mtd;
+    operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
+    // operation_t.input_image.median_blur();
+    nlohmann::json proj_cfg = loadJsonFile(argv[2]);
+    proj_cfg["metadata"] = final_mtd;
+    proj_cfg["metadata"]["tle"] = img_pro.get_tle();
+    proj_cfg["metadata"]["timestamps"] = final_tt;
+    operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
+                                                                           operation_t.input_image.width(),
+                                                                           operation_t.input_image.height());
+    operation_t.output_width = 2048 * 10;
+    operation_t.output_height = 1024 * 10;
+    operation_t.output_rgba = true;
 
-    satdump::warp::ImageWarper warper;
-    warper.op = operation;
-    warper.update();
+    auto warp_result = satdump::warp::performSmartWarp(operation_t);
 
-    satdump::warp::WarpResult result = warper.warp();
+    geodetic::projection::EquirectangularProjection projector_final;
+    projector_final.init(warp_result.output_image.width(), warp_result.output_image.height(), warp_result.top_left.lon, warp_result.top_left.lat, warp_result.bottom_right.lon, warp_result.bottom_right.lat);
 
-    geodetic::projection::EquirectangularProjection projector;
-    projector.init(result.output_image.width(), result.output_image.height(), result.top_left.lon, result.top_left.lat, result.bottom_right.lon, result.bottom_right.lat);
-
-    unsigned short color[3] = {0, 65535, 0};
+    unsigned short color[4] = {0, 65535, 0, 65535};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                   result.output_image,
+                                   warp_result.output_image,
                                    color,
-                                   [&projector](float lat, float lon, int, int) -> std::pair<int, int>
+                                   [&projector_final](float lat, float lon, int, int) -> std::pair<int, int>
                                    {
                                        int x, y;
-                                       projector.forward(lon, lat, x, y);
+                                       projector_final.forward(lon, lat, x, y);
                                        return {x, y};
                                    });
 
-    for (auto gcp : operation.ground_control_points)
-    {
-        auto projfunc = [&projector](float lat, float lon, int, int) -> std::pair<int, int>
-        {
-            int x, y;
-            projector.forward(lon, lat, x, y);
-            return {x, y};
-        };
-
-        std::pair<int, int> pos = projfunc(gcp.lat, gcp.lon, 0, 0);
-
-        if (pos.first == -1 || pos.second == -1)
-            continue;
-
-        result.output_image.draw_circle(pos.first, pos.second, 2, color, true);
-    }
-
-    // img_map.crop(p_x_min, p_y_min, p_x_max, p_y_max);
-    result.output_image.save_img("test");
+    warp_result.output_image.save_img("test");
 }

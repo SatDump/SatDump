@@ -12,16 +12,7 @@
 
 #include "logger.h"
 
-#include "common/image/earth_curvature.h"
-
 int main(int argc, char *argv[])
 {
     initLogger();
-
-    image::Image<uint16_t> image1;
-    image1.load_png(argv[1]);
-
-    auto image2 = image::earth_curvature::correct_earth_curvature(image1, 820, 2800, 1);
-
-    image2.save_png(argv[2]);
 }
