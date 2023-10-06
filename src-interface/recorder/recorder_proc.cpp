@@ -16,6 +16,7 @@ namespace satdump
         out["fft_rate"] = fft_rate;
         out["waterfall_rate"] = waterfall_rate;
         out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
+        out["select_sample_format"] = select_sample_format;
         if (fft_plot && waterfall_plot && fft)
         {
             out["fft_min"] = fft_plot->scale_min;
@@ -50,6 +51,8 @@ namespace satdump
             fft_rate = in["fft_rate"];
         if (in.contains("waterfall_rate"))
             waterfall_rate = in["waterfall_rate"];
+        if (in.contains("select_sample_format"))
+            select_sample_format = in["select_sample_format"];
         if (in.contains("waterfall_palette"))
         {
             std::string name = in["waterfall_palette"].get<std::string>();
@@ -141,6 +144,65 @@ namespace satdump
                     current_decimation = 1;
             }
         }
+    }
+
+    void RecorderApplication::set_output_sample_format()
+    {
+        int type_lut[] = {
+            0,
+            1,
+            2,
+            3,
+#ifdef BUILD_ZIQ
+                            4,
+                            5,
+                            6,
+#endif
+#ifdef BUILD_ZIQ2
+                            7,
+                            8,
+#endif
+        };
+
+        int f = type_lut[select_sample_format];
+
+        if (f == 0)
+            file_sink->set_output_sample_type(dsp::CF_32);
+        else if (f == 1)
+            file_sink->set_output_sample_type(dsp::IS_16);
+        else if (f == 2)
+            file_sink->set_output_sample_type(dsp::IS_8);
+        else if (f == 3)
+            file_sink->set_output_sample_type(dsp::WAV_16);
+#ifdef BUILD_ZIQ
+        else if (f == 4)
+        {
+            file_sink->set_output_sample_type(dsp::ZIQ);
+            ziq_bit_depth = 8;
+        }
+        else if (f == 5)
+        {
+            file_sink->set_output_sample_type(dsp::ZIQ);
+            ziq_bit_depth = 16;
+        }
+        else if (f == 6)
+        {
+            file_sink->set_output_sample_type(dsp::ZIQ);
+            ziq_bit_depth = 32;
+        }
+#endif
+#ifdef BUILD_ZIQ2
+        else if (f == 7)
+        {
+            file_sink->set_output_sample_type(dsp::ZIQ2);
+            ziq_bit_depth = 8;
+        }
+        else if (f == 8)
+        {
+            file_sink->set_output_sample_type(dsp::ZIQ2);
+            ziq_bit_depth = 16;
+        }
+#endif
     }
 
     void RecorderApplication::start_processing()
