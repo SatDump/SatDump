@@ -1,47 +1,10 @@
-/**********************************************************************
- * This file is used for testing random stuff without running the
- * whole of SatDump, which comes in handy for debugging individual
- * elements before putting them all together in modules...
- *
- * If you are an user, ignore this file which will not be built by
- * default, and if you're a developper in need of doing stuff here...
- * Go ahead!
- *
- * Don't judge the code you might see in there! :)
- **********************************************************************/
-
-#include "logger.h"
-#include <fstream>
-#include <vector>
-#include "common/image/image.h"
-#include "common/repack.h"
+#include "main.h"
 #include "products/image_products.h"
+#include "common/repack.h"
+#include "logger.h"
 
-int main(int argc, char *argv[])
+void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
 {
-    initLogger();
-
-    if (argc < 3)
-    {
-        logger->error("Not enough arguments");
-        return 1;
-    }
-
-    std::string msg_native_file = argv[1];
-    std::string pro_output_file = argv[2];
-
-    // We will in the future want to decode from memory, so load it all up in RAM
-    std::vector<uint8_t> msg_file;
-    {
-        std::ifstream input_file(msg_native_file);
-        uint8_t byte;
-        while (!input_file.eof())
-        {
-            input_file.read((char *)&byte, 1);
-            msg_file.push_back(byte);
-        }
-    }
-
     uint8_t *buf = msg_file.data();
 
     // Parse header
