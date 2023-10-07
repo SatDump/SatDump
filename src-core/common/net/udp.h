@@ -106,12 +106,11 @@ namespace net
 
 #if defined(_WIN32)
             sock_addr.sin_addr.S_un.S_addr = INADDR_ANY;
-#else
+#endif
             if (bind(sock, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) < 0)
                 throw std::runtime_error("Couldn't connect to UDP socket!");
-            int ttrue = 1;
+            const char ttrue = 1;
             setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &ttrue, sizeof(int));
-#endif
         }
 
         ~UDPServer()
@@ -143,7 +142,12 @@ namespace net
 #endif
             int r = recvfrom(sock, (char *)data, len, 0, (struct sockaddr *)&sock_addr, &slen);
             if (r == -1)
+            {
+#if defined(_WIN32)
+                if(WSAGetLastError() != WSAEINTR)
+#endif
                 throw std::runtime_error("Error receiving from UDP socket!");
+            }
             return r;
         }
     };

@@ -51,8 +51,8 @@ void UDPSource::start()
 
 void UDPSource::stop()
 {
-    udp_server.reset();
     is_started = false;
+    udp_server.reset();
 }
 
 void UDPSource::close()
