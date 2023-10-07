@@ -119,7 +119,7 @@ namespace net
             closesocket(sock);
             WSACleanup();
 #else
-
+            shutdown(sock, SHUT_RDWR);
             close(sock);
 #endif
         }
