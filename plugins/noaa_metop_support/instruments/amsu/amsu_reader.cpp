@@ -5,8 +5,6 @@
 #include "resources.h"
 #include "common/calibration.h"
 
-#include <iostream>
-
 namespace noaa_metop
 {
     namespace amsu
@@ -30,7 +28,7 @@ namespace noaa_metop
 
         void AMSUReader::work_A1(uint8_t *buffer)
         {
-            test.write((char*)buffer, 1240);
+            test.write((char *)buffer, 1240);
             for (int n = 2; n < 15; n++)
                 channels[n].resize(channels[n].size() + 30);
             for (int i = 0; i < 1020; i += 34)
@@ -44,8 +42,8 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 26; c += 2)
-                calibration_views_A1[c / 2].push_back( view_pair {static_cast<uint16_t>((((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1214 + c] << 8) | buffer[1215 + c])) / 2),
-                                                                  static_cast<uint16_t>((((buffer[1036 + c] << 8) | buffer[1037 + c]) + ((buffer[1062 + c] << 8) | buffer[1063 + c])) / 2)});
+                calibration_views_A1[c / 2].push_back(view_pair{static_cast<uint16_t>((((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1214 + c] << 8) | buffer[1215 + c])) / 2),
+                                                                static_cast<uint16_t>((((buffer[1036 + c] << 8) | buffer[1037 + c]) + ((buffer[1062 + c] << 8) | buffer[1063 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 90; n += 2)
                 temperature_counts_A1[n / 2].push_back((buffer[1088 + n] << 8) | buffer[1089 + n]);
@@ -66,8 +64,8 @@ namespace noaa_metop
 
             // calibration
             for (int c = 0; c < 4; c += 2)
-                calibration_views_A2[c / 2].push_back( view_pair {static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
-                                                                  static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)});
+                calibration_views_A2[c / 2].push_back(view_pair{static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
+                                                                static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 38; n += 2)
                 temperature_counts_A2[n / 2].push_back((buffer[260 + n] << 8) | buffer[261 + n]);
@@ -180,11 +178,9 @@ namespace noaa_metop
                     for (int j = 0; j < 4; j++)
                     {
                         uint16_t count = temperature_counts_A1[i][l];
-                        temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>() * pow(count, j);
+                        temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>() * pow(count / 2, j);
                     }
-                    std::cout<<temps_A1[i]<<", ";
                 }
-                std::cout<<std::endl;
 
                 double Tw1 = 0;
                 double Tw2 = 0;
@@ -203,8 +199,6 @@ namespace noaa_metop
                 Tw2 /= sum2;
 
                 nlohmann::json ln;
-
-
 
                 for (int c = 0; c < 13; c++)
                 {
@@ -247,8 +241,8 @@ namespace noaa_metop
                     temps_A2[i] = 0;
                     for (int j = 0; j < 4; j++)
                     {
-                        uint16_t count = temperature_counts_A1[i][l];
-                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>() * pow(count, j);
+                        uint16_t count = temperature_counts_A2[i][l];
+                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>() * pow(count/2, j);
                     }
                 }
 
@@ -257,7 +251,7 @@ namespace noaa_metop
                 int sum1 = 0;
                 for (int i = 0; i < 7; i++)
                 {
-                    Tw1 += temps_A1[i + 12] * calib["A2"]["wf"][i].get<int>();
+                    Tw1 += temps_A2[i + 12] * calib["A2"]["wf"][i].get<int>();
                     sum1 += calib["A2"]["wf"][i].get<int>();
                 }
                 Tw1 /= sum1;
@@ -279,14 +273,12 @@ namespace noaa_metop
                         {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>(), calib["A2"]["u"][0][c].get<double>()},
                         {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][1].get<double>(), calib["A2"]["u"][1][c].get<double>()},
                         {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["A2"]["u"][2][c].get<double>()},
-                         temps_A2[calib["A2"]["instrument_temerature_sensor_id"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
+                        temps_A2[calib["A2"]["instrument_temerature_sensor_id"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
 
                     calib_out["lua_vars"]["perLine_perChannel"][l][c]["a0"] = Rw - (calibration_views_A2[c][l].blackbody / G) + u * (calibration_views_A2[c][l].blackbody * calibration_views_A2[c][l].space) / (G * G);
                     calib_out["lua_vars"]["perLine_perChannel"][l][c]["a1"] = 1 / G - u * (calibration_views_A2[c][l].blackbody + calibration_views_A2[c][l].space) / (G * G);
                     calib_out["lua_vars"]["perLine_perChannel"][l][c]["a2"] = u / (G * G);
                 }
-
-                
             }
             // ##############
             // ##### A2 #####
