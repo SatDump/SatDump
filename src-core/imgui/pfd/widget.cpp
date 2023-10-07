@@ -30,8 +30,6 @@ bool FileSelectWidget::draw(std::string hint)
 {
     bool changed = false;
     bool disabled = waiting_for_res;
-    bool is_dir = std::filesystem::is_directory(path);
-    file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
 
 #ifdef _MSC_VER
     if (default_dir == ".")
@@ -46,9 +44,11 @@ bool FileSelectWidget::draw(std::string hint)
         style::beginDisabled();
     if (!file_valid)
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-    changed |= ImGui::InputTextWithHint(id.c_str(), hint.c_str(), &path);
+    ImGui::InputTextWithHint(id.c_str(), hint.c_str(), &path);
+    changed = ImGui::IsItemDeactivatedAfterEdit();
     if (!file_valid)
         ImGui::PopStyleColor();
+
     ImGui::SameLine();
     if (ImGui::Button(btnid.c_str()))
     {
@@ -113,12 +113,13 @@ bool FileSelectWidget::draw(std::string hint)
 #endif
                 path = get;
                 changed = true;
-                file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
                 waiting_for_res = false;
             }
         }
     }
 
+    bool is_dir = std::filesystem::is_directory(path);
+    file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
     return file_valid && changed;
 }
 
