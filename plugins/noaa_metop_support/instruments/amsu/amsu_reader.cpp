@@ -15,6 +15,8 @@ namespace noaa_metop
         {
             for (int i = 0; i < 15; i++)
                 channels[i].resize(30);
+
+            test.open("test.amsu");
         }
 
         AMSUReader::~AMSUReader()
@@ -23,10 +25,12 @@ namespace noaa_metop
                 channels[i].clear();
             timestamps_A1.clear();
             timestamps_A2.clear();
+            test.close();
         }
 
         void AMSUReader::work_A1(uint8_t *buffer)
         {
+            test.write((char*)buffer, 1240);
             for (int n = 2; n < 15; n++)
                 channels[n].resize(channels[n].size() + 30);
             for (int i = 0; i < 1020; i += 34)
@@ -44,7 +48,7 @@ namespace noaa_metop
                                                                   static_cast<uint16_t>((((buffer[1036 + c] << 8) | buffer[1037 + c]) + ((buffer[1062 + c] << 8) | buffer[1063 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 90; n += 2)
-                temperature_counts_A1[n / 2].push_back((buffer[1089 + n] << 8) | buffer[1089 + n + 1]);
+                temperature_counts_A1[n / 2].push_back((buffer[1088 + n] << 8) | buffer[1089 + n]);
         }
 
         void AMSUReader::work_A2(uint8_t *buffer)
@@ -66,7 +70,7 @@ namespace noaa_metop
                                                                   static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)});
             // temperatures
             for (int n = 0; n < 38; n += 2)
-                temperature_counts_A2[n / 2].push_back((buffer[261 + n] << 8) | buffer[261 + n + 1]);
+                temperature_counts_A2[n / 2].push_back((buffer[260 + n] << 8) | buffer[261 + n]);
         }
 
         void AMSUReader::work_noaa(uint8_t *buffer)
@@ -178,7 +182,9 @@ namespace noaa_metop
                         uint16_t count = temperature_counts_A1[i][l];
                         temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>() * pow(count, j);
                     }
+                    std::cout<<temps_A1[i]<<", ";
                 }
+                std::cout<<std::endl;
 
                 double Tw1 = 0;
                 double Tw2 = 0;
@@ -187,16 +193,18 @@ namespace noaa_metop
                 int sum2 = 0;
                 for (int i = 0; i < 5; i++)
                 {
-                    Tw1 += temps_A1[i + 35] * calib["A1-1"]["wf"][i].get<int>();
+                    Tw1 += (temps_A1[i + 35] * calib["A1-1"]["wf"][i].get<int>());
                     sum1 += calib["A1-1"]["wf"][i].get<int>();
 
-                    Tw2 += temps_A1[i + 40] * calib["A1-2"]["wf"][i].get<int>();
+                    Tw2 += (temps_A1[i + 40] * calib["A1-2"]["wf"][i].get<int>());
                     sum2 += calib["A1-2"]["wf"][i].get<int>();
                 }
                 Tw1 /= sum1;
                 Tw2 /= sum2;
 
                 nlohmann::json ln;
+
+
 
                 for (int c = 0; c < 13; c++)
                 {
