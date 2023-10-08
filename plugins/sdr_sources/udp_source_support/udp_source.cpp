@@ -53,6 +53,7 @@ void UDPSource::stop()
 {
     is_started = false;
     udp_server.reset();
+    output_stream->flush();
 }
 
 void UDPSource::close()
