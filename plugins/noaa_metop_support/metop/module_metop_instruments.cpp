@@ -423,6 +423,22 @@ namespace metop
                 for (int i = 0; i < 15; i++)
                     amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
 
+                // calib
+                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
+                if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                {
+                    calib_coefs[sat_name]["all"] = calib_coefs["all"];
+                    amsu_reader.calibrate(calib_coefs[sat_name]);
+                    amsu_products.set_calibration(amsu_reader.calib_out);
+                    for (int c = 0; c < 15; c++)
+                    {
+                        amsu_products.set_calibration_type(c, amsu_products.CALIB_RADIANCE);
+                        amsu_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                    }
+                }
+                else
+                    logger->warn("(AMSU) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");
 
