@@ -17,4 +17,10 @@ namespace satdump
         predict_orbit(satellite_object, &satellite_orbit, predict_to_julian_double(utc_time));
         return geodetic::geodetic_coords_t(satellite_orbit.latitude, satellite_orbit.longitude, satellite_orbit.altitude, true).toDegs();
     }
+
+    predict_position SatelliteTracker::get_sat_position_at_raw(double utc_time)
+    {
+        predict_orbit(satellite_object, &satellite_orbit, predict_to_julian_double(utc_time));
+        return satellite_orbit;
+    }
 }

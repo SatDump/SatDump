@@ -17,5 +17,6 @@ namespace satdump
         ~SatelliteTracker();
 
         geodetic::geodetic_coords_t get_sat_position_at(double utc_time);
+        predict_position get_sat_position_at_raw(double utc_time);
     };
 }

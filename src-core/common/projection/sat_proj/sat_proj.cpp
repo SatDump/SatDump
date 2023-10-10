@@ -52,7 +52,7 @@ namespace satdump
         float yaw_offset_des;
 
         // Pre-computed stuff
-        std::vector<geodetic::geodetic_coords_t> sat_positions;
+        std::vector</*geodetic::geodetic_coords_t*/ predict_position> sat_positions;
         std::vector<double> az_angles;
         std::vector<bool> sat_ascendings;
 
@@ -90,7 +90,7 @@ namespace satdump
                 geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
                 geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
                 double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
-                sat_positions.push_back(pos_curr);
+                sat_positions.push_back(sat_tracker.get_sat_position_at_raw(timestamp));
                 az_angles.push_back(az_angle);
                 sat_ascendings.push_back(pos_curr.lat < pos_next.lat);
             }
@@ -108,7 +108,7 @@ namespace satdump
             if (timestamp == -1)
                 return 1;
 
-            geodetic::geodetic_coords_t pos_curr = sat_positions[y];
+            auto pos_curr = sat_positions[y];
             double az_angle = az_angles[y];
 
             double final_x = !invert_scan ? (image_width - 1) - x : x;
@@ -130,13 +130,13 @@ namespace satdump
             }
             else
             {
-                satellite_pointing.roll = -(((final_x - (image_width / 2.0)) / image_width) * scan_angle) + roll_offset;
+                satellite_pointing.roll = -(((final_x - (image_width / 2.0)) / image_width) * scan_angle) + roll_offset - 0.06;
                 satellite_pointing.pitch = pitch_offset;
-                satellite_pointing.yaw = (90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle;
+                satellite_pointing.yaw = yaw_offset; // 2.1;//-yaw_offset; //(90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle;
             }
 
             geodetic::geodetic_coords_t ground_position;
-            int ret = geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
+            int ret = geodetic::raytrace_to_earth_new(pos_curr.time, pos_curr.position, pos_curr.velocity, satellite_pointing, ground_position);
             pos = ground_position.toDegs();
 
             if (ret)

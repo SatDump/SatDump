@@ -12,4 +12,6 @@ namespace geodetic
     Returns 1 on error.
     */
     int raytrace_to_earth(geodetic_coords_t position, euler_coords_t pointing, geodetic_coords_t &earth_point);
+
+    int raytrace_to_earth_new(double time, const double position_in[3], const double velocity_in[3], geodetic::euler_coords_t pointing, geodetic::geodetic_coords_t &earth_point);
 };
