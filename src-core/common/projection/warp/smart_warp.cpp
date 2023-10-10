@@ -350,6 +350,7 @@ namespace satdump
                     int height = std::min<int>(result.output_image.height(), y2 + result2.output_image.height()) - y2;
 
                     if (result2.output_image.channels() == result.output_image.channels())
+#pragma omp parallel for
                         for (int x = 0; x < width; x++)
                             for (int y = 0; y < height; y++)
                                 if (y + y2 >= 0 && x + x2 >= 0)
