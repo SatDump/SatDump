@@ -311,13 +311,13 @@ namespace satdump
 
                 satdump::warp::WarpResult result2 = warper.warp(segmentCfg.force_double);
 
-                // Setup projector....
+#if 0 // Draw GCPs, useful for debug
+      // Setup projector....
                 geodetic::projection::EquirectangularProjection projector;
                 projector.init(result2.output_image.width(), result2.output_image.height(),
                                result2.top_left.lon, result2.top_left.lat,
                                result2.bottom_right.lon, result2.bottom_right.lat);
-
-#if 0 // Draw GCPs, useful for debug
+                               
                 {
                     unsigned short color[4] = {0, 65535, 0, 65535};
                     for (auto gcp : operation.ground_control_points)
@@ -342,8 +342,8 @@ namespace satdump
                 // .....and re-project! (just a basic affine transform)
                 float lon = result2.top_left.lon, lat = result2.top_left.lat;
                 int x2 = 0, y2 = 0;
-                projector_final.forward(lon, lat, x2, y2);
-                if (!(x2 == -1 || y2 == -1))
+                projector_final.forward(lon, lat, x2, y2, true);
+                // if (!(x2 == -1 || y2 == -1))
                 {
                     // Slightly modified draw_image()
                     int width = std::min<int>(result.output_image.width(), x2 + result2.output_image.width()) - x2;

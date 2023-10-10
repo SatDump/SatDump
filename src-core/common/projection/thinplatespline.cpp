@@ -43,8 +43,9 @@
 
 #include "logger.h"
 
-//#include <armadillo>
-//#define HAVE_ARMADILLO 1
+#ifdef HAVE_ARMADILLO
+#include <armadillo>
+#endif
 
 /*
  This file is originally from https://github.com/OSGeo/gdal

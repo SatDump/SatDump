@@ -30,7 +30,7 @@ namespace geodetic
 
         public:
             void init(int img_width, int img_height, float tl_lon, float tl_lat, float br_lon, float br_lat);
-            void forward(float lon, float lat, int &x, int &y);
+            void forward(float lon, float lat, int &x, int &y, bool allow_oob = false);
             void reverse(int x, int y, float &lon, float &lat);
         };
     };

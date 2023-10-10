@@ -44,7 +44,7 @@ endif()
 
 # Threads
 find_package(Threads REQUIRED)
-target_link_libraries(satdump_core PUBLIC Threads::Threads)
+target_link_libraries(satdump_core PUBLIC Threads::Threads armadillo)
 
 # Set Spdlog to build the library
 target_compile_definitions(satdump_core PUBLIC SPDLOG_COMPILED_LIB="1")
@@ -153,6 +153,16 @@ else()
         message("-- Building with LuaJIT!")
     else()
         target_include_directories(satdump_core PUBLIC libs/lua)
+    endif()
+
+    # Armadillo
+    find_package(Armadillo)
+
+    if(ARMADILLO_FOUND)
+        target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
+        target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
+        target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+        message("-- Building with Armadillo!")
     endif()
 
     # Dynamic linking

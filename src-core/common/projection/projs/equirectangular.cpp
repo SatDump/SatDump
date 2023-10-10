@@ -25,9 +25,9 @@ namespace geodetic
             offset_lon = fabs(top_left_lon + 180);
         }
 
-        void EquirectangularProjection::forward(float lon, float lat, int &x, int &y)
+        void EquirectangularProjection::forward(float lon, float lat, int &x, int &y, bool allow_oob)
         {
-            if (lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon)
+            if ((lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon) && !allow_oob)
             {
                 x = y = -1;
                 return;
@@ -42,7 +42,7 @@ namespace geodetic
             y = (lat / covered_lat) * image_height;
             x = (lon / covered_lon) * image_width;
 
-            if (y < 0 || y >= image_height || x < 0 || x >= image_width)
+            if ((y < 0 || y >= image_height || x < 0 || x >= image_width) && !allow_oob)
                 x = y = -1;
         }
 
