@@ -1,7 +1,7 @@
 {
     "type": "normal_single_line",
     "scan_angle": 100,
-    "roll_offset": -0.7,
+    "roll_offset": -1,
     "timestamp_offset": -3.5,
     "image_width": 56,
     "gcp_spacing_x": 5,
