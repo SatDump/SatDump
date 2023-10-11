@@ -156,6 +156,10 @@ namespace satdump
         if (autotrack_engaged)
             style::beginDisabled();
 
+        float curpos = ImGui::GetCursorPosY();
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 220 * ui_scale);
+        ImGui::SetNextItemWidth(200 * ui_scale);
+        ImGui::InputTextWithHint("##trackingavailablesatssearch", u8"\uf422   Search All Satellites", &availablesatssearch);
         ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 220 * ui_scale);
         ImGui::BeginGroup();
         ImGui::SetNextItemWidth(200 * ui_scale);
@@ -164,12 +168,12 @@ namespace satdump
             for (int i = 0; i < (int)satoptions.size(); i++)
                 if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
-                    if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
+                    if ((availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch)) &&
+                                 ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
                         tracking_sats_menu_selected_1 = i;
             ImGui::EndListBox();
         }
         ImGui::SameLine();
-        int curpos = ImGui::GetCursorPosY();
         ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 15 * ui_scale);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50 * ui_scale);
         ImGui::BeginGroup();
@@ -188,8 +192,10 @@ namespace satdump
                 enabled_satellites.erase(it);
         }
         ImGui::EndGroup();
-        ImGui::SameLine();
         ImGui::SetCursorPosY(curpos);
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + 20 * ui_scale);
+        ImGui::SetNextItemWidth(200 * ui_scale);
+        ImGui::InputTextWithHint("##trackingselectedsatssearch", u8"\uf422   Search Selected", &selectedsatssearch);
         ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + 20 * ui_scale);
         ImGui::SetNextItemWidth(200 * ui_scale);
         if (ImGui::BeginListBox("##trackingselectedsatsbox"))
@@ -197,7 +203,8 @@ namespace satdump
             for (int i = 0; i < (int)satoptions.size(); i++)
                 if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) != enabled_satellites.end())
-                    if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
+                    if ((selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch)) &&
+                                 ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
                         tracking_sats_menu_selected_2 = i;
             ImGui::EndListBox();
         }

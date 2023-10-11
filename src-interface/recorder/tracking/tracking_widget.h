@@ -113,6 +113,8 @@ namespace satdump
     private: // Config Window
         bool config_window_was_asked = false;
         bool show_window_config = false;
+        std::string availablesatssearch;
+        std::string selectedsatssearch;
 
     private: // Current satellite
         float current_az = 0, current_el = 0;
