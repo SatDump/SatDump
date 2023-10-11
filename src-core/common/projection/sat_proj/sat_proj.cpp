@@ -52,8 +52,7 @@ namespace satdump
         float yaw_offset_des;
 
         // Pre-computed stuff
-        std::vector</*geodetic::geodetic_coords_t*/ predict_position> sat_positions;
-        std::vector<double> az_angles;
+        std::vector<predict_position> sat_positions;
         std::vector<bool> sat_ascendings;
 
     public:
@@ -89,9 +88,7 @@ namespace satdump
                 double timestamp = timestamps[i] + timestamp_offset;
                 geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
                 geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
-                double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
                 sat_positions.push_back(sat_tracker.get_sat_position_at_raw(timestamp));
-                az_angles.push_back(az_angle);
                 sat_ascendings.push_back(pos_curr.lat < pos_next.lat);
             }
         }
@@ -109,7 +106,6 @@ namespace satdump
                 return 1;
 
             auto pos_curr = sat_positions[y];
-            double az_angle = az_angles[y];
 
             double final_x = !invert_scan ? (image_width - 1) - x : x;
             bool ascending = sat_ascendings[y];
@@ -126,13 +122,13 @@ namespace satdump
                 }
                 satellite_pointing.roll = roll_offset;
                 satellite_pointing.pitch = pitch_offset;
-                satellite_pointing.yaw = (90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle + -(((final_x - (image_width / 2.0)) / image_width) * scan_angle);
+                satellite_pointing.yaw = yaw_offset + (((final_x - (image_width / 2.0)) / image_width) * scan_angle);
             }
             else
             {
                 satellite_pointing.roll = -(((final_x - (image_width / 2.0)) / image_width) * scan_angle) + roll_offset - 0.06;
                 satellite_pointing.pitch = pitch_offset;
-                satellite_pointing.yaw = yaw_offset; // 2.1;//-yaw_offset; //(90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle;
+                satellite_pointing.yaw = yaw_offset;
             }
 
             geodetic::geodetic_coords_t ground_position;
@@ -169,8 +165,7 @@ namespace satdump
         double ifov_y_scan_angle;
 
         // Pre-computed stuff
-        std::vector<geodetic::geodetic_coords_t> sat_positions;
-        std::vector<double> az_angles;
+        std::vector<predict_position> sat_positions;
         std::vector<bool> sat_ascendings;
 
     public:
@@ -207,9 +202,7 @@ namespace satdump
                 double timestamp = timestamps[i] + timestamp_offset;
                 geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
                 geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
-                double az_angle = vincentys_inverse(pos_next, pos_curr).reverse_azimuth * RAD_TO_DEG;
-                sat_positions.push_back(pos_curr);
-                az_angles.push_back(az_angle);
+                sat_positions.push_back(sat_tracker.get_sat_position_at_raw(timestamp));
                 sat_ascendings.push_back(pos_curr.lat < pos_next.lat);
             }
         }
@@ -233,8 +226,7 @@ namespace satdump
 
             timestamp += timestamp_offset;
 
-            geodetic::geodetic_coords_t pos_curr = sat_positions[currentArrayValue];
-            double az_angle = az_angles[currentArrayValue];
+            auto pos_curr = sat_positions[currentArrayValue];
 
             bool ascending = sat_ascendings[y];
 
@@ -247,10 +239,10 @@ namespace satdump
             geodetic::euler_coords_t satellite_pointing;
             satellite_pointing.roll = -(((ifov_x - (ifov_x_size / 2)) / ifov_x_size) * ifov_x_scan_angle) + currentIfovOffset + roll_offset;
             satellite_pointing.pitch = -(((ifov_y - (ifov_y_size / 2)) / ifov_y_size) * ifov_y_scan_angle) + pitch_offset;
-            satellite_pointing.yaw = (90 + (!ascending ? yaw_offset : -yaw_offset)) - az_angle;
+            satellite_pointing.yaw = yaw_offset;
 
             geodetic::geodetic_coords_t ground_position;
-            int ret = geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
+            int ret = geodetic::raytrace_to_earth_new(pos_curr.time, pos_curr.position, pos_curr.velocity, satellite_pointing, ground_position);
             pos = ground_position.toDegs();
 
             if (ret)

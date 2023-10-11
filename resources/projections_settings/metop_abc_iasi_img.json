@@ -1,8 +1,8 @@
 {
     "type": "normal_per_ifov",
     "scan_angle": 100,
-    "roll_offset": -1.7,
-    "yaw_offset": 0.2,
+    "roll_offset": -1.75,
+    "yaw_offset": 2.4,
     "image_width": 1920,
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100,
