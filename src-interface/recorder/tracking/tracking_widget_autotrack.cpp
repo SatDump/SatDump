@@ -202,7 +202,7 @@ namespace satdump
             ImGui::EndListBox();
         }
         ImGui::EndGroup();
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 45 * ui_scale);
+        ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
         ImGui::SetNextItemWidth(150 * ui_scale);
