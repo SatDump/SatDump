@@ -1,17 +1,17 @@
 #include "euler_raytrace.h"
 #include "wgs84.h"
 
+extern "C"
+{
+#include "libs/predict/unsorted.h"
+}
+
 #define EPSILON 2.2204460492503131e-016
+
+#define JULIAN_TIME_DIFF 2444238.5
 
 namespace geodetic
 {
-    /*
-    Namespace to store some stuff used only for this function,
-    at least for now.
-    I initially wanted to avoid implementing all this, but it
-    would have made most of the code much harder and shouldn't
-    really impact performances that badly.
-    */
     namespace raytrace_to_earth_namespace
     {
         struct vector
@@ -48,7 +48,7 @@ namespace geodetic
             }
         };
 
-        vector vectorCross(vector a, vector b)
+        inline vector vectorCross(vector a, vector b)
         {
             vector c;
             c.x = a.y * b.z - a.z * b.y;
@@ -57,196 +57,107 @@ namespace geodetic
             return c;
         }
 
-        struct matrix
+        inline vector rotate_vector_a_around_b(vector a, vector b, double theta)
         {
-            double m[16];
+            double _const = (a.x * b.x + a.y * b.y + a.z * b.z) / (b.x * b.x + b.y * b.y + b.z * b.z);
 
-            matrix()
-            {
-                std::fill(m, &m[16], 0);
-                m[0] = 1;
-                m[5] = 1;
-                m[10] = 1;
-                m[15] = 1;
-            }
+            vector a_par_b;
+            vector a_ortho_b;
 
-            matrix(double a1, double a2, double a3, double a4,
-                   double a5, double a6, double a7, double a8,
-                   double a9, double a10, double a11, double a12,
-                   double a13, double a14, double a15, double a16)
-            {
-                m[0] = a1;
-                m[1] = a2;
-                m[2] = a3;
-                m[3] = a4;
-                m[4] = a5;
-                m[5] = a6;
-                m[6] = a7;
-                m[7] = a8;
-                m[8] = a9;
-                m[9] = a10;
-                m[10] = a11;
-                m[11] = a12;
-                m[12] = a13;
-                m[13] = a14;
-                m[14] = a15;
-                m[15] = a16;
-            }
+            a_par_b.x = _const * b.x;
+            a_par_b.y = _const * b.y;
+            a_par_b.z = _const * b.z;
+            a_ortho_b.x = a.x - a_par_b.x;
+            a_ortho_b.y = a.y - a_par_b.y;
+            a_ortho_b.z = a.z - a_par_b.z;
 
-            double &operator[](const int &i)
-            {
-                return m[i];
-            }
+            vector w;
 
-            matrix operator*(const matrix &b)
-            {
-                matrix out;
-                out[0] = m[0] * b.m[0] + m[1] * b.m[4] + m[2] * b.m[8] + m[3] * b.m[12];
-                out[1] = m[0] * b.m[1] + m[1] * b.m[5] + m[2] * b.m[9] + m[3] * b.m[13];
-                out[2] = m[0] * b.m[2] + m[1] * b.m[6] + m[2] * b.m[10] + m[3] * b.m[14];
-                out[3] = m[0] * b.m[3] + m[1] * b.m[7] + m[2] * b.m[11] + m[3] * b.m[15];
-                out[4] = m[4] * b.m[0] + m[5] * b.m[4] + m[6] * b.m[8] + m[7] * b.m[12];
-                out[5] = m[4] * b.m[1] + m[5] * b.m[5] + m[6] * b.m[9] + m[7] * b.m[13];
-                out[6] = m[4] * b.m[2] + m[5] * b.m[6] + m[6] * b.m[10] + m[7] * b.m[14];
-                out[7] = m[4] * b.m[3] + m[5] * b.m[7] + m[6] * b.m[11] + m[7] * b.m[15];
-                out[8] = m[8] * b.m[0] + m[9] * b.m[4] + m[10] * b.m[8] + m[11] * b.m[12];
-                out[9] = m[8] * b.m[1] + m[9] * b.m[5] + m[10] * b.m[9] + m[11] * b.m[13];
-                out[10] = m[8] * b.m[2] + m[9] * b.m[6] + m[10] * b.m[10] + m[11] * b.m[14];
-                out[11] = m[8] * b.m[3] + m[9] * b.m[7] + m[10] * b.m[11] + m[11] * b.m[15];
-                out[12] = m[12] * b.m[0] + m[13] * b.m[4] + m[14] * b.m[8] + m[15] * b.m[12];
-                out[13] = m[12] * b.m[1] + m[13] * b.m[5] + m[14] * b.m[9] + m[15] * b.m[13];
-                out[14] = m[12] * b.m[2] + m[13] * b.m[6] + m[14] * b.m[10] + m[15] * b.m[14];
-                out[15] = m[12] * b.m[3] + m[13] * b.m[7] + m[14] * b.m[11] + m[15] * b.m[15];
-                return out;
-            }
-        };
+            w.x = b.y * a_ortho_b.z - b.z * a_ortho_b.y;
+            w.y = b.z * a_ortho_b.x - b.x * a_ortho_b.z;
+            w.z = b.x * a_ortho_b.y - b.y * a_ortho_b.x;
+
+            double rnorm_ortho = sqrt(a_ortho_b.x * a_ortho_b.x + a_ortho_b.y * a_ortho_b.y + a_ortho_b.z * a_ortho_b.z);
+
+            double x1 = cos(theta) / rnorm_ortho;
+            double x2 = sin(theta) / sqrt(w.x * w.x + w.y * w.y + w.z * w.z);
+
+            vector a_ortho_b_theta;
+
+            a_ortho_b_theta.x = rnorm_ortho * (x1 * a_ortho_b.x + x2 * w.x);
+            a_ortho_b_theta.y = rnorm_ortho * (x1 * a_ortho_b.y + x2 * w.y);
+            a_ortho_b_theta.z = rnorm_ortho * (x1 * a_ortho_b.z + x2 * w.z);
+
+            vector c;
+
+            c.x = a_ortho_b_theta.x + a_par_b.x;
+            c.y = a_ortho_b_theta.y + a_par_b.y;
+            c.z = a_ortho_b_theta.z + a_par_b.z;
+
+            return c;
+        }
     };
 
-    // Must already be in radians!
-    void lla2xyz(geodetic_coords_t lla, raytrace_to_earth_namespace::vector &position)
-    {
-#if 0
-        double asq = WGS84::a * WGS84::a;
-        double esq = WGS84::e * WGS84::e;
-        double N = WGS84::a / sqrt(1 - esq * pow(sin(lla.lat), 2));
-        position.x = (N + lla.alt) * cos(lla.lat) * cos(lla.lon);
-        position.y = (N + lla.alt) * cos(lla.lat) * sin(lla.lon);
-        position.z = ((1 - esq) * N + lla.alt) * sin(lla.lat);
-#else
-        double N = pow(WGS84::a, 2) / sqrt(pow(WGS84::a, 2) * pow(cos(lla.lat), 2) + pow(WGS84::b, 2) * pow(sin(lla.lat), 2));
-        position.x = (N + lla.alt) * cos(lla.lat) * cos(lla.lon);
-        position.y = (N + lla.alt) * cos(lla.lat) * sin(lla.lon);
-        position.z = ((pow(WGS84::b, 2) / pow(WGS84::a, 2)) * N + lla.alt) * sin(lla.lat);
-#endif
-    }
-
-    // Output in radians!
-    void xyz2lla(raytrace_to_earth_namespace::vector position, geodetic_coords_t &lla)
-    {
-#if 0
-        double asq = WGS84::a * WGS84::a;
-        double esq = WGS84::e * WGS84::e;
-
-        double b = sqrt(asq * (1 - esq));
-        double bsq = b * b;
-        double ep = sqrt((asq - bsq) / bsq);
-        double p = sqrt(position.x * position.x + position.y * position.y);
-        double th = atan2(WGS84::a * position.z, b * p);
-        double lon = atan2(position.y, position.x);
-        double lat = atan2((position.z + ep * ep * b * pow(sin(th), 3)), (p - esq * WGS84::a * pow(cos(th), 3)));
-        double N = WGS84::a / (sqrt(1 - esq * pow(sin(lat), 2)));
-
-        raytrace_to_earth_namespace::vector g;
-        lla2xyz(geodetic_coords_t(lat, lon, 0, true), g);
-
-        double gm = sqrt(g.x * g.x + g.y * g.y + g.z * g.z);
-        double am = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
-        double alt = am - gm;
-
-        lla = geodetic::geodetic_coords_t(lat, lon, alt, true);
-#else
-        double p = sqrt(pow(position.x, 2) + pow(position.y, 2));
-        double phi = atan2(position.z * WGS84::a, p * WGS84::b);
-        double lat = atan2(position.z + pow(WGS84::e2, 2) * WGS84::b * pow(sin(phi), 3), p - pow(WGS84::e, 2) * WGS84::a * pow(cos(phi), 3));
-        double lon = atan2(position.y, position.x);
-        lla = geodetic::geodetic_coords_t(lat, lon, 0, true);
-#endif
-    }
-
-    /*
-    I initially wrote this function in a much, much less elegant way...
-    But during my research for some examples of cleaner ways, I stumbled
-    upon https://github.com/Digitelektro/MeteorDemod and reused some
-    implementations. They were also simplified / cleaned up.
-    */
-    int raytrace_to_earth(geodetic_coords_t position_geo, euler_coords_t pointing, geodetic_coords_t &earth_point)
+    int raytrace_to_earth(double time, const double position_in[3], const double velocity_in[3], geodetic::euler_coords_t pointing, geodetic::geodetic_coords_t &earth_point)
     {
         // Ensure all inputs are in radians
-        position_geo.toRads();
+        // position_geo.toRads();
         pointing.toRads();
-
-        // Generate rotation matrices
-        raytrace_to_earth_namespace::matrix rotateX;
-        rotateX[5] = cos(-pointing.roll);
-        rotateX[6] = -sin(-pointing.roll);
-        rotateX[9] = sin(-pointing.roll);
-        rotateX[10] = cos(-pointing.roll);
-
-        raytrace_to_earth_namespace::matrix rotateY;
-        rotateY[0] = cos(-pointing.pitch);
-        rotateY[2] = sin(-pointing.pitch);
-        rotateY[8] = -sin(-pointing.pitch);
-        rotateY[10] = cos(-pointing.pitch);
-
-        raytrace_to_earth_namespace::matrix rotateZ;
-        rotateZ[0] = cos(-pointing.yaw);
-        rotateZ[1] = -sin(-pointing.yaw);
-        rotateZ[4] = sin(-pointing.yaw);
-        rotateZ[5] = cos(-pointing.yaw);
-
-        // Total rotation matrice
-        raytrace_to_earth_namespace::matrix rotateXYZ = rotateZ * rotateY * rotateX;
 
         // Geodetic coordinates to vector
         raytrace_to_earth_namespace::vector position;
+        position.x = position_in[0];
+        position.y = position_in[1];
+        position.z = position_in[2];
 
-        lla2xyz(position_geo, position);
-
-        // Matrices
-        raytrace_to_earth_namespace::matrix look_matrix;
-        raytrace_to_earth_namespace::matrix final_matrix(1, 0, 0, position.x,
-                                                         0, 1, 0, position.y,
-                                                         0, 0, 1, position.z,
-                                                         0, 0, 0, 1);
-
-        raytrace_to_earth_namespace::vector k(-position.x, -position.y, -position.z);
-        double m = k.distance_square();
-        if (m >= EPSILON)
+        // Get vector to Nadir
+        raytrace_to_earth_namespace::vector nadir_vector;
         {
-            k.x *= (1.0 / sqrt(m));
-            k.y *= (1.0 / sqrt(m));
-            k.z *= (1.0 / sqrt(m));
-
-            raytrace_to_earth_namespace::vector i = raytrace_to_earth_namespace::vectorCross(raytrace_to_earth_namespace::vector(0, 0, 1), k).normalize();
-            raytrace_to_earth_namespace::vector j = raytrace_to_earth_namespace::vectorCross(k, i).normalize();
-
-            look_matrix = raytrace_to_earth_namespace::matrix(i.x, j.x, k.x, 0.0,
-                                                              i.y, j.y, k.y, 0.0,
-                                                              i.z, j.z, k.z, 0.0,
-                                                              0.0, 0.0, 0.0, 1.0);
+            geodetic_t out;
+            double obspos[3];
+            double obs_vel[3];
+            Calculate_LatLonAlt(time, position_in, &out);
+            out.alt = 0;
+            Calculate_User_PosVel(time + JULIAN_TIME_DIFF, &out, obspos, obs_vel);
+            // logger->critical("%f-%f %f-%f %f-%f",
+            //                  obspos[0], position_in[0],
+            //                  obspos[1], position_in[1],
+            //                  obspos[2], position_in[2]);
+            nadir_vector.x = obspos[0] - position_in[0];
+            nadir_vector.y = obspos[1] - position_in[1];
+            nadir_vector.z = obspos[2] - position_in[2];
         }
 
-        final_matrix = final_matrix * look_matrix * rotateXYZ;
+        // Satellite velocity vector
+        raytrace_to_earth_namespace::vector velocity_vector;
+        velocity_vector.x = velocity_in[0];
+        velocity_vector.y = velocity_in[1];
+        velocity_vector.z = velocity_in[2];
 
-        // Vector
-        double u = final_matrix[2];
-        double v = final_matrix[6];
-        double w = final_matrix[10];
+        // Rotate to apply yaw
+        velocity_vector =
+            raytrace_to_earth_namespace::rotate_vector_a_around_b(velocity_vector, nadir_vector, pointing.yaw);
+
+        // Compute a vector orthogonal to the velocity vector
+        raytrace_to_earth_namespace::vector velocity_vector_90 =
+            raytrace_to_earth_namespace::rotate_vector_a_around_b(velocity_vector, nadir_vector, 90 * DEG_TO_RAD);
+
+        // Apply rotations. First, roll
+        raytrace_to_earth_namespace::vector pointing_vector =
+            raytrace_to_earth_namespace::rotate_vector_a_around_b(nadir_vector, velocity_vector, pointing.roll);
+
+        // Apply rotations. Then, pitch
+        pointing_vector =
+            raytrace_to_earth_namespace::rotate_vector_a_around_b(pointing_vector, velocity_vector_90, pointing.pitch);
+
+        double u = pointing_vector.x;
+        double v = pointing_vector.y;
+        double w = pointing_vector.z;
 
         // WGS84 ellipsoid
-        const double &a = WGS84::a;
-        const double &b = WGS84::a;
-        const double &c = WGS84::b;
+        const double &a = geodetic::WGS84::a;
+        const double &b = geodetic::WGS84::a;
+        const double &c = geodetic::WGS84::b;
 
         double value = -pow(a, 2) * pow(b, 2) * w * position.z - pow(a, 2) * pow(c, 2) * v * position.y - pow(b, 2) * pow(c, 2) * u * position.x;
         double radical = pow(a, 2) * pow(b, 2) * pow(w, 2) + pow(a, 2) * pow(c, 2) * pow(v, 2) - pow(a, 2) * pow(v, 2) * pow(position.z, 2) +
@@ -268,7 +179,18 @@ namespace geodetic
         position.z += d * w;
 
         // To geodetic
-        xyz2lla(position, earth_point);
+        // xyz2lla(position, earth_point);
+        const double position_final[3] = {position.x, position.y, position.z};
+        geodetic_t out;
+        Calculate_LatLonAlt(time, position_final, &out);
+
+        earth_point = geodetic::geodetic_coords_t(out.lat, out.lon, out.alt / 1000.0, true).toDegs();
+
+        if (earth_point.lon > 180.0)
+            earth_point.lon -= 360.0;
+
+        if (std::isnan(earth_point.lat) || std::isnan(earth_point.lon))
+            return 1;
 
         return 0;
     }

@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
             satellite_pointing.yaw = 90 - az_angle;
 
             geodetic::geodetic_coords_t ground_position;
-            int ret = geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
+            int ret = geodetic::raytrace_to_earth_old(pos_curr, satellite_pointing, ground_position);
             ground_position.toDegs();
 
             if (ret)
