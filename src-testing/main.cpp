@@ -45,10 +45,10 @@ int main(int argc, char *argv[])
 
         geodetic::geodetic_coords_t earth_point, earth_point2;
 
-        geodetic::raytrace_to_earth(position, {50, 0, 0}, earth_point);
+        geodetic::raytrace_to_earth_old(position, {50, 0, 0}, earth_point);
         earth_point.toDegs();
 
-        geodetic::raytrace_to_earth_new(utc_jul, satellite_orbit.position, satellite_orbit.velocity, {50, 0, 0}, earth_point2);
+        geodetic::raytrace_to_earth(utc_jul, satellite_orbit.position, satellite_orbit.velocity, {50, 0, 0}, earth_point2);
 
         logger->info("%f %f ---- %f %f ---- %f %f",
                      position.lon, position.lat,

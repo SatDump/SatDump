@@ -132,7 +132,7 @@ namespace satdump
             }
 
             geodetic::geodetic_coords_t ground_position;
-            int ret = geodetic::raytrace_to_earth_new(pos_curr.time, pos_curr.position, pos_curr.velocity, satellite_pointing, ground_position);
+            int ret = geodetic::raytrace_to_earth(pos_curr.time, pos_curr.position, pos_curr.velocity, satellite_pointing, ground_position);
             pos = ground_position.toDegs();
 
             if (ret)
@@ -242,7 +242,7 @@ namespace satdump
             satellite_pointing.yaw = yaw_offset;
 
             geodetic::geodetic_coords_t ground_position;
-            int ret = geodetic::raytrace_to_earth_new(pos_curr.time, pos_curr.position, pos_curr.velocity, satellite_pointing, ground_position);
+            int ret = geodetic::raytrace_to_earth(pos_curr.time, pos_curr.position, pos_curr.velocity, satellite_pointing, ground_position);
             pos = ground_position.toDegs();
 
             if (ret)
@@ -390,7 +390,7 @@ namespace satdump
             // logger->critical("%f %f %f ", satellite_pointing.roll, satellite_pointing.pitch, satellite_pointing.yaw);
 
             geodetic::geodetic_coords_t ground_position;
-            int ret = geodetic::raytrace_to_earth(pos_curr, satellite_pointing, ground_position);
+            int ret = geodetic::raytrace_to_earth_old(pos_curr, satellite_pointing, ground_position);
             pos = ground_position.toDegs();
 
             if (ret)
