@@ -8,7 +8,9 @@
 
 ImageViewWidget::ImageViewWidget()
 {
-    id_str = "imgview_" + std::to_string(rand());
+    static int id_num = 0;
+    id_str = "imgview_" + std::to_string(id_num);
+    id_num++;
 }
 
 ImageViewWidget::~ImageViewWidget()
