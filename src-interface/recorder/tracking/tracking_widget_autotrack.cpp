@@ -170,8 +170,7 @@ namespace satdump
                                  { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
                     if (availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch))
                     {
-                        bool selected = ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1);
-                        if(selected)
+                        if(ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
                             tracking_sats_menu_selected_1 = i;
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
@@ -216,8 +215,7 @@ namespace satdump
                                  { return c.norad == general_tle_registry[i].norad; }) != enabled_satellites.end())
                     if (selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch))
                     {
-                        bool selected = ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2);
-                        if (selected)
+                        if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
                             tracking_sats_menu_selected_2 = i;
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
