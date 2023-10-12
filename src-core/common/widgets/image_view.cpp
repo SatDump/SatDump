@@ -20,7 +20,11 @@ ImageViewWidget::~ImageViewWidget()
 void ImageViewWidget::update(image::Image<uint16_t> image)
 {
     image_mtx.lock();
-    if (image.width() <= 8192 && image.height() <= 8192)
+    if (image.width() == 0 || image.height() == 0)
+    {
+        img_chunks.resize(0);
+    }
+    else if (image.width() <= 8192 && image.height() <= 8192)
     {
         img_chunks.resize(1);
         fimg_width = img_chunks[0].img_width = image.width();
@@ -72,7 +76,11 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
 void ImageViewWidget::update(image::Image<uint8_t> image)
 {
     image_mtx.lock();
-    if (image.width() <= 8192 && image.height() <= 8192)
+    if (image.width() == 0 || image.height() == 0)
+    {
+        img_chunks.resize(0);
+    }
+    else if (image.width() <= 8192 && image.height() <= 8192)
     {
         img_chunks.resize(1);
         fimg_width = img_chunks[0].img_width = image.width();
