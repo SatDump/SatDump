@@ -3,12 +3,12 @@
     "scan_angle": 121,
     "roll_offset": 0, // -2.4,
     "pitch_offset": 45,
-    "yaw_offset": 0,
+    "yaw_offset": 3,
     "rotate_yaw": true,
     "image_width": 492,
     "gcp_spacing_x": 20,
     "gcp_spacing_y": 20,
-    "timestamp_offset": -1,
+    "timestamp_offset": 0.5,
     ///////////////////////
     "timefilter": {
         "type": "simple",
