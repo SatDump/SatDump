@@ -168,9 +168,20 @@ namespace satdump
             for (int i = 0; i < (int)satoptions.size(); i++)
                 if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
-                    if ((availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch)) &&
-                                 ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
-                        tracking_sats_menu_selected_1 = i;
+                    if (availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch))
+                    {
+                        bool selected = ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1);
+                        if(selected)
+                            tracking_sats_menu_selected_1 = i;
+
+                        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+                        {
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject& t)
+                                { return t.norad == general_tle_registry[i].norad; });
+                            if (it == enabled_satellites.end())
+                                enabled_satellites.push_back({general_tle_registry[i].norad});
+                        }
+                    }
             ImGui::EndListBox();
         }
         ImGui::SameLine();
@@ -203,9 +214,21 @@ namespace satdump
             for (int i = 0; i < (int)satoptions.size(); i++)
                 if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) != enabled_satellites.end())
-                    if ((selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch)) &&
-                                 ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
-                        tracking_sats_menu_selected_2 = i;
+                    if (selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch))
+                    {
+                        bool selected = ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2);
+                        if (selected)
+                            tracking_sats_menu_selected_2 = i;
+
+                        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+                        {
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject& t)
+                                { return t.norad == general_tle_registry[i].norad; });
+                            if (it != enabled_satellites.end())
+                                enabled_satellites.erase(it);
+                        }
+                    }
+
             ImGui::EndListBox();
         }
         ImGui::EndGroup();
