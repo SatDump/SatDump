@@ -52,8 +52,8 @@ namespace satdump
                 ratio_y = round((double)projection->img_size_y / (double)height);
 
             int img_x_offset = 0;
-            if (mtd.contains("img_offset_x"))
-                img_x_offset = mtd["img_offset_x"];
+            if (mtd.contains("img_x_offset"))
+                img_x_offset = mtd["img_x_offset"];
 
             std::vector<int> values;
             for (int x = 0; x < projection->img_size_x; x += projection->gcp_spacing_x)
