@@ -23,7 +23,6 @@ namespace colormaps
         }
         catch (const std::exception &)
         {
-            // spdlog::error("Could not load {0}", path);
             return map;
         }
 
