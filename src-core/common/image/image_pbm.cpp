@@ -71,7 +71,140 @@ namespace image
         if (!std::filesystem::exists(file))
             return;
 
-        init(d_width, d_height, d_channels);
+        try
+        {
+            std::ifstream filei(file, std::ios::binary);
+
+            std::string signature;
+            signature.resize(2);
+            filei.read((char *)signature.c_str(), 2);
+
+            logger->critical(signature);
+
+            int channels = 1;
+            if (signature == "P4")
+                channels = 1;
+            else if (signature == "P6")
+                channels = 3;
+
+            uint8_t dump; // Extra char
+            filei.read((char *)&dump, 1);
+
+            std::string widthstr;
+            while (!filei.eof())
+            {
+                char c;
+                filei.read(&c, 1);
+                if (c != ' ' && c != '\r' && c != '\n')
+                    widthstr.push_back(c);
+                else
+                    break;
+            }
+            int width = std::stoi(widthstr);
+
+            logger->critical(widthstr);
+
+            std::string heightstr;
+            while (!filei.eof())
+            {
+                char c;
+                filei.read(&c, 1);
+                if (c != ' ' && c != '\r' && c != '\n')
+                    heightstr.push_back(c);
+                else
+                    break;
+            }
+            int height = std::stoi(heightstr);
+
+            logger->critical(heightstr);
+
+            init(width, height, channels);
+
+            std::string maxvalstr;
+            while (!filei.eof())
+            {
+                char c;
+                filei.read(&c, 1);
+                if (c != ' ' && c != '\r' && c != '\n')
+                    maxvalstr.push_back(c);
+                else
+                    break;
+            }
+            int maxval = std::stoi(maxvalstr);
+
+            if (d_depth == 8)
+            {
+                if (maxval > 255)
+                {
+                    for (int y = 0; y < d_height; y++)
+                    {
+                        for (int x = 0; x < d_width; x++)
+                        {
+                            for (int c = 0; c < d_channels; c++)
+                            {
+                                uint16_t v;
+                                filei.read((char *)&v, sizeof(uint16_t));
+                                channel(c)[y * d_width + x] = INVERT_ENDIAN_16(v) >> 8;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < d_height; y++)
+                    {
+                        for (int x = 0; x < d_width; x++)
+                        {
+                            for (int c = 0; c < d_channels; c++)
+                            {
+                                uint8_t v;
+                                filei.read((char *)&v, sizeof(uint8_t));
+                                channel(c)[y * d_width + x] = v;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (d_depth == 16)
+            {
+                if (maxval > 255)
+                {
+                    for (int y = 0; y < d_height; y++)
+                    {
+                        for (int x = 0; x < d_width; x++)
+                        {
+                            for (int c = 0; c < d_channels; c++)
+                            {
+                                uint16_t v;
+                                filei.read((char *)&v, sizeof(uint16_t));
+                                channel(c)[y * d_width + x] = INVERT_ENDIAN_16(v);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < d_height; y++)
+                    {
+                        for (int x = 0; x < d_width; x++)
+                        {
+                            for (int c = 0; c < d_channels; c++)
+                            {
+                                uint8_t v;
+                                filei.read((char *)&v, sizeof(uint8_t));
+                                channel(c)[y * d_width + x] = v << 8;
+                            }
+                        }
+                    }
+                }
+            }
+
+            filei.close();
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Could not open PBM file : %s", e.what());
+        }
     }
 
     // Generate Images for uint16_t and uint8_t

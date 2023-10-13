@@ -126,9 +126,10 @@
             "options": [
                 "png",
                 "j2k",
-                "jpg"
+                "jpg",
+                "pbm"
             ],
-            "description": "Image format for raw image products\n\nPNG: PNG Image (recommended)\nj2k: JPEG 2000\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)"
+            "description": "Image format for raw image products\n\nPNG: PNG Image (recommended)\nj2k: JPEG 2000\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)\npbm : Really fast, but will result is very big files"
         },
         "image_format": {
             "type": "options",
@@ -137,7 +138,8 @@
             "options": [
                 "png",
                 "j2k",
-                "jpg"
+                "jpg",
+                "pbm"
             ],
             "description": "Default format for processed images\n\nDoes not apply to raw image products or images\ntransmitted in an already viewable format"
         },

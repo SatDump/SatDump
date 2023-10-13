@@ -235,6 +235,8 @@ namespace image
             load_png(file);
         else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
             load_j2k(file);
+        else if ((signature[0] == 'P' && signature[1] == '4') || (signature[0] == 'P' && signature[1] == '6'))
+            load_pbm(file);
     }
 
     template <typename T>
@@ -258,6 +260,8 @@ namespace image
             save_jpeg(file);
         else if (file.find(".j2k") != std::string::npos)
             save_j2k(file);
+        else if ((file.find(".ppm") != std::string::npos) || (file.find(".pgm") != std::string::npos) || (file.find(".pbm") != std::string::npos))
+            save_pbm(file);
     }
 
     // Append selected file extension
