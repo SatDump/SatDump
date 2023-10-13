@@ -428,11 +428,19 @@ namespace satdump
 
                         tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
                         {
-                            stop_recording();
-                            stop_processing();
+                            if(obj.live)
+                                stop_processing();
+                            if (obj.record)
+                                stop_recording();
 
-                            frequency_mhz = obj.frequency;
-                            set_frequency(frequency_mhz);
+                            if (obj.live || obj.record)
+                            {
+                                frequency_mhz = obj.frequency;
+                                if (is_started)
+                                    set_frequency(frequency_mhz);
+                                else
+                                    start();
+                            }
 
                             if (obj.live)
                             {
@@ -447,10 +455,12 @@ namespace satdump
                             }
                         };
 
-                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject)
+                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
                         {
-                            stop_recording();
-                            stop_processing();
+                            if(obj.record)
+                                stop_recording();
+                            if (obj.live)
+                                stop_processing();
                         };
                     }
                     tracking_widget->render();
