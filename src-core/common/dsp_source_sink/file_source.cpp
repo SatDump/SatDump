@@ -92,6 +92,12 @@ void FileSource::start()
     if (is_ui)
         file_path = file_input.getPath();
 
+    //Sanity Checks
+    if(!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
+        throw std::runtime_error("Invalid file path " + file_path);
+    if(samplerate_input.get() <= 0)
+        throw std::runtime_error("Invalid samplerate " + std::to_string(samplerate_input.get()));
+
     buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
 
     DSPSampleSource::start();

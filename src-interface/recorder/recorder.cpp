@@ -440,6 +440,13 @@ namespace satdump
                                     set_frequency(frequency_mhz);
                                 else
                                     start();
+
+                                //Catch situations where source could not start
+                                if (!is_started)
+                                {
+                                    logger->error("Could not start recorder/processor since the source could not be started!");
+                                    return;
+                                }
                             }
 
                             if (obj.live)
