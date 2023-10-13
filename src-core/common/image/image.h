@@ -127,6 +127,10 @@ namespace image
         void save_j2k(std::string file); // Save to a J2K file
         void load_j2k(std::string file); // Load a J2K file
 
+        // PBM Interface
+        void save_pbm(std::string file); // Save to a PBM file
+        void load_pbm(std::string file); // Load a PBM file
+
         // Generic loading/saving interface
         void load_img(std::string file);                   // Load a file, auto-detecting type
         void load_img(uint8_t *buffer, int size);          // Load from memory, auto-detecting type
