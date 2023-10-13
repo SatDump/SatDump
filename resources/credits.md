@@ -1,5 +1,6 @@
 # SatDump
-Getting started? See the reference documents below to start using SatDump UI.
+
+First time here? See the reference documents below to get started using SatDump.
 [About](https://www.satdump.org/about/) | [Basic Usage](https://www.satdump.org/posts/basic-usage/)
 
 # Libraries
@@ -73,7 +74,7 @@ Getting started? See the reference documents below to start using SatDump UI.
 # Developers
 **Lead Developer:** Aang23 (F4LAU)
 
-### Development Team
+### Additional Developers
 - crosswalkersam
 - Jamie Vital (KC3TWZ)
 - lego11
