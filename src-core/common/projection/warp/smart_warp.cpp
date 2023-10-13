@@ -136,6 +136,21 @@ namespace satdump
                 scfg.y_end = operation_t.input_image.height();
         }
 
+        std::vector<satdump::projection::GCP> filter_gcps_position(std::vector<satdump::projection::GCP> gcps, double max_distance)
+        {
+            double center_lat = 0, center_lon = 0;
+            computeGCPCenter(gcps, center_lon, center_lat);
+            auto gcp_2 = gcps;
+            gcps.clear();
+            for (auto &gcp : gcp_2)
+            {
+                auto median_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(center_lat, center_lon, 0));
+                if (median_dis.distance < max_distance)
+                    gcps.push_back(gcp);
+            }
+            return gcps;
+        }
+
         std::vector<SegmentConfig> prepareSegmentsAndSplitCuts(double nsegs, WarpOperation &operation_t, double median_dist)
         {
             std::vector<SegmentConfig> segmentConfigs;
@@ -162,6 +177,9 @@ namespace satdump
                             scfg.gcps.push_back(gcp);
                         }
                     }
+
+                    // Filter obviously bogus GCPs
+                    scfg.gcps = filter_gcps_position(scfg.gcps, SEGMENT_SIZE_KM * 2);
 
                     // Calculate center, and handle longitude shifting
                     {
@@ -206,6 +224,9 @@ namespace satdump
                         gcps_curr.push_back(gcp);
                     }
                 }
+
+                // Filter obviously bogus GCPs
+                gcps_curr = filter_gcps_position(gcps_curr, SEGMENT_SIZE_KM * 2);
 
                 // Filter GCPs, only keep each first y in x
                 std::sort(gcps_curr.begin(), gcps_curr.end(),
@@ -314,7 +335,7 @@ namespace satdump
                 projector.init(result2.output_image.width(), result2.output_image.height(),
                                result2.top_left.lon, result2.top_left.lat,
                                result2.bottom_right.lon, result2.bottom_right.lat);
-                               
+
                 {
                     unsigned short color[4] = {0, 65535, 0, 65535};
                     for (auto gcp : operation.ground_control_points)
