@@ -259,7 +259,6 @@ void initLogger()
         console_sink = std::make_shared<slog::StdOutSink>();
 #endif
 
-        // logger = std::shared_ptr<spdlog::logger>(new spdlog::logger("SatDump", {console_sink}));
         logger = std::make_shared<slog::Logger>();
         logger->add_sink(console_sink);
 

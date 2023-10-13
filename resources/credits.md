@@ -6,6 +6,7 @@ First time here? See the reference documents below to get started using SatDump.
 # Libraries
 
 **Libraries included in libsatdump_core**
+- [bzip2](https://github.com/libarchive/bzip2), for BZIP2 decompression utilized on MetOp admin messages and Himawaricast
 - [ctpl](https://github.com/vit-vit/ctpl), for thread pools used over the program
 - [deepspace-turbo](https://github.com/geeanlooca/deepspace-turbo), used for Turbo decoding
 - [dlfcn-win32](https://github.com/dlfcn-win32/dlfcn-win32), to use the usual dlopen() functions on Windows
@@ -16,24 +17,26 @@ First time here? See the reference documents below to get started using SatDump.
 - [libcorrect](https://github.com/quiet/libcorrect), for Reed-Solomon decoding
 - [libjpeg](https://ijg.org/), from the Independent JPEG Group
 - [libpredict](https://github.com/la1k/libpredict), used for orbit prediction
+- [Lua](https://www.lua.org/), used for complex image composites when LuaJIT is not available
 - [miniz](https://github.com/richgel999/miniz), used to decompress ZIP files in some decoders
 - [MuParser](https://github.com/beltoforion/muparser), for expression parsing (such as in composites)
 - [Nlhohmann's JSON](https://github.com/nlohmann/json), for JSON and CBOR encoding/parsing
-- [OpenCL C++ Headers](https://github.com/KhronosGroup/OpenCL-CLHPP)
+- [OpenCL C++ Headers](https://github.com/KhronosGroup/OpenCL-CLHPP), for OpenCL support
+- [OpenJP2](https://github.com/uclouvain/openjpeg), for JPEG-2000 support on GOES GRB, FY4, and more
 - [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs), for native files dialogs
 - [RapidXML](http://rapidxml.sourceforge.net/), for XML Parsing
+- [sol2](https://github.com/ThePhD/sol2), C++ Bindings for LUA
+- [tiny-regex-c](https://github.com/kokke/tiny-regex-c), for RegEx parsing
 - [UTF-8 CPP](https://utfcpp.sourceforge.net/), for UTF-8 handling
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 
 ### Libraries included in plugins / Code taken from and in plugins
 - Elektro/Arktika, [DecompWT](https://gitlab.eumetsat.int/open-source/PublicDecompWT), custom wavelet compression/decompression library originally used for MSG xRIT
 - GK-2A, [libtomcrypt](https://github.com/libtom/libtomcrypt), for DES decryption
-- GOES, [OpenJP2](https://github.com/uclouvain/openjpeg), for decompressiong J2K on GRB
 - Inmarsat, [libacars](https://github.com/szpajder/libacars), for ACARS parsing
 - Inmarsat, [mbelib](https://github.com/szechyjs/mbelib), for AMBE audio decompression
 - Inmarsat, [libaeroambe](https://github.com/jontio/libaeroambe), not the library itself, but the code was adapted (for Ambe decoding)
 - Inmarsat, [Scytale-C](https://bitbucket.org/scytalec/scytalec), for STD-C packet formats and parsing
-- MetOp, [bzip2](https://github.com/libarchive/bzip2), for BZIP2 decompression utilized on MetOp admin messages
 
 *Those libraries above are included directly as they are either header-only, not already present on most systems or required some modifications for the purpose of this software. For the code included, the licenses of each respective library applies.*
 
@@ -46,20 +49,25 @@ First time here? See the reference documents below to get started using SatDump.
 ### Libraries linked against
 - [fftw3](http://fftw.org/), used for all FFT operations
 - [libpng](https://github.com/glennrp/libpng), for PNG image loading/saving
+- [LuaJIT](https://luajit.org/), used for complex image composites
 - [nng](https://github.com/nanomsg/nng), for network stuff
 - [PortAudio](https://www.portaudio.com/), used for audio output for NOAA APT
 - [Volk](https://github.com/gnuradio/volk), to simplify SIMD utilization
 - [zlib](https://github.com/madler/zlib), required by libpng
 
 ### SDR Libraries
+- [Aaronia](https://aaronia.com/en/support/downloads#rtsa-suite)
 - [libairspy](https://github.com/airspy/airspyone_host)
 - [libairspyhf](https://github.com/airspy/airspyhf)
+- [libbladerf](https://github.com/Nuand/bladeRF/)
 - [libhackrf](https://github.com/greatscottgadgets/hackrf)
+- [libiio](https://github.com/analogdevicesinc/libiio) and [libad9361](https://github.com/analogdevicesinc/libad9361-iio) for PlutoSDR
 - [libmirisdr4](https://github.com/f4exb/libmirisdr-4)
 - [librtlsdr](https://osmocom.org/projects/rtl-sdr/wiki)
 - [libsddc](https://github.com/ik1xpv/ExtIO_sddc)
 - [libsdrplay](https://www.sdrplay.com/)
 - [LimeSuite](https://github.com/MyriadRF/LimeSuite)
+- [UHD](https://github.com/EttusResearch/uhd)
 
 ### UI Libraries
 - [glew](http://glew.sourceforge.net/), for OpenGL loading
