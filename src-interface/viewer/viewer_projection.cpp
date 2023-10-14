@@ -399,10 +399,10 @@ namespace satdump
         {
             ImGui::Checkbox("Map Overlay##Projs", &projections_draw_map_overlay);
             ImGui::SameLine();
-            ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::ColorEdit3("##borders", (float *)&viewer_color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
             ImGui::SameLine();
-            ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::ColorEdit3("##cities", (float *)&viewer_color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_scale, 10, 500);
         }
 
@@ -518,7 +518,7 @@ namespace satdump
         if (projections_draw_map_overlay)
         {
             logger->info("Drawing map overlay...");
-            unsigned short color[4] = {(unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f), 65535};
+            unsigned short color[4] = {(unsigned short)(viewer_color_borders.x * 65535.0f), (unsigned short)(viewer_color_borders.y * 65535.0f), (unsigned short)(viewer_color_borders.z * 65535.0f), 65535};
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            projected_image_result,
                                            color,
@@ -529,7 +529,7 @@ namespace satdump
         if (projections_draw_cities_overlay)
         {
             logger->info("Drawing map overlay...");
-            unsigned short color[4] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f), 65535};
+            unsigned short color[4] = {(unsigned short)(viewer_color_cities.x * 65535.0f), (unsigned short)(viewer_color_cities.y * 65535.0f), (unsigned short)(viewer_color_cities.z * 65535.0f), 65535};
             map::drawProjectedCapitalsGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                               projected_image_result,
                                               color,

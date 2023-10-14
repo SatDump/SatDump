@@ -44,7 +44,6 @@ namespace satdump
         image::Image<uint16_t> projected_img;
 
         bool map_overlay = false;
-        ImVec4 color_borders = {0, 1, 0, 1};
 
         void init();
         void update();

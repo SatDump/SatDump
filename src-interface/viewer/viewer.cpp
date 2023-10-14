@@ -16,6 +16,9 @@ void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komó
 
 namespace satdump
 {
+    ImVec4 viewer_color_borders = { 0, 1, 0, 1 };
+    ImVec4 viewer_color_cities = { 1, 0, 0, 1 };
+
     ViewerApplication::ViewerApplication()
         : Application("viewer")
     {
@@ -27,17 +30,17 @@ namespace satdump
             if (config::main_cfg["user"]["viewer_state"].contains("borders_color"))
             {
                 std::vector<float> color = config::main_cfg["user"]["viewer_state"]["borders_color"].get<std::vector<float>>();
-                color_borders.x = color[0];
-                color_borders.y = color[1];
-                color_borders.z = color[2];
+                viewer_color_borders.x = color[0];
+                viewer_color_borders.y = color[1];
+                viewer_color_borders.z = color[2];
             }
 
             if (config::main_cfg["user"]["viewer_state"].contains("cities_color"))
             {
                 std::vector<float> color = config::main_cfg["user"]["viewer_state"]["cities_color"].get<std::vector<float>>();
-                color_cities.x = color[0];
-                color_cities.y = color[1];
-                color_cities.z = color[2];
+                viewer_color_cities.x = color[0];
+                viewer_color_cities.y = color[1];
+                viewer_color_cities.z = color[2];
             }
 
 
@@ -153,8 +156,8 @@ namespace satdump
     ViewerApplication::~ViewerApplication()
     {
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
-        config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};
-        config::main_cfg["user"]["viewer_state"]["cities_color"] = {color_cities.x, color_cities.y, color_cities.z};
+        config::main_cfg["user"]["viewer_state"]["borders_color"] = { viewer_color_borders.x, viewer_color_borders.y, viewer_color_borders.z};
+        config::main_cfg["user"]["viewer_state"]["cities_color"] = { viewer_color_cities.x, viewer_color_cities.y, viewer_color_cities.z};
     }
 
     ImRect ViewerApplication::renderHandler(ProductsHandler &ph, int index)

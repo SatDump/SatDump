@@ -80,9 +80,6 @@ namespace satdump
 
         bool project_old_algorithm = false;
 
-        ImVec4 color_borders = {0, 1, 0, 1};
-        ImVec4 color_cities = {1, 0, 0, 1};
-
         // Utils
         void updateScaleImage();
         void updateCorrectionFactors(bool first = false);
