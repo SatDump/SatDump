@@ -77,17 +77,8 @@ namespace image
             std::string signature;
             size_t width, height, maxval;
             int channels;
-            for (int i = 0; i < 4; i++)
-            {
-                if (i == 0)
-                    filei >> signature;
-                else if (i == 1)
-                    filei >> width;
-                else if(i == 2)
-                    filei >> height;
-                else if(i == 3)
-                    filei >> maxval;
-            }
+
+            filei >> signature >> width >> height >> maxval;
 
             if (signature == "P5")
                 channels = 1;
