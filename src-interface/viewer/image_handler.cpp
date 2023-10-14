@@ -203,6 +203,14 @@ namespace satdump
                                                 cities_type,
                                                 cities_scale_rank);
             }
+            if (latlon_overlay)
+            {
+                logger->info("Drawing latlon overlay...");
+                unsigned short color[3] = {(unsigned short)(viewer_color_latlon.x * 65535.0f), (unsigned short)(viewer_color_latlon.y * 65535.0f), (unsigned short)(viewer_color_latlon.z * 65535.0f)};
+                map::drawProjectedMapLatLonGrid(current_image,
+                                                color,
+                                                proj_func);
+            }
         }
 
         projection_ready = false;
@@ -675,6 +683,7 @@ namespace satdump
                     asyncUpdate();
                 ImGui::SameLine();
                 ImGui::ColorEdit3("##borders", (float *)&viewer_color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
                 if (ImGui::Checkbox("Cities", &cities_overlay))
                     asyncUpdate();
                 ImGui::SameLine();
@@ -685,6 +694,11 @@ namespace satdump
                     asyncUpdate();
                 if (cities_type == 2 && ImGui::SliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10))
                     asyncUpdate();
+
+                if (ImGui::Checkbox("Lat/Lon Grid", &latlon_overlay))
+                    asyncUpdate();
+                ImGui::SameLine();
+                ImGui::ColorEdit3("##latlongrid", (float *)&viewer_color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             }
 
             if (ImGui::CollapsingHeader("Projection"))

@@ -100,6 +100,7 @@ namespace satdump
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
                     bool map_overlay = compo.value().contains("map_overlay") && compo.value()["map_overlay"].get<bool>();
                     bool cities_overlay = compo.value().contains("cities_overlay");
+                    bool latlon_overlay = compo.value().contains("latlon_grid") && compo.value()["latlon_grid"].get<bool>();
                     std::function<std::pair<int, int>(float, float, int, int)> proj_func;
                     std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
                     std::vector<float> corrected_stuff;
@@ -173,6 +174,28 @@ namespace satdump
                                                            color,
                                                            corr_proj_func,
                                                            100);
+                    }
+
+                    if (latlon_overlay)
+                    {
+                        logger->info("Drawing latlon...");
+                        unsigned short color[3] = {0, 0, 65535};
+
+                        if (compo.value().contains("latlon_grid_colors"))
+                        {
+                            color[0] = compo.value()["latlon_grid_colors"].get<std::vector<float>>()[0] * 65535;
+                            color[1] = compo.value()["latlon_grid_colors"].get<std::vector<float>>()[1] * 65535;
+                            color[2] = compo.value()["latlon_grid_colors"].get<std::vector<float>>()[2] * 65535;
+                        }
+
+                        map::drawProjectedMapLatLonGrid(rgb_image,
+                                                        color,
+                                                        proj_func);
+                        if (geo_correct)
+                            map::drawProjectedMapLatLonGrid(
+                                rgb_image_corr,
+                                color,
+                                corr_proj_func);
                     }
 
                     if (cities_overlay)

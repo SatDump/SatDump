@@ -16,6 +16,8 @@ namespace map
     void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int font_size = 50, int cities_type = 0, int cities_scale_rank = 10);
     template <typename T>
     void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = 2147483647);
+    template <typename T>
+    void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
 
     struct CustomLabel
     {

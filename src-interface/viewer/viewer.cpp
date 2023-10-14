@@ -16,8 +16,9 @@ void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komó
 
 namespace satdump
 {
-    ImVec4 viewer_color_borders = { 0, 1, 0, 1 };
-    ImVec4 viewer_color_cities = { 1, 0, 0, 1 };
+    ImVec4 viewer_color_borders = {0, 1, 0, 1};
+    ImVec4 viewer_color_cities = {1, 0, 0, 1};
+    ImVec4 viewer_color_latlon = {0, 0, 1, 1};
 
     ViewerApplication::ViewerApplication()
         : Application("viewer")
@@ -43,6 +44,13 @@ namespace satdump
                 viewer_color_cities.z = color[2];
             }
 
+            if (config::main_cfg["user"]["viewer_state"].contains("latlon_color"))
+            {
+                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["latlon_color"].get<std::vector<float>>();
+                viewer_color_latlon.x = color[0];
+                viewer_color_latlon.y = color[1];
+                viewer_color_latlon.z = color[2];
+            }
 
             if (config::main_cfg["user"]["viewer_state"].contains("projections"))
                 deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
@@ -156,8 +164,9 @@ namespace satdump
     ViewerApplication::~ViewerApplication()
     {
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
-        config::main_cfg["user"]["viewer_state"]["borders_color"] = { viewer_color_borders.x, viewer_color_borders.y, viewer_color_borders.z};
-        config::main_cfg["user"]["viewer_state"]["cities_color"] = { viewer_color_cities.x, viewer_color_cities.y, viewer_color_cities.z};
+        config::main_cfg["user"]["viewer_state"]["borders_color"] = {viewer_color_borders.x, viewer_color_borders.y, viewer_color_borders.z};
+        config::main_cfg["user"]["viewer_state"]["cities_color"] = {viewer_color_cities.x, viewer_color_cities.y, viewer_color_cities.z};
+        config::main_cfg["user"]["viewer_state"]["latlon_color"] = {viewer_color_latlon.x, viewer_color_latlon.y, viewer_color_latlon.z};
     }
 
     ImRect ViewerApplication::renderHandler(ProductsHandler &ph, int index)
@@ -312,7 +321,7 @@ namespace satdump
                     ImGui::Text("Load Products :");
                     if (select_products_dialog.draw())
                     {
-                        ui_thread_pool.push([this](int) 
+                        ui_thread_pool.push([this](int)
                                             {
                             try
                             {

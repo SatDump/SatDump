@@ -42,6 +42,7 @@ namespace satdump
 
     extern ImVec4 viewer_color_borders;
     extern ImVec4 viewer_color_cities;
+    extern ImVec4 viewer_color_latlon;
     extern std::map<std::string, std::function<std::shared_ptr<ViewerHandler>()>> viewer_handlers_registry;
     void registerViewerHandlers();
 
@@ -164,6 +165,7 @@ namespace satdump
         bool projections_draw_map_overlay = true;
         bool projections_draw_cities_overlay = true;
         int projections_cities_scale = 50;
+        bool projections_draw_latlon_overlay = false;
 
         int projections_current_selected_proj = 0;
         /////////////
@@ -205,6 +207,7 @@ namespace satdump
             out["projections_draw_map_overlay"] = projections_draw_map_overlay;
             out["projections_draw_cities_overlay"] = projections_draw_cities_overlay;
             out["projections_cities_scale"] = projections_cities_scale;
+            out["projections_draw_latlon_overlay"] = projections_draw_latlon_overlay;
 
             out["projections_current_selected_proj"] = projections_current_selected_proj;
 
@@ -236,6 +239,7 @@ namespace satdump
             setValueIfExists(in["projections_draw_map_overlay"], projections_draw_map_overlay);
             setValueIfExists(in["projections_draw_cities_overlay"], projections_draw_cities_overlay);
             setValueIfExists(in["projections_cities_scale"], projections_cities_scale);
+            setValueIfExists(in["projections_draw_latlon_overlay"], projections_draw_latlon_overlay);
 
             setValueIfExists(in["projections_current_selected_proj"], projections_current_selected_proj);
 

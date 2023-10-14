@@ -113,7 +113,7 @@ namespace satdump
 #ifdef _MSC_VER
                 if (default_path == ".")
                 {
-                    char* cwd;
+                    char *cwd;
                     cwd = _getcwd(NULL, 0);
                     if (cwd != 0)
                         default_path = cwd;
@@ -400,10 +400,15 @@ namespace satdump
             ImGui::Checkbox("Map Overlay##Projs", &projections_draw_map_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##borders", (float *)&viewer_color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float *)&viewer_color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_scale, 10, 500);
+
+            ImGui::Checkbox("Lat/Lon Grid", &projections_draw_latlon_overlay);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##latlongrid", (float *)&viewer_color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
         }
 
         if (projections_should_refresh) // Refresh in the UI thread!
@@ -535,6 +540,16 @@ namespace satdump
                                               color,
                                               proj_func,
                                               projections_cities_scale);
+        }
+
+        // Draw latlon grid
+        if (projections_draw_latlon_overlay)
+        {
+            logger->info("Drawing latlon overlay...");
+            unsigned short color[4] = {(unsigned short)(viewer_color_latlon.x * 65535.0f), (unsigned short)(viewer_color_latlon.y * 65535.0f), (unsigned short)(viewer_color_latlon.z * 65535.0f), 65535};
+            map::drawProjectedMapLatLonGrid(projected_image_result,
+                                            color,
+                                            proj_func);
         }
 
         // Update ImageView

@@ -191,13 +191,13 @@ namespace map
                         if (cc.first == -1 || cc.first == -1)
                             continue;
 
-                        map_image.draw_line(cc.first - font_size*0.3, cc.second - font_size*0.3, cc.first + font_size*0.3, cc.second + font_size*0.3, color);
-                        map_image.draw_line(cc.first + font_size*0.3, cc.second - font_size*0.3, cc.first - font_size*0.3, cc.second + font_size*0.3, color);
+                        map_image.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
+                        map_image.draw_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
                         map_image.draw_circle(cc.first, cc.second, 0.15 * font_size, color, true);
 
                         std::string name = mapStruct["properties"]["nameascii"];
-                        //map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
-                        map_image.draw_text(cc.first, cc.second + font_size*0.15, color, font_size, name);
+                        // map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
+                        map_image.draw_text(cc.first, cc.second + font_size * 0.15, color, font_size, name);
                     }
                 }
             }
@@ -229,9 +229,7 @@ namespace map
 
                 std::string featurecla = mapStruct["properties"]["featurecla"].get<std::string>();
 
-                if ((cities_type == 0 && featurecla == "Admin-0 capital")
-                    || (cities_type == 1 && (featurecla == "Admin-1 capital" || featurecla == "Admin-0 capital"))
-                    || (cities_type == 2 && mapStruct["properties"]["scalerank"] <= cities_scale_rank))
+                if ((cities_type == 0 && featurecla == "Admin-0 capital") || (cities_type == 1 && (featurecla == "Admin-1 capital" || featurecla == "Admin-0 capital")) || (cities_type == 2 && mapStruct["properties"]["scalerank"] <= cities_scale_rank))
                 {
                     std::pair<float, float> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<float, float>>();
                     std::pair<float, float> cc = projectionFunc(coordinates.second, coordinates.first,
@@ -240,13 +238,13 @@ namespace map
                     if (cc.first == -1 || cc.first == -1)
                         continue;
 
-                    map_image.draw_line(cc.first - font_size*0.3, cc.second - font_size*0.3, cc.first + font_size*0.3, cc.second + font_size*0.3, color);
-                    map_image.draw_line(cc.first + font_size*0.3, cc.second - font_size*0.3, cc.first - font_size*0.3, cc.second + font_size*0.3, color);
+                    map_image.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
+                    map_image.draw_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
                     map_image.draw_circle(cc.first, cc.second, 0.15 * font_size, color, true);
 
                     std::string name = mapStruct["properties"]["nameascii"];
-                    //map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
-                    map_image.draw_text(cc.first, cc.second + font_size*0.15, color, font_size, name);
+                    // map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
+                    map_image.draw_text(cc.first, cc.second + font_size * 0.15, color, font_size, name);
                 }
             }
         }
@@ -328,6 +326,47 @@ namespace map
 
     template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
     template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+
+    template <typename T>
+    void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    {
+        for (float lon = -180; lon < 180; lon += 10)
+        {
+            float last_lat = -90;
+            for (float lat = -90; lat < 90; lat += 0.01)
+            {
+                std::pair<float, float> start = projectionFunc(last_lat, lon,
+                                                               image.height(), image.width());
+                std::pair<float, float> end = projectionFunc(lat, lon,
+                                                             image.height(), image.width());
+
+                if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
+                    image.draw_line(start.first, start.second, end.first, end.second, color);
+
+                last_lat = lat;
+            }
+        }
+
+        for (float lat = -90; lat < 90; lat += 10)
+        {
+            float last_lon = -90;
+            for (float lon = -180; lon < 180; lon += 0.01)
+            {
+                std::pair<float, float> start = projectionFunc(lat, last_lon,
+                                                               image.height(), image.width());
+                std::pair<float, float> end = projectionFunc(lat, lon,
+                                                             image.height(), image.width());
+
+                if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
+                    image.draw_line(start.first, start.second, end.first, end.second, color);
+
+                last_lon = lon;
+            }
+        }
+    }
+
+    template void drawProjectedMapLatLonGrid(image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapLatLonGrid(image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
 
     template <typename T>
     void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
