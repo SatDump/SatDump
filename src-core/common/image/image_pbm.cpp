@@ -13,7 +13,7 @@ namespace image
     {
         if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
         {
-            logger->trace("Tried to save empty PNG!");
+            logger->trace("Tried to save empty PBM!");
             return;
         }
 
@@ -26,12 +26,12 @@ namespace image
             channels = 3;
 
         if (channels == 1)
-            fileo.write("P4  ", 4); // Magic Number + Whitespace
+            fileo.write("P5 ", 3); // Magic Number + Whitespace
         else
-            fileo.write("P6  ", 4);                          // Magic Number + Whitespace
-        std::string swidth = std::to_string(d_width) + "  "; // Width + Whitespace
+            fileo.write("P6 ", 3);                          // Magic Number + Whitespace
+        std::string swidth = std::to_string(d_width) + " "; // Width + Whitespace
         fileo.write(swidth.c_str(), swidth.size());
-        std::string sheight = std::to_string(d_height) + "  "; // Height + Whitespace
+        std::string sheight = std::to_string(d_height) + " "; // Height + Whitespace
         fileo.write(sheight.c_str(), sheight.size());
 
         if (d_depth == 8)
@@ -39,8 +39,8 @@ namespace image
             std::string smaxval = "255\n"; // MaxVal + Whitespace
             fileo.write(smaxval.c_str(), smaxval.size());
 
-            for (int y = 0; y < d_height; y++)
-                for (int x = 0; x < d_width; x++)
+            for (size_t y = 0; y < d_height; y++)
+                for (size_t x = 0; x < d_width; x++)
                     for (int c = 0; c < channels; c++)
                         fileo.write((char *)&channel(c)[y * d_width + x], sizeof(uint8_t));
         }
@@ -49,9 +49,9 @@ namespace image
             std::string smaxval = "65535\n"; // MaxVal + Whitespace
             fileo.write(smaxval.c_str(), smaxval.size());
 
-            for (int y = 0; y < d_height; y++)
+            for (size_t y = 0; y < d_height; y++)
             {
-                for (int x = 0; x < d_width; x++)
+                for (size_t x = 0; x < d_width; x++)
                 {
                     for (int c = 0; c < channels; c++)
                     {
@@ -74,71 +74,29 @@ namespace image
         try
         {
             std::ifstream filei(file, std::ios::binary);
-
             std::string signature;
-            signature.resize(2);
-            filei.read((char *)signature.c_str(), 2);
+            size_t width, height, maxval;
+            int channels;
 
-            logger->critical(signature);
+            filei >> signature >> width >> height >> maxval;
 
-            int channels = 1;
-            if (signature == "P4")
+            if (signature == "P5")
                 channels = 1;
             else if (signature == "P6")
                 channels = 3;
-
-            uint8_t dump; // Extra char
-            filei.read((char *)&dump, 1);
-
-            std::string widthstr;
-            while (!filei.eof())
-            {
-                char c;
-                filei.read(&c, 1);
-                if (c != ' ' && c != '\r' && c != '\n')
-                    widthstr.push_back(c);
-                else
-                    break;
-            }
-            int width = std::stoi(widthstr);
-
-            logger->critical(widthstr);
-
-            std::string heightstr;
-            while (!filei.eof())
-            {
-                char c;
-                filei.read(&c, 1);
-                if (c != ' ' && c != '\r' && c != '\n')
-                    heightstr.push_back(c);
-                else
-                    break;
-            }
-            int height = std::stoi(heightstr);
-
-            logger->critical(heightstr);
+            else
+                throw std::runtime_error("Invalid Magic Number " + signature);
 
             init(width, height, channels);
-
-            std::string maxvalstr;
-            while (!filei.eof())
-            {
-                char c;
-                filei.read(&c, 1);
-                if (c != ' ' && c != '\r' && c != '\n')
-                    maxvalstr.push_back(c);
-                else
-                    break;
-            }
-            int maxval = std::stoi(maxvalstr);
+            filei.seekg(1, std::ios_base::cur);
 
             if (d_depth == 8)
             {
                 if (maxval > 255)
                 {
-                    for (int y = 0; y < d_height; y++)
+                    for (size_t y = 0; y < d_height; y++)
                     {
-                        for (int x = 0; x < d_width; x++)
+                        for (size_t x = 0; x < d_width; x++)
                         {
                             for (int c = 0; c < d_channels; c++)
                             {
@@ -151,9 +109,9 @@ namespace image
                 }
                 else
                 {
-                    for (int y = 0; y < d_height; y++)
+                    for (size_t y = 0; y < d_height; y++)
                     {
-                        for (int x = 0; x < d_width; x++)
+                        for (size_t x = 0; x < d_width; x++)
                         {
                             for (int c = 0; c < d_channels; c++)
                             {
@@ -169,9 +127,9 @@ namespace image
             {
                 if (maxval > 255)
                 {
-                    for (int y = 0; y < d_height; y++)
+                    for (size_t y = 0; y < d_height; y++)
                     {
-                        for (int x = 0; x < d_width; x++)
+                        for (size_t x = 0; x < d_width; x++)
                         {
                             for (int c = 0; c < d_channels; c++)
                             {
@@ -184,9 +142,9 @@ namespace image
                 }
                 else
                 {
-                    for (int y = 0; y < d_height; y++)
+                    for (size_t y = 0; y < d_height; y++)
                     {
-                        for (int x = 0; x < d_width; x++)
+                        for (size_t x = 0; x < d_width; x++)
                         {
                             for (int c = 0; c < d_channels; c++)
                             {

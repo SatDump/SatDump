@@ -235,7 +235,7 @@ namespace image
             load_png(file);
         else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
             load_j2k(file);
-        else if ((signature[0] == 'P' && signature[1] == '4') || (signature[0] == 'P' && signature[1] == '6'))
+        else if (signature[0] == 'P' && (signature[1] == '5' || signature[1] == '6'))
             load_pbm(file);
     }
 
