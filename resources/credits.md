@@ -70,9 +70,8 @@ First time here? See the reference documents below to get started using SatDump.
 - [UHD](https://github.com/EttusResearch/uhd)
 
 ### UI Libraries
-- [glew](http://glew.sourceforge.net/), for OpenGL loading
-- [gles](https://www.glfw.org/), OpenGL on Android
-- [glfw3](https://www.glfw.org/), OpenGL on Desktop
+- [OpenGL ES](https://www.khronos.org/opengles/) and [EGL](https://www.khronos.org/egl), for OpenGL on Android
+- [glew](http://glew.sourceforge.net/) and [glfw3](https://www.glfw.org/), for OpenGL on Desktop
 
 ### Fonts
 - [Roboto](https://fonts.google.com/specimen/Roboto), for text
