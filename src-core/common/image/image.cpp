@@ -272,7 +272,10 @@ namespace image
         if (file->find(".png") != std::string::npos ||
             file->find(".jpeg") != std::string::npos ||
             file->find(".jpg") != std::string::npos ||
-            file->find(".j2k") != std::string::npos)
+            file->find(".j2k") != std::string::npos ||
+            file->find(".pgm") != std::string::npos ||
+            file->find(".pbm") != std::string::npos ||
+            file->find(".ppm") != std::string::npos)
             return true;
 
         // Otherwise, load the user setting
@@ -287,7 +290,7 @@ namespace image
             return false;
         }
 
-        if (image_format != "png" && image_format != "jpg" && image_format != "j2k")
+        if (image_format != "png" && image_format != "jpg" && image_format != "j2k" && image_format != "pbm")
         {
             logger->error("Image format not specified, and default format is invalid!");
             return false;

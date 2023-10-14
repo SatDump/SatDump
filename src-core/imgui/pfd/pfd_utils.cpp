@@ -8,7 +8,8 @@ namespace satdump
         std::vector<std::string> saveopts = {
             "PNG Files", "*.png",
             "JPEG 2000 Files", "*.j2k",
-            "JPEG Files", "*.jpg *.jpeg"
+            "JPEG Files", "*.jpg *.jpeg",
+            "PBM Files", "*.pbm *.pgm *.ppm"
         };
 
         for (auto it = saveopts.begin() + 1, lim = saveopts.end(); it != lim; it += 2)
