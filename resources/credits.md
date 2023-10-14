@@ -84,7 +84,7 @@ First time here? See the reference documents below to get started using SatDump.
 ### Additional Developers
 - crosswalkersam
 - Jamie Vital (KC3TWZ)
-- lego11
+- lego11 (IU1QPT)
 - Zbychu (SP5EWS)
 
 ### Contributors
