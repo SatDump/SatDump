@@ -9,13 +9,15 @@ namespace lua_utils
     sol::table mapJsonToLua(sol::state &lua, nlohmann::json json)
     {
         sol::table l = lua.create_table();
+        char *ptr;
+        long index;
         for (auto &el : json.items())
         {
             try
             {
-                try
+                index = strtol(el.key().c_str(), &ptr, 10);
+                if(*ptr == '\0')
                 {
-                    int index = std::stoi(el.key());
                     if (el.value().is_number_integer())
                         l[index] = el.value().get<int>();
                     else if (el.value().is_number())
@@ -25,7 +27,7 @@ namespace lua_utils
                     else
                         l[index] = mapJsonToLua(lua, el.value());
                 }
-                catch (std::exception&)
+                else
                 {
                     if (el.value().is_number_integer())
                         l[el.key()] = el.value().get<int>();
