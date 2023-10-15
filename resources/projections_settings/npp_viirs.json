@@ -1,6 +1,6 @@
 {
     "type": "viirs_single_line",
-    "scan_angle": 112.6,
+    "scan_angle": 112.52,
     "forced_gcps_x": [
         1279,
         2015,
@@ -11,7 +11,7 @@
     "is_dnb": false,
     "roll_offset": 0.01, //0.02, //-0.2,
     "pitch_offset": 0,
-    "yaw_offset": 0.15,
+    "yaw_offset": 0.11,
     "timestamp_offset": 0.5, //-0.3, //-0.5,
     "image_width": 6400,
     "gcp_spacing_x": 100,
