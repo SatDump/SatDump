@@ -20,6 +20,7 @@ protected:
     float yaw_offset;
 
     bool is_dnb;
+    bool is_noaa20 = false; // WIP
 
     // Pre-computed stuff
     std::vector<predict_position> sat_positions;
@@ -73,16 +74,62 @@ public:
 
         double final_x = !invert_scan ? (image_width - 1) - x : x;
 
+        double final_width = 0;
+
         // Transform X to undo aggregation zones
-        if (!is_dnb)
+        if (is_dnb)
         {
-            std::vector<int> aggr_width = is_dnb
-                                              ? std::vector<int>{80, 16, 64, 64, 64, 32, 24, 72, 40, 56, 40, 48, 32, 48, 32, 72, 72, 72, 80, 56, 80, 64, 64, 64, 64, 64, 72, 80, 72, 88, 72, 184,
-                                                                 184, 72, 88, 72, 80, 72, 64, 64, 64, 64, 64, 80, 56, 80, 72, 72, 72, 32, 48, 32, 48, 40, 56, 40, 72, 24, 32, 64, 64, 64, 16, 80}
-                                              : std::vector<int>{1280, 736, 1184, 1184, 736, 1280};
-            std::vector<int> aggr_inter = is_dnb
-                                              ? std::vector<int>{/*TODO*/}
-                                              : std::vector<int>{1, 2, 3, 3, 2, 1};
+            std::vector<int> aggr_width = {80, 16, 64, 64, 64, 32, 24, 72, 40, 56, 40, 48, 32, 48, 32, 72, 72, 72, 80, 56, 80, 64, 64, 64, 64, 64, 72, 80, 72, 88, 72, 184};
+            std::vector<int> aggr_inter = {11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 28, 30, 33, 35, 38, 40, 43, 46, 49, 52, 55, 59, 62, 64, 66};
+
+            std::vector<int> aggr_mode_normal = {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+                                                 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+            std::vector<int> aggr_mode_jpss1 = {
+
+                /*32, 21, 21, 21, 21, 20, 20, 19, 19, 18, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 4, 3, 3, 2, 2, 1, 1,
+                1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 19, 20, 20, 21, 21, 21, 21, 21*/
+
+                /* 21, 21, 21, 21, 21, 20, 20, 19, 19, 18, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 4, 3, 3, 2, 2, 1, 1,
+                 1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 19, 20, 20, 21, 21, 21, 21, 32*/
+
+                /*26, 26, 26, 21, 21, 20, 19, 19, 18, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 4, 3, 3, 2, 2, 1, 1,
+                1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 19, 20, 20, 21, 21, 26, 26, 32*/
+
+                32, 26, 26, 21, 21, 20, 20, 19, 19, 18, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 4, 3, 3, 2, 2, 1, 1,
+                1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 19, 20, 21, 21, 26, 26, 26
+
+            };
+
+            final_width = is_noaa20 ? /*194464*/ 191672 : 145040;
+            auto &aggr_mode_c = is_noaa20 ? aggr_mode_jpss1 : aggr_mode_normal;
+
+           // int all_px = 0;
+          //  for (int zone = 0; zone < 64; zone++)
+          //      all_px += aggr_width[31 - (aggr_mode_c[zone] - 1)] * aggr_inter[31 - (aggr_mode_c[zone] - 1)];
+          //  logger->critical(all_px);
+
+            int current_zoff = 0;
+            int current_zoff2 = 0;
+            int current_zone = 0;
+            while (current_zone < 64)
+            {
+                if ((current_zoff + aggr_width[31 - (aggr_mode_c[current_zone] - 1)]) >= final_x)
+                    break;
+
+                current_zoff += aggr_width[31 - (aggr_mode_c[current_zone] - 1)];
+                current_zoff2 += aggr_width[31 - (aggr_mode_c[current_zone] - 1)] * aggr_inter[31 - (aggr_mode_c[current_zone] - 1)];
+                current_zone++;
+            }
+
+            final_x = current_zoff2 + (final_x - current_zoff) * aggr_inter[31 - (aggr_mode_c[current_zone] - 1)];
+        }
+        else
+        {
+            std::vector<int> aggr_width = {1280, 736, 1184, 1184, 736, 1280};
+            std::vector<int> aggr_inter = {1, 2, 3, 3, 2, 1};
+
+            final_width = 12608;
 
             int current_zoff = 0;
             int current_zoff2 = 0;
@@ -99,8 +146,6 @@ public:
 
             final_x = current_zoff2 + (final_x - current_zoff) * aggr_inter[current_zone];
         }
-
-        double final_width = is_dnb ? 4064 : 12608;
 
         geodetic::euler_coords_t satellite_pointing;
 

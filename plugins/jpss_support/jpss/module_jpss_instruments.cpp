@@ -258,6 +258,7 @@ namespace jpss
                 viirs_products.set_tle(satellite_tle);
                 viirs_products.bit_depth = 16;
                 viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+
                 if (scid == SNPP_SCID)
                     viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs.json")));
                 else if (scid == JPSS1_SCID)
