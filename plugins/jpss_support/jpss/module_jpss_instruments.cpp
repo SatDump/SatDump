@@ -234,9 +234,12 @@ namespace jpss
                 }
 
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/VIIRS";
+                std::string directory_dnb = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/VIIRS-DNB";
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directories(directory);
+                if (!std::filesystem::exists(directory_dnb))
+                    std::filesystem::create_directories(directory_dnb);
 
                 logger->info("----------- VIIRS");
                 for (int i = 0; i < 16; i++)
@@ -251,6 +254,7 @@ namespace jpss
                 const float alpha = 1.0 / 1.9;
                 const float beta = 0.52333; // 1.0 - alpha;
 
+                // Normal channels
                 satdump::ImageProducts viirs_products;
                 viirs_products.instrument_name = "viirs";
                 viirs_products.has_timestamps = true;
@@ -265,6 +269,22 @@ namespace jpss
                     viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs.json")));
                 else if (scid == JPSS2_SCID)
                     viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs.json")));
+
+                // DNB channels
+                satdump::ImageProducts viirs_dnb_products;
+                viirs_dnb_products.instrument_name = "viirs_dnb";
+                viirs_dnb_products.has_timestamps = true;
+                viirs_dnb_products.needs_correlation = true;
+                viirs_dnb_products.set_tle(satellite_tle);
+                viirs_dnb_products.bit_depth = 16;
+                viirs_dnb_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+
+                if (scid == SNPP_SCID)
+                    viirs_dnb_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs_dnb.json")));
+                else if (scid == JPSS1_SCID)
+                    viirs_dnb_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs_dnb.json")));
+                else if (scid == JPSS2_SCID)
+                    viirs_dnb_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs_dnb.json")));
 
                 for (int i = 0; i < 16; i++)
                 {
@@ -307,38 +327,40 @@ namespace jpss
                 {
                     logger->info("DNB...");
 
-                    viirs_products.images.push_back({"VIIRS-DNB",
-                                                     "dnb",
-                                                     viirs_reader_dnb[0].getImage(),
-                                                     viirs_reader_dnb[0].timestamps,
-                                                     viirs_reader_dnb[0].channelSettings.zoneHeight});
+                    viirs_dnb_products.images.push_back({"VIIRS-DNB",
+                                                         "dnb",
+                                                         viirs_reader_dnb[0].getImage(),
+                                                         viirs_reader_dnb[0].timestamps,
+                                                         viirs_reader_dnb[0].channelSettings.zoneHeight});
                 }
 
                 if (viirs_reader_dnb[1].segments.size() > 0)
                 {
                     logger->info("DNB MGS...");
 
-                    viirs_products.images.push_back({"VIIRS-DNB-MGS",
-                                                     "dnbmgs",
-                                                     viirs_reader_dnb[1].getImage(),
-                                                     viirs_reader_dnb[1].timestamps,
-                                                     viirs_reader_dnb[1].channelSettings.zoneHeight});
+                    viirs_dnb_products.images.push_back({"VIIRS-DNB-MGS",
+                                                         "dnbmgs",
+                                                         viirs_reader_dnb[1].getImage(),
+                                                         viirs_reader_dnb[1].timestamps,
+                                                         viirs_reader_dnb[1].channelSettings.zoneHeight});
                 }
 
                 if (viirs_reader_dnb[2].segments.size() > 0)
                 {
                     logger->info("DNB LGS...");
 
-                    viirs_products.images.push_back({"VIIRS-DNB-LGS",
-                                                     "dnblgs",
-                                                     viirs_reader_dnb[2].getImage(),
-                                                     viirs_reader_dnb[2].timestamps,
-                                                     viirs_reader_dnb[2].channelSettings.zoneHeight});
+                    viirs_dnb_products.images.push_back({"VIIRS-DNB-LGS",
+                                                         "dnblgs",
+                                                         viirs_reader_dnb[2].getImage(),
+                                                         viirs_reader_dnb[2].timestamps,
+                                                         viirs_reader_dnb[2].channelSettings.zoneHeight});
                 }
                 viirs_dnb_status = DONE;
 
                 viirs_products.save(directory);
+                viirs_dnb_products.save(directory_dnb);
                 dataset.products_list.push_back("VIIRS");
+                dataset.products_list.push_back("VIIRS-DNB");
             }
 
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));

@@ -827,9 +827,6 @@
                         "equation": "chm5, chm4, chm3",
                         "equalize": true
                     },
-                    "DNB Night": {
-                        "equation": "chdnb * 50 - 0.5"
-                    },
                     "Night Microphysics": {
                         "equation": "(1-chi5)-(1-chi4),(1-chi4)-(1-chi3),(1-chi4)",
                         "individual_equalize": true,
@@ -842,6 +839,15 @@
                     "Thermal Channel": {
                         "equation": "1-chi4",
                         "individual_equalize": true
+                    }
+                }
+            },
+            "viirs_dnb": {
+                "handler": "image_handler",
+                "name": "VIIRS DNB",
+                "rgb_composites": {
+                    "DNB Night": {
+                        "equation": "chdnb * 50 - 0.5"
                     }
                 }
             },

@@ -104,10 +104,10 @@ public:
             final_width = is_noaa20 ? /*194464*/ 191672 : 145040;
             auto &aggr_mode_c = is_noaa20 ? aggr_mode_jpss1 : aggr_mode_normal;
 
-           // int all_px = 0;
-          //  for (int zone = 0; zone < 64; zone++)
-          //      all_px += aggr_width[31 - (aggr_mode_c[zone] - 1)] * aggr_inter[31 - (aggr_mode_c[zone] - 1)];
-          //  logger->critical(all_px);
+            // int all_px = 0;
+            //  for (int zone = 0; zone < 64; zone++)
+            //      all_px += aggr_width[31 - (aggr_mode_c[zone] - 1)] * aggr_inter[31 - (aggr_mode_c[zone] - 1)];
+            //  logger->critical(all_px);
 
             int current_zoff = 0;
             int current_zoff2 = 0;
