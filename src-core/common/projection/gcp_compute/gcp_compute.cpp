@@ -56,6 +56,8 @@ namespace satdump
                 img_x_offset = mtd["img_x_offset"];
 
             std::vector<int> values;
+            if (cfg.contains("forced_gcps_x"))
+                values = cfg["forced_gcps_x"].get<std::vector<int>>();
             for (int x = 0; x < projection->img_size_x; x += projection->gcp_spacing_x)
                 values.push_back(x);
             values.push_back(projection->img_size_x - 1);

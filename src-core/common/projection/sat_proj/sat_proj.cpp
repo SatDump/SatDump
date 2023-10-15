@@ -8,6 +8,8 @@
 
 #include "common/projection/timestamp_filtering.h"
 
+#include "core/plugin.h"
+
 namespace satdump
 {
     void try_interpolate_timestamps(std::vector<double> &timestamps, nlohmann::ordered_json &cfg)
@@ -55,6 +57,12 @@ namespace satdump
 
         else if (cfg["type"].get<std::string>() == "manual_single_line")
             return std::make_shared<NormalLineManualSatProj>(cfg, tle, timestamps_raw);
+
+        // And plugins!
+        std::vector<std::shared_ptr<SatelliteProjection>> projs;
+        satdump::eventBus->fire_event<RequestSatProjEvent>({cfg["type"].get<std::string>(), projs, cfg, tle, timestamps_raw});
+        if (projs.size() > 0)
+            return projs[0];
 
         throw std::runtime_error("Invalid satellite projection!");
     }

@@ -1,0 +1,27 @@
+{
+    "type": "viirs_single_line",
+    "scan_angle": 112,
+    "forced_gcps_x": [
+        1279,
+        2015,
+        3199,
+        4383,
+        5119
+    ],
+    "is_dnb": false,
+    "roll_offset": -0.05, //0.02, //-0.2,
+    "pitch_offset": 0,
+    "yaw_offset": 0.15,
+    "timestamp_offset": 0.8, //-0.3, //-0.5,
+    "image_width": 6400,
+    "gcp_spacing_x": 100,
+    "gcp_spacing_y": 100,
+    "interpolate_timestamps": 32,
+    "interpolate_timestamps_scantime": 0.0555,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 1.786,
+        "max_diff": 10.0
+    }
+}

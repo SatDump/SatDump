@@ -7,6 +7,8 @@
 
 namespace satdump
 {
+    void try_interpolate_timestamps(std::vector<double> &timestamps, nlohmann::ordered_json &cfg);
+
     class SatelliteProjection
     {
     protected:
@@ -32,6 +34,15 @@ namespace satdump
         }
 
         virtual bool get_position(int x, int y, geodetic::geodetic_coords_t &pos) = 0;
+    };
+
+    struct RequestSatProjEvent
+    {
+        std::string id;
+        std::vector<std::shared_ptr<SatelliteProjection>> &projs;
+        nlohmann::ordered_json cfg;
+        TLE tle;
+        nlohmann::ordered_json timestamps_raw;
     };
 
     std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw);
