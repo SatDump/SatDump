@@ -333,7 +333,7 @@ namespace map
         for (float lon = -180; lon < 180; lon += 10)
         {
             float last_lat = -90;
-            for (float lat = -90; lat < 90; lat += 0.01)
+            for (float lat = -90; lat < 90; lat += 0.05)
             {
                 std::pair<float, float> start = projectionFunc(last_lat, lon,
                                                                image.height(), image.width());
@@ -350,7 +350,7 @@ namespace map
         for (float lat = -90; lat < 90; lat += 10)
         {
             float last_lon = -90;
-            for (float lon = -180; lon < 180; lon += 0.01)
+            for (float lon = -180; lon < 180; lon += 0.05)
             {
                 std::pair<float, float> start = projectionFunc(lat, last_lon,
                                                                image.height(), image.width());
