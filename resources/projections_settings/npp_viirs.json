@@ -9,10 +9,10 @@
         5119
     ],
     "is_dnb": false,
-    "roll_offset": 0, //0.02, //-0.2,
+    "roll_offset": 0.01, //0.02, //-0.2,
     "pitch_offset": 0,
     "yaw_offset": 0.15,
-    "timestamp_offset": 0.8, //-0.3, //-0.5,
+    "timestamp_offset": 0.5, //-0.3, //-0.5,
     "image_width": 6400,
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100,

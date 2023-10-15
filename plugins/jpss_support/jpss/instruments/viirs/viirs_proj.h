@@ -23,7 +23,6 @@ protected:
 
     // Pre-computed stuff
     std::vector<predict_position> sat_positions;
-    std::vector<bool> sat_ascendings;
 
 public:
     VIIRSNormalLineSatProj(nlohmann::ordered_json cfg, satdump::TLE tle, nlohmann::ordered_json timestamps_raw)
@@ -54,10 +53,7 @@ public:
         for (int i = 0; i < (int)timestamps.size(); i++)
         {
             double timestamp = timestamps[i] + timestamp_offset;
-            geodetic::geodetic_coords_t pos_curr = sat_tracker.get_sat_position_at(timestamp);     // Current position
-            geodetic::geodetic_coords_t pos_next = sat_tracker.get_sat_position_at(timestamp + 1); // Upcoming position
             sat_positions.push_back(sat_tracker.get_sat_position_at_raw(timestamp));
-            sat_ascendings.push_back(pos_curr.lat < pos_next.lat);
         }
     }
 
@@ -76,30 +72,35 @@ public:
         auto pos_curr = sat_positions[y];
 
         double final_x = !invert_scan ? (image_width - 1) - x : x;
-        bool ascending = sat_ascendings[y];
 
-        if (is_dnb)
+        // Transform X to undo aggregation zones
+        if (!is_dnb)
         {
-                }
-        else
-        {
-            double final_x2 = 0;
-            if (final_x < 1280) // First zone
-                final_x2 = final_x;
-            else if (final_x < 1280 + 736) // Second zone
-                final_x2 = 1280 + (final_x - 1280) * 2;
-            else if (final_x < 1280 + 736 + 1184) // Third zone
-                final_x2 = 1280 + 736 * 2 + (final_x - 1280 - 736) * 3;
-            else if (final_x < 1280 + 736 + 1184 + 1184) // Fourth zone
-                final_x2 = 1280 + 736 * 2 + 1184 * 3 + (final_x - 1280 - 736 - 1184) * 3;
-            else if (final_x < 1280 + 736 + 1184 + 1184 + 736) // Fifth zone
-                final_x2 = 1280 + 736 * 2 + 1184 * 3 * 2 + (final_x - 1280 - 736 - 1184 - 1184) * 2;
-            else if (final_x < 1280 + 736 + 1184 + 1184 + 736 + 1280) // Fifth zone
-                final_x2 = 1280 + 736 * 2 + 1184 * 3 * 2 + 736 * 2 + (final_x - 1280 - 736 - 1184 - 1184 - 736);
-            final_x = final_x2;
+            std::vector<int> aggr_width = is_dnb
+                                              ? std::vector<int>{80, 16, 64, 64, 64, 32, 24, 72, 40, 56, 40, 48, 32, 48, 32, 72, 72, 72, 80, 56, 80, 64, 64, 64, 64, 64, 72, 80, 72, 88, 72, 184,
+                                                                 184, 72, 88, 72, 80, 72, 64, 64, 64, 64, 64, 80, 56, 80, 72, 72, 72, 32, 48, 32, 48, 40, 56, 40, 72, 24, 32, 64, 64, 64, 16, 80}
+                                              : std::vector<int>{1280, 736, 1184, 1184, 736, 1280};
+            std::vector<int> aggr_inter = is_dnb
+                                              ? std::vector<int>{/*TODO*/}
+                                              : std::vector<int>{1, 2, 3, 3, 2, 1};
+
+            int current_zoff = 0;
+            int current_zoff2 = 0;
+            int current_zone = 0;
+            while (current_zone < 6)
+            {
+                if ((current_zoff + aggr_width[current_zone]) >= final_x)
+                    break;
+
+                current_zoff += aggr_width[current_zone];
+                current_zoff2 += aggr_width[current_zone] * aggr_inter[current_zone];
+                current_zone++;
+            }
+
+            final_x = current_zoff2 + (final_x - current_zoff) * aggr_inter[current_zone];
         }
 
-        double final_width = is_dnb ? 8080 : 12608;
+        double final_width = is_dnb ? 4064 : 12608;
 
         geodetic::euler_coords_t satellite_pointing;
 
