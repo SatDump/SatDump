@@ -713,15 +713,15 @@ namespace satdump
                 ImGui::SameLine();
                 ImGui::ColorEdit3("##cities", (float *)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
                 ImGui::SliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500);
-                if (ImGui::IsItemDeactivatedAfterEdit())
+                if (ImGui::IsItemDeactivatedAfterEdit() && cities_overlay)
                     asyncUpdate();
                 static const char *items[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
-                if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)))
+                if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)) && cities_overlay)
                     asyncUpdate();
 
                 if (viewer_app->cities_type == 2)
                     ImGui::SliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10);
-                if (ImGui::IsItemDeactivatedAfterEdit())
+                if (ImGui::IsItemDeactivatedAfterEdit() && cities_overlay)
                     asyncUpdate();
             }
 
