@@ -141,7 +141,7 @@ namespace satdump
                 corrected_stuff.clear();
         }
 
-        if (map_overlay || cities_overlay || latlon_overlay)
+        if (shores_overlay || map_overlay || cities_overlay || latlon_overlay)
         {
             current_image.to_rgb(); // Ensure this is RGB!!
             nlohmann::json proj_cfg = products->get_proj_cfg();

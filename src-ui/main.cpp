@@ -15,7 +15,13 @@
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
 
-extern bool recorder_running;
+static volatile bool signal_caught = false;
+
+void sig_handler_ui(int signo)
+{
+    if (signo == SIGINT)
+        signal_caught = true;
+}
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -270,6 +276,9 @@ int main(int argc, char *argv[])
                                      {  satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
                                         satdump::loadTLEFileIntoRegistry(satdump::user_path + "/satdump_tles.txt"); });
 
+    // Attach signal
+    signal(SIGINT, sig_handler_ui);
+
     // Main loop
     do
     {
@@ -302,7 +311,7 @@ int main(int argc, char *argv[])
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-    } while (!glfwWindowShouldClose(window));
+    } while (!glfwWindowShouldClose(window) && !signal_caught);
 
     satdump::exitMainUI();
 

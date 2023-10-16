@@ -44,8 +44,15 @@ namespace satdump
         image::Image<uint16_t> projected_img;
 
         bool map_overlay = false;
+        bool shores_overlay = false;
+        bool cities_overlay = false;
+        bool latlon_overlay = false;
+        int cities_size = 50;
 
         void init();
+
+        std::mutex async_image_mutex;
+        void asyncUpdate();
         void update();
 
         void drawMenu();
