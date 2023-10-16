@@ -22,7 +22,7 @@ void mercator_forward(struct merc_cfg *cfg, float lon, float lat, int *x,
     return;
   }
 
-  float px = (lon / 180.0) * (cfg->image_width * cfg->scale_x);
+  float px = (lon / 180.0f) * (cfg->image_width * cfg->scale_x);
   float py = asinh(tan(lat / 57.29578f)) * (cfg->image_height * cfg->scale_y);
 
   *x = px + (cfg->image_width / 2);
