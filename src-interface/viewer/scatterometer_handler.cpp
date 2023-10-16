@@ -39,6 +39,7 @@ namespace satdump
                 select_channel_image_str += "Channel " + std::to_string(c + 1) + '\0';
         }
 
+        current_img.init_font(resources::getResourcePath("fonts/font.ttf"));
         update();
     }
 
@@ -65,20 +66,68 @@ namespace satdump
             current_image_proj.clear();
             current_img = make_scatterometer_grayscale_projs(*products, cfg, nullptr, &current_image_proj);
 
-            if (map_overlay)
+            if (shores_overlay || map_overlay || cities_overlay || latlon_overlay)
             {
                 auto proj_func = satdump::reprojection::setupProjectionFunction(current_img.width(), current_img.height(), current_image_proj, {});
-                logger->info("Drawing map overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_borders.x * 65535.0f), (unsigned short)(viewer_app->color_borders.y * 65535.0f),
-                    (unsigned short)(viewer_app->color_borders.z * 65535.0f)};
-                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                               current_img,
-                                               color,
-                                               proj_func);
+
+                if (map_overlay)
+                {
+                    logger->info("Drawing map overlay...");
+                    unsigned short color[3] = { (unsigned short)(viewer_app->color_borders.x * 65535.0f), (unsigned short)(viewer_app->color_borders.y * 65535.0f),
+                                               (unsigned short)(viewer_app->color_borders.z * 65535.0f) };
+                    map::drawProjectedMapShapefile({ resources::getResourcePath("maps/ne_10m_admin_0_countries.shp") },
+                        current_img,
+                        color,
+                        proj_func,
+                        100);
+                }
+                if (shores_overlay)
+                {
+                    logger->info("Drawing shores overlay...");
+                    unsigned short color[3] = { (unsigned short)(viewer_app->color_shores.x * 65535.0f), (unsigned short)(viewer_app->color_shores.y * 65535.0f),
+                                               (unsigned short)(viewer_app->color_shores.z * 65535.0f) };
+                    map::drawProjectedMapShapefile({ resources::getResourcePath("maps/ne_10m_coastline.shp") },
+                        current_img,
+                        color,
+                        proj_func,
+                        100);
+                }
+                if (cities_overlay)
+                {
+                    logger->info("Drawing cities overlay...");
+                    unsigned short color[3] = { (unsigned short)(viewer_app->color_cities.x * 65535.0f), (unsigned short)(viewer_app->color_cities.y * 65535.0f),
+                                               (unsigned short)(viewer_app->color_cities.z * 65535.0f) };
+                    map::drawProjectedCitiesGeoJson({ resources::getResourcePath("maps/ne_10m_populated_places_simple.json") },
+                        current_img,
+                        color,
+                        proj_func,
+                        cities_size,
+                        viewer_app->cities_type,
+                        viewer_app->cities_scale_rank);
+                }
+                if (latlon_overlay)
+                {
+                    logger->info("Drawing latlon overlay...");
+                    unsigned short color[3] = { (unsigned short)(viewer_app->color_latlon.x * 65535.0f), (unsigned short)(viewer_app->color_latlon.y * 65535.0f),
+                                               (unsigned short)(viewer_app->color_latlon.z * 65535.0f) };
+                    map::drawProjectedMapLatLonGrid(current_img,
+                        color,
+                        proj_func);
+                }
             }
 
             image_view.update(current_img);
         }
+    }
+
+    void ScatterometerViewerHandler::asyncUpdate()
+    {
+        ui_thread_pool.push([this](int)
+                    {   async_image_mutex.lock();
+                            logger->info("Update image...");
+                            update();
+                            logger->info("Done");
+                            async_image_mutex.unlock(); });
     }
 
     void ScatterometerViewerHandler::drawMenu()
@@ -86,30 +135,30 @@ namespace satdump
         if (ImGui::CollapsingHeader("Images"))
         {
             if (ImGui::RadioButton(u8"Raw Image", &selected_visualization_id, 0))
-                update();
+                asyncUpdate();
             if (ImGui::RadioButton(u8"Projected", &selected_visualization_id, 1))
-                update();
+                asyncUpdate();
 
             if (selected_visualization_id == 0 || selected_visualization_id == 1)
             {
                 if (current_scat_type == SCAT_ASCAT && selected_visualization_id == 1)
                 {
                     if (ImGui::Combo("###scatchannelcomboid", &ascat_select_channel_id, ascat_select_channel_image_str.c_str()))
-                        update();
+                        asyncUpdate();
                 }
                 else
                 {
                     if (ImGui::Combo("###scatchannelcomboid", &select_channel_image_id, select_channel_image_str.c_str()))
-                        update();
+                        asyncUpdate();
                 }
 
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
                 if (ImGui::SliderInt("##MinScat", &scat_grayscale_min, 0, 1e7, "Min: %d", ImGuiSliderFlags_AlwaysClamp))
-                    update();
+                    asyncUpdate();
                 ImGui::SameLine();
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
                 if (ImGui::SliderInt("##MaxScat", &scat_grayscale_max, 0, 1e7, "Max: %d", ImGuiSliderFlags_AlwaysClamp))
-                    update();
+                    asyncUpdate();
             }
 
             if (ImGui::Button("Save"))
@@ -156,10 +205,37 @@ namespace satdump
         {
             if (selected_visualization_id != 1)
                 style::beginDisabled();
-            if (ImGui::Checkbox("Borders", &map_overlay))
-                update();
+            if (ImGui::Checkbox("Lat/Lon Grid", &latlon_overlay))
+                asyncUpdate();
             ImGui::SameLine();
-            ImGui::ColorEdit3("##borders", (float *)&viewer_app->color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::ColorEdit3("##latlongrid", (float*)&viewer_app->color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+            if (ImGui::Checkbox("Borders", &map_overlay))
+                asyncUpdate();
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##borders", (float*)&viewer_app->color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+            if (ImGui::Checkbox("Shores", &shores_overlay))
+                asyncUpdate();
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##shores", (float*)&viewer_app->color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+            if (ImGui::Checkbox("Cities", &cities_overlay))
+                asyncUpdate();
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##cities", (float*)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SliderInt("Cities Font Size", &cities_size, 10, 500);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                asyncUpdate();
+            static const char* items[] = { "Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)" };
+            if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)))
+                asyncUpdate();
+
+            if (viewer_app->cities_type == 2)
+                ImGui::SliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                asyncUpdate();
+
             if (selected_visualization_id != 1)
                 style::endDisabled();
         }
