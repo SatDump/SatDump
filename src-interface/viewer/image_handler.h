@@ -38,6 +38,7 @@ namespace satdump
         bool white_balance_image = false;
 
         bool map_overlay = false;
+        bool shores_overlay = false;
         bool cities_overlay = false;
         bool latlon_overlay = false;
         int cities_size = 50;

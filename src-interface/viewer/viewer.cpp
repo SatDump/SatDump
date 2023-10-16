@@ -32,6 +32,14 @@ namespace satdump
                 color_borders.z = color[2];
             }
 
+            if (config::main_cfg["user"]["viewer_state"].contains("shores_color"))
+            {
+                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["shores_color"].get<std::vector<float>>();
+                color_shores.x = color[0];
+                color_shores.y = color[1];
+                color_shores.z = color[2];
+            }
+
             if (config::main_cfg["user"]["viewer_state"].contains("cities_color"))
             {
                 std::vector<float> color = config::main_cfg["user"]["viewer_state"]["cities_color"].get<std::vector<float>>();
@@ -92,9 +100,10 @@ namespace satdump
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
         config::main_cfg["user"]["viewer_state"]["cities_type"] = cities_type;
         config::main_cfg["user"]["viewer_state"]["cities_scale_rank"] = cities_scale_rank;
-        config::main_cfg["user"]["viewer_state"]["borders_color"] = { color_borders.x, color_borders.y, color_borders.z };
-        config::main_cfg["user"]["viewer_state"]["cities_color"] = { color_cities.x, color_cities.y, color_cities.z };
-        config::main_cfg["user"]["viewer_state"]["latlon_color"] = { color_latlon.x, color_latlon.y, color_latlon.z };
+        config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};
+        config::main_cfg["user"]["viewer_state"]["shores_color"] = {color_shores.x, color_shores.y, color_shores.z};
+        config::main_cfg["user"]["viewer_state"]["cities_color"] = {color_cities.x, color_cities.y, color_cities.z};
+        config::main_cfg["user"]["viewer_state"]["latlon_color"] = {color_latlon.x, color_latlon.y, color_latlon.z};
         config::main_cfg["user"]["viewer_state"]["projections"] = serialize_projections_config();
     }
 

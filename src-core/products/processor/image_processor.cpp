@@ -99,6 +99,7 @@ namespace satdump
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
                     bool map_overlay = compo.value().contains("map_overlay") && compo.value()["map_overlay"].get<bool>();
+                    bool shores_overlay = compo.value().contains("shores_overlay") && compo.value()["shores_overlay"].get<bool>();
                     bool cities_overlay = compo.value().contains("cities_overlay");
                     bool latlon_overlay = compo.value().contains("latlon_grid") && compo.value()["latlon_grid"].get<bool>();
                     std::function<std::pair<int, int>(float, float, int, int)> proj_func;
@@ -122,7 +123,7 @@ namespace satdump
                     if (geo_correct)
                         rgb_image_corr.save_img(product_path + "/" + name + "_corrected");
 
-                    if (map_overlay || cities_overlay)
+                    if (map_overlay || shores_overlay || cities_overlay || latlon_overlay)
                     {
                         rgb_image.to_rgb(); // Ensure this is RGB!!
                         nlohmann::json proj_cfg = img_products->get_proj_cfg();
@@ -170,6 +171,31 @@ namespace satdump
                                                        100);
                         if (geo_correct)
                             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                                           rgb_image_corr,
+                                                           color,
+                                                           corr_proj_func,
+                                                           100);
+                    }
+
+                    if (shores_overlay)
+                    {
+                        logger->info("Drawing shores...");
+                        unsigned short color[3] = {65535, 65535, 0};
+
+                        if (compo.value().contains("map_overlay_colors"))
+                        {
+                            color[0] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[0] * 65535;
+                            color[1] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[1] * 65535;
+                            color[2] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[2] * 65535;
+                        }
+
+                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
+                                                       rgb_image,
+                                                       color,
+                                                       proj_func,
+                                                       100);
+                        if (geo_correct)
+                            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                                            rgb_image_corr,
                                                            color,
                                                            corr_proj_func,

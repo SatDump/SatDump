@@ -185,8 +185,19 @@ namespace satdump
             {
                 logger->info("Drawing map overlay...");
                 unsigned short color[3] = {(unsigned short)(viewer_app->color_borders.x * 65535.0f), (unsigned short)(viewer_app->color_borders.y * 65535.0f),
-                    (unsigned short)(viewer_app->color_borders.z * 65535.0f)};
+                                           (unsigned short)(viewer_app->color_borders.z * 65535.0f)};
                 map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                                               current_image,
+                                               color,
+                                               proj_func,
+                                               100);
+            }
+            if (shores_overlay)
+            {
+                logger->info("Drawing shores overlay...");
+                unsigned short color[3] = {(unsigned short)(viewer_app->color_shores.x * 65535.0f), (unsigned short)(viewer_app->color_shores.y * 65535.0f),
+                                           (unsigned short)(viewer_app->color_shores.z * 65535.0f)};
+                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                                current_image,
                                                color,
                                                proj_func,
@@ -196,7 +207,7 @@ namespace satdump
             {
                 logger->info("Drawing cities overlay...");
                 unsigned short color[3] = {(unsigned short)(viewer_app->color_cities.x * 65535.0f), (unsigned short)(viewer_app->color_cities.y * 65535.0f),
-                    (unsigned short)(viewer_app->color_cities.z * 65535.0f)};
+                                           (unsigned short)(viewer_app->color_cities.z * 65535.0f)};
                 map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                                 current_image,
                                                 color,
@@ -209,7 +220,7 @@ namespace satdump
             {
                 logger->info("Drawing latlon overlay...");
                 unsigned short color[3] = {(unsigned short)(viewer_app->color_latlon.x * 65535.0f), (unsigned short)(viewer_app->color_latlon.y * 65535.0f),
-                    (unsigned short)(viewer_app->color_latlon.z * 65535.0f)};
+                                           (unsigned short)(viewer_app->color_latlon.z * 65535.0f)};
                 map::drawProjectedMapLatLonGrid(current_image,
                                                 color,
                                                 proj_func);
@@ -685,12 +696,17 @@ namespace satdump
                 if (ImGui::Checkbox("Lat/Lon Grid", &latlon_overlay))
                     asyncUpdate();
                 ImGui::SameLine();
-                ImGui::ColorEdit3("##latlongrid", (float*)&viewer_app->color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                ImGui::ColorEdit3("##latlongrid", (float *)&viewer_app->color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 
                 if (ImGui::Checkbox("Borders", &map_overlay))
                     asyncUpdate();
                 ImGui::SameLine();
                 ImGui::ColorEdit3("##borders", (float *)&viewer_app->color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+                if (ImGui::Checkbox("Shores", &shores_overlay))
+                    asyncUpdate();
+                ImGui::SameLine();
+                ImGui::ColorEdit3("##shores", (float *)&viewer_app->color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 
                 if (ImGui::Checkbox("Cities", &cities_overlay))
                     asyncUpdate();
@@ -705,7 +721,7 @@ namespace satdump
 
                 if (viewer_app->cities_type == 2)
                     ImGui::SliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10);
-                if(ImGui::IsItemDeactivatedAfterEdit())
+                if (ImGui::IsItemDeactivatedAfterEdit())
                     asyncUpdate();
             }
 

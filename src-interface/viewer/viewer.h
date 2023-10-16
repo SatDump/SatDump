@@ -160,6 +160,7 @@ namespace satdump
         void refreshProjectionLayers();
 
         bool projections_draw_map_overlay = true;
+        bool projections_draw_shores_overlay = true;
         bool projections_draw_cities_overlay = true;
         int projections_cities_scale = 50;
         bool projections_draw_latlon_overlay = false;
@@ -191,9 +192,10 @@ namespace satdump
         bool urlgood = true;
 
         // Settings
-        ImVec4 color_borders = { 0, 1, 0, 1 };
-        ImVec4 color_cities = { 1, 0, 0, 1 };
-        ImVec4 color_latlon = { 0, 0, 1, 1 };
+        ImVec4 color_borders = {0, 1, 0, 1};
+        ImVec4 color_shores = {1, 1, 0, 1};
+        ImVec4 color_cities = {1, 0, 0, 1};
+        ImVec4 color_latlon = {0, 0, 1, 1};
         int cities_type = 0;
         int cities_scale_rank = 3;
 
@@ -208,6 +210,7 @@ namespace satdump
             nlohmann::json out;
 
             out["projections_draw_map_overlay"] = projections_draw_map_overlay;
+            out["projections_draw_shores_overlay"] = projections_draw_shores_overlay;
             out["projections_draw_cities_overlay"] = projections_draw_cities_overlay;
             out["projections_cities_scale"] = projections_cities_scale;
             out["projections_draw_latlon_overlay"] = projections_draw_latlon_overlay;
@@ -240,6 +243,7 @@ namespace satdump
         void deserialize_projections_config(nlohmann::json in)
         {
             setValueIfExists(in["projections_draw_map_overlay"], projections_draw_map_overlay);
+            setValueIfExists(in["projections_draw_shores_overlay"], projections_draw_shores_overlay);
             setValueIfExists(in["projections_draw_cities_overlay"], projections_draw_cities_overlay);
             setValueIfExists(in["projections_cities_scale"], projections_cities_scale);
             setValueIfExists(in["projections_draw_latlon_overlay"], projections_draw_latlon_overlay);

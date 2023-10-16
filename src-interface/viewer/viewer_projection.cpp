@@ -396,16 +396,21 @@ namespace satdump
         {
             ImGui::Checkbox("Lat/Lon Grid", &projections_draw_latlon_overlay);
             ImGui::SameLine();
-            ImGui::ColorEdit3("##latlongrid", (float*)&color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::ColorEdit3("##latlongrid", (float *)&color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
             ImGui::Checkbox("Map Overlay##Projs", &projections_draw_map_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+
+            ImGui::Checkbox("Shores Overlay##Projs", &projections_draw_shores_overlay);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##shores", (float *)&color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_scale, 10, 500);
-            static const char* city_categories[] = { "Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)" };
+            static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
             ImGui::Combo("Cities Type", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
             if (cities_type == 2)
                 ImGui::SliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
@@ -527,7 +532,19 @@ namespace satdump
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            projected_image_result,
                                            color,
-                                           proj_func);
+                                           proj_func, 200);
+        }
+
+        // Draw map shorelines
+        if (projections_draw_shores_overlay)
+        {
+            logger->info("Drawing shores overlay...");
+            unsigned short color[4] = {(unsigned short)(color_shores.x * 65535.0f), (unsigned short)(color_shores.y * 65535.0f), (unsigned short)(color_shores.z * 65535.0f), 65535};
+            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
+                                           projected_image_result,
+                                           color,
+                                           proj_func,
+                                           200);
         }
 
         // Draw cities points
@@ -536,12 +553,12 @@ namespace satdump
             logger->info("Drawing map overlay...");
             unsigned short color[4] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f), 65535};
             map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
-                                              projected_image_result,
-                                              color,
-                                              proj_func,
-                                              projections_cities_scale,
-                                              cities_type,
-                                              cities_scale_rank);
+                                            projected_image_result,
+                                            color,
+                                            proj_func,
+                                            projections_cities_scale,
+                                            cities_type,
+                                            cities_scale_rank);
         }
 
         // Draw latlon grid
