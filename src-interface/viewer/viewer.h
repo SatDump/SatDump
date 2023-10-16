@@ -40,9 +40,6 @@ namespace satdump
         static std::shared_ptr<ViewerHandler> getInstance();
     };
 
-    extern ImVec4 viewer_color_borders;
-    extern ImVec4 viewer_color_cities;
-    extern ImVec4 viewer_color_latlon;
     extern std::map<std::string, std::function<std::shared_ptr<ViewerHandler>()>> viewer_handlers_registry;
     void registerViewerHandlers();
 
@@ -194,6 +191,12 @@ namespace satdump
         bool urlgood = true;
 
         // Settings
+        ImVec4 color_borders = { 0, 1, 0, 1 };
+        ImVec4 color_cities = { 1, 0, 0, 1 };
+        ImVec4 color_latlon = { 0, 0, 1, 1 };
+        int cities_type = 0;
+        int cities_scale_rank = 3;
+
         int projections_image_width = 2048;
         int projections_image_height = 1024;
 
@@ -267,6 +270,7 @@ namespace satdump
     public:
         ViewerApplication();
         ~ViewerApplication();
+        void save_settings();
         void loadDatasetInViewer(std::string path);
         void loadProductsInViewer(std::string path, std::string dataset_name = "");
 

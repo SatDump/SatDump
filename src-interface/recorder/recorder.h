@@ -140,7 +140,6 @@ namespace satdump
         void save_settings()
         {
             config::main_cfg["user"]["recorder_state"] = serialize_config();
-            config::saveUserConfig();
         }
 
     public:

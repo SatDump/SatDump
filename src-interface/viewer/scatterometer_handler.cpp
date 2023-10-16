@@ -5,6 +5,7 @@
 #include "core/style.h"
 #include "common/map/map_drawer.h"
 #include "imgui/pfd/pfd_utils.h"
+#include "main_ui.h"
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -68,7 +69,8 @@ namespace satdump
             {
                 auto proj_func = satdump::reprojection::setupProjectionFunction(current_img.width(), current_img.height(), current_image_proj, {});
                 logger->info("Drawing map overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_color_borders.x * 65535.0f), (unsigned short)(viewer_color_borders.y * 65535.0f), (unsigned short)(viewer_color_borders.z * 65535.0f)};
+                unsigned short color[3] = {(unsigned short)(viewer_app->color_borders.x * 65535.0f), (unsigned short)(viewer_app->color_borders.y * 65535.0f),
+                    (unsigned short)(viewer_app->color_borders.z * 65535.0f)};
                 map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                current_img,
                                                color,
@@ -157,7 +159,7 @@ namespace satdump
             if (ImGui::Checkbox("Borders", &map_overlay))
                 update();
             ImGui::SameLine();
-            ImGui::ColorEdit3("##borders", (float *)&viewer_color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::ColorEdit3("##borders", (float *)&viewer_app->color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             if (selected_visualization_id != 1)
                 style::endDisabled();
         }

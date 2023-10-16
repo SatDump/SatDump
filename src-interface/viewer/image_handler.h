@@ -40,10 +40,7 @@ namespace satdump
         bool map_overlay = false;
         bool cities_overlay = false;
         bool latlon_overlay = false;
-
         int cities_size = 50;
-        int cities_type = 0;
-        int cities_scale_rank = 3;
 
         // GUI
         bool range_window = false;
