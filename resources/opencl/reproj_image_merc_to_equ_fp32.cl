@@ -17,13 +17,13 @@ struct merc_cfg {
 
 void mercator_forward(struct merc_cfg *cfg, float lon, float lat, int *x,
                       int *y) {
-  if (lat > 85.06 || lat < -85.06) {
+  if (lat > 85.06f || lat < -85.06f) {
     *x = *y = -1;
     return;
   }
 
   float px = (lon / 180.0) * (cfg->image_width * cfg->scale_x);
-  float py = asinh(tan(lat / 57.29578)) * (cfg->image_height * cfg->scale_y);
+  float py = asinh(tan(lat / 57.29578f)) * (cfg->image_height * cfg->scale_y);
 
   *x = px + (cfg->image_width / 2);
   *y = cfg->image_height - (py + (cfg->image_height / 2));

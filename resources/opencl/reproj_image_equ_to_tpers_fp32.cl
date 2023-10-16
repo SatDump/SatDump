@@ -31,11 +31,11 @@ struct tpers_cfg {
   float lon_0;
 };
 
-float const EPS10 = 1.e-10;
+#define EPS10 1.e-10f
 
 int tpers_inverse(struct tpers_cfg *cfg, float x, float y, float *lon,
                   float *lat) {
-  *lon = *lat = 0.0;
+  *lon = *lat = 0.0f;
 
   float phi = 0, lam = 0;
   float rh;
@@ -53,20 +53,20 @@ int tpers_inverse(struct tpers_cfg *cfg, float x, float y, float *lon,
   rh = hypot(x, y);
 
   if (fabs(rh) <= EPS10) {
-    lam = 0.;
+    lam = 0.0f;
     phi = cfg->phi0;
   } else {
     float cosz, sinz;
-    sinz = 1. - rh * rh * cfg->pfact;
+    sinz = 1.0f - rh * rh * cfg->pfact;
 
-    if (sinz < 0.) {
+    if (sinz < 0.0f) {
       // Illegal
-      *lon = *lat = 2e10; // Trigger error
+      *lon = *lat = 2e10f; // Trigger error
       return 1;
     }
 
     sinz = (cfg->p - sqrt(sinz)) / (cfg->pn1 / rh + rh / cfg->pn1);
-    cosz = sqrt(1. - sinz * sinz);
+    cosz = sqrt(1.0f - sinz * sinz);
 
     switch (cfg->mode) {
     case OBLIQ:
@@ -92,8 +92,8 @@ int tpers_inverse(struct tpers_cfg *cfg, float x, float y, float *lon,
   }
 
   // To degs
-  *lat = phi * 57.29578;
-  *lon = lam * 57.29578;
+  *lat = phi * 57.29578f;
+  *lon = lam * 57.29578f;
 
   // Shift longitudes back to reference 0
   *lon += cfg->lon_0;

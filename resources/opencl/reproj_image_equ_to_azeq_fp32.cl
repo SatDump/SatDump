@@ -20,31 +20,31 @@ struct azeq_cfg {
 void azeq_inverse(struct azeq_cfg *cfg, int x, int y, float *lon, float *lat) {
   // x = image_width - x;
   y = cfg->image_height - y;
-  double px, py, c;
+  float px, py, c;
 
-  px = (2.0 * 3.14159265358979323846 * (double)x) / (double)cfg->image_width -
-       3.14159265358979323846;
-  py = (2.0 * 3.14159265358979323846 * (double)y) / (double)cfg->image_height -
-       3.14159265358979323846;
+  px = (2.0f * 3.14159265358979323846f * (float)x) / (float)cfg->image_width -
+       3.14159265358979323846f;
+  py = (2.0f * 3.14159265358979323846f * (float)y) / (float)cfg->image_height -
+       3.14159265358979323846f;
   c = sqrt(pow(px, 2) + pow(py, 2));
 
-  if (c > 3.14159265358979323846) {
+  if (c > 3.14159265358979323846f) {
     *lat = -1;
     *lon = -1;
     return;
   }
-  *lat = 57.29578 * asin(cos(c) * sin(cfg->center_phi) +
-                         py * sin(c) * cos(cfg->center_phi) / c);
+  *lat = 57.29578f * asin(cos(c) * sin(cfg->center_phi) +
+                          py * sin(c) * cos(cfg->center_phi) / c);
 
   if (cfg->center_lat == 90) {
-    *lon = (cfg->center_lam + atan2(-1 * px, py)) * 57.29578;
+    *lon = (cfg->center_lam + atan2(-1 * px, py)) * 57.29578f;
   } else if (cfg->center_lat == -90) {
-    *lon = (cfg->center_lam + atan2(px, py)) * 57.29578;
+    *lon = (cfg->center_lam + atan2(px, py)) * 57.29578f;
   } else {
     *lon = (cfg->center_lam +
             atan2(px * sin(c), (c * cos(cfg->center_phi) * cos(c) -
                                 py * sin(cfg->center_phi) * sin(c)))) *
-           57.29578;
+           57.29578f;
   }
 
   if (*lon < -180)
@@ -102,11 +102,11 @@ void kernel reproj_image_equ_to_azeq(global ushort *source_img,
     int x = (xy_ptr % target_img_width);
     int y = (xy_ptr / target_img_width);
 
-    //float px = (x - (target_img_width / 2));
-    //float py = (target_img_height - y) - (target_img_height / 2);
+    // float px = (x - (target_img_width / 2));
+    // float py = (target_img_height - y) - (target_img_height / 2);
 
-    //px /= target_img_width / 2;
-    //py /= target_img_height / 2;
+    // px /= target_img_width / 2;
+    // py /= target_img_height / 2;
 
     azeq_inverse(&azeq_cfg, x, y, &lon, &lat);
     if (lon == -1 || lat == -1)

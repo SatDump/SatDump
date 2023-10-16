@@ -6,6 +6,10 @@
   This is faster on the GPU :-)
 */
 
+#ifndef M_PI_2
+#define M_PI_2 1.57079632679489661923f /* pi/2 */
+#endif
+
 float powf(float base, float exponent) {
   if (base == 0.0f)
     return 0.0f;
@@ -35,52 +39,54 @@ struct stereo_cfg {
 
 int stereo_inverse(struct stereo_cfg *cfg, float x, float y, float *lon,
                    float *lat) {
-  *lon = *lat = 0.0;
+  *lon = *lat = 0.0f;
   float phi = 0, lam = 0;
 
-  float cosphi, sinphi, tp = 0.0, phi_l = 0.0, rho, halfe = 0.0, halfpi = 0.0;
+  float cosphi, sinphi, tp = 0.0f, phi_l = 0.0f, rho, halfe = 0.0f,
+                        halfpi = 0.0f;
 
   rho = hypot(x, y);
 
   switch (cfg->mode) {
   case OBLIQ:
   case EQUIT:
-    tp = 2. * atan2(rho * cfg->cosX1, cfg->akm1);
+    tp = 2.0f * atan2(rho * cfg->cosX1, cfg->akm1);
     cosphi = cos(tp);
     sinphi = sin(tp);
-    if (rho == 0.0)
+    if (rho == 0.0f)
       phi_l = asin(cosphi * cfg->sinX1);
     else
       phi_l = asin(cosphi * cfg->sinX1 + (y * sinphi * cfg->cosX1 / rho));
 
-    tp = tan(.5 * (M_PI_2 + phi_l));
+    tp = tan(0.5f * (M_PI_2 + phi_l));
     x *= sinphi;
     y = rho * cfg->cosX1 * cosphi - y * cfg->sinX1 * sinphi;
     halfpi = M_PI_2;
-    halfe = .5 * cfg->e;
+    halfe = 0.5f * cfg->e;
     break;
   case N_POLE:
     y = -y;
     /*-fallthrough*/
   case S_POLE:
     tp = -rho / cfg->akm1;
-    phi_l = M_PI_2 - 2. * atan(tp);
+    phi_l = M_PI_2 - 2.0f * atan(tp);
     halfpi = -M_PI_2;
-    halfe = -.5 * cfg->e;
+    halfe = -0.5f * cfg->e;
     break;
   }
 
   for (int i = 8; i > 0; --i) {
     sinphi = cfg->e * sin(phi_l);
-    phi = 2. * atan(tp * powf((1. + sinphi) / (1. - sinphi), halfe)) - halfpi;
-    if (fabs(phi_l - phi) < 1.e-10) {
+    phi = 2.0f * atan(tp * powf((1.0f + sinphi) / (1.0f - sinphi), halfe)) -
+          halfpi;
+    if (fabs(phi_l - phi) < 1.e-10f) {
       if (cfg->mode == S_POLE)
         phi = -phi;
-      lam = (x == 0. && y == 0.) ? 0. : atan2(x, y);
+      lam = (x == 0.0f && y == 0.0f) ? 0.0f : atan2(x, y);
 
       // To degs
-      *lat = phi * 57.29578;
-      *lon = lam * 57.29578;
+      *lat = phi * 57.29578f;
+      *lon = lam * 57.29578f;
 
       // Shift longitudes back to reference 0
       *lon += cfg->lon_0;

@@ -36,7 +36,7 @@ int geos_forward(struct geos_cfg *cfg, float lon, float lat, float *x,
     lon = lon - 360;
 
   // To radians
-  float phi = lat * 0.01745329, lam = lon * 0.01745329;
+  float phi = lat * 0.01745329f, lam = lon * 0.01745329f;
 
   float r, Vx, Vy, Vz, tmp;
 
@@ -53,7 +53,7 @@ int geos_forward(struct geos_cfg *cfg, float lon, float lat, float *x,
   // Check visibility.
   if (((cfg->radius_g - Vx) * Vx - Vy * Vy - Vz * Vz * cfg->radius_p_inv2) <
       0.) {
-    *x = *y = 2e10; // Trigger error
+    *x = *y = 2e10f; // Trigger error
     return 1;
   }
 
@@ -94,11 +94,11 @@ int geo_proj_forward(struct geo_proj_cfg *cfg, float lon, float lat, int *img_x,
   y -= cfg->y_offset;
   x -= cfg->x_offset;
 
-  image_x = x * cfg->hscale * (cfg->width / 2.0);
-  image_y = y * cfg->vscale * (cfg->height / 2.0);
+  image_x = x * cfg->hscale * (cfg->width / 2.0f);
+  image_y = y * cfg->vscale * (cfg->height / 2.0f);
 
-  image_x += cfg->width / 2.0;
-  image_y += cfg->height / 2.0;
+  image_x += cfg->width / 2.0f;
+  image_y += cfg->height / 2.0f;
 
   *img_x = image_x;
   *img_y = (cfg->height - 1) - image_y;
