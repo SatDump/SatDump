@@ -101,7 +101,7 @@ namespace satdump
                         current_img,
                         color,
                         proj_func,
-                        cities_size,
+                        viewer_app->cities_size,
                         viewer_app->cities_type,
                         viewer_app->cities_scale_rank);
                 }
@@ -224,7 +224,7 @@ namespace satdump
                 asyncUpdate();
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float*)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            ImGui::SliderInt("Cities Font Size", &cities_size, 10, 500);
+            ImGui::SliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500);
             if (ImGui::IsItemDeactivatedAfterEdit())
                 asyncUpdate();
             static const char* items[] = { "Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)" };

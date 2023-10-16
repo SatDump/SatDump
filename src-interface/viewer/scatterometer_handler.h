@@ -47,7 +47,6 @@ namespace satdump
         bool shores_overlay = false;
         bool cities_overlay = false;
         bool latlon_overlay = false;
-        int cities_size = 50;
 
         void init();
 

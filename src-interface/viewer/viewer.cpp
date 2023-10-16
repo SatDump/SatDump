@@ -56,6 +56,8 @@ namespace satdump
                 color_latlon.z = color[2];
             }
 
+            if (config::main_cfg["user"]["viewer_state"].contains("cities_size"))
+                cities_size = config::main_cfg["user"]["viewer_state"]["cities_size"].get<int>();
             if (config::main_cfg["user"]["viewer_state"].contains("cities_type"))
                 cities_type = config::main_cfg["user"]["viewer_state"]["cities_type"].get<int>();
             if (config::main_cfg["user"]["viewer_state"].contains("cities_scale_rank"))
@@ -99,6 +101,7 @@ namespace satdump
     {
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
         config::main_cfg["user"]["viewer_state"]["cities_type"] = cities_type;
+        config::main_cfg["user"]["viewer_state"]["cities_size"] = cities_size;
         config::main_cfg["user"]["viewer_state"]["cities_scale_rank"] = cities_scale_rank;
         config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};
         config::main_cfg["user"]["viewer_state"]["shores_color"] = {color_shores.x, color_shores.y, color_shores.z};
