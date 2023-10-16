@@ -397,6 +397,9 @@ namespace satdump
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
         {
+            ImGui::Checkbox("Lat/Lon Grid", &projections_draw_latlon_overlay);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##latlongrid", (float*)&viewer_color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::Checkbox("Map Overlay##Projs", &projections_draw_map_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##borders", (float *)&viewer_color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
@@ -405,10 +408,6 @@ namespace satdump
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float *)&viewer_color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_scale, 10, 500);
-
-            ImGui::Checkbox("Lat/Lon Grid", &projections_draw_latlon_overlay);
-            ImGui::SameLine();
-            ImGui::ColorEdit3("##latlongrid", (float *)&viewer_color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
         }
 
         if (projections_should_refresh) // Refresh in the UI thread!
