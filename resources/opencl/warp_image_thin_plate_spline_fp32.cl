@@ -18,8 +18,8 @@
   cards) FP32 cores.
 */
 
-#define DEG_TO_RAD (3.14159265359 / 180.0)
-#define RAD_TO_DEG (180.0 / 3.14159265359)
+#define DEG_TO_RAD (3.14159265359f / 180.0f)
+#define RAD_TO_DEG (180.0f / 3.14159265359f)
 
 inline float lon_shift(float lon, float shift) {
   lon += shift;
@@ -55,19 +55,19 @@ inline void VizGeorefSpline2DBase_func4(float *res, const float *pxy,
                                         global const float *xr,
                                         global const float *yr) {
   float dist0 = SQ(xr[0] - pxy[0]) + SQ(yr[0] - pxy[1]);
-  res[0] = dist0 != 0.0 ? dist0 * log(dist0) : 0.0;
+  res[0] = dist0 != 0.0f ? dist0 * log(dist0) : 0.0f;
   float dist1 = SQ(xr[1] - pxy[0]) + SQ(yr[1] - pxy[1]);
-  res[1] = dist1 != 0.0 ? dist1 * log(dist1) : 0.0;
+  res[1] = dist1 != 0.0f ? dist1 * log(dist1) : 0.0f;
   float dist2 = SQ(xr[2] - pxy[0]) + SQ(yr[2] - pxy[1]);
-  res[2] = dist2 != 0.0 ? dist2 * log(dist2) : 0.0;
+  res[2] = dist2 != 0.0f ? dist2 * log(dist2) : 0.0f;
   float dist3 = SQ(xr[3] - pxy[0]) + SQ(yr[3] - pxy[1]);
-  res[3] = dist3 != 0.0 ? dist3 * log(dist3) : 0.0;
+  res[3] = dist3 != 0.0f ? dist3 * log(dist3) : 0.0f;
 }
 
 inline float VizGeorefSpline2DBase_func(const float x1, const float y1,
                                         const float x2, const float y2) {
   const float dist = SQ(x2 - x1) + SQ(y2 - y1);
-  return dist != 0.0 ? dist * log(dist) : 0.0;
+  return dist != 0.0f ? dist * log(dist) : 0.0f;
 }
 
 void kernel warp_image_thin_plate_spline(
