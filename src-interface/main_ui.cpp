@@ -86,9 +86,11 @@ namespace satdump
 
     void exitMainUI()
     {
-        viewer_app.reset();
         recorder_app->save_settings();
+        viewer_app->save_settings();
+        config::saveUserConfig();
         recorder_app.reset();
+        viewer_app.reset();
     }
 
     bool main_ui_is_processing_selected = false;
