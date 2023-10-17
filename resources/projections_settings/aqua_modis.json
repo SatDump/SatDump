@@ -4,7 +4,7 @@
     "roll_offset": 0.05,
     "pitch_offset": 0,
     "yaw_offset": 0, //3.2,
-    "timestamp_offset": 1, //-1.0,
+    "timestamp_offset": -1.0,
     "image_width": 5416,
     "gcp_spacing_x": 200,
     "gcp_spacing_y": 200,
