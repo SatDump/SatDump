@@ -78,8 +78,7 @@ namespace satdump
                     map::drawProjectedMapShapefile({ resources::getResourcePath("maps/ne_10m_admin_0_countries.shp") },
                         current_img,
                         color,
-                        proj_func,
-                        100);
+                        proj_func);
                 }
                 if (shores_overlay)
                 {
@@ -89,8 +88,7 @@ namespace satdump
                     map::drawProjectedMapShapefile({ resources::getResourcePath("maps/ne_10m_coastline.shp") },
                         current_img,
                         color,
-                        proj_func,
-                        100);
+                        proj_func);
                 }
                 if (cities_overlay)
                 {

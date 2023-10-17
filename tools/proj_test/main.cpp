@@ -112,8 +112,7 @@ int main(int /*argc*/, char *argv[])
                 int x, y;
                 projector_final.forward(lon, lat, x, y);
                 return {x, y};
-            },
-            200);
+            });
     }
 #if 0
     {

@@ -167,14 +167,12 @@ namespace satdump
                         map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                        rgb_image,
                                                        color,
-                                                       proj_func,
-                                                       100);
+                                                       proj_func);
                         if (geo_correct)
                             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                                            rgb_image_corr,
                                                            color,
-                                                           corr_proj_func,
-                                                           100);
+                                                           corr_proj_func);
                     }
 
                     if (shores_overlay)
@@ -192,14 +190,12 @@ namespace satdump
                         map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                                        rgb_image,
                                                        color,
-                                                       proj_func,
-                                                       100);
+                                                       proj_func);
                         if (geo_correct)
                             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                                            rgb_image_corr,
                                                            color,
-                                                           corr_proj_func,
-                                                           100);
+                                                           corr_proj_func);
                     }
 
                     if (latlon_overlay)

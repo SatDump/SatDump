@@ -545,7 +545,7 @@ namespace satdump
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            projected_image_result,
                                            color,
-                                           proj_func, 200);
+                                           proj_func);
         }
 
         // Draw map shorelines
@@ -556,8 +556,7 @@ namespace satdump
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                            projected_image_result,
                                            color,
-                                           proj_func,
-                                           200);
+                                           proj_func);
         }
 
         // Draw cities points

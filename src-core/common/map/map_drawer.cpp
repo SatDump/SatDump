@@ -205,14 +205,14 @@ namespace map
     template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
 
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
             std::ifstream inputFile(currentShapeFile, std::ios::binary);
             shapefile::Shapefile shape_file(inputFile);
 
-            std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, maxLength, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
+            std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
             {
                 for (std::vector<shapefile::point_t> coordinates : parts)
                 {
@@ -222,24 +222,6 @@ namespace map
                                                                        map_image.height(), map_image.width());
                         std::pair<float, float> end = projectionFunc(coordinates[i + 1].y, coordinates[i + 1].x,
                                                                      map_image.height(), map_image.width());
-
-                        if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
-                            continue;
-
-                        if (start.first == -1 || end.first == -1)
-                            continue;
-
-                        map_image.draw_line(start.first, start.second, end.first, end.second, color);
-                    }
-
-                    {
-                        std::pair<float, float> start = projectionFunc(coordinates[0].y, coordinates[0].x,
-                                                                       map_image.height(), map_image.width());
-                        std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].y, coordinates[coordinates.size() - 1].x,
-                                                                     map_image.height(), map_image.width());
-
-                        if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
-                            continue;
 
                         if (start.first == -1 || end.first == -1)
                             continue;
@@ -275,8 +257,8 @@ namespace map
         }
     }
 
-    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
-    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
 
     template <typename T>
     void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
