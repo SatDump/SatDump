@@ -162,7 +162,7 @@ namespace satdump
         bool projections_draw_map_overlay = true;
         bool projections_draw_shores_overlay = true;
         bool projections_draw_cities_overlay = true;
-        int projections_cities_scale = 50;
+        int projections_cities_size = 50;
         bool projections_draw_latlon_overlay = false;
 
         int projections_current_selected_proj = 0;
@@ -197,6 +197,7 @@ namespace satdump
         ImVec4 color_cities = {1, 0, 0, 1};
         ImVec4 color_latlon = {0, 0, 1, 1};
         int cities_type = 0;
+        int cities_size;
         int cities_scale_rank = 3;
 
         int projections_image_width = 2048;
@@ -212,7 +213,7 @@ namespace satdump
             out["projections_draw_map_overlay"] = projections_draw_map_overlay;
             out["projections_draw_shores_overlay"] = projections_draw_shores_overlay;
             out["projections_draw_cities_overlay"] = projections_draw_cities_overlay;
-            out["projections_cities_scale"] = projections_cities_scale;
+            out["projections_cities_scale"] = projections_cities_size;
             out["projections_draw_latlon_overlay"] = projections_draw_latlon_overlay;
 
             out["projections_current_selected_proj"] = projections_current_selected_proj;
@@ -245,7 +246,7 @@ namespace satdump
             setValueIfExists(in["projections_draw_map_overlay"], projections_draw_map_overlay);
             setValueIfExists(in["projections_draw_shores_overlay"], projections_draw_shores_overlay);
             setValueIfExists(in["projections_draw_cities_overlay"], projections_draw_cities_overlay);
-            setValueIfExists(in["projections_cities_scale"], projections_cities_scale);
+            setValueIfExists(in["projections_cities_scale"], projections_cities_size);
             setValueIfExists(in["projections_draw_latlon_overlay"], projections_draw_latlon_overlay);
 
             setValueIfExists(in["projections_current_selected_proj"], projections_current_selected_proj);

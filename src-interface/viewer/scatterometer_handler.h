@@ -43,11 +43,14 @@ namespace satdump
         bool projection_ready = false, should_project = false;
         image::Image<uint16_t> projected_img;
 
+        //GUI
+        bool is_updating = false;
+
+        //Overlays
         bool map_overlay = false;
         bool shores_overlay = false;
         bool cities_overlay = false;
         bool latlon_overlay = false;
-        int cities_size = 50;
 
         void init();
 

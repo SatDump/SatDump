@@ -96,10 +96,13 @@ namespace satdump
                     generateProjectionImage();
                     logger->info("Done"); });
             }
-            if ((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                ImGui::SetTooltip("No layers loaded!");
-            if ((projections_are_generating && beginGenHide) || projection_layers.size() == 0)
-                style::endDisabled();
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                if(projections_are_generating)
+                    ImGui::SetTooltip("Generating, please wait...");
+                if(projection_layers.size() == 0)
+                    ImGui::SetTooltip("No layers loaded!");
+            }
 
             ImGui::Spacing();
 
@@ -138,6 +141,16 @@ namespace satdump
                 projected_image_result.save_img("" + path);
 #endif
             }
+
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                if (projections_are_generating)
+                    ImGui::SetTooltip("Generating, please wait...");
+                if (projection_layers.size() == 0)
+                    ImGui::SetTooltip("No layers loaded!");
+            }
+            if (beginGenHide || projection_layers.size() == 0)
+                style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
@@ -409,7 +422,7 @@ namespace satdump
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_scale, 10, 500);
+            ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_size, 10, 500);
             static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
             ImGui::Combo("Cities Type", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
             if (cities_type == 2)
@@ -556,7 +569,7 @@ namespace satdump
                                             projected_image_result,
                                             color,
                                             proj_func,
-                                            projections_cities_scale,
+                                            projections_cities_size,
                                             cities_type,
                                             cities_scale_rank);
         }

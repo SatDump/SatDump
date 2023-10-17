@@ -41,12 +41,12 @@ namespace satdump
         bool shores_overlay = false;
         bool cities_overlay = false;
         bool latlon_overlay = false;
-        int cities_size = 50;
 
         // GUI
         bool range_window = false;
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
+        bool is_updating = false;
 
         // Calibration
         bool is_temp = false;

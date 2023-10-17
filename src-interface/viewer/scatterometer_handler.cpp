@@ -101,7 +101,7 @@ namespace satdump
                         current_img,
                         color,
                         proj_func,
-                        cities_size,
+                        viewer_app->cities_size,
                         viewer_app->cities_type,
                         viewer_app->cities_scale_rank);
                 }
@@ -124,9 +124,11 @@ namespace satdump
     {
         ui_thread_pool.push([this](int)
                     {   async_image_mutex.lock();
+                            is_updating = true;
                             logger->info("Update image...");
                             update();
                             logger->info("Done");
+                            is_updating = false;
                             async_image_mutex.unlock(); });
     }
 
@@ -161,6 +163,9 @@ namespace satdump
                     asyncUpdate();
             }
 
+            bool save_disabled = is_updating;
+            if (save_disabled)
+                style::beginDisabled();
             if (ImGui::Button("Save"))
             {
                 std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
@@ -199,6 +204,12 @@ namespace satdump
                 current_img.save_img("" + path);
 #endif
             }
+            if (save_disabled)
+            {
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Updating, please wait...");
+                style::endDisabled();
+            }
         }
 
         if (ImGui::CollapsingHeader("Map Overlay"))
@@ -224,16 +235,16 @@ namespace satdump
                 asyncUpdate();
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float*)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            ImGui::SliderInt("Cities Font Size", &cities_size, 10, 500);
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            ImGui::SliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500);
+            if (ImGui::IsItemDeactivatedAfterEdit() && cities_overlay)
                 asyncUpdate();
             static const char* items[] = { "Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)" };
-            if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)))
+            if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)) && cities_overlay)
                 asyncUpdate();
 
             if (viewer_app->cities_type == 2)
                 ImGui::SliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10);
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            if (ImGui::IsItemDeactivatedAfterEdit() && cities_overlay)
                 asyncUpdate();
 
             if (selected_visualization_id != 1)
