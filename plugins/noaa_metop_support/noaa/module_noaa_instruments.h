@@ -5,7 +5,7 @@
 #include "../instruments/avhrr/avhrr_reader.h"
 #include "../instruments/mhs/mhs_reader.h"
 #include "instruments/hirs/hirs_reader.h"
-#include "instruments/amsu/amsu_reader.h"
+#include "../instruments/amsu/amsu_reader.h"
 #include "instruments/sem/sem_reader.h"
 
 namespace noaa
@@ -24,7 +24,7 @@ namespace noaa
             noaa_metop::avhrr::AVHRRReader avhrr_reader;
             noaa_metop::mhs::MHSReader mhs_reader;
             hirs::HIRSReader hirs_reader;
-            amsu::AMSUReader amsu_reader;
+            noaa_metop::amsu::AMSUReader amsu_reader;
             sem::SEMReader sem_reader;
 
             // Statuses

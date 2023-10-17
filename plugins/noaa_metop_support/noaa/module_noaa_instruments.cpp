@@ -65,7 +65,7 @@ namespace noaa
                                     }
                                     else
                                     {
-                                        amsu_reader.work(frameBuffer);
+                                        amsu_reader.work_noaa(frameBuffer);
                                         mhs_reader.work_NOAA(frameBuffer);
                                     }
                                 }
@@ -97,7 +97,7 @@ namespace noaa
                                 {
                                     frameBuffer[j] = buffer[104 * (i + 6) + j - 1] >> 2;
                                 }
-                                amsu_reader.work(frameBuffer);
+                                amsu_reader.work_noaa(frameBuffer);
                                 mhs_reader.work_NOAA(frameBuffer);
                             }
                         }
@@ -364,7 +364,23 @@ namespace noaa
                     amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps2 : amsu_reader.timestamps1});
+                        amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
+
+                    // calibration
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
+                    if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                    {
+                        calib_coefs[sat_name]["all"] = calib_coefs["all"];
+                        amsu_reader.calibrate(calib_coefs[sat_name]);
+                        amsu_products.set_calibration(amsu_reader.calib_out);
+                        for (int c = 0; c < 15; c++)
+                        {
+                            amsu_products.set_calibration_type(c, amsu_products.CALIB_RADIANCE);
+                            amsu_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                        }
+                    }
+                    else
+                        logger->warn("(AMSU) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                     amsu_products.save(directory);
                     dataset.products_list.push_back("AMSU");
