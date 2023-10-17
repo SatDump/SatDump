@@ -124,9 +124,11 @@ namespace satdump
     {
         ui_thread_pool.push([this](int)
                     {   async_image_mutex.lock();
+                            is_updating = true;
                             logger->info("Update image...");
                             update();
                             logger->info("Done");
+                            is_updating = false;
                             async_image_mutex.unlock(); });
     }
 
@@ -161,6 +163,9 @@ namespace satdump
                     asyncUpdate();
             }
 
+            bool save_disabled = is_updating;
+            if (save_disabled)
+                style::beginDisabled();
             if (ImGui::Button("Save"))
             {
                 std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
@@ -198,6 +203,12 @@ namespace satdump
                 logger->info("Saving current image at %s", path.c_str());
                 current_img.save_img("" + path);
 #endif
+            }
+            if (save_disabled)
+            {
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Updating, please wait...");
+                style::endDisabled();
             }
         }
 

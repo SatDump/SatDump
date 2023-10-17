@@ -46,6 +46,7 @@ namespace satdump
         bool range_window = false;
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
+        bool is_updating = false;
 
         // Calibration
         bool is_temp = false;

@@ -96,10 +96,13 @@ namespace satdump
                     generateProjectionImage();
                     logger->info("Done"); });
             }
-            if ((projections_are_generating || projection_layers.size() == 0) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                ImGui::SetTooltip("No layers loaded!");
-            if ((projections_are_generating && beginGenHide) || projection_layers.size() == 0)
-                style::endDisabled();
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                if(projections_are_generating)
+                    ImGui::SetTooltip("Generating, please wait...");
+                if(projection_layers.size() == 0)
+                    ImGui::SetTooltip("No layers loaded!");
+            }
 
             ImGui::Spacing();
 
@@ -138,6 +141,16 @@ namespace satdump
                 projected_image_result.save_img("" + path);
 #endif
             }
+
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                if (projections_are_generating)
+                    ImGui::SetTooltip("Generating, please wait...");
+                if (projection_layers.size() == 0)
+                    ImGui::SetTooltip("No layers loaded!");
+            }
+            if (beginGenHide || projection_layers.size() == 0)
+                style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Layers"))
         {
