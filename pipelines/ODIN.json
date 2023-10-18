@@ -1,0 +1,31 @@
+{
+    "odin_dump": {
+        "name": "ODIN Dump",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                // "fsk_demod": {
+                //     "symbolrate": 2.162e6,
+                //     "rrc_alpha": 0.25
+                // }
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2.162e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.001,
+                    "carrier_pll_bw": 0.001,
+                    "has_carrier": true
+                }
+            },
+            "cadu": {},
+            "products": {}
+        }
+    }
+}

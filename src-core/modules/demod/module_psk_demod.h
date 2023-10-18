@@ -5,6 +5,7 @@
 #include "common/dsp/pll/costas_loop.h"
 #include "common/dsp/clock_recovery/clock_recovery_mm.h"
 #include "common/dsp/demod/delay_one_imag.h"
+#include "common/dsp/pll/pll_carrier_tracking.h"
 
 namespace demod
 {
@@ -12,6 +13,8 @@ namespace demod
     {
     protected:
         std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
+        std::shared_ptr<dsp::PLLCarrierTrackingBlock> carrier_pll;
+        std::shared_ptr<dsp::CorrectIQBlock<complex_t>> carrier_dc;
         std::shared_ptr<dsp::CostasLoopBlock> pll;
         std::shared_ptr<dsp::CorrectIQBlock<complex_t>> post_pll_dc;
         std::shared_ptr<dsp::DelayOneImagBlock> delay;
@@ -24,6 +27,7 @@ namespace demod
         int d_rrc_taps = 31;
         float d_loop_bw;
         bool d_post_costas_dc_blocking = false;
+        bool d_has_carrier = false;
 
         float d_clock_gain_omega = pow(8.7e-3, 2) / 4.0;
         float d_clock_mu = 0.5f;

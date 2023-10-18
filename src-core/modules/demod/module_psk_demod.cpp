@@ -32,6 +32,9 @@ namespace demod
         if (parameters.count("post_costas_dc") > 0)
             d_post_costas_dc_blocking = parameters["post_costas_dc"].get<bool>();
 
+        if (parameters.count("has_carrier") > 0)
+            d_has_carrier = parameters["has_carrier"].get<bool>();
+
         if (parameters.count("clock_alpha") > 0)
         {
             float clock_alpha = parameters["clock_alpha"].get<float>();
@@ -83,9 +86,31 @@ namespace demod
         // RRC
         rrc = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
+        if (d_has_carrier)
+        {
+            if (constellation_type != "bpsk")
+                throw std::runtime_error("For carrier mode, constellation must be BPSK!");
+
+            float d_carrier_pll_bw;
+            if (d_parameters.count("carrier_pll_bw") > 0)
+                d_carrier_pll_bw = d_parameters["carrier_pll_bw"].get<float>();
+            else
+                throw std::runtime_error("Carrier PLL Bw parameter must be present!");
+
+            float d_carrier_pll_max_offset = 3.14;
+            if (d_parameters.count("carrier_pll_max_offset") > 0)
+                d_carrier_pll_max_offset = d_parameters["carrier_pll_max_offset"].get<float>();
+
+            // PLL
+            carrier_pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(rrc->output_stream, d_carrier_pll_bw, d_carrier_pll_max_offset, -d_carrier_pll_max_offset);
+
+            // DC
+            carrier_dc = std::make_shared<dsp::CorrectIQBlock<complex_t>>(carrier_pll->output_stream);
+        }
+
         // PLL
         if (constellation_type == "bpsk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
+            pll = std::make_shared<dsp::CostasLoopBlock>(d_has_carrier ? carrier_dc->output_stream : rrc->output_stream, d_loop_bw, 2);
         else if (constellation_type == "qpsk" || constellation_type == "oqpsk")
             pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
         else if (constellation_type == "8psk")
@@ -130,6 +155,11 @@ namespace demod
         // Start
         BaseDemodModule::start();
         rrc->start();
+        if (d_has_carrier)
+        {
+            carrier_pll->start();
+            carrier_dc->start();
+        }
         pll->start();
         if (d_post_costas_dc_blocking)
             post_pll_dc->start();
@@ -210,6 +240,11 @@ namespace demod
         BaseDemodModule::stop();
 
         rrc->stop();
+        if (d_has_carrier)
+        {
+            carrier_pll->stop();
+            carrier_dc->stop();
+        }
         pll->stop();
         if (d_post_costas_dc_blocking)
             post_pll_dc->stop();
