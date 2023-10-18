@@ -116,7 +116,11 @@ void FileSource::start()
 
 void FileSource::stop()
 {
+    if (!is_started)
+        return;
+
     is_started = false;
+    output_stream->flush();
 }
 
 void FileSource::close()
