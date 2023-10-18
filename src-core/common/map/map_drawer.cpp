@@ -282,7 +282,7 @@ namespace map
 
         for (float lat = -90; lat < 90; lat += 10)
         {
-            float last_lon = -90;
+            float last_lon = -180;
             for (float lon = -180; lon < 180; lon += 0.05)
             {
                 std::pair<float, float> start = projectionFunc(lat, last_lon,
