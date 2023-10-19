@@ -37,7 +37,7 @@ namespace satdump
 
                     int checksum = tle_lines[i].back() - '0';
                     int actualsum = 0;
-                    for (int j = 0; j < tle_lines[i].size() - 1; j++)
+                    for (int j = 0; j < (int)tle_lines[i].size() - 1; j++)
                     {
                         if (tle_lines[i][j] == '-')
                         {
