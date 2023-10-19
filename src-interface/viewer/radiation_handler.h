@@ -30,7 +30,6 @@ namespace satdump
 
         void init();
         void update();
-        void asyncUpdate();
 
         void drawMenu();
         void drawContents(ImVec2 win_size);

@@ -15,20 +15,30 @@ namespace satdump
         for (int c = 0; c < (int)products->channel_counts.size(); c++)
             select_channel_image_str += products->get_channel_name(c) + '\0';
 
-        asyncUpdate();
+        update();
     }
 
     void RadiationViewerHandler::update()
     {
         if (selected_visualization_id == 0)
         {
-            RadiationMapCfg cfg;
-            cfg.channel = select_channel_image_id + 1;
-            cfg.radius = 5;
-            cfg.min = map_min;
-            cfg.max = map_max;
-            map_img = make_radiation_map(*products, cfg);
-            image_view.update(map_img);
+            ui_thread_pool.push([this](int)
+                            {   async_image_mutex.lock();
+                                    is_updating = true;
+                                    logger->info("Update map...");
+
+                                    RadiationMapCfg cfg;
+                                    cfg.channel = select_channel_image_id + 1;
+                                    cfg.radius = 5;
+                                    cfg.min = map_min;
+                                    cfg.max = map_max;
+                                    map_img = make_radiation_map(*products, cfg);
+                                    image_view.update(map_img);
+
+                                    logger->info("Done");
+                                    is_updating = false;
+                                    async_image_mutex.unlock(); });
+
         }
         else if (selected_visualization_id == 1)
         {
@@ -42,38 +52,26 @@ namespace satdump
         }
     }
 
-    void RadiationViewerHandler::asyncUpdate()
-    {
-        ui_thread_pool.push([this](int)
-                            {   async_image_mutex.lock();
-                                    is_updating = true;
-                                    logger->info("Update map...");
-                                    update();
-                                    logger->info("Done");
-                                    is_updating = false;
-                                    async_image_mutex.unlock(); });
-    }
-
     void RadiationViewerHandler::drawMenu()
     {
         if (ImGui::CollapsingHeader("View"))
         {
             if (ImGui::RadioButton(u8"\uf84c   Map", &selected_visualization_id, 0))
-                asyncUpdate();
+                update();
             if (ImGui::RadioButton(u8"\uf437   Graph", &selected_visualization_id, 1))
-                asyncUpdate();
+                update();
 
             if (selected_visualization_id == 0)
             {
                 if (ImGui::Combo("###mapchannelcomboid", &select_channel_image_id, select_channel_image_str.c_str()))
-                    asyncUpdate();
+                    update();
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
                 if (ImGui::DragInt("##Min", &map_min, 1.0f, 0, 255, "Min: %d", ImGuiSliderFlags_AlwaysClamp))
-                    asyncUpdate();
+                    update();
                 ImGui::SameLine();
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
                 if (ImGui::DragInt("##Max", &map_max, 1.0f, 0, 255, "Max: %d", ImGuiSliderFlags_AlwaysClamp))
-                    asyncUpdate();
+                    update();
             }
 
             bool save_disabled = selected_visualization_id != 0 || is_updating;
