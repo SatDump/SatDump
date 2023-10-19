@@ -40,13 +40,9 @@ namespace satdump
                     for (int j = 0; j < (int)tle_lines[i].size() - 1; j++)
                     {
                         if (tle_lines[i][j] == '-')
-                        {
                             actualsum++;
-                            continue;
-                        }
-                        else if (!isdigit(tle_lines[i][j]))
-                            continue;
-                        actualsum += tle_lines[i][j] - '0';
+                        else if (isdigit(tle_lines[i][j]))
+                            actualsum += tle_lines[i][j] - '0';
                     }
 
                     checksum_good = checksum == actualsum % 10;

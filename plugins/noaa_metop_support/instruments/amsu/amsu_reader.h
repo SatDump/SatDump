@@ -77,8 +77,6 @@ namespace noaa_metop
                     return (C.second - B.second)/(C.first - B.second) * (x - B.first) + B.second;
                 }
             }
-
-            std::ofstream test;
         };
     }; // namespace amsu
 };     // namespace noaa_metop

@@ -13,8 +13,6 @@ namespace noaa_metop
         {
             for (int i = 0; i < 15; i++)
                 channels[i].resize(30);
-
-            test.open("test.amsu");
         }
 
         AMSUReader::~AMSUReader()
@@ -23,12 +21,10 @@ namespace noaa_metop
                 channels[i].clear();
             timestamps_A1.clear();
             timestamps_A2.clear();
-            test.close();
         }
 
         void AMSUReader::work_A1(uint8_t *buffer)
         {
-            test.write((char *)buffer, 1240);
             for (int n = 2; n < 15; n++)
                 channels[n].resize(channels[n].size() + 30);
             for (int i = 0; i < 1020; i += 34)
