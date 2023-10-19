@@ -1011,9 +1011,15 @@
                         "individual_equalize": true,
                         "geo_correct": true
                     },
+                    "7.2 µm Water Vapor": {
+                        "equation": "1 - ch6",
+                        "individual_equalize": true,
+                        "apply_lut": true,
+                        "geo_correct": true
+                    },
                     "WXtoImg NO": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
-                        "channels": "ch1, 0",
+                        "channels": "ch1, ch1",
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
