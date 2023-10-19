@@ -8,8 +8,6 @@
 #include "common/simple_deframer.h"
 #include "nlohmann/json.hpp"
 
-#include <fstream>
-
 namespace noaa_metop
 {
     namespace amsu
