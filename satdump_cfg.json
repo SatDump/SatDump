@@ -1019,7 +1019,7 @@
                     },
                     "WXtoImg NO": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
-                        "channels": "ch1, ch1",
+                        "channels": "ch1, ch2",
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
