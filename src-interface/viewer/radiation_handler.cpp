@@ -1,14 +1,10 @@
 #include "radiation_handler.h"
-#include "core/config.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "resources.h"
 #include "core/module.h"
 #include "core/style.h"
 #include "common/projection/reprojector.h"
-
-#ifdef _MSC_VER
-#include <direct.h>
-#endif
+#include "main_ui.h"
 
 namespace satdump
 {
@@ -19,7 +15,7 @@ namespace satdump
         for (int c = 0; c < (int)products->channel_counts.size(); c++)
             select_channel_image_str += products->get_channel_name(c) + '\0';
 
-        update();
+        asyncUpdate();
     }
 
     void RadiationViewerHandler::update()
@@ -46,66 +42,60 @@ namespace satdump
         }
     }
 
+    void RadiationViewerHandler::asyncUpdate()
+    {
+        ui_thread_pool.push([this](int)
+                            {   async_image_mutex.lock();
+                                    is_updating = true;
+                                    logger->info("Update map...");
+                                    update();
+                                    logger->info("Done");
+                                    is_updating = false;
+                                    async_image_mutex.unlock(); });
+    }
+
     void RadiationViewerHandler::drawMenu()
     {
         if (ImGui::CollapsingHeader("View"))
         {
             if (ImGui::RadioButton(u8"\uf84c   Map", &selected_visualization_id, 0))
-                update();
+                asyncUpdate();
             if (ImGui::RadioButton(u8"\uf437   Graph", &selected_visualization_id, 1))
-                update();
+                asyncUpdate();
 
             if (selected_visualization_id == 0)
             {
                 if (ImGui::Combo("###mapchannelcomboid", &select_channel_image_id, select_channel_image_str.c_str()))
-                    update();
+                    asyncUpdate();
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
                 if (ImGui::DragInt("##Min", &map_min, 1.0f, 0, 255, "Min: %d", ImGuiSliderFlags_AlwaysClamp))
-                    update();
+                    asyncUpdate();
                 ImGui::SameLine();
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
                 if (ImGui::DragInt("##Max", &map_max, 1.0f, 0, 255, "Max: %d", ImGuiSliderFlags_AlwaysClamp))
-                    update();
+                    asyncUpdate();
             }
 
-            if (selected_visualization_id != 0)
+            bool save_disabled = selected_visualization_id != 0 || is_updating;
+            if (save_disabled)
                 style::beginDisabled();
+
             if (ImGui::Button("Save"))
             {
-                std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
-                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-#ifdef _MSC_VER
-                if (default_path == ".")
-                {
-                    char* cwd;
-                    cwd = _getcwd(NULL, 0);
-                    if (cwd != 0)
-                        default_path = cwd;
-                }
-                default_path += "\\";
-#else
-                default_path += "/";
-#endif
-                std::string default_name = default_path + products->instrument_name + "_map." + default_ext;
+                ui_thread_pool.push([this](int)
+                    {   async_image_mutex.lock();
+                        is_updating = true;
+                        logger->info("Saving Image...");
+                        std::string saved_at = save_image_dialog(products->instrument_name + "_map", "Save Map", &map_img, &viewer_app->save_type);
 
-#ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, get_file_formats(default_ext));
-                while (!result.ready(1000))
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-                if (result.result().size() > 0)
-                {
-                    std::string path = result.result();
-                    logger->info("Saving current image at %s", path.c_str());
-                    map_img.save_img(path);
-                }
-#else
-                std::string path = "/storage/emulated/0/" + default_name;
-                logger->info("Saving current image at %s", path.c_str());
-                map_img.save_img("" + path);
-#endif
+                        if (saved_at == "")
+                            logger->info("Save cancelled");
+                        else
+                            logger->info("Saved current map at %s", saved_at.c_str());
+                        is_updating = false;
+                        async_image_mutex.unlock(); });
             }
-            if (selected_visualization_id != 0)
+            if (save_disabled)
                 style::endDisabled();
 
             if (!canBeProjected())

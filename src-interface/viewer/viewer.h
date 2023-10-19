@@ -197,8 +197,9 @@ namespace satdump
         ImVec4 color_cities = {1, 0, 0, 1};
         ImVec4 color_latlon = {0, 0, 1, 1};
         int cities_type = 0;
-        int cities_size;
+        int cities_size = 50;
         int cities_scale_rank = 3;
+        std::string save_type = "png";
 
         int projections_image_width = 2048;
         int projections_image_height = 1024;
