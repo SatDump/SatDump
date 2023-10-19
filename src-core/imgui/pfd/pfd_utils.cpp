@@ -30,7 +30,11 @@ namespace satdump
             }
         }
 
+#ifdef __ANDROID__
+        *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
+#endif
         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+
 #ifdef _MSC_VER
         if (default_path == ".")
         {
