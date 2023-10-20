@@ -122,7 +122,8 @@ namespace satdump
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Update TLEs Now");
                     ImGui::TableSetColumnIndex(1);
-                    if (tles_are_update)
+                    bool disable_update_button = tles_are_update;
+                    if (disable_update_button)
                         style::beginDisabled();
                     if (ImGui::Button("Update###updateTLEs"))
                     {
@@ -131,7 +132,7 @@ namespace satdump
                                                 updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
                                                 tles_are_update = false; });
                     }
-                    if (tles_are_update)
+                    if (disable_update_button)
                         style::endDisabled();
 
                     ImGui::TableNextRow();
