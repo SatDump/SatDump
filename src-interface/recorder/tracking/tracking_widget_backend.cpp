@@ -305,7 +305,7 @@ namespace satdump
 
             if (sscanf(line.c_str(), "%lf%*s    %lf %lf %lf  %lf  %lf",
                        &julian_time, &az, &el, &delta, &deldot, &unk) == 6 ||
-                sscanf(line.c_str(), "%lf %*s   %lf %lf %lf  %lf  %*lf",
+                sscanf(line.c_str(), "%lf %*s   %lf %lf %lf  %lf  %*f",
                     &julian_time, &az, &el, &delta, &deldot) == 5 ||
                 sscanf(line.c_str(), "%lf    %lf %lf %lf  %lf  %lf",
                        &julian_time, &az, &el, &delta, &deldot, &unk) == 6)
