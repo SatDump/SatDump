@@ -1,8 +1,9 @@
 #pragma once
 
+#include <deque>
 #include <string>
-#include "nlohmann/json.hpp"
 #include <optional>
+#include "nlohmann/json.hpp"
 #include "dll_export.h"
 
 namespace satdump
@@ -58,8 +59,9 @@ namespace satdump
 
     SATDUMP_DLL extern TLERegistry general_tle_registry;
 
-    void updateTLEFile(std::string path);
-    void loadTLEFileIntoRegistry(std::string path);
+    int  parseTLEStream(std::istream& inputStream, TLERegistry& new_registry);  //Helper - Takes an input stream and parses out the valid TLEs
+    void updateTLEFile(std::string path);                                       //Updates the TLE file based on the URLs in the config
+    void loadTLEFileIntoRegistry(std::string path);                             //Loads the TLE file into the general registry
 
     void fetchTLENow(int norad); // Utils, in case you want to fetch & load a TLE into the regristry right now. Should NOT be used in most cases
 }

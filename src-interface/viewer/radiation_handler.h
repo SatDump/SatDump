@@ -50,5 +50,8 @@ namespace satdump
         image::Image<uint16_t> &getProjection();
         unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
         void setShouldProject(bool proj) { should_project = proj; }
+
+        std::mutex async_image_mutex;
+        bool is_updating = false;
     };
 }

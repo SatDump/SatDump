@@ -240,9 +240,9 @@ namespace noaa_apt
             new_white = (new_white + new_white1) / 2;
             new_black = (new_black + new_black1) / 2;
 
-            for (int l = 0; l < wip_apt_image_sync.height(); l++)
+            for (size_t l = 0; l < wip_apt_image_sync.height(); l++)
             {
-                for (int x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
+                for (size_t x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
                 {
                     float init_val = wip_apt_image_sync[l * wip_apt_image_sync.width() + x];
                     init_val -= new_black;
@@ -267,7 +267,7 @@ namespace noaa_apt
             int first_valid_wedge = 1e9;
             int last_valid_wedge = 0;
 
-            for (int i = 0; i < wedges1.size(); i++)
+            for (size_t i = 0; i < wedges1.size(); i++)
             {
                 if (wedges1[i].max_diff < 30e3)
                 {
@@ -278,7 +278,7 @@ namespace noaa_apt
                 }
             }
 
-            for (int i = 0; i < wedges2.size(); i++)
+            for (size_t i = 0; i < wedges2.size(); i++)
             {
                 if (wedges2[i].max_diff < 30e3)
                 {
@@ -497,7 +497,7 @@ namespace noaa_apt
                 final_sync_wedge.push_back(sync_wedge[i]);
 
         std::vector<uint16_t> wedge_a;
-        for (int line = 0; line < wedge.height(); line++)
+        for (size_t line = 0; line < wedge.height(); line++)
         {
             int val = 0;
             for (int x = 0; x < 43; x++)
@@ -506,7 +506,7 @@ namespace noaa_apt
             wedge_a.push_back(val);
         }
 
-        for (int line = 0; line < wedge_a.size() / (16 * 8); line++)
+        for (size_t line = 0; line < wedge_a.size() / (16 * 8); line++)
         {
             int best_cor = 160 * 255;
             int best_pos = 0;
@@ -558,7 +558,7 @@ namespace noaa_apt
             wed.back_scan = final_wedge[14];
             wed.channel = final_wedge[15];
 
-            if (wed.end_line < wedge.height())
+            if (wed.end_line < (int)wedge.height())
             {
                 wed.max_diff = 0;
                 for (int c = 0; c < 16; c++)

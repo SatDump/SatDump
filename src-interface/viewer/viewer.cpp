@@ -6,8 +6,9 @@
 #include "products/dataset.h"
 #include "common/utils.h"
 #include "resources.h"
+#include "main_ui.h"
 
-void SelectableColor(ImU32 color) // funkcja pozwalająca na pokolorowanie komówki w tabelii na wybrany kolor w RGBA
+void SelectableColor(ImU32 color) //Colors a cell in the table with the specified color in RGBA
 {
     ImVec2 p_min = ImGui::GetItemRectMin();
     ImVec2 p_max = ImGui::GetItemRectMax();
@@ -63,6 +64,11 @@ namespace satdump
             if (config::main_cfg["user"]["viewer_state"].contains("cities_scale_rank"))
                 cities_scale_rank = config::main_cfg["user"]["viewer_state"]["cities_scale_rank"].get<int>();
 
+            if (config::main_cfg["user"]["viewer_state"].contains("save_type"))
+                save_type = config::main_cfg["user"]["viewer_state"]["save_type"].get<std::string>();
+            else
+                save_type = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
+
             if (config::main_cfg["user"]["viewer_state"].contains("projections"))
                 deserialize_projections_config(config::main_cfg["user"]["viewer_state"]["projections"]);
         }
@@ -107,6 +113,7 @@ namespace satdump
         config::main_cfg["user"]["viewer_state"]["shores_color"] = {color_shores.x, color_shores.y, color_shores.z};
         config::main_cfg["user"]["viewer_state"]["cities_color"] = {color_cities.x, color_cities.y, color_cities.z};
         config::main_cfg["user"]["viewer_state"]["latlon_color"] = {color_latlon.x, color_latlon.y, color_latlon.z};
+        config::main_cfg["user"]["viewer_state"]["save_type"] = save_type;
         config::main_cfg["user"]["viewer_state"]["projections"] = serialize_projections_config();
     }
 

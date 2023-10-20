@@ -132,7 +132,7 @@ namespace satdump
 
             if (scfg.y_start < 0)
                 scfg.y_start = 0;
-            if (scfg.y_end > operation_t.input_image.height())
+            if (scfg.y_end > (int)operation_t.input_image.height())
                 scfg.y_end = operation_t.input_image.height();
         }
 
@@ -258,7 +258,7 @@ namespace satdump
                 if (cutPositions.size() > 0)
                 {
                     generateSeg(y_start, cutPositions[0], true, false);
-                    for (int i = 1; i < cutPositions.size() - 1; i++)
+                    for (size_t i = 1; i < cutPositions.size() - 1; i++)
                         generateSeg(cutPositions[i], y_end, false, false);
                     generateSeg(cutPositions[cutPositions.size() - 1], y_end, false, true);
                 }
@@ -307,7 +307,7 @@ namespace satdump
 
 #pragma omp parallel for
             //  Solve all TPS transforms, multithreaded
-            for (int ns = 0; ns < segmentConfigs.size(); ns++)
+            for (size_t ns = 0; ns < segmentConfigs.size(); ns++)
                 segmentConfigs[ns].tps = initTPSTransform(segmentConfigs[ns].gcps, segmentConfigs[ns].shift_lon, segmentConfigs[ns].shift_lat);
 
             int scnt = 0;

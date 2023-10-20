@@ -1,6 +1,4 @@
 #include "image_handler.h"
-
-#include "core/config.h"
 #include "common/calibration.h"
 
 #include "imgui/pfd/pfd_utils.h"
@@ -14,10 +12,7 @@
 #include "common/projection/reprojector.h"
 #include "core/opencl.h"
 #include "common/widgets/switch.h"
-
-#ifdef _MSC_VER
-#include <direct.h>
-#endif
+#include "main_ui.h"
 
 namespace satdump
 {
@@ -588,40 +583,20 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Save"))
             {
-                std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
-#ifdef _MSC_VER
-                if (default_path == ".")
-                {
-                    char *cwd;
-                    cwd = _getcwd(NULL, 0);
-                    if (cwd != 0)
-                        default_path = cwd;
-                }
-                default_path += "\\";
-#else
-                default_path += "/";
-#endif
-                std::string default_name = default_path +
-                                           products->instrument_name + "_" + (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])) +
-                                           "." + default_ext;
+                ui_thread_pool.push([this](int)
+                    {   async_image_mutex.lock();
+                        is_updating = true;
+                        logger->info("Saving Image...");
+                        std::string saved_at = save_image_dialog(products->instrument_name + "_" +
+                            (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
+                            "Save Image", &current_image, &viewer_app->save_type);
 
-#ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, get_file_formats(default_ext));
-                while (!result.ready(1000))
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-                if (result.result().size() > 0)
-                {
-                    std::string path = result.result();
-                    logger->info("Saving current image at %s", path.c_str());
-                    current_image.save_img(path);
-                }
-#else
-                std::string path = "/storage/emulated/0/" + default_name;
-                logger->info("Saving current image at %s", path.c_str());
-                current_image.save_img("" + path);
-#endif
+                        if (saved_at == "")
+                            logger->info("Save cancelled");
+                        else
+                            logger->info("Saved current image at %s", saved_at.c_str());
+                        is_updating = false;
+                        async_image_mutex.unlock(); });
             }
             if (save_disabled)
             {

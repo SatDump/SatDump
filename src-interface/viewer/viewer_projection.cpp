@@ -10,10 +10,6 @@
 #include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
-#ifdef _MSC_VER
-#include <direct.h>
-#endif
-
 namespace satdump
 {
     re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
@@ -108,38 +104,16 @@ namespace satdump
 
             if (ImGui::Button("Save Projected Image"))
             {
-                std::string default_ext = satdump::config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
-                std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
-#ifdef _MSC_VER
-                if (default_path == ".")
-                {
-                    char *cwd;
-                    cwd = _getcwd(NULL, 0);
-                    if (cwd != 0)
-                        default_path = cwd;
-                }
-                default_path += "\\";
-#else
-                default_path += "/";
-#endif
-                std::string default_name = default_path + "projection." + default_ext;
+                ui_thread_pool.push([this](int)
+                    {   projections_are_generating = true;
+                        logger->info("Saving Projection...");
+                        std::string saved_at = save_image_dialog("projection", "Save Projection", &projected_image_result, &viewer_app->save_type);
 
-#ifndef __ANDROID__
-                auto result = pfd::save_file("Save Image", default_name, get_file_formats(default_ext));
-                while (!result.ready(1000))
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-                if (result.result().size() > 0)
-                {
-                    std::string path = result.result();
-                    logger->info("Saving current projection at %s", path.c_str());
-                    projected_image_result.save_img(path);
-                }
-#else
-                std::string path = "/storage/emulated/0/" + default_name;
-                logger->info("Saving current projection at %s", path.c_str());
-                projected_image_result.save_img("" + path);
-#endif
+                        if (saved_at == "")
+                            logger->info("Save cancelled");
+                        else
+                            logger->info("Saved current projection at %s", saved_at.c_str());
+                        projections_are_generating = false; });
             }
 
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))

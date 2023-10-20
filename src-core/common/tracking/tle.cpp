@@ -12,6 +12,75 @@ namespace satdump
 {
     TLERegistry general_tle_registry;
 
+    int parseTLEStream(std::istream &inputStream, TLERegistry &new_registry)
+    {
+        std::string this_line;
+        std::deque<std::string> tle_lines;
+        int total_lines = 0;
+        while (std::getline(inputStream, this_line))
+        {
+            this_line.erase(0, this_line.find_first_not_of(" \t\n\r"));
+            this_line.erase(this_line.find_last_not_of(" \t\n\r") + 1);
+            if(this_line != "")
+                tle_lines.push_back(this_line);
+
+            if (tle_lines.size() == 3)
+            {
+                bool checksum_good = true;
+                for (int i = 1; i < 3; i++)
+                {
+                    if (!isdigit(tle_lines[i].back()) || !isdigit(tle_lines[i].front()) || tle_lines[i].front() - '0' != i)
+                    {
+                        checksum_good = false;
+                        break;
+                    }
+
+                    int checksum = tle_lines[i].back() - '0';
+                    int actualsum = 0;
+                    for (int j = 0; j < (int)tle_lines[i].size() - 1; j++)
+                    {
+                        if (tle_lines[i][j] == '-')
+                            actualsum++;
+                        else if (isdigit(tle_lines[i][j]))
+                            actualsum += tle_lines[i][j] - '0';
+                    }
+
+                    checksum_good = checksum == actualsum % 10;
+                    if (!checksum_good)
+                        break;
+                }
+                if (!checksum_good)
+                {
+                    tle_lines.pop_front();
+                    continue;
+                }
+
+                int norad;
+                try
+                {
+                    std::string noradstr = tle_lines[2].substr(2, tle_lines[2].substr(2, tle_lines[2].size() - 1).find(' '));
+                    norad = std::stoi(noradstr);
+                }
+                catch (std::exception&)
+                {
+                    tle_lines.pop_front();
+                    continue;
+                }
+
+                new_registry.push_back({norad, tle_lines[0], tle_lines[1], tle_lines[2]});
+                tle_lines.clear();
+                total_lines++;
+            }
+        }
+
+        //Sort and remove duplicates
+        sort(new_registry.begin(), new_registry.end(), [](TLE& a, TLE& b) { return a.name < b.name; });
+        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE& a, TLE& b) { return a.norad == b.norad; }),
+            new_registry.end());
+
+        return total_lines;
+    }
+
     void updateTLEFile(std::string path)
     {
         std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
@@ -20,8 +89,8 @@ namespace satdump
         if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
             std::filesystem::create_directories(std::filesystem::path(path).parent_path());
 
-        std::ofstream outfile(path + ".tmp");
         bool success = true;
+        TLERegistry new_registry;
 
         for (int norad : norads_to_fetch)
         {
@@ -42,8 +111,8 @@ namespace satdump
             {
                 if ((http_res = perform_http_request(url_str, result)) != 1)
                 {
-                    outfile << result;
-                    success = true;
+                    std::istringstream tle_stream(result);
+                    success = parseTLEStream(tle_stream, new_registry) > 0;
                 }
                 else
                     success = false;
@@ -59,94 +128,29 @@ namespace satdump
                 logger->warn("Failed to get TLE for %s", url_str.c_str());
         }
 
-        outfile.close();
-
         if (success)
         {
-            if (std::filesystem::exists(path))
-                std::filesystem::remove(path);
-            std::filesystem::rename(path + ".tmp", path);
+            std::ofstream outfile(path, std::ios::trunc);
+            for (TLE& tle : new_registry)
+                outfile << tle.name << std::endl << tle.line1 << std::endl << tle.line2 << std::endl << std::endl;
+            outfile.close();
+            logger->info("%zu TLEs loaded!", new_registry.size());
+            general_tle_registry = new_registry;
+            eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
         }
         else
-        {
             logger->error("Error updating TLEs. Not updated.");
-        }
-
-        if (std::filesystem::exists(path + ".tmp"))
-            std::filesystem::remove(path + ".tmp");
     }
 
     void loadTLEFileIntoRegistry(std::string path)
     {
         logger->info("Loading TLEs from " + path);
-
-        // Parse
         std::ifstream tle_file(path);
-
-        std::string line;
-        int line_count = 0;
-        int norad = 0;
-        bool found_bad = false;
-        std::string name, tle1, tle2;
-        while (getline(tle_file, line))
-        {
-            if (line_count % 3 == 0)
-            {
-                name = line;
-                name.erase(name.end() - 1); // Remove newline
-                name.erase(std::find_if(name.rbegin(), name.rend(), [](char &c)
-                                        { return c != ' '; })
-                               .base(),
-                           name.end()); // Remove useless spaces
-            }
-            else if (line_count % 3 == 1)
-            {
-                if (line.at(0) != '1')
-                {
-                    line_count = 0;
-                    found_bad = true;
-                    continue;
-                }
-                tle1 = line;
-            }
-            else if (line_count % 3 == 2)
-            {
-                if (line.at(0) != '2')
-                {
-                    line_count = 0;
-                    found_bad = true;
-                    continue;
-                }
-                tle2 = line;
-
-                try
-                {
-                    std::string noradstr = tle2.substr(2, tle2.substr(2, tle2.size() - 1).find(' '));
-                    norad = std::stoi(noradstr);
-                }
-                catch (std::exception&)
-                {
-                    line_count = 0;
-                    found_bad = true;
-                    continue;
-                }
-
-                // logger->trace("Add satellite " + name);
-                general_tle_registry.push_back({norad, name, tle1, tle2});
-            }
-
-            line_count++;
-        }
-
-        if (found_bad)
-            logger->warn("Bad TLEs found! Please verify your TLE file");
-
-        //Sort and remove duplicates
-        sort(general_tle_registry.begin(), general_tle_registry.end(), [](TLE& a, TLE& b) { return a.name < b.name; });
-        general_tle_registry.erase(std::unique(general_tle_registry.begin(), general_tle_registry.end(), [](TLE& a, TLE& b) { return a.norad == b.norad; }),
-            general_tle_registry.end());
-
-        logger->info("%zu TLEs loaded!", general_tle_registry.size());
+        TLERegistry new_registry;
+        parseTLEStream(tle_file, new_registry);
+        tle_file.close();
+        logger->info("%zu TLEs loaded!", new_registry.size());
+        general_tle_registry = new_registry;
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
@@ -162,21 +166,9 @@ namespace satdump
 
         if (perform_http_request(url_str, result) != 1)
         {
-            std::vector<std::string> lines = splitString(result, '\n');
-            TLE newTLE;
-            newTLE.name = lines[0];
-            newTLE.name.erase(newTLE.name.end() - 1); // Remove newline
-            newTLE.name.erase(std::find_if(newTLE.name.rbegin(), newTLE.name.rend(), [](char &c)
-                                           { return c != ' '; })
-                                  .base(),
-                              newTLE.name.end()); // Remove useless spaces
-            newTLE.line1 = lines[1];
-            newTLE.line2 = lines[2];
-
-            std::string noradstr = newTLE.line2.substr(2, newTLE.line2.substr(2, newTLE.line2.size() - 1).find(' '));
-            newTLE.norad = std::stoi(noradstr);
-
-            general_tle_registry.push_back(newTLE);
+            std::istringstream tle_stream(result);
+            int loaded_count = parseTLEStream(tle_stream, general_tle_registry);
+            logger->info("%d TLEs added!", loaded_count);
         }
 
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());

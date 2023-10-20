@@ -51,7 +51,7 @@ namespace service_discovery
 #endif
     }
 
-    void sendUdpPacket(char *address, int port, uint8_t *data, int len)
+    void sendUdpPacket(const char *address, int port, uint8_t *data, int len)
     {
 #if defined(_WIN32)
         WSADATA wsa;
@@ -124,9 +124,9 @@ namespace service_discovery
                 throw std::runtime_error("Error on recvfrom!");
 
             bool is_valid = true;
-            if (nrecv == cfg.req_pkt.size())
+            if (nrecv == (int)cfg.req_pkt.size())
             {
-                for (int i = 0; i < cfg.req_pkt.size(); i++)
+                for (size_t i = 0; i < cfg.req_pkt.size(); i++)
                     if (buffer_rx[i] != cfg.req_pkt[i])
                         is_valid = false;
             }
@@ -212,9 +212,9 @@ namespace service_discovery
                     throw std::runtime_error("Error on recvfrom!");
 
                 bool is_valid = true;
-                if (nrecv - 4 == cfg.rep_pkt.size())
+                if (nrecv - 4 == (int)cfg.rep_pkt.size())
                 {
-                    for (int i = 0; i < cfg.rep_pkt.size(); i++)
+                    for (size_t i = 0; i < cfg.rep_pkt.size(); i++)
                         if (buffer_rx[i] != cfg.rep_pkt[i])
                             is_valid = false;
                 }
