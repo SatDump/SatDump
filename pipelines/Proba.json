@@ -193,7 +193,7 @@
         }
     },
     "pvcc_s_dump": {
-        "name": "Proba-V Cubesat Companion S-Band Dump",
+        "name": "Proba-V-CC S-Band Dump",
         "live": true,
         "live_cfg": [
             [
@@ -238,6 +238,38 @@
                 }
             },
             "products": {}
+        }
+    },
+    "pvcc_x_dump": {
+        "name": "Proba-V-CC X-Band Dump",
+        "frequencies": [],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 25e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "oqpsk_mode": true,
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                "proba_instruments": {
+                    "satellite": "probaV_X"
+                }
+            }
         }
     }
 }
