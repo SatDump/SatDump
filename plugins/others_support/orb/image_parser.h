@@ -75,13 +75,13 @@ namespace orb
 
             image::Image<uint8_t> img = imgt.to8bits();
 
-            for (int i = 0; i < img.size(); i++)
+            for (size_t i = 0; i < img.size(); i++)
                 img[i] = imgt[i];
 
             if (decoded_imgs.count(channel) == 0)
                 decoded_imgs.emplace(channel, ImgStc());
 
-            if (last_timestamp != timestamp || decoded_imgs[channel].img.size() == 0)
+            if ((uint64_t)last_timestamp != timestamp || decoded_imgs[channel].img.size() == 0)
             {
                 if (decoded_imgs[channel].img.size() != 0)
                     saveAll();
@@ -128,7 +128,6 @@ namespace orb
             }
             else if (decoded_imgs.count(channel) > 0)
             {
-                auto &ch = decoded_imgs[channel];
                 std::string path = dirpath +
                                    "/" +
                                    std::to_string(channel);

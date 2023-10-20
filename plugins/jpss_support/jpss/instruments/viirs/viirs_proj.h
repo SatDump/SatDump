@@ -120,7 +120,7 @@ public:
             auto &aggr_mode_c = is_noaa20 ? aggr_mode_jpss1 : aggr_mode_normal;
 
             int all_px = 0, all_px2 = 0;
-            for (int zone = 0; zone < aggr_mode_c.size(); zone++)
+            for (size_t zone = 0; zone < aggr_mode_c.size(); zone++)
             {
                 all_px += aggr_width[zone] * aggr_inter[31 - (aggr_mode_c[zone] - 1)];
                 all_px2 += aggr_width[zone];
@@ -132,7 +132,7 @@ public:
             int current_zoff = 0;
             int current_zoff2 = 0;
             int current_zone = 0;
-            while (current_zone < aggr_mode_c.size())
+            while (current_zone < (int)aggr_mode_c.size())
             {
                 if ((current_zoff + aggr_width[current_zone]) >= final_x)
                     break;

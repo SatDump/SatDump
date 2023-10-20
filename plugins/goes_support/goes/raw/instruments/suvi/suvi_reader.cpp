@@ -37,7 +37,7 @@ namespace goes
                 {
                     image::Image<uint16_t> suvi_img(current_frame + 105, 1330, 1295, 1);
                     suvi_img.crop(0, 3, 0 + 1280, 3 + 1284);
-                    for (int i = 0; i < suvi_img.size(); i++)
+                    for (size_t i = 0; i < suvi_img.size(); i++)
                         suvi_img[i] = suvi_img.clamp(int(suvi_img[i]) << 5);
                     suvi_img.save_img(directory + "/SUVI_" + std::to_string(img_cnt++));
                 }

@@ -32,7 +32,7 @@ namespace fengyun3
             if (marker == 2) // End
             {
                 for (int i = 0; i < 30044 / 2; i++)
-                    if (cnt * 1073 + i < image.size()) // Avoid running out if data is shifted. Still can occur in normal ops!
+                    if (cnt * 1073 + i < (int)image.size()) // Avoid running out if data is shifted. Still can occur in normal ops!
                         image[cnt * 1073 + i] = packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1];
             }
             else if (marker == 1) // Start
@@ -46,7 +46,7 @@ namespace fengyun3
             else // Middle
             {
                 for (int i = 0; i < 64380 / 2; i++)
-                    if (cnt * 1073 + i < image.size()) // Avoid running out if data is shifted. Still can occur in normal ops!
+                    if (cnt * 1073 + i < (int)image.size()) // Avoid running out if data is shifted. Still can occur in normal ops!
                         image[cnt * 1073 + i] = packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1];
             }
         }
