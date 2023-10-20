@@ -149,7 +149,7 @@ namespace jpss
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = avg_overflowless(atms_reader.timestamps);
+            dataset.timestamp = get_median(atms_reader.timestamps);
 
             // Satellite ID
             {

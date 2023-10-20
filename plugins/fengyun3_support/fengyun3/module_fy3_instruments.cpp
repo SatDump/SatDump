@@ -472,17 +472,17 @@ namespace fengyun3
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             if ((d_satellite == FY_AB || d_satellite == FY_3C) && d_downlink == AHRPT)
-                dataset.timestamp = avg_overflowless(virr_reader.timestamps);
+                dataset.timestamp = get_median(virr_reader.timestamps);
             else if (d_satellite == FY_AB && d_downlink == MPT)
-                dataset.timestamp = avg_overflowless(mersi1_reader.timestamps);
+                dataset.timestamp = get_median(mersi1_reader.timestamps);
             else if (d_satellite == FY_3D)
-                dataset.timestamp = avg_overflowless(mersi2_reader.timestamps);
+                dataset.timestamp = get_median(mersi2_reader.timestamps);
             else if (d_satellite == FY_3E)
-                dataset.timestamp = avg_overflowless(mersill_reader.timestamps);
+                dataset.timestamp = get_median(mersill_reader.timestamps);
             else if (d_satellite == FY_3F)
-                dataset.timestamp = avg_overflowless(mersi3_reader.timestamps);
+                dataset.timestamp = get_median(mersi3_reader.timestamps);
             else if (d_satellite == FY_3G)
-                dataset.timestamp = avg_overflowless(mersirm_reader.timestamps);
+                dataset.timestamp = get_median(mersirm_reader.timestamps);
 
             // Satellite ID
             {
@@ -609,7 +609,7 @@ namespace fengyun3
 
                 if (d_write_c10)
                 {
-                    virr_to_c10->close(avg_overflowless(virr_reader.timestamps), scid);
+                    virr_to_c10->close(get_median(virr_reader.timestamps), scid);
                     delete virr_to_c10;
                 }
 

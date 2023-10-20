@@ -160,7 +160,7 @@ namespace eos
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {
-                dataset.timestamp = avg_overflowless(modis_reader.timestamps_1000);
+                dataset.timestamp = get_median(modis_reader.timestamps_1000);
 
                 modis_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MODIS";

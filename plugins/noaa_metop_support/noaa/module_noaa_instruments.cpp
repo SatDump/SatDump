@@ -136,7 +136,7 @@ namespace noaa
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = avg_overflowless(avhrr_reader.timestamps);
+                dataset.timestamp = get_median(avhrr_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
