@@ -339,7 +339,7 @@ namespace satdump
 
                         ImGui::BeginGroup();
                         FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 76 * ui_scale);
-                        ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
+                        ImGui::ProgressBar(layer.progress/2, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
                         ImGui::EndGroup();
                     }
                     ImGui::EndGroup();
