@@ -31,6 +31,7 @@
                 "value": 3e6
             },
             "year_override": {
+                "type":"int",
                 "value": -1,
                 "name": "Year Override",
                 "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
@@ -93,6 +94,7 @@
                 "value": 6e6
             },
             "year_override": {
+                "type":"int",
                 "value": -1,
                 "name": "Year Override",
                 "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
@@ -149,6 +151,7 @@
                 "value": 6e6
             },
             "year_override": {
+                "type":"int",
                 "value": -1,
                 "name": "Year Override",
                 "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
