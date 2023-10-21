@@ -15,6 +15,9 @@ namespace satdump
 {
     re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
     int osm_url_regex_len = 0;
+    float general_progress = 0;
+    float general_sum = 1;
+    float *progress_pointer = NULL;
 
     void ViewerApplication::drawProjectionPanel()
     {
@@ -95,9 +98,9 @@ namespace satdump
             }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
-                if(projections_are_generating)
+                if (projections_are_generating)
                     ImGui::SetTooltip("Generating, please wait...");
-                if(projection_layers.size() == 0)
+                if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
             }
 
@@ -106,7 +109,7 @@ namespace satdump
             if (ImGui::Button("Save Projected Image"))
             {
                 ui_thread_pool.push([this](int)
-                    {   projections_are_generating = true;
+                                    {   projections_are_generating = true;
                         logger->info("Saving Projection...");
                         std::string saved_at = save_image_dialog("projection", "Save Projection", &projected_image_result, &viewer_app->save_type);
 
@@ -161,6 +164,7 @@ namespace satdump
             {
                 if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
                 {
+                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
                     ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
                     ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
                     ImGui::RadioButton("Other", &selected_external_type, 1);
@@ -366,6 +370,13 @@ namespace satdump
                 }
                 ImGui::EndListBox();
             }
+            if (!(projections_are_generating || is_opening_layer))
+                style::beginDisabled();
+
+            ImGui::ProgressBar((general_progress + (progress_pointer == NULL ? 0 : *(progress_pointer))) / general_sum);
+            
+            if (!(projections_are_generating || is_opening_layer))
+                style::endDisabled();
 
             if (projections_are_generating || projection_layers.size() == 0)
                 style::beginDisabled();
@@ -414,6 +425,8 @@ namespace satdump
     void ViewerApplication::generateProjectionImage()
     {
         projections_are_generating = true;
+        general_progress = 0;
+        general_sum = 0;
 
         nlohmann::json cfg; //= nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
 
@@ -460,6 +473,18 @@ namespace satdump
         projected_image_result.init(projections_image_width, projections_image_height, 3);
         projected_image_result.init_font(resources::getResourcePath("fonts/font.ttf"));
 
+        for (int i = projection_layers.size() - 1; i >= 0; i--)
+        {
+            ProjectionLayer &layer = projection_layers[i];
+            if (!layer.enabled)
+                continue;
+            general_sum++;
+        }
+        general_sum += projections_draw_map_overlay;
+        general_sum += projections_draw_cities_overlay;
+        general_sum += projections_draw_latlon_overlay;
+        general_sum += projections_draw_shores_overlay;
+
         // Generate all layers
         std::vector<image::Image<uint16_t>> layers_images;
 
@@ -468,6 +493,7 @@ namespace satdump
             ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
                 continue;
+            progress_pointer = &layer.progress;
 
             if (layer.type == 0)
             {
@@ -480,6 +506,7 @@ namespace satdump
                 // img.to_rgb();
                 layers_images.push_back(img);
             }
+            general_progress++;
         }
 
         logger->info("Combining images...");
@@ -521,6 +548,7 @@ namespace satdump
                                            projected_image_result,
                                            color,
                                            proj_func);
+            general_progress++;
         }
 
         // Draw map shorelines
@@ -532,6 +560,7 @@ namespace satdump
                                            projected_image_result,
                                            color,
                                            proj_func);
+            general_progress++;
         }
 
         // Draw cities points
@@ -546,6 +575,7 @@ namespace satdump
                                             projections_cities_size,
                                             cities_type,
                                             cities_scale_rank);
+            general_progress++;
         }
 
         // Draw latlon grid
@@ -556,11 +586,13 @@ namespace satdump
             map::drawProjectedMapLatLonGrid(projected_image_result,
                                             color,
                                             proj_func);
+            general_progress++;
         }
 
         // Update ImageView
         projection_image_widget.update(projected_image_result);
-
+        general_progress = general_sum;
+        progress_pointer = NULL;
         projections_are_generating = false;
     }
 
