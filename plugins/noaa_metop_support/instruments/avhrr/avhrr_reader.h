@@ -47,7 +47,7 @@ namespace noaa_metop
             nlohmann::json calib_out;
 
         public:
-            AVHRRReader(bool gac);
+            AVHRRReader(bool gac, int year);
             ~AVHRRReader();
             void work_metop(ccsds::CCSDSPacket &packet);
             void work_noaa(uint16_t *buffer);

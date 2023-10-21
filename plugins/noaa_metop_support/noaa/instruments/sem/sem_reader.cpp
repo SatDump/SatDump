@@ -6,7 +6,7 @@ namespace noaa
 {
     namespace sem
     {
-        SEMReader::SEMReader()
+        SEMReader::SEMReader(int year) : ttp(year)
         {
             for (int i = 0; i < 62; i++)
             {

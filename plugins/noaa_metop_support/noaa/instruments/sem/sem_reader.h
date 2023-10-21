@@ -37,7 +37,7 @@ namespace noaa
                     "0DPM", "3DPM", "0PBKL", "0PBKH", "3PBKL", "3PBKH",
                     "0EBKL", "0EBKH", "3EBKL", "3EBKH"};
 
-            SEMReader();
+            SEMReader(int year);
             ~SEMReader();
             void work(uint8_t *buffer);
             std::vector<int> getChannel(int channel);

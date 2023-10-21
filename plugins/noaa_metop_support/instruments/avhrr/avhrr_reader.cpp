@@ -7,7 +7,7 @@ namespace noaa_metop
 {
     namespace avhrr
     {
-        AVHRRReader::AVHRRReader(bool gac) : gac_mode(gac), width(gac_mode ? 409 : 2048)
+        AVHRRReader::AVHRRReader(bool gac, int year) : gac_mode(gac), width(gac_mode ? 409 : 2048), ttp(year)
         {
             for (int i = 0; i < 6; i++)
                 channels[i].resize(width);

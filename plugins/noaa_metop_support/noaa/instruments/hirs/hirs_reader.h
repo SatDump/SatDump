@@ -19,7 +19,7 @@ namespace noaa
             unsigned int last = 0;
 
         public:
-            HIRSReader();
+            HIRSReader(int year);
             ~HIRSReader();
             int line = 0;
             void work(uint8_t *buffer);

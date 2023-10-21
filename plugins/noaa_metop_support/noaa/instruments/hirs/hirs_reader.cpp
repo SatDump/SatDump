@@ -7,7 +7,7 @@ namespace noaa
 {
     namespace hirs
     {
-        HIRSReader::HIRSReader()
+        HIRSReader::HIRSReader(int year) : ttp(year)
         {
             for (int i = 0; i < 20; i++)
                 channels[i].resize(56);

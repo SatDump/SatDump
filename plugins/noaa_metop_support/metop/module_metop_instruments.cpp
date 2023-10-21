@@ -20,7 +20,7 @@ namespace metop
     namespace instruments
     {
         MetOpInstrumentsDecoderModule::MetOpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters), avhrr_reader(false)
+            : ProcessingModule(input_file, output_file_hint, parameters), avhrr_reader(false, -1)
         {
             write_hpt = parameters.contains("write_hpt") ? parameters["write_hpt"].get<bool>() : false;
         }

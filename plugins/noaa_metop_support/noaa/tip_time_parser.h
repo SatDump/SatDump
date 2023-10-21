@@ -11,7 +11,7 @@ namespace noaa
         time_t dayYearValue = 0;
 
     public:
-        TIPTimeParser()
+        TIPTimeParser(int year_ov)
         {
             time_t curr_time = time(NULL);
             struct tm timeinfo_struct;
@@ -27,6 +27,9 @@ namespace noaa
             timeinfo_struct.tm_sec = 0;
             timeinfo_struct.tm_min = 0;
             timeinfo_struct.tm_hour = 0;
+
+            if (year_ov != -1)
+                timeinfo_struct.tm_year = year_ov;
 
 #ifdef _WIN32
             dayYearValue = _mkgmtime(&timeinfo_struct);
