@@ -99,8 +99,6 @@ namespace meteor
 
             image::Image<uint8_t> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
             {
-                timestamps.clear();
-
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
 
@@ -121,6 +119,8 @@ namespace meteor
                 lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
 
                 uint32_t index = 0;
+                if(lastSeg_l != 0)
+                    timestamps.clear();
                 for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
                 {
                     bool hasDoneTimestamps = false;
