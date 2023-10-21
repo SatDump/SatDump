@@ -28,8 +28,8 @@ namespace noaa
             timeinfo_struct.tm_min = 0;
             timeinfo_struct.tm_hour = 0;
 
-            if (year_ov != -1)
-                timeinfo_struct.tm_year = year_ov-1900;
+            if (year_ov != -1) // year override
+                timeinfo_struct.tm_year = year_ov - 1900;
 
 #ifdef _WIN32
             dayYearValue = _mkgmtime(&timeinfo_struct);
