@@ -274,11 +274,9 @@ namespace satdump
                         waterfall_plot->set_rate(fft_rate, waterfall_rate);
                         logger->info("Set Waterfall rate to %d", fft_rate);
                     }
-
                     widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
                     widgets::SteppedSliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99, 0.1);
-
                     if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                         waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
                     ImGui::Checkbox("Show Waterfall", &show_waterfall);

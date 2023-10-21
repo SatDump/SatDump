@@ -21,21 +21,23 @@ namespace widgets
         ImGui::PushButtonRepeat(true);
         if (ImGui::Button("-", ImVec2(button_size, button_size)))
         {
-            retval = true;
             if (*v - v_rate < v_min)
                 *v = v_min;
             else
                 *v -= v_rate;
         }
+        if(ImGui::IsItemDeactivated())
+            retval = true;
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         if (ImGui::Button("+", ImVec2(button_size, button_size)))
         {
-            retval = true;
             if (*v + v_rate > v_max)
                 *v = v_max;
             else
                 *v += v_rate;
         }
+        if (ImGui::IsItemDeactivated())
+            retval = true;
         ImGui::PopButtonRepeat();
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         ImGui::TextUnformatted(label);
@@ -63,7 +65,6 @@ namespace widgets
         ImGui::PushButtonRepeat(true);
         if (ImGui::Button("-", ImVec2(button_size, button_size)))
         {
-            retval = true;
             if (ImGui::IsKeyDown(ImGuiKey_ModShift))
                 v_rate /= 10;
             else if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
@@ -74,10 +75,11 @@ namespace widgets
             else
                 *v -= v_rate;
         }
+        if (ImGui::IsItemDeactivated())
+            retval = true;
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         if (ImGui::Button("+", ImVec2(button_size, button_size)))
         {
-            retval = true;
             if (ImGui::IsKeyDown(ImGuiKey_ModShift))
                 v_rate /= 10;
             else if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
@@ -88,6 +90,8 @@ namespace widgets
             else
                 *v += v_rate;
         }
+        if (ImGui::IsItemDeactivated())
+            retval = true;
         ImGui::PopButtonRepeat();
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         ImGui::TextUnformatted(label);
