@@ -3,6 +3,7 @@
 #include "common/projection/reprojector.h"
 #include "core/style.h"
 #include "common/map/map_drawer.h"
+#include "common/widgets/stepped_slider.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "main_ui.h"
 
@@ -207,16 +208,13 @@ namespace satdump
                 asyncUpdate();
             ImGui::SameLine();
             ImGui::ColorEdit3("##cities", (float*)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            ImGui::SliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500);
-            if (ImGui::IsItemDeactivatedAfterEdit() && cities_overlay)
+            if (widgets::SteppedSliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500) && cities_overlay)
                 asyncUpdate();
             static const char* items[] = { "Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)" };
             if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)) && cities_overlay)
                 asyncUpdate();
 
-            if (viewer_app->cities_type == 2)
-                ImGui::SliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10);
-            if (ImGui::IsItemDeactivatedAfterEdit() && cities_overlay)
+            if (viewer_app->cities_type == 2 && widgets::SteppedSliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10) && cities_overlay)
                 asyncUpdate();
 
             if (selected_visualization_id != 1)

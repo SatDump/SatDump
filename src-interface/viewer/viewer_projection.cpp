@@ -7,6 +7,7 @@
 #include "main_ui.h"
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
+#include "common/widgets/stepped_slider.h"
 #include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
@@ -395,12 +396,12 @@ namespace satdump
 
             ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
             ImGui::SameLine();
-            ImGui::ColorEdit3("##cities", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            ImGui::SliderInt("Cities Font Size##Projs", &projections_cities_size, 10, 500);
+            ImGui::ColorEdit3("##cities##Projs", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            widgets::SteppedSliderInt("Cities Font Size", &projections_cities_size, 10, 500);
             static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
-            ImGui::Combo("Cities Type", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
+            ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
             if (cities_type == 2)
-                ImGui::SliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
+                widgets::SteppedSliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
         }
 
         if (projections_should_refresh) // Refresh in the UI thread!
