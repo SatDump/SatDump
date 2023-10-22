@@ -6,12 +6,15 @@
 #include "products/radiation_products.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
+#include "libs/ctpl/ctpl_stl.h"
 
 namespace satdump
 {
     class RadiationViewerHandler : public ViewerHandler
     {
     public:
+        ~RadiationViewerHandler();
+
         // Products
         RadiationProducts *products;
 
@@ -51,6 +54,7 @@ namespace satdump
         unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
         void setShouldProject(bool proj) { should_project = proj; }
 
+        ctpl::thread_pool handler_thread_pool = ctpl::thread_pool(1);
         std::mutex async_image_mutex;
         bool is_updating = false;
     };
