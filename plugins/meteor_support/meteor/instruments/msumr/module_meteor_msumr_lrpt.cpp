@@ -119,7 +119,7 @@ namespace meteor
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = time(0); // avg_overflowless(msureader.timestamps);
+            dataset.timestamp = get_median(msureader.timestamps);
 
             // Satellite ID
             {
