@@ -102,6 +102,20 @@
                 1694.1e6
             ]
         ],
+        "parameters": {
+            "write_dcs": {
+                "type": "bool",
+                "value": true,
+                "name": "Save DCS LRIT",
+                "description": "Save DCS LRIT for processing\nin another program"
+            },
+            "write_lrit": {
+                "type": "bool",
+                "value": false,
+                "name": "Save All LRIT",
+                "description": "Save all unprocessed LRIT files"
+            }
+        },
         "samplerate": 6e6,
         "work": {
             "baseband": {},
@@ -130,9 +144,7 @@
                     "write_images": true,
                     "write_emwin": true,
                     "write_messages": true,
-                    "write_dcs": true,
-                    "write_unknown": false,
-                    "write_lrit": false
+                    "write_unknown": false
                 }
             }
         }
