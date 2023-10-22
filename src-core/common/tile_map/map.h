@@ -21,8 +21,8 @@ struct tileMap
     int expiryTime;
 
     tileMap(std::string url = "http://tile.openstreetmap.org/{z}/{x}/{y}.png", std::string path = satdump::user_path + "/osm_tiles/", int expiry = 30);
-    image::Image<uint8_t> getMapImage(std::pair<float, float> coor, int zoom, std::pair<int, int> dim);
-    image::Image<uint8_t> getMapImage(std::pair<float, float> coor, std::pair<float, float> coor1, int zoom);
+    image::Image<uint8_t> getMapImage(std::pair<float, float> coor, int zoom, std::pair<int, int> dim, float *progress);
+    image::Image<uint8_t> getMapImage(std::pair<float, float> coor, std::pair<float, float> coor1, int zoom, float *progress);
     mapTile downloadTile(std::pair<int, int> t1, int zoom);
     std::pair<int, int> coorToTile(std::pair<float, float> coor, int zoom);
     std::pair<float, float> coorToTileF(std::pair<float, float> coor, int zoom);

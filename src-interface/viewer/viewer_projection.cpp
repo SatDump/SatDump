@@ -201,6 +201,7 @@ namespace satdump
                             auto genfun = [this](int)
                             {
                                 is_opening_layer = true;
+                                progress_pointer = new float;
 
                                 std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
                                 if (selected_external_type == 2)
@@ -240,7 +241,7 @@ namespace satdump
                                     }
                                     logger->info("Generating tile map");
                                     tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom).to16bits();
+                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, progress_pointer).to16bits();
                                 }
                                 else
                                     new_layer_cfg->img.load_img(projection_new_layer_file.getPath());
@@ -250,6 +251,7 @@ namespace satdump
                                 if (selected_external_type == 2)
                                     selected_external_type = 0;
 
+                                progress_pointer = NULL;
                                 projections_should_refresh = true;
                                 is_opening_layer = false;
                             };
