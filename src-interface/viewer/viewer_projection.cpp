@@ -202,6 +202,8 @@ namespace satdump
                             {
                                 is_opening_layer = true;
                                 progress_pointer = new float;
+                                general_progress = 0;
+                                general_sum = 1;
 
                                 std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
                                 if (selected_external_type == 2)
