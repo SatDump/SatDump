@@ -8,12 +8,15 @@
 #include "imgui/imgui_stdlib.h"
 #include "common/image/composite.h"
 #include "core/style.h"
+#include "libs/ctpl/ctpl_stl.h"
 
 namespace satdump
 {
     class ImageViewerHandler : public ViewerHandler
     {
     public:
+        ~ImageViewerHandler();
+
         // Products
         ImageProducts *products;
 
@@ -85,6 +88,7 @@ namespace satdump
         void init();
         void updateImage();
 
+        ctpl::thread_pool handler_thread_pool = ctpl::thread_pool(1);
         std::mutex async_image_mutex;
         void asyncUpdate();
         void updateRGB();

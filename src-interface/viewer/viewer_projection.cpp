@@ -21,6 +21,7 @@ namespace satdump
 
     void ViewerApplication::drawProjectionPanel()
     {
+        bool disable_buttons = projections_are_generating;
         if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Text("Output image : ");
@@ -85,8 +86,7 @@ namespace satdump
             ImGui::Separator();
             ImGui::Spacing();
 
-            bool beginGenHide = projections_are_generating;
-            if (projections_are_generating || projection_layers.size() == 0)
+            if (disable_buttons || projection_layers.size() == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
             {
@@ -127,7 +127,7 @@ namespace satdump
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
             }
-            if (beginGenHide || projection_layers.size() == 0)
+            if (disable_buttons || projection_layers.size() == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Layers"))
@@ -301,7 +301,7 @@ namespace satdump
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
                     // if (layer.type == 1)
                     {
-                        if (projections_are_generating)
+                        if (disable_buttons)
                             ImGui::BeginDisabled();
                         // Closing button
                         ImGui::SameLine();
@@ -332,7 +332,7 @@ namespace satdump
                             ImGui::SetTooltip("Wait for the processing to finish!");
                         ImGui::PopStyleColor();
                         ImGui::PopStyleColor();
-                        if (projections_are_generating)
+                        if (disable_buttons)
                             ImGui::EndDisabled();
                     }
                     if (layer.enabled)
@@ -374,15 +374,15 @@ namespace satdump
                 }
                 ImGui::EndListBox();
             }
-            if (!(projections_are_generating || is_opening_layer))
+            if (!(disable_buttons || is_opening_layer))
                 style::beginDisabled();
 
             ImGui::ProgressBar((general_progress + (progress_pointer == NULL ? 0 : *(progress_pointer))) / general_sum);
             
-            if (!(projections_are_generating || is_opening_layer))
+            if (!(disable_buttons || is_opening_layer))
                 style::endDisabled();
 
-            if (projections_are_generating || projection_layers.size() == 0)
+            if (disable_buttons || projection_layers.size() == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection##layers"))
             {
@@ -392,7 +392,7 @@ namespace satdump
                     generateProjectionImage();
                     logger->info("Done"); });
             }
-            if (projections_are_generating || projection_layers.size() == 0)
+            if (disable_buttons || projection_layers.size() == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))

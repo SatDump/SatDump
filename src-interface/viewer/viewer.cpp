@@ -192,7 +192,9 @@ namespace satdump
             }
 
             // Push products and handler
+            product_handler_mutex.lock();
             products_and_handlers.push_back(std::make_shared<ProductsHandler>(products, handler, dataset_name));
+            product_handler_mutex.unlock();
         }
     }
 
@@ -273,7 +275,13 @@ namespace satdump
                                     logger->info("Closing datset " + dataset_name);
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
                                         if (products_and_handlers[i]->dataset_name == dataset_name)
-                                            products_and_handlers[i]->marked_for_close = true;
+                                        {
+                                            if (products_and_handlers[i]->handler->shouldProject() && projections_are_generating)
+                                                logger->warn("%s is currently being projected and will not close",
+                                                    products_and_handlers[i]->products->instrument_name.c_str());
+                                            else
+                                                products_and_handlers[i]->marked_for_close = true;
+                                        }
                                 }
                                 ImGui::PopStyleColor();
                                 ImGui::PopStyleColor();
@@ -323,7 +331,9 @@ namespace satdump
                     {
                         if (products_and_handlers[i]->marked_for_close)
                         {
+                            product_handler_mutex.lock();
                             products_and_handlers.erase(products_and_handlers.begin() + i);
+                            product_handler_mutex.unlock();
                             if (current_handler_id >= (int)products_and_handlers.size())
                                 current_handler_id = 0;
                             break;

@@ -39,6 +39,16 @@ namespace satdump
         update();
     }
 
+    ScatterometerViewerHandler::~ScatterometerViewerHandler()
+    {
+        handler_thread_pool.stop();
+        for (int i = 0; i < handler_thread_pool.size(); i++)
+        {
+            if (handler_thread_pool.get_thread(i).joinable())
+                handler_thread_pool.get_thread(i).join();
+        }
+    }
+
     void ScatterometerViewerHandler::update()
     {
         if (selected_visualization_id == 0)
@@ -116,7 +126,8 @@ namespace satdump
 
     void ScatterometerViewerHandler::asyncUpdate()
     {
-        ui_thread_pool.push([this](int)
+        handler_thread_pool.clear_queue();
+        handler_thread_pool.push([this](int)
                     {   async_image_mutex.lock();
                             is_updating = true;
                             logger->info("Update image...");
@@ -162,7 +173,7 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Save"))
             {
-                ui_thread_pool.push([this](int)
+                handler_thread_pool.push([this](int)
                     {   async_image_mutex.lock();
                         is_updating = true;
                         logger->info("Saving Image...");

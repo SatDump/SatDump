@@ -6,12 +6,15 @@
 #include "products/scatterometer_products.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
+#include "libs/ctpl/ctpl_stl.h"
 
 namespace satdump
 {
     class ScatterometerViewerHandler : public ViewerHandler
     {
     public:
+        ~ScatterometerViewerHandler();
+
         // Products
         ScatterometerProducts *products;
 
@@ -54,6 +57,7 @@ namespace satdump
 
         void init();
 
+        ctpl::thread_pool handler_thread_pool = ctpl::thread_pool(1);
         std::mutex async_image_mutex;
         void asyncUpdate();
         void update();
