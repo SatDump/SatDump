@@ -80,7 +80,7 @@ namespace satdump
         virtual void drawContent();
 
         std::vector<std::string> opened_datasets;
-
+        std::mutex product_handler_mutex;
         std::vector<std::shared_ptr<ProductsHandler>> products_and_handlers;
         int products_cnt_in_dataset(std::string dataset_name)
         {
