@@ -267,7 +267,7 @@ namespace satdump
                     }
 
                     if (progress != nullptr)
-                        *progress = float(x) / float(projected_image.height());
+                        *progress = float(x) / float(projected_image.width());
                 }
             }
             else if (op.target_prj_info["type"] == "mercator")
@@ -305,7 +305,7 @@ namespace satdump
                     }
 
                     if (progress != nullptr)
-                        *progress = float(x) / float(projected_image.height());
+                        *progress = float(x) / float(projected_image.width());
                 }
             }
             else if (op.target_prj_info["type"] == "stereo")
