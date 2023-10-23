@@ -103,9 +103,12 @@
             ]
         ],
         "parameters": {
+            "samplerate": {
+                "value": 6e6
+            },
             "write_dcs": {
                 "type": "bool",
-                "value": true,
+                "value": false,
                 "name": "Save DCS LRIT",
                 "description": "Save DCS LRIT for processing\nin another program"
             },
@@ -116,7 +119,6 @@
                 "description": "Save all unprocessed LRIT files"
             }
         },
-        "samplerate": 6e6,
         "work": {
             "baseband": {},
             "soft": {

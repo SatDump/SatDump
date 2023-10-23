@@ -127,6 +127,8 @@ The aim of this is to list all possible satellite processing pipelines as well a
 
 - `goes_gvar`: GOES GVAR
 - `goes_hrit`: GOES-R HRIT
+  - `write_dcs`: Save DCS LRIT files 
+  - `write_lrit`: Write all LRIT files
 - `goes_hrit_tcp`: GOES-R HRIT to goestools
 - `goes_grb`: GOES-R GRB
 - `goesr_cda`: GOES_R CDA
