@@ -155,7 +155,7 @@ namespace satdump
                 }
 
                 if (progress != nullptr)
-                    *progress = float(x) / float(target_img.height());
+                    *progress = float(x) / float(target_img.width());
             }
         }
 
