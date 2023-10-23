@@ -323,7 +323,7 @@ namespace noaa
 
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
-                    if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                    if (calib_coefs.contains(sat_name))
                     {
                         mhs_reader.calibrate(calib_coefs[sat_name]);
                         mhs_products.set_calibration(mhs_reader.calib_out);
@@ -370,7 +370,7 @@ namespace noaa
 
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
-                    if (calib_coefs.contains(sat_name) && std::filesystem::exists(resources::getResourcePath("calibration/MHS.lua")))
+                    if (calib_coefs.contains(sat_name))
                     {
                         calib_coefs[sat_name]["all"] = calib_coefs["all"];
                         amsu_reader.calibrate(calib_coefs[sat_name]);
