@@ -10,6 +10,7 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "resources.h"
+#include "instruments/modis/modis_histmatch.h"
 
 namespace eos
 {
@@ -192,6 +193,7 @@ namespace eos
                 for (int i = 0; i < 2; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage250m(i);
+                    // modis::modis_match_detector_histograms(image, 1 /*4*/, 40 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
                     modis_products.images.push_back({"MODIS-" + std::to_string(i + 1), std::to_string(i + 1), image});
@@ -200,6 +202,7 @@ namespace eos
                 for (int i = 0; i < 5; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage500m(i);
+                    // modis::modis_match_detector_histograms(image, 1 /*2*/, 20 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
                     modis_products.images.push_back({"MODIS-" + std::to_string(i + 3), std::to_string(i + 3), image});
@@ -208,6 +211,8 @@ namespace eos
                 for (int i = 0; i < 31; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage1000m(i);
+
+                    // modis::modis_match_detector_histograms(image, 1, 10 * 2);
 
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
