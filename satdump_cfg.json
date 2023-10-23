@@ -919,13 +919,9 @@
                         "equalize": true,
                         "geo_correct": true
                     },
-                    "3(24)1": {
+                    "MERSI False Color": {
                         "equation": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
                         "individual_equalize": true,
-                        "geo_correct": true
-                    },
-                    "17.19.18": {
-                        "equation": "ch17, ch19, ch18",
                         "geo_correct": true
                     },
                     "9.12.11": {
@@ -933,13 +929,8 @@
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "441": {
+                    "AVHRR 221 False COlor": {
                         "equation": "ch4, ch4, ch1",
-                        "geo_correct": true
-                    },
-                    "5 individual_equalized": {
-                        "equation": "1.0 - ch5",
-                        "individual_equalize": true,
                         "geo_correct": true
                     },
                     "Thermal Channel": {
@@ -952,6 +943,25 @@
                         "individual_equalize": true,
                         "geo_correct": true,
                         "white_balance": true
+                    },
+                    "7.46 µm Water Vapor": {
+                        "equation": "1 - ch12",
+                        "individual_equalize": true,
+                        "apply_lut": true,
+                        "geo_correct": true
+                    },
+                    "WXtoImg NO": {
+                        "lut": "lut/WXtoImg-NO_mod_meteor.png",
+                        "channels": "ch4, ch5",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "individual_equalize": true,
+                        "draw_map": true,
+                        "map_overlay_colors": [
+                            1,
+                            1,
+                            0
+                        ]
                     }
                 }
             },
