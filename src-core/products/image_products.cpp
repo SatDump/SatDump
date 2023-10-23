@@ -8,6 +8,7 @@
 #include "libs/sol2/sol.hpp"
 #include "common/lua/lua_utils.h"
 #include "common/calibration.h"
+#include "core/plugin.h"
 
 namespace satdump
 {
@@ -145,28 +146,44 @@ namespace satdump
 
     void ImageProducts::init_calibration()
     {
-        lua_mutex.lock();
-        if (lua_state_ptr == nullptr)
-        {
-            lua_state_ptr = new sol::state();
-            sol::state &lua = *((sol::state *)lua_state_ptr);
+        calib_mutex.lock();
+        if (contents["calibration"].contains("lua"))
+        { // Lua-based calibration
+            if (lua_state_ptr == nullptr)
+            {
+                lua_state_ptr = new sol::state();
+                sol::state &lua = *((sol::state *)lua_state_ptr);
 
-            lua.open_libraries(sol::lib::base);
-            lua.open_libraries(sol::lib::string);
-            lua.open_libraries(sol::lib::math);
+                lua.open_libraries(sol::lib::base);
+                lua.open_libraries(sol::lib::string);
+                lua.open_libraries(sol::lib::math);
 
-            lua["wavenumbers"] = contents["calibration"]["wavenumbers"].get<std::vector<double>>();
-            lua["lua_vars"] = lua_utils::mapJsonToLua(lua, contents["calibration"]["lua_vars"]);
+                lua["wavenumbers"] = contents["calibration"]["wavenumbers"].get<std::vector<double>>();
+                lua["lua_vars"] = lua_utils::mapJsonToLua(lua, contents["calibration"]["lua_vars"]);
 
-            std::string lua_code = contents["calibration"]["lua"].get<std::string>();
-            lua.script(lua_code);
+                std::string lua_code = contents["calibration"]["lua"].get<std::string>();
+                lua.script(lua_code);
 
-            lua["init"].call();
+                lua["init"].call();
 
-            lua_comp_func_ptr = new sol::function();
-            *((sol::function *)lua_comp_func_ptr) = lua["compute"];
+                lua_comp_func_ptr = new sol::function();
+                *((sol::function *)lua_comp_func_ptr) = lua["compute"];
+            }
         }
-        lua_mutex.unlock();
+        else if (contents["calibration"].contains("calibrator"))
+        { // Callback-based calibration
+            std::string calibrator_id = contents["calibration"]["calibrator"].get<std::string>();
+
+            std::vector<std::shared_ptr<CalibratorBase>> calibrators;
+            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"]});
+            if (calibrators.size() > 0)
+                calibrator_ptr = calibrators[0];
+            else
+                logger->error("Requested calibrator " + calibrator_id + " does not exist!");
+
+            calibrator_ptr->init();
+        }
+        calib_mutex.unlock();
     }
 
     ImageProducts::~ImageProducts()
@@ -176,14 +193,22 @@ namespace satdump
             delete (sol::function *)lua_comp_func_ptr;
             delete (sol::state *)lua_state_ptr;
         }
+        if (calibrator_ptr != nullptr)
+        {
+            calibrator_ptr.reset();
+        }
     }
 
     double ImageProducts::get_calibrated_value(int image_index, int x, int y)
     {
-        lua_mutex.lock();
+        calib_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
-        double val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
-        lua_mutex.unlock();
+        double val2;
+        if (calibrator_ptr != nullptr)
+            val2 = calibrator_ptr->compute(image_index, x, y, val);
+        else if (lua_state_ptr != nullptr)
+            val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+        calib_mutex.unlock();
         return val2;
     }
 

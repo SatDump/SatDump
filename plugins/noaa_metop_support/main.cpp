@@ -1,6 +1,7 @@
 #include "core/plugin.h"
 #include "logger.h"
 #include "core/module.h"
+#include "products/image_products.h"
 
 #include "metop/module_metop_ahrpt_decoder.h"
 #include "metop/module_metop_dump_decoder.h"
@@ -10,6 +11,8 @@
 #include "noaa/module_noaa_gac_decoder.h"
 #include "noaa/module_noaa_dsb_decoder.h"
 #include "noaa/module_noaa_instruments.h"
+
+#include "instruments/avhrr/avhrr_calibrator.h"
 
 class NOAAMetOpSupport : public satdump::Plugin
 {
@@ -22,6 +25,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -34,6 +38,12 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa::NOAAGACDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa::NOAADSBDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa::instruments::NOAAInstrumentsDecoderModule);
+    }
+
+    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    {
+        if (evt.id == "noaa_avhrr3")
+            evt.calibrators.push_back(std::make_shared<NoaaAVHRR3Calibrator>(evt.calib));
     }
 };
 

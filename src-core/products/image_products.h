@@ -142,6 +142,25 @@ namespace satdump
             CALIB_VTYPE_TEMPERATURE,
         };
 
+        class CalibratorBase
+        {
+        public:
+            const nlohmann::json d_calib;
+
+        public:
+            CalibratorBase(nlohmann::json calib) : d_calib(calib) {}
+            ~CalibratorBase() {}
+            virtual void init() = 0;
+            virtual double compute(int image_index, int x, int y, int val) = 0;
+        };
+
+        struct RequestCalibratorEvent
+        {
+            std::string id;
+            std::vector<std::shared_ptr<CalibratorBase>> &calibrators;
+            nlohmann::json calib;
+        };
+
         bool has_calibation()
         {
             return contents.contains("calibration");
@@ -223,7 +242,8 @@ namespace satdump
 
     private:
         std::map<int, image::Image<uint16_t>> calibrated_img_cache;
-        std::mutex lua_mutex;
+        std::mutex calib_mutex;
+        std::shared_ptr<CalibratorBase> calibrator_ptr = nullptr;
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
         void *lua_comp_func_ptr = nullptr;
     };
