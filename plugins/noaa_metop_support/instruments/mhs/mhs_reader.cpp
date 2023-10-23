@@ -122,7 +122,8 @@ namespace noaa_metop
         {
             // declare all the variables
             calib = calib_coefs;
-            calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+            //calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+            calib_out["calibrator"] = "noaa_mhs";
 
             uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end());
             PIE_buff.clear();
@@ -188,7 +189,7 @@ namespace noaa_metop
                     ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][0] + calib_lines[l].calibration_views[i][1]) / pow(G, 2.0));
                     ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
                 }
-                calib_out["lua_vars"]["perLine_perChannel"].push_back(ln);
+                calib_out["vars"]["perLine_perChannel"].push_back(ln);
                 calib_out["wavenumbers"] = calib["wavenumber"];
             }
         }

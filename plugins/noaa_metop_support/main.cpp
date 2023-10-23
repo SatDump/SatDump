@@ -13,6 +13,7 @@
 #include "noaa/module_noaa_instruments.h"
 
 #include "instruments/avhrr/avhrr_calibrator.h"
+#include "instruments/mhs/mhs_calibrator.h"
 
 class NOAAMetOpSupport : public satdump::Plugin
 {
@@ -44,6 +45,8 @@ public:
     {
         if (evt.id == "noaa_avhrr3")
             evt.calibrators.push_back(std::make_shared<NoaaAVHRR3Calibrator>(evt.calib));
+        else if (evt.id == "noaa_mhs" || evt.id == "noaa_amsu")
+            evt.calibrators.push_back(std::make_shared<NoaaMHSCalibrator>(evt.calib));
     }
 };
 

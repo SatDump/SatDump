@@ -156,7 +156,8 @@ namespace noaa_metop
         void AMSUReader::calibrate(nlohmann::json calib_coefs)
         {
             calib = calib_coefs;
-            calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+            //calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+            calib_out["calibrator"] = "noaa_mhs";
 
             double temps_A1[45];
             double temps_A2[19];
@@ -221,7 +222,7 @@ namespace noaa_metop
                     ln[c + 2]["a2"] = u / (G * G);
                 }
 
-                calib_out["lua_vars"]["perLine_perChannel"].push_back(ln);
+                calib_out["vars"]["perLine_perChannel"].push_back(ln);
             }
             // ##############
             // ##### A1 #####
@@ -271,9 +272,9 @@ namespace noaa_metop
                         {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["A2"]["u"][2][c].get<double>()},
                         temps_A2[calib["A2"]["instrument_temerature_sensor_id"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
 
-                    calib_out["lua_vars"]["perLine_perChannel"][l][c]["a0"] = Rw - (calibration_views_A2[c][l].blackbody / G) + u * (calibration_views_A2[c][l].blackbody * calibration_views_A2[c][l].space) / (G * G);
-                    calib_out["lua_vars"]["perLine_perChannel"][l][c]["a1"] = 1 / G - u * (calibration_views_A2[c][l].blackbody + calibration_views_A2[c][l].space) / (G * G);
-                    calib_out["lua_vars"]["perLine_perChannel"][l][c]["a2"] = u / (G * G);
+                    calib_out["vars"]["perLine_perChannel"][l][c]["a0"] = Rw - (calibration_views_A2[c][l].blackbody / G) + u * (calibration_views_A2[c][l].blackbody * calibration_views_A2[c][l].space) / (G * G);
+                    calib_out["vars"]["perLine_perChannel"][l][c]["a1"] = 1 / G - u * (calibration_views_A2[c][l].blackbody + calibration_views_A2[c][l].space) / (G * G);
+                    calib_out["vars"]["perLine_perChannel"][l][c]["a2"] = u / (G * G);
                 }
             }
             // ##############
