@@ -18,11 +18,22 @@ namespace satdump
         update();
     }
 
+    RadiationViewerHandler::~RadiationViewerHandler()
+    {
+        handler_thread_pool.stop();
+        for (int i = 0; i < handler_thread_pool.size(); i++)
+        {
+            if (handler_thread_pool.get_thread(i).joinable())
+                handler_thread_pool.get_thread(i).join();
+        }
+    }
+
     void RadiationViewerHandler::update()
     {
         if (selected_visualization_id == 0)
         {
-            ui_thread_pool.push([this](int)
+            handler_thread_pool.clear_queue();
+            handler_thread_pool.push([this](int)
                             {   async_image_mutex.lock();
                                     is_updating = true;
                                     logger->info("Update map...");
@@ -80,7 +91,7 @@ namespace satdump
 
             if (ImGui::Button("Save"))
             {
-                ui_thread_pool.push([this](int)
+                handler_thread_pool.push([this](int)
                     {   async_image_mutex.lock();
                         is_updating = true;
                         logger->info("Saving Image...");
