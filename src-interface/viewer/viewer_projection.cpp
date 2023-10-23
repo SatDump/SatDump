@@ -17,7 +17,7 @@ namespace satdump
     int osm_url_regex_len = 0;
     float general_progress = 0;
     float general_sum = 1;
-    float *progress_pointer = NULL;
+    float *progress_pointer = nullptr;
 
     void ViewerApplication::drawProjectionPanel()
     {
@@ -201,7 +201,8 @@ namespace satdump
                             auto genfun = [this](int)
                             {
                                 is_opening_layer = true;
-                                progress_pointer = new float;
+                                if (progress_pointer == nullptr)
+                                    progress_pointer = new float;
                                 general_progress = 0;
                                 general_sum = 1;
 
@@ -253,7 +254,7 @@ namespace satdump
                                 if (selected_external_type == 2)
                                     selected_external_type = 0;
 
-                                progress_pointer = NULL;
+                                progress_pointer = nullptr;
                                 projections_should_refresh = true;
                                 is_opening_layer = false;
                             };
@@ -343,7 +344,7 @@ namespace satdump
 
                         ImGui::BeginGroup();
                         FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 76 * ui_scale);
-                        ImGui::ProgressBar(layer.progress/2, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
+                        ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
                         ImGui::EndGroup();
                     }
                     ImGui::EndGroup();
@@ -377,7 +378,7 @@ namespace satdump
             if (!(disable_buttons || is_opening_layer))
                 style::beginDisabled();
 
-            ImGui::ProgressBar((general_progress + (progress_pointer == NULL ? 0 : *(progress_pointer))) / general_sum);
+            ImGui::ProgressBar((general_progress + (progress_pointer == nullptr ? 0 : *(progress_pointer))) / general_sum);
             
             if (!(disable_buttons || is_opening_layer))
                 style::endDisabled();
@@ -497,7 +498,8 @@ namespace satdump
             ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
                 continue;
-            progress_pointer = &layer.progress;
+            if(progress_pointer == nullptr)
+                progress_pointer = &layer.progress;
 
             if (layer.type == 0)
             {
@@ -596,7 +598,7 @@ namespace satdump
         // Update ImageView
         projection_image_widget.update(projected_image_result);
         general_progress = general_sum;
-        progress_pointer = NULL;
+        progress_pointer = nullptr;
         projections_are_generating = false;
     }
 
