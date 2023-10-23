@@ -597,7 +597,8 @@ namespace satdump
 
         // Update ImageView
         projection_image_widget.update(projected_image_result);
-        general_progress = general_sum;
+        general_sum = 1;
+        general_progress = 1;
         progress_pointer = nullptr;
         projections_are_generating = false;
     }
