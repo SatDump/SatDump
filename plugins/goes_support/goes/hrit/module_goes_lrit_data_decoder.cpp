@@ -16,10 +16,10 @@ namespace goes
                                                                                                                                                 write_images(parameters["write_images"].get<bool>()),
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
-                                                                                                                                                write_dcs(parameters["write_dcs"].get<bool>()),
-                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>()),
-                                                                                                                                                write_lrit(parameters["write_lrit"].get<bool>())
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
         {
+            write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
+            write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
             goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
             goes_r_fc_composer_meso2 = std::make_shared<GOESRFalseColorComposer>();
