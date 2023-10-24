@@ -79,7 +79,7 @@ void RtlSdrSource::set_gains()
     }
 
     logger->debug("Set RTL-SDR AGC to %d", (int)lna_agc_enabled);
-    logger->debug("Set RTL-SDR Gain to %d", gain * 10);
+    logger->debug("Set RTL-SDR Gain to %d", gain);
 }
 
 void RtlSdrSource::set_bias()
