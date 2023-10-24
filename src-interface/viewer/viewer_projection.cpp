@@ -22,6 +22,7 @@ namespace satdump
     void ViewerApplication::drawProjectionPanel()
     {
         bool disable_buttons = projections_are_generating;
+        bool disable_add_layer = is_opening_layer;
         if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Text("Output image : ");
@@ -149,8 +150,7 @@ namespace satdump
             ImGui::Text("Layers :");
 
             ImGui::SameLine(ImGui::GetWindowWidth() - 85 * ui_scale);
-
-            if (is_opening_layer)
+            if (disable_add_layer)
                 style::beginDisabled();
 
             if (ImGui::Button("Add Layer##button"))
@@ -158,7 +158,7 @@ namespace satdump
                 ImGui::OpenPopup("Add Layer##popup", ImGuiPopupFlags_None);
             }
 
-            if (is_opening_layer)
+            if (disable_add_layer)
                 style::endDisabled();
 
             {
@@ -313,10 +313,11 @@ namespace satdump
                         {
                             if (layer.type == 1 || layer.type == 2)
                             {
-                                projection_layers.erase(projection_layers.begin() + i);
                                 for (int f = 0; f < (int)projections_external_sources.size(); f++)
                                     if (projections_external_sources[f]->name == projection_layers[i].name)
                                         projections_external_sources.erase(projections_external_sources.begin() + f);
+
+                                projection_layers.erase(projection_layers.begin() + i);
                             }
                             else if (layer.type == 0)
                             {
@@ -375,12 +376,12 @@ namespace satdump
                 }
                 ImGui::EndListBox();
             }
-            if (!(disable_buttons || is_opening_layer))
+            if (!(disable_buttons || disable_add_layer))
                 style::beginDisabled();
 
             ImGui::ProgressBar((general_progress + (progress_pointer == nullptr ? 0 : *(progress_pointer))) / general_sum);
             
-            if (!(disable_buttons || is_opening_layer))
+            if (!(disable_buttons || disable_add_layer))
                 style::endDisabled();
 
             if (disable_buttons || projection_layers.size() == 0)

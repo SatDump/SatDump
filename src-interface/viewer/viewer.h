@@ -154,7 +154,7 @@ namespace satdump
         std::vector<ProjectionLayer> projection_layers;
 
         std::string projection_new_layer_name = "Ext Layer";
-        FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Equirectangular Image");
+        FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Layer Image");
         FileSelectWidget projection_new_layer_cfg = FileSelectWidget("Config (JSON)", "Select Projection Config");
 
         void refreshProjectionLayers();
