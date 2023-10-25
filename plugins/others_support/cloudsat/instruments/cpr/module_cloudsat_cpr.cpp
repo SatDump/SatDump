@@ -63,7 +63,7 @@ namespace cloudsat
             image::Image<uint16_t> image = reader.getChannel();
             WRITE_IMAGE(image, directory + "/CPR");
 
-            image::Image<uint8_t> clut = image::scale_lut<uint8_t>(65536, 0, 65536, image::LUT_jet<uint8_t>());
+            image::Image<uint8_t> clut = image::legacy_scale_lut<uint8_t>(65536, 0, 65536, image::LUT_jet<uint8_t>());
             image::Image<uint8_t> rain(image.width(), image.height(), 3);
 
             for (unsigned int i = 0; i < image.height() * image.width(); i++)

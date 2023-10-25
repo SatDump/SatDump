@@ -12,51 +12,26 @@
 
 #include "init.h"
 #include "logger.h"
-#include "common/tracking/tle.h"
-#include "libs/predict/predict.h"
-#include "common/geodetic/geodetic_coordinates.h"
-#include "common/geodetic/euler_raytrace.h"
-#include <unistd.h>
-
+#include "common/image/image.h"
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    // We don't wanna spam with init this time around
-    logger->set_level(slog::LOG_OFF);
-    satdump::initSatdump();
-    logger->set_level(slog::LOG_TRACE);
+    image::Image<uint8_t> lut = image::generate_lut<uint8_t>(1024, {{0.1, {0.0, 0.0, 0.0}},
+                                                                   {0.23, {0.23, 0.75, 0.89}},
+                                                                   {0.50, {0.1, 0.9, 0.5}},
+                                                                   {0.75, {1.0, 0.0, 0.0}},
+                                                                   {0.75, {0.0, 1.0, 0.0}},
+                                                                   {0.84, {1, 1, 1}},
+                                                                   {0.95, {0,0,0}},
+                                                                   {1.0, {1.0, 0.0, 0.0}}});
+    image::Image<uint8_t> lut2(1024, 100, 3);
 
-    predict_orbital_elements_t *satellite_object;
-    predict_position satellite_orbit;
-
-    auto tle = satdump::general_tle_registry.get_from_norad(40069).value();
-
-    satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
-
-    while (1)
+    for (int y = 0; y < 100; y++)
     {
-        time_t utc_time = time(0);
-
-        auto utc_jul = predict_to_julian_double(utc_time);
-        predict_orbit(satellite_object, &satellite_orbit, utc_jul);
-
-        auto position = geodetic::geodetic_coords_t(satellite_orbit.latitude, satellite_orbit.longitude, satellite_orbit.altitude, true).toDegs();
-
-        geodetic::geodetic_coords_t earth_point, earth_point2;
-
-        geodetic::raytrace_to_earth_old(position, {50, 0, 0}, earth_point);
-        earth_point.toDegs();
-
-        geodetic::raytrace_to_earth(utc_jul, satellite_orbit.position, satellite_orbit.velocity, {50, 0, 0}, earth_point2);
-
-        logger->info("%f %f ---- %f %f ---- %f %f",
-                     position.lon, position.lat,
-                     earth_point.lon, earth_point.lat,
-                     earth_point2.lon, earth_point2.lat);
-
-        sleep(1);
+        lut2.draw_image(0, image::Image<uint8_t>(lut.channel(0), 1024, 1, 1), 0, y);
+        lut2.draw_image(1, image::Image<uint8_t>(lut.channel(1), 1024, 1, 1), 0, y);
+        lut2.draw_image(2, image::Image<uint8_t>(lut.channel(2), 1024, 1, 1), 0, y);
     }
-
-    predict_destroy_orbital_elements(satellite_object);
+    lut2.save_png("lut.png");
 }

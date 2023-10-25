@@ -25,6 +25,12 @@ struct font_info
     std::vector<char_el> chars;
 };
 
+struct lut_point
+{
+    float f;
+    std::vector<float> color;
+};
+
 namespace image
 {
     template <typename T>
@@ -148,9 +154,13 @@ namespace image
 
     // LUT functions
     template <typename T>
-    Image<T> create_lut(int channels, int width, int points, std::vector<T> data);
+    Image<T> legacy_create_lut(int channels, int width, int points, std::vector<T> data);
     template <typename T>
-    Image<T> scale_lut(int width, int x0, int x1, Image<T> in);
+    Image<T> legacy_scale_lut(int width, int x0, int x1, Image<T> in);
+
+    template <typename T>
+    Image<T> generate_lut(int width, std::vector<lut_point> p);
+    std::vector<float> get_color_lut(float f, std::vector<lut_point> p);
 
     // LUT presets
     template <typename T>
