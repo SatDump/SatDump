@@ -37,6 +37,7 @@ namespace jpss
             int insert_zone_size = npp_mode ? 0 : 9;
 
             // Demuxers
+            ccsds::ccsds_weather::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
             ccsds::ccsds_weather::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
             ccsds::ccsds_weather::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
             ccsds::ccsds_weather::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
@@ -60,7 +61,14 @@ namespace jpss
                 )
                     jpss_scids.push_back(vcdu.spacecraft_id);
 
-                if (vcdu.vcid == 1) // ATMS
+                if (vcdu.vcid == 0) // HK/TM
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid0.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                        if (pkt.header.apid == 11)
+                            att_ephem.work(pkt);
+                }
+                else if (vcdu.vcid == 1) // ATMS
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid1.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
@@ -176,7 +184,9 @@ namespace jpss
                 atms_products.bit_depth = 16;
                 atms_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 atms_products.set_timestamps(atms_reader.timestamps);
-                atms_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json")));
+                auto proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json"));
+                proj_cfg["ephemeris"] = att_ephem.getEphem();
+                atms_products.set_proj_cfg(proj_cfg);
 
                 for (int i = 0; i < 22; i++)
                     atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
@@ -263,12 +273,15 @@ namespace jpss
                 viirs_products.bit_depth = 16;
                 viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
 
+                nlohmann::json proj_cfg;
                 if (scid == SNPP_SCID)
-                    viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs.json"));
                 else if (scid == JPSS1_SCID)
-                    viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs.json"));
                 else if (scid == JPSS2_SCID)
-                    viirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs.json"));
+                proj_cfg["ephemeris"] = att_ephem.getEphem();
+                viirs_products.set_proj_cfg(proj_cfg);
 
                 // DNB channels
                 satdump::ImageProducts viirs_dnb_products;
@@ -280,11 +293,13 @@ namespace jpss
                 viirs_dnb_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
 
                 if (scid == SNPP_SCID)
-                    viirs_dnb_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs_dnb.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs_dnb.json"));
                 else if (scid == JPSS1_SCID)
-                    viirs_dnb_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs_dnb.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs_dnb.json"));
                 else if (scid == JPSS2_SCID)
-                    viirs_dnb_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs_dnb.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs_dnb.json"));
+                proj_cfg["ephemeris"] = att_ephem.getEphem();
+                viirs_dnb_products.set_proj_cfg(proj_cfg);
 
                 for (int i = 0; i < 16; i++)
                 {
