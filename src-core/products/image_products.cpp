@@ -199,7 +199,7 @@ namespace satdump
         }
     }
 
-    double ImageProducts::get_calibrated_value(int image_index, int x, int y)
+    double ImageProducts::get_calibrated_value(int image_index, int x, int y, bool temp)
     {
         calib_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
@@ -208,6 +208,8 @@ namespace satdump
             val2 = calibrator_ptr->compute(image_index, x, y, val);
         else if (lua_state_ptr != nullptr)
             val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+        if (get_calibration_type(image_index) == calib_type_t::CALIB_RADIANCE && temp)
+            val = radiance_to_temperature(val2, get_wavenumber(image_index));
         calib_mutex.unlock();
         return val2;
     }
