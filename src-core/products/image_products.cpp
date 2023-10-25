@@ -209,7 +209,7 @@ namespace satdump
         else if (lua_state_ptr != nullptr)
             val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
         if (get_calibration_type(image_index) == calib_type_t::CALIB_RADIANCE && temp)
-            val = radiance_to_temperature(val2, get_wavenumber(image_index));
+            val2 = radiance_to_temperature(val2, get_wavenumber(image_index));
         calib_mutex.unlock();
         return val2;
     }
