@@ -32,13 +32,6 @@ namespace jpss
             return v;
         }
 
-        struct vector
-        {
-            double x = 0;
-            double y = 0;
-            double z = 0;
-        };
-
         void AttEphemReader::work(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets

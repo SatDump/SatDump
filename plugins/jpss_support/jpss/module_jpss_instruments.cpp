@@ -185,7 +185,8 @@ namespace jpss
                 atms_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 atms_products.set_timestamps(atms_reader.timestamps);
                 auto proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json"));
-                proj_cfg["ephemeris"] = att_ephem.getEphem();
+                if (d_parameters["use_ephemeris"].get<bool>())
+                    proj_cfg["ephemeris"] = att_ephem.getEphem();
                 atms_products.set_proj_cfg(proj_cfg);
 
                 for (int i = 0; i < 22; i++)
@@ -280,7 +281,8 @@ namespace jpss
                     proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs.json"));
                 else if (scid == JPSS2_SCID)
                     proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs.json"));
-                proj_cfg["ephemeris"] = att_ephem.getEphem();
+                if (d_parameters["use_ephemeris"].get<bool>())
+                    proj_cfg["ephemeris"] = att_ephem.getEphem();
                 viirs_products.set_proj_cfg(proj_cfg);
 
                 // DNB channels
@@ -298,7 +300,8 @@ namespace jpss
                     proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs_dnb.json"));
                 else if (scid == JPSS2_SCID)
                     proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs_dnb.json"));
-                proj_cfg["ephemeris"] = att_ephem.getEphem();
+                if (d_parameters["use_ephemeris"].get<bool>())
+                    proj_cfg["ephemeris"] = att_ephem.getEphem();
                 viirs_dnb_products.set_proj_cfg(proj_cfg);
 
                 for (int i = 0; i < 16; i++)
