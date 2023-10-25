@@ -29,6 +29,7 @@ namespace satdump
 #endif
 
         bool tles_are_update = false;
+        char tle_last_update[80];
 
         bool show_imgui_demo = false;
 
@@ -134,6 +135,18 @@ namespace satdump
                     }
                     if (disable_update_button)
                         style::endDisabled();
+
+                    time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+                    if (last_update == 0)
+                        strcpy(tle_last_update, "Never");
+                    else
+                    {
+                        struct tm ts;
+                        ts = *gmtime(&last_update);
+                        strftime(tle_last_update, sizeof(tle_last_update), "%Y-%m-%d %H:%M:%S UTC", &ts);
+                    }
+                    ImGui::SameLine(0.0f, 10.0f * ui_scale);
+                    ImGui::TextDisabled("Last updated: %s", tle_last_update);
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);

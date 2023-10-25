@@ -100,8 +100,8 @@ namespace satdump
         if (tle_file_override == "")
         {
             loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
-            if (tle_do_update_on_init && (config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || general_tle_registry.size() == 0))
-                updateTLEFile(user_path + "/satdump_tles.txt");
+            if (tle_do_update_on_init)
+                autoUpdateTLE(user_path + "/satdump_tles.txt");
         }
         else
         {

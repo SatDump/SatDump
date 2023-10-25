@@ -271,8 +271,7 @@ int main(int argc, char *argv[])
     }
 
     // TLE
-    if (satdump::config::main_cfg["satdump_general"]["update_tles_startup"]["value"].get<bool>() || satdump::general_tle_registry.size() == 0)
-        satdump::ui_thread_pool.push([&](int){ satdump::updateTLEFile(satdump::user_path + "/satdump_tles.txt"); });
+    satdump::ui_thread_pool.push([&](int){ satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
 
     // Attach signal
     signal(SIGINT, sig_handler_ui);
