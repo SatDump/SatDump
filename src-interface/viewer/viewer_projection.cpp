@@ -112,7 +112,8 @@ namespace satdump
                 ui_thread_pool.push([this](int)
                                     {   projections_are_generating = true;
                         logger->info("Saving Projection...");
-                        std::string saved_at = save_image_dialog("projection", "Save Projection", &projected_image_result, &viewer_app->save_type);
+                        std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
+                        std::string saved_at = save_image_dialog("projection", default_path, "Save Projection", &projected_image_result, &viewer_app->save_type);
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
