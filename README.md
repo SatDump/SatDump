@@ -154,6 +154,7 @@ sudo apt install libzstd-dev                                                    
 (optional)
 sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
 sudo apt install ocl-icd-opencl-dev                                                                           # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
+sudo apt install intel-opencl-icd                                                                             # Optional, enables OpenCL for Intel Integrated Graphics
 
 # Install dependencies on Red-Hat-based systems:
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel luajit-devel
@@ -164,6 +165,7 @@ sudo dnf install libzstd-devel
 (optional)
 sudo dnf install libomp-devel
 sudo dnf install ocl-icd                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
+sudo dnf install intel-opencl                                                                                 # Optional, enables OpenCL for Intel Integrated Graphics
 
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
