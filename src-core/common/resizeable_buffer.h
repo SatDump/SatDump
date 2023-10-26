@@ -27,7 +27,7 @@ public:
     std::mutex buffer_lock;
     T *buf;
 
-    bool destroyed = false;
+    bool destroyed = true;
 
 public:
     ResizeableBuffer() { d_size = 0; }
@@ -53,6 +53,7 @@ public:
         d_headroom = headroom;
         d_size = d_width * d_headroom;
         buf = new T[d_size];
+        destroyed = false;
     }
 
     void resize(size_t newSize)
