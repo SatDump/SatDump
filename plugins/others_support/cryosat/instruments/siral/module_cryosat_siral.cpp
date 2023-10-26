@@ -55,7 +55,7 @@ namespace cryosat
 
             // cimg_library::CImg<unsigned char> outputImage(243, 100000, 1, 1, 0);
             ResizeableBuffer<unsigned char> fftImage;
-            fftImage.create(100000 * 243);
+            fftImage.create(10 * 243);
             int lines = 0;
 
             while (!data_in.eof())

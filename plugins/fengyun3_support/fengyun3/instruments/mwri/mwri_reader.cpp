@@ -7,7 +7,7 @@ namespace fengyun3
         MWRIReader::MWRIReader()
         {
             for (int i = 0; i < 10; i++)
-                channels[i].create(1000 * 266);
+                channels[i].create(266);
 
             lines = 0;
         }
