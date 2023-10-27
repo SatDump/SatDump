@@ -74,6 +74,8 @@ namespace jpss
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 528)
                             atms_reader.work(pkt);
+                        else if (pkt.header.apid == 515)
+                            atms_reader.work_calib(pkt);
                 }
                 else if (vcdu.vcid == 6) // CrIS
                 {
