@@ -113,7 +113,7 @@ namespace noaa_apt
 
                 if (is_stereo)
                 {
-                    for (int i = 0; i < buffer_size * 2; i++)
+                    for (int i = 0; i < buffer_size / 2; i++)
                         input_stream->writeBuf[i] = s16_buf[i * 2] / 65535.0;
                     input_stream->swap(buffer_size / 2);
                 }
@@ -325,7 +325,7 @@ namespace noaa_apt
                 {
                     number = d_parameters["satellite_number"];
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     number = std::stoi(d_parameters["satellite_number"].get<std::string>());
                 }
