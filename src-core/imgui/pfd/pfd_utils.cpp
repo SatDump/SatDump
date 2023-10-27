@@ -11,7 +11,7 @@
 namespace satdump
 {
     template <typename T>
-    std::string save_image_dialog(std::string default_name, std::string window_title, image::Image<T>* image, std::string *default_ext)
+    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image<T>* image, std::string *default_ext)
     {
         std::vector<std::string> saveopts = {
             "PNG Files", "*.png",
@@ -33,7 +33,6 @@ namespace satdump
 #ifdef __ANDROID__
         *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
 #endif
-        std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
 
 #ifdef _MSC_VER
         if (default_path == ".")
@@ -70,6 +69,6 @@ namespace satdump
         return path;
     }
 
-    template std::string save_image_dialog<uint8_t>(std::string default_name, std::string window_title, image::Image<uint8_t>* image, std::string* default_ext);
-    template std::string save_image_dialog<uint16_t>(std::string default_name, std::string window_title, image::Image<uint16_t>* image, std::string* default_ext);
+    template std::string save_image_dialog<uint8_t>(std::string default_name, std::string default_path, std::string window_title, image::Image<uint8_t>* image, std::string* default_ext);
+    template std::string save_image_dialog<uint16_t>(std::string default_name, std::string default_path, std::string window_title, image::Image<uint16_t>* image, std::string* default_ext);
 }

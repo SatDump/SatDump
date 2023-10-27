@@ -601,9 +601,10 @@ namespace satdump
                     {   async_image_mutex.lock();
                         is_updating = true;
                         logger->info("Saving Image...");
+                        std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
                         std::string saved_at = save_image_dialog(products->instrument_name + "_" +
                             (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                            "Save Image", &current_image, &viewer_app->save_type);
+                            default_path, "Save Image", &current_image, &viewer_app->save_type);
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
