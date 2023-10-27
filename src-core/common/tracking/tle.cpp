@@ -91,6 +91,7 @@ namespace satdump
             std::filesystem::create_directories(std::filesystem::path(path).parent_path());
 
         bool success = true;
+        bool all_success = true;
         TLERegistry new_registry;
 
         for (int norad : norads_to_fetch)
@@ -126,10 +127,13 @@ namespace satdump
             }
 
             if (!success)
+            {
+                all_success = false;
                 logger->warn("Failed to get TLE for %s", url_str.c_str());
+            }
         }
 
-        if (success)
+        if (all_success)
         {
             std::ofstream outfile(path, std::ios::trunc);
             for (TLE& tle : new_registry)
