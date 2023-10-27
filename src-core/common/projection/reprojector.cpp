@@ -456,7 +456,8 @@ namespace satdump
             {
                 auto gcps = gcp_compute::compute_gcps(params, width, height);
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
-                transform->init(gcps, true, false);
+                if (transform->init(gcps, true, false))
+                    std::runtime_error("Error generating TPS!");
                 return [transform, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x, y;
