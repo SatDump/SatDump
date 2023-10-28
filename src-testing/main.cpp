@@ -17,21 +17,16 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image<uint8_t> lut = image::generate_lut<uint8_t>(1024, {{0.1, {0.0, 0.0, 0.0}},
-                                                                   {0.23, {0.23, 0.75, 0.89}},
-                                                                   {0.50, {0.1, 0.9, 0.5}},
-                                                                   {0.75, {1.0, 0.0, 0.0}},
-                                                                   {0.75, {0.0, 1.0, 0.0}},
-                                                                   {0.84, {1, 1, 1}},
-                                                                   {0.95, {0,0,0}},
-                                                                   {1.0, {1.0, 0.0, 0.0}}});
-    image::Image<uint8_t> lut2(1024, 100, 3);
+    image::Image<uint16_t> lut = image::generate_lut<uint16_t>(1024, {{-0.5, {0.0, 0.0, 0.0}},
+
+                                                                   {1.0, {1.0, 1.0, 1.0}}});
+    image::Image<uint16_t> lut2(1024, 100, 3);
 
     for (int y = 0; y < 100; y++)
     {
-        lut2.draw_image(0, image::Image<uint8_t>(lut.channel(0), 1024, 1, 1), 0, y);
-        lut2.draw_image(1, image::Image<uint8_t>(lut.channel(1), 1024, 1, 1), 0, y);
-        lut2.draw_image(2, image::Image<uint8_t>(lut.channel(2), 1024, 1, 1), 0, y);
+        lut2.draw_image(0, image::Image<uint16_t>(lut.channel(0), 1024, 1, 1), 0, y);
+        lut2.draw_image(1, image::Image<uint16_t>(lut.channel(1), 1024, 1, 1), 0, y);
+        lut2.draw_image(2, image::Image<uint16_t>(lut.channel(2), 1024, 1, 1), 0, y);
     }
     lut2.save_png("lut.png");
 }
