@@ -112,7 +112,8 @@ namespace satdump
                 ui_thread_pool.push([this](int)
                                     {   projections_are_generating = true;
                         logger->info("Saving Projection...");
-                        std::string saved_at = save_image_dialog("projection", "Save Projection", &projected_image_result, &viewer_app->save_type);
+                        std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
+                        std::string saved_at = save_image_dialog("projection", default_path, "Save Projection", &projected_image_result, &viewer_app->save_type);
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -636,7 +637,7 @@ namespace satdump
                     contains = true;
 
             if (!contains)
-                projection_layers.push_back({projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
+                projection_layers.insert(projection_layers.begin(), {projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
         }
 
         // Check for *new* products layers
@@ -657,7 +658,7 @@ namespace satdump
                 }
 
                 if (!contains)
-                    projection_layers.push_back({label, 0, products_and_handlers[i], nullptr});
+                    projection_layers.insert(projection_layers.begin(), {label, 0, products_and_handlers[i], nullptr});
             }
         }
 

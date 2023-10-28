@@ -346,8 +346,8 @@ namespace image
                     ctype = satdump::ImageProducts::CALIB_VTYPE_TEMPERATURE;
 
                 return img_pro->get_calibrated_image(ch, nullptr, ctype, {min, max}); };
-            lua["get_calibrated_value"] = [img_pro](int ch, int x, int y)
-            { return img_pro->get_calibrated_value(ch, x, y); };
+            lua["get_calibrated_value"] = [img_pro](int ch, int x, int y, bool temp = false)
+            { return img_pro->get_calibrated_value(ch, x, y, temp); };
             lua["set_progress"] = [&progress](float x, float y)
             { if(progress != nullptr) *progress = x / y; };
 

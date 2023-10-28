@@ -55,7 +55,7 @@ public:
         for (int i = 0; i < (int)timestamps.size(); i++)
         {
             double timestamp = timestamps[i] + timestamp_offset;
-            sat_positions.push_back(sat_tracker.get_sat_position_at_raw(timestamp));
+            sat_positions.push_back(sat_tracker->get_sat_position_at_raw(timestamp));
         }
     }
 

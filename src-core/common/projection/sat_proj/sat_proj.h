@@ -15,7 +15,7 @@ namespace satdump
         const nlohmann::ordered_json cfg;
         const TLE tle;
         const nlohmann::ordered_json timestamps_raw;
-        satdump::SatelliteTracker sat_tracker;
+        std::shared_ptr<satdump::SatelliteTracker> sat_tracker;
 
     public:
         int img_size_x;
@@ -28,9 +28,12 @@ namespace satdump
         SatelliteProjection(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
             : cfg(cfg),
               tle(tle),
-              timestamps_raw(timestamps_raw),
-              sat_tracker(tle)
+              timestamps_raw(timestamps_raw)
         {
+            if (cfg.contains("ephemeris") && cfg["ephemeris"].size() > 1)
+                sat_tracker = std::make_shared<satdump::SatelliteTracker>((nlohmann::json)cfg["ephemeris"]);
+            else
+                sat_tracker = std::make_shared<satdump::SatelliteTracker>(tle);
         }
 
         virtual bool get_position(int x, int y, geodetic::geodetic_coords_t &pos) = 0;

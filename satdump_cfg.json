@@ -129,7 +129,7 @@
                 "jpg",
                 "pbm"
             ],
-            "description": "Image format for raw image products\n\nPNG: PNG Image (recommended)\nj2k: JPEG 2000\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)\npbm : Really fast, but will result is very big files"
+            "description": "Image format for raw image products\n\npng: PNG Image (recommended)\n\nj2k: JPEG 2000\n\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)\n\npbm : Really fast, but will result is very big files"
         },
         "image_format": {
             "type": "options",
@@ -146,12 +146,6 @@
         "opencl_device": {
             "platform": 0,
             "device": 0
-        },
-        "update_tles_startup": {
-            "type": "bool",
-            "value": false,
-            "name": "Update TLEs on Startup",
-            "description": "If this is enabled, TLEs will be updated each time SatDump is started"
         },
         "auto_process_products": {
             "type": "bool",
@@ -176,6 +170,20 @@
             "value": 0.0,
             "name": "QTH Altitude",
             "description": "Altitude (meters) of your station's QTH"
+        },
+        "tle_update_interval": {
+            "type": "options",
+            "value": "1 day",
+            "name": "TLE Auto Update Interval",
+            "options": [
+                "4 hours",
+                "1 day",
+                "3 days",
+                "7 days",
+                "14 days",
+                "Never"
+            ],
+            "description": "Frequency to update TLEs. Auto update happens at launch only\n\nWarning: The older your TLEs, the more inaccurate projections\nmay be."
         }
     },
     // Input/Output Directories

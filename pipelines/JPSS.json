@@ -6,6 +6,12 @@
         "parameters": {
             "samplerate": {
                 "value": 25e6
+            },
+            "use_ephemeris": {
+                "type": "bool",
+                "value": true,
+                "name": "Use Ephemeris",
+                "description": "Use Ephemeris data from HRD instead of TLE"
             }
         },
         "work": {
@@ -32,7 +38,8 @@
             },
             "products": {
                 "jpss_instruments": {
-                    "npp_mode": true
+                    "npp_mode": true,
+                    "use_ephemeris": true
                 }
             }
         }
@@ -44,6 +51,12 @@
         "parameters": {
             "samplerate": {
                 "value": 40e6
+            },
+            "use_ephemeris": {
+                "type": "bool",
+                "value": true,
+                "name": "Use Ephemeris",
+                "description": "Use Ephemeris data from HRD instead of TLE"
             }
         },
         "work": {
@@ -71,7 +84,8 @@
             },
             "products": {
                 "jpss_instruments": {
-                    "npp_mode": false
+                    "npp_mode": false,
+                    "use_ephemeris": true
                 }
             }
         }

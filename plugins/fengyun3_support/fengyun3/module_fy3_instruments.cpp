@@ -614,6 +614,8 @@ namespace fengyun3
                 }
 
                 virr_products.set_timestamps(virr_reader.timestamps);
+                if (d_downlink == AHRPT)
+                    dataset.timestamp = get_median(virr_reader.timestamps); //Re-set dataset timestamp since we just adjusted it
 
                 virr_products.save(directory);
                 dataset.products_list.push_back("VIRR");

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "core/plugin.h"
 #include <thread>
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
@@ -125,7 +126,10 @@ namespace satdump
             }
 
             if (!success)
+            {
                 logger->warn("Failed to get TLE for %s", url_str.c_str());
+                break;
+            }
         }
 
         if (success)
@@ -134,12 +138,41 @@ namespace satdump
             for (TLE& tle : new_registry)
                 outfile << tle.name << std::endl << tle.line1 << std::endl << tle.line2 << std::endl << std::endl;
             outfile.close();
-            logger->info("%zu TLEs loaded!", new_registry.size());
             general_tle_registry = new_registry;
+            config::main_cfg["user"]["tles_last_updated"] = time(NULL);
+            config::saveUserConfig();
+            logger->info("%zu TLEs loaded!", new_registry.size());
             eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
         }
         else
             logger->error("Error updating TLEs. Not updated.");
+    }
+
+    void autoUpdateTLE(std::string path)
+    {
+        std::string update_setting = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_update_interval"]["value"], "1 day");
+        time_t next_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+        bool honor_setting = true;
+        if (update_setting == "Never")
+            honor_setting = false;
+        else if (update_setting == "4 hours")
+            next_update += 14400;
+        else if (update_setting == "1 day")
+            next_update += 86400;
+        else if (update_setting == "3 days")
+            next_update += 259200;
+        else if (update_setting == "7 days")
+            next_update += 604800;
+        else if (update_setting == "14 days")
+            next_update += 1209600;
+        else
+        {
+            logger->error("Invalid TLE Auto-update interval: %s", update_setting.c_str());
+            honor_setting = false;
+        }
+
+        if ((honor_setting && time(NULL) > next_update) || satdump::general_tle_registry.size() == 0)
+            updateTLEFile(path);
     }
 
     void loadTLEFileIntoRegistry(std::string path)

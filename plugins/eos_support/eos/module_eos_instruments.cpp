@@ -43,6 +43,7 @@ namespace eos
             uint8_t cadu[1024];
 
             // Demuxers
+            ccsds::ccsds_weather::Demuxer demuxer_vcid3;
             ccsds::ccsds_weather::Demuxer demuxer_vcid10;
             ccsds::ccsds_weather::Demuxer demuxer_vcid15;
             ccsds::ccsds_weather::Demuxer demuxer_vcid20;
@@ -72,7 +73,14 @@ namespace eos
                 }
                 else if (d_satellite == AQUA)
                 {
-                    if (vcdu.vcid == 30) // MODIS
+                    if (vcdu.vcid == 3) // GBAD
+                    {
+                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid30.work(cadu);
+                        for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                            if (pkt.header.apid == 957)
+                                gbad_reader.work(pkt);
+                    }
+                    else if (vcdu.vcid == 30) // MODIS
                     {
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid30.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
@@ -100,7 +108,6 @@ namespace eos
                             if (pkt.header.apid == 290)
                                 amsu_a2_reader.work(pkt);
                     }
-
                     else if (vcdu.vcid == 10) // CERES FM-3
                     {
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid10.work(cadu);
@@ -185,10 +192,14 @@ namespace eos
                 modis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 modis_products.set_tle(satellite_tle);
                 modis_products.set_timestamps(modis_reader.timestamps_250);
+                nlohmann::json proj_cfg;
                 if (d_satellite == AQUA)
-                    modis_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_modis.json")));
-                if (d_satellite == TERRA)
-                    modis_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/terra_modis.json")));
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aqua_modis.json"));
+                else if (d_satellite == TERRA)
+                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/terra_modis.json"));
+                // if (d_satellite == AQUA)
+                //     proj_cfg["ephemeris"] = gbad_reader.getEphem();
+                modis_products.set_proj_cfg(proj_cfg);
 
                 for (int i = 0; i < 2; i++)
                 {
