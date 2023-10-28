@@ -637,7 +637,7 @@ namespace satdump
                     contains = true;
 
             if (!contains)
-                projection_layers.push_back({projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
+                projection_layers.insert(projection_layers.begin(), {projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
         }
 
         // Check for *new* products layers
@@ -658,7 +658,7 @@ namespace satdump
                 }
 
                 if (!contains)
-                    projection_layers.push_back({label, 0, products_and_handlers[i], nullptr});
+                    projection_layers.insert(projection_layers.begin(), {label, 0, products_and_handlers[i], nullptr});
             }
         }
 
