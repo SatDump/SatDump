@@ -148,9 +148,6 @@ namespace slog
 
     FileSink::FileSink(std::string path)
     {
-        if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
-            std::filesystem::create_directories(std::filesystem::path(path).parent_path());
-
         int suffix = 0;
         std::string log_path = path + ".log";
         while(std::filesystem::exists(log_path))
@@ -285,9 +282,12 @@ void initLogger()
 
 void initFileSink()
 {
-    //Get log path
     try
     {
+        //Make sure the user folder is created
+        if (!std::filesystem::exists(std::filesystem::path(satdump::user_path + "/")))
+            std::filesystem::create_directories(std::filesystem::path(satdump::user_path + "/"));
+
         //Clear old logs
         char timebuffer[16];
         struct tm *timeinfo;
