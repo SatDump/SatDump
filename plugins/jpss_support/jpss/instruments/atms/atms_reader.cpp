@@ -35,6 +35,10 @@ namespace jpss
             // If there is, trigger a new scanline
             if (scan_synch == 1)
             {
+                calib_data[lines]["calibration_pkt"] = last_calib_pkt;
+                calib_data[lines]["engineering_pkt"] = last_eng_pkt;
+                calib_data[lines]["hotcal_pkt"] = last_calib_pkt;
+
                 lines++;
                 timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383));
                 scan_pos = 0;
@@ -47,16 +51,27 @@ namespace jpss
                 }
             }
 
+            int beam_angle = (packet.payload[8 + 0] << 8 | packet.payload[8 + 1]);
+
             // Safeguard
             if (scan_pos < 96 && scan_pos >= 0)
+            {
                 for (int i = 0; i < 22; i++) // Decode all channels
                     channels[i][(lines * 96) + 95 - scan_pos] = (packet.payload[12 + i * 2] << 8 | packet.payload[13 + i * 2]);
+                calib_data[lines]["beam_pos_sc"][95 - scan_pos] = beam_angle;
+            }
             else if (scan_pos - 96 < 4 && scan_pos - 96 >= 0)
+            {
                 for (int i = 0; i < 22; i++) // Decode all channels
                     channels_cc[i][(lines * 4) + (scan_pos - 96)] = (packet.payload[12 + i * 2] << 8 | packet.payload[13 + i * 2]);
+                calib_data[lines]["beam_pos_cc"][scan_pos - 96] = beam_angle;
+            }
             else if (scan_pos - 96 - 4 < 4 && scan_pos - 96 - 4 >= 0)
+            {
                 for (int i = 0; i < 22; i++) // Decode all channels
                     channels_wc[i][(lines * 4) + (scan_pos - 96 - 4)] = (packet.payload[12 + i * 2] << 8 | packet.payload[13 + i * 2]);
+                calib_data[lines]["beam_pos_wc"][scan_pos - 96 - 4] = beam_angle;
+            }
 
             scan_pos++;
         }
@@ -74,76 +89,124 @@ namespace jpss
         inline double parse_rc(uint16_t word) { return 0.0003 * word; }
         inline double parse_muxresti(uint16_t word) { return 1900.0 + 0.003 * word; }
 
-        struct CalTargetTemp
-        {
-            double r0;
-            double alpha;
-            double delta;
-            double beta;
-        };
-
-        struct ShelfTemp
-        {
-            double r0;
-            double alpha;
-            double delta;
-            double rc;
-        };
-
-        inline CalTargetTemp parse_cal_target_temp(uint16_t *dat)
-        {
-            return {parse_4w_2w_r0(dat[0]), parse_4w_2w_alpha(dat[1]), parse_4w_2w_delta(dat[2]), parse_4w_prt_beta(dat[3])};
-        }
-
-        inline ShelfTemp parse_shelf_temp(uint16_t *dat)
-        {
-            return {parse_4w_2w_r0(dat[0]), parse_4w_2w_alpha(dat[1]), parse_4w_2w_delta(dat[2]), parse_rc(dat[3])};
-        }
-
         void ATMSReader::work_calib(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
             if (packet.payload.size() < 438)
                 return;
 
+            // Parse calibration packet
+            ATMSCalibPkt calib_pkt;
             uint16_t *words = (uint16_t *)&packet.payload[8];
 
-            double k_ka_v_pam_resistance = parse_pam_gamma0(words[0]);
-            double w_g_pam_resistance = parse_pam_gamma0(words[1]);
+            calib_pkt.pamKav = parse_pam_gamma0(words[0]);
+            calib_pkt.pamWg = parse_pam_gamma0(words[1]);
 
-            CalTargetTemp prt_kkav[8];
-            for (int i = 0; i < 8; i++)
-                prt_kkav[i] = parse_cal_target_temp(&words[2 + 4 * i]);
+            for (int i = 0; i < NUM_PRT_KAV; i++)
+            {
+                calib_pkt.prtCoeffKav[i][0] = parse_4w_2w_r0(words[2 + 4 * i + 0]);
+                calib_pkt.prtCoeffKav[i][1] = parse_4w_2w_alpha(words[2 + 4 * i + 1]);
+                calib_pkt.prtCoeffKav[i][2] = parse_4w_2w_delta(words[2 + 4 * i + 2]);
+                calib_pkt.prtCoeffKav[i][3] = parse_4w_prt_beta(words[2 + 4 * i + 3]);
+            }
 
-            CalTargetTemp prt_wg[7];
-            for (int i = 0; i < 7; i++)
-                prt_wg[i] = parse_cal_target_temp(&words[2 + 4 * 8 + 4 * i]);
+            for (int i = 0; i < NUM_PRT_WG; i++)
+            {
+                calib_pkt.prtCoeffWg[i][0] = parse_4w_2w_r0(words[34 + 4 * i + 0]);
+                calib_pkt.prtCoeffWg[i][1] = parse_4w_2w_alpha(words[34 + 4 * i + 1]);
+                calib_pkt.prtCoeffWg[i][2] = parse_4w_2w_delta(words[34 + 4 * i + 2]);
+                calib_pkt.prtCoeffWg[i][3] = parse_4w_prt_beta(words[34 + 4 * i + 3]);
+            }
 
-            double k_cal_target_offset = parse_calibration_target_offset(words[62 + 0]);
-            double ka_cal_target_offset = parse_calibration_target_offset(words[62 + 1]);
-            double v_cal_target_offset = parse_calibration_target_offset(words[62 + 2]);
-            double w_cal_target_offset = parse_calibration_target_offset(words[62 + 3]);
-            double g_cal_target_offset = parse_calibration_target_offset(words[62 + 4]);
+            for (int i = 0; i < NUM_ATMS_BANDS; i++)
+                calib_pkt.warmBias[i] = parse_calibration_target_offset(words[62 + i]);
 
-            double k_cal_cold_offset = parse_cold_calibration_offset(words[67 + 0]);
-            double ka_cal_cold_offset = parse_cold_calibration_offset(words[67 + 1]);
-            double v_cal_cold_offset = parse_cold_calibration_offset(words[67 + 2]);
-            double w_cal_cold_offset = parse_cold_calibration_offset(words[67 + 3]);
-            double g_cal_cold_offset = parse_cold_calibration_offset(words[67 + 4]);
+            for (int i = 0; i < NUM_ATMS_BANDS; i++)
+                calib_pkt.coldBias[i] = parse_cold_calibration_offset(words[67 + i]);
 
-            double quadratic_coefficients[22];
             for (int i = 0; i < 22; i++)
-                quadratic_coefficients[i] = parse_quadratic_coefficient(words[72 + i]);
+                calib_pkt.quadraticCoeffs[i] = parse_quadratic_coefficient(words[72 + i]);
 
-            ShelfTemp k_band_shelf_temp = parse_shelf_temp(&words[139 + 4 * 0]);
-            ShelfTemp v_band_shelf_temp = parse_shelf_temp(&words[139 + 4 * 1]);
-            ShelfTemp w_band_shelf_temp = parse_shelf_temp(&words[139 + 4 * 2]);
-            ShelfTemp g_band_shelf_temp = parse_shelf_temp(&words[139 + 4 * 3]);
+            // Beam alignement - Skipped
+
+            for (int i = 0; i < NUM_PRT_COEFFS; i++)
+            {
+                calib_pkt.prtCoeffShelf[i][0] = parse_4w_2w_r0(words[139 + 4 * i + 0]);
+                calib_pkt.prtCoeffShelf[i][1] = parse_4w_2w_alpha(words[139 + 4 * i + 1]);
+                calib_pkt.prtCoeffShelf[i][2] = parse_4w_2w_delta(words[139 + 4 * i + 2]);
+                calib_pkt.prtCoeffShelf[i][3] = parse_rc(words[139 + 4 * i + 3]);
+            }
+
+            for (int i = 0; i < NUM_PRT_COEFF_2WIRE / 2; i++)
+            {
+                calib_pkt.prtCoeff2Wire[i * 2 + 0] = parse_4w_2w_r0(words[155 + 2 * i + 0]);
+                calib_pkt.prtCoeff2Wire[i * 2 + 1] = parse_2w_prt_a(words[155 + 2 * i + 1]);
+            }
+
+            for (int i = 0; i < NUM_HOUSE_KEEPING; i++)
+            {
+                calib_pkt.houseKeeping[i] = parse_muxresti(words[211 + i]);
+            }
+
+            calib_pkt.valid = true;
+            last_calib_pkt = calib_pkt;
+        }
+
+        void ATMSReader::work_eng(ccsds::CCSDSPacket &packet)
+        {
+            // Filter out bad packets
+            if (packet.payload.size() < 156)
+                return;
+
+            ATMSHealtStatusPkt eng_pkt;
+            uint16_t *words = (uint16_t *)&packet.payload[8];
+
+            for (int i = 0; i < NUM_HS_VARS; i++)
+                eng_pkt.data[i] = words[i];
+
+            eng_pkt.valid = true;
+            last_eng_pkt = eng_pkt;
+        }
+
+        void ATMSReader::work_hotcal(ccsds::CCSDSPacket &packet)
+        {
+            // Filter out bad packets
+            if (packet.payload.size() < 36)
+                return;
+
+            ATMSHotCalTempPkt hot_pkt;
+            uint16_t *words = (uint16_t *)&packet.payload[8];
+
+            for (int i = 0; i < NUM_PRT_KAV; i++)
+                hot_pkt.kavPrt[i] = words[i];
+
+            hot_pkt.kavPamCounts = words[8];
+
+            for (int i = 0; i < NUM_PRT_WG; i++)
+                hot_pkt.wqPrt[i] = words[9 + i];
+
+            hot_pkt.wgPamCounts = words[16];
+
+            hot_pkt.valid = true;
+            last_hot_pkt = hot_pkt;
         }
 
         image::Image<uint16_t> ATMSReader::getChannel(int channel)
         {
             return image::Image<uint16_t>(channels[channel].data(), 96, lines, 1);
+        }
+
+        nlohmann::json ATMSReader::getCalib()
+        {
+            for (int i = 0; i < lines; i++)
+                for (int c = 0; c < 22; c++)
+                    for (int z = 0; z < 4; z++)
+                        calib_data["cold_counts"][i][c][z] = channels_cc[c][i * 4 + z];
+            for (int i = 0; i < lines; i++)
+                for (int c = 0; c < 22; c++)
+                    for (int z = 0; z < 4; z++)
+                        calib_data["warm_counts"][i][c][z] = channels_wc[c][i * 4 + z];
+            return calib_data;
         }
     } // namespace atms
 } // namespace jpss

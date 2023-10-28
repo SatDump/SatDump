@@ -1,5 +1,6 @@
 #pragma once
 
+#include "products/image_products.h"
 #include "nlohmann/json.hpp"
 
 class NoaaAVHRR3Calibrator : public satdump::ImageProducts::CalibratorBase
@@ -21,7 +22,7 @@ private:
     }
 
 public:
-    NoaaAVHRR3Calibrator(nlohmann::json calib) : satdump::ImageProducts::CalibratorBase(calib)
+    NoaaAVHRR3Calibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
     {
     }
 

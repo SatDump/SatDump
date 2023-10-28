@@ -6,6 +6,8 @@
 
 #include "jpss/instruments/viirs/viirs_proj.h"
 
+#include "jpss/instruments/atms/atms_calibrator.h"
+
 class JPSSSupport : public satdump::Plugin
 {
 public:
@@ -18,6 +20,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::RequestSatProjEvent>(provideSatProjHandler);
+        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -29,6 +32,12 @@ public:
     {
         if (evt.id == "viirs_single_line")
             evt.projs.push_back(std::make_shared<VIIRSNormalLineSatProj>(evt.cfg, evt.tle, evt.timestamps_raw));
+    }
+
+    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    {
+        if (evt.id == "jpss_atms")
+            evt.calibrators.push_back(std::make_shared<jpss::atms::JpssATMSCalibrator>(evt.calib, evt.products));
     }
 };
 

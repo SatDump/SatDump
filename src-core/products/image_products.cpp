@@ -175,7 +175,7 @@ namespace satdump
             std::string calibrator_id = contents["calibration"]["calibrator"].get<std::string>();
 
             std::vector<std::shared_ptr<CalibratorBase>> calibrators;
-            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"]});
+            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"], this});
             if (calibrators.size() > 0)
                 calibrator_ptr = calibrators[0];
             else

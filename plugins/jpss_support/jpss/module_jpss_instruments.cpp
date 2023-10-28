@@ -76,6 +76,10 @@ namespace jpss
                             atms_reader.work(pkt);
                         else if (pkt.header.apid == 515)
                             atms_reader.work_calib(pkt);
+                        else if (pkt.header.apid == 530)
+                            atms_reader.work_hotcal(pkt);
+                        else if (pkt.header.apid == 531)
+                            atms_reader.work_eng(pkt);
                 }
                 else if (vcdu.vcid == 6) // CrIS
                 {
@@ -193,6 +197,16 @@ namespace jpss
 
                 for (int i = 0; i < 22; i++)
                     atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
+
+                nlohmann::json calib_cfg;
+                calib_cfg["calibrator"] = "jpss_atms";
+                calib_cfg["vars"] = atms_reader.getCalib();
+                atms_products.set_calibration(calib_cfg);
+                for (int c = 0; c < 22; c++)
+                {
+                    atms_products.set_calibration_type(c, atms_products.CALIB_RADIANCE);
+                    // mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                }
 
                 atms_products.save(directory);
                 dataset.products_list.push_back("ATMS");

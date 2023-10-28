@@ -146,9 +146,10 @@ namespace satdump
         {
         public:
             const nlohmann::json d_calib;
+            ImageProducts *d_products;
 
         public:
-            CalibratorBase(nlohmann::json calib) : d_calib(calib) {}
+            CalibratorBase(nlohmann::json calib, ImageProducts *products) : d_calib(calib), d_products(products) {}
             ~CalibratorBase() {}
             virtual void init() = 0;
             virtual double compute(int image_index, int x, int y, int val) = 0;
@@ -159,6 +160,7 @@ namespace satdump
             std::string id;
             std::vector<std::shared_ptr<CalibratorBase>> &calibrators;
             nlohmann::json calib;
+            ImageProducts *products;
         };
 
         bool has_calibation()
