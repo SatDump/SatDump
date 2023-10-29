@@ -69,9 +69,12 @@ int main(int argc, char *argv[])
 
     std::ifstream input_bin(argv[2], std::ios::binary);
 
+    if (std::stoi(data_config["DataProduct"]["ProductData"][0]["NumberOfFields"].get<std::string>()) == 1)
+        data_fields = {data_fields};
+
     for (auto field : data_fields)
     {
-        // printf("%s\n", field.dump().c_str());
+        printf("%s\n", data_fields.dump().c_str());
 
         std::string symbol = field["Symbol"];
         std::string datatype = field["DataType"];
