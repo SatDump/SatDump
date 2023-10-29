@@ -1,9 +1,9 @@
 {
     "type": "viirs_single_line",
-    "scan_angle": 120,
+    "scan_angle": 116.8,
     "is_dnb": true,
     "is_n20": true,
-    "roll_offset": 2,//-0.05, //0.02, //-0.2,
+    "roll_offset": 2.1, //-0.05, //0.02, //-0.2,
     "pitch_offset": 0,
     "yaw_offset": 0.15,
     "timestamp_offset": 0.8, //-0.3, //-0.5,
