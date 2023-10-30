@@ -180,12 +180,17 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
 
     for (int i = 0; i < devlist->devicecount; i++)
     {
-        std::stringstream ss;
-        uint64_t id = 0;
-        ss << devlist->serial_numbers[i];
-        ss >> std::hex >> id;
-        ss << devlist->serial_numbers[i];
-        results.push_back({"hackrf", "HackRF One " + ss.str().substr(16, 16), id});
+        if (devlist->serial_numbers[i] == nullptr)
+            results.push_back({ "hackrf", "HackRF One [In Use]", 0 });
+        else
+        {
+            std::stringstream ss;
+            uint64_t id = 0;
+            ss << devlist->serial_numbers[i];
+            ss >> std::hex >> id;
+            ss << devlist->serial_numbers[i];
+            results.push_back({ "hackrf", "HackRF One " + ss.str().substr(16, 16), id });
+        }
     }
 #else
     int vid, pid;
