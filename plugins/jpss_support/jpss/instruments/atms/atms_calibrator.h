@@ -1,13 +1,13 @@
 #pragma once
 
 #include "products/image_products.h"
-
-#include "atms_sdr_cc.h"
+#include "atms_structs.h"
 
 namespace jpss
 {
     namespace atms
     {
+        // ATMS Calibration, based on the algorithm published in the ADL software
         class JpssATMSCalibrator : public satdump::ImageProducts::CalibratorBase
         {
         private:
@@ -21,6 +21,7 @@ namespace jpss
             JpssATMSCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
                 d_vars = calib["vars"];
+                atmsSdrCoeffsPtr = calib["sdr_cc"];
             }
 
             void init();

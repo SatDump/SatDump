@@ -4,6 +4,8 @@
 #include "common/image/image.h"
 #include <mutex>
 
+#define CALIBRATION_INVALID_VALUE -999.99
+
 namespace satdump
 {
     class ImageProducts : public Products

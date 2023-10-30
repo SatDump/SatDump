@@ -14,6 +14,29 @@ namespace jpss
         const int NUM_PRT_COEFF_2WIRE = 56;
         const int NUM_HOUSE_KEEPING = 4;
 
+        const int ATTITUDE = 3;
+        const int BEAM_POS_OFFSET = 3;
+        const int MIN_MAX_DIMENSION = 2;
+        const int NUM_BAND_CATEGORIES = 2;
+        const int NUM_BC_COEFFS = 2;
+        const int NUM_BEAM_POSITIONS = 96;
+        const int NUM_BIAS_COEFFS = 3;
+        const int NUM_COLD_PLATE_TEMP = 3;
+        const int NUM_COLD_SAMPLES = 4;
+        const int NUM_COLD_SCAN_PROFILES = 4;
+        const int NUM_COLD_SMAPLES = 4;
+        const int NUM_HS_VARS = 74;
+        const int NUM_MAP_RC_SIZE = 8;
+        const int NUM_NL_COEFFS = 3;
+        const int NUM_PADBYTES_COEFF = 1;
+        const int NUM_REDUNDANCY_CONFIGS = 4;
+        const int NUM_SCAN_CC = 10;
+        const int NUM_SCAN_PRT = 9;
+        const int NUM_SCAN_WC = 10;
+        const int NUM_SHELF_TEMPS = 4;
+        const int NUM_WARM_SAMPLES = 4;
+        const int NUM_WARM_SCAN_PROFILES = 4;
+
         struct ATMSCalibPkt
         {
             double pamKav;
@@ -82,8 +105,6 @@ namespace jpss
             v.valid = j["valid"];
         }
 
-        const int NUM_HS_VARS = 74;
-
         struct ATMSHealtStatusPkt
         {
             uint16_t data[NUM_HS_VARS];
@@ -134,5 +155,54 @@ namespace jpss
             v.wgPamCounts = j["wgPamCounts"];
             v.valid = j["valid"];
         }
+
+        struct ATMS_SDR_CC
+        {
+            double scanBias[NUM_CHANNELS][NUM_BEAM_POSITIONS];
+            double beamEfficiencyCorrection[NUM_CHANNELS][NUM_BEAM_POSITIONS];
+            double centralFrequency[NUM_CHANNELS];
+            double radianceBandCorrection[NUM_BC_COEFFS][NUM_CHANNELS];
+            float quadraticRc[NUM_NL_COEFFS][NUM_REDUNDANCY_CONFIGS][NUM_CHANNELS];
+            float shelfTemp[NUM_COLD_PLATE_TEMP][NUM_SHELF_TEMPS];
+            float prtConvergence;
+            float reflectorEmissivity[NUM_CHANNELS];
+            float reflectorTempOffset;
+            int32_t mapRc[NUM_MAP_RC_SIZE];
+            int32_t resolverOffset;
+            int32_t prtLoops;
+            int8_t useQuadraticTerm;
+        };
+
+        inline void from_json(const nlohmann::json &j, ATMS_SDR_CC &v)
+        {
+            for (int i = 0; i < NUM_CHANNELS; i++)
+                for (int z = 0; z < NUM_BEAM_POSITIONS; z++)
+                    v.scanBias[i][z] = j["scanBias"][i][z];
+            for (int i = 0; i < NUM_CHANNELS; i++)
+                for (int z = 0; z < NUM_BEAM_POSITIONS; z++)
+                    v.beamEfficiencyCorrection[i][z] = j["beamEfficiencyCorrection"][i][z];
+            for (int i = 0; i < NUM_CHANNELS; i++)
+                v.centralFrequency[i] = j["centralFrequency"][i];
+            for (int i = 0; i < NUM_BC_COEFFS; i++)
+                for (int z = 0; z < NUM_CHANNELS; z++)
+                    v.radianceBandCorrection[i][z] = j["radianceBandCorrection"][i][z];
+            for (int i = 0; i < NUM_NL_COEFFS; i++)
+                for (int z = 0; z < NUM_REDUNDANCY_CONFIGS; z++)
+                    for (int k = 0; k < NUM_CHANNELS; k++)
+                        v.quadraticRc[i][z][k] = j["quadraticRc"][i][z][k];
+            for (int i = 0; i < NUM_COLD_PLATE_TEMP; i++)
+                for (int z = 0; z < NUM_SHELF_TEMPS; z++)
+                    v.shelfTemp[i][z] = j["shelfTemp"][i][z];
+            v.prtConvergence = j["prtConvergence"];
+            for (int i = 0; i < NUM_CHANNELS; i++)
+                v.reflectorEmissivity[i] = j["reflectorEmissivity"][i];
+            v.reflectorTempOffset = j["reflectorTempOffset"];
+            for (int i = 0; i < NUM_MAP_RC_SIZE; i++)
+                v.mapRc[i] = j["mapRc"][i];
+            v.resolverOffset = j["resolverOffset"];
+            v.prtLoops = j["prtLoops"];
+            v.useQuadraticTerm = j["useQuadraticTerm"];
+        }
     }
+
 }

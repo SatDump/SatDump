@@ -1,6 +1,6 @@
 #include "atms_calibrator.h"
 #include "common/calibration.h"
-#include "atms_structs.h"
+#include "logger.h"
 
 #define DEG_TO_RAD (M_PI / 180.0)
 #define RAD_TO_DEG (180.0 / M_PI)
@@ -9,15 +9,7 @@ namespace jpss
 {
     namespace atms
     {
-        const int NUM_BEAM_POSITIONS = 96;
-        const int NUM_COLD_SAMPLES = 4;
-        const int NUM_WARM_SAMPLES = 4;
-
         const double BEAM_COUNTS2DEG = 360.0 / (2 << 15);
-
-        const int NUM_SCAN_WC = 10;
-        const int NUM_SCAN_CC = 10;
-        const int NUM_SCAN_PRT = 9;
 
         void JpssATMSCalibrator::init()
         {
@@ -33,13 +25,13 @@ namespace jpss
 
             // Check Data
             if (!convCalData.valid)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
             if (!hotCalData.valid)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
             if (!engData.valid)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
             if (px_val == 0)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
 
             double cfreq = atmsSdrCoeffsPtr.centralFrequency[ich];
 
@@ -65,7 +57,7 @@ namespace jpss
 
                 if (r0 == 0)
                 {
-                    printf("Bad PRT!\n");
+                    logger->trace("ATMS Calibratior : Bad PRT!");
                     continue; // Bad PRT
                 }
 
@@ -75,8 +67,6 @@ namespace jpss
                 //  Setup initial guess for temperature (degress C)
                 double tguess = ((ri - r0) / r0a) - 1;
                 double degc = tguess + atmsSdrCoeffsPtr.prtConvergence + 1;
-
-                // printf("Temp guess %f - R %f --------- %f %f %f\n", tguess, ri, rref, cref, coff);
 
                 // Loop using Newton-Raphson method until temperature converges -
                 // this should happen very quickly.
@@ -93,12 +83,10 @@ namespace jpss
                     iloop++;
                     if (iloop > atmsSdrCoeffsPtr.prtLoops)
                     {
-                        printf("PRT Temp not converging!\n");
+                        logger->trace("ATMS Calibratior : PRT Temp not converging!");
                         converged = false;
                     }
                 }
-
-                // printf("Temp guess ------------------------------ %f\n", degc);
 
                 if (converged)
                     temp_prt = degc + 273.15;
@@ -114,7 +102,7 @@ namespace jpss
             atemp_prt /= double(num_valid_prts);
 
             if (atemp_prt == 0)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
 
             ///////////////////////////////////////// Calculate shelf PRTs
             double bptemp_backup[2];
@@ -138,7 +126,7 @@ namespace jpss
 
                 if (r0 == 0)
                 {
-                    printf("Bad PRT!\n");
+                    logger->trace("ATMS Calibratior : Bad PRT!");
                     continue; // Bad PRT
                 }
 
@@ -148,8 +136,6 @@ namespace jpss
                 //  Setup initial guess for temperature (degress C)
                 double tguess = ((ri - r0) / r0a) - 1;
                 double degc = tguess + atmsSdrCoeffsPtr.prtConvergence + 1;
-
-                // printf("Temp guess %f - R %f --------- %f %f %f\n", tguess, ri, rref, cref, coff);
 
                 // Loop using Newton-Raphson method until temperature converges -
                 // this should happen very quickly.
@@ -166,12 +152,10 @@ namespace jpss
                     iloop++;
                     if (iloop > atmsSdrCoeffsPtr.prtLoops)
                     {
-                        printf("Shelf PRT Temp not converging!\n");
+                        logger->trace("ATMS Calibratior : Shelf PRT Temp not converging!");
                         converged = false;
                     }
                 }
-
-                // printf("Temp guess ------------------------------ %f\n", degc);
 
                 if (converged)
                 {
@@ -184,12 +168,12 @@ namespace jpss
                 }
             }
 
-            // Always retrieve  shelf PRT temperature from the backup
+            // Always retrieve shelf PRT temperature from the backup
             double bptemp = bptemp_backup[1];
 
             // Transform vshelf prt to radiance
             double prt_vshelf_corr = atmsSdrCoeffsPtr.radianceBandCorrection[0][ich] + atmsSdrCoeffsPtr.radianceBandCorrection[1][ich] * (bptemp + atmsSdrCoeffsPtr.reflectorTempOffset);
-            double prt_vshelf_rad = temperature_to_radiance(prt_vshelf_corr, freq_to_wavenumber(cfreq)); // planck(cfreq,prt_vshelf_corr)
+            double prt_vshelf_rad = temperature_to_radiance(prt_vshelf_corr, freq_to_wavenumber(cfreq));
 
             // Calculate average warm and cold counts
             double cw = ((double)d_vars[pos_y]["warm_counts"][ich][0] +
@@ -216,7 +200,7 @@ namespace jpss
                 double angle_cold = (d_vars[pos_y]["beam_pos_cc"][i].get<double>() - atmsSdrCoeffsPtr.resolverOffset) * BEAM_COUNTS2DEG;
 
                 if (angle_cold < -180.0 || angle_cold > 180.0)
-                    printf("Invalid cold beam angle %f\n", angle_cold);
+                    logger->trace("ATMS Calibratior : Invalid cold beam angle %f", angle_cold);
                 else
                 {
                     angc_mean += angle_cold * DEG_TO_RAD;
@@ -224,7 +208,7 @@ namespace jpss
                 }
             }
             if (angc_cnt == 0)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
             angc_mean /= double(angc_cnt);
 
             double angw_mean = 0;
@@ -239,7 +223,7 @@ namespace jpss
                 double angle_warm = (d_vars[pos_y]["beam_pos_wc"][i].get<double>() - atmsSdrCoeffsPtr.resolverOffset) * BEAM_COUNTS2DEG;
 
                 if (angle_warm < -180.0 || angle_warm > 180.0)
-                    printf("Invalid warm beam angle %f\n", angle_warm);
+                    logger->trace("ATMS Calibratior : Invalid warm beam angle %f", angle_warm);
                 else
                 {
                     angw_mean += angle_warm * DEG_TO_RAD;
@@ -247,7 +231,7 @@ namespace jpss
                 }
             }
             if (angw_cnt == 0)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
             angw_mean /= double(angw_cnt);
 
             // Include biases to compute warm load, cold space temperatures
@@ -262,7 +246,7 @@ namespace jpss
             // get warmload radiance
             double twcorr = atmsSdrCoeffsPtr.radianceBandCorrection[0][ich] + atmsSdrCoeffsPtr.radianceBandCorrection[1][ich] * tw;
 
-            double tw_rad = temperature_to_radiance(twcorr, freq_to_wavenumber(cfreq)); // planck(cfreq, twcorr);
+            double tw_rad = temperature_to_radiance(twcorr, freq_to_wavenumber(cfreq));
 
             // Antenna reflector emission correction in radiance
             tw_rad = tw_rad + Calculate_Sa_target(ich, angw_mean, tw_rad, prt_vshelf_rad);
@@ -270,12 +254,10 @@ namespace jpss
             // get cold space radiance
             double tccorr = atmsSdrCoeffsPtr.radianceBandCorrection[0][ich] + atmsSdrCoeffsPtr.radianceBandCorrection[1][ich] * tc;
 
-            double tc_rad = temperature_to_radiance(tccorr, freq_to_wavenumber(cfreq)); // planck(cfreq, tccorr);
+            double tc_rad = temperature_to_radiance(tccorr, freq_to_wavenumber(cfreq));
 
             // Antenna reflector emission correction in radiance
             tc_rad = tc_rad + Calculate_Sa_target(ich, angc_mean, tc_rad, prt_vshelf_rad);
-
-            // printf("GGGG ------------------------------ %f %f %f %f\n", cw, cc, angw_mean, angc_mean);
 
             // calculate gain in counts/radiance
             double gain_rad = (cw - cc) / (tw_rad - tc_rad);
@@ -283,21 +265,20 @@ namespace jpss
             // calculate linear radiance
             double tk_rad = tw_rad + ((scnt - cw) / gain_rad);
 
-            double degc = bptemp;
-            const double bptemp_bad = -999.9;
-
             // Get Earth beam angle
             if (!d_vars[pos_y].contains("beam_pos_sc"))
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
             if (d_vars[pos_y]["beam_pos_sc"].size() <= pos_x)
-                return -1;
+                return CALIBRATION_INVALID_VALUE;
 
             double angle_sc = (d_vars[pos_y]["beam_pos_sc"][pos_x].get<double>() - atmsSdrCoeffsPtr.resolverOffset) * BEAM_COUNTS2DEG;
 
             if (angle_sc < -180.0 || angle_sc > 180.0)
-                printf("Invalid Earth beam angle %f\n", angle_sc);
+                logger->trace("ATMS Calibratior : Invalid Earth beam angle %f", angle_sc);
             else
                 angle_sc += angle_sc * DEG_TO_RAD;
+
+            double degc = bptemp;
 
             // Use of the quadratic term can be enabled or disabled in the
             // ancillary data file.
@@ -311,7 +292,7 @@ namespace jpss
 
                 // normalize scene counts to 0~1
                 double cnorm = (scnt - cc) / (cw - cc);
-                if (degc <= bptemp_bad + 0.001)
+                if (degc <= -999.9 + 0.001)
                 {
                     quadratic_factor = 0;
                 }
