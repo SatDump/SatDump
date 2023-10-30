@@ -13,6 +13,9 @@
 #include "products/dataset.h"
 #include "resources.h"
 
+#include "instruments/atms/atms_sdr_cc.h"
+#include "common/calibration.h"
+
 namespace jpss
 {
     namespace instruments
@@ -198,6 +201,8 @@ namespace jpss
                 for (int i = 0; i < 22; i++)
                     atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
 
+                ATMS_SDR_CC sdr_cc;
+
                 nlohmann::json calib_cfg;
                 calib_cfg["calibrator"] = "jpss_atms";
                 calib_cfg["vars"] = atms_reader.getCalib();
@@ -206,6 +211,7 @@ namespace jpss
                 {
                     atms_products.set_calibration_type(c, atms_products.CALIB_RADIANCE);
                     // mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                    atms_products.set_wavenumber(c, freq_to_wavenumber(sdr_cc.centralFrequency[c]));
                 }
 
                 atms_products.save(directory);

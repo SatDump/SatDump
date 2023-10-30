@@ -1,5 +1,6 @@
 #include "atms_reader.h"
 #include "common/ccsds/ccsds_time.h"
+#include "common/repack.h"
 
 namespace jpss
 {
@@ -37,7 +38,7 @@ namespace jpss
             {
                 calib_data[lines]["calibration_pkt"] = last_calib_pkt;
                 calib_data[lines]["engineering_pkt"] = last_eng_pkt;
-                calib_data[lines]["hotcal_pkt"] = last_calib_pkt;
+                calib_data[lines]["hotcal_pkt"] = last_hot_pkt;
 
                 lines++;
                 timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, -4383));
@@ -51,7 +52,9 @@ namespace jpss
                 }
             }
 
-            int beam_angle = (packet.payload[8 + 0] << 8 | packet.payload[8 + 1]);
+            int16_t beam_angle;
+            ((uint8_t *)&beam_angle)[1] = packet.payload[8 + 0];
+            ((uint8_t *)&beam_angle)[0] = packet.payload[8 + 1];
 
             // Safeguard
             if (scan_pos < 96 && scan_pos >= 0)
@@ -97,7 +100,8 @@ namespace jpss
 
             // Parse calibration packet
             ATMSCalibPkt calib_pkt;
-            uint16_t *words = (uint16_t *)&packet.payload[8];
+            uint16_t words[215];
+            repackBytesTo16bits(&packet.payload[8], 430, words);
 
             calib_pkt.pamKav = parse_pam_gamma0(words[0]);
             calib_pkt.pamWg = parse_pam_gamma0(words[1]);
@@ -159,7 +163,8 @@ namespace jpss
                 return;
 
             ATMSHealtStatusPkt eng_pkt;
-            uint16_t *words = (uint16_t *)&packet.payload[8];
+            uint16_t words[74];
+            repackBytesTo16bits(&packet.payload[8], 148, words);
 
             for (int i = 0; i < NUM_HS_VARS; i++)
                 eng_pkt.data[i] = words[i];
@@ -175,7 +180,8 @@ namespace jpss
                 return;
 
             ATMSHotCalTempPkt hot_pkt;
-            uint16_t *words = (uint16_t *)&packet.payload[8];
+            uint16_t words[14];
+            repackBytesTo16bits(&packet.payload[8], 28, words);
 
             for (int i = 0; i < NUM_PRT_KAV; i++)
                 hot_pkt.kavPrt[i] = words[i];
@@ -201,11 +207,11 @@ namespace jpss
             for (int i = 0; i < lines; i++)
                 for (int c = 0; c < 22; c++)
                     for (int z = 0; z < 4; z++)
-                        calib_data["cold_counts"][i][c][z] = channels_cc[c][i * 4 + z];
+                        calib_data[i]["cold_counts"][c][z] = channels_cc[c][i * 4 + z];
             for (int i = 0; i < lines; i++)
                 for (int c = 0; c < 22; c++)
                     for (int z = 0; z < 4; z++)
-                        calib_data["warm_counts"][i][c][z] = channels_wc[c][i * 4 + z];
+                        calib_data[i]["warm_counts"][c][z] = channels_wc[c][i * 4 + z];
             return calib_data;
         }
     } // namespace atms

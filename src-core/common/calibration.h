@@ -11,6 +11,6 @@ double temperature_to_radiance(double t, double v);
 
 double radiance_to_temperature(double L, double v);
 
-struct calibration_metadata {
+double freq_to_wavenumber(double freq);
 
-};
+double wavenumber_to_freq(double wavenumber);
