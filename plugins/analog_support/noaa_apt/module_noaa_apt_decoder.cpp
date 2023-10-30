@@ -113,7 +113,7 @@ namespace noaa_apt
 
                 if (is_stereo)
                 {
-                    for (int i = 0; i < buffer_size * 2; i++)
+                    for (int i = 0; i < buffer_size / 2; i++)
                         input_stream->writeBuf[i] = s16_buf[i * 2] / 65535.0;
                     input_stream->swap(buffer_size / 2);
                 }
@@ -291,7 +291,7 @@ namespace noaa_apt
 
             logger->trace("Valid lines %d %d", first_valid_wedge, last_valid_wedge);
 
-            if (abs(first_valid_wedge - last_valid_wedge) > 0)
+            if (abs(first_valid_wedge - last_valid_wedge) > 0 && first_valid_wedge != 1e9)
             {
                 first_valid_line = first_valid_wedge;
                 last_valid_line = last_valid_wedge;
@@ -325,7 +325,7 @@ namespace noaa_apt
                 {
                     number = d_parameters["satellite_number"];
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     number = std::stoi(d_parameters["satellite_number"].get<std::string>());
                 }

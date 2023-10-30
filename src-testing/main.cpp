@@ -12,6 +12,7 @@
 
 #include "init.h"
 #include "logger.h"
+<<<<<<< HEAD
 #include "nlohmann/json.hpp"
 #include "nlohmann/json_utils.h"
 #include <iostream>
@@ -52,10 +53,13 @@ std::string parseArray(std::ifstream &input_bin, std::string datatype, int types
     final_decl += "}";
     return final_decl;
 }
+=======
+>>>>>>> master
 
 int main(int argc, char *argv[])
 {
     initLogger();
+<<<<<<< HEAD
 
     nlohmann::json data_config = loadJsonFile(argv[1]);
     auto data_fields = data_config["DataProduct"]["ProductData"][0]["Field"];
@@ -152,4 +156,6 @@ int main(int argc, char *argv[])
     printf("\n");
     printf("%s", full_variables.c_str());
     printf("};\n");
+=======
+>>>>>>> master
 }
