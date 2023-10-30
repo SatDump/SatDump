@@ -39,6 +39,7 @@ namespace jpss
 
             double compute(int channel, int pos_x, int pos_y, int px_val)
             {
+                /*
                 auto &scanWeightsPrtKav = atmsSdrCoeffsPtr.scanWeightsPrtKav;
                 auto &scanWeightsPrtWg = atmsSdrCoeffsPtr.scanWeightsPrtWg;
 
@@ -117,6 +118,9 @@ namespace jpss
                 for (int c = 0; c < NUM_PRT_WG; c++)
                     for (int i = 0; i < NUM_SCAN_PRT; i++)
                         prtw_wg[c][i] = hot_cal.wqPrt[c];
+                */
+
+               
 
                 return -1;
             }
