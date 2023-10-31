@@ -213,8 +213,8 @@ namespace jpss
                         atms_products.set_calibration_type(c, atms_products.CALIB_RADIANCE);
                         atms_products.set_wavenumber(c, freq_to_wavenumber(sdr_cc.centralFrequency[c]));
                         atms_products.set_calibration_default_radiance_range(c,
-                                                                             temperature_to_radiance(0, freq_to_wavenumber(sdr_cc.centralFrequency[c])),
-                                                                             temperature_to_radiance(330, freq_to_wavenumber(sdr_cc.centralFrequency[c])));
+                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][0].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])),
+                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][1].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])));
                     }
                 }
                 else
