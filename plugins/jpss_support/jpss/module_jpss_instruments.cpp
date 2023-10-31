@@ -12,6 +12,7 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "resources.h"
+#include "common/calibration.h"
 
 namespace jpss
 {
@@ -74,6 +75,12 @@ namespace jpss
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 528)
                             atms_reader.work(pkt);
+                        else if (pkt.header.apid == 515)
+                            atms_reader.work_calib(pkt);
+                        else if (pkt.header.apid == 530)
+                            atms_reader.work_hotcal(pkt);
+                        else if (pkt.header.apid == 531)
+                            atms_reader.work_eng(pkt);
                 }
                 else if (vcdu.vcid == 6) // CrIS
                 {
@@ -191,6 +198,27 @@ namespace jpss
 
                 for (int i = 0; i < 22; i++)
                     atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
+
+                nlohmann::json calib_coefs = loadCborFile(resources::getResourcePath("calibration/ATMS.cbor"));
+                if (calib_coefs.contains(sat_name))
+                {
+                    atms::ATMS_SDR_CC sdr_cc = calib_coefs[sat_name];
+                    nlohmann::json calib_cfg;
+                    calib_cfg["calibrator"] = "jpss_atms";
+                    calib_cfg["vars"] = atms_reader.getCalib();
+                    calib_cfg["sdr_cc"] = calib_coefs[sat_name];
+                    atms_products.set_calibration(calib_cfg);
+                    for (int c = 0; c < 22; c++)
+                    {
+                        atms_products.set_calibration_type(c, atms_products.CALIB_RADIANCE);
+                        atms_products.set_wavenumber(c, freq_to_wavenumber(sdr_cc.centralFrequency[c]));
+                        atms_products.set_calibration_default_radiance_range(c,
+                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][0].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])),
+                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][1].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])));
+                    }
+                }
+                else
+                    logger->warn("(ATMS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                 atms_products.save(directory);
                 dataset.products_list.push_back("ATMS");
