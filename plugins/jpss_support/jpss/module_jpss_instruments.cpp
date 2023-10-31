@@ -281,10 +281,10 @@ namespace jpss
                     std::filesystem::create_directories(directory_dnb);
 
                 logger->info("----------- VIIRS");
-                for (int i = 0; i < 16; i++)
-                    logger->info("M" + std::to_string(i + 1) + " Segments : " + std::to_string(viirs_reader_moderate[i].segments.size()));
                 for (int i = 0; i < 5; i++)
                     logger->info("I" + std::to_string(i + 1) + " Segments : " + std::to_string(viirs_reader_imaging[i].segments.size()));
+                for (int i = 0; i < 16; i++)
+                    logger->info("M" + std::to_string(i + 1) + " Segments : " + std::to_string(viirs_reader_moderate[i].segments.size()));
                 logger->info("DNB Segments : " + std::to_string(viirs_reader_dnb[0].segments.size()));
 
                 process_viirs_channels(); // Differential decoding!
@@ -332,24 +332,6 @@ namespace jpss
                     proj_cfg["ephemeris"] = att_ephem.getEphem();
                 viirs_dnb_products.set_proj_cfg(proj_cfg);
 
-                for (int i = 0; i < 16; i++)
-                {
-                    if (viirs_reader_moderate[i].segments.size() > 0)
-                    {
-                        logger->info("M" + std::to_string(i + 1) + "...");
-                        image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
-                        viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
-                        viirs_moderate_status[i] = SAVING;
-
-                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),
-                                                         "m" + std::to_string(i + 1),
-                                                         viirs_image,
-                                                         viirs_reader_moderate[i].timestamps,
-                                                         viirs_reader_moderate[i].channelSettings.zoneHeight});
-                    }
-                    viirs_moderate_status[i] = DONE;
-                }
-
                 for (int i = 0; i < 5; i++)
                 {
                     if (viirs_reader_imaging[i].segments.size() > 0)
@@ -366,6 +348,24 @@ namespace jpss
                                                          viirs_reader_imaging[i].channelSettings.zoneHeight});
                     }
                     viirs_imaging_status[i] = DONE;
+                }
+
+                for (int i = 0; i < 16; i++)
+                {
+                    if (viirs_reader_moderate[i].segments.size() > 0)
+                    {
+                        logger->info("M" + std::to_string(i + 1) + "...");
+                        image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
+                        viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
+                        viirs_moderate_status[i] = SAVING;
+
+                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),
+                                                         "m" + std::to_string(i + 1),
+                                                         viirs_image,
+                                                         viirs_reader_moderate[i].timestamps,
+                                                         viirs_reader_moderate[i].channelSettings.zoneHeight});
+                    }
+                    viirs_moderate_status[i] = DONE;
                 }
 
                 viirs_dnb_status = SAVING;
