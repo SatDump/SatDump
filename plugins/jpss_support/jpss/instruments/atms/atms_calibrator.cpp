@@ -57,16 +57,8 @@ namespace jpss
             double prt_vshelf_rad = temperature_to_radiance(prt_vshelf_corr, freq_to_wavenumber(cfreq));
 
             // Calculate average warm and cold counts
-            double cw = ((double)d_vars[pos_y]["warm_counts"][ich][0] +
-                         (double)d_vars[pos_y]["warm_counts"][ich][1] +
-                         (double)d_vars[pos_y]["warm_counts"][ich][2] +
-                         (double)d_vars[pos_y]["warm_counts"][ich][3]) /
-                        4.0;
-            double cc = ((double)d_vars[pos_y]["cold_counts"][ich][0] +
-                         (double)d_vars[pos_y]["cold_counts"][ich][1] +
-                         (double)d_vars[pos_y]["cold_counts"][ich][2] +
-                         (double)d_vars[pos_y]["cold_counts"][ich][3]) /
-                        4.0;
+            double cw = calculate_avg_warm_cnt(pos_y, ich);
+            double cc = calculate_avg_cold_cnt(pos_y, ich);
 
             // Calculate average warm/cold counts angles
             double angc_mean = 0;
@@ -371,6 +363,44 @@ namespace jpss
                         bptemp_backup[i] = degc + 273.15;
                 }
             }
+        }
+
+        double JpssATMSCalibrator::calculate_avg_warm_cnt(int pos_y, int ich)
+        {
+            int num_valid = 0;
+            double favg = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                double v = d_vars[pos_y]["warm_counts"][ich][i];
+                if (v != 0)
+                {
+                    num_valid++;
+                    favg += v;
+                }
+            }
+            if (num_valid > 0)
+                return favg / double(num_valid);
+            else
+                return -1;
+        }
+
+        double JpssATMSCalibrator::calculate_avg_cold_cnt(int pos_y, int ich)
+        {
+            int num_valid = 0;
+            double favg = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                double v = d_vars[pos_y]["cold_counts"][ich][i];
+                if (v != 0)
+                {
+                    num_valid++;
+                    favg += v;
+                }
+            }
+            if (num_valid > 0)
+                return favg / double(num_valid);
+            else
+                return -1;
         }
     }
 }
