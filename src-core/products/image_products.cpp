@@ -43,7 +43,8 @@ namespace satdump
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
-                images[c].filename.find(".j2k") == std::string::npos)
+                images[c].filename.find(".j2k") == std::string::npos && 
+                images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
             else
                 logger->trace("Image format was specified in product call. Not supposed to happen!");
