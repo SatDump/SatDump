@@ -115,8 +115,8 @@ namespace jpss
 
                 int ioff = ich < 15 ? 0 : 2;
 
-                double prt_bp[2] = {ich < 15 ? engData.data[26] : engData.data[25],
-                                    ich < 15 ? engData.data[28] : engData.data[27]};
+                double prt_bp[2] = {ich < 15 ? (double)engData.data[26] : (double)engData.data[25],
+                                    ich < 15 ? (double)engData.data[28] : (double)engData.data[27]};
 
                 double r0 = prt_coeff_bp[i + ioff][0];
                 double alpha = prt_coeff_bp[i + ioff][1];
