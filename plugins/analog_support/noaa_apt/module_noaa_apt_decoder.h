@@ -11,7 +11,6 @@
 #include "common/image/image.h"
 
 #define APT_IMG_WIDTH 2080
-#define APT_MAX_LINES 2400
 #define APT_IMG_OVERS 4
 
 namespace noaa_apt
