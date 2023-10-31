@@ -37,146 +37,23 @@ namespace jpss
             if (px_val == 0)
                 return CALIBRATION_INVALID_VALUE;
 
+            // Frequency of the current channel
             double cfreq = atmsSdrCoeffsPtr.centralFrequency[ich];
 
-            ///////////////////////////////////////// Calculate warm PRTs
-            double atemp_prt = 0;
+            // Calculate warm & shelf PRTs
+            double warm_prt = 0;
+            double shelf_prts[2];
 
-            int num_prt = ich < 15 ? NUM_PRT_KAV : NUM_PRT_WG;
-            double rref = ich < 15 ? convCalData.pamKav : convCalData.pamWg;
-            uint16_t *prtw = ich < 15 ? (uint16_t *)hotCalData.kavPrt : (uint16_t *)hotCalData.wqPrt;
-            double coff = engData.data[45]; // INDEX_46;
-            double cref = ich < 15 ? hotCalData.kavPamCounts : hotCalData.wgPamCounts;
+            calculate_prt_temps(ich, warm_prt, shelf_prts);
 
-            double num_valid_prts = 0;
-            for (int i = 0; i < num_prt; i++)
-            {
-                double temp_prt = -1;
-
-                double r0 = ich < 15 ? convCalData.prtCoeffKav[i][0] : convCalData.prtCoeffWg[i][0];
-                double alpha = ich < 15 ? convCalData.prtCoeffKav[i][1] : convCalData.prtCoeffWg[i][1];
-                double delta = ich < 15 ? convCalData.prtCoeffKav[i][2] : convCalData.prtCoeffWg[i][2];
-                double beta = ich < 15 ? convCalData.prtCoeffKav[i][3] : convCalData.prtCoeffWg[i][3];
-                double r0a = r0 * alpha;
-
-                if (r0 == 0)
-                {
-                    logger->trace("ATMS Calibratior : Bad PRT!");
-                    continue; // Bad PRT
-                }
-
-                // Compute PRT resistance
-                double ri = (rref * (double(prtw[i]) - coff)) / (cref - coff);
-
-                //  Setup initial guess for temperature (degress C)
-                double tguess = ((ri - r0) / r0a) - 1;
-                double degc = tguess + atmsSdrCoeffsPtr.prtConvergence + 1;
-
-                // Loop using Newton-Raphson method until temperature converges -
-                // this should happen very quickly.
-                int iloop = 0;
-                bool converged = true;
-                while (abs(degc - tguess) > atmsSdrCoeffsPtr.prtConvergence && converged)
-                {
-                    tguess = degc;
-                    double tg100 = tguess / 100.0;
-                    double ft = r0 - ri + (r0a * (tguess - (delta * (tg100 - 1.0) * tg100) - (beta * (tg100 - 1.0) * (pow(tg100, 3)))));
-                    double ftprime = r0a * (1.0 - (delta * ((tguess / 5000.0) - 0.01)) - (beta * (((pow(tguess, 3)) / 2.5e7) - (3.0 * (pow(tguess, 2)) / 1.0e6))));
-                    degc = tguess - (ft / ftprime);
-                    // Data Integrity: check for infinite loop
-                    iloop++;
-                    if (iloop > atmsSdrCoeffsPtr.prtLoops)
-                    {
-                        logger->trace("ATMS Calibratior : PRT Temp not converging!");
-                        converged = false;
-                    }
-                }
-
-                if (converged)
-                    temp_prt = degc + 273.15;
-
-                if (temp_prt != -1)
-                {
-                    num_valid_prts++;
-                    atemp_prt += temp_prt;
-                }
-            }
-
-            // Compute average
-            atemp_prt /= double(num_valid_prts);
-
-            if (atemp_prt == 0)
+            if (warm_prt == 0)
                 return CALIBRATION_INVALID_VALUE;
 
-            ///////////////////////////////////////// Calculate shelf PRTs
-            double bptemp_backup[2];
-
-            auto &prt_coeff_bp = convCalData.prtCoeffShelf;
-
-            for (int i = 0; i < 2; i++)
-            {
-                bptemp_backup[i] = -1;
-
-                int ioff = ich < 15 ? 0 : 2;
-
-                double prt_bp[2] = {ich < 15 ? (double)engData.data[26] : (double)engData.data[25],
-                                    ich < 15 ? (double)engData.data[28] : (double)engData.data[27]};
-
-                double r0 = prt_coeff_bp[i + ioff][0];
-                double alpha = prt_coeff_bp[i + ioff][1];
-                double delta = prt_coeff_bp[i + ioff][2];
-                double beta = prt_coeff_bp[i + ioff][3];
-                double r0a = r0 * alpha;
-
-                if (r0 == 0)
-                {
-                    logger->trace("ATMS Calibratior : Bad PRT!");
-                    continue; // Bad PRT
-                }
-
-                // Compute PRT resistance
-                double ri = (rref * (double(prt_bp[i]) - coff)) / (cref - coff);
-
-                //  Setup initial guess for temperature (degress C)
-                double tguess = ((ri - r0) / r0a) - 1;
-                double degc = tguess + atmsSdrCoeffsPtr.prtConvergence + 1;
-
-                // Loop using Newton-Raphson method until temperature converges -
-                // this should happen very quickly.
-                int iloop = 0;
-                bool converged = true;
-                while (abs(degc - tguess) > atmsSdrCoeffsPtr.prtConvergence && converged)
-                {
-                    tguess = degc;
-                    double tg100 = tguess / 100.0;
-                    double ft = r0 - ri + (r0a * (tguess - (delta * (tg100 - 1.0) * tg100) - (beta * (tg100 - 1.0) * (pow(tg100, 3)))));
-                    double ftprime = r0a * (1.0 - (delta * ((tguess / 5000.0) - 0.01)) - (beta * (((pow(tguess, 3)) / 2.5e7) - (3.0 * (pow(tguess, 2)) / 1.0e6))));
-                    degc = tguess - (ft / ftprime);
-                    // Data Integrity: check for infinite loop
-                    iloop++;
-                    if (iloop > atmsSdrCoeffsPtr.prtLoops)
-                    {
-                        logger->trace("ATMS Calibratior : Shelf PRT Temp not converging!");
-                        converged = false;
-                    }
-                }
-
-                if (converged)
-                {
-                    if (degc < atmsSdrCoeffsPtr.shelfTemp[0][i + ioff])
-                        bptemp_backup[i] = atmsSdrCoeffsPtr.shelfTemp[0][i + ioff] + 273.15;
-                    else if (degc > atmsSdrCoeffsPtr.shelfTemp[2][i + ioff])
-                        bptemp_backup[i] = atmsSdrCoeffsPtr.shelfTemp[2][i + ioff] + 273.15;
-                    else
-                        bptemp_backup[i] = degc + 273.15;
-                }
-            }
-
             // Always retrieve shelf PRT temperature from the backup
-            double bptemp = bptemp_backup[1];
+            double base_plate_temp = shelf_prts[1];
 
             // Transform vshelf prt to radiance
-            double prt_vshelf_corr = atmsSdrCoeffsPtr.radianceBandCorrection[0][ich] + atmsSdrCoeffsPtr.radianceBandCorrection[1][ich] * (bptemp + atmsSdrCoeffsPtr.reflectorTempOffset);
+            double prt_vshelf_corr = atmsSdrCoeffsPtr.radianceBandCorrection[0][ich] + atmsSdrCoeffsPtr.radianceBandCorrection[1][ich] * (base_plate_temp + atmsSdrCoeffsPtr.reflectorTempOffset);
             double prt_vshelf_rad = temperature_to_radiance(prt_vshelf_corr, freq_to_wavenumber(cfreq));
 
             // Calculate average warm and cold counts
@@ -241,7 +118,7 @@ namespace jpss
             // Include biases to compute warm load, cold space temperatures
             // The warm bias can be from telemetry or from parameter input
             double warm_bias = convCalData.warmBias[ich];
-            double tw = atemp_prt + warm_bias;
+            double tw = warm_prt + warm_bias;
 
             // In radiance processing, cold space temperature is set to 2.73K
             double cold_bias = convCalData.coldBias[ich];
@@ -282,7 +159,7 @@ namespace jpss
             else
                 angle_sc += angle_sc * DEG_TO_RAD;
 
-            double degc = bptemp;
+            double degc = base_plate_temp;
 
             // Use of the quadratic term can be enabled or disabled in the
             // ancillary data file.
@@ -367,6 +244,133 @@ namespace jpss
             double A = 1 / var1;
             double B = -var2 / var1;
             return A * taRadiance + reflectorRadiance * B;
+        }
+
+        void JpssATMSCalibrator::calculate_prt_temps(int ich, double &atemp_prt, double &bptemp_backup[2])
+        {
+            ///////////////////////////////////////// Calculate warm PRTs
+            int num_prt = ich < 15 ? NUM_PRT_KAV : NUM_PRT_WG;
+            double rref = ich < 15 ? convCalData.pamKav : convCalData.pamWg;
+            uint16_t *prtw = ich < 15 ? (uint16_t *)hotCalData.kavPrt : (uint16_t *)hotCalData.wqPrt;
+            double coff = engData.data[45]; // INDEX_46;
+            double cref = ich < 15 ? hotCalData.kavPamCounts : hotCalData.wgPamCounts;
+
+            double num_valid_prts = 0;
+            for (int i = 0; i < num_prt; i++)
+            {
+                double temp_prt = -1;
+
+                double r0 = ich < 15 ? convCalData.prtCoeffKav[i][0] : convCalData.prtCoeffWg[i][0];
+                double alpha = ich < 15 ? convCalData.prtCoeffKav[i][1] : convCalData.prtCoeffWg[i][1];
+                double delta = ich < 15 ? convCalData.prtCoeffKav[i][2] : convCalData.prtCoeffWg[i][2];
+                double beta = ich < 15 ? convCalData.prtCoeffKav[i][3] : convCalData.prtCoeffWg[i][3];
+                double r0a = r0 * alpha;
+
+                if (r0 == 0)
+                {
+                    logger->trace("ATMS Calibratior : Bad PRT!");
+                    continue; // Bad PRT
+                }
+
+                // Compute PRT resistance
+                double ri = (rref * (double(prtw[i]) - coff)) / (cref - coff);
+
+                //  Setup initial guess for temperature (degress C)
+                double tguess = ((ri - r0) / r0a) - 1;
+                double degc = tguess + atmsSdrCoeffsPtr.prtConvergence + 1;
+
+                // Loop using Newton-Raphson method until temperature converges -
+                // this should happen very quickly.
+                int iloop = 0;
+                bool converged = true;
+                while (abs(degc - tguess) > atmsSdrCoeffsPtr.prtConvergence && converged)
+                {
+                    tguess = degc;
+                    double tg100 = tguess / 100.0;
+                    double ft = r0 - ri + (r0a * (tguess - (delta * (tg100 - 1.0) * tg100) - (beta * (tg100 - 1.0) * (pow(tg100, 3)))));
+                    double ftprime = r0a * (1.0 - (delta * ((tguess / 5000.0) - 0.01)) - (beta * (((pow(tguess, 3)) / 2.5e7) - (3.0 * (pow(tguess, 2)) / 1.0e6))));
+                    degc = tguess - (ft / ftprime);
+                    // Data Integrity: check for infinite loop
+                    iloop++;
+                    if (iloop > atmsSdrCoeffsPtr.prtLoops)
+                    {
+                        logger->trace("ATMS Calibratior : PRT Temp not converging!");
+                        converged = false;
+                    }
+                }
+
+                if (converged)
+                    temp_prt = degc + 273.15;
+
+                if (temp_prt != -1)
+                {
+                    num_valid_prts++;
+                    atemp_prt += temp_prt;
+                }
+            }
+
+            // Compute average
+            atemp_prt /= double(num_valid_prts);
+
+            ///////////////////////////////////////// Calculate shelf PRTs
+            for (int i = 0; i < 2; i++)
+            {
+                bptemp_backup[i] = -1;
+
+                int ioff = ich < 15 ? 0 : 2;
+
+                double prt_bp[2] = {ich < 15 ? (double)engData.data[26] : (double)engData.data[25],
+                                    ich < 15 ? (double)engData.data[28] : (double)engData.data[27]};
+
+                double r0 = convCalData.prtCoeffShelf[i + ioff][0];
+                double alpha = convCalData.prtCoeffShelf[i + ioff][1];
+                double delta = convCalData.prtCoeffShelf[i + ioff][2];
+                double beta = convCalData.prtCoeffShelf[i + ioff][3];
+                double r0a = r0 * alpha;
+
+                if (r0 == 0)
+                {
+                    logger->trace("ATMS Calibratior : Bad PRT!");
+                    continue; // Bad PRT
+                }
+
+                // Compute PRT resistance
+                double ri = (rref * (double(prt_bp[i]) - coff)) / (cref - coff);
+
+                //  Setup initial guess for temperature (degress C)
+                double tguess = ((ri - r0) / r0a) - 1;
+                double degc = tguess + atmsSdrCoeffsPtr.prtConvergence + 1;
+
+                // Loop using Newton-Raphson method until temperature converges -
+                // this should happen very quickly.
+                int iloop = 0;
+                bool converged = true;
+                while (abs(degc - tguess) > atmsSdrCoeffsPtr.prtConvergence && converged)
+                {
+                    tguess = degc;
+                    double tg100 = tguess / 100.0;
+                    double ft = r0 - ri + (r0a * (tguess - (delta * (tg100 - 1.0) * tg100) - (beta * (tg100 - 1.0) * (pow(tg100, 3)))));
+                    double ftprime = r0a * (1.0 - (delta * ((tguess / 5000.0) - 0.01)) - (beta * (((pow(tguess, 3)) / 2.5e7) - (3.0 * (pow(tguess, 2)) / 1.0e6))));
+                    degc = tguess - (ft / ftprime);
+                    // Data Integrity: check for infinite loop
+                    iloop++;
+                    if (iloop > atmsSdrCoeffsPtr.prtLoops)
+                    {
+                        logger->trace("ATMS Calibratior : Shelf PRT Temp not converging!");
+                        converged = false;
+                    }
+                }
+
+                if (converged)
+                {
+                    if (degc < atmsSdrCoeffsPtr.shelfTemp[0][i + ioff])
+                        bptemp_backup[i] = atmsSdrCoeffsPtr.shelfTemp[0][i + ioff] + 273.15;
+                    else if (degc > atmsSdrCoeffsPtr.shelfTemp[2][i + ioff])
+                        bptemp_backup[i] = atmsSdrCoeffsPtr.shelfTemp[2][i + ioff] + 273.15;
+                    else
+                        bptemp_backup[i] = degc + 273.15;
+                }
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ namespace jpss
 
             double Calculate_Sa_target(int ich, double ang_rad, double PRTtargetRadiance, double PRTradiance);
             double Calculate_Sa_scene(int ich, double ang_rad, double taRadiance, double PRTradiance);
+            void calculate_prt_temps(int ich, double &atemp_prt, double &bptemp_backup[2]);
 
         public:
             JpssATMSCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
