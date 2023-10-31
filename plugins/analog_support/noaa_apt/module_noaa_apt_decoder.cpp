@@ -155,9 +155,8 @@ namespace noaa_apt
         ctm->start();
 
         int image_i = 0;
-        wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, APT_MAX_LINES, 1);
-
         int last_line_cnt = 0;
+        std::vector<uint16_t> imagebuf;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             int nsamp = ctm->output_stream->read();
@@ -166,18 +165,27 @@ namespace noaa_apt
             {
                 float v = ctm->output_stream->readBuf[i];
                 v = (v / 0.5f) * 65535.0f;
-
-                if (image_i < APT_IMG_WIDTH * APT_IMG_OVERS * APT_MAX_LINES)
-                    wip_apt_image[image_i++] = wip_apt_image.clamp(v);
+                imagebuf.push_back(wip_apt_image.clamp(v));
+                image_i++;
             }
 
             ctm->output_stream->flush();
 
             int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
-
             if (textureID != 0 && line_cnt > last_line_cnt)
             {
-                auto preview = wip_apt_image.resize_to(wip_apt_image.width() / 5, wip_apt_image.height() / 5);
+                int x_scale = (APT_IMG_WIDTH * APT_IMG_OVERS) / 512;
+                int y_scale = ceil((double)line_cnt / 512);
+                image::Image<uint16_t> preview;
+                preview.init(512, 512, 1);
+                for (int x = 0; x < 512; x++)
+                    for (int y = 0; y < line_cnt / y_scale; y++)
+                    {
+                        int xx = floor(double(x) * x_scale);
+                        int yy = floor(double(y) * y_scale);
+                        preview[y * 512 + x] = imagebuf[yy * APT_IMG_WIDTH * APT_IMG_OVERS + xx];
+                    }
+
                 ushort_to_rgba(preview.data(), textureBuffer, preview.size());
                 has_to_update = true;
                 last_line_cnt = line_cnt;
@@ -206,6 +214,11 @@ namespace noaa_apt
         // Line mumbers
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got %d lines...", line_cnt);
+
+        //Buffer to image
+        wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
+        for (size_t i = 0; i < wip_apt_image.size(); i++)
+            wip_apt_image[i] = imagebuf[i];
 
         // WB
         logger->info("White balance...");
@@ -506,7 +519,7 @@ namespace noaa_apt
             wedge_a.push_back(val);
         }
 
-        for (size_t line = 0; line < wedge_a.size() / (16 * 8); line++)
+        for (size_t line = 0; line < (wedge_a.size() - (9 * 8)) / (16 * 8); line++)
         {
             int best_cor = 160 * 255;
             int best_pos = 0;
@@ -655,12 +668,12 @@ namespace noaa_apt
             if (textureID == 0)
             {
                 textureID = makeImageTexture();
-                textureBuffer = new uint32_t[((APT_IMG_WIDTH * APT_IMG_OVERS) / 5) * (APT_MAX_LINES / 5)];
+                textureBuffer = new uint32_t[262144]; //512x512
             }
 
             if (has_to_update)
             {
-                updateImageTexture(textureID, textureBuffer, wip_apt_image.width() / 5, wip_apt_image.height() / 5);
+                updateImageTexture(textureID, textureBuffer, 512, 512);
                 has_to_update = false;
             }
 
