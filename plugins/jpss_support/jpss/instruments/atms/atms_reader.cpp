@@ -176,12 +176,12 @@ namespace jpss
         void ATMSReader::work_hotcal(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
-            if (packet.payload.size() < 36)
+            if (packet.payload.size() < 42)
                 return;
 
             ATMSHotCalTempPkt hot_pkt;
-            uint16_t words[14];
-            repackBytesTo16bits(&packet.payload[8], 28, words);
+            uint16_t words[17];
+            repackBytesTo16bits(&packet.payload[8], 34, words);
 
             for (int i = 0; i < NUM_PRT_KAV; i++)
                 hot_pkt.kavPrt[i] = words[i];
