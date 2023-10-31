@@ -44,7 +44,7 @@ namespace jpss
             double warm_prt = 0;
             double shelf_prts[2];
 
-            calculate_prt_temps(ich, warm_prt, shelf_prts);
+            calculate_prt_temps(ich, warm_prt, shelf_prts, convCalData, hotCalData, engData);
 
             if (warm_prt == 0)
                 return CALIBRATION_INVALID_VALUE;
@@ -246,7 +246,7 @@ namespace jpss
             return A * taRadiance + reflectorRadiance * B;
         }
 
-        void JpssATMSCalibrator::calculate_prt_temps(int ich, double &atemp_prt, double &bptemp_backup[2])
+        void JpssATMSCalibrator::calculate_prt_temps(int ich, double &atemp_prt, double *bptemp_backup, ATMSCalibPkt &convCalData, ATMSHotCalTempPkt &hotCalData, ATMSHealtStatusPkt &engData)
         {
             ///////////////////////////////////////// Calculate warm PRTs
             int num_prt = ich < 15 ? NUM_PRT_KAV : NUM_PRT_WG;
