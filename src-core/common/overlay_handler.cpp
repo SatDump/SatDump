@@ -11,26 +11,30 @@ int OverlayHandler::enabled()
 bool OverlayHandler::drawUI()
 {
     bool update = false;
-    update = update || ImGui::Checkbox("Lat/Lon Grid", &draw_latlon_overlay);
+    update |= ImGui::Checkbox("Lat/Lon Grid", &draw_latlon_overlay);
     ImGui::SameLine();
-    update = update || ImGui::ColorEdit3("##latlongrid", (float *)&color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    ImGui::ColorEdit3("##latlongrid", (float *)&color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    update |= ImGui::IsItemDeactivatedAfterEdit();
 
-    update = update || ImGui::Checkbox("Map Overlay##Projs", &draw_map_overlay);
+    update |= ImGui::Checkbox("Map Overlay##Projs", &draw_map_overlay);
     ImGui::SameLine();
-    update = update || ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    update |= ImGui::IsItemDeactivatedAfterEdit();
 
-    update = update || ImGui::Checkbox("Shores Overlay##Projs", &draw_shores_overlay);
+    update |= ImGui::Checkbox("Shores Overlay##Projs", &draw_shores_overlay);
     ImGui::SameLine();
-    update = update || ImGui::ColorEdit3("##shores", (float *)&color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    ImGui::ColorEdit3("##shores", (float *)&color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    update |= ImGui::IsItemDeactivatedAfterEdit();
 
-    update = update || ImGui::Checkbox("Cities Overlay##Projs", &draw_cities_overlay);
+    update |= ImGui::Checkbox("Cities Overlay##Projs", &draw_cities_overlay);
     ImGui::SameLine();
-    update = update || ImGui::ColorEdit3("##cities##Projs", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-    update = update || widgets::SteppedSliderInt("Cities Font Size", &cities_size, 10, 500);
+    ImGui::ColorEdit3("##cities##Projs", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    update |= ImGui::IsItemDeactivatedAfterEdit();
+    update |= widgets::SteppedSliderInt("Cities Font Size", &cities_size, 10, 500);
     static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
-    update = update || ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
+    update |= ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
     if (cities_type == 2)
-        update = update || widgets::SteppedSliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
+        update |= widgets::SteppedSliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
     return update;
 }
 
