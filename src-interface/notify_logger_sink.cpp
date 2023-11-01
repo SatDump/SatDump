@@ -14,9 +14,14 @@ namespace satdump
 
     void NotifyLoggerSink::receive(slog::LogMsg log)
     {
-        if (log.lvl == slog::LOG_WARN)
-            ImGui::InsertNotification(ImGuiToast(ImGuiToastType_Warning, "Warning", log.str.c_str()));
-        else if (log.lvl == slog::LOG_ERROR)
-            ImGui::InsertNotification(ImGuiToast(ImGuiToastType_Error, "Error", log.str.c_str()));
+        if (log.lvl == slog::LOG_WARN || log.lvl == slog::LOG_ERROR)
+        {
+            notify_mutex.lock();
+            if (log.lvl == slog::LOG_WARN)
+                ImGui::InsertNotification(ImGuiToast(ImGuiToastType_Warning, "Warning", log.str.c_str()));
+            else
+                ImGui::InsertNotification(ImGuiToast(ImGuiToastType_Error, "Error", log.str.c_str()));
+            notify_mutex.unlock();
+        }
     }
 }
