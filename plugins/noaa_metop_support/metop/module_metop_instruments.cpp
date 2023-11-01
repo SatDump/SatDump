@@ -14,6 +14,7 @@
 #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
+#include "common/calibration.h"
 
 namespace metop
 {
@@ -106,6 +107,8 @@ namespace metop
                             iasi_reader_img.work(pkt);
                         else if (pkt.header.apid == 130 || pkt.header.apid == 135 || pkt.header.apid == 140 || pkt.header.apid == 145)
                             iasi_reader.work(pkt);
+                        else if (pkt.header.apid == 180)
+                            iasi_reader_img.work_calib(pkt);
                     }
                 }
                 else if (vcdu.vcid == 3) // AMSU
@@ -362,7 +365,7 @@ namespace metop
                     logger->info("Channel IR imaging...");
                     image::Image<uint16_t> iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                    iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                    // iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;
@@ -374,6 +377,14 @@ namespace metop
                     iasi_img_products.set_timestamps(iasi_reader_img.timestamps_ifov);
                     iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")));
                     iasi_img_products.images.push_back({"IASI-IMG", "1", iasi_imaging});
+
+                    nlohmann::json calib_cfg;
+                    calib_cfg["calibrator"] = "metop_iasi_img";
+                    calib_cfg["vars"] = iasi_reader_img.getCalib();
+                    iasi_img_products.set_calibration(calib_cfg);
+                    iasi_img_products.set_calibration_type(0, iasi_img_products.CALIB_RADIANCE);
+                    iasi_img_products.set_wavenumber(0, freq_to_wavenumber(26297584035088.0));
+                    iasi_img_products.set_calibration_default_radiance_range(0, -10, 180);
 
                     iasi_img_products.save(directory_img);
                     dataset.products_list.push_back("IASI-IMG");
@@ -421,7 +432,7 @@ namespace metop
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
 
                 for (int i = 0; i < 15; i++)
-                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
+                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
 
                 // calib
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
