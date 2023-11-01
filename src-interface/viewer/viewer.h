@@ -10,6 +10,7 @@
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_image.h"
 #include "nlohmann/json_utils.h"
+#include "common/overlay_handler.h"
 
 namespace satdump
 {
@@ -95,6 +96,8 @@ namespace satdump
 
         int current_selected_tab = 0;
 
+        OverlayHandler projection_overlay_handler;
+
     public: // Projection UI stuff
         image::Image<uint16_t> projected_image_result;
         ImageViewWidget projection_image_widget;
@@ -159,12 +162,6 @@ namespace satdump
 
         void refreshProjectionLayers();
 
-        bool projections_draw_map_overlay = true;
-        bool projections_draw_shores_overlay = true;
-        bool projections_draw_cities_overlay = true;
-        int projections_cities_size = 50;
-        bool projections_draw_latlon_overlay = false;
-
         int projections_current_selected_proj = 0;
         /////////////
         float projections_equirectangular_tl_lon = -180;
@@ -192,13 +189,6 @@ namespace satdump
         bool urlgood = true;
 
         // Settings
-        ImVec4 color_borders = {0, 1, 0, 1};
-        ImVec4 color_shores = {1, 1, 0, 1};
-        ImVec4 color_cities = {1, 0, 0, 1};
-        ImVec4 color_latlon = {0, 0, 1, 1};
-        int cities_type = 0;
-        int cities_size = 50;
-        int cities_scale_rank = 3;
         std::string save_type = "png";
 
         int projections_image_width = 2048;
@@ -211,11 +201,7 @@ namespace satdump
         {
             nlohmann::json out;
 
-            out["projections_draw_map_overlay"] = projections_draw_map_overlay;
-            out["projections_draw_shores_overlay"] = projections_draw_shores_overlay;
-            out["projections_draw_cities_overlay"] = projections_draw_cities_overlay;
-            out["projections_cities_scale"] = projections_cities_size;
-            out["projections_draw_latlon_overlay"] = projections_draw_latlon_overlay;
+            out["projections_overlay_settings"] = projection_overlay_handler.get_config();
 
             out["projections_current_selected_proj"] = projections_current_selected_proj;
 
@@ -244,11 +230,8 @@ namespace satdump
 
         void deserialize_projections_config(nlohmann::json in)
         {
-            setValueIfExists(in["projections_draw_map_overlay"], projections_draw_map_overlay);
-            setValueIfExists(in["projections_draw_shores_overlay"], projections_draw_shores_overlay);
-            setValueIfExists(in["projections_draw_cities_overlay"], projections_draw_cities_overlay);
-            setValueIfExists(in["projections_cities_scale"], projections_cities_size);
-            setValueIfExists(in["projections_draw_latlon_overlay"], projections_draw_latlon_overlay);
+            if (in.contains("projections_overlay_settings"))
+                projection_overlay_handler.set_config(in["projections_overlay_settings"]);
 
             setValueIfExists(in["projections_current_selected_proj"], projections_current_selected_proj);
 

@@ -8,7 +8,7 @@
 #include "resources.h"
 #include "main_ui.h"
 
-void SelectableColor(ImU32 color) //Colors a cell in the table with the specified color in RGBA
+void SelectableColor(ImU32 color) // Colors a cell in the table with the specified color in RGBA
 {
     ImVec2 p_min = ImGui::GetItemRectMin();
     ImVec2 p_max = ImGui::GetItemRectMax();
@@ -20,49 +20,13 @@ namespace satdump
     ViewerApplication::ViewerApplication()
         : Application("viewer")
     {
+        projection_overlay_handler.draw_map_overlay = true;
+        projection_overlay_handler.draw_cities_overlay = true;
+
         if (config::main_cfg["user"].contains("viewer_state"))
         {
             if (config::main_cfg["user"]["viewer_state"].contains("panel_ratio"))
                 panel_ratio = config::main_cfg["user"]["viewer_state"]["panel_ratio"].get<float>();
-
-            if (config::main_cfg["user"]["viewer_state"].contains("borders_color"))
-            {
-                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["borders_color"].get<std::vector<float>>();
-                color_borders.x = color[0];
-                color_borders.y = color[1];
-                color_borders.z = color[2];
-            }
-
-            if (config::main_cfg["user"]["viewer_state"].contains("shores_color"))
-            {
-                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["shores_color"].get<std::vector<float>>();
-                color_shores.x = color[0];
-                color_shores.y = color[1];
-                color_shores.z = color[2];
-            }
-
-            if (config::main_cfg["user"]["viewer_state"].contains("cities_color"))
-            {
-                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["cities_color"].get<std::vector<float>>();
-                color_cities.x = color[0];
-                color_cities.y = color[1];
-                color_cities.z = color[2];
-            }
-
-            if (config::main_cfg["user"]["viewer_state"].contains("latlon_color"))
-            {
-                std::vector<float> color = config::main_cfg["user"]["viewer_state"]["latlon_color"].get<std::vector<float>>();
-                color_latlon.x = color[0];
-                color_latlon.y = color[1];
-                color_latlon.z = color[2];
-            }
-
-            if (config::main_cfg["user"]["viewer_state"].contains("cities_size"))
-                cities_size = config::main_cfg["user"]["viewer_state"]["cities_size"].get<int>();
-            if (config::main_cfg["user"]["viewer_state"].contains("cities_type"))
-                cities_type = config::main_cfg["user"]["viewer_state"]["cities_type"].get<int>();
-            if (config::main_cfg["user"]["viewer_state"].contains("cities_scale_rank"))
-                cities_scale_rank = config::main_cfg["user"]["viewer_state"]["cities_scale_rank"].get<int>();
 
             if (config::main_cfg["user"]["viewer_state"].contains("save_type"))
                 save_type = config::main_cfg["user"]["viewer_state"]["save_type"].get<std::string>();
@@ -106,13 +70,6 @@ namespace satdump
     void ViewerApplication::save_settings()
     {
         config::main_cfg["user"]["viewer_state"]["panel_ratio"] = panel_ratio;
-        config::main_cfg["user"]["viewer_state"]["cities_type"] = cities_type;
-        config::main_cfg["user"]["viewer_state"]["cities_size"] = cities_size;
-        config::main_cfg["user"]["viewer_state"]["cities_scale_rank"] = cities_scale_rank;
-        config::main_cfg["user"]["viewer_state"]["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};
-        config::main_cfg["user"]["viewer_state"]["shores_color"] = {color_shores.x, color_shores.y, color_shores.z};
-        config::main_cfg["user"]["viewer_state"]["cities_color"] = {color_cities.x, color_cities.y, color_cities.z};
-        config::main_cfg["user"]["viewer_state"]["latlon_color"] = {color_latlon.x, color_latlon.y, color_latlon.z};
         config::main_cfg["user"]["viewer_state"]["save_type"] = save_type;
         config::main_cfg["user"]["viewer_state"]["projections"] = serialize_projections_config();
     }
@@ -278,7 +235,7 @@ namespace satdump
                                         {
                                             if (products_and_handlers[i]->handler->shouldProject() && projections_are_generating)
                                                 logger->warn("%s is currently being projected and will not close",
-                                                    products_and_handlers[i]->products->instrument_name.c_str());
+                                                             products_and_handlers[i]->products->instrument_name.c_str());
                                             else
                                                 products_and_handlers[i]->marked_for_close = true;
                                         }

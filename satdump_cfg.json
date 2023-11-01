@@ -406,7 +406,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -448,7 +448,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -510,8 +510,8 @@
                         "autogen": false,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -543,7 +543,7 @@
                     "width": 4096,
                     "height": 2048,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -585,8 +585,8 @@
                             "thresold": 0,
                             "blend": 1
                         },
-                        "map_overlay": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -601,8 +601,8 @@
                             "thresold": 0,
                             "blend": 1
                         },
-                        "map_overlay": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -617,8 +617,8 @@
                             "thresold": 0,
                             "lut": "noaa_apt/WXtoImg-NO_mod.png"
                         },
-                        "map_overlay": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -663,7 +663,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -677,7 +677,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -691,7 +691,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -704,7 +704,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -727,7 +727,7 @@
                     "width": 4096,
                     "height": 2048,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -748,7 +748,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -772,7 +772,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -807,8 +807,8 @@
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -869,7 +869,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -883,7 +883,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -964,8 +964,8 @@
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -1041,8 +1041,8 @@
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -1102,7 +1102,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1126,7 +1126,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1158,7 +1158,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1173,7 +1173,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1456,7 +1456,7 @@
                         "project": {
                             "width": 2048,
                             "height": 1024,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -1468,7 +1468,7 @@
                         "project": {
                             "width": 2048,
                             "height": 1024,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -1546,7 +1546,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -1603,7 +1603,7 @@
                         "project": {
                             "width": 2048,
                             "height": 1024,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -1652,19 +1652,19 @@
                         "channel": 0,
                         "min": 0,
                         "max": 2576687,
-                        "draw_map": true
+                        "draw_map_overlay": true
                     },
                     "downward": {
                         "channel": 1,
                         "min": 0,
                         "max": 2576687,
-                        "draw_map": true
+                        "draw_map_overlay": true
                     },
                     "forward": {
                         "channel": 2,
                         "min": 0,
                         "max": 2576687,
-                        "draw_map": true
+                        "draw_map_overlay": true
                     }
                 }
             },

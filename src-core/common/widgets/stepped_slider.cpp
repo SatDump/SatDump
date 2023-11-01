@@ -47,6 +47,7 @@ namespace widgets
 
         return retval;
     }
+    
     bool SteppedSliderFloat(const char* label, float* v, float v_min, float v_max, float v_rate, const char* format, ImGuiSliderFlags flags)
     {
         bool retval = false;

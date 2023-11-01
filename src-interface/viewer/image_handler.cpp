@@ -56,6 +56,14 @@ namespace satdump
 
         asyncUpdate();
 
+        try
+        {
+            overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["image_handler"][products->instrument_name]["overlay_cfg"]);
+        }
+        catch (std::exception &e)
+        {
+        }
+
 #ifdef USE_OPENCL
         opencl::initOpenCL();
 #endif
@@ -69,6 +77,9 @@ namespace satdump
             if (handler_thread_pool.get_thread(i).joinable())
                 handler_thread_pool.get_thread(i).join();
         }
+
+        config::main_cfg["user"]["viewer_state"]["image_handler"][products->instrument_name]["overlay_cfg"] = overlay_handler.get_config();
+        config::saveUserConfig();
     }
 
     void ImageViewerHandler::updateImage()
@@ -147,7 +158,7 @@ namespace satdump
                 corrected_stuff.clear();
         }
 
-        if (shores_overlay || map_overlay || cities_overlay || latlon_overlay)
+        if (overlay_handler.enabled())
         {
             current_image.to_rgb(); // Ensure this is RGB!!
             nlohmann::json proj_cfg = products->get_proj_cfg();
@@ -187,48 +198,7 @@ namespace satdump
                 proj_func = newfun;
             }
 
-            if (map_overlay)
-            {
-                logger->info("Drawing map overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_borders.x * 65535.0f), (unsigned short)(viewer_app->color_borders.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_borders.z * 65535.0f)};
-                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                               current_image,
-                                               color,
-                                               proj_func);
-            }
-            if (shores_overlay)
-            {
-                logger->info("Drawing shores overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_shores.x * 65535.0f), (unsigned short)(viewer_app->color_shores.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_shores.z * 65535.0f)};
-                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
-                                               current_image,
-                                               color,
-                                               proj_func);
-            }
-            if (cities_overlay)
-            {
-                logger->info("Drawing cities overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_cities.x * 65535.0f), (unsigned short)(viewer_app->color_cities.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_cities.z * 65535.0f)};
-                map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
-                                                current_image,
-                                                color,
-                                                proj_func,
-                                                viewer_app->cities_size,
-                                                viewer_app->cities_type,
-                                                viewer_app->cities_scale_rank);
-            }
-            if (latlon_overlay)
-            {
-                logger->info("Drawing latlon overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_latlon.x * 65535.0f), (unsigned short)(viewer_app->color_latlon.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_latlon.z * 65535.0f)};
-                map::drawProjectedMapLatLonGrid(current_image,
-                                                color,
-                                                proj_func);
-            }
+            overlay_handler.apply(current_image, proj_func);
         }
 
         projection_ready = false;
@@ -283,7 +253,7 @@ namespace satdump
     {
         handler_thread_pool.clear_queue();
         handler_thread_pool.push([this](int)
-                            {   async_image_mutex.lock();
+                                 {   async_image_mutex.lock();
                                     is_updating = true;
                                     logger->info("Update image...");
                                     updateImage();
@@ -298,7 +268,7 @@ namespace satdump
         active_channel_id = -1;
         handler_thread_pool.clear_queue();
         handler_thread_pool.push([this](int)
-                            { 
+                                 { 
                     async_image_mutex.lock();
                     logger->info("Generating RGB Composite");
                     satdump::ImageCompositeCfg cfg;
@@ -592,13 +562,13 @@ namespace satdump
             }
 
             bool save_disabled = is_updating || rgb_processing;
-            if(save_disabled)
+            if (save_disabled)
                 style::beginDisabled();
             if (ImGui::Button("Save"))
             {
                 handler_thread_pool.clear_queue();
                 handler_thread_pool.push([this](int)
-                    {   async_image_mutex.lock();
+                                         {   async_image_mutex.lock();
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
@@ -692,32 +662,7 @@ namespace satdump
         {
             if (ImGui::CollapsingHeader("Map Overlay"))
             {
-                if (ImGui::Checkbox("Lat/Lon Grid", &latlon_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##latlongrid", (float *)&viewer_app->color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-                if (ImGui::Checkbox("Borders", &map_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##borders", (float *)&viewer_app->color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-                if (ImGui::Checkbox("Shores", &shores_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##shores", (float *)&viewer_app->color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-                if (ImGui::Checkbox("Cities", &cities_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##cities", (float *)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                if (widgets::SteppedSliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500) && cities_overlay)
-                    asyncUpdate();
-                static const char *items[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
-                if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)) && cities_overlay)
-                    asyncUpdate();
-
-                if (viewer_app->cities_type == 2 && widgets::SteppedSliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10) && cities_overlay)
+                if (overlay_handler.drawUI())
                     asyncUpdate();
             }
 
