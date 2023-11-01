@@ -56,6 +56,16 @@ namespace jpss
             float atti_q3 = get_float(&dat[49]);
             float atti_q4 = get_float(&dat[53]);
 
+            if (fabs(ephem_x) > 8000000 || fabs(ephem_y) > 8000000 || fabs(ephem_z) > 8000000)
+                return;
+            if (fabs(ephem_vx) > 8000000 || fabs(ephem_vy) > 8000000 || fabs(ephem_vz) > 8000000)
+                return;
+
+            // printf("%f - %f %f %f - %f %f %f\n",
+            //        ephem_timestamp,
+            //        ephem_x, ephem_y, ephem_z,
+            //        ephem_vx, ephem_vy, ephem_vz);
+
             ecef_epehem_to_eci(ephem_timestamp, ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
 
             // Convert to km from meters
