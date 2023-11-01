@@ -260,7 +260,9 @@ namespace satdump
         float notification_transparency = (light_theme ? 200.f : 100.f) / 255.f;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
+        notify_logger_sink->notify_mutex.lock();
         ImGui::RenderNotifications();
+        notify_logger_sink->notify_mutex.unlock();
         ImGui::PopStyleVar(1);
         ImGui::PopStyleColor(1);
     }
