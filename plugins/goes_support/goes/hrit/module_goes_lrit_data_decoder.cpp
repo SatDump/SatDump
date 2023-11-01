@@ -157,6 +157,26 @@ namespace goes
                 }
             };
 
+            lrit_demux.onFinalizeData =
+                [this](::lrit::LRITFile& file) -> void
+            {
+                //On image data, make sure buffer contains the right amount of data
+                if (file.hasHeader<::lrit::ImageStructureRecord>() && file.hasHeader<::lrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
+                {
+                    ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+                    ::lrit::ImageStructureRecord image_header = file.getHeader<::lrit::ImageStructureRecord>();
+                    NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
+
+                    if (primary_header.file_type_code == 0 &&
+                        (image_header.compression_flag == 0 || (image_header.compression_flag == 1 && noaa_header.noaa_specific_compression == 1)))
+                    {
+                        uint32_t target_size = image_header.lines_count * image_header.columns_count + primary_header.total_header_length;
+                        if (file.lrit_data.size() != target_size)
+                            file.lrit_data.resize(target_size, 0);
+                    }
+                }
+            };
+
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer

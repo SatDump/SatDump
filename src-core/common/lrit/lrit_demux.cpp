@@ -137,16 +137,7 @@ namespace lrit
 
     void LRITDemux::finalizeLRITData(LRITFile &file)
     {
-        //On image data, make sure buffer contains the right amount of data
-        if (file.hasHeader<ImageStructureRecord>() && file.hasHeader<PrimaryHeader>())
-        {
-            PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
-            ImageStructureRecord image_header = file.getHeader<ImageStructureRecord>();
-            uint32_t target_size = image_header.lines_count * image_header.columns_count + primary_header.total_header_length;
-            if (primary_header.file_type_code == 0 && file.lrit_data.size() != target_size)
-                file.lrit_data.resize(target_size, 0);
-        }
-
+        onFinalizeData(file);
         files.push_back(file);
     }
 };
