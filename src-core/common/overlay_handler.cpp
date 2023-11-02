@@ -115,7 +115,7 @@ nlohmann::json OverlayHandler::get_config()
     return out;
 }
 
-void OverlayHandler::set_config(nlohmann::json in)
+void OverlayHandler::set_config(nlohmann::json in, bool status)
 {
     if (in.contains("borders_color"))
     {
@@ -156,9 +156,12 @@ void OverlayHandler::set_config(nlohmann::json in)
     if (in.contains("cities_scale_rank"))
         cities_scale_rank = in["cities_scale_rank"].get<int>();
 
-    setValueIfExists(in["draw_map_overlay"], draw_map_overlay);
-    setValueIfExists(in["draw_shores_overlay"], draw_shores_overlay);
-    setValueIfExists(in["draw_cities_overlay"], draw_cities_overlay);
+    if (status)
+    {
+        setValueIfExists(in["draw_map_overlay"], draw_map_overlay);
+        setValueIfExists(in["draw_shores_overlay"], draw_shores_overlay);
+        setValueIfExists(in["draw_cities_overlay"], draw_cities_overlay);
+        setValueIfExists(in["draw_latlon_overlay"], draw_latlon_overlay);
+    }
     setValueIfExists(in["cities_scale"], cities_size);
-    setValueIfExists(in["draw_latlon_overlay"], draw_latlon_overlay);
 }

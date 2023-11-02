@@ -37,7 +37,7 @@ namespace satdump
 
         try
         {
-            overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["image_handler"][products->instrument_name]["overlay_cfg"]);
+            overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["image_handler"][products->instrument_name]["overlay_cfg"], false);
         }
         catch (std::exception &e)
         {

@@ -32,5 +32,5 @@ public:
     bool drawUI();
     void apply(image::Image<uint16_t> &img, std::function<std::pair<int, int>(float, float, int, int)> &proj_func, float *step_cnt = nullptr);
     nlohmann::json get_config();
-    void set_config(nlohmann::json in);
+    void set_config(nlohmann::json in, bool status = true);
 };
