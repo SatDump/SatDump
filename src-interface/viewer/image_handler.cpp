@@ -58,7 +58,7 @@ namespace satdump
 
         try
         {
-            overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["image_handler"][products->instrument_name]["overlay_cfg"], false);
+            overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["products_handler"]["overlay_cfg"], false);
         }
         catch (std::exception &e)
         {
@@ -78,7 +78,7 @@ namespace satdump
                 handler_thread_pool.get_thread(i).join();
         }
 
-        config::main_cfg["user"]["viewer_state"]["image_handler"][products->instrument_name]["overlay_cfg"] = overlay_handler.get_config();
+        config::main_cfg["user"]["viewer_state"]["products_handler"]["overlay_cfg"] = overlay_handler.get_config();
         config::saveUserConfig();
     }
 
