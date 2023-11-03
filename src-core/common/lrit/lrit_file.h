@@ -6,6 +6,7 @@
 #include <string>
 #include "libs/others/strptime.h"
 #include <ctime>
+#include <cstring>
 
 namespace lrit
 {
@@ -37,6 +38,42 @@ namespace lrit
                                 (uint64_t)data[13] << 16 |
                                 (uint64_t)data[14] << 8 |
                                 (uint64_t)data[15];
+        }
+    };
+
+    struct ImageNavigationRecord
+    {
+        static constexpr int TYPE = 2;
+
+        uint8_t type;
+        uint16_t record_length;
+        char projection_name[32];
+        uint32_t column_scaling_factor;
+        uint32_t line_scaling_factor;
+        uint32_t column_offset;
+        uint32_t line_offset;
+
+        ImageNavigationRecord(uint8_t *data)
+        {
+            type = data[0];
+            record_length = data[1] << 8 | data[2];
+            memcpy(projection_name, &data[3], 32);
+            column_scaling_factor = (uint32_t)data[35] << 24 |
+                                    (uint32_t)data[36] << 16 |
+                                    (uint32_t)data[37] << 8 |
+                                    (uint32_t)data[38];
+            line_scaling_factor = (uint32_t)data[39] << 24 |
+                                  (uint32_t)data[40] << 16 |
+                                  (uint32_t)data[41] << 8 |
+                                  (uint32_t)data[42];
+            column_offset = (uint32_t)data[43] << 24 |
+                            (uint32_t)data[44] << 16 |
+                            (uint32_t)data[45] << 8 |
+                            (uint32_t)data[46];
+            line_offset = (uint32_t)data[47] << 24 |
+                          (uint32_t)data[48] << 16 |
+                          (uint32_t)data[49] << 8 |
+                          (uint32_t)data[50];
         }
     };
 

@@ -125,7 +125,7 @@ namespace elektro
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != "")
-                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
+                    ::lrit::save_lrit_image(segmentedDecoder.second.image, segmentedDecoder.second.image_desc, &productizer);
 
             if (elektro_221_composer_full_disk->hasData)
                 elektro_221_composer_full_disk->save(directory);

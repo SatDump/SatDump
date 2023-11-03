@@ -441,6 +441,44 @@ namespace satdump
                     return {x, y};
                 };
             }
+            else if (params["type"] == "geos_xrit") // EXPERIMENTAL, to merge in the geoprojector
+            {
+                double sub_lon = params["sat_lon"];
+                double column_scaling_factor = params["scale_x"];
+                double line_scaling_factor = params["scale_y"];
+                double column_offset = params["offset_x"];
+                double line_offset = params["offset_y"];
+
+                return [rotate, /*&geos,*/ sub_lon, column_scaling_factor, line_scaling_factor, column_offset, line_offset](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                {
+                    geodetic::projection::GEOSProjection geos;
+                    geos.init(35786023, sub_lon, true);
+
+                    double x = 0, y = 0;
+                    geos.forward(lon, -lat, x, y);
+
+                    if (x == 2e10 || y == 2e10)
+                        return {-1, -1};
+
+                    // printf("%f %f\n", x, y);
+
+                    int c = column_offset + int(x * pow(2.0, -16.0) * column_scaling_factor * 10.23);
+                    int l = line_offset + int(y * pow(2.0, -16.0) * line_scaling_factor * 10.23);
+
+                    if (c < 0 || c >= map_width)
+                        return {-1, -1};
+                    if (l < 0 || l >= map_height)
+                        return {-1, -1};
+
+                    if (rotate)
+                    {
+                        c = (map_width - 1) - c;
+                        l = (map_height - 1) - l;
+                    }
+
+                    return {c, l};
+                };
+            }
             else if (params["type"] == "azeq")
             {
                 geodetic::projection::AzimuthalEquidistantProjection eqaz_proj;

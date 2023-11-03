@@ -12,7 +12,7 @@
 
 namespace satdump
 {
-    void ImageProducts::save(std::string directory)
+    void ImageProducts::save(std::string directory, bool save_imgs, std::string override_cbor)
     {
         type = "image";
         contents["has_timestamps"] = has_timestamps;
@@ -43,7 +43,7 @@ namespace satdump
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
-                images[c].filename.find(".j2k") == std::string::npos && 
+                images[c].filename.find(".j2k") == std::string::npos &&
                 images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
             else
@@ -63,7 +63,7 @@ namespace satdump
                 contents["images"][c]["offset_x"] = images[c].offset_x;
 
             savemtx.unlock();
-            if (!save_as_matrix)
+            if (!save_as_matrix && save_imgs)
                 images[c].image.save_img(directory + "/" + images[c].filename);
         }
 
@@ -79,7 +79,7 @@ namespace satdump
             savemtx.unlock();
         }
 
-        Products::save(directory);
+        Products::save(directory, override_cbor);
     }
 
     void ImageProducts::load(std::string file)

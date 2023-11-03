@@ -239,7 +239,7 @@ namespace satdump
         image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
-        virtual void save(std::string directory);
+        virtual void save(std::string directory, bool save_imgs = true, std::string override_cbor = "");
         virtual void load(std::string file);
 
         ~ImageProducts();

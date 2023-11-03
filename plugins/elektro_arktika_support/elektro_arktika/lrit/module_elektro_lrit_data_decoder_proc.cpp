@@ -11,30 +11,6 @@ namespace elektro
 {
     namespace lrit
     {
-        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, int channel)
-        {
-            std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
-                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
-                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
-                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
-                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
-                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
-                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
-            return utc_filename;
-        }
-
-        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, std::string channel)
-        {
-            std::string utc_filename = sat_name + "_" + channel + "_" +                                                                                             // Satellite name and channel
-                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
-                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
-                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
-                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
-                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
-                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
-            return utc_filename;
-        }
-
         void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
             std::string current_filename = file.filename;
@@ -183,55 +159,29 @@ namespace elektro
                     int channel = segment_id_header.channel_id + 1;
 
                     // Timestamp
-                    std::string timestamp = current_filename.substr(46, 12);
-                    std::tm scanTimestamp;
-                    strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
-                    scanTimestamp.tm_sec = 0; // No seconds
+                    double timestamp = ::lrit::stringTimestampToDouble("%Y%m%d%H%M", current_filename.substr(46, 12));
 
                     // If we can, use a better filename
+                    std::string satellite_name = "Lx";
                     {
                         std::string sat_name = current_filename.substr(6, 5);
 
                         if (sat_name == "GOMS1") // Dead... But good measure
-                        {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L1", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L1", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L1", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L1", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L1", "NC");
-                        }
+                            satellite_name = "L1";
                         else if (sat_name == "GOMS2")
-                        {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L2", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L2", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L2", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L2", "NC");
-                        }
+                            satellite_name = "L2";
                         else if (sat_name == "GOMS3")
-                        {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L3", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L3", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L3", "NC");
-                        }
-                        else if (sat_name == "GOMS4") // Not launched yet, but we can expect it to be the same anyway
-                        {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L4", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L4", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L4", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L4", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L4", "NC");
-                        }
+                            satellite_name = "L3";
+                        else if (sat_name == "GOMS4")
+                            satellite_name = "L4";
                         else if (sat_name == "GOMS5") // Not launched yet, but we can expect it to be the same anyway
-                        {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L5", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L5", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L5", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L5", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L5", "NC");
-                        }
+                            satellite_name = "L5";
+
+                        image_id = ::lrit::getLRITImageFilename(timestamp, satellite_name, std::to_string(channel)); // getHRITImageFilename(&scanTimestamp, satellite_name, channel);
+                        elektro_221_composer_full_disk->filename = ::lrit::getLRITImageFilename(timestamp, satellite_name, "221");
+                        elektro_321_composer_full_disk->filename321 = ::lrit::getLRITImageFilename(timestamp, satellite_name, "321");
+                        elektro_321_composer_full_disk->filename231 = ::lrit::getLRITImageFilename(timestamp, satellite_name, "231");
+                        elektro_321_composer_full_disk->filenameNC = ::lrit::getLRITImageFilename(timestamp, satellite_name, "NC");
                     }
 
                     if (all_wip_images.count(channel) == 0)
@@ -251,7 +201,7 @@ namespace elektro
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
-                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                            ::lrit::save_lrit_image(segmentedDecoder.image, segmentedDecoder.image_desc, &productizer);
 
                             if (elektro_221_composer_full_disk->hasData)
                                 elektro_221_composer_full_disk->save(directory);
@@ -265,6 +215,13 @@ namespace elektro
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
                                                                      image_id);
+                        segmentedDecoder.image_desc.sat_name = satellite_name;
+                        segmentedDecoder.image_desc.cha_name = std::to_string(channel);
+                        segmentedDecoder.image_desc.timestamp = timestamp;
+                        segmentedDecoder.image_desc.directory = directory + "/IMAGES";
+                        if (file.all_headers.count(::lrit::ImageNavigationRecord::TYPE) > 0)
+                            segmentedDecoder.image_desc.proj_cfg = ::lrit::convertNavigationHeaderToProjCfg(file.getHeader<::lrit::ImageNavigationRecord>());
+                        productizer.d_current_path = directory + "/IMAGES";
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
@@ -273,17 +230,17 @@ namespace elektro
                     // Composite?
                     if (channel == 1)
                     {
-                        elektro_221_composer_full_disk->push1(segmentedDecoder.image, mktime(&scanTimestamp));
-                        elektro_321_composer_full_disk->push1(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_221_composer_full_disk->push1(segmentedDecoder.image, timestamp);
+                        elektro_321_composer_full_disk->push1(segmentedDecoder.image, timestamp);
                     }
                     else if (channel == 2)
                     {
-                        elektro_221_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
-                        elektro_321_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_221_composer_full_disk->push2(segmentedDecoder.image, timestamp);
+                        elektro_321_composer_full_disk->push2(segmentedDecoder.image, timestamp);
                     }
                     else if (channel == 3)
                     {
-                        elektro_321_composer_full_disk->push3(segmentedDecoder.image, mktime(&scanTimestamp));
+                        elektro_321_composer_full_disk->push3(segmentedDecoder.image, timestamp);
                     }
 
                     // If the UI is active, update texture
@@ -303,7 +260,7 @@ namespace elektro
                         current_filename = image_id;
 
                         wip_img->imageStatus = SAVING;
-                        segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                        ::lrit::save_lrit_image(segmentedDecoder.image, segmentedDecoder.image_desc, &productizer);
 
                         if (elektro_221_composer_full_disk->hasData)
                             elektro_221_composer_full_disk->save(directory);

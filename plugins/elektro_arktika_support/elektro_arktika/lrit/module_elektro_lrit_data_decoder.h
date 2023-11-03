@@ -3,6 +3,7 @@
 #include "core/module.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
+#include "common/lrit/lrit_prod.h"
 
 namespace elektro
 {
@@ -40,6 +41,8 @@ namespace elektro
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void processLRITFile(::lrit::LRITFile &file);
+
+            ::lrit::xRITProductizer productizer = ::lrit::xRITProductizer("msu_gs");
 
         public:
             ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -39,7 +39,7 @@ namespace satdump
         }
 
     public:
-        virtual void save(std::string directory);
+        virtual void save(std::string directory, std::string override_cbor = "");
         virtual void load(std::string file);
     };
 

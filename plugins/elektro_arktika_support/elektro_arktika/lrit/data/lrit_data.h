@@ -7,10 +7,7 @@
 #include <string>
 #include <map>
 #include <memory>
-extern "C"
-{
-    //#include <common/aec/szlib.h>
-}
+#include "common/lrit/lrit_prod.h"
 
 namespace elektro
 {
@@ -38,6 +35,7 @@ namespace elektro
             bool isComplete();
             image::Image<uint8_t> image;
             std::string image_id = "";
+            ::lrit::ImageDescription image_desc;
         };
 
         class ELEKTRO221Composer

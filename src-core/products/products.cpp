@@ -12,7 +12,7 @@
 
 namespace satdump
 {
-    void Products::save(std::string directory)
+    void Products::save(std::string directory, std::string override_cbor)
     {
         contents["instrument"] = instrument_name;
         contents["type"] = type;
@@ -22,7 +22,7 @@ namespace satdump
 
         // Write the file out
         std::vector<uint8_t> cbor_data = nlohmann::json::to_cbor(contents);
-        std::ofstream out_file(directory + "/product.cbor", std::ios::binary);
+        std::ofstream out_file(override_cbor == "" ? (directory + "/product.cbor") : override_cbor, std::ios::binary);
         out_file.write((char *)cbor_data.data(), cbor_data.size());
         out_file.close();
     }
