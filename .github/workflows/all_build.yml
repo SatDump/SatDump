@@ -157,7 +157,7 @@ jobs:
         run: sudo apt update
 
       - name: Install dependencies
-        run: sudo apt install -y libglfw3-dev libglew-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev ocl-icd-opencl-dev libluajit-5.1-dev
+        run: sudo apt install -y libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev ocl-icd-opencl-dev libluajit-5.1-dev
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -199,7 +199,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
+        run: brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
 
       - name: Build airspyhf
         run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install

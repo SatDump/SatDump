@@ -24,13 +24,8 @@ target_include_directories(satdump-ui PUBLIC ${OPENGL_INCLUDE_DIR})
 target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
 
 if(MSVC)
-    target_link_libraries(satdump-ui PRIVATE glew32.dll)
     target_link_libraries(satdump-ui PRIVATE glfw3dll.dll)
 else()
-    # Glew
-    find_package(GLEW REQUIRED)
-    target_link_libraries(satdump-ui PRIVATE GLEW::GLEW)
-
     find_package(OpenGL REQUIRED)
     target_include_directories(satdump-ui PUBLIC ${OPENGL_INCLUDE_DIR})
     target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
