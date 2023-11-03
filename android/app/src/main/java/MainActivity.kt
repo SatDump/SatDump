@@ -95,6 +95,7 @@ class MainActivity : NativeActivity(), TextWatcher {
 
     public var mLayout : ViewGroup? = null;
     public var editText : EditText? = null;
+    public var lastFiller : String? = null;
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,6 +130,9 @@ class MainActivity : NativeActivity(), TextWatcher {
         editText!!.setVisibility(View.VISIBLE);
         editText!!.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         editText!!.requestFocus();
+        editText!!.setText(" ");
+        editText!!.setSelection(1);
+        lastFiller = " ";
         editText!!.addTextChangedListener(this);
 
         setContentView(mLayout);
@@ -177,16 +181,20 @@ class MainActivity : NativeActivity(), TextWatcher {
     // Hecking Android not having a simple function
     // to get Key events......... WHY!?
     override fun afterTextChanged(s : Editable) {
-        if(editText!!.getText().toString() != "FILLER")
-            editText!!.setText("FILLER");
-        editText!!.setSelection(6);
+        if(!editText!!.getText().toString().startsWith(" "))
+        {
+            editText!!.setText(" ");
+            editText!!.setSelection(1);
+        }
+
+        lastFiller = editText!!.getText().toString();
     }
 
     override fun beforeTextChanged(s : CharSequence, start: Int, count: Int, after: Int) {
     }
 
     override fun onTextChanged(s : CharSequence, start: Int, before: Int, count: Int) {
-        if(editText!!.getText().toString() != "FILLER") {
+        if(editText!!.getText().toString() != lastFiller) {
             if(before < count) {
                 var char2 = s.get(s.length - 1);
                 unicodeCharacterQueue.offer(char2.toInt());
