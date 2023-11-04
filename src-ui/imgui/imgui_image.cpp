@@ -1,6 +1,10 @@
 #include "imgui/imgui_image.h"
 #include "gl.h"
 
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2ext.h>
+#endif
+
 unsigned int funcMakeImageTexture()
 {
     GLuint gl_text;

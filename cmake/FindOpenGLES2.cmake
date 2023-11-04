@@ -14,12 +14,7 @@
 if(WIN32)
 	find_path(OPENGLES2_INCLUDE_DIR GLES2/gl2.h)
 	find_library(OPENGLES2_LIBRARY libGLESv2)
-elseif(APPLE)
-	create_search_paths(/Developer/Platforms)
-	findpkg_framework(OpenGLES2)
-	set(OPENGLES2_LIBRARY "-framework OpenGLES")
 else()
-	# Unix
 	find_path(OPENGLES2_INCLUDE_DIR GLES2/gl2.h
 		PATHS /usr/openwin/share/include
 			/opt/graphics/OpenGL/include
