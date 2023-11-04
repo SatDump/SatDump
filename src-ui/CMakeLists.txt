@@ -14,23 +14,31 @@ target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../l
 # Link against the core
 target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
 
-# OpenGL
-set(OpenGL_GL_PREFERENCE LEGACY)
-find_package(OpenGL REQUIRED)
-
-# Tell FindOpengl to use modern GL lib system
-set(OpenGL_GL_PREFERENCE GLVND)
-target_include_directories(satdump-ui PUBLIC ${OPENGL_INCLUDE_DIR})
-target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
-
-if(MSVC)
-    target_link_libraries(satdump-ui PRIVATE glfw3dll.dll)
+# OpenGL or OpenGL ES
+find_package(OpenGLES2)
+if(OPENGLES2_FOUND)
+    option(BUILD_GLES "Build the GUI with OpenGL ES" ON)
 else()
+    option(BUILD_GLES "Build the GUI with OpenGL ES" OFF)
+endif()
+
+if(BUILD_GLES)
+    message("Compiling GUI with OpenGL ES")
+    target_compile_definitions(satdump-ui PUBLIC IMGUI_IMPL_OPENGL_ES2)
+    target_include_directories(satdump-ui PUBLIC ${OPENGLES2_INCLUDE_DIR})
+    target_link_libraries(satdump-ui PUBLIC ${OPENGLES2_LIBRARIES})
+else()
+    message("Compiling GUI with OpenGL")
+    set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL REQUIRED)
     target_include_directories(satdump-ui PUBLIC ${OPENGL_INCLUDE_DIR})
     target_link_libraries(satdump-ui PUBLIC ${OPENGL_LIBRARIES})
+endif()
 
-    # GLFW3
+#GLFW3
+if(MSVC)
+    target_link_libraries(satdump-ui PRIVATE glfw3dll.dll)
+else()
     find_package(glfw3 CONFIG REQUIRED)
     target_link_libraries(satdump-ui PRIVATE glfw)
 endif()
