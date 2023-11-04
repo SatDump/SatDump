@@ -48,32 +48,36 @@ namespace lrit
         uint8_t type;
         uint16_t record_length;
         char projection_name[32];
-        uint32_t column_scaling_factor;
-        uint32_t line_scaling_factor;
-        uint32_t column_offset;
-        uint32_t line_offset;
+        int32_t column_scaling_factor;
+        int32_t line_scaling_factor;
+        int32_t column_offset;
+        int32_t line_offset;
 
         ImageNavigationRecord(uint8_t *data)
         {
             type = data[0];
             record_length = data[1] << 8 | data[2];
             memcpy(projection_name, &data[3], 32);
-            column_scaling_factor = (uint32_t)data[35] << 24 |
-                                    (uint32_t)data[36] << 16 |
-                                    (uint32_t)data[37] << 8 |
-                                    (uint32_t)data[38];
-            line_scaling_factor = (uint32_t)data[39] << 24 |
-                                  (uint32_t)data[40] << 16 |
-                                  (uint32_t)data[41] << 8 |
-                                  (uint32_t)data[42];
-            column_offset = (uint32_t)data[43] << 24 |
-                            (uint32_t)data[44] << 16 |
-                            (uint32_t)data[45] << 8 |
-                            (uint32_t)data[46];
-            line_offset = (uint32_t)data[47] << 24 |
-                          (uint32_t)data[48] << 16 |
-                          (uint32_t)data[49] << 8 |
-                          (uint32_t)data[50];
+
+            ((uint8_t *)&column_scaling_factor)[3] = data[35];
+            ((uint8_t *)&column_scaling_factor)[2] = data[36];
+            ((uint8_t *)&column_scaling_factor)[1] = data[37];
+            ((uint8_t *)&column_scaling_factor)[0] = data[38];
+
+            ((uint8_t *)&line_scaling_factor)[3] = data[39];
+            ((uint8_t *)&line_scaling_factor)[2] = data[40];
+            ((uint8_t *)&line_scaling_factor)[1] = data[41];
+            ((uint8_t *)&line_scaling_factor)[0] = data[42];
+
+            ((uint8_t *)&column_offset)[3] = data[43];
+            ((uint8_t *)&column_offset)[2] = data[44];
+            ((uint8_t *)&column_offset)[1] = data[45];
+            ((uint8_t *)&column_offset)[0] = data[46];
+
+            ((uint8_t *)&line_offset)[3] = data[47];
+            ((uint8_t *)&line_offset)[2] = data[48];
+            ((uint8_t *)&line_offset)[1] = data[49];
+            ((uint8_t *)&line_offset)[0] = data[50];
         }
     };
 

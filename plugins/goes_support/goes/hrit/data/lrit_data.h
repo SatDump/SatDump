@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include "common/lrit/lrit_prod.h"
 
 namespace goes
 {
@@ -28,6 +29,8 @@ namespace goes
             image::Image<uint8_t> image;
             int image_id = -1;
             std::string filename;
+            std::string productizer_id;
+            ::lrit::ImageDescription image_desc;
         };
 
         enum lrit_image_status

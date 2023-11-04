@@ -3,6 +3,7 @@
 #include "core/module.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
+#include "common/lrit/lrit_prod.h"
 
 extern "C"
 {
@@ -56,6 +57,8 @@ namespace goes
 
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
+
+            std::map<std::string, std::unique_ptr<::lrit::xRITProductizer>> productizers;
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

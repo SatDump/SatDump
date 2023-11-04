@@ -158,9 +158,9 @@ namespace goes
             };
 
             lrit_demux.onFinalizeData =
-                [this](::lrit::LRITFile& file) -> void
+                [this](::lrit::LRITFile &file) -> void
             {
-                //On image data, make sure buffer contains the right amount of data
+                // On image data, make sure buffer contains the right amount of data
                 if (file.hasHeader<::lrit::ImageStructureRecord>() && file.hasHeader<::lrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
                 {
                     ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
@@ -190,7 +190,7 @@ namespace goes
                 for (auto &file : files)
                 {
                     processLRITFile(file);
-                    if(write_lrit)
+                    if (write_lrit)
                         saveLRITFile(file, directory + "/LRIT");
                 }
 
@@ -209,7 +209,12 @@ namespace goes
             for (auto &segmentedDecoder : segmentedDecoders)
             {
                 if (segmentedDecoder.second.image.size())
-                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename).c_str());
+                {
+                    if (productizers.count(segmentedDecoder.second.productizer_id) != 0)
+                        ::lrit::save_lrit_image(segmentedDecoder.second.image, segmentedDecoder.second.image_desc, productizers[segmentedDecoder.second.productizer_id].get());
+                    else
+                        segmentedDecoder.second.image.save_img(directory + "/IMAGES/" + segmentedDecoder.second.filename);
+                }
             }
 
             if (goes_r_fc_composer_full_disk->hasData)

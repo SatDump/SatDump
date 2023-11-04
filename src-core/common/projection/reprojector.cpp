@@ -448,8 +448,9 @@ namespace satdump
                 double line_scaling_factor = params["scale_y"];
                 double column_offset = params["offset_x"];
                 double line_offset = params["offset_y"];
+                double width = params["width"];
 
-                return [rotate, /*&geos,*/ sub_lon, column_scaling_factor, line_scaling_factor, column_offset, line_offset](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [rotate, /*&geos,*/ width, sub_lon, column_scaling_factor, line_scaling_factor, column_offset, line_offset](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     geodetic::projection::GEOSProjection geos;
                     geos.init(35786023, sub_lon, true);
@@ -462,13 +463,17 @@ namespace satdump
 
                     // printf("%f %f\n", x, y);
 
-                    int c = column_offset + int(x * pow(2.0, -16.0) * column_scaling_factor * 10.23);
-                    int l = line_offset + int(y * pow(2.0, -16.0) * line_scaling_factor * 10.23);
+                    int c = column_offset + int(x * pow(2.0, -16.0) * column_scaling_factor * 10.215);
+                    int l = line_offset + int(y * pow(2.0, -16.0) * line_scaling_factor * 10.215);
 
                     if (c < 0 || c >= map_width)
                         return {-1, -1};
                     if (l < 0 || l >= map_height)
                         return {-1, -1};
+
+                    double ratio = (double)map_width / width;
+                    c *= ratio;
+                    l *= ratio;
 
                     if (rotate)
                     {

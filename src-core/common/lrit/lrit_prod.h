@@ -7,6 +7,10 @@
 #include <mutex>
 #include "products/image_products.h"
 #include "lrit_file.h"
+#include "logger.h"
+
+/////
+#include "common/utils.h"
 
 namespace lrit
 {
@@ -29,23 +33,28 @@ namespace lrit
         std::tm scanTimestamp;
         scanTimestamp.tm_sec = 0; // No seconds
         strptime(timestamp_str.c_str(), strptimestr, &scanTimestamp);
-        return mktime(&scanTimestamp);
+        return timegm(&scanTimestamp);
     }
 
-    inline nlohmann::json convertNavigationHeaderToProjCfg(ImageNavigationRecord record)
+    inline nlohmann::json convertNavigationHeaderToProjCfg(ImageNavigationRecord record, int width)
     {
-        if (record.projection_name[0] == 'G' &&
-            record.projection_name[1] == 'E' &&
-            record.projection_name[2] == 'O' &&
-            record.projection_name[3] == 'S')
+        // logger->trace("------------------------------------------------------- %s - %d %d - %d %d",
+        //               record.projection_name,
+        //               record.column_scaling_factor, record.line_scaling_factor,
+        //               record.column_offset, record.line_offset);
+        if ((record.projection_name[0] == 'G' &&
+             record.projection_name[1] == 'E' &&
+             record.projection_name[2] == 'O' &&
+             record.projection_name[3] == 'S') ||
+            (record.projection_name[0] == 'g' &&
+             record.projection_name[1] == 'e' &&
+             record.projection_name[2] == 'o' &&
+             record.projection_name[3] == 's'))
         {
             float position = 0;
-            if (sscanf(record.projection_name, "GEOS(%f)", &position) == 1)
+            if (sscanf(record.projection_name, "GEOS(%f)", &position) == 1 ||
+                sscanf(record.projection_name, "geos(%f)", &position) == 1)
             {
-                printf("------------------------------------------------------- %s - %d %d - %d %d\n",
-                       record.projection_name,
-                       record.column_scaling_factor, record.line_scaling_factor,
-                       record.column_offset, record.line_offset);
                 nlohmann::json cfg;
 #if 0
                 cfg["type"] = "geos";
@@ -58,6 +67,7 @@ namespace lrit
                 cfg["sweep_x"] = false;
 #else
                 cfg["type"] = "geos_xrit";
+                cfg["width"] = width;
                 cfg["sat_lon"] = position;
                 cfg["scale_x"] = record.column_scaling_factor;
                 cfg["scale_y"] = record.line_scaling_factor;
@@ -101,7 +111,7 @@ namespace lrit
                 gbd_mtx.lock();
                 if (last_update_time != 0)
                 {
-                    if (time(0) - last_update_time > 60 * 3)
+                    if (time(0) - last_update_time > 240)
                         save_product();
                 }
                 gbd_mtx.unlock();
@@ -134,15 +144,17 @@ namespace lrit
                                              "/" + std::filesystem::path(current_images[i]).stem().string() + std::filesystem::path(current_images[i]).extension().string();
                 // printf("%s\n", final_path_rel.c_str());
                 xrit_products.images.push_back({final_path_rel, current_imgdecs[i].cha_name, image::Image<uint16_t>()});
+                logger->critical("IMAGE+" + final_path_rel);
             }
 
             std::string path = d_current_path + "/" + getLRITImageFilename(current_timestamp, current_imgdecs[0].sat_name, "product") + ".cbor";
-            // printf("%s\n", path.c_str());
+            logger->critical(path);
             xrit_products.save("", false, path);
 
             current_images.clear();
             current_imgdecs.clear();
             current_timestamp = -1;
+            is_saved = true;
         }
 
     public:
@@ -171,11 +183,20 @@ namespace lrit
             current_timestamp = image_desc.timestamp;
 
             last_update_time = time(0);
+            is_saved = false;
+            gbd_mtx.unlock();
+        }
+
+        void tick()
+        {
+            gbd_mtx.lock();
+            last_update_time = time(0);
             gbd_mtx.unlock();
         }
 
         //
         std::string d_current_path;
+        bool is_saved = false;
     };
 
     template <typename T>

@@ -220,12 +220,13 @@ namespace elektro
                         segmentedDecoder.image_desc.timestamp = timestamp;
                         segmentedDecoder.image_desc.directory = directory + "/IMAGES";
                         if (file.all_headers.count(::lrit::ImageNavigationRecord::TYPE) > 0)
-                            segmentedDecoder.image_desc.proj_cfg = ::lrit::convertNavigationHeaderToProjCfg(file.getHeader<::lrit::ImageNavigationRecord>());
+                            segmentedDecoder.image_desc.proj_cfg = ::lrit::convertNavigationHeaderToProjCfg(file.getHeader<::lrit::ImageNavigationRecord>(), segmentedDecoder.image.width());
                         productizer.d_current_path = directory + "/IMAGES";
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
                     segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], seg_number);
+                    productizer.tick();
 
                     // Composite?
                     if (channel == 1)

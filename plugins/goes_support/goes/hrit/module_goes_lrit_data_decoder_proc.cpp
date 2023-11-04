@@ -45,7 +45,7 @@ namespace goes
             if (!std::filesystem::exists(path))
                 std::filesystem::create_directory(path);
 
-            //If segmented, rename file after segment name
+            // If segmented, rename file after segment name
             std::string current_filename = file.filename;
             if (file.hasHeader<SegmentIdentificationHeader>())
             {
@@ -85,6 +85,14 @@ namespace goes
 
                 bool is_goesn = false;
 
+                bool is_to_productize = false;
+                std::string instrument_name = "ukn_instrument";
+                std::string satellite_name = "Unknown Satellite";
+                std::string scan_region = "Unknwon Region";
+                int satellite_channel = -1;
+                double scan_timestamp = -1;
+                std::string saving_directory = directory + "/IMAGES/";
+
                 // Process as a specific dataset
                 {
                     // GOES-R Data, from GOES-16 to 19.
@@ -105,8 +113,6 @@ namespace goes
                             {
                                 AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
 
-                                std::string region = "Others";
-
                                 // Parse Region
                                 if (ancillary_record.meta.count("Region") > 0)
                                 {
@@ -114,16 +120,16 @@ namespace goes
 
                                     if (regionName == "Full Disk")
                                     {
-                                        region = "Full Disk";
+                                        scan_region = "Full Disk";
                                     }
                                     else if (regionName == "Mesoscale")
                                     {
                                         if (cutFilename[2] == "CMIPM1")
-                                            region = "Mesoscale 1";
+                                            scan_region = "Mesoscale 1";
                                         else if (cutFilename[2] == "CMIPM2")
-                                            region = "Mesoscale 2";
+                                            scan_region = "Mesoscale 2";
                                         else
-                                            region = "Mesoscale";
+                                            scan_region = "Mesoscale";
                                     }
                                 }
 
@@ -133,23 +139,28 @@ namespace goes
                                 {
                                     std::string scanTime = ancillary_record.meta["Time of frame start"];
                                     strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
+                                    scan_timestamp = ::lrit::stringTimestampToDouble("%Y-%m-%dT%H:%M:%S", scanTime);
                                 }
 
-                                std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + region;
+                                std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + scan_region + "/" + timestamp_to_string_path(scan_timestamp);
 
                                 if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                                     std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
                                 current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
 
-                                //Configure mesoscale color compoer - FD is defined further down
-                                if ((region == "Mesoscale 1" || region == "Mesoscale 2"))
+                                // Satellite name
+                                satellite_name = "G" + std::to_string(noaa_header.product_id);
+                                saving_directory = directory + "/IMAGES/" + "/" + subdir;
+
+                                // Configure mesoscale color compoer - FD is defined further down
+                                if ((scan_region == "Mesoscale 1" || scan_region == "Mesoscale 2"))
                                 {
                                     std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer;
 
-                                    if (region == "Mesoscale 1")
+                                    if (scan_region == "Mesoscale 1")
                                         goes_r_fc_composer = goes_r_fc_composer_meso1;
-                                    else if (region == "Mesoscale 2")
+                                    else if (scan_region == "Mesoscale 2")
                                         goes_r_fc_composer = goes_r_fc_composer_meso2;
 
                                     image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length],
@@ -168,6 +179,10 @@ namespace goes
                                     goes_r_fc_composer->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
                             }
+
+                            satellite_channel = channel;
+                            instrument_name = "abi";
+                            is_to_productize = true;
                         }
                     }
                     // GOES-N Data, from GOES-13 to 15.
@@ -187,24 +202,22 @@ namespace goes
                         else if (noaa_header.product_subid <= 30)
                             channel = 3;
 
-                        std::string region = "Others";
-
                         // Parse Region. Had to peak in goestools again...
                         if (noaa_header.product_subid % 10 == 1)
-                            region = "Full Disk";
+                            scan_region = "Full Disk";
                         else if (noaa_header.product_subid % 10 == 2)
-                            region = "Northern Hemisphere";
+                            scan_region = "Northern Hemisphere";
                         else if (noaa_header.product_subid % 10 == 3)
-                            region = "Southern Hemisphere";
+                            scan_region = "Southern Hemisphere";
                         else if (noaa_header.product_subid % 10 == 4)
-                            region = "United States";
+                            scan_region = "United States";
                         else
                         {
                             char buf[32];
                             size_t len;
                             int num = (noaa_header.product_subid % 10) - 5;
                             len = snprintf(buf, 32, "Special Interest %d", num);
-                            region = std::string(buf, len);
+                            scan_region = std::string(buf, len);
                         }
 
                         // Parse scan time
@@ -214,19 +227,29 @@ namespace goes
                         {
                             std::string scanTime = ancillary_record.meta["Time of frame start"];
                             strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
+                            scan_timestamp = ::lrit::stringTimestampToDouble("%Y-%m-%dT%H:%M:%S", scanTime);
                         }
 
-                        std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + region;
+                        // Satellite name
+                        satellite_name = "G" + std::to_string(noaa_header.product_id);
+
+                        std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/" + scan_region + "/" + timestamp_to_string_path(scan_timestamp);
+
+                        saving_directory = directory + "/IMAGES/" + "/" + subdir;
 
                         if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                             std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
                         current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
+
+                        satellite_channel = channel;
+                        instrument_name = "goesn_imager";
+                        is_to_productize = true;
                     }
                     // Himawari-8 rebroadcast
                     else if (primary_header.file_type_code == 0 && noaa_header.product_id == 43)
                     {
-                        std::string subdir = "Himawari-8/Full Disk";
+                        std::string subdir = "Himawari-8/Full Disk/" + timestamp_to_string_path(scan_timestamp);
 
                         if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                             std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
@@ -238,8 +261,16 @@ namespace goes
                         if (strParts.size() > 3)
                         {
                             strptime(strParts[2].c_str(), "%Y%m%d%H%M", timeReadable);
+                            scan_region = "Full Disk";
+                            satellite_name = "HIM";
+                            satellite_channel = noaa_header.product_subid;
                             current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM", noaa_header.product_subid); // SubID = Channel
+                            saving_directory = directory + "/IMAGES/" + subdir;
+                            scan_timestamp = ::lrit::stringTimestampToDouble("%Y%m%d%H%M", strParts[2]);
                         }
+
+                        instrument_name = "ahi";
+                        is_to_productize = true;
                     }
                     // NWS Images
                     else if (primary_header.file_type_code == 0 && noaa_header.product_id == 6)
@@ -253,6 +284,28 @@ namespace goes
                         current_filename = subdir + "/" + back;
                     }
                 }
+
+                // Prepare productizer
+                std::string productizer_id = satellite_name + "_" + scan_region + "_" + std::to_string(scan_timestamp);
+                if (is_to_productize && satellite_channel != -1)
+                {
+                recheck_productizers:
+                    for (int i = 0; i < productizers.size(); i++)
+                    {
+                        auto it = productizers.begin();
+                        std::advance(it, i);
+                        if (it->second->is_saved)
+                        {
+                            productizers.erase(it->first);
+                            goto recheck_productizers;
+                        }
+                    }
+
+                    if (productizers.count(productizer_id) == 0)
+                        productizers.insert({productizer_id, std::make_unique<::lrit::xRITProductizer>(instrument_name)});
+                    productizers[productizer_id]->tick();
+                }
+                logger->critical(productizer_id + " " + instrument_name);
 
                 if (file.hasHeader<SegmentIdentificationHeader>())
                 {
@@ -277,7 +330,10 @@ namespace goes
                             wip_img->imageStatus = SAVING;
                             if (is_goesn)
                                 segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.filename).c_str());
+                            if (productizers.count(productizer_id) != 0)
+                                ::lrit::save_lrit_image(segmentedDecoder.image, segmentedDecoder.image_desc, productizers[productizer_id].get());
+                            else
+                                segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.filename).c_str());
                             wip_img->imageStatus = RECEIVING;
                         }
 
@@ -286,6 +342,15 @@ namespace goes
                                                                      image_structure_record.lines_count,
                                                                      segment_id_header.image_identifier);
                         segmentedDecoder.filename = current_filename;
+                        segmentedDecoder.productizer_id = productizer_id;
+                        segmentedDecoder.image_desc.sat_name = satellite_name;
+                        segmentedDecoder.image_desc.cha_name = std::to_string(satellite_channel);
+                        segmentedDecoder.image_desc.timestamp = scan_timestamp;
+                        segmentedDecoder.image_desc.directory = saving_directory;
+                        if (file.all_headers.count(::lrit::ImageNavigationRecord::TYPE) > 0)
+                            segmentedDecoder.image_desc.proj_cfg = ::lrit::convertNavigationHeaderToProjCfg(file.getHeader<::lrit::ImageNavigationRecord>(), segmentedDecoder.image.width());
+                        if (productizers.count(productizer_id) != 0)
+                            productizers[productizer_id]->d_current_path = saving_directory;
                     }
 
                     if (noaa_header.product_id == ID_HIMAWARI)
@@ -323,14 +388,12 @@ namespace goes
                                     goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
 
-                                else if (channel == 13 && file.vcid == 13) //Redundant check keeps relayed channel 13 from entering the color composer
+                                else if (channel == 13 && file.vcid == 13) // Redundant check keeps relayed channel 13 from entering the color composer
                                 {
                                     goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, timegm(&scanTimestamp));
                                     std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
                                     goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
-
-
                             }
                         }
                     }
@@ -352,7 +415,10 @@ namespace goes
                         wip_img->imageStatus = SAVING;
                         if (is_goesn)
                             segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                        segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                        if (productizers.count(productizer_id) != 0)
+                            ::lrit::save_lrit_image(segmentedDecoder.image, segmentedDecoder.image_desc, productizers[productizer_id].get());
+                        else
+                            segmentedDecoder.image.save_img(directory + "/IMAGES/" + segmentedDecoder.filename);
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         wip_img->imageStatus = IDLE;
 
@@ -391,8 +457,8 @@ namespace goes
                     }
                     else // Write raw image dats
                     {
-                        //Sometimes, multiple different images can be sent down with the same name
-                        //Do not overwrite files
+                        // Sometimes, multiple different images can be sent down with the same name
+                        // Do not overwrite files
                         std::string suffix = "";
                         std::string extension = "";
                         int suffixInt = 1;
@@ -400,7 +466,7 @@ namespace goes
                         image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         image.append_ext(&extension);
 
-                        while(std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + extension))
+                        while (std::filesystem::exists(directory + "/IMAGES/" + current_filename + suffix + extension))
                         {
                             suffixInt++;
                             suffix = "-" + std::to_string(suffixInt);
@@ -408,7 +474,24 @@ namespace goes
 
                         if (is_goesn)
                             image.resize(image.width(), image.height() * 1.75);
-                        image.save_img(std::string(directory + "/IMAGES/" + current_filename + suffix).c_str());
+
+                        if (productizers.count(productizer_id) != 0)
+                        {
+                            ::lrit::ImageDescription image_desc;
+                            image_desc.sat_name = satellite_name;
+                            image_desc.cha_name = std::to_string(satellite_channel);
+                            image_desc.timestamp = scan_timestamp;
+                            image_desc.directory = saving_directory;
+                            if (file.all_headers.count(::lrit::ImageNavigationRecord::TYPE) > 0)
+                                image_desc.proj_cfg = ::lrit::convertNavigationHeaderToProjCfg(file.getHeader<::lrit::ImageNavigationRecord>(), image.width());
+                            if (productizers.count(productizer_id) != 0)
+                                productizers[productizer_id]->d_current_path = saving_directory;
+                            ::lrit::save_lrit_image(image, image_desc, productizers[productizer_id].get());
+                        }
+                        else
+                        {
+                            image.save_img(std::string(directory + "/IMAGES/" + current_filename + suffix).c_str());
+                        }
 
                         // Check if this is GOES-R
                         if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
