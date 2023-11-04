@@ -38,10 +38,10 @@ namespace lrit
 
     inline nlohmann::json convertNavigationHeaderToProjCfg(ImageNavigationRecord record, int width)
     {
-        // logger->trace("------------------------------------------------------- %s - %d %d - %d %d",
-        //               record.projection_name,
-        //               record.column_scaling_factor, record.line_scaling_factor,
-        //               record.column_offset, record.line_offset);
+        logger->trace("------------------------------------------------------- %s - %d %d - %d %d",
+                      record.projection_name,
+                      record.column_scaling_factor, record.line_scaling_factor,
+                      record.column_offset, record.line_offset);
         if ((record.projection_name[0] == 'G' &&
              record.projection_name[1] == 'E' &&
              record.projection_name[2] == 'O' &&

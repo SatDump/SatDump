@@ -79,7 +79,6 @@ namespace goes
                 ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
 
                 ::lrit::TimeStampRecord timestamp_record = file.getHeader<::lrit::TimeStampRecord>();
-                std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
 
                 std::string old_filename = current_filename;
 
@@ -90,7 +89,7 @@ namespace goes
                 std::string satellite_name = "Unknown Satellite";
                 std::string scan_region = "Unknwon Region";
                 int satellite_channel = -1;
-                double scan_timestamp = -1;
+                double scan_timestamp = timestamp_record.timestamp;
                 std::string saving_directory = directory + "/IMAGES/";
 
                 // Process as a specific dataset
@@ -134,11 +133,10 @@ namespace goes
                                 }
 
                                 // Parse scan time
-                                std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
+                                // Default to CCSDS timestamp normally...
                                 if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
                                 {
                                     std::string scanTime = ancillary_record.meta["Time of frame start"];
-                                    strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
                                     scan_timestamp = ::lrit::stringTimestampToDouble("%Y-%m-%dT%H:%M:%S", scanTime);
                                 }
 
@@ -147,7 +145,7 @@ namespace goes
                                 if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                                     std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
-                                current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
+                                current_filename = subdir + "/" + ::lrit::getLRITImageFilename(scan_timestamp, "G" + std::to_string(noaa_header.product_id), std::to_string(channel));
 
                                 // Satellite name
                                 satellite_name = "G" + std::to_string(noaa_header.product_id);
@@ -169,14 +167,14 @@ namespace goes
 
                                     if (channel == 2)
                                     {
-                                        goes_r_fc_composer->push2(image, timegm(&scanTimestamp));
+                                        goes_r_fc_composer->push2(image, scan_timestamp);
                                     }
                                     else if (channel == 13)
                                     {
-                                        goes_r_fc_composer->push13(image, timegm(&scanTimestamp));
+                                        goes_r_fc_composer->push13(image, scan_timestamp);
                                     }
 
-                                    goes_r_fc_composer->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                    goes_r_fc_composer->filename = subdir + "/" + ::lrit::getLRITImageFilename(scan_timestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
                             }
 
@@ -222,11 +220,10 @@ namespace goes
 
                         // Parse scan time
                         AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
-                        std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
+                        // Default to CCSDS timestamp normally...
                         if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
                         {
                             std::string scanTime = ancillary_record.meta["Time of frame start"];
-                            strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
                             scan_timestamp = ::lrit::stringTimestampToDouble("%Y-%m-%dT%H:%M:%S", scanTime);
                         }
 
@@ -240,7 +237,7 @@ namespace goes
                         if (!std::filesystem::exists(directory + "/IMAGES/" + subdir))
                             std::filesystem::create_directories(directory + "/IMAGES/" + subdir);
 
-                        current_filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), channel);
+                        current_filename = subdir + "/" + ::lrit::getLRITImageFilename(scan_timestamp, "G" + std::to_string(noaa_header.product_id), std::to_string(channel));
 
                         satellite_channel = channel;
                         instrument_name = "goesn_imager";
@@ -260,13 +257,12 @@ namespace goes
                         std::vector<std::string> strParts = splitString(annotation_record.annotation_text, '_');
                         if (strParts.size() > 3)
                         {
-                            strptime(strParts[2].c_str(), "%Y%m%d%H%M", timeReadable);
                             scan_region = "Full Disk";
                             satellite_name = "HIM";
                             satellite_channel = noaa_header.product_subid;
-                            current_filename = subdir + "/" + getHRITImageFilename(timeReadable, "HIM", noaa_header.product_subid); // SubID = Channel
-                            saving_directory = directory + "/IMAGES/" + subdir;
                             scan_timestamp = ::lrit::stringTimestampToDouble("%Y%m%d%H%M", strParts[2]);
+                            current_filename = subdir + "/" + ::lrit::getLRITImageFilename(scan_timestamp, "HIM", std::to_string(noaa_header.product_subid)); // SubID = Channel
+                            saving_directory = directory + "/IMAGES/" + subdir;
                         }
 
                         instrument_name = "ahi";
@@ -374,25 +370,25 @@ namespace goes
                                 AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
 
                                 // Parse scan time
-                                std::tm scanTimestamp = *timeReadable;                      // Default to CCSDS timestamp normally...
+                                // Default to CCSDS timestamp normally...
                                 if (ancillary_record.meta.count("Time of frame start") > 0) // ...unless we have a proper scan time
                                 {
                                     std::string scanTime = ancillary_record.meta["Time of frame start"];
-                                    strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
+                                    scan_timestamp = ::lrit::stringTimestampToDouble("%Y-%m-%dT%H:%M:%S", scanTime);
                                 }
 
                                 if (channel == 2)
                                 {
-                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, timegm(&scanTimestamp));
-                                    std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
-                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, scan_timestamp);
+                                    std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk/" + timestamp_to_string_path(scan_timestamp);
+                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + ::lrit::getLRITImageFilename(scan_timestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
 
                                 else if (channel == 13 && file.vcid == 13) // Redundant check keeps relayed channel 13 from entering the color composer
                                 {
-                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, timegm(&scanTimestamp));
-                                    std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
-                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, scan_timestamp);
+                                    std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk/" + timestamp_to_string_path(scan_timestamp);
+                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + ::lrit::getLRITImageFilename(scan_timestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
                             }
                         }
