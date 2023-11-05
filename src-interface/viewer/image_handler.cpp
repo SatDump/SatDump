@@ -229,14 +229,21 @@ namespace satdump
                         updateCorrectionFactors();
                         radiance = products->get_calibrated_value(active_channel_id, correction_factors[x], y);
                     }
-                    if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
+                    if (radiance != CALIBRATION_INVALID_VALUE)
                     {
-                        ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
+                        if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
+                        {
+                            ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
+                        }
+                        else
+                        {
+                            ImGui::Text("Radiance : %.10f", radiance);
+                            ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                        }
                     }
                     else
                     {
-                        ImGui::Text("Radiance : %.10f", radiance);
-                        ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                        ImGui::Text("Calibration Error! - Invalid Value");
                     }
                 }
                 ImGui::EndTooltip();
