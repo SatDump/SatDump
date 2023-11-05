@@ -182,7 +182,6 @@ git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
-# To build for SBCs like the Raspberry Pi, add -DBUILD_GLES=ON
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j`nproc`
@@ -201,7 +200,7 @@ sudo make install
 
 ### Android
 
-On Android, the preferred source is F-Droid [INSERT LINK WHEN POSSIBLE].   
+On Android, the preferred source is F-Droid - [https://f-droid.org/en/packages/org.satdump.SatDump/](https://f-droid.org/en/packages/org.satdump.SatDump/).   
 
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 
