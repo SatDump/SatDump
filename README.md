@@ -182,6 +182,7 @@ git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
+# To build for SBCs like the Raspberry Pi, add -DBUILD_GLES=ON
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j`nproc`
@@ -195,7 +196,6 @@ ln -s ../satdump_cfg.json . # Symlink settings so it can run
 sudo make install
 
 # Run (if you want!)
-# On Raspberry PIs, you will need to export MESA_GL_VERSION_OVERRIDE=4.5
 ./satdump-ui
 ```
 
