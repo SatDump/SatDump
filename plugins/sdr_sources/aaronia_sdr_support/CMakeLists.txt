@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(aaronia_sdr_support)
 
+
 if(MSVC)
     set(AARONIA_RTSA_SUITE_PATH "C:/Program Files/Aaronia AG/Aaronia RTSA-Suite PRO/" CACHE STRING "Path of RTSA Aaronia SW")
 else()
@@ -10,12 +11,6 @@ endif()
 if(UNIX OR MSVC)
     message("Building with Aaronia support")
     file(GLOB_RECURSE aaronia_sdr_support_CPPS *.cpp)
-
-    if(MSVC)
-    else()
-        set(aaronia_sdr_support_CPPS ${aaronia_sdr_support_CPPS} libAaroniaRTSAAPI.so.init.c libAaroniaRTSAAPI.so.tramp.S)
-    endif()
-
     add_library(aaronia_sdr_support SHARED ${aaronia_sdr_support_CPPS})
 
     if(MSVC)
@@ -23,9 +18,8 @@ if(UNIX OR MSVC)
         target_include_directories(aaronia_sdr_support PUBLIC "${AARONIA_RTSA_SUITE_PATH}/sdk")
         target_link_libraries(aaronia_sdr_support PUBLIC satdump_core AaroniaRTSAAPI.dll)
     else()
-        target_link_libraries(aaronia_sdr_support PUBLIC satdump_core) # ${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so)
+        target_link_libraries(aaronia_sdr_support PUBLIC satdump_core ${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so)
         target_include_directories(aaronia_sdr_support PUBLIC ${AARONIA_RTSA_SUITE_PATH})
-        target_compile_definitions(aaronia_sdr_support PUBLIC AARONIA_RTSA_SUITE_LIB="${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so")
     endif()
 
     target_include_directories(aaronia_sdr_support PUBLIC src)
