@@ -12,6 +12,13 @@ if(UNIX OR MSVC)
     file(GLOB_RECURSE aaronia_sdr_support_CPPS *.cpp)
 
     if(MSVC)
+    else()
+        set(aaronia_sdr_support_CPPS ${aaronia_sdr_support_CPPS} libAaroniaRTSAAPI.so.init.c libAaroniaRTSAAPI.so.tramp.S)
+    endif()
+
+    add_library(aaronia_sdr_support SHARED ${aaronia_sdr_support_CPPS})
+
+    if(MSVC)
         target_link_directories(aaronia_sdr_support PUBLIC "${AARONIA_RTSA_SUITE_PATH}/sdk")
         target_include_directories(aaronia_sdr_support PUBLIC "${AARONIA_RTSA_SUITE_PATH}/sdk")
         target_link_libraries(aaronia_sdr_support PUBLIC satdump_core AaroniaRTSAAPI.dll)
@@ -19,10 +26,7 @@ if(UNIX OR MSVC)
         target_link_libraries(aaronia_sdr_support PUBLIC satdump_core) # ${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so)
         target_include_directories(aaronia_sdr_support PUBLIC ${AARONIA_RTSA_SUITE_PATH})
         target_compile_definitions(aaronia_sdr_support PUBLIC AARONIA_RTSA_SUITE_LIB="${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so")
-        set(aaronia_sdr_support_CPPS ${aaronia_sdr_support_CPPS} libAaroniaRTSAAPI.so.init.c libAaroniaRTSAAPI.so.tramp.S)
     endif()
-
-    add_library(aaronia_sdr_support SHARED ${aaronia_sdr_support_CPPS})
 
     target_include_directories(aaronia_sdr_support PUBLIC src)
 
