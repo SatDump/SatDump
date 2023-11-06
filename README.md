@@ -65,7 +65,7 @@ Sample command :
 satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
 ```
 
-You can find a list of all SDR Options [Here](docs/SDR-Options.md).
+You can find a list of all SDR Options [Here](docs/SDR-Options.md). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
 
 ### Recording
 
