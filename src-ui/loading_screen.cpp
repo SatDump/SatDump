@@ -1,7 +1,11 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+
+#ifndef IMGUI_IMPL_OPENGL_ES2
 #include "imgui/imgui_impl_opengl2.h"
+#endif
+
 #include "loading_screen.h"
 #include "loader/loader.h"
 #include "core/style.h"
@@ -38,9 +42,11 @@ namespace satdump
     {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
+#ifndef IMGUI_IMPL_OPENGL_ES2
         if(fallback_gl)
             ImGui_ImplOpenGL2_NewFrame();
         else
+#endif
             ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
 
@@ -49,9 +55,11 @@ namespace satdump
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+#ifndef IMGUI_IMPL_OPENGL_ES2
         if(fallback_gl)
             ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         else
+#endif
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();

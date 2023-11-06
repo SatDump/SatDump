@@ -29,12 +29,14 @@ void window_content_scale_callback(GLFWwindow*, float xscale, float)
 {
     satdump::updateUI(xscale / style::macos_framebuffer_scale());
     style::setFonts();
+#ifndef IMGUI_IMPL_OPENGL_ES2
     if (fallback_gl)
     {
         ImGui_ImplOpenGL2_DestroyFontsTexture();
         ImGui_ImplOpenGL2_CreateFontsTexture();
     }
     else
+#endif
     {
         ImGui_ImplOpenGL3_DestroyFontsTexture();
         ImGui_ImplOpenGL3_CreateFontsTexture();
@@ -135,9 +137,11 @@ int main(int argc, char *argv[])
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
+#ifndef IMGUI_IMPL_OPENGL_ES2
     if (fallback_gl)
         ImGui_ImplOpenGL2_Init();
     else
+#endif
         ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[selected_glsl]);
 
     // Setup Icon
@@ -204,12 +208,14 @@ int main(int argc, char *argv[])
 
     //Set font again to adjust for DPI
     style::setFonts();
+#ifndef IMGUI_IMPL_OPENGL_ES2
     if (fallback_gl)
     {
         ImGui_ImplOpenGL2_DestroyFontsTexture();
         ImGui_ImplOpenGL2_CreateFontsTexture();
     }
     else
+#endif
     {
         ImGui_ImplOpenGL3_DestroyFontsTexture();
         ImGui_ImplOpenGL3_CreateFontsTexture();
@@ -231,9 +237,11 @@ int main(int argc, char *argv[])
     do
     {
         // Start the Dear ImGui frame
+#ifndef IMGUI_IMPL_OPENGL_ES2
         if (fallback_gl)
             ImGui_ImplOpenGL2_NewFrame();
         else
+#endif
             ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -258,9 +266,11 @@ int main(int argc, char *argv[])
         // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+#ifndef IMGUI_IMPL_OPENGL_ES2
         if(fallback_gl)
             ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         else
+#endif
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
@@ -270,9 +280,11 @@ int main(int argc, char *argv[])
     satdump::exitMainUI();
 
     // Cleanup
+#ifndef IMGUI_IMPL_OPENGL_ES2
     if(fallback_gl)
         ImGui_ImplOpenGL2_Shutdown();
     else
+#endif
         ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
