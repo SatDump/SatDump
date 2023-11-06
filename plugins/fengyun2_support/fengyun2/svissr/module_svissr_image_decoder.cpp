@@ -105,7 +105,7 @@ namespace fengyun_svissr
     SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                           sat_name(parameters["satname"])
     {
-        frame = new uint8_t[FRAME_SIZE];
+        frame = new uint8_t[FRAME_SIZE + 10000];
 
         // Counters and so
         backwardScan = false;
