@@ -236,14 +236,16 @@ namespace goes
                     {
                         dec->textureID = makeImageTexture();
                         dec->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        dec->hasToUpdate = true;
                     }
 
                     if (dec->imageStatus != IDLE)
                     {
                         if (dec->hasToUpdate)
                         {
-                            dec->hasToUpdate = true;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, dec->img_width, dec->img_height);
+                            dec->hasToUpdate = false;
+                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
                         }
 
                         hasImage = true;
@@ -272,17 +274,18 @@ namespace goes
                     {
                         goes_r_fc_composer_full_disk->textureID = makeImageTexture();
                         goes_r_fc_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(goes_r_fc_composer_full_disk->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        goes_r_fc_composer_full_disk->hasToUpdate = true;
                     }
 
                     if (goes_r_fc_composer_full_disk->imageStatus != IDLE)
                     {
                         if (goes_r_fc_composer_full_disk->hasToUpdate)
                         {
-                            goes_r_fc_composer_full_disk->hasToUpdate = true;
+                            goes_r_fc_composer_full_disk->hasToUpdate = false;
                             updateImageTexture(goes_r_fc_composer_full_disk->textureID,
                                                goes_r_fc_composer_full_disk->textureBuffer,
-                                               goes_r_fc_composer_full_disk->img_width,
-                                               goes_r_fc_composer_full_disk->img_height);
+                                               1000, 1000);
                         }
 
                         hasImage = true;
@@ -311,17 +314,18 @@ namespace goes
                     {
                         goes_r_fc_composer_meso1->textureID = makeImageTexture();
                         goes_r_fc_composer_meso1->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(goes_r_fc_composer_meso1->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        goes_r_fc_composer_meso1->hasToUpdate = true;
                     }
 
                     if (goes_r_fc_composer_meso1->imageStatus != IDLE)
                     {
                         if (goes_r_fc_composer_meso1->hasToUpdate)
                         {
-                            goes_r_fc_composer_meso1->hasToUpdate = true;
+                            goes_r_fc_composer_meso1->hasToUpdate = false;
                             updateImageTexture(goes_r_fc_composer_meso1->textureID,
                                                goes_r_fc_composer_meso1->textureBuffer,
-                                               goes_r_fc_composer_meso1->img_width,
-                                               goes_r_fc_composer_meso1->img_height);
+                                               1000, 1000);
                         }
 
                         hasImage = true;
@@ -350,17 +354,18 @@ namespace goes
                     {
                         goes_r_fc_composer_meso2->textureID = makeImageTexture();
                         goes_r_fc_composer_meso2->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(goes_r_fc_composer_meso2->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        goes_r_fc_composer_meso2->hasToUpdate = true;
                     }
 
                     if (goes_r_fc_composer_meso2->imageStatus != IDLE)
                     {
                         if (goes_r_fc_composer_meso2->hasToUpdate)
                         {
-                            goes_r_fc_composer_meso2->hasToUpdate = true;
+                            goes_r_fc_composer_meso2->hasToUpdate = false;
                             updateImageTexture(goes_r_fc_composer_meso2->textureID,
                                                goes_r_fc_composer_meso2->textureBuffer,
-                                               goes_r_fc_composer_meso2->img_width,
-                                               goes_r_fc_composer_meso2->img_height);
+                                               1000, 1000);
                         }
 
                         hasImage = true;

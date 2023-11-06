@@ -28,7 +28,7 @@ namespace widgets
         int curr_width;
         int curr_height;
 
-        bool need_update;
+        bool need_update = false;
 
         int waterfall_i_mod = 0;
         int waterfall_i = 0;

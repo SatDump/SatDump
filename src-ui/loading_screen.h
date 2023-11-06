@@ -8,7 +8,7 @@ namespace satdump
     class LoadingScreenSink : public slog::LoggerSink
     {
     public:
-        LoadingScreenSink(GLFWwindow* window, float scale, GLFWimage* img);
+        LoadingScreenSink(GLFWwindow* window, float scale, GLFWimage* img, bool fallback_gl);
         ~LoadingScreenSink();
     protected:
         void receive(slog::LogMsg log);
@@ -17,5 +17,6 @@ namespace satdump
         GLFWwindow* window;
         float scale, macos_scale;
         GLuint image_texture;
+        bool fallback_gl;
     };
 }
