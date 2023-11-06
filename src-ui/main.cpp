@@ -16,7 +16,7 @@ bool fallback_gl = false;
 
 void sig_handler_ui(int signo)
 {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         signal_caught = true;
 }
 
@@ -232,6 +232,7 @@ int main(int argc, char *argv[])
 
     // Attach signal
     signal(SIGINT, sig_handler_ui);
+    signal(SIGTERM, sig_handler_ui);
 
     // Main loop
     do
