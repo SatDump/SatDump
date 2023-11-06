@@ -19,7 +19,6 @@ cp -force ..\..\..\satdump_cfg.json Debug
 
 #Overwrite debug DLLs
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\libpng16d.dll Debug\libpng16.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\glew32d.dll Debug\glew32.dll
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\fftw3f.dll Debug\fftw3f.dll
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\glfw3.dll Debug\glfw3.dll
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\jpeg62.dll Debug\jpeg62.dll
