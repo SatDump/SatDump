@@ -54,6 +54,11 @@ void ProcessingModule::drawUI(bool /*window*/)
 {
 }
 
+bool ProcessingModule::hasUI()
+{
+    return true;
+}
+
 // Registry
 SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule>(std::string, std::string, nlohmann::json)>> modules_registry;
 

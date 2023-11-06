@@ -17,6 +17,13 @@ if(PLUGIN_SCRIPTING) # OR PLUGINS_ALL)
 endif()
 
 # ######################
+option(C_PLUGIN_SUPPORT "Enable the C plugin loader" ON)
+
+if(C_PLUGIN_SUPPORT OR PLUGINS_ALL)
+    add_subdirectory(c_plugin_support)
+endif()
+
+# ######################
 if(PLUGIN_SPACEX OR PLUGINS_ALL)
     add_subdirectory(spacex_support)
 endif()

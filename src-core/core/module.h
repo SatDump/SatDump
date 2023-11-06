@@ -61,6 +61,7 @@ public:
     virtual void stop();
     virtual void process() = 0;
     virtual void drawUI(bool window) = 0;
+    virtual bool hasUI();
     std::vector<std::string> getOutputs();
 
 public:

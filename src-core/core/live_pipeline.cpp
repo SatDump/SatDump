@@ -197,6 +197,7 @@ namespace satdump
     void LivePipeline::drawUIs()
     {
         for (std::shared_ptr<ProcessingModule> mod : modules)
-            mod->drawUI(true);
+            if (mod->hasUI())
+                mod->drawUI(true);
     }
 }

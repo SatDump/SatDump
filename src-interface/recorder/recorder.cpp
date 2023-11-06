@@ -533,18 +533,27 @@ namespace satdump
             if (processing_modules_floating_windows)
             {
                 for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
-                    module->drawUI(true);
+                    if (module->hasUI())
+                        module->drawUI(true);
             }
             else
             {
                 float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                 float live_width = recorder_size.x + 16 * ui_scale;
                 float live_height = 250 * ui_scale;
-                float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
+                int module_has_ui_count = 0;
+                for (auto module : live_pipeline->modules)
+                    if (module->hasUI())
+                        module_has_ui_count++;
+                    
+                float winwidth = module_has_ui_count > 0 ? live_width / module_has_ui_count : live_width;
                 float currentPos = 0;
                 ImGui::PushStyleColor(11, ImGui::GetStyleColorVec4(10));
                 for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
                 {
+                    if (!module->hasUI())
+                        continue;
+
                     ImGui::SetNextWindowPos({currentPos, y_pos});
                     ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
                     module->drawUI(false);

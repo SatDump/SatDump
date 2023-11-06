@@ -154,10 +154,16 @@ namespace satdump
                         processing::ui_call_list_mutex->lock();
                         int live_width = wwidth; // ImGui::GetWindowWidth();
                         int live_height = /*ImGui::GetWindowHeight()*/ wheight - ImGui::GetCursorPos().y;
-                        float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
+                        int module_has_ui_count = 0;
+                        for (auto module : *processing::ui_call_list)
+                            if (module->hasUI())
+                                module_has_ui_count++;
+                        float winheight = module_has_ui_count > 0 ? live_height / module_has_ui_count : live_height;
                         float currentPos = ImGui::GetCursorPos().y;
                         for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
                         {
+                            if (!module->hasUI())
+                                continue;
                             ImGui::SetNextWindowPos({0, currentPos});
                             currentPos += winheight;
                             ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
