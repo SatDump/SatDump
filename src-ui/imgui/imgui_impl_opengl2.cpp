@@ -40,7 +40,7 @@
 //  2016-09-05: OpenGL: Fixed save and restore of current scissor rectangle.
 
 #include "imgui/imgui.h"
-#ifndef IMGUI_DISABLE
+#if !defined IMGUI_DISABLE && !defined IMGUI_IMPL_OPENGL_ES2
 #include "imgui_impl_opengl2.h"
 #include <stdint.h>     // intptr_t
 
