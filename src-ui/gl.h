@@ -1,5 +1,6 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl2.h"
 #include "imgui/imgui_impl_opengl3.h"
 
 #define GL_SILENCE_DEPRECATION

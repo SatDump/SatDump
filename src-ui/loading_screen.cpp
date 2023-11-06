@@ -1,14 +1,16 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_opengl2.h"
 #include "loading_screen.h"
 #include "loader/loader.h"
 #include "core/style.h"
 
 namespace satdump
 {
-    LoadingScreenSink::LoadingScreenSink(GLFWwindow* window, float scale, GLFWimage* img) : window{window},
-                                                                                            scale{scale}
+    LoadingScreenSink::LoadingScreenSink(GLFWwindow* window, float scale, GLFWimage* img, bool fallback_gl) : window{window},
+                                                                                                              scale{scale},
+                                                                                                              fallback_gl{fallback_gl}
     {
         macos_scale = style::macos_framebuffer_scale();
 
@@ -36,7 +38,10 @@ namespace satdump
     {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
-        ImGui_ImplOpenGL3_NewFrame();
+        if(fallback_gl)
+            ImGui_ImplOpenGL2_NewFrame();
+        else
+            ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
 
         draw_loader(display_w / macos_scale, display_h / macos_scale, scale, &image_texture, str);
@@ -44,7 +49,10 @@ namespace satdump
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        if(fallback_gl)
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+        else
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

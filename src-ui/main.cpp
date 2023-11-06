@@ -12,6 +12,7 @@
 #include "gl.h"
 
 static volatile bool signal_caught = false;
+bool fallback_gl = false;
 
 void sig_handler_ui(int signo)
 {
@@ -28,8 +29,16 @@ void window_content_scale_callback(GLFWwindow*, float xscale, float)
 {
     satdump::updateUI(xscale / style::macos_framebuffer_scale());
     style::setFonts();
-    ImGui_ImplOpenGL3_DestroyFontsTexture();
-    ImGui_ImplOpenGL3_CreateFontsTexture();
+    if (fallback_gl)
+    {
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+    }
+    else
+    {
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+    }
 }
 
 void bindImageTextureFunctions();
@@ -73,7 +82,7 @@ int main(int argc, char *argv[])
 #endif
 
     // Decide GL+GLSL versions
-    const char* OPENGL_VERSIONS_GLSL[] = { "#version 100", "#version 120", "#version 130", "#version 150" };
+    const char* OPENGL_VERSIONS_GLSL[] = { "#version 100", "#version 130", "#version 150" };
     int selected_glsl;
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
@@ -83,27 +92,27 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #elif defined(__APPLE__)
     // GL 3.2 + GLSL 150
-    selected_glsl = 3;
+    selected_glsl = 2;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
     // GL 3.0 + GLSL 130
-    selected_glsl = 2;
+    selected_glsl = 1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
         glfwDefaultWindowHints();
-        selected_glsl = 1;
-        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
+        fallback_gl = true;
+        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
         if (window == nullptr)
         {
             logger->critical("Could not init GLFW Window! Exiting");
@@ -126,7 +135,10 @@ int main(int argc, char *argv[])
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[selected_glsl]);
+    if (fallback_gl)
+        ImGui_ImplOpenGL2_Init();
+    else
+        ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[selected_glsl]);
 
     // Setup Icon
     GLFWimage img;
@@ -175,7 +187,7 @@ int main(int argc, char *argv[])
     style::setFonts(display_scale);
 
     // Init Loading Screen
-    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img);
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img, fallback_gl);
     logger->add_sink(loading_screen_sink);
 
     // Init SatDump
@@ -192,8 +204,16 @@ int main(int argc, char *argv[])
 
     //Set font again to adjust for DPI
     style::setFonts();
-    ImGui_ImplOpenGL3_DestroyFontsTexture();
-    ImGui_ImplOpenGL3_CreateFontsTexture();
+    if (fallback_gl)
+    {
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+    }
+    else
+    {
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+    }
 
     if (satdump::processing::is_processing)
     {
@@ -211,7 +231,10 @@ int main(int argc, char *argv[])
     do
     {
         // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
+        if (fallback_gl)
+            ImGui_ImplOpenGL2_NewFrame();
+        else
+            ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
@@ -235,7 +258,10 @@ int main(int argc, char *argv[])
         // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        if(fallback_gl)
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+        else
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -244,7 +270,10 @@ int main(int argc, char *argv[])
     satdump::exitMainUI();
 
     // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
+    if(fallback_gl)
+        ImGui_ImplOpenGL2_Shutdown();
+    else
+        ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
