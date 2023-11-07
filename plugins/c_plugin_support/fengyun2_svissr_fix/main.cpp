@@ -151,7 +151,7 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
     {
         if (closest_sync == ZERO)
             pdata->zero_counter++;
-        if (closest_sync == FORWARD && pdata->zero_counter > 10)
+        if (closest_sync == FORWARD && pdata->zero_counter > 5)
         {
             pdata->forward_counter = 1;
             pdata->now_lino = 0;

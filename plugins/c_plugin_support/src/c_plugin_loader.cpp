@@ -98,8 +98,8 @@ CPluginLoader::CPluginLoader(std::string input_file, std::string output_file_hin
     : ProcessingModule(input_file, output_file_hint, parameters),
       plugin_path(parameters["plugin_path"].template get<std::string>()), params(parameters["plugin_params"])
 {
-    auto real_plugin_path =
-        resources::getResourcePath(std::string("c_plugin") + std::filesystem::path::preferred_separator + plugin_path);
+    std::string real_plugin_path =
+        resources::getResourcePath(std::string("c_plugin") + "/" + plugin_path);
 
     dynlib = dlopen(real_plugin_path.c_str(), RTLD_LAZY);
     if (!dynlib)
@@ -182,12 +182,15 @@ void CPluginLoader::process()
     std::vector<char> buffer_container(acquire_result.buffer_size);
 
     std::shared_ptr<void> plugin_dispose_defer(
-        nullptr, [&acquire_result, this](...) { plugin_interface.plugin_dispose(&acquire_result); });
+        nullptr, 
+        [&acquire_result, this] (...) { 
+            this->plugin_interface.plugin_dispose(&acquire_result); 
+    });
 
     while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
     {
         // Read a buffer
-        ssize_t count = 0;
+        std::streamsize count = 0;
         if (input_data_type == DATA_FILE)
         {
             data_in.read((char *)buffer_container.data(), buffer_container.size());
