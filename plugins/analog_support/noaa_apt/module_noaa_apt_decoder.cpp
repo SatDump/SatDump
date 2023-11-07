@@ -215,7 +215,7 @@ namespace noaa_apt
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got %d lines...", line_cnt);
 
-        //Buffer to image
+        // Buffer to image
         wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
         for (size_t i = 0; i < wip_apt_image.size(); i++)
             wip_apt_image[i] = imagebuf[i];
@@ -429,12 +429,18 @@ namespace noaa_apt
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(timestamps);
+                    nlohmann::json proj_cfg;
                     if (norad == 25338)
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr_apt.json")));
+                        proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json"));
                     else if (norad == 28654)
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr_apt.json")));
+                        proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr.json"));
                     else if (norad == 33591)
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr_apt.json")));
+                        proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json"));
+                    proj_cfg["type"] = "noaa_apt_single_line";
+                    proj_cfg["image_width"] = 909;
+                    proj_cfg["gcp_spacing_x"] = 30;
+                    proj_cfg["gcp_spacing_y"] = 30;
+                    avhrr_products.set_proj_cfg(proj_cfg);
                 }
             }
 
@@ -668,7 +674,7 @@ namespace noaa_apt
             if (textureID == 0)
             {
                 textureID = makeImageTexture();
-                textureBuffer = new uint32_t[262144]; //512x512
+                textureBuffer = new uint32_t[262144]; // 512x512
                 memset(textureBuffer, 0, sizeof(uint32_t) * 262144);
                 has_to_update = true;
             }
