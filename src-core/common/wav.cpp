@@ -68,8 +68,9 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
                 md.frequency = freq;
-                md.timestamp = mktime(&timeS) - 3600;
+                md.timestamp = mktime(&timeS);
             }
 
             // HDSDR Audio filename
@@ -107,6 +108,7 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
                 md.frequency = freq;
                 md.timestamp = mktime(&timeS);
             }
@@ -156,6 +158,7 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
                 md.timestamp = mktime(&timeS);
             }
 
@@ -169,6 +172,7 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
                 md.timestamp = mktime(&timeS);
             }
 
@@ -180,9 +184,9 @@ namespace wav
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 7)
             {
-                timeS.tm_isdst = -1;
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
                 md.timestamp = mktime(&timeS);
             }
         }
@@ -197,6 +201,7 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
                 md.frequency = freq;
                 md.timestamp = mktime(&timeS);
             }
