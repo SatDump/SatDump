@@ -130,7 +130,8 @@ namespace satdump
         // TODO : Cleanup?
         if (using_lut)
         {
-            current_image.to_rgb();
+            if (current_image.channels() < 3)
+                current_image.to_rgb();
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
                 uint16_t val = current_image[i];
