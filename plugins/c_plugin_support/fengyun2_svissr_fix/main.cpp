@@ -168,7 +168,7 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
         if (!pdata->use_time_counter)
         {
             int offset = pdata->symbols_elapsed / (double)pdata->symbol_gap - 1;
-            printf("%ld\n", pdata->symbols_elapsed);
+            // printf("%ld\n", pdata->symbols_elapsed);
             if (offset > 0)
             {
                 pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
