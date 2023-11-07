@@ -520,6 +520,17 @@
                         },
                         "autogen": false
                     },
+                    "Night Time Fire Detection": {
+                        "equation": "((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0, 0, 0, ((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0",
+                        "ch4": {
+                            "min": 0,
+                            "max": 1000
+                        },
+                        "ch5": {
+                            "min": 0,
+                            "max": 1000
+                        }
+                    },
                     "NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod.png",
                         "channels": "ch3b, ch4",
