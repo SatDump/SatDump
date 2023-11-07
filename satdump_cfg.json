@@ -504,19 +504,6 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "NO enhancement": {
-                        "lut": "lut/WXtoImg-NO_mod.png",
-                        "channels": "ch3b, ch4",
-                        "autogen": false,
-                        "geo_correct": true,
-                        "individual_equalize": true,
-                        "draw_map_overlay": true,
-                        "borders_color": [
-                            1,
-                            1,
-                            0
-                        ]
-                    },
                     "Sea Surface Temperature": {
                         "channels": "cch4",
                         "lua": "scripted_compos/sst_landmask.lua",
@@ -533,9 +520,84 @@
                         },
                         "autogen": false
                     },
-                    "NOAA BD (Hurricane)": {
-                        "channels": "cch4",
-                        "lut": "lut/bd.png"
+                    "NO enhancement": {
+                        "lut": "lut/WXtoImg-NO_mod.png",
+                        "channels": "ch3b, ch4",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "individual_equalize": true,
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "ZA enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-ZA.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MB enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-MB.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MD enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-MD.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "BD enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-BD.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "CC enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-CC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "EC enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-EC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HE enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-HE.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HF enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-HF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JF enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-JF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JJ enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-JJ.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "TA enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-TA.png",
+                        "autogen": false,
+                        "geo_correct": true
                     }
                 },
                 "project_channels": {
