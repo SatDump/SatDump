@@ -376,7 +376,11 @@ namespace satdump
                                     {
                                         for (int ch = 0; ch < 3; ch++)
                                             result.output_image.channel(ch)[(y + y2) * result.output_image.width() + x + x2] = result2.output_image.channel(ch)[y * result2.output_image.width() + x];
-                                        result.output_image.channel(3)[(y + y2) * result.output_image.width() + x + x2] = 65535;
+
+                                        if (result2.output_image.channels() == 4)
+                                            result.output_image.channel(3)[(y + y2) * result.output_image.width() + x + x2] = result2.output_image.channel(3)[y * result2.output_image.width() + x];
+                                        else
+                                            result.output_image.channel(3)[(y + y2) * result.output_image.width() + x + x2] = 65535;
                                     }
                 }
 
