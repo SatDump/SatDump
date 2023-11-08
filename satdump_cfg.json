@@ -529,8 +529,7 @@
                         "ch5": {
                             "min": 0,
                             "max": 1000
-                        },
-                        "median_blur": true
+                        }
                     },
                     "NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod.png",
