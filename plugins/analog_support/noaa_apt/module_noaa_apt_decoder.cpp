@@ -113,7 +113,7 @@ namespace noaa_apt
 
                 if (is_stereo)
                 {
-                    for (int i = 0; i < buffer_size * 2; i++)
+                    for (int i = 0; i < buffer_size / 2; i++)
                         input_stream->writeBuf[i] = s16_buf[i * 2] / 65535.0;
                     input_stream->swap(buffer_size / 2);
                 }
@@ -155,9 +155,8 @@ namespace noaa_apt
         ctm->start();
 
         int image_i = 0;
-        wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, APT_MAX_LINES, 1);
-
         int last_line_cnt = 0;
+        std::vector<uint16_t> imagebuf;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             int nsamp = ctm->output_stream->read();
@@ -166,18 +165,27 @@ namespace noaa_apt
             {
                 float v = ctm->output_stream->readBuf[i];
                 v = (v / 0.5f) * 65535.0f;
-
-                if (image_i < APT_IMG_WIDTH * APT_IMG_OVERS * APT_MAX_LINES)
-                    wip_apt_image[image_i++] = wip_apt_image.clamp(v);
+                imagebuf.push_back(wip_apt_image.clamp(v));
+                image_i++;
             }
 
             ctm->output_stream->flush();
 
             int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
-
             if (textureID != 0 && line_cnt > last_line_cnt)
             {
-                auto preview = wip_apt_image.resize_to(wip_apt_image.width() / 5, wip_apt_image.height() / 5);
+                int x_scale = (APT_IMG_WIDTH * APT_IMG_OVERS) / 512;
+                int y_scale = ceil((double)line_cnt / 512);
+                image::Image<uint16_t> preview;
+                preview.init(512, 512, 1);
+                for (int x = 0; x < 512; x++)
+                    for (int y = 0; y < line_cnt / y_scale; y++)
+                    {
+                        int xx = floor(double(x) * x_scale);
+                        int yy = floor(double(y) * y_scale);
+                        preview[y * 512 + x] = imagebuf[yy * APT_IMG_WIDTH * APT_IMG_OVERS + xx];
+                    }
+
                 ushort_to_rgba(preview.data(), textureBuffer, preview.size());
                 has_to_update = true;
                 last_line_cnt = line_cnt;
@@ -206,6 +214,11 @@ namespace noaa_apt
         // Line mumbers
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got %d lines...", line_cnt);
+
+        // Buffer to image
+        wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
+        for (size_t i = 0; i < wip_apt_image.size(); i++)
+            wip_apt_image[i] = imagebuf[i];
 
         // WB
         logger->info("White balance...");
@@ -291,7 +304,7 @@ namespace noaa_apt
 
             logger->trace("Valid lines %d %d", first_valid_wedge, last_valid_wedge);
 
-            if (abs(first_valid_wedge - last_valid_wedge) > 0)
+            if (abs(first_valid_wedge - last_valid_wedge) > 0 && first_valid_wedge != 1e9)
             {
                 first_valid_line = first_valid_wedge;
                 last_valid_line = last_valid_wedge;
@@ -325,7 +338,7 @@ namespace noaa_apt
                 {
                     number = d_parameters["satellite_number"];
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     number = std::stoi(d_parameters["satellite_number"].get<std::string>());
                 }
@@ -416,12 +429,18 @@ namespace noaa_apt
                     avhrr_products.set_tle(satellite_tle);
                     avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     avhrr_products.set_timestamps(timestamps);
+                    nlohmann::json proj_cfg;
                     if (norad == 25338)
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr_apt.json")));
+                        proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json"));
                     else if (norad == 28654)
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr_apt.json")));
+                        proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_18_avhrr.json"));
                     else if (norad == 33591)
-                        avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr_apt.json")));
+                        proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json"));
+                    proj_cfg["type"] = "noaa_apt_single_line";
+                    proj_cfg["image_width"] = 909;
+                    proj_cfg["gcp_spacing_x"] = 30;
+                    proj_cfg["gcp_spacing_y"] = 30;
+                    avhrr_products.set_proj_cfg(proj_cfg);
                 }
             }
 
@@ -506,7 +525,7 @@ namespace noaa_apt
             wedge_a.push_back(val);
         }
 
-        for (size_t line = 0; line < wedge_a.size() / (16 * 8); line++)
+        for (size_t line = 0; line < (wedge_a.size() - (9 * 8)) / (16 * 8); line++)
         {
             int best_cor = 160 * 255;
             int best_pos = 0;
@@ -655,12 +674,14 @@ namespace noaa_apt
             if (textureID == 0)
             {
                 textureID = makeImageTexture();
-                textureBuffer = new uint32_t[((APT_IMG_WIDTH * APT_IMG_OVERS) / 5) * (APT_MAX_LINES / 5)];
+                textureBuffer = new uint32_t[262144]; // 512x512
+                memset(textureBuffer, 0, sizeof(uint32_t) * 262144);
+                has_to_update = true;
             }
 
             if (has_to_update)
             {
-                updateImageTexture(textureID, textureBuffer, wip_apt_image.width() / 5, wip_apt_image.height() / 5);
+                updateImageTexture(textureID, textureBuffer, 512, 512);
                 has_to_update = false;
             }
 

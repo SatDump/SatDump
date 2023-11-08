@@ -36,6 +36,25 @@ void LimeSDRSource::set_gains()
     }
 }
 
+void LimeSDRSource::set_others()
+{
+    if (!is_started)
+        return;
+
+    lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
+
+    if (manual_bandwidth)
+    {
+        LMS_SetLPFBW(limeDevice, false, channel_id, bandwidth_widget.get_value());
+        LMS_SetLPF(limeDevice, false, channel_id, true);
+    }
+    else
+    {
+        LMS_SetLPFBW(limeDevice, false, channel_id, samplerate_widget.get_value());
+        LMS_SetLPF(limeDevice, false, channel_id, true);
+    }
+}
+
 void LimeSDRSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
@@ -45,11 +64,14 @@ void LimeSDRSource::set_settings(nlohmann::json settings)
     gain_tia = getValueOrDefault(d_settings["tia_gain"], gain_tia);
     gain_pga = getValueOrDefault(d_settings["pga_gain"], gain_pga);
     path_id = getValueOrDefault(d_settings["path_id"], path_id);
+    manual_bandwidth = getValueOrDefault(d_settings["manual_bw"], manual_bandwidth);
+    bandwidth_widget.set_value(getValueOrDefault(d_settings["manual_bw_value"], samplerate_widget.get_value()));
     channel_id = getValueOrDefault(d_settings["channel_id"], channel_id);
 
     if (is_started)
     {
         set_gains();
+        set_others();
     }
 }
 
@@ -60,6 +82,8 @@ nlohmann::json LimeSDRSource::get_settings()
     d_settings["tia_gain"] = gain_tia;
     d_settings["pga_gain"] = gain_pga;
     d_settings["path_id"] = path_id;
+    d_settings["manual_bw"] = manual_bandwidth;
+    d_settings["manual_bw_value"] = bandwidth_widget.get_value();
     d_settings["channel_id"] = channel_id;
 
     return d_settings;
@@ -75,6 +99,7 @@ void LimeSDRSource::open()
         available_samplerates.push_back(i * 1e6);
 
     samplerate_widget.set_list(available_samplerates, true);
+    bandwidth_widget.set_list(available_samplerates, true);
 }
 
 void LimeSDRSource::start()
@@ -163,14 +188,13 @@ void LimeSDRSource::start()
 
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
     LMS_SetSampleRate(limeDevice, current_samplerate, 0);
-    LMS_SetLPFBW(limeDevice, false, channel_id, current_samplerate);
-    LMS_SetLPF(limeDevice, false, channel_id, true);
 
     is_started = true;
 
     set_frequency(d_frequency);
 
     set_gains();
+    set_others();
 
     LMS_SetupStream(limeDevice, &limeStream);
 
@@ -270,6 +294,12 @@ void LimeSDRSource::drawControlUI()
 
     if (gain_changed)
         set_gains();
+
+    bool bw_update = RImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
+    if (manual_bandwidth)
+        bw_update = bw_update || bandwidth_widget.render();
+    if (bw_update && is_started)
+        set_others();
 }
 
 void LimeSDRSource::set_samplerate(uint64_t samplerate)

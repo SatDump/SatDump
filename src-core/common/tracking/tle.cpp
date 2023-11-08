@@ -126,7 +126,10 @@ namespace satdump
             }
 
             if (!success)
+            {
                 logger->warn("Failed to get TLE for %s", url_str.c_str());
+                break;
+            }
         }
 
         if (success)

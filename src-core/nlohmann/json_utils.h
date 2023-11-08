@@ -18,7 +18,7 @@ T getValueOrDefault(nlohmann::json obj, T v)
     {
         return obj.get<T>();
     }
-    catch (std::exception&)
+    catch (std::exception &)
     {
         return v;
     }
@@ -31,7 +31,9 @@ void setValueIfExists(nlohmann::json obj, T &v)
     {
         v = obj.get<T>();
     }
-    catch (std::exception&)
+    catch (std::exception &)
     {
     }
 }
+
+nlohmann::ordered_json loadCborFile(std::string path);

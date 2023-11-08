@@ -3,6 +3,7 @@
 #include <iostream>
 #include <ctime>
 #include <algorithm>
+#include <filesystem>
 #ifdef __ANDROID__
 #include <android/log.h>
 static char ag_LogTag[] = "SatDump";
@@ -10,10 +11,6 @@ static char ag_LogTag[] = "SatDump";
 #if defined(_WIN32)
 #include <windows.h>
 #include <wincon.h>
-#endif
-#ifdef __APPLE__
-#include <sysdir.h>
-#include <glob.h>
 #endif
 
 #include "init.h"
@@ -151,9 +148,16 @@ namespace slog
 
     FileSink::FileSink(std::string path)
     {
-        outf = std::ofstream(path);
-    }
+        int suffix = 0;
+        std::string log_path = path + ".log";
+        while(std::filesystem::exists(log_path))
+        {
+            suffix++;
+            log_path = path + "-" + std::to_string(suffix) + ".log";
+        }
 
+        outf = std::ofstream(log_path);
+    }
     FileSink::~FileSink()
     {
         outf.close();
@@ -280,21 +284,30 @@ void initFileSink()
 {
     try
     {
-#ifdef __APPLE__
-        char library_glob[PATH_MAX];
-        glob_t globbuf;
-        sysdir_search_path_enumeration_state search_state = sysdir_start_search_path_enumeration(SYSDIR_DIRECTORY_LIBRARY, SYSDIR_DOMAIN_MASK_USER);
-        sysdir_get_next_search_path_enumeration(search_state, library_glob);
-        glob(library_glob, GLOB_TILDE, nullptr, &globbuf);
-        std::string log_path = std::string(globbuf.gl_pathv[0]) + "/Logs/satdump.log";
-        globfree(&globbuf);
-#elif defined(_WIN32)
-        std::string log_path = satdump::user_path + "/satdump.log";
-#else
-        std::string log_path = "satdump.log";
-#endif
+        //Make sure the user folder is created
+        if (!std::filesystem::exists(std::filesystem::path(satdump::user_path + "/")))
+            std::filesystem::create_directories(std::filesystem::path(satdump::user_path + "/"));
 
-        file_sink = std::make_shared<slog::FileSink>(log_path);
+        //Clear old logs
+        char timebuffer[16];
+        struct tm *timeinfo;
+        time_t current_time = time(NULL);
+        timeinfo = localtime(&current_time);
+        strftime(timebuffer, sizeof(timebuffer), "%Y%m%d", timeinfo);
+        int delete_before = atoi(timebuffer) - 2;
+        for (const auto& user_file : std::filesystem::directory_iterator(satdump::user_path + "/"))
+        {
+            std::string file_name = user_file.path().filename().string();
+            if (file_name.size() < 26)
+                continue;
+            int log_date = atoi(file_name.substr(8, 8).c_str());
+            if (log_date != 0 && log_date < delete_before)
+                std::filesystem::remove(user_file);
+        }
+
+        //Create new log
+        strftime(timebuffer, sizeof(timebuffer), "%Y%m%dT%H%M%S", timeinfo);
+        file_sink = std::make_shared<slog::FileSink>(satdump::user_path + "/satdump-" + std::string(timebuffer));
         logger->add_sink(file_sink);
         // file_sink->set_pattern("[%D - %T] (%L) %v");
         file_sink->set_level(slog::LOG_TRACE);

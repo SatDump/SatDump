@@ -98,6 +98,8 @@ namespace orb
                 {
                     dec.textureID = makeImageTexture();
                     dec.textureBuffer = new uint32_t[1000 * 1000];
+                    memset(dec.textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                    dec.hasToUpdate = true;
                 }
 
                 if (dec.is_dling)
@@ -138,6 +140,8 @@ namespace orb
                 {
                     dec.textureID = makeImageTexture();
                     dec.textureBuffer = new uint32_t[1000 * 1000];
+                    memset(dec.textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                    dec.hasToUpdate = true;
                 }
 
                 if (dec.is_dling)

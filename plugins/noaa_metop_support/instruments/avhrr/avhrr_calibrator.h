@@ -1,5 +1,6 @@
 #pragma once
 
+#include "products/image_products.h"
 #include "nlohmann/json.hpp"
 
 class NoaaAVHRR3Calibrator : public satdump::ImageProducts::CalibratorBase
@@ -7,7 +8,7 @@ class NoaaAVHRR3Calibrator : public satdump::ImageProducts::CalibratorBase
 private:
     nlohmann::json perLine_perChannel;
     nlohmann::json perChannel;
-    double crossover[2];
+    double crossover[3];
 
     double calc_rad(int channel, int pos_y, int px_val)
     {
@@ -21,7 +22,7 @@ private:
     }
 
 public:
-    NoaaAVHRR3Calibrator(nlohmann::json calib) : satdump::ImageProducts::CalibratorBase(calib)
+    NoaaAVHRR3Calibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
     {
     }
 
@@ -29,7 +30,7 @@ public:
     {
         perLine_perChannel = d_calib["vars"]["perLine_perChannel"];
         perChannel = d_calib["vars"]["perChannel"];
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 3; i++)
             crossover[i] = (perChannel[i]["int_hi"].get<double>() - perChannel[i]["int_lo"].get<double>()) / (perChannel[i]["slope_lo"].get<double>() - perChannel[i]["slope_hi"].get<double>());
     }
 

@@ -38,16 +38,13 @@ namespace satdump
         bool normalize_image = false;
         bool white_balance_image = false;
 
-        bool map_overlay = false;
-        bool shores_overlay = false;
-        bool cities_overlay = false;
-        bool latlon_overlay = false;
-
         // GUI
         bool range_window = false;
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
         bool is_updating = false;
+
+        OverlayHandler overlay_handler;
 
         // Calibration
         bool is_temp = false;

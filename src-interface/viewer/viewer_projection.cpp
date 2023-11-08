@@ -112,7 +112,8 @@ namespace satdump
                 ui_thread_pool.push([this](int)
                                     {   projections_are_generating = true;
                         logger->info("Saving Projection...");
-                        std::string saved_at = save_image_dialog("projection", "Save Projection", &projected_image_result, &viewer_app->save_type);
+                        std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
+                        std::string saved_at = save_image_dialog("projection", default_path, "Save Projection", &projected_image_result, &viewer_app->save_type);
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -380,7 +381,7 @@ namespace satdump
                 style::beginDisabled();
 
             ImGui::ProgressBar((general_progress + (progress_pointer == nullptr ? 0 : *(progress_pointer))) / general_sum);
-            
+
             if (!(disable_buttons || disable_add_layer))
                 style::endDisabled();
 
@@ -399,26 +400,7 @@ namespace satdump
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
         {
-            ImGui::Checkbox("Lat/Lon Grid", &projections_draw_latlon_overlay);
-            ImGui::SameLine();
-            ImGui::ColorEdit3("##latlongrid", (float *)&color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-            ImGui::Checkbox("Map Overlay##Projs", &projections_draw_map_overlay);
-            ImGui::SameLine();
-            ImGui::ColorEdit3("##borders", (float *)&color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-            ImGui::Checkbox("Shores Overlay##Projs", &projections_draw_shores_overlay);
-            ImGui::SameLine();
-            ImGui::ColorEdit3("##shores", (float *)&color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-            ImGui::Checkbox("Cities Overlay##Projs", &projections_draw_cities_overlay);
-            ImGui::SameLine();
-            ImGui::ColorEdit3("##cities##Projs", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-            widgets::SteppedSliderInt("Cities Font Size", &projections_cities_size, 10, 500);
-            static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
-            ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
-            if (cities_type == 2)
-                widgets::SteppedSliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
+            projection_overlay_handler.drawUI();
         }
 
         if (projections_should_refresh) // Refresh in the UI thread!
@@ -486,10 +468,7 @@ namespace satdump
                 continue;
             general_sum++;
         }
-        general_sum += projections_draw_map_overlay;
-        general_sum += projections_draw_cities_overlay;
-        general_sum += projections_draw_latlon_overlay;
-        general_sum += projections_draw_shores_overlay;
+        general_sum += projection_overlay_handler.enabled();
 
         // Generate all layers
         std::vector<image::Image<uint16_t>> layers_images;
@@ -499,7 +478,7 @@ namespace satdump
             ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
                 continue;
-            if(progress_pointer == nullptr)
+            if (progress_pointer == nullptr)
                 progress_pointer = &layer.progress;
 
             if (layer.type == 0)
@@ -547,54 +526,7 @@ namespace satdump
         auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, cfg, {});
 
         // Draw map borders
-        if (projections_draw_map_overlay)
-        {
-            logger->info("Drawing map overlay...");
-            unsigned short color[4] = {(unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f), 65535};
-            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                           projected_image_result,
-                                           color,
-                                           proj_func);
-            general_progress++;
-        }
-
-        // Draw map shorelines
-        if (projections_draw_shores_overlay)
-        {
-            logger->info("Drawing shores overlay...");
-            unsigned short color[4] = {(unsigned short)(color_shores.x * 65535.0f), (unsigned short)(color_shores.y * 65535.0f), (unsigned short)(color_shores.z * 65535.0f), 65535};
-            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
-                                           projected_image_result,
-                                           color,
-                                           proj_func);
-            general_progress++;
-        }
-
-        // Draw cities points
-        if (projections_draw_cities_overlay)
-        {
-            logger->info("Drawing map overlay...");
-            unsigned short color[4] = {(unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f), 65535};
-            map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
-                                            projected_image_result,
-                                            color,
-                                            proj_func,
-                                            projections_cities_size,
-                                            cities_type,
-                                            cities_scale_rank);
-            general_progress++;
-        }
-
-        // Draw latlon grid
-        if (projections_draw_latlon_overlay)
-        {
-            logger->info("Drawing latlon overlay...");
-            unsigned short color[4] = {(unsigned short)(color_latlon.x * 65535.0f), (unsigned short)(color_latlon.y * 65535.0f), (unsigned short)(color_latlon.z * 65535.0f), 65535};
-            map::drawProjectedMapLatLonGrid(projected_image_result,
-                                            color,
-                                            proj_func);
-            general_progress++;
-        }
+        projection_overlay_handler.apply(projected_image_result, proj_func, &general_progress);
 
         // Update ImageView
         projection_image_widget.update(projected_image_result);
@@ -636,7 +568,7 @@ namespace satdump
                     contains = true;
 
             if (!contains)
-                projection_layers.push_back({projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
+                projection_layers.insert(projection_layers.begin(), {projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
         }
 
         // Check for *new* products layers
@@ -657,7 +589,7 @@ namespace satdump
                 }
 
                 if (!contains)
-                    projection_layers.push_back({label, 0, products_and_handlers[i], nullptr});
+                    projection_layers.insert(projection_layers.begin(), {label, 0, products_and_handlers[i], nullptr});
             }
         }
 

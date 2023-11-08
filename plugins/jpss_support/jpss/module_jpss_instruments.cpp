@@ -12,6 +12,7 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "resources.h"
+#include "common/calibration.h"
 
 namespace jpss
 {
@@ -74,6 +75,12 @@ namespace jpss
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         if (pkt.header.apid == 528)
                             atms_reader.work(pkt);
+                        else if (pkt.header.apid == 515)
+                            atms_reader.work_calib(pkt);
+                        else if (pkt.header.apid == 530)
+                            atms_reader.work_hotcal(pkt);
+                        else if (pkt.header.apid == 531)
+                            atms_reader.work_eng(pkt);
                 }
                 else if (vcdu.vcid == 6) // CrIS
                 {
@@ -192,6 +199,27 @@ namespace jpss
                 for (int i = 0; i < 22; i++)
                     atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
 
+                nlohmann::json calib_coefs = loadCborFile(resources::getResourcePath("calibration/ATMS.cbor"));
+                if (calib_coefs.contains(sat_name))
+                {
+                    atms::ATMS_SDR_CC sdr_cc = calib_coefs[sat_name];
+                    nlohmann::json calib_cfg;
+                    calib_cfg["calibrator"] = "jpss_atms";
+                    calib_cfg["vars"] = atms_reader.getCalib();
+                    calib_cfg["sdr_cc"] = calib_coefs[sat_name];
+                    atms_products.set_calibration(calib_cfg);
+                    for (int c = 0; c < 22; c++)
+                    {
+                        atms_products.set_calibration_type(c, atms_products.CALIB_RADIANCE);
+                        atms_products.set_wavenumber(c, freq_to_wavenumber(sdr_cc.centralFrequency[c]));
+                        atms_products.set_calibration_default_radiance_range(c,
+                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][0].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])),
+                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][1].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])));
+                    }
+                }
+                else
+                    logger->warn("(ATMS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
                 atms_products.save(directory);
                 dataset.products_list.push_back("ATMS");
 
@@ -253,10 +281,10 @@ namespace jpss
                     std::filesystem::create_directories(directory_dnb);
 
                 logger->info("----------- VIIRS");
-                for (int i = 0; i < 16; i++)
-                    logger->info("M" + std::to_string(i + 1) + " Segments : " + std::to_string(viirs_reader_moderate[i].segments.size()));
                 for (int i = 0; i < 5; i++)
                     logger->info("I" + std::to_string(i + 1) + " Segments : " + std::to_string(viirs_reader_imaging[i].segments.size()));
+                for (int i = 0; i < 16; i++)
+                    logger->info("M" + std::to_string(i + 1) + " Segments : " + std::to_string(viirs_reader_moderate[i].segments.size()));
                 logger->info("DNB Segments : " + std::to_string(viirs_reader_dnb[0].segments.size()));
 
                 process_viirs_channels(); // Differential decoding!
@@ -304,24 +332,6 @@ namespace jpss
                     proj_cfg["ephemeris"] = att_ephem.getEphem();
                 viirs_dnb_products.set_proj_cfg(proj_cfg);
 
-                for (int i = 0; i < 16; i++)
-                {
-                    if (viirs_reader_moderate[i].segments.size() > 0)
-                    {
-                        logger->info("M" + std::to_string(i + 1) + "...");
-                        image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
-                        viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
-                        viirs_moderate_status[i] = SAVING;
-
-                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),
-                                                         "m" + std::to_string(i + 1),
-                                                         viirs_image,
-                                                         viirs_reader_moderate[i].timestamps,
-                                                         viirs_reader_moderate[i].channelSettings.zoneHeight});
-                    }
-                    viirs_moderate_status[i] = DONE;
-                }
-
                 for (int i = 0; i < 5; i++)
                 {
                     if (viirs_reader_imaging[i].segments.size() > 0)
@@ -338,6 +348,24 @@ namespace jpss
                                                          viirs_reader_imaging[i].channelSettings.zoneHeight});
                     }
                     viirs_imaging_status[i] = DONE;
+                }
+
+                for (int i = 0; i < 16; i++)
+                {
+                    if (viirs_reader_moderate[i].segments.size() > 0)
+                    {
+                        logger->info("M" + std::to_string(i + 1) + "...");
+                        image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
+                        viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
+                        viirs_moderate_status[i] = SAVING;
+
+                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),
+                                                         "m" + std::to_string(i + 1),
+                                                         viirs_image,
+                                                         viirs_reader_moderate[i].timestamps,
+                                                         viirs_reader_moderate[i].channelSettings.zoneHeight});
+                    }
+                    viirs_moderate_status[i] = DONE;
                 }
 
                 viirs_dnb_status = SAVING;

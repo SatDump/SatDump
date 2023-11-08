@@ -474,6 +474,7 @@ namespace goes
             {
                 textureID = makeImageTexture();
                 textureBuffer = new uint32_t[1354 * 2 * 5236];
+                memset(textureBuffer, 0, sizeof(uint32_t) * 1354 * 2 * 5236);
             }
 
             ImGui::Begin("GVAR Image Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);

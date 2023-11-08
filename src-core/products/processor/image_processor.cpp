@@ -10,6 +10,8 @@
 #include "common/map/map_drawer.h"
 #include "common/utils.h"
 
+#include "common/overlay_handler.h"
+
 namespace satdump
 {
     reprojection::ProjectionResult projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
@@ -41,18 +43,13 @@ namespace satdump
 
         reprojection::ProjectionResult ret = reprojection::reproject(op);
 
-        if (proj_settings.contains("draw_map"))
+        OverlayHandler overlay_handler;
+        overlay_handler.set_config(proj_settings);
+
+        if (overlay_handler.enabled())
         {
-            if (proj_settings["draw_map"].get<bool>())
-            {
-                auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
-                logger->info("Drawing map");
-                unsigned short color[3] = {0, 65535, 0};
-                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                               ret.img,
-                                               color,
-                                               proj_func);
-            }
+            auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
+            overlay_handler.apply(ret.img, proj_func);
         }
 
         ret.img.to_rgb();
@@ -98,10 +95,7 @@ namespace satdump
                                        initial_name;
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
-                    bool map_overlay = compo.value().contains("map_overlay") && compo.value()["map_overlay"].get<bool>();
-                    bool shores_overlay = compo.value().contains("shores_overlay") && compo.value()["shores_overlay"].get<bool>();
-                    bool cities_overlay = compo.value().contains("cities_overlay");
-                    bool latlon_overlay = compo.value().contains("latlon_grid") && compo.value()["latlon_grid"].get<bool>();
+
                     std::function<std::pair<int, int>(float, float, int, int)> proj_func;
                     std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
                     std::vector<float> corrected_stuff;
@@ -119,11 +113,14 @@ namespace satdump
                         }
                     }
 
+                    OverlayHandler overlay_handler;
+                    overlay_handler.set_config(compo.value());
+
                     rgb_image.save_img(product_path + "/" + name);
                     if (geo_correct)
                         rgb_image_corr.save_img(product_path + "/" + name + "_corrected");
 
-                    if (map_overlay || shores_overlay || cities_overlay || latlon_overlay)
+                    if (overlay_handler.enabled())
                     {
                         rgb_image.to_rgb(); // Ensure this is RGB!!
                         nlohmann::json proj_cfg = img_products->get_proj_cfg();
@@ -150,127 +147,13 @@ namespace satdump
                             };
                             corr_proj_func = newfun;
                         }
-                    }
 
-                    if (map_overlay)
-                    {
-                        logger->info("Drawing map...");
-                        unsigned short color[3] = {0, 65535, 0};
-
-                        if (compo.value().contains("map_overlay_colors"))
-                        {
-                            color[0] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[0] * 65535;
-                            color[1] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[1] * 65535;
-                            color[2] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[2] * 65535;
-                        }
-
-                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                                       rgb_image,
-                                                       color,
-                                                       proj_func);
+                        overlay_handler.apply(rgb_image, proj_func);
                         if (geo_correct)
-                            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                                           rgb_image_corr,
-                                                           color,
-                                                           corr_proj_func);
+                            overlay_handler.apply(rgb_image_corr, corr_proj_func);
                     }
 
-                    if (shores_overlay)
-                    {
-                        logger->info("Drawing shores...");
-                        unsigned short color[3] = {65535, 65535, 0};
-
-                        if (compo.value().contains("map_overlay_colors"))
-                        {
-                            color[0] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[0] * 65535;
-                            color[1] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[1] * 65535;
-                            color[2] = compo.value()["map_overlay_colors"].get<std::vector<float>>()[2] * 65535;
-                        }
-
-                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
-                                                       rgb_image,
-                                                       color,
-                                                       proj_func);
-                        if (geo_correct)
-                            map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
-                                                           rgb_image_corr,
-                                                           color,
-                                                           corr_proj_func);
-                    }
-
-                    if (latlon_overlay)
-                    {
-                        logger->info("Drawing latlon...");
-                        unsigned short color[3] = {0, 0, 65535};
-
-                        if (compo.value().contains("latlon_grid_colors"))
-                        {
-                            color[0] = compo.value()["latlon_grid_colors"].get<std::vector<float>>()[0] * 65535;
-                            color[1] = compo.value()["latlon_grid_colors"].get<std::vector<float>>()[1] * 65535;
-                            color[2] = compo.value()["latlon_grid_colors"].get<std::vector<float>>()[2] * 65535;
-                        }
-
-                        map::drawProjectedMapLatLonGrid(rgb_image,
-                                                        color,
-                                                        proj_func);
-                        if (geo_correct)
-                            map::drawProjectedMapLatLonGrid(
-                                rgb_image_corr,
-                                color,
-                                corr_proj_func);
-                    }
-
-                    if (cities_overlay)
-                    {
-                        logger->info("Drawing cities...");
-                        auto overlay_cfg = compo.value()["cities_overlay"].get<nlohmann::json>();
-                        unsigned short color[3] = {65535, 0, 0};
-                        int font_size = 50;
-                        int cities_type = 0;
-                        int scale_rank = 3;
-
-                        if (overlay_cfg.contains("color"))
-                        {
-                            color[0] = overlay_cfg["color"].get<std::vector<float>>()[0] * 65535;
-                            color[1] = overlay_cfg["color"].get<std::vector<float>>()[1] * 65535;
-                            color[2] = overlay_cfg["color"].get<std::vector<float>>()[2] * 65535;
-                        }
-                        if (overlay_cfg.contains("font_size"))
-                            font_size = overlay_cfg["font_size"].get<int>();
-                        if (overlay_cfg.contains("type"))
-                        {
-                            if (overlay_cfg["type"] == "capitals")
-                                cities_type = 0;
-                            else if (overlay_cfg["type"] == "rcapitals")
-                                cities_type = 1;
-                            else if (overlay_cfg["type"] == "all")
-                                cities_type = 2;
-                        }
-                        if (overlay_cfg.contains("scale_rank"))
-                            scale_rank = overlay_cfg["scale_rank"].get<int>();
-
-                        rgb_image.init_font(resources::getResourcePath("fonts/font.ttf"));
-                        map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
-                                                        rgb_image,
-                                                        color,
-                                                        proj_func,
-                                                        font_size,
-                                                        cities_type,
-                                                        scale_rank);
-                        if (geo_correct)
-                        {
-                            rgb_image_corr.init_font(resources::getResourcePath("fonts/font.ttf"));
-                            map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
-                                                            rgb_image_corr,
-                                                            color,
-                                                            corr_proj_func,
-                                                            font_size,
-                                                            cities_type,
-                                                            scale_rank);
-                        }
-                    }
-
-                    if (map_overlay || cities_overlay)
+                    if (overlay_handler.enabled())
                     {
                         rgb_image.save_img(product_path + "/" + name + "_map");
                         if (geo_correct)

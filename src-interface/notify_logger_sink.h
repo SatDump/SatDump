@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include "logger.h"
 
 namespace satdump
@@ -10,5 +11,7 @@ namespace satdump
         NotifyLoggerSink();
         ~NotifyLoggerSink();
         void receive(slog::LogMsg log);
+
+        std::mutex notify_mutex;
     };
 }

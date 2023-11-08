@@ -156,11 +156,15 @@ void kernel warp_image_thin_plate_spline(
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
               img[(int)yy * img_width + (int)xx];
-      else if (source_channels == 3)
+      else if (source_channels == 3 || source_channels == 4)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
               img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
-      map_image[(crop_width * crop_height) * 3 + y * crop_width + x] = 65535;
+      if (source_channels == 4)
+        map_image[(crop_width * crop_height) * 3 + y * crop_width + x] =
+            img[(img_width * img_height) * 3 + (int)yy * img_width + (int)xx];
+      else
+        map_image[(crop_width * crop_height) * 3 + y * crop_width + x] = 65535;
     } else {
       for (int c = 0; c < source_channels; c++)
         map_image[(crop_width * crop_height) * c + y * crop_width + x] =

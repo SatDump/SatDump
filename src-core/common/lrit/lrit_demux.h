@@ -31,6 +31,8 @@ namespace lrit
         std::function<bool(LRITFile &, ccsds::CCSDSPacket &)> onProcessData =
             [](LRITFile &, ccsds::CCSDSPacket &) -> bool
         { return true; };
+        std::function<void(LRITFile&)> onFinalizeData =
+            [](LRITFile&) -> void {};
 
     public:
         LRITDemux(int mpdu_size = 884, bool check_crc = true);

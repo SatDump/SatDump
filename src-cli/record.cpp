@@ -14,7 +14,7 @@
 bool rec_should_exit = false;
 void sig_handler_rec(int signo)
 {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         rec_should_exit = true;
 }
 
@@ -222,6 +222,7 @@ int main_record(int argc, char *argv[])
 
     // Attach signal
     signal(SIGINT, sig_handler_rec);
+    signal(SIGTERM, sig_handler_rec);
 
     // Now, we wait
     uint64_t start_time = time(0);
@@ -240,7 +241,7 @@ int main_record(int argc, char *argv[])
 
         if (rec_should_exit)
         {
-            logger->warn("SIGINT Received. Stopping.");
+            logger->warn("Signal Received. Stopping.");
             break;
         }
 

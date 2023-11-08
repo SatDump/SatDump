@@ -43,7 +43,8 @@ namespace satdump
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
-                images[c].filename.find(".j2k") == std::string::npos)
+                images[c].filename.find(".j2k") == std::string::npos && 
+                images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
             else
                 logger->trace("Image format was specified in product call. Not supposed to happen!");
@@ -175,7 +176,7 @@ namespace satdump
             std::string calibrator_id = contents["calibration"]["calibrator"].get<std::string>();
 
             std::vector<std::shared_ptr<CalibratorBase>> calibrators;
-            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"]});
+            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"], this});
             if (calibrators.size() > 0)
                 calibrator_ptr = calibrators[0];
             else

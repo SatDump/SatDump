@@ -55,6 +55,31 @@ namespace satdump
         // Start threads
         backend_thread = std::thread(&TrackingWidget::backend_run, this);
         rotatorth_thread = std::thread(&TrackingWidget::rotatorth_run, this);
+
+        // Attempt to apply provided CLI settings
+        auto &cli_settings = satdump::config::main_cfg["cli"];
+
+        if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
+        {
+            upcoming_satellite_passes_mtx.lock();
+            autotrack_engaged = true;
+            updateAutotrackPasses();
+
+            if (upcoming_satellite_passes_sel.size() > 0)
+            {
+                for (int i = 0; i < (int)general_tle_registry.size(); i++)
+                    if (general_tle_registry[i].norad == upcoming_satellite_passes_sel[0].norad)
+                        current_satellite = i;
+                horizons_mode = false;
+                backend_needs_update = true;
+                autotrack_pass_has_started = false;
+            }
+            else
+            {
+                autotrack_engaged = false;
+            }
+            upcoming_satellite_passes_mtx.unlock();
+        }
     }
 
     TrackingWidget::~TrackingWidget()

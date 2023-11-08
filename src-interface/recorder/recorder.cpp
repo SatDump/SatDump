@@ -98,6 +98,47 @@ namespace satdump
         fft_plot->set_size(fft_size);
         waterfall_plot->set_size(fft_size);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
+
+        // Attempt to apply provided CLI settings
+        auto &cli_settings = satdump::config::main_cfg["cli"];
+
+        if (cli_settings.contains("source"))
+        {
+            std::string source = cli_settings["source"];
+            for (int i = 0; i < (int)sources.size(); i++)
+            {
+                if (sources[i].source_type == source)
+                {
+                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
+                        continue;
+
+                    try
+                    {
+                        source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                        source_ptr->open();
+                        sdr_select_id = i;
+                        break;
+                    }
+                    catch (std::runtime_error &e)
+                    {
+                        logger->error(e.what());
+                    }
+                }
+            }
+        }
+
+        if (source_ptr)
+        {
+            if (cli_settings.contains("samplerate"))
+                source_ptr->set_samplerate(cli_settings["samplerate"].get<uint64_t>());
+            source_ptr->set_settings(cli_settings);
+        }
+
+        if (cli_settings.contains("start_recorder_device") && cli_settings["start_recorder_device"].get<bool>())
+            start();
+
+        if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
+            try_init_tracking_widget();
     }
 
     RecorderApplication::~RecorderApplication()
@@ -135,7 +176,7 @@ namespace satdump
 
             ImGui::BeginGroup();
             float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
-            ImGui::BeginChild("RecorderChildPanel", { left_width, wf_size }, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
+            ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
             {
                 if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
                 {
@@ -315,8 +356,7 @@ namespace satdump
                     Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
                     if (selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_mhz * 1e6 ?
-                            selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_mhz * 1e6 ? selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
                             for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
                             {
@@ -423,54 +463,7 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("Tracking"))
                 {
-                    if (tracking_widget == nullptr)
-                    {
-                        tracking_widget = new TrackingWidget();
-
-                        tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
-                        {
-                            if(obj.live)
-                                stop_processing();
-                            if (obj.record)
-                                stop_recording();
-
-                            if (obj.live || obj.record)
-                            {
-                                frequency_mhz = obj.frequency;
-                                if (is_started)
-                                    set_frequency(frequency_mhz);
-                                else
-                                    start();
-
-                                //Catch situations where source could not start
-                                if (!is_started)
-                                {
-                                    logger->error("Could not start recorder/processor since the source could not be started!");
-                                    return;
-                                }
-                            }
-
-                            if (obj.live)
-                            {
-                                pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
-                                pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
-                                start_processing();
-                            }
-
-                            if (obj.record)
-                            {
-                                start_recording();
-                            }
-                        };
-
-                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
-                        {
-                            if(obj.record)
-                                stop_recording();
-                            if (obj.live)
-                                stop_processing();
-                        };
-                    }
+                    try_init_tracking_widget();
                     tracking_widget->render();
                 }
 
@@ -488,7 +481,7 @@ namespace satdump
 
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
-            ImGui::BeginChild("RecorderFFT", { right_width, wf_size }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;

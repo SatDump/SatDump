@@ -15,7 +15,7 @@
 bool live_should_exit = false;
 void sig_handler_live(int signo)
 {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         live_should_exit = true;
 }
 
@@ -91,13 +91,14 @@ int main_live(int argc, char *argv[])
 
         // Attach signal
         signal(SIGINT, sig_handler_live);
+        signal(SIGTERM, sig_handler_live);
 
         // Now, we wait
         while (1)
         {
             if (live_should_exit)
             {
-                logger->warn("SIGINT Received. Stopping.");
+                logger->warn("Signal Received. Stopping.");
                 break;
             }
 
@@ -274,6 +275,7 @@ int main_live(int argc, char *argv[])
 
             // Attach signal
             signal(SIGINT, sig_handler_live);
+            signal(SIGTERM, sig_handler_live);
 
             // Now, we wait
             uint64_t start_time = time(0);
@@ -293,7 +295,7 @@ int main_live(int argc, char *argv[])
 
                 if (live_should_exit)
                 {
-                    logger->warn("SIGINT Received. Stopping.");
+                    logger->warn("Signal Received. Stopping.");
                     break;
                 }
 
@@ -397,6 +399,7 @@ int main_live(int argc, char *argv[])
 
             // Attach signal
             signal(SIGINT, sig_handler_live);
+            signal(SIGTERM, sig_handler_live);
 
             // Now, we wait
             uint64_t start_time = time(0);
@@ -416,7 +419,7 @@ int main_live(int argc, char *argv[])
 
                 if (live_should_exit)
                 {
-                    logger->warn("SIGINT Received. Stopping.");
+                    logger->warn("Signal Received. Stopping.");
                     break;
                 }
 

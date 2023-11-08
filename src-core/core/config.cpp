@@ -53,7 +53,9 @@ namespace satdump
                 PWSTR documents_wide;
                 SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, NULL, &documents_wide);
                 std::wstring documents_widestr = std::wstring(documents_wide);
-                documents_dir = std::string(documents_widestr.begin(), documents_widestr.end());
+                int len = WideCharToMultiByte(CP_UTF8, 0, documents_widestr.c_str(), (int)documents_widestr.size(), nullptr, 0, nullptr, nullptr);
+                documents_dir = std::string(len, '\0');
+                WideCharToMultiByte(CP_UTF8, 0, documents_widestr.c_str(), (int)documents_widestr.size(), (LPSTR)documents_dir.data(), (int)documents_dir.size(), nullptr, nullptr);
             }
             else
                 CloseHandle(test_handle);

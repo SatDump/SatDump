@@ -35,7 +35,7 @@ namespace satdump
 
 #ifdef _WIN32
         if (std::filesystem::exists("satdump_cfg.json"))
-            user_path = ".";
+            user_path = "./config";
         else 
             user_path = std::string(getenv("APPDATA")) + "/satdump";
 #elif __ANDROID__

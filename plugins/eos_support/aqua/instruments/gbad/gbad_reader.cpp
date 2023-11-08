@@ -94,18 +94,18 @@ namespace aqua
             double ephem_vy = MiL1750_EPFP((char *)&packet.payload[8 + 6 * 4]);
             double ephem_vz = MiL1750_EPFP((char *)&packet.payload[8 + 6 * 5]);
 
-            if (abs(ephem_vx / 1e3) > 10)
+            if (fabs(ephem_vx / 1e3) > 10)
                 return;
-            if (abs(ephem_vy / 1e3) > 10)
+            if (fabs(ephem_vy / 1e3) > 10)
                 return;
-            if (abs(ephem_vz / 1e3) > 10)
+            if (fabs(ephem_vz / 1e3) > 10)
                 return;
 
-            if (abs(ephem_x / 1e3) > 1e4)
+            if (fabs(ephem_x / 1e3) > 1e4)
                 return;
-            if (abs(ephem_y / 1e3) > 1e4)
+            if (fabs(ephem_y / 1e3) > 1e4)
                 return;
-            if (abs(ephem_z / 1e3) > 1e4)
+            if (fabs(ephem_z / 1e3) > 1e4)
                 return;
 
             // Convert to km from meters

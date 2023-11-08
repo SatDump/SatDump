@@ -1,25 +1,22 @@
+#include <signal.h>
+#include <filesystem>
 #include "logger.h"
 #include "core/style.h"
-#include "gl.h"
-#include "logger.h"
-#include <signal.h>
-#include <GLFW/glfw3.h>
-#include "imgui/imgui_flags.h"
 #include "init.h"
 #include "processing.h"
-#include <filesystem>
 #include "main_ui.h"
 #include "satdump_vars.h"
-
 #include "loading_screen.h"
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
+#include "gl.h"
 
 static volatile bool signal_caught = false;
+bool fallback_gl = false;
 
 void sig_handler_ui(int signo)
 {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         signal_caught = true;
 }
 
@@ -28,22 +25,25 @@ static void glfw_error_callback(int error, const char *description)
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
 }
 
-void window_content_scale_callback(GLFWwindow*, float xscale, float)
+void window_content_scale_callback(GLFWwindow *, float xscale, float)
 {
     satdump::updateUI(xscale / style::macos_framebuffer_scale());
     style::setFonts();
-    ImGui_ImplOpenGL3_DestroyFontsTexture();
-    ImGui_ImplOpenGL3_CreateFontsTexture();
+#ifndef IMGUI_IMPL_OPENGL_ES2
+    if (fallback_gl)
+    {
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+    }
+    else
+#endif
+    {
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+    }
 }
 
 void bindImageTextureFunctions();
-
-// OpenGL versions to try to start
-// Yes, I did check on SDR++'s way around that
-const int OPENGL_VERSIONS_MAJOR[] = {3, 3, 2};
-const int OPENGL_VERSIONS_MINOR[] = {0, 1, 1};
-const char *OPENGL_VERSIONS_GLSL[] = {"#version 150", "#version 300 es", "#version 120"};
-const bool OPENGL_VERSIONS_GLES[] = {false, true, false, false};
 
 int main(int argc, char *argv[])
 {
@@ -79,110 +79,52 @@ int main(int argc, char *argv[])
     }
 
     // GL STUFF
-
-    // Initialize GLFW
-    GLFWwindow *window = nullptr;
-    int final_gl_version = 0;
-
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 #endif
 
-#ifdef __APPLE__
+    // Decide GL+GLSL versions
+    const char *OPENGL_VERSIONS_GLSL[] = {"#version 100", "#version 130", "#version 150"};
+    int selected_glsl;
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    selected_glsl = 0;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+    // GL 3.2 + GLSL 150
+    selected_glsl = 2;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
-
-    final_gl_version = 0;
-
-    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
-
-    if (window == NULL)
-    {
-        logger->critical("Could not init GLFW Window");
-        exit(1);
-    }
-#elif defined(_WIN32)
+#else
+    // GL 3.0 + GLSL 130
+    selected_glsl = 1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
 
-    final_gl_version = 0;
-
-    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
-
-    if (window == NULL) // Try 2.1. We assume it's the only available if 3.2 does not work
+    GLFWwindow *window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
+    if (window == nullptr)
     {
-        logger->warn("Could not init GLFW Window. Trying GL 2.1");
+        logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
         glfwDefaultWindowHints();
-        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
-        final_gl_version = 2;
-
-        if (window == NULL)
+        fallback_gl = true;
+        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
+        if (window == nullptr)
         {
-            logger->critical("Could not init GLFW Window");
+            logger->critical("Could not init GLFW Window! Exiting");
             exit(1);
         }
     }
-#else
-    const char *gl_override_rpi = getenv("MESA_GL_VERSION_OVERRIDE");
-    if (gl_override_rpi != nullptr)
-    {
-        if (std::string(gl_override_rpi).find("4.5") != std::string::npos)
-        {
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
-
-            // Create window with graphics context
-            window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
-            final_gl_version = 2;
-            if (window == NULL)
-            {
-                logger->critical("Could not init GLFW Window with OpenGL 3.2 with %s", gl_override_rpi);
-                exit(1);
-            }
-        }
-        else
-        {
-            goto normal_gl;
-        }
-    }
-    else
-    {
-    normal_gl:
-        for (int i = 0; i < 4; i++)
-        {
-            glfwWindowHint(GLFW_CLIENT_API, OPENGL_VERSIONS_GLES[i] ? GLFW_OPENGL_ES_API : GLFW_OPENGL_API);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSIONS_MINOR[i]);
-            if (OPENGL_VERSIONS_MAJOR[i] >= 3 && OPENGL_VERSIONS_MINOR[i] >= 2)
-                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);               // Required on Mac
-
-            // Create window with graphics context
-            window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), NULL, NULL);
-            final_gl_version = i;
-            if (window == NULL)
-                logger->critical("Could not init GLFW Window with OpenGL %d.%d", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i]);
-            else
-                break;
-        }
-    }
-#endif
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
                          // Vsync slows down init process when items are logged quickly
-    if (glewInit() != GLEW_OK)
-    {
-        logger->critical("Failed to initialize OpenGL loader!");
-        exit(1);
-    }
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -195,7 +137,12 @@ int main(int argc, char *argv[])
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[final_gl_version]);
+#ifndef IMGUI_IMPL_OPENGL_ES2
+    if (fallback_gl)
+        ImGui_ImplOpenGL2_Init();
+    else
+#endif
+        ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[selected_glsl]);
 
     // Setup Icon
     GLFWimage img;
@@ -230,7 +177,7 @@ int main(int argc, char *argv[])
     glfwSetWindowIcon(window, 1, &img);
 #endif
 
-    //Handle DPI changes
+    // Handle DPI changes
     float display_scale;
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
@@ -240,29 +187,43 @@ int main(int argc, char *argv[])
     display_scale = 1.0f;
 #endif
 
-    //Set font
+    // Set font
     style::setFonts(display_scale);
 
     // Init Loading Screen
-    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img);
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img, fallback_gl);
     logger->add_sink(loading_screen_sink);
 
     // Init SatDump
     satdump::tle_do_update_on_init = false;
     satdump::initSatdump();
 
+    // See if we need to add arguments
+    if (argc > 1)
+        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
+
     // Init UI
     satdump::initMainUI(display_scale);
 
-    //Shut down loading screen
+    // Shut down loading screen
     logger->del_sink(loading_screen_sink);
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
 
-    //Set font again to adjust for DPI
+    // Set font again to adjust for DPI
     style::setFonts();
-    ImGui_ImplOpenGL3_DestroyFontsTexture();
-    ImGui_ImplOpenGL3_CreateFontsTexture();
+#ifndef IMGUI_IMPL_OPENGL_ES2
+    if (fallback_gl)
+    {
+        ImGui_ImplOpenGL2_DestroyFontsTexture();
+        ImGui_ImplOpenGL2_CreateFontsTexture();
+    }
+    else
+#endif
+    {
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();
+    }
 
     if (satdump::processing::is_processing)
     {
@@ -271,16 +232,23 @@ int main(int argc, char *argv[])
     }
 
     // TLE
-    satdump::ui_thread_pool.push([&](int){ satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
+    satdump::ui_thread_pool.push([&](int)
+                                 { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
 
     // Attach signal
     signal(SIGINT, sig_handler_ui);
+    signal(SIGTERM, sig_handler_ui);
 
     // Main loop
     do
     {
         // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
+#ifndef IMGUI_IMPL_OPENGL_ES2
+        if (fallback_gl)
+            ImGui_ImplOpenGL2_NewFrame();
+        else
+#endif
+            ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
@@ -304,7 +272,12 @@ int main(int argc, char *argv[])
         // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#ifndef IMGUI_IMPL_OPENGL_ES2
+        if (fallback_gl)
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+        else
+#endif
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -313,7 +286,12 @@ int main(int argc, char *argv[])
     satdump::exitMainUI();
 
     // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
+#ifndef IMGUI_IMPL_OPENGL_ES2
+    if (fallback_gl)
+        ImGui_ImplOpenGL2_Shutdown();
+    else
+#endif
+        ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 

@@ -75,7 +75,7 @@ namespace eos
                 {
                     if (vcdu.vcid == 3) // GBAD
                     {
-                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid30.work(cadu);
+                        std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                             if (pkt.header.apid == 957)
                                 gbad_reader.work(pkt);

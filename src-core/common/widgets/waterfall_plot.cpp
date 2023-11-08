@@ -24,34 +24,35 @@ namespace widgets
         curr_height = size.y > fft_lines ? fft_lines : size.y;
 
         work_mtx.lock();
-        if (active)
+        if (texture_id == 0)
         {
-            if (texture_id == 0)
-            {
-                texture_id = makeImageTexture();
-                raw_img_buffer = new uint32_t[curr_width * curr_height];
-                memset(raw_img_buffer, 0, sizeof(uint32_t) * curr_width * curr_height);
-                if ((int)palette.size() != resolution)
-                    set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
-            }
+            texture_id = makeImageTexture();
+            raw_img_buffer = new uint32_t[curr_width * curr_height];
+            memset(raw_img_buffer, 0, sizeof(uint32_t) * curr_width * curr_height);
+            if ((int)palette.size() != resolution)
+                set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
 
-            if (last_curr_width != curr_width || last_curr_height != curr_height)
-            {
-                if (raw_img_buffer != nullptr)
-                    delete[] raw_img_buffer;
-                raw_img_buffer = new uint32_t[curr_width * curr_height];
-                memset(raw_img_buffer, 0, sizeof(uint32_t) * curr_width * curr_height);
-                last_curr_width = curr_width;
-                last_curr_height = curr_height;
-            }
-
-            if (need_update)
-                updateImageTexture(texture_id, raw_img_buffer, curr_width, curr_height);
+            last_curr_width = curr_width;
+            last_curr_height = curr_height;
+            need_update = true;
+        }
+        if (active && (last_curr_width != curr_width || last_curr_height != curr_height))
+        {
+            if (raw_img_buffer != nullptr)
+                delete[] raw_img_buffer;
+            raw_img_buffer = new uint32_t[curr_width * curr_height];
+            memset(raw_img_buffer, 0, sizeof(uint32_t) * curr_width * curr_height);
+            last_curr_width = curr_width;
+            last_curr_height = curr_height;
+        }
+        if (need_update)
+        {
+            updateImageTexture(texture_id, raw_img_buffer, curr_width, curr_height);
             need_update = false;
         }
+        work_mtx.unlock();
 
         ImGui::Image((void *)(intptr_t)texture_id, size);
-        work_mtx.unlock();
     }
 
     void WaterfallPlot::push_fft(float *values)

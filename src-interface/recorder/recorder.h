@@ -105,6 +105,8 @@ namespace satdump
         void start_recording();
         void stop_recording();
 
+        void try_init_tracking_widget();
+
         uint64_t get_samplerate()
         {
             if (current_decimation > 0)

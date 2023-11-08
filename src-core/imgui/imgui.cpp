@@ -9262,7 +9262,7 @@ static void ImGui::ErrorCheckNewFrameSanityChecks()
     IM_ASSERT(g.Style.ColorButtonPosition == ImGuiDir_Left || g.Style.ColorButtonPosition == ImGuiDir_Right);
 #ifndef IMGUI_DISABLE_OBSOLETE_KEYIO
     for (int n = ImGuiKey_NamedKey_BEGIN; n < ImGuiKey_COUNT; n++)
-        if(g.IO.KeyMap[n] < 0 || g.IO.KeyMap[n] >= ImGuiKey_LegacyNativeKey_END) g.IO.KeyMap[n] = 0;
+        if(g.IO.KeyMap[n] < -1 || g.IO.KeyMap[n] >= ImGuiKey_LegacyNativeKey_END) g.IO.KeyMap[n] = -1;
     // Check: required key mapping (we intentionally do NOT check all keys to not pressure user into setting up everything, but Space is required and was only added in 1.60 WIP)
     if ((g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) && g.IO.BackendUsingLegacyKeyArrays == 1)
         IM_ASSERT(g.IO.KeyMap[ImGuiKey_Space] != -1 && "ImGuiKey_Space is not mapped, required for keyboard navigation.");

@@ -96,7 +96,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project(SatDump VERSION "1.1.1")
+project(SatDump VERSION "1.1.2")
 
 # Check if the current commit has a tag
 execute_process(
@@ -265,7 +265,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         install(TARGETS satdump_core DESTINATION bin)
     else()
         set(CPACK_GENERATOR DEB)
-        set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+        #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
         set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
         set(CPACK_DEB_COMPONENT_INSTALL ON)
     endif()

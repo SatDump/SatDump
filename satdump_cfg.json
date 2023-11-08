@@ -406,7 +406,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -448,7 +448,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -504,19 +504,6 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "WXtoImg NO": {
-                        "lut": "noaa_apt/WXtoImg-NO_mod.png",
-                        "channels": "ch3b, ch4",
-                        "autogen": false,
-                        "geo_correct": true,
-                        "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
-                            1,
-                            1,
-                            0
-                        ]
-                    },
                     "Sea Surface Temperature": {
                         "channels": "cch4",
                         "lua": "scripted_compos/sst_landmask.lua",
@@ -533,9 +520,84 @@
                         },
                         "autogen": false
                     },
-                    "NOAA BD (Hurricane)": {
-                        "channels": "cch4",
-                        "lut": "lut/bd.png"
+                    "NO enhancement": {
+                        "lut": "lut/WXtoImg-NO_mod.png",
+                        "channels": "ch3b, ch4",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "individual_equalize": true,
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "ZA enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-ZA.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MB enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-MB.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MD enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-MD.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "BD enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-BD.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "CC enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-CC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "EC enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-EC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HE enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-HE.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HF enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-HF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JF enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-JF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JJ enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-JJ.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "TA enhancement": {
+                        "channels": "ch3b, ch4",
+                        "lut": "lut/WXtoImg-TA.png",
+                        "autogen": false,
+                        "geo_correct": true
                     }
                 },
                 "project_channels": {
@@ -543,7 +605,7 @@
                     "width": 4096,
                     "height": 2048,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -585,8 +647,8 @@
                             "thresold": 0,
                             "blend": 1
                         },
-                        "map_overlay": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -601,8 +663,8 @@
                             "thresold": 0,
                             "blend": 1
                         },
-                        "map_overlay": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -615,32 +677,87 @@
                             "minoffset": 0.2,
                             "scalar": 1.5,
                             "thresold": 0,
-                            "lut": "noaa_apt/WXtoImg-NO_mod.png"
+                            "lut": "lut/WXtoImg-NO_mod.png"
                         },
-                        "map_overlay": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
                         ]
                     },
                     "WXtoImg HVC N15": {
-                        "lut": "noaa_apt/WXtoImg-N15-HVC.png",
+                        "lut": "lut/WXtoImg-N15-HVC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
                     "WXtoImg HVC N18": {
-                        "lut": "noaa_apt/WXtoImg-N18-HVC.png",
+                        "lut": "lut/WXtoImg-N18-HVC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
                     "WXtoImg HVC N19": {
-                        "lut": "noaa_apt/WXtoImg-N19-HVC.png",
+                        "lut": "lut/WXtoImg-N19-HVC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "WXtoImg NO": {
-                        "lut": "noaa_apt/WXtoImg-NO.png",
+                    "NO enhancement": {
+                        "lut": "lut/WXtoImg-NO_mod.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "ZA enhancement": {
+                        "lut": "lut/WXtoImg-ZA.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "MB enhancement": {
+                        "lut": "lut/WXtoImg-MB.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "MD enhancement": {
+                        "lut": "lut/WXtoImg-MD.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "BD enhancement": {
+                        "lut": "lut/WXtoImg-BD.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "CC enhancement": {
+                        "lut": "lut/WXtoImg-CC.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "EC enhancement": {
+                        "lut": "lut/WXtoImg-EC.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "HE enhancement": {
+                        "lut": "lut/WXtoImg-HE.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "HF enhancement": {
+                        "lut": "lut/WXtoImg-HF.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "JF enhancement": {
+                        "lut": "lut/WXtoImg-JF.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "JJ enhancement": {
+                        "lut": "lut/WXtoImg-JJ.png",
+                        "channels": "cha, chb",
+                        "autogen": false
+                    },
+                    "TA enhancement": {
+                        "lut": "lut/WXtoImg-TA.png",
                         "channels": "cha, chb",
                         "autogen": false
                     }
@@ -663,7 +780,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -677,7 +794,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -691,7 +808,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -704,7 +821,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -727,7 +844,7 @@
                     "width": 4096,
                     "height": 2048,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -748,7 +865,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -772,7 +889,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -801,14 +918,14 @@
                         "geo_correct": true,
                         "autogen": true
                     },
-                    "WXtoImg NO": {
+                    "NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
                         "channels": "ch4, ch5",
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -869,7 +986,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -883,7 +1000,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -958,14 +1075,14 @@
                         "apply_lut": true,
                         "geo_correct": true
                     },
-                    "WXtoImg NO": {
+                    "NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
                         "channels": "ch4, ch5",
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -1035,14 +1152,14 @@
                         "apply_lut": true,
                         "geo_correct": true
                     },
-                    "WXtoImg NO": {
+                    "NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
                         "channels": "ch1, ch2",
                         "autogen": true,
                         "geo_correct": true,
                         "individual_equalize": true,
-                        "draw_map": true,
-                        "map_overlay_colors": [
+                        "draw_map_overlay": true,
+                        "borders_color": [
                             1,
                             1,
                             0
@@ -1095,6 +1212,11 @@
                     "Rainfall": {
                         "equation": "((1-(cch5-cch4))-0.95)^0.25",
                         "apply_lut": true
+                    },
+                    "Rainfall (Transparent)": {
+                        "equation": "((1-(cch5-cch4))-0.95)^0.25, 0, 0, ((1-(cch5-cch4))-0.95)^0.25",
+                        "apply_lut": true,
+                        "autogen": false
                     }
                 },
                 "project_channels": {
@@ -1102,7 +1224,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1126,7 +1248,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1158,7 +1280,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1173,7 +1295,7 @@
                     "width": 2048,
                     "height": 1024,
                     "individual_equalize": true,
-                    "draw_map": true,
+                    "draw_map_overlay": true,
                     "config": {
                         "type": "equirectangular"
                     }
@@ -1456,7 +1578,7 @@
                         "project": {
                             "width": 2048,
                             "height": 1024,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -1468,7 +1590,7 @@
                         "project": {
                             "width": 2048,
                             "height": 1024,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -1546,7 +1668,7 @@
                         "project": {
                             "width": 4096,
                             "height": 2048,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -1603,7 +1725,7 @@
                         "project": {
                             "width": 2048,
                             "height": 1024,
-                            "draw_map": true,
+                            "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
                                 "type": "equirectangular"
@@ -1652,19 +1774,19 @@
                         "channel": 0,
                         "min": 0,
                         "max": 2576687,
-                        "draw_map": true
+                        "draw_map_overlay": true
                     },
                     "downward": {
                         "channel": 1,
                         "min": 0,
                         "max": 2576687,
-                        "draw_map": true
+                        "draw_map_overlay": true
                     },
                     "forward": {
                         "channel": 2,
                         "min": 0,
                         "max": 2576687,
-                        "draw_map": true
+                        "draw_map_overlay": true
                     }
                 }
             },

@@ -72,6 +72,7 @@ namespace ccsds
         const int d_rs_fill_bytes;         // RS Frame size, if -1, no puncturing
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
+        const bool d_rs_usecheck;          // RS Used as frame check?
 
         enum vitrate_t
         {

@@ -60,3 +60,19 @@ nlohmann::ordered_json perform_json_diff(nlohmann::ordered_json master, nlohmann
 
     return diff;
 }
+
+nlohmann::ordered_json loadCborFile(std::string path)
+{
+    // Read file
+    std::vector<uint8_t> cbor_data;
+    std::ifstream in_file(path, std::ios::binary);
+    while (!in_file.eof())
+    {
+        uint8_t b;
+        in_file.read((char *)&b, 1);
+        cbor_data.push_back(b);
+    }
+    in_file.close();
+    cbor_data.pop_back();
+    return nlohmann::json::from_cbor(cbor_data);
+}
