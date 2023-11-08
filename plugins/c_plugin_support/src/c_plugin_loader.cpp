@@ -73,21 +73,23 @@ static void dispose_space_by_name(void *, const char *name)
     }
 }
 
-static void print_log(void *, int level, const char *str)
+static void print_log(void *, int level, const char *fmt, ...)
 {
+    va_list args;
+    va_start(args, fmt);
     switch (level)
     {
     case logger_level::DEBUG:
-        logger->log(slog::LOG_DEBUG, str);
+        logger->logf(slog::LOG_DEBUG, fmt, args);
         break;
     case logger_level::INFO:
-        logger->log(slog::LOG_INFO, str);
+        logger->logf(slog::LOG_INFO, fmt, args);
         break;
     case logger_level::WARNING:
-        logger->log(slog::LOG_WARN, str);
+        logger->logf(slog::LOG_WARN, fmt, args);
         break;
     case logger_level::ERROR:
-        logger->log(slog::LOG_ERROR, str);
+        logger->logf(slog::LOG_ERROR, fmt, args);
         break;
     default:
         break;
@@ -98,8 +100,7 @@ CPluginLoader::CPluginLoader(std::string input_file, std::string output_file_hin
     : ProcessingModule(input_file, output_file_hint, parameters),
       plugin_path(parameters["plugin_path"].template get<std::string>()), params(parameters["plugin_params"])
 {
-    std::string real_plugin_path =
-        resources::getResourcePath(std::string("c_plugin") + "/" + plugin_path);
+    std::string real_plugin_path = resources::getResourcePath(std::string("c_plugin") + "/" + plugin_path);
 
     dynlib = dlopen(real_plugin_path.c_str(), RTLD_LAZY);
     if (!dynlib)
@@ -122,7 +123,7 @@ CPluginLoader::~CPluginLoader()
         dlclose(dynlib);
 }
 
-const char* CPluginLoader::query_plugin_param(void *loader, const char *param_name)
+const char *CPluginLoader::query_plugin_param(void *loader, const char *param_name)
 {
     thread_local std::string ret;
     CPluginLoader *plugin_loader = reinterpret_cast<CPluginLoader *>(loader);
@@ -158,7 +159,7 @@ void CPluginLoader::process()
 
         for (int i = 0; std::filesystem::exists(filename); i++)
             filename = d_output_file_hint + "." + std::to_string(i) + ".dat";
-        
+
         data_out = std::ofstream(filename, std::ios::binary);
         d_output_files.push_back(filename);
     }
@@ -182,10 +183,7 @@ void CPluginLoader::process()
     std::vector<char> buffer_container(acquire_result.buffer_size);
 
     std::shared_ptr<void> plugin_dispose_defer(
-        nullptr, 
-        [&acquire_result, this] (...) { 
-            this->plugin_interface.plugin_dispose(&acquire_result); 
-    });
+        nullptr, [&acquire_result, this](...) { this->plugin_interface.plugin_dispose(&acquire_result); });
 
     while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
     {

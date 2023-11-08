@@ -70,9 +70,9 @@
             },
             "counter": {
                 "c_plugin_decoder": {
-                    "plugin_path": "c_example_process_plugin.plugin",
+                    "plugin_path": "fengyun2_pn_sync.plugin",
                     "plugin_params": {
-                        "size": "65536"
+                        "pn_sync": "1"
                     }
                 }
             },
@@ -83,7 +83,7 @@
                 "c_plugin_decoder": {
                     "plugin_path": "fengyun2_svissr_fix.plugin",
                     "plugin_params": {
-                        "symbol_gap": "393216",
+                        "symbol_gap": "401408",
                         "time_gap": "600"
                     }
                 }

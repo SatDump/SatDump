@@ -10,8 +10,8 @@
 #define FRAME_SIZE 44356
 
 #ifdef _MSC_VER
-#  include <intrin.h>
-#  define __builtin_popcount __popcnt
+#include <intrin.h>
+#define __builtin_popcount __popcnt
 #endif
 
 enum
@@ -21,7 +21,7 @@ enum
     BACKWARD = 0xCC
 };
 
-static inline int syncs[] = {ZERO, FORWARD, BACKWARD};
+static int syncs[] = {ZERO, FORWARD, BACKWARD};
 
 enum error_codes
 {
@@ -40,9 +40,11 @@ struct PluginData
     int backward_counter;
     int now_lino;
 
+    bool check_pn_sync_module;
+
     long long time_gap, symbol_gap;
 
-    volatile long long *counter;
+    volatile long long *cross_module_shared_memory;
 
     bool use_time_counter;
     long long last_counter, now_counter;
@@ -82,16 +84,7 @@ plugin_error_t plugin_acquire(plugin_acquire_info_t acquire_info, plugin_acquire
     pdata->symbol_gap = std::stoll(acquire_info.query_plugin_param(acquire_info.plugin_interface_data, "symbol_gap"));
     pdata->time_gap = std::stoll(acquire_info.query_plugin_param(acquire_info.plugin_interface_data, "time_gap"));
 
-    pdata->counter = (volatile long long *)acquire_info.acquire_space_by_name(pdata->acquire_info.plugin_interface_data,
-                                                                              "concat_c_plugin_counter", 0);
-
-    if (pdata->counter)
-    {
-        *(pdata->counter) = 0;
-        pdata->use_time_counter = false;
-    }
-    else
-        pdata->use_time_counter = true;
+    pdata->check_pn_sync_module = false;
 
     if (pdata->acquire_info.live_process)
     {
@@ -109,6 +102,32 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
 {
     PluginData *pdata = (PluginData *)(acquire_result->plugin_custom_data);
 
+    if (!pdata->check_pn_sync_module)
+    {
+        pdata->cross_module_shared_memory = (volatile long long *)pdata->acquire_info.acquire_space_by_name(
+            pdata->acquire_info.plugin_interface_data, "fengyun2_pn_sync_symbol_counter", 0);
+
+        if (pdata->cross_module_shared_memory)
+        {
+            pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
+                                          "using counters from pn_sync module");
+            *(pdata->cross_module_shared_memory) = 0;
+            pdata->use_time_counter = false;
+
+            if (pdata->cross_module_shared_memory[1])
+                pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
+                                              "pn sync detected, uses in-frame counter");
+        }
+        else
+        {
+            pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
+                                          "pn_sync module not found, fallback to time counter");
+            pdata->use_time_counter = true;
+        }
+
+        pdata->check_pn_sync_module = true;
+    }
+
     pdata->output_buffer.resize(FRAME_SIZE);
     memcpy(pdata->output_buffer.data(), data_arrived, data_length);
     auto frame = pdata->output_buffer.data();
@@ -122,9 +141,21 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
     }
     else
     {
-        pdata->now_counter = *(pdata->counter);
-        pdata->symbols_elapsed = pdata->now_counter - pdata->last_counter;
-        pdata->last_counter = pdata->now_counter;
+        if (pdata->cross_module_shared_memory[1])
+        {
+            pdata->now_counter = *(long long *)(frame + 20);
+            pdata->symbols_elapsed = pdata->now_counter - pdata->last_counter;
+            pdata->last_counter = pdata->now_counter;
+        }
+        else
+        {
+            pdata->now_counter = pdata->cross_module_shared_memory[0];
+            pdata->symbols_elapsed = pdata->now_counter - pdata->last_counter;
+            pdata->last_counter = pdata->now_counter;
+        }
+
+        if (pdata->symbols_elapsed > pdata->symbol_gap * 2500)
+            pdata->symbols_elapsed = 0;
     }
 
     int min_diff_bits = 32, closest_sync = 0;
@@ -167,12 +198,11 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
     {
         if (!pdata->use_time_counter)
         {
-            int offset = pdata->symbols_elapsed / (double)pdata->symbol_gap - 1;
-            // printf("%ld\n", pdata->symbols_elapsed);
+            int offset = pdata->symbols_elapsed / (double)pdata->symbol_gap + 0.5 - 1; // round
             if (offset > 0)
             {
-                pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
-                                              ("Counter added " + std::to_string(offset)).c_str());
+                // pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
+                //                               ("Counter added " + std::to_string(offset)).c_str());
                 pdata->forward_counter += offset;
             }
         }
@@ -181,8 +211,8 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
             int offset = pdata->milliseconds_elapsed / (double)pdata->time_gap - 1;
             if (offset > 0)
             {
-                pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
-                                              ("Counter added " + std::to_string(offset)).c_str());
+                // pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
+                //                               ("Counter added " + std::to_string(offset)).c_str());
                 pdata->forward_counter += offset;
             }
         }
@@ -237,7 +267,8 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
 void plugin_dispose(plugin_acquire_result_t *acquire_result)
 {
     PluginData *pdata = (PluginData *)(acquire_result->plugin_custom_data);
-    pdata->acquire_info.dispose_space_by_name(pdata->acquire_info.plugin_interface_data, "concat_c_plugin_counter");
+    pdata->acquire_info.dispose_space_by_name(pdata->acquire_info.plugin_interface_data,
+                                              "fengyun2_pn_sync_symbol_counter");
     delete pdata;
 }
 

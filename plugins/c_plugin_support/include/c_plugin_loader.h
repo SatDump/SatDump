@@ -36,8 +36,8 @@ typedef struct plugin_acquire_info
     // The plugin can use this function to print log messages at different levels.
     // Parameters:
     //   - level: The severity level of the log message (DEBUG, INFO, WARNING, ERROR).
-    //   - str: The message to be printed in the log.
-    void (*print_log)(void *data, int level, const char *str);
+    //   - fmt: The format message to be printed in the log.
+    void (*print_log)(void *data, int level, const char *fmt, ...);
 
     // Function pointer to acquire space by name
     // The plugin can use this function to acquire memory space by name and size.
