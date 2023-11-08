@@ -125,7 +125,7 @@ namespace satdump
                     {
                         source_ptr->set_samplerate(cfg["samplerate"]);
                     }
-                    catch (std::exception&)
+                    catch (std::exception &)
                     {
                     }
                 }
@@ -154,13 +154,13 @@ namespace satdump
             2,
             3,
 #ifdef BUILD_ZIQ
-                            4,
-                            5,
-                            6,
+            4,
+            5,
+            6,
 #endif
 #ifdef BUILD_ZIQ2
-                            7,
-                            8,
+            7,
+            8,
 #endif
         };
 
@@ -307,7 +307,7 @@ namespace satdump
             std::ostringstream ss;
 
             double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
-            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0')  << ms_val;
+            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0') << ms_val;
             timestamp += ss.str();
         }
 
@@ -330,6 +330,58 @@ namespace satdump
             splitter->set_enabled("record", false);
             recorder_filename = "";
             is_recording = false;
+        }
+    }
+
+    void RecorderApplication::try_init_tracking_widget()
+    {
+        if (tracking_widget == nullptr)
+        {
+            tracking_widget = new TrackingWidget();
+
+            tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+            {
+                if (obj.live)
+                    stop_processing();
+                if (obj.record)
+                    stop_recording();
+
+                if (obj.live || obj.record)
+                {
+                    frequency_mhz = obj.frequency;
+                    if (is_started)
+                        set_frequency(frequency_mhz);
+                    else
+                        start();
+
+                    // Catch situations where source could not start
+                    if (!is_started)
+                    {
+                        logger->error("Could not start recorder/processor since the source could not be started!");
+                        return;
+                    }
+                }
+
+                if (obj.live)
+                {
+                    pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
+                    pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
+                    start_processing();
+                }
+
+                if (obj.record)
+                {
+                    start_recording();
+                }
+            };
+
+            tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+            {
+                if (obj.record)
+                    stop_recording();
+                if (obj.live)
+                    stop_processing();
+            };
         }
     }
 }

@@ -25,7 +25,7 @@ static void glfw_error_callback(int error, const char *description)
     logger->error("Glfw Error " + std::to_string(error) + ": " + description);
 }
 
-void window_content_scale_callback(GLFWwindow*, float xscale, float)
+void window_content_scale_callback(GLFWwindow *, float xscale, float)
 {
     satdump::updateUI(xscale / style::macos_framebuffer_scale());
     style::setFonts();
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 #endif
 
     // Decide GL+GLSL versions
-    const char* OPENGL_VERSIONS_GLSL[] = { "#version 100", "#version 130", "#version 150" };
+    const char *OPENGL_VERSIONS_GLSL[] = {"#version 100", "#version 130", "#version 150"};
     int selected_glsl;
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
@@ -97,18 +97,18 @@ int main(int argc, char *argv[])
     selected_glsl = 2;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 #else
     // GL 3.0 + GLSL 130
     selected_glsl = 1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     glfwSetWindowIcon(window, 1, &img);
 #endif
 
-    //Handle DPI changes
+    // Handle DPI changes
     float display_scale;
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
     display_scale = 1.0f;
 #endif
 
-    //Set font
+    // Set font
     style::setFonts(display_scale);
 
     // Init Loading Screen
@@ -198,15 +198,19 @@ int main(int argc, char *argv[])
     satdump::tle_do_update_on_init = false;
     satdump::initSatdump();
 
+    // See if we need to add arguments
+    if (argc > 1)
+        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
+
     // Init UI
     satdump::initMainUI(display_scale);
 
-    //Shut down loading screen
+    // Shut down loading screen
     logger->del_sink(loading_screen_sink);
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
 
-    //Set font again to adjust for DPI
+    // Set font again to adjust for DPI
     style::setFonts();
 #ifndef IMGUI_IMPL_OPENGL_ES2
     if (fallback_gl)
@@ -228,7 +232,8 @@ int main(int argc, char *argv[])
     }
 
     // TLE
-    satdump::ui_thread_pool.push([&](int){ satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
+    satdump::ui_thread_pool.push([&](int)
+                                 { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
 
     // Attach signal
     signal(SIGINT, sig_handler_ui);
@@ -268,7 +273,7 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
 #ifndef IMGUI_IMPL_OPENGL_ES2
-        if(fallback_gl)
+        if (fallback_gl)
             ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         else
 #endif
@@ -282,7 +287,7 @@ int main(int argc, char *argv[])
 
     // Cleanup
 #ifndef IMGUI_IMPL_OPENGL_ES2
-    if(fallback_gl)
+    if (fallback_gl)
         ImGui_ImplOpenGL2_Shutdown();
     else
 #endif
