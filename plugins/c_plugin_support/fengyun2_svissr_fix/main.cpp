@@ -41,6 +41,7 @@ struct PluginData
     int now_lino;
 
     bool check_pn_sync_module;
+    bool use_in_frame_counter;
 
     long long time_gap, symbol_gap;
 
@@ -92,7 +93,13 @@ plugin_error_t plugin_acquire(plugin_acquire_info_t acquire_info, plugin_acquire
                                       "Fix line numbers using interval");
     }
     else
-        return ERR_OFFLINE_PROCESS;
+    {
+        pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, WARNING,
+                                      "Offline process detected. Use in-frame counter.");
+        pdata->check_pn_sync_module = true;
+        pdata->use_time_counter = false;
+        pdata->use_in_frame_counter = true;
+    }
 
     return error_codes::SUCCESS;
 }
@@ -113,16 +120,21 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
                                           "using counters from pn_sync module");
             *(pdata->cross_module_shared_memory) = 0;
             pdata->use_time_counter = false;
+            pdata->use_in_frame_counter = false;
 
             if (pdata->cross_module_shared_memory[1])
+            {
                 pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
                                               "pn sync detected, uses in-frame counter");
+                pdata->use_in_frame_counter = true;
+            }
         }
         else
         {
             pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
                                           "pn_sync module not found, fallback to time counter");
             pdata->use_time_counter = true;
+            pdata->use_in_frame_counter = false;
         }
 
         pdata->check_pn_sync_module = true;
@@ -141,7 +153,7 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
     }
     else
     {
-        if (pdata->cross_module_shared_memory[1])
+        if (pdata->use_in_frame_counter)
         {
             pdata->now_counter = *(long long *)(frame + 20);
             pdata->symbols_elapsed = pdata->now_counter - pdata->last_counter;
