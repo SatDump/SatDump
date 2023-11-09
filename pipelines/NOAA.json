@@ -238,7 +238,7 @@
         },
         "work": {
             "baseband": {},
-            "audio": {
+            "audio_wav": {
                 "noaa_apt_demod": {
                     "symbolrate": 50e3
                 }
