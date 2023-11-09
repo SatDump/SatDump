@@ -60,6 +60,7 @@ namespace dsp
 
         // Wav handling
         bool is_wav = false;
+        bool is_rf64 = false;
 
     public:
         BasebandReader()
@@ -91,7 +92,7 @@ namespace dsp
                 progress = 0;
 
                 is_wav |= wav::isValidWav(wav::parseHeaderFromFileWav(file_path));
-                is_wav |= wav::isValidRF64(wav::parseHeaderFromFileWav(file_path));
+                is_rf64 |= wav::isValidRF64(wav::parseHeaderFromFileWav(file_path));
             }
 
             this->format = format;
@@ -104,6 +105,10 @@ namespace dsp
 
             if (format == ZIQ2)
                 input_file.seekg(4);
+            else if (is_wav)
+                input_file.seekg(sizeof(wav::WavHeader));
+            else if (is_rf64)
+                input_file.seekg(sizeof(wav::RF64Header));
 
             main_mtx.unlock();
         }

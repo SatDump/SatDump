@@ -198,10 +198,6 @@ int main(int argc, char *argv[])
     satdump::tle_do_update_on_init = false;
     satdump::initSatdump();
 
-    // See if we need to add arguments
-    if (argc > 1)
-        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
-
     // Init UI
     satdump::initMainUI(display_scale);
 
@@ -227,9 +223,17 @@ int main(int argc, char *argv[])
 
     if (satdump::processing::is_processing)
     {
-        satdump::ui_thread_pool.push([&](int)
-                                     { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
+        std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
+        if (pipeline.has_value())
+            satdump::ui_thread_pool.push([&](int)
+                                         { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
+        else
+            satdump::processing::is_processing = false;
     }
+
+    // See if we need to add arguments
+    if (argc > 1 && !satdump::processing::is_processing)
+        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
 
     // TLE
     satdump::ui_thread_pool.push([&](int)
