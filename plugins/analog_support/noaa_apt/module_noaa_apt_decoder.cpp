@@ -507,6 +507,9 @@ namespace noaa_apt
 
     std::vector<APTWedge> NOAAAPTDecoderModule::parse_wedge_full(image::Image<uint16_t> &wedge)
     {
+        if (wedge.height() < 128)
+            return std::vector<APTWedge>();
+
         std::vector<uint8_t> sync_wedge = {31, 63, 95, 127, 159, 191, 224, 255, 0};
         std::vector<APTWedge> wedges;
 
