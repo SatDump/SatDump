@@ -28,6 +28,7 @@ struct PluginData
 
     int64_t bits_wrote;
     std::bitset<64> shifter, pn_shifter;
+
     int64_t pn_right_bit_counter;
     std::vector<unsigned char> buffer;
 
@@ -103,9 +104,9 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
 #define PUSHBIT(x, val)                                                                                                \
     do                                                                                                                 \
     {                                                                                                                  \
-        uint8_t __bit_to_write = x ^ last_write_bit;                                                                     \
-        last_write_bit = !!__bit_to_write;                                                                               \
-        pdata->buffer[output_buffer_bit_index] = __bit_to_write ? val : -val;                                            \
+        uint8_t __bit_to_write = x ^ last_write_bit;                                                                   \
+        last_write_bit = !!__bit_to_write;                                                                             \
+        pdata->buffer[output_buffer_bit_index] = __bit_to_write ? val : -val;                                          \
         output_buffer_bit_index++;                                                                                     \
     } while (0)
 
@@ -156,7 +157,14 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
             {
                 if (bit == pn_bit)
                 {
-                    pn_right_bit_counter++;
+                    if (pn_right_bit_counter < 5000)
+                        pn_right_bit_counter++;
+
+                    // if (pn_right_bit_counter == 1000)
+                    // {
+                    //     pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
+                    //                                     "Locked %lld", pdata->cross_module_shared_memory[0]);
+                    // }
                 }
                 else
                 {
