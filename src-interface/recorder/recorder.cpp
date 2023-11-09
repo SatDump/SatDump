@@ -100,45 +100,51 @@ namespace satdump
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
         // Attempt to apply provided CLI settings
-        auto &cli_settings = satdump::config::main_cfg["cli"];
-
-        if (cli_settings.contains("source"))
+        if (satdump::config::main_cfg.contains("cli"))
         {
-            std::string source = cli_settings["source"];
-            for (int i = 0; i < (int)sources.size(); i++)
-            {
-                if (sources[i].source_type == source)
-                {
-                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
-                        continue;
+            auto &cli_settings = satdump::config::main_cfg["cli"];
 
-                    try
+            if (cli_settings.contains("source"))
+            {
+                std::string source = cli_settings["source"];
+                for (int i = 0; i < (int)sources.size(); i++)
+                {
+                    if (sources[i].source_type == source)
                     {
-                        source_ptr = dsp::getSourceFromDescriptor(sources[i]);
-                        source_ptr->open();
-                        sdr_select_id = i;
-                        break;
-                    }
-                    catch (std::runtime_error &e)
-                    {
-                        logger->error(e.what());
+                        if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
+                            continue;
+
+                        try
+                        {
+                            source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                            source_ptr->open();
+                            sdr_select_id = i;
+                            break;
+                        }
+                        catch (std::runtime_error &e)
+                        {
+                            logger->error(e.what());
+                        }
                     }
                 }
             }
+
+            if (source_ptr)
+            {
+                if (cli_settings.contains("samplerate"))
+                    source_ptr->set_samplerate(cli_settings["samplerate"].get<uint64_t>());
+                source_ptr->set_settings(cli_settings);
+            }
+
+            if (cli_settings.contains("start_recorder_device") && cli_settings["start_recorder_device"].get<bool>())
+            {
+                logger->warn("Recorder was asked to autostart!");
+                start();
+            }
+
+            if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
+                try_init_tracking_widget();
         }
-
-        if (source_ptr)
-        {
-            if (cli_settings.contains("samplerate"))
-                source_ptr->set_samplerate(cli_settings["samplerate"].get<uint64_t>());
-            source_ptr->set_settings(cli_settings);
-        }
-
-        if (cli_settings.contains("start_recorder_device") && cli_settings["start_recorder_device"].get<bool>())
-            start();
-
-        if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
-            try_init_tracking_widget();
     }
 
     RecorderApplication::~RecorderApplication()

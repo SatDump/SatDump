@@ -1,9 +1,11 @@
 #include "overlay_handler.h"
+#include "core/config.h"
 
 int OverlayHandler::enabled()
 {
     return (int)draw_map_overlay +
            (int)draw_cities_overlay +
+           (int)draw_qth_overlay +
            (int)draw_latlon_overlay +
            (int)draw_shores_overlay;
 }
@@ -30,6 +32,12 @@ bool OverlayHandler::drawUI()
     ImGui::SameLine();
     ImGui::ColorEdit3("##cities##Projs", (float *)&color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
     update |= ImGui::IsItemDeactivatedAfterEdit();
+
+    update |= ImGui::Checkbox("QTH Overlay##Projs", &draw_qth_overlay);
+    ImGui::SameLine();
+    ImGui::ColorEdit3("##qth##Projs", (float *)&color_qth, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+    update |= ImGui::IsItemDeactivatedAfterEdit();
+
     update |= widgets::SteppedSliderInt("Cities Font Size", &cities_size, 10, 500);
     static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
     update |= ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
@@ -82,6 +90,30 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             (*step_cnt)++;
     }
 
+    // Draw cities points
+    if (draw_qth_overlay)
+    {
+        logger->info("Drawing QTH overlay...");
+        double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
+        double qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
+
+        unsigned short color[4] = {(unsigned short)(color_qth.x * 65535.0f), (unsigned short)(color_qth.y * 65535.0f), (unsigned short)(color_qth.z * 65535.0f), 65535};
+
+        std::pair<float, float> cc = proj_func(qth_lat, qth_lon,
+                                               img.height(), img.width());
+
+        if (!(cc.first == -1 || cc.first == -1))
+        {
+            img.draw_line(cc.first - cities_size * 0.3, cc.second - cities_size * 0.3, cc.first + cities_size * 0.3, cc.second + cities_size * 0.3, color);
+            img.draw_line(cc.first + cities_size * 0.3, cc.second - cities_size * 0.3, cc.first - cities_size * 0.3, cc.second + cities_size * 0.3, color);
+            img.draw_circle(cc.first, cc.second, 0.15 * cities_size, color, true);
+            img.draw_text(cc.first, cc.second + cities_size * 0.15, color, cities_size, "QTH");
+        }
+
+        if (step_cnt != nullptr)
+            (*step_cnt)++;
+    }
+
     // Draw latlon grid
     if (draw_latlon_overlay)
     {
@@ -104,11 +136,13 @@ nlohmann::json OverlayHandler::get_config()
     out["borders_color"] = {color_borders.x, color_borders.y, color_borders.z};
     out["shores_color"] = {color_shores.x, color_shores.y, color_shores.z};
     out["cities_color"] = {color_cities.x, color_cities.y, color_cities.z};
+    out["qth_color"] = {color_qth.x, color_qth.y, color_qth.z};
     out["latlon_color"] = {color_latlon.x, color_latlon.y, color_latlon.z};
 
     out["draw_map_overlay"] = draw_map_overlay;
     out["draw_shores_overlay"] = draw_shores_overlay;
     out["draw_cities_overlay"] = draw_cities_overlay;
+    out["draw_qth_overlay"] = draw_qth_overlay;
     out["cities_scale"] = cities_size;
     out["draw_latlon_overlay"] = draw_latlon_overlay;
 
@@ -139,6 +173,14 @@ void OverlayHandler::set_config(nlohmann::json in, bool status)
         color_cities.x = color[0];
         color_cities.y = color[1];
         color_cities.z = color[2];
+    }
+
+    if (in.contains("qth_color"))
+    {
+        std::vector<float> color = in["qth_color"].get<std::vector<float>>();
+        color_qth.x = color[0];
+        color_qth.y = color[1];
+        color_qth.z = color[2];
     }
 
     if (in.contains("latlon_color"))

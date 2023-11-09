@@ -15,12 +15,14 @@ public:
     ImVec4 color_borders = {0, 1, 0, 1};
     ImVec4 color_shores = {1, 1, 0, 1};
     ImVec4 color_cities = {1, 0, 0, 1};
+    ImVec4 color_qth = {1, 0, 1, 1};
     ImVec4 color_latlon = {0, 0, 1, 1};
 
     // Settings
     bool draw_map_overlay = false;
     bool draw_shores_overlay = false;
     bool draw_cities_overlay = false;
+    bool draw_qth_overlay = false;
     bool draw_latlon_overlay = false;
 
     int cities_type = 0;
