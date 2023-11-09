@@ -118,7 +118,6 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
         {
             pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
                                           "using counters from pn_sync module");
-            *(pdata->cross_module_shared_memory) = 0;
             pdata->use_time_counter = false;
             pdata->use_in_frame_counter = false;
 
@@ -194,16 +193,23 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
     {
         if (closest_sync == ZERO)
             pdata->zero_counter++;
-        if (closest_sync == FORWARD && pdata->zero_counter > 5)
+        if (closest_sync == FORWARD)
         {
-            pdata->forward_counter = 1;
-            pdata->now_lino = 0;
-            pdata->zero_counter = 0;
+            if (pdata->zero_counter > 5)
+            {
+                pdata->forward_counter = 1;
+                pdata->now_lino = 0;
+                pdata->zero_counter = 0;
 
-            for (auto &&d : pdata->recv_lino_diff)
-                d = 0;
-            pdata->recv_lino_diff_index = 0;
-            pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO, "Image detected");
+                for (auto &&d : pdata->recv_lino_diff)
+                    d = 0;
+                pdata->recv_lino_diff_index = 0;
+                pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO, "Image detected");
+            }
+            else
+            {
+                pdata->zero_counter++;
+            }
         }
     }
     else if (pdata->forward_counter > 0 && pdata->backward_counter < 5)
@@ -220,7 +226,7 @@ int plugin_process_data(plugin_acquire_result_t *acquire_result, const unsigned 
         }
         else
         {
-            int offset = pdata->milliseconds_elapsed / (double)pdata->time_gap - 1;
+            int offset = pdata->milliseconds_elapsed / (double)pdata->time_gap + 0.5 - 1;
             if (offset > 0)
             {
                 // pdata->acquire_info.print_log(pdata->acquire_info.plugin_interface_data, INFO,
