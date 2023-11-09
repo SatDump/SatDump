@@ -491,6 +491,7 @@ namespace satdump
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
+                float wfft_widht = right_width - 9 * ui_scale;
                 bool t = true;
 #ifdef __ANDROID__
                 int offset = 8;
@@ -503,7 +504,7 @@ namespace satdump
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
-                    fft_plot->draw({float(right_width - 9 * ui_scale), fft_height});
+                    fft_plot->draw({float(wfft_widht), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered())
@@ -519,7 +520,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
-                    waterfall_plot->draw({float(right_width - 9 * ui_scale), wf_height}, is_started);
+                    waterfall_plot->draw({wfft_widht, wf_height}, is_started);
                 }
             }
             ImGui::EndChild();
