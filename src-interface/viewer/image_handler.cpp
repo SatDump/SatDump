@@ -109,6 +109,9 @@ namespace satdump
         if (median_blur)
             current_image.median_blur();
 
+        if (despeckle)
+            current_image.kuwahara_filter();
+
         if (rotate_image)
             current_image.mirror(true, true);
 
@@ -522,6 +525,9 @@ namespace satdump
             }
 
             if (ImGui::Checkbox("Median Blur", &median_blur))
+                asyncUpdate();
+
+            if (ImGui::Checkbox("Despeckle", &despeckle))
                 asyncUpdate();
 
             if (ImGui::Checkbox("Rotate", &rotate_image))

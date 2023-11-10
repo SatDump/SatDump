@@ -82,6 +82,7 @@ namespace lua_utils
         image_type["linear_invert"] = &image::Image<T>::linear_invert;
         image_type["simple_despeckle"] = &image::Image<T>::simple_despeckle;
         image_type["median_blur"] = &image::Image<T>::median_blur;
+        image_type["despeckle"] = &image::Image<T>::kuwahara_filter;
 
         image_type["draw_pixel"] = &image::Image<T>::draw_pixel;
         image_type["draw_line"] = &image::Image<T>::draw_line;
