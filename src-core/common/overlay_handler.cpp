@@ -38,7 +38,7 @@ bool OverlayHandler::drawUI()
     ImGui::ColorEdit3("##qth##Projs", (float *)&color_qth, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
     update |= ImGui::IsItemDeactivatedAfterEdit();
 
-    update |= widgets::SteppedSliderInt("Cities Font Size", &cities_size, 10, 500);
+    update |= widgets::SteppedSliderInt("Map Labels Font Size", &cities_size, 10, 500);
     static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
     update |= ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
     if (cities_type == 2)
