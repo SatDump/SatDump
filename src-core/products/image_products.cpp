@@ -505,6 +505,9 @@ namespace satdump
         else
             rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
 
+        if (cfg.despeckle)
+            rgb_composite.kuwahara_filter();
+
         if (cfg.equalize)
             rgb_composite.equalize();
 

@@ -290,6 +290,7 @@ namespace satdump
                     cfg.lua_vars = rgb_compo_cfg.lua_vars;
                     cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
 
+                    despeckle = rgb_compo_cfg.despeckle;
                     equalize_image = rgb_compo_cfg.equalize;
                     individual_equalize_image = rgb_compo_cfg.individual_equalize;
                     invert_image = rgb_compo_cfg.invert;
