@@ -1451,24 +1451,25 @@
                         "apply_lut": true
                     },
                     "550hPa Temperature (~5 km)": {
-                        "equation": "ch6",
-                        "individual_equalize": true,
+                        "equation": "cch6",
                         "apply_lut": true
                     },
                     "350hPa Temperature (~10 km)": {
-                        "equation": "ch7",
-                        "individual_equalize": true,
+                        "equation": "cch7",
                         "apply_lut": true
                     },
                     "200hPa Temperature (~12 km)": {
-                        "equation": "ch8",
-                        "individual_equalize": true,
+                        "equation": "cch8",
                         "apply_lut": true
                     },
                     "100hPa Temperature (~15 km)": {
-                        "equation": "ch9",
-                        "individual_equalize": true,
+                        "equation": "cch9",
                         "apply_lut": true
+                    },
+                    "Snow cover (Transparent, AMSU-like)": {
+                        "equation": "cch3^0.3, 0, 0, cch2 > 0.57 ? (cch3 < 0.5 ? 1 : 0) : 0",
+                        "apply_lut": true,
+                        "autogen": false
                     }
                 }
             },
@@ -1482,27 +1483,22 @@
                     },
                     "Surface Relative Temperature": {
                         "equation": "cos(ln(ch1) + ln(ch2)+0.3)",
-                        "individual_equalize": true,
                         "apply_lut": true
                     },
                     "550hPa Temperature (~5 km)": {
-                        "equation": "ch5",
-                        "individual_equalize": true,
+                        "equation": "cch5",
                         "apply_lut": true
                     },
                     "350hPa Temperature (~10 km)": {
-                        "equation": "ch6",
-                        "individual_equalize": true,
+                        "equation": "cch6",
                         "apply_lut": true
                     },
                     "200hPa Temperature (~12 km)": {
-                        "equation": "ch7",
-                        "individual_equalize": true,
+                        "equation": "cch7",
                         "apply_lut": true
                     },
                     "100hPa Temperature (~15 km)": {
-                        "equation": "ch8",
-                        "individual_equalize": true,
+                        "equation": "cch8",
                         "apply_lut": true
                     },
                     "Snow cover (Transparent)": {
