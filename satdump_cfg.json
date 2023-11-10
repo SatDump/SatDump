@@ -466,7 +466,7 @@
                         "white_balance": true
                     },
                     "Day Microphysics": {
-                        "equation": "cch1, cch3b^2.5,cch4",
+                        "equation": "cch1, cch3a^2.5,cch4",
                         "geo_correct": true,
                         "individual_equalize": true
                     },
@@ -1225,7 +1225,12 @@
                         "apply_lut": true
                     },
                     "Rainfall (Transparent)": {
-                        "equation": "((1-(cch5-cch4))-0.95)^0.25, 0, 0, ((1-(cch5-cch4))-0.95)^0.25",
+                        "equation": "((1-(cch5-cch4))-0.95)^0.25, 0, 0, ((1-(cch5-cch4))-0.95)^0.25 > 0.01 ? 1 : 0",
+                        "apply_lut": true,
+                        "autogen": false
+                    },
+                    "Snow cover (Transparent)": {
+                        "equation": "cch1, 0, 0, cch2-cch1 < 0.1 ? (cch1 < 0.6 ? 1 : 0) : 0",
                         "apply_lut": true,
                         "autogen": false
                     }
@@ -1499,6 +1504,11 @@
                         "equation": "ch8",
                         "individual_equalize": true,
                         "apply_lut": true
+                    },
+                    "Snow cover (Transparent)": {
+                        "equation": "cch3^0.3, 0, 0, cch2 > 0.45 ? (cch3 < 0.439 ? 1 : 0) : 0",
+                        "apply_lut": true,
+                        "autogen": false
                     }
                 }
             },
