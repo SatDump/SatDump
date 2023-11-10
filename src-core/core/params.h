@@ -22,7 +22,8 @@ namespace satdump
             PARAM_OPTIONS,
             PARAM_PATH,
             PARAM_TIMESTAMP,
-            PARAM_NOTATED_INT
+            PARAM_NOTATED_INT,
+            PARAM_COLOR,
         };
 
         class EditableParameter
@@ -39,6 +40,7 @@ namespace satdump
             int p_int;
             double p_float;
             bool p_bool;
+            float p_color[4] = {0, 0, 0, 0};
             std::shared_ptr<FileSelectWidget> file_select;
             std::shared_ptr<widgets::DateTimePicker> date_time_picker;
             std::shared_ptr<widgets::NotatedNum<int64_t>> notated_int;

@@ -43,6 +43,10 @@ bool OverlayHandler::drawUI()
     update |= ImGui::Combo("Cities Type##Projs", &cities_type, city_categories, IM_ARRAYSIZE(city_categories));
     if (cities_type == 2)
         update |= widgets::SteppedSliderInt("Cities Scale Rank", &cities_scale_rank, 0, 10);
+
+    if (ImGui::Button("Set Defaults###oerlayhandlers"))
+        set_defaults();
+
     return update;
 }
 
@@ -206,4 +210,28 @@ void OverlayHandler::set_config(nlohmann::json in, bool status)
         setValueIfExists(in["draw_latlon_overlay"], draw_latlon_overlay);
     }
     setValueIfExists(in["cities_scale"], cities_size);
+}
+
+void OverlayHandler::set_defaults()
+{
+    std::vector<float> dcolor_borders = satdump::config::main_cfg["satdump_general"]["default_borders_color"]["value"].get<std::vector<float>>();
+    color_borders.x = dcolor_borders[0];
+    color_borders.y = dcolor_borders[1];
+    color_borders.z = dcolor_borders[2];
+    std::vector<float> dcolor_shores = satdump::config::main_cfg["satdump_general"]["default_shores_color"]["value"].get<std::vector<float>>();
+    color_shores.x = dcolor_shores[0];
+    color_shores.y = dcolor_shores[1];
+    color_shores.z = dcolor_shores[2];
+    std::vector<float> dcolor_cities = satdump::config::main_cfg["satdump_general"]["default_cities_color"]["value"].get<std::vector<float>>();
+    color_cities.x = dcolor_cities[0];
+    color_cities.y = dcolor_cities[1];
+    color_cities.z = dcolor_cities[2];
+    std::vector<float> dcolor_qth = satdump::config::main_cfg["satdump_general"]["default_qth_color"]["value"].get<std::vector<float>>();
+    color_qth.x = dcolor_qth[0];
+    color_qth.y = dcolor_qth[1];
+    color_qth.z = dcolor_qth[2];
+    std::vector<float> dcolor_latlon = satdump::config::main_cfg["satdump_general"]["default_latlon_color"]["value"].get<std::vector<float>>();
+    color_latlon.x = dcolor_latlon[0];
+    color_latlon.y = dcolor_latlon[1];
+    color_latlon.z = dcolor_latlon[2];
 }

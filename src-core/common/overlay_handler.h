@@ -29,7 +29,14 @@ public:
     int cities_size = 50;
     int cities_scale_rank = 3;
 
+    void set_defaults();
+
 public:
+    OverlayHandler()
+    {
+        set_defaults();
+    }
+
     int enabled();
     bool drawUI();
     void apply(image::Image<uint16_t> &img, std::function<std::pair<int, int>(float, float, int, int)> &proj_func, float *step_cnt = nullptr);
