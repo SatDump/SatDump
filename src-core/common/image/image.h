@@ -69,6 +69,7 @@ namespace image
 
         T *data() { return d_data; }                                              // Return the raw image data buffer
         T *channel(int channel) { return &d_data[d_width * d_height * channel]; } // Return a pointer to a specific channel
+        T wraparound_read(T* c, int x, int y);                                    // Returns pixel value, wrapping around at the edge
 
         void to_rgb();              // Convert this image from B&W to RGB (if it is B&W / RGBA)
         void to_rgba();             // Convert this image from to RGBA (if it is B&W / RGB)
@@ -96,6 +97,7 @@ namespace image
         void linear_invert();                                                // Invert the entire image
         void simple_despeckle(int thresold = 10);                            // Very basic despeckle algorithm
         void median_blur();                                                  // Median blur algorithm
+        void kuwahara_filter();                                              // Adaptive noise reduction filter
 
         // Drawing functions
         void draw_pixel(int x, int y, T color[]);                                                      // Set a pixel's color

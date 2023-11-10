@@ -1,4 +1,5 @@
 #include "image.h"
+#include <float.h>
 #include <cstring>
 #include <cmath>
 #include <limits>
@@ -434,6 +435,90 @@ namespace image
                 }
             }
         }
+    }
+
+    template <typename T>
+    void Image<T>::kuwahara_filter()
+    {
+        const int radius = 1;
+        const float num_pixels = (float)((radius + 1) * (radius + 1));
+
+        Image<T> tmp = *this;
+        init(d_width, d_height, d_channels);
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t y = 0; y < d_height; y++)
+            {
+                for (size_t x = 0; x < d_width; x++)
+                {
+                    float average[4] = { 0 };
+                    float variance[4] = { 0 };
+
+                    // Calculate values for the four regions
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            average[0] += wraparound_read(tmp.channel(c), x + i, y + j);
+                    average[0] /= num_pixels;
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            variance[0] += pow(wraparound_read(tmp.channel(c), x + i, y + j) - average[0], 2);
+
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            average[1] += wraparound_read(tmp.channel(c), x + i, y + j);
+                    average[1] /= num_pixels;
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            variance[1] += pow(wraparound_read(tmp.channel(c), x + i, y + j) - average[1], 2);
+
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            average[2] += wraparound_read(tmp.channel(c), x + i, y + j);
+                    average[2] /= num_pixels;
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            variance[2] += pow(wraparound_read(tmp.channel(c), x + i, y + j) - average[2], 2);
+
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            average[3] += wraparound_read(tmp.channel(c), x + i, y + j);
+                    average[3] /= num_pixels;
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            variance[3] += pow(wraparound_read(tmp.channel(c), x + i, y + j) - average[3], 2);
+
+                    // Find the region with the smallest variance and use its mean as the new pixel value
+                    float min_sigma2 = FLT_MAX;
+                    for (int k = 0; k < 4; k++)
+                    {
+                        variance[k] /= num_pixels - 1;
+                        // Find Sigma 2
+                        if (variance[k] < 0)
+                            variance[k] = -variance[k];
+
+                        if (variance[k] < min_sigma2)
+                        {
+                            min_sigma2 = variance[k];
+                            channel(c)[y * d_width + x] = (T)average[k];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    template <typename T>
+    T Image<T>::wraparound_read(T* c, int x, int y)
+    {
+        if (x < 0)
+            x += d_width;
+        if (y < 0)
+            y += d_height;
+        if (x >= (int)d_width)
+            x -= d_width;
+        if (y >= (int)d_height)
+            y -= d_height;
+        return c[y * d_width + x];
     }
 
     // Generate Images for uint16_t and uint8_t

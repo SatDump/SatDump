@@ -256,6 +256,7 @@ namespace satdump
     struct ImageCompositeCfg
     {
         std::string equation;
+        bool despeckle = false;
         bool equalize = false;
         bool individual_equalize = false;
         bool invert = false;
@@ -273,6 +274,7 @@ namespace satdump
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
     {
         j["equation"] = v.equation;
+        j["despeckle"] = v.despeckle;
         j["equalize"] = v.equalize;
         j["individual_equalize"] = v.individual_equalize;
         j["invert"] = v.invert;
@@ -310,6 +312,8 @@ namespace satdump
         if (j.contains("calib_cfg"))
             v.calib_cfg = j["calib_cfg"];
 
+        if (j.contains("despeckle"))
+            v.despeckle = j["despeckle"].get<bool>();
         if (j.contains("equalize"))
             v.equalize = j["equalize"].get<bool>();
         if (j.contains("individual_equalize"))

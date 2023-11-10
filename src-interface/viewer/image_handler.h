@@ -30,6 +30,7 @@ namespace satdump
 
         // Other controls
         bool median_blur = false;
+        bool despeckle = false;
         bool rotate_image = false;
         bool equalize_image = false;
         bool individual_equalize_image = false;
