@@ -118,6 +118,7 @@ namespace satdump
                         {
                             source_ptr = dsp::getSourceFromDescriptor(sources[i]);
                             source_ptr->open();
+                            try_load_sdr_settings();
                             sdr_select_id = i;
                             break;
                         }
