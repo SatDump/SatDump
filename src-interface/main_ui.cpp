@@ -168,7 +168,9 @@ namespace satdump
                     }
                     else
                     {
+                        ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
                         offline::render();
+                        ImGui::EndChild();
                     }
 
                     ImGui::EndTabItem();
@@ -210,7 +212,9 @@ namespace satdump
 #endif
                 if (ImGui::BeginTabItem("Settings"))
                 {
+                    ImGui::BeginChild("settings", ImGui::GetContentRegionAvail());
                     settings::render();
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("About"))
