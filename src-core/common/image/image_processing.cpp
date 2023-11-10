@@ -1,4 +1,5 @@
 #include "image.h"
+#include <float.h>
 #include <cstring>
 #include <cmath>
 #include <limits>
@@ -513,9 +514,9 @@ namespace image
             x += d_width;
         if (y < 0)
             y += d_height;
-        if (x >= d_width)
+        if (x >= (int)d_width)
             x -= d_width;
-        if (y >= d_height)
+        if (y >= (int)d_height)
             y -= d_height;
         return c[y * d_width + x];
     }

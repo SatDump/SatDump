@@ -69,7 +69,7 @@ namespace image
 
         T *data() { return d_data; }                                              // Return the raw image data buffer
         T *channel(int channel) { return &d_data[d_width * d_height * channel]; } // Return a pointer to a specific channel
-        T Image<T>::wraparound_read(T* c, int x, int y);                          // Returns pixel value, wrapping around at the edge
+        T wraparound_read(T* c, int x, int y);                                    // Returns pixel value, wrapping around at the edge
 
         void to_rgb();              // Convert this image from B&W to RGB (if it is B&W / RGBA)
         void to_rgba();             // Convert this image from to RGBA (if it is B&W / RGB)
