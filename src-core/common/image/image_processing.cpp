@@ -491,7 +491,7 @@ namespace image
                     float min_sigma2 = FLT_MAX;
                     for (int k = 0; k < 4; k++)
                     {
-                        variance[k] /= num_pixels;
+                        variance[k] /= num_pixels - 1;
                         // Find Sigma 2
                         if (variance[k] < 0)
                             variance[k] = -variance[k];
