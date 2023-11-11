@@ -286,41 +286,44 @@ namespace satdump
         void drawMainparams()
         {
             pipeline_mtx.lock();
-            ImGui::BeginTable("##pipelinesmainoptions", 2);
-            ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, 100 * ui_scale);
-            ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, 100 * ui_scale);
-
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Input File");
-            ImGui::TableSetColumnIndex(1);
-            if (inputfileselect.draw())
+            if (ImGui::BeginTable("##pipelinesmainoptions", 2))
             {
-                std::string file_path = inputfileselect.getPath();
+                ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, 100 * ui_scale);
+                ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, 100 * ui_scale);
 
-                if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Input File");
+                ImGui::TableSetColumnIndex(1);
+                if (inputfileselect.draw())
                 {
-                    HeaderInfo hdr = try_parse_header(file_path);
-                    if (hdr.valid)
+                    std::string file_path = inputfileselect.getPath();
+
+                    if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
                     {
-                        try_set_param("samplerate", hdr.samplerate);
-                        try_set_param("baseband_format", hdr.type);
+                        HeaderInfo hdr = try_parse_header(file_path);
+                        if (hdr.valid)
+                        {
+                            try_set_param("samplerate", hdr.samplerate);
+                            try_set_param("baseband_format", hdr.type);
+                        }
                     }
                 }
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Output Directory");
+                ImGui::TableSetColumnIndex(1);
+                outputdirselect.draw();
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Input Level");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Combo("##pipelinelevel", &pipelines_levels_select_id, pipeline_levels_str.c_str());
+                ImGui::EndTable();
             }
-
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Output Directory");
-            ImGui::TableSetColumnIndex(1);
-            outputdirselect.draw();
-
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Input Level");
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Combo("##pipelinelevel", &pipelines_levels_select_id, pipeline_levels_str.c_str());
-            ImGui::EndTable();
+            
             pipeline_mtx.unlock();
         }
 
