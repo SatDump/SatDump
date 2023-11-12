@@ -119,8 +119,6 @@ namespace satdump
                 return false;
             if (!contents.contains("projection_cfg"))
                 return false;
-            if (get_proj_cfg().contains("disable_correct") && get_proj_cfg()["disable_correct"])
-                return false;
             if (!get_proj_cfg().contains("corr_swath"))
                 return false;
             if (!get_proj_cfg().contains("corr_resol"))
