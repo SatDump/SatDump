@@ -440,6 +440,10 @@ namespace noaa_apt
                     proj_cfg["image_width"] = 909;
                     proj_cfg["gcp_spacing_x"] = 30;
                     proj_cfg["gcp_spacing_y"] = 30;
+                    proj_cfg.erase("corr_width");
+                    proj_cfg.erase("corr_swath");
+                    proj_cfg.erase("corr_resol");
+                    proj_cfg.erase("corr_altit");
                     avhrr_products.set_proj_cfg(proj_cfg);
                 }
             }
