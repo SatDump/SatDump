@@ -118,7 +118,7 @@ namespace widgets
                 else if (month_holder > 9 || start_edit)
                     auto_advance = true;
             }
-            if(ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace))
+            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
                 start_edit = false;
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -143,7 +143,7 @@ namespace widgets
                 else if (timestamp.tm_mday > 9 || start_edit)
                     auto_advance = true;
             }
-            if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace))
+            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
                 start_edit = false;
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -166,7 +166,7 @@ namespace widgets
                 else if (timestamp.tm_hour > 9 || start_edit)
                     auto_advance = true;
             }
-            if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace))
+            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
                 start_edit = false;
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -190,7 +190,7 @@ namespace widgets
                 else if (timestamp.tm_min > 9 || start_edit)
                     auto_advance = true;
             }
-            if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace))
+            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
                 start_edit = false;
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -214,7 +214,7 @@ namespace widgets
                 else if (timestamp.tm_sec > 9 || start_edit)
                     auto_advance = true;
             }
-            if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace))
+            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
                 start_edit = false;
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
