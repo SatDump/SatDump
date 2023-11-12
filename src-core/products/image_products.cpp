@@ -550,6 +550,8 @@ namespace satdump
         success = false;
         if (!product.contents.contains("projection_cfg"))
             return img;
+        if (product.get_proj_cfg().contains("disable_correct") && product.get_proj_cfg()["disable_correct"])
+            return img;
         if (!product.get_proj_cfg().contains("corr_swath"))
             return img;
         if (!product.get_proj_cfg().contains("corr_resol"))
