@@ -6,7 +6,7 @@ if(MSVC)
     set (WIN32_RESOURCES ../windows/resource.rc)
 endif()
 
-file(GLOB_RECURSE SatDump_ui_CPPS *.cpp gl3w/gl3w.c)
+file(GLOB_RECURSE SatDump_ui_CPPS *.cpp imgui/gl3w/gl3w.c)
 add_executable(satdump-ui ${SatDump_ui_CPPS} ${WIN32_RESOURCES})
 target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
 
