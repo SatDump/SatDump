@@ -71,7 +71,7 @@ First time here? See the reference documents below to get started using SatDump.
 
 ### UI Libraries
 - [OpenGL ES](https://www.khronos.org/opengles/) and [EGL](https://www.khronos.org/egl), for OpenGL on Android
-- [glfw3](https://www.glfw.org/), for OpenGL on Desktop
+- [gl3w](https://github.com/skaslev/gl3w) and [glfw3](https://www.glfw.org/), for OpenGL on Desktop
 
 ### Fonts
 - [Roboto](https://fonts.google.com/specimen/Roboto), for text
