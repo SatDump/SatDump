@@ -41,7 +41,9 @@
                     "rs_type": "rs223"
                 }
             },
-            "products": {}
+            "products": {
+                "hinode_instruments": {}
+            }
         }
     },
     "hinode_s_tlm": {
