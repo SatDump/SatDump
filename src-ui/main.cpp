@@ -46,8 +46,8 @@ void window_content_scale_callback(GLFWwindow *, float xscale, float)
     }
 }
 
-void bindImageTextureFunctions();
-void bindMMImageTextureFunctions();
+void bindBaseTextureFunctions();
+void bindAdvancedTextureFunctions();
 
 int main(int argc, char *argv[])
 {
@@ -130,10 +130,10 @@ int main(int argc, char *argv[])
                          // Vsync slows down init process when items are logged quickly
 
     //Set up texture functions
-    bindImageTextureFunctions();
+    bindBaseTextureFunctions();
 #ifndef IMGUI_IMPL_OPENGL_ES2
     if (!fallback_gl)
-        bindMMImageTextureFunctions();
+        bindAdvancedTextureFunctions();
 #endif
 
     // Setup Dear ImGui context
