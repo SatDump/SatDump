@@ -1,3 +1,8 @@
+// SatDump OpenGL 3 texture functions
+// - Functions in this file will load through gl3w and must be complaint with OpenGL 3+
+// - Functions here should override functions already set up in imgui_image_base.cpp
+//   to provide mordern/advanced functionality
+
 #include "imgui/imgui_image.h"
 #include "gl3w/gl3w.h"
 #include "logger.h"
