@@ -947,16 +947,18 @@ namespace fengyun3
                 mersirm_products.set_timestamps(mersirm_reader.timestamps);
                 mersirm_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mersirm.json")));
 
+                bool rotate = d_parameters.contains("satellite_rotated") ? d_parameters["satellite_rotated"].get<bool>() : false;
+
                 // Channel offsets relative to Ch1
                 int offset[8] = {
                     0,
+                    rotate ? -2 : 2,
+                    rotate ? -4 : 4,
+                    rotate ? -2 : 2,
                     0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
+                    rotate ? -7 : 7,
+                    rotate ? -2 : 2,
+                    rotate ? 2 : -1,
                 };
 
                 for (int i = 0; i < 8; i++)
@@ -969,7 +971,7 @@ namespace fengyun3
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     // What did you do NSMC.... Why did you turn FY-3G 180 degs!?
-                    if (d_parameters.contains("satellite_rotated") ? d_parameters["satellite_rotated"].get<bool>() : false)
+                    if (rotate)
                     {
                         auto img2 = image;
                         for (int l = 0; l < (int)img2.height() / 10; l++)
