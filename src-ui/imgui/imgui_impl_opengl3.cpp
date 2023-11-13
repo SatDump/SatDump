@@ -108,6 +108,9 @@
 #endif
 
 #include "imgui/imgui.h"
+#ifndef IMGUI_IMPL_OPENGL_ES2
+#include "gl3w/gl3w.h"
+#endif
 #ifndef IMGUI_DISABLE
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>

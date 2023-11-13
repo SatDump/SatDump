@@ -1,5 +1,9 @@
 #include <signal.h>
 #include <filesystem>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "gl.h"
 #include "logger.h"
 #include "core/style.h"
 #include "init.h"
@@ -9,7 +13,6 @@
 #include "loading_screen.h"
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
-#include "gl.h"
 
 static volatile bool signal_caught = false;
 bool fallback_gl = false;
@@ -44,10 +47,10 @@ void window_content_scale_callback(GLFWwindow *, float xscale, float)
 }
 
 void bindImageTextureFunctions();
+void bindMMImageTextureFunctions();
 
 int main(int argc, char *argv[])
 {
-    bindImageTextureFunctions();
     initLogger();
 
     if (argc < 5) // Check overall command
@@ -125,6 +128,13 @@ int main(int argc, char *argv[])
     glfwMakeContextCurrent(window);
     glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
                          // Vsync slows down init process when items are logged quickly
+
+    //Set up texture functions
+    bindImageTextureFunctions();
+#ifndef IMGUI_IMPL_OPENGL_ES2
+    if (!fallback_gl)
+        bindMMImageTextureFunctions();
+#endif
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
