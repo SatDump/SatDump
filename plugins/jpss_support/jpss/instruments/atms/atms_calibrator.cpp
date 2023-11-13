@@ -67,7 +67,7 @@ namespace jpss
             {
                 if (!d_vars[pos_y].contains("beam_pos_cc"))
                     continue;
-                if (d_vars[pos_y]["beam_pos_cc"].size() <= i)
+                if ((int)d_vars[pos_y]["beam_pos_cc"].size() <= i)
                     continue;
 
                 double angle_cold = (d_vars[pos_y]["beam_pos_cc"][i].get<double>() - atmsSdrCoeffsPtr.resolverOffset) * BEAM_COUNTS2DEG;
@@ -90,7 +90,7 @@ namespace jpss
             {
                 if (!d_vars[pos_y].contains("beam_pos_wc"))
                     continue;
-                if (d_vars[pos_y]["beam_pos_wc"].size() <= i)
+                if ((int)d_vars[pos_y]["beam_pos_wc"].size() <= i)
                     continue;
 
                 double angle_warm = (d_vars[pos_y]["beam_pos_wc"][i].get<double>() - atmsSdrCoeffsPtr.resolverOffset) * BEAM_COUNTS2DEG;
@@ -141,7 +141,7 @@ namespace jpss
             // Get Earth beam angle
             if (!d_vars[pos_y].contains("beam_pos_sc"))
                 return CALIBRATION_INVALID_VALUE;
-            if (d_vars[pos_y]["beam_pos_sc"].size() <= pos_x)
+            if ((int)d_vars[pos_y]["beam_pos_sc"].size() <= pos_x)
                 return CALIBRATION_INVALID_VALUE;
 
             double angle_sc = (d_vars[pos_y]["beam_pos_sc"][pos_x].get<double>() - atmsSdrCoeffsPtr.resolverOffset) * BEAM_COUNTS2DEG;

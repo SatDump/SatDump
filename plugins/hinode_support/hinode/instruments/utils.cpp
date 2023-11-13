@@ -90,7 +90,7 @@ namespace hinode
 
     void HinodeDepacketizer::clear_chktbl()
     {
-        memset(_chk_tbl, 0, sizeof(_chk_tbl));
+        memset(_chk_tbl, 0, MAX_PIXELS);
     }
 
     void HinodeDepacketizer::fill_chktbl()
@@ -104,7 +104,7 @@ namespace hinode
 
         /* */
 
-        int dpcm_col, dpcm_row;
+        int dpcm_col = 0, dpcm_row = 0;
         int i;
 
         int tmp = 0; //////

@@ -43,7 +43,7 @@ namespace satdump
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
-                images[c].filename.find(".j2k") == std::string::npos && 
+                images[c].filename.find(".j2k") == std::string::npos &&
                 images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
             else
@@ -204,7 +204,7 @@ namespace satdump
     {
         calib_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
-        double val2;
+        double val2 = CALIBRATION_INVALID_VALUE;
         if (calibrator_ptr != nullptr)
             val2 = calibrator_ptr->compute(image_index, x, y, val);
         else if (lua_state_ptr != nullptr)

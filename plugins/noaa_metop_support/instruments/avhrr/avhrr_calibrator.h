@@ -34,7 +34,7 @@ public:
             crossover[i] = (perChannel[i]["int_hi"].get<double>() - perChannel[i]["int_lo"].get<double>()) / (perChannel[i]["slope_lo"].get<double>() - perChannel[i]["slope_hi"].get<double>());
     }
 
-    double compute(int channel, int pos_x, int pos_y, int px_val)
+    double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
     {
         if (channel < 3)
         {

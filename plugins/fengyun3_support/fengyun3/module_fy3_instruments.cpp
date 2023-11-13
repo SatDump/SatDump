@@ -390,10 +390,10 @@ namespace fengyun3
                     }
                     else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
                     {
+#if 0
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         {
-#if 0
                             printf("APID %d\n", pkt.header.apid);
                             if (pkt.header.apid == 1)
                             {
@@ -408,8 +408,8 @@ namespace fengyun3
                                     idk_out.write((char *)pkt.payload.data(), 862);
                                 }
                             }
-#endif
                         }
+#endif
                         //    if (pkt.header.apid == 16) // MWHS-2
                         //        mwhs2_reader.work(pkt, true);
                         //    else if (pkt.header.apid == 7) // MWTS-3
@@ -615,7 +615,7 @@ namespace fengyun3
 
                 virr_products.set_timestamps(virr_reader.timestamps);
                 if (d_downlink == AHRPT)
-                    dataset.timestamp = get_median(virr_reader.timestamps); //Re-set dataset timestamp since we just adjusted it
+                    dataset.timestamp = get_median(virr_reader.timestamps); // Re-set dataset timestamp since we just adjusted it
 
                 virr_products.save(directory);
                 dataset.products_list.push_back("VIRR");

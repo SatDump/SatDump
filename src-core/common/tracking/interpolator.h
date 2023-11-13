@@ -52,10 +52,10 @@ public:
     double interpolate(double xvalue)
     {
         int start_pos = 0;
-        while (start_pos < xy.size() && xvalue > xy[start_pos].first)
+        while (start_pos < (int)xy.size() && xvalue > xy[start_pos].first)
             start_pos++;
 
-        if (start_pos + 1 == xy.size())
+        if (start_pos + 1 == (int)xy.size())
             start_pos--;
         if (start_pos == 0)
             start_pos++;

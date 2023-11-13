@@ -41,7 +41,7 @@ void LimeSDRSource::set_others()
     if (!is_started)
         return;
 
-    lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
+    // lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
 
     if (manual_bandwidth)
     {

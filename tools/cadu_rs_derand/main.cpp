@@ -9,6 +9,9 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
+    if (argc < 3)
+        return 1;
+
     std::ifstream data_in(argv[1], std::ios::binary);
     std::ofstream data_out(argv[2], std::ios::binary);
 

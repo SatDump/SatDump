@@ -59,14 +59,14 @@ namespace orb
 
             image::Image<uint16_t> imgt = image::decompress_j2k_openjp2(&pkt.payload[17], pkt.payload.size() - 17);
 
-            uint64_t timestamp = pkt.payload[0] << 56 |
-                                 pkt.payload[1] << 48 |
-                                 pkt.payload[2] << 40 |
-                                 pkt.payload[3] << 32 |
-                                 pkt.payload[4] << 24 |
-                                 pkt.payload[5] << 16 |
-                                 pkt.payload[6] << 8 |
-                                 pkt.payload[7]; // TODO use CCSDS
+            uint64_t timestamp = (uint64_t)pkt.payload[0] << 56 |
+                                 (uint64_t)pkt.payload[1] << 48 |
+                                 (uint64_t)pkt.payload[2] << 40 |
+                                 (uint64_t)pkt.payload[3] << 32 |
+                                 (uint64_t)pkt.payload[4] << 24 |
+                                 (uint64_t)pkt.payload[5] << 16 |
+                                 (uint64_t)pkt.payload[6] << 8 |
+                                 (uint64_t)pkt.payload[7]; // TODO use CCSDS
             int channel = pkt.payload[8];
             int width = pkt.payload[9] << 8 | pkt.payload[10];
             int height = pkt.payload[11] << 8 | pkt.payload[12];

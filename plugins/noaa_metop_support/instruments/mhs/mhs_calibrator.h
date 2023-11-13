@@ -26,7 +26,7 @@ public:
         perLine_perChannel = d_calib["vars"]["perLine_perChannel"];
     }
 
-    double compute(int channel, int pos_x, int pos_y, int px_val)
+    double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
     {
         try
         {

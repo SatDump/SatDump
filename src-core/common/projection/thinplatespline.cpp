@@ -58,8 +58,8 @@
 //// vizGeorefSpline2D
 //////////////////////////////////////////////////////////////////////////////
 
-//#define USE_OPTIMIZED_VizGeorefSpline2DBase_func4 1
-// #define VIZ_GEOREF_SPLINE_DEBUG 0
+// #define USE_OPTIMIZED_VizGeorefSpline2DBase_func4 1
+//  #define VIZ_GEOREF_SPLINE_DEBUG 0
 
 namespace satdump
 {
@@ -104,7 +104,7 @@ namespace satdump
 
             // LU decomposition of the quadratic matrix A
             // see https://en.wikipedia.org/wiki/LU_decomposition#C_code_examples
-            bool solve(TPSMatrix &A, TPSMatrix &RHS, TPSMatrix &X, double eps)
+            inline bool solve(TPSMatrix &A, TPSMatrix &RHS, TPSMatrix &X, double eps)
             {
                 // assert(A.getNumRows() == A.getNumCols());
                 if (eps < 0)
@@ -317,7 +317,7 @@ namespace satdump
 #endif // defined(__INTEL_COMPILER)
 #endif
 
-        //#undef USE_OPTIMIZED_VizGeorefSpline2DBase_func4
+        // #undef USE_OPTIMIZED_VizGeorefSpline2DBase_func4
 
 #if defined(USE_OPTIMIZED_VizGeorefSpline2DBase_func4)
 

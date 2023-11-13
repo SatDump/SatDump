@@ -23,7 +23,7 @@ namespace hinode
         inline void handleAPID(ccsds::CCSDSPacket &pkt, HinodeDepacketizer &depack, std::string &directory, ImageRecomposer &recomp)
         {
             hinode::DecodedImage result;
-            int status = depack.work(pkt, &result);
+            /*int status =*/depack.work(pkt, &result);
             // printf("status %d - %d\n", status, result.apid);
             if (result.apid != -1)
             {
@@ -105,7 +105,7 @@ namespace hinode
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid4.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     {
-                        if (pkt.payload.size() != pkt.header.packet_length + 1)
+                        if ((int)pkt.payload.size() != pkt.header.packet_length + 1)
                             continue; // Strict filtering
 
                         // printf("APID %d - %d\n", pkt.header.apid, pkt.payload.size());
