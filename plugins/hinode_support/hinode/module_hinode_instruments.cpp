@@ -20,6 +20,21 @@ namespace hinode
         {
         }
 
+        inline void handleAPID(ccsds::CCSDSPacket &pkt, HinodeDepacketizer &depack, std::string &directory, ImageRecomposer &recomp)
+        {
+            hinode::DecodedImage result;
+            int status = depack.work(pkt, &result);
+            // printf("status %d - %d\n", status, result.apid);
+            if (result.apid != -1)
+            {
+                result.img.save_img(directory + "/" + std::to_string(depack.img_cnt));
+                saveJsonFile(directory + "/" + std::to_string(depack.img_cnt) + ".json", nlohmann::json(result.sci));
+                image::Image<uint16_t> img;
+                if (recomp.pushSegment(result, &img))
+                    img.save_img(directory + "/full_" + std::to_string(result.sci.MainID));
+            }
+        }
+
         void HinodeInstrumentsDecoderModule::process()
         {
             filesize = getFilesize(d_input_file);
@@ -63,6 +78,11 @@ namespace hinode
             if (!std::filesystem::exists(eis_obs2_directory))
                 std::filesystem::create_directories(eis_obs2_directory);
 
+            ImageRecomposer recomp_flt_obs1, recomp_flt_obs2;
+            ImageRecomposer recomp_spp_obs1, recomp_spp_obs2;
+            ImageRecomposer recomp_xrt_obs1, recomp_xrt_obs2;
+            ImageRecomposer recomp_eis_obs1, recomp_eis_obs2;
+
             while (!data_in.eof())
             {
                 // Read buffer
@@ -88,99 +108,27 @@ namespace hinode
                         if (pkt.payload.size() != pkt.header.packet_length + 1)
                             continue; // Strict filtering
 
-                        printf("APID %d - %d\n", pkt.header.apid, pkt.payload.size());
+                        // printf("APID %d - %d\n", pkt.header.apid, pkt.payload.size());
 
                         if (pkt.header.apid == 332) // FLT OBS1
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_flt_obs1.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(flt_obs1_directory + "/" + std::to_string(depack_flt_obs1.img_cnt) + ".png");
-                                saveJsonFile(flt_obs1_directory + "/" + std::to_string(depack_flt_obs1.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_flt_obs1, flt_obs1_directory, recomp_flt_obs1);
                         else if (pkt.header.apid == 333) // FLT OBS2
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_flt_obs2.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(flt_obs2_directory + "/" + std::to_string(depack_flt_obs2.img_cnt) + ".png");
-                                saveJsonFile(flt_obs2_directory + "/" + std::to_string(depack_flt_obs2.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_flt_obs2, flt_obs2_directory, recomp_flt_obs2);
 
                         if (pkt.header.apid == 334) // SPP OBS1
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_spp_obs1.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(spp_obs1_directory + "/" + std::to_string(depack_spp_obs1.img_cnt) + ".png");
-                                saveJsonFile(spp_obs1_directory + "/" + std::to_string(depack_spp_obs1.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_spp_obs1, spp_obs1_directory, recomp_spp_obs1);
                         else if (pkt.header.apid == 335) // SPP OBS2
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_spp_obs2.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(spp_obs2_directory + "/" + std::to_string(depack_spp_obs2.img_cnt) + ".png");
-                                saveJsonFile(spp_obs2_directory + "/" + std::to_string(depack_spp_obs2.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_spp_obs2, spp_obs2_directory, recomp_spp_obs2);
 
                         if (pkt.header.apid == 426) // XRT OBS1
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_xrt_obs1.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(xrt_obs1_directory + "/" + std::to_string(depack_xrt_obs1.img_cnt) + ".png");
-                                saveJsonFile(xrt_obs1_directory + "/" + std::to_string(depack_xrt_obs1.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_xrt_obs1, xrt_obs1_directory, recomp_xrt_obs1);
                         else if (pkt.header.apid == 427) // XRT OBS2
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_xrt_obs2.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(xrt_obs2_directory + "/" + std::to_string(depack_xrt_obs2.img_cnt) + ".png");
-                                saveJsonFile(xrt_obs2_directory + "/" + std::to_string(depack_xrt_obs2.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_xrt_obs2, xrt_obs2_directory, recomp_xrt_obs2);
 
                         if (pkt.header.apid == 458) // EIS OBS1
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_eis_obs1.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(eis_obs1_directory + "/" + std::to_string(depack_eis_obs1.img_cnt) + ".png");
-                                saveJsonFile(eis_obs1_directory + "/" + std::to_string(depack_eis_obs1.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_eis_obs1, eis_obs1_directory, recomp_eis_obs1);
                         else if (pkt.header.apid == 459) // EIS OBS2
-                        {
-                            hinode::DecodedImage result;
-                            int status = depack_eis_obs2.work(pkt, &result);
-                            // printf("status %d - %d\n", status, result.apid);
-                            if (result.apid != -1)
-                            {
-                                result.img.save_png(eis_obs2_directory + "/" + std::to_string(depack_eis_obs2.img_cnt) + ".png");
-                                saveJsonFile(eis_obs2_directory + "/" + std::to_string(depack_eis_obs2.img_cnt) + ".json", nlohmann::json(result.sci));
-                            }
-                        }
+                            handleAPID(pkt, depack_eis_obs2, eis_obs2_directory, recomp_eis_obs2);
                     }
                 }
 

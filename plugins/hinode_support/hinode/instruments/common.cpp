@@ -64,6 +64,10 @@ namespace hinode
             wk.num_segment = num_segment;
         }
 
+        // uint32_t time = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+        // double ttime = time + 946684800.0;
+        // printf("TIME = %s\n", timestamp_to_string(ttime).c_str());
+
         num_RST = 0;
         restored_flag = 0;
         buff_pos = 0;

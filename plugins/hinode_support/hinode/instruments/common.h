@@ -153,4 +153,38 @@ namespace hinode
 
         int img_cnt = 0;
     };
+
+    class ImageRecomposer
+    {
+    private:
+        int current_main_id = -1;
+        image::Image<uint16_t> full_image;
+
+    public:
+        int pushSegment(DecodedImage &seg, image::Image<uint16_t> *img)
+        {
+            if (seg.sci.FullImageSizeX == seg.sci.PartImageSizeX &&
+                seg.sci.FullImageSizeY == seg.sci.PartImageSizeY)
+                return 0;
+
+            int ret = 0;
+
+            if (seg.sci.MainID != current_main_id)
+            {
+                *img = full_image;
+                ret = current_main_id;
+                current_main_id = seg.sci.MainID;
+                full_image.init(seg.sci.FullImageSizeX, seg.sci.FullImageSizeY, 1);
+            }
+
+            full_image.draw_image(0, seg.img, seg.sci.BasePointCoorX, seg.sci.BasePointCoorY);
+
+            return ret;
+        }
+
+        image::Image<uint16_t> &getImage()
+        {
+            return full_image;
+        }
+    };
 }
