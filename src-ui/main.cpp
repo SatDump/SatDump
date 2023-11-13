@@ -131,8 +131,10 @@ int main(int argc, char *argv[])
 
     //Set up texture functions
     bindImageTextureFunctions();
+#ifndef IMGUI_IMPL_OPENGL_ES2
     if (!fallback_gl)
         bindMMImageTextureFunctions();
+#endif
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
