@@ -457,6 +457,7 @@
                 "rgb_composites": {
                     "221": {
                         "equation": "ch2, ch2, ch1",
+                        "description": "descriptions/test_221.md",
                         "geo_correct": true,
                         "project": {
                             "width": 4096,

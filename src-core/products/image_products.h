@@ -269,6 +269,8 @@ namespace satdump
         std::string lua = "";
         nlohmann::json lua_vars;
         nlohmann::json calib_cfg;
+
+        std::string description_markdown = "";
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
@@ -326,6 +328,9 @@ namespace satdump
             v.white_balance = j["white_balance"].get<bool>();
         if (j.contains("apply_lut"))
             v.apply_lut = j["apply_lut"].get<bool>();
+
+        if (j.contains("description"))
+            v.description_markdown = j["description"].get<std::string>();
     }
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);

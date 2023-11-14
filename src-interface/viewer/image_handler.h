@@ -9,6 +9,7 @@
 #include "common/image/composite.h"
 #include "core/style.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/widgets/markdown_helper.h"
 
 namespace satdump
 {
@@ -68,6 +69,9 @@ namespace satdump
         std::vector<std::pair<std::string, ImageCompositeCfg>> rgb_presets;
         std::string rgb_presets_str;
         int select_rgb_presets = -1;
+
+        bool show_markdown_description = false;
+        widgets::MarkdownHelper markdown_composite_info;
 
         std::vector<double> current_timestamps;
         nlohmann::json current_proj_metadata;

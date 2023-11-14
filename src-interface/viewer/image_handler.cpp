@@ -614,6 +614,19 @@ namespace satdump
                 updateRGB();
             }
 
+            if (select_rgb_presets != -1)
+            {
+                ImGui::SameLine();
+
+                if (ImGui::Button("Info###compopresetinfo"))
+                {
+                    std::ifstream ifs(resources::getResourcePath(rgb_compo_cfg.description_markdown));
+                    std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+                    markdown_composite_info.set_md(desc_markdown);
+                    show_markdown_description = true;
+                }
+            }
+
             if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
             {
                 select_rgb_presets = -1; // Editing, NOT the compo anymore!
@@ -720,6 +733,13 @@ namespace satdump
                     ImGui::EndTooltip();
                 }
             }
+        }
+
+        if (show_markdown_description)
+        {
+            ImGui::Begin("Composite Info", &show_markdown_description);
+            markdown_composite_info.render();
+            ImGui::End();
         }
     }
 
