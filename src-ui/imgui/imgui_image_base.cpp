@@ -49,6 +49,8 @@ void funcUpdateMMImageTexture_GL2(unsigned int gl_text, uint32_t* buffer, int wi
         return;
     }
     glBindTexture(GL_TEXTURE_2D, gl_text);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -56,6 +58,8 @@ void funcUpdateMMImageTexture_GL2(unsigned int gl_text, uint32_t* buffer, int wi
     glGenerateMipmap(GL_TEXTURE_2D);
 #else
     glBindTexture(GL_TEXTURE_2D, gl_text);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, 0x8191, GL_TRUE); //GL_GENERATE_MIPMAP
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
