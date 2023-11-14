@@ -457,7 +457,7 @@
                 "rgb_composites": {
                     "221": {
                         "equation": "ch2, ch2, ch1",
-                        "description": "descriptions/test_221.md",
+                        "description": "descriptions/221.md",
                         "geo_correct": true,
                         "project": {
                             "width": 4096,
@@ -757,7 +757,7 @@
                             "minoffset": 0.2,
                             "scalar": 1.5,
                             "thresold": 0,
-                            "lut": "lut/WXtoImg-NO_mod.png"
+                            "lut": "lut/WXtoImg-NO_mod_APT.png"
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -782,7 +782,7 @@
                         "autogen": false
                     },
                     "NO enhancement": {
-                        "lut": "lut/WXtoImg-NO_mod.png",
+                        "lut": "lut/WXtoImg-NO_mod_APT.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
