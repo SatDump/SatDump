@@ -9,6 +9,12 @@
 #include "imgui/imgui_image.h"
 #include "gl.h"
 
+#ifndef GL_GENERATE_MIPMAP
+#define GL_GENERATE_MIPMAP 0x8191
+#endif
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2ext.h>
 #if !defined(GL_UNPACK_ROW_LENGTH) && defined(GL_UNPACK_ROW_LENGTH_EXT)
@@ -60,7 +66,7 @@ void funcUpdateMMImageTexture_GL2(unsigned int gl_text, uint32_t* buffer, int wi
     glBindTexture(GL_TEXTURE_2D, gl_text);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, 0x8191, GL_TRUE); //GL_GENERATE_MIPMAP
+    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
