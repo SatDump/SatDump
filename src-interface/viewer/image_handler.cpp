@@ -614,7 +614,7 @@ namespace satdump
                 updateRGB();
             }
 
-            if (select_rgb_presets != -1)
+            if (select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "")
             {
                 ImGui::SameLine();
 
