@@ -664,6 +664,19 @@
                         "lut": "lut/WXtoImg-TA.png",
                         "autogen": false,
                         "geo_correct": true
+                    },
+                    "Color general cloud IR": {
+                        "channels": "cch4, cch4",
+                        "lut": "lut/Multispectral.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
                     }
                 },
                 "project_channels": {
