@@ -13,6 +13,13 @@
 #include <GLES2/gl2ext.h>
 #endif
 
+int funcGetMaxTextureSize()
+{
+    int maxTextureSize;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    return maxTextureSize;
+}
+
 unsigned int funcMakeImageTexture()
 {
     GLuint gl_text;
@@ -62,6 +69,7 @@ void funcDeleteImageTexture(unsigned int /*gl_text*/)
 
 void bindBaseTextureFunctions()
 {
+    maxTextureSize = funcGetMaxTextureSize();
     makeImageTexture = funcMakeImageTexture;
     updateImageTexture = funcUpdateImageTexture;
     updateMMImageTexture = funcUpdateMMImageTexture_GL2;

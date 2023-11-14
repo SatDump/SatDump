@@ -35,7 +35,12 @@
 #include "imgui_impl_opengl3_loader.h"
 #endif
 
-
+int funcGetMaxTextureSize()
+{
+    int maxTextureSize;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    return maxTextureSize;
+}
 
 unsigned int funcMakeImageTexture()
 {
@@ -72,6 +77,7 @@ void funcDeleteImageTexture(unsigned int /*gl_text*/)
 
 void bindImageTextureFunctions()
 {
+    maxTextureSize = funcGetMaxTextureSize();
     makeImageTexture = funcMakeImageTexture;
     updateImageTexture = funcUpdateImageTexture;
     updateMMImageTexture = funcUpdateMMImageTexture;

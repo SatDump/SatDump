@@ -5,6 +5,7 @@
 #include <functional>
 #include "dll_export.h"
 
+SATDUMP_DLL extern size_t maxTextureSize;
 SATDUMP_DLL extern std::function<unsigned int()> makeImageTexture;
 SATDUMP_DLL extern std::function<void(unsigned int, uint32_t *, int, int)> updateImageTexture;
 SATDUMP_DLL extern std::function<void(unsigned int, uint32_t *, int, int)> updateMMImageTexture;

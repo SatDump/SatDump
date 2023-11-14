@@ -1,6 +1,7 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "imgui_image.h"
 
+SATDUMP_DLL size_t maxTextureSize;
 SATDUMP_DLL std::function<unsigned int()> makeImageTexture;
 SATDUMP_DLL std::function<void(unsigned int, uint32_t *, int, int)> updateImageTexture;
 SATDUMP_DLL std::function<void(unsigned int, uint32_t*, int, int)> updateMMImageTexture;
