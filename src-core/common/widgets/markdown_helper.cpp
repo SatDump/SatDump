@@ -1,5 +1,6 @@
 #include "markdown_helper.h"
 #include "core/style.h"
+#include "logger.h"
 
 namespace widgets
 {
@@ -8,6 +9,8 @@ namespace widgets
         std::string url(data_.link, data_.linkLength);
         if (!data_.isImage)
         {
+            logger->info("Opening URL " + url);
+
 #if defined(_WIN32)
             system(std::string("explorer \"" + url + "\"").c_str());
 #elif defined(__APPLE__)
@@ -29,9 +32,9 @@ namespace widgets
 
     void MarkdownHelper::render()
     {
-        mdConfig.headingFormats[0] = { style::bigFont, true };
-        mdConfig.headingFormats[1] = { style::bigFont, true };
-        mdConfig.headingFormats[2] = { style::baseFont, true };
+        mdConfig.headingFormats[0] = {style::bigFont, true};
+        mdConfig.headingFormats[1] = {style::bigFont, true};
+        mdConfig.headingFormats[2] = {style::baseFont, true};
         ImGui::Markdown(markdown_.c_str(), markdown_.length(), mdConfig);
     }
 
