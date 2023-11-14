@@ -11,6 +11,9 @@
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2ext.h>
+#if !defined(GL_UNPACK_ROW_LENGTH) && defined(GL_UNPACK_ROW_LENGTH_EXT)
+#define GL_UNPACK_ROW_LENGTH GL_UNPACK_ROW_LENGTH_EXT
+#endif
 #endif
 
 int funcGetMaxTextureSize()
