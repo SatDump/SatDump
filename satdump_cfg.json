@@ -471,6 +471,7 @@
                     },
                     "3a21": {
                         "equation": "cch3a, cch2, cch1",
+                        "description": "descriptions/3a21.md",
                         "equalize": true,
                         "geo_correct": true
                     },
@@ -485,16 +486,19 @@
                     },
                     "Natural Color": {
                         "equation": "((0.5*max(cch3a,min(cch2,cch1)) + 0.5*cch2) / 0.7)^0.65, (cch2/0.7)^0.65, (cch1/0.7)^0.65",
+                        "description": "descriptions/NatColor.md",
                         "geo_correct": true
                     },
                     "543b": {
                         "equation": "ch5, ch4, ch3b",
                         "individual_equalize": true,
+                        "description": "descriptions/543b.md",
                         "geo_correct": true
                     },
                     "3b45": {
                         "equation": "ch3b, ch4, ch5",
                         "individual_equalize": true,
+                        "description": "descriptions/3b45.md",
                         "geo_correct": true
                     },
                     "124": {
@@ -512,7 +516,7 @@
                     },
                     "Thermal Channel": {
                         "equation": "cch4",
-                        "individual_equalize": true,
+                        "apply_lut": true,
                         "geo_correct": true
                     },
                     "Night Microphysics": {
