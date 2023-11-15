@@ -12,4 +12,4 @@ Meteorology (thunderstorm analysis).
 
 ### Limitations
 
-No specific limitatiton.
+Unsuitable for hotter climates (use the MD enhancement) or cold, northern latitude climates (use the CC enhancement)

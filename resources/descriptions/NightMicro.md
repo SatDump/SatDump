@@ -8,7 +8,7 @@ The Night Microphysics enhancement makes use of various shades of colors and thr
 
 ### Intended usage
 
-In-depth cloud and fog analysis.
+Meteorology (In-depth cloud and fog analysis).
 
 ### Limitations
 

@@ -8,7 +8,7 @@ The Day Microphysics enhancement makes use of various shades of colors and three
 
 ### Intended usage
 
-In-depth cloud analysis.
+Meteorology (in-depth cloud analysis).
 
 ### Limitations
 

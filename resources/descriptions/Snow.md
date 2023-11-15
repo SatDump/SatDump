@@ -8,7 +8,7 @@ Treeless land (grassland, farmland, desert) is rendered tan, snow on treeless la
 
 ### Intended usage
 
-Snowfall and glacier analysis
+Meteorology (snowfall, sea ice and glaciers analysis).
 
 ### Limitations
 
