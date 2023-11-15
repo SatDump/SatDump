@@ -167,6 +167,15 @@ sudo dnf install libomp-devel
 sudo dnf install ocl-icd                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 sudo dnf install intel-opencl                                                                                 # Optional, enables OpenCL for Intel Integrated Graphics
 
+# Install dependencies on Alpine-based systems:
+sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev luajit-dev                            # Adding the testing repository is required for libvolk-dev
+# You need to build libnng from source, see below.
+sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev
+sudo apk add glfw-dev
+sudo apk add zstd-dev
+(optional)
+sudo apk add opencl-dev                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
+
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
 cd nng
