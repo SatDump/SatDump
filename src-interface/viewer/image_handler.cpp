@@ -737,6 +737,7 @@ namespace satdump
 
         if (show_markdown_description)
         {
+            ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale});
             ImGui::Begin("Composite Info", &show_markdown_description);
             markdown_composite_info.render();
             ImGui::End();
