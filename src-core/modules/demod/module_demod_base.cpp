@@ -192,7 +192,7 @@ namespace demod
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         drawStopButton();
 

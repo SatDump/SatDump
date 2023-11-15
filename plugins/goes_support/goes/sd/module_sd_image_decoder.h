@@ -15,8 +15,8 @@ namespace goes
             uint16_t *frame_words;
 
             std::ifstream data_in;
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             SDImagerReader img_reader;
 

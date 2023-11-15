@@ -14,7 +14,7 @@
 #define ENCODED_FRAME_SIZE 1024 * 8 * 2
 
 // Return filesize
-size_t getFilesize(std::string filepath);
+uint64_t getFilesize(std::string filepath);
 
 namespace meteor
 {
@@ -238,7 +238,7 @@ namespace meteor
                     lastTime = time(NULL);
                     std::string viterbi_state = viterbi_lock == 0 ? "NOSYNC" : "SYNCED";
                     std::string deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi_ber) + ", Deframer : " + deframer_state);
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi_ber) + ", Deframer : " + deframer_state);
                 }
             }
 
@@ -329,7 +329,7 @@ namespace meteor
                 {
                     lastTime = time(NULL);
                     std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Viterbi BER : " + std::to_string(viterbin->ber() * 100) + "%%, Lock : " + lock_state);
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Viterbi BER : " + std::to_string(viterbin->ber() * 100) + "%%, Lock : " + lock_state);
                 }
             }
         }
@@ -480,7 +480,7 @@ namespace meteor
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

@@ -12,8 +12,8 @@ namespace stereo
     class StereoInstrumentsDecoderModule : public ProcessingModule
     {
     protected:
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         secchi::PayloadAssembler secchi_assembler0, secchi_assembler1, secchi_assembler2, secchi_assembler3;
 

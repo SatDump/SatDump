@@ -5,7 +5,7 @@
 #include <filesystem>
 
 // Return filesize
-size_t getFilesize(std::string filepath);
+uint64_t getFilesize(std::string filepath);
 
 #define BUFSIZE 8192
 
@@ -119,7 +119,7 @@ namespace noaa
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Frames : " + std::to_string(frame_count));
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Frames : " + std::to_string(frame_count));
             }
         }
 
@@ -191,7 +191,7 @@ namespace noaa
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

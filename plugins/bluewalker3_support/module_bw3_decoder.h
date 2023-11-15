@@ -7,8 +7,8 @@ namespace bluewalker3
     class BW3DecoderModule : public ProcessingModule
     {
     protected:
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         const int d_cadu_size;
         const int d_payload_size;

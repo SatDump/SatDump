@@ -53,8 +53,8 @@ namespace fengyun3
             bool d_dump_mersi;
             bool d_write_c10;
 
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             erm::ERMReader erm_reader;

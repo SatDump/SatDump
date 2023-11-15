@@ -12,8 +12,8 @@ namespace xrit
         uint8_t *buffer;
 
         std::ifstream data_in;
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         std::string address;
         int port;

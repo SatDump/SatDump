@@ -11,8 +11,8 @@ namespace meteor
         class MeteorInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             msumr::MSUMRReader msumr_reader;

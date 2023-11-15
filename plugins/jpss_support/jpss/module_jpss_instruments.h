@@ -14,8 +14,8 @@ namespace jpss
         class JPSSInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             const bool npp_mode;
 

@@ -9,7 +9,7 @@
 #define BUFFER_SIZE 8192
 
 // Return filesize
-size_t getFilesize(std::string filepath);
+uint64_t getFilesize(std::string filepath);
 
 namespace fengyun3
 {
@@ -174,7 +174,7 @@ namespace fengyun3
                 std::string viterbi1_state = viterbi1.getState() == 0 ? "NOSYNC" : "SYNCED";
                 std::string viterbi2_state = viterbi2.getState() == 0 ? "NOSYNC" : "SYNCED";
                 std::string deframer_state = deframer.getState() == deframer.STATE_NOSYNC ? "NOSYNC" : (deframer.getState() == deframer.STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Viterbi 1 : " + viterbi1_state + " BER : " + std::to_string(viterbi1.ber()) + ", Viterbi 2 : " + viterbi2_state + " BER : " + std::to_string(viterbi2.ber()) + ", Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Viterbi 1 : " + viterbi1_state + " BER : " + std::to_string(viterbi1.ber()) + ", Viterbi 2 : " + viterbi2_state + " BER : " + std::to_string(viterbi2.ber()) + ", Deframer : " + deframer_state);
             }
         }
 
@@ -294,7 +294,7 @@ namespace fengyun3
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }
