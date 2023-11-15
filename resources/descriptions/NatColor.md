@@ -8,7 +8,7 @@ It tries to reduce the cyan color caused by ice absorption on the *3a21* enhance
 
 Land appears green (vegetated areas) or yellowish orange (deserts), while the sea appears blue.
 Clouds appear white.
-The fog appears whitish-gray.
+Fog appears whitish-gray.
 
 ### Intended usage
 
