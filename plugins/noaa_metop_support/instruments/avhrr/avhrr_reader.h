@@ -32,7 +32,7 @@ namespace noaa_metop
                     return *this;
                 };
             };
-            uint16_t avhrr_buffer[10355];
+            uint16_t avhrr_buffer[12944];
             const bool gac_mode;
             const int width;
             noaa::TIPTimeParser ttp;
