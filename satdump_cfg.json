@@ -632,6 +632,7 @@
                     },
                     "MD enhancement": {
                         "channels": "ch3b, ch4",
+                        "description": "descriptions/MD.md",
                         "lut": "lut/WXtoImg-MD.png",
                         "autogen": false,
                         "geo_correct": true
