@@ -1636,20 +1636,24 @@
                 "rgb_composites": {
                     "HIRS False Color": {
                         "equation": "ch5, ch4, ch3",
+                        "description": "descriptions/sounders/HIRSFalseColor.md",
                         "individual_equalize": true,
                         "white_balance": true
                     },
                     "Clouds Only (N2O Sounding)": {
                         "equation": "ch14, ch13, 1",
+                        "description": "descriptions/sounders/CloudOnlyN2O.md",
                         "individual_equalize": true
                     },
                     "Low Level Water Vapor": {
                         "equation": "ch10",
+                        "description": "descriptions/sounders/LLWV.md",
                         "individual_equalize": true,
                         "apply_lut": true
                     },
                     "Mid Level Water Vapor": {
                         "equation": "ch11",
+                        "description": "descriptions/sounders/MLWV.md",
                         "individual_equalize": true,
                         "apply_lut": true
                     },
