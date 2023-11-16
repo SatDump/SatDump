@@ -120,7 +120,7 @@ inline bool getBit(T &data, int &bit)
 bool isStringPresent(std::string searched, std::string keyword);
 
 // Return filesize
-size_t getFilesize(std::string filepath);
+uint64_t getFilesize(std::string filepath);
 
 // Perform a HTTP Request on the provided URL and return the result as a string
 int perform_http_request(std::string url, std::string &result);

@@ -13,8 +13,8 @@ namespace elektro_arktika
         {
         protected:
             std::ifstream data_in;
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             MSUVISReader vis1_reader;

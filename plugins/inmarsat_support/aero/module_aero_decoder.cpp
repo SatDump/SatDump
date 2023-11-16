@@ -248,7 +248,7 @@ namespace inmarsat
                 {
                     lastTime = time(NULL);
                     std::string lock_state = correlator_locked ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Lock : " + lock_state + ", Viterbi BER : " + std::to_string(viterbi->ber() * 100) + "%%, Lock : " + lock_state);
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Lock : " + lock_state + ", Viterbi BER : " + std::to_string(viterbi->ber() * 100) + "%%, Lock : " + lock_state);
                 }
             }
 
@@ -296,7 +296,7 @@ namespace inmarsat
             ImGui::EndGroup();
 
             if (input_data_type == DATA_FILE)
-                ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

@@ -10,8 +10,8 @@ namespace oceansat
         class OceansatOCMDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             OCMReader ocm_reader;
             instrument_status_t ocm_status = DECODING;

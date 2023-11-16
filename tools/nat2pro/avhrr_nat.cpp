@@ -1,6 +1,8 @@
 #include "main.h"
 #include "products/image_products.h"
 #include "logger.h"
+#include "nlohmann/json_utils.h"
+#include "resources.h"
 
 double get_deg_latlon(uint8_t *data)
 {
@@ -166,6 +168,21 @@ void decodeAVHRRNat(std::vector<uint8_t> nat_file, std::string pro_output_file)
         std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
         for (int i = 0; i < 6; i++)
             avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], image::Image<uint16_t>(avhrr_data[i].data(), image_width, number_of_lines, 1)});
+
+        // calibration
+        nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
+
+        // calib
+        nlohmann::json calib_cfg;
+        calib_cfg["calibrator"] = "metop_avhrr_nat";
+        avhrr_products.set_calibration(calib_cfg);
+        for (int n = 0; n < 3; n++)
+        {
+            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+            avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+        }
+        for (int c = 0; c < 6; c++)
+            avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
 
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);

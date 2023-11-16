@@ -12,8 +12,8 @@ namespace jason3
         class Jason3InstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             amr2::AMR2Reader amr2_reader;

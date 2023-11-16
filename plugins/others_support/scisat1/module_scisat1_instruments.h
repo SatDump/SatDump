@@ -11,8 +11,8 @@ namespace scisat1
         class SciSat1InstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             fts::FTSReader fts_reader;

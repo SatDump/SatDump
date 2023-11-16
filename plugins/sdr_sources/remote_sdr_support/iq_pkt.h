@@ -24,8 +24,8 @@ namespace remote_sdr
         }
 
         output[0] = bit_depth;
-        *((float *)&output[1]) = scale;
-        *((uint32_t *)&output[5]) = nsamples;
+        memcpy(output + 1, &scale, sizeof(scale));
+        memcpy(output + 5, &nsamples, sizeof(nsamples));
 
         int final_size = 9;
 
@@ -53,8 +53,9 @@ namespace remote_sdr
     inline void decode_iq_pkt(uint8_t *input, complex_t *output, int *nsamples)
     {
         int bit_depth = input[0];
-        float scale = *((float *)&input[1]);
-        *nsamples = *((uint32_t *)&input[5]);
+        float scale = 0.0f;
+        memcpy(&scale, input + 1, sizeof(scale));
+        memcpy(nsamples, input + 5, sizeof(*nsamples));
 
         int final_size = 9;
 

@@ -82,9 +82,9 @@ namespace RImGui
             buffer[pos++] = id >> 8;
             buffer[pos++] = id & 0xFF;
 
-            *((float *)&buffer[pos]) = size_x;
+            memcpy(buffer + pos, &size_x, sizeof(size_x));
             pos += 4;
-            *((float *)&buffer[pos]) = size_y;
+            memcpy(buffer + pos, &size_y, sizeof(size_y));
             pos += 4;
 
             buffer[pos++] = (sv.size() >> 8) & 0xFF;
@@ -97,12 +97,12 @@ namespace RImGui
 
             buffer[pos++] = bv;
 
-            *((float *)&buffer[pos]) = fv;
+            memcpy(buffer + pos, &fv, sizeof(fv));
             pos += 4;
 
-            *((double *)&buffer[pos]) = min;
+            memcpy(buffer + pos, &min, sizeof(min));
             pos += 8;
-            *((double *)&buffer[pos]) = max;
+            memcpy(buffer + pos, &max, sizeof(max));
             pos += 8;
 
             buffer[pos++] = (sv2.size() >> 8) & 0xFF;
@@ -124,9 +124,9 @@ namespace RImGui
             id = buffer[pos + 0] << 8 | buffer[pos + 1];
             pos += 2;
 
-            size_x = *((float *)&buffer[pos]);
+            memcpy(&size_x, buffer + pos, sizeof(size_x));
             pos += 4;
-            size_y = *((float *)&buffer[pos]);
+            memcpy(&size_y, buffer + pos, sizeof(size_y));
             pos += 4;
 
             int svsize = buffer[pos + 0] << 8 | buffer[pos + 1];
@@ -135,17 +135,17 @@ namespace RImGui
             for (int i = 0; i < (int)sv.size(); i++)
                 sv[i] = buffer[pos++];
 
-            iv = *((int *)&buffer[pos]);
+            memcpy(&iv, buffer + pos, sizeof(iv));
             pos += 4;
 
             bv = buffer[pos++];
 
-            fv = *((float *)&buffer[pos]);
+            memcpy(&fv, buffer + pos, sizeof(fv));
             pos += 4;
 
-            min = *((double *)&buffer[pos]);
+            memcpy(&min, buffer + pos, sizeof(min));
             pos += 8;
-            max = *((double *)&buffer[pos]);
+            memcpy(&max, buffer + pos, sizeof(max));
             pos += 8;
 
             int sv2size = buffer[pos + 0] << 8 | buffer[pos + 1];
