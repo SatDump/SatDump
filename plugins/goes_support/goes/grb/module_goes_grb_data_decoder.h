@@ -9,8 +9,8 @@ namespace goes
         class GOESGRBDataDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
         public:
             GOESGRBDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

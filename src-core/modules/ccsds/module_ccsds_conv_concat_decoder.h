@@ -92,8 +92,8 @@ namespace ccsds
         std::ifstream data_in;
         std::ofstream data_out;
 
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         std::shared_ptr<viterbi::Viterbi1_2> viterbi, viterbi2;
         std::shared_ptr<viterbi::Viterbi_Depunc> viterbip, viterbip2;

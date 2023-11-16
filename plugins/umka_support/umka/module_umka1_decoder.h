@@ -7,8 +7,8 @@ namespace umka
     class UmKA1DecoderModule : public ProcessingModule
     {
     protected:
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
     public:
         UmKA1DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -25,8 +25,8 @@ namespace proba
 
             proba_sat_t d_satellite;
 
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             std::unique_ptr<chris::CHRISReader> chris_reader;
