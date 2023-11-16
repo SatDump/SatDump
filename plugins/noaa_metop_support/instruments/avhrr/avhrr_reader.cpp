@@ -44,12 +44,13 @@ namespace noaa_metop
                 for (int i = 0; i < 10; i++)
                     for (int j = 0; j < 3; j++)
                     {
-                        if (i != 9) avg_blb[j] += avhrr_buffer[10305 + 5 * i + j + 2];
+                        if (i != 9)
+                            avg_blb[j] += avhrr_buffer[10305 + 5 * i + j + 2];
                         avg_spc[j] += avhrr_buffer[0 + 5 * i + j + 2];
                     }
                 for (int j = 0; j < 3; j++)
                 {
-                    avg_blb[j] /= 9;  // for whatever reason last scan on metop is all 0s (?)
+                    avg_blb[j] /= 9; // for whatever reason last scan on metop is all 0s (?)
                     avg_spc[j] /= 10;
                 }
 
@@ -149,12 +150,12 @@ namespace noaa_metop
             for (unsigned int i = 0; i < prt_buffer.size(); i++)
             {
                 // PRT counts to temperature but NOAA made it annoying
-                if (i >= 4 && prt_buffer[i] == 0)
+                if (i > 4 && prt_buffer[i] == 0)
                 {
                     double tbb = 0;
                     int chk = 1;
                     std::array<view_pair, 3> avgpair;
-                    while (prt_buffer[i - chk] != 0 && chk <= 4)
+                    do
                     {
 
                         for (int p = 0; p < 4; p++)
@@ -165,10 +166,11 @@ namespace noaa_metop
                             avgpair[p] += views[i - chk][p]; // average the views
 
                         chk++;
-                    }
-                    tbb /= (chk-1);
+                    } while (chk <= 4 && prt_buffer[i - chk] != 0);
+
+                    tbb /= (chk - 1) == 0 ? 1 : (chk - 1);
                     for (int p = 0; p < 3; p++)
-                        avgpair[p] /= (chk-1);
+                        avgpair[p] /= (chk - 1) == 0 ? 1 : (chk - 1);
                     ltbb = tbb;
                     for (int n = 1; n <= chk; n++)
                     {
