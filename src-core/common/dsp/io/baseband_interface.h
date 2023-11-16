@@ -35,8 +35,8 @@ namespace dsp
     {
     public:
         // File stuff
-        size_t filesize;
-        size_t progress;
+        uint64_t filesize;
+        uint64_t progress;
         std::ifstream input_file;
 
         // Control
@@ -194,7 +194,7 @@ namespace dsp
             return buffer_size;
         }
 
-        inline void set_progress(size_t progress)
+        inline void set_progress(uint64_t progress)
         {
 #ifdef BUILD_ZIQ
             if (format == ZIQ)
@@ -209,7 +209,7 @@ namespace dsp
             if (format == ZIQ2)
             {
                 main_mtx.lock();
-                size_t pos = filesize * (progress / 100.0f);
+                uint64_t pos = filesize * (progress / 100.0f);
                 uint8_t sync[4];
                 while (pos < filesize)
                 {
@@ -279,8 +279,8 @@ namespace dsp
 
         std::ofstream output_file;
 
-        size_t current_size_out = 0;
-        size_t current_size_out_raw = 0;
+        uint64_t current_size_out = 0;
+        uint64_t current_size_out_raw = 0;
 
         int8_t *buffer_s8;
         int16_t *buffer_s16;
@@ -382,12 +382,12 @@ namespace dsp
             return finalt;
         }
 
-        size_t get_written()
+        uint64_t get_written()
         {
             return current_size_out;
         }
 
-        size_t get_written_raw()
+        uint64_t get_written_raw()
         {
             return current_size_out_raw;
         }

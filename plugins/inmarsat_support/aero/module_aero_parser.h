@@ -19,8 +19,8 @@ namespace inmarsat
             bool is_c_channel = false;
 
             std::ifstream data_in;
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             std::mutex pkt_history_mtx;
             std::vector<nlohmann::json> pkt_history;

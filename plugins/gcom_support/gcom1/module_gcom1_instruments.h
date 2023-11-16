@@ -11,8 +11,8 @@ namespace gcom1
         class GCOM1InstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             amsr2::AMSR2Reader amsr2_reader;

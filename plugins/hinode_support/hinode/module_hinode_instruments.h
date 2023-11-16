@@ -10,8 +10,8 @@ namespace hinode
         class HinodeInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             HinodeDepacketizer depack_flt_obs1, depack_flt_obs2;

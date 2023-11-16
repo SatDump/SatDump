@@ -56,7 +56,7 @@ void FileSource::run_thread()
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
 
             output_stream->swap(read);
-            file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
+            file_progress = (double(baseband_reader.progress) / double(baseband_reader.filesize)) * 100.0;
 
             if (!fast_playback)
             {
@@ -109,7 +109,7 @@ void FileSource::start()
     baseband_reader.set_file(file_path, baseband_type_e);
     baseband_reader.should_repeat = true;
 
-    logger->debug("Opening %s filesize %d", file_path.c_str(), baseband_reader.filesize);
+    logger->debug("Opening %s filesize " PRIu64, file_path.c_str(), baseband_reader.filesize);
 
     is_started = true;
 }

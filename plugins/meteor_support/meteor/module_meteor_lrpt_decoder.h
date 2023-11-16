@@ -19,8 +19,8 @@ namespace meteor
 
         std::ifstream data_in;
         std::ofstream data_out;
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         bool m2x_mode;
 

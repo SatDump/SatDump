@@ -28,8 +28,8 @@ namespace eos
             eos_sat_t d_satellite;
             bool d_modis_bowtie;
 
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             modis::MODISReader modis_reader;

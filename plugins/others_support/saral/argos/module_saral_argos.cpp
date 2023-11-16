@@ -9,7 +9,7 @@
 #define BUFFER_SIZE 8192
 
 // Return filesize
-size_t getFilesize(std::string filepath);
+uint64_t getFilesize(std::string filepath);
 
 namespace saral
 {
@@ -83,7 +83,7 @@ namespace saral
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
 
@@ -101,7 +101,7 @@ namespace saral
         {
             ImGui::Begin("Saral ARGOS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }
