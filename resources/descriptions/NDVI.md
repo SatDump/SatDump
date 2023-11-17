@@ -9,6 +9,7 @@ The difference of the two channels used by this enhancement (0.62 and 0.863 µm)
 Water appears blue.
 Land with living vegetation appears in progressively darker shades of yellow-green and then green.
 Deserts appear yellow.
+Clouds or ambiguous areas appear white.
 
 ### Intended usage
 
