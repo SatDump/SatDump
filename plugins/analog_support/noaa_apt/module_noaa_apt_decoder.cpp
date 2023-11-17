@@ -37,6 +37,20 @@ namespace noaa_apt
         }
     }
 
+    template <typename T>
+    inline void scale_val(T &valv, int &new_black, int &new_white)
+    {
+        float init_val = valv;
+        init_val -= new_black;
+        float vval = init_val / new_white;
+        vval *= 65535;
+        if (vval < 0)
+            vval = 0;
+        if (vval > 65535)
+            vval = 65535;
+        valv = vval;
+    }
+
     void NOAAAPTDecoderModule::process()
     {
         if (input_data_type == DATA_FILE)
@@ -253,20 +267,48 @@ namespace noaa_apt
             new_white = (new_white + new_white1) / 2;
             new_black = (new_black + new_black1) / 2;
 
-            for (size_t l = 0; l < wip_apt_image_sync.height(); l++)
-            {
+            for (size_t l = 0; l < wip_apt_image_sync.height(); l++)    // Calib image
                 for (size_t x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
-                {
-                    float init_val = wip_apt_image_sync[l * wip_apt_image_sync.width() + x];
-                    init_val -= new_black;
-                    float vval = init_val / new_white;
-                    vval *= 65535;
-                    if (vval < 0)
-                        vval = 0;
-                    if (vval > 65535)
-                        vval = 65535;
-                    wip_apt_image_sync[l * wip_apt_image_sync.width() + x] = vval;
-                }
+                    scale_val(wip_apt_image_sync[l * wip_apt_image_sync.width() + x], new_black, new_white);
+
+            for (auto &wed : wedges1)
+            { // Calib wedges 1
+                scale_val(wed.ref1, new_black, new_white);
+                scale_val(wed.ref2, new_black, new_white);
+                scale_val(wed.ref3, new_black, new_white);
+                scale_val(wed.ref4, new_black, new_white);
+                scale_val(wed.ref5, new_black, new_white);
+                scale_val(wed.ref6, new_black, new_white);
+                scale_val(wed.ref7, new_black, new_white);
+                scale_val(wed.ref8, new_black, new_white);
+                scale_val(wed.zero_mod_ref, new_black, new_white);
+                scale_val(wed.therm_temp1, new_black, new_white);
+                scale_val(wed.therm_temp2, new_black, new_white);
+                scale_val(wed.therm_temp3, new_black, new_white);
+                scale_val(wed.therm_temp4, new_black, new_white);
+                scale_val(wed.patch_temp, new_black, new_white);
+                scale_val(wed.back_scan, new_black, new_white);
+                scale_val(wed.channel, new_black, new_white);
+            }
+
+            for (auto &wed : wedges2)
+            { // Calib wedges 2
+                scale_val(wed.ref1, new_black, new_white);
+                scale_val(wed.ref2, new_black, new_white);
+                scale_val(wed.ref3, new_black, new_white);
+                scale_val(wed.ref4, new_black, new_white);
+                scale_val(wed.ref5, new_black, new_white);
+                scale_val(wed.ref6, new_black, new_white);
+                scale_val(wed.ref7, new_black, new_white);
+                scale_val(wed.ref8, new_black, new_white);
+                scale_val(wed.zero_mod_ref, new_black, new_white);
+                scale_val(wed.therm_temp1, new_black, new_white);
+                scale_val(wed.therm_temp2, new_black, new_white);
+                scale_val(wed.therm_temp3, new_black, new_white);
+                scale_val(wed.therm_temp4, new_black, new_white);
+                scale_val(wed.patch_temp, new_black, new_white);
+                scale_val(wed.back_scan, new_black, new_white);
+                scale_val(wed.channel, new_black, new_white);
             }
         }
 
