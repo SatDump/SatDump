@@ -568,12 +568,26 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "NDVI (Vegetation)": {
-                        "equation": "((cch2-cch1)/(cch2+cch1)+1)/2",
+                    "NDVI": {
+                        "channels": "cch1, cch2",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 100
+                            },
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 100
+                            }
+                        },
+                        "lua": "scripted_compos/ndvi.lua",
                         "description": "descriptions/NDVI.md",
                         "geo_correct": true,
                         "autogen": false
                     },
+
                     "Sea Surface Temperature": {
                         "channels": "cch4",
                         "description": "descriptions/SST.md",
