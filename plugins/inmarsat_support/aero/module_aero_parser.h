@@ -39,6 +39,7 @@ namespace inmarsat
             void process_pkt();
 
             bool enable_audio = false;
+            bool play_audio;
 
         public:
             AeroParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

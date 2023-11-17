@@ -59,6 +59,12 @@
             "name": "UI Scaling",
             "description": "Defines the overall UI scale. This can be used to make UI elements bigger or smaller\n\n1.0 = normal\n0.5 = half size\n2.0 = double size"
         },
+        "play_audio": {
+            "type": "bool",
+            "value": true,
+            "name": "Play Audio",
+            "description": "Automatically play audio from pipelines that support it,\nlike NOAA APT and Inmarsat Aero"
+        },
         "finish_processing_after_live": {
             "type": "bool",
             "value": true,

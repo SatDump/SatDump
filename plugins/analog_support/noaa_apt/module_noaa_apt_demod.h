@@ -12,6 +12,7 @@ namespace noaa_apt
     protected:
         std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> res;
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
+        bool play_audio;
 
     public:
         NOAAAPTDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
@@ -19,6 +20,7 @@ namespace noaa_apt
         void init();
         void stop();
         void process();
+        void drawUI(bool window);
 
         bool enable_audio = false;
 
