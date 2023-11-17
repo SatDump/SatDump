@@ -260,6 +260,8 @@ namespace noaa_apt
         get_calib_values_wedge(wedges1, new_white, new_black);
         get_calib_values_wedge(wedges2, new_white1, new_black1);
 
+        APTWedge calib_wedge_ch1, calib_wedge_ch2; // We also extract calibration words, scaled to 10-bits
+
         if (new_white != 0 && new_black != 0 && new_white1 != 0 && new_black1 != 0)
         {
             logger->info("Calibrating...");
@@ -271,6 +273,7 @@ namespace noaa_apt
                 for (size_t x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
                     scale_val(wip_apt_image_sync[l * wip_apt_image_sync.width() + x], new_black, new_white);
 
+            int validn1 = 0;
             for (auto &wed : wedges1)
             { // Calib wedges 1
                 scale_val(wed.ref1, new_black, new_white);
@@ -289,8 +292,27 @@ namespace noaa_apt
                 scale_val(wed.patch_temp, new_black, new_white);
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
+
+                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                {
+                    calib_wedge_ch1.therm_temp1 += wed.therm_temp1;
+                    calib_wedge_ch1.therm_temp2 += wed.therm_temp2;
+                    calib_wedge_ch1.therm_temp3 += wed.therm_temp3;
+                    calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
+                    calib_wedge_ch1.patch_temp += wed.patch_temp;
+                    calib_wedge_ch1.back_scan += wed.back_scan;
+                    validn1++;
+                }
             }
 
+            calib_wedge_ch1.therm_temp1 = (calib_wedge_ch1.therm_temp1 / validn1) >> 6;
+            calib_wedge_ch1.therm_temp2 = (calib_wedge_ch1.therm_temp2 / validn1) >> 6;
+            calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / validn1) >> 6;
+            calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / validn1) >> 6;
+            calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / validn1) >> 6;
+            calib_wedge_ch1.back_scan = (calib_wedge_ch1.back_scan / validn1) >> 6;
+
+            int validn2 = 0;
             for (auto &wed : wedges2)
             { // Calib wedges 2
                 scale_val(wed.ref1, new_black, new_white);
@@ -309,7 +331,25 @@ namespace noaa_apt
                 scale_val(wed.patch_temp, new_black, new_white);
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
+
+                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                {
+                    calib_wedge_ch2.therm_temp1 += wed.therm_temp1;
+                    calib_wedge_ch2.therm_temp2 += wed.therm_temp2;
+                    calib_wedge_ch2.therm_temp3 += wed.therm_temp3;
+                    calib_wedge_ch2.therm_temp4 += wed.therm_temp4;
+                    calib_wedge_ch2.patch_temp += wed.patch_temp;
+                    calib_wedge_ch2.back_scan += wed.back_scan;
+                    validn2++;
+                }
             }
+
+            calib_wedge_ch2.therm_temp1 = (calib_wedge_ch2.therm_temp1 / validn2) >> 6;
+            calib_wedge_ch2.therm_temp2 = (calib_wedge_ch2.therm_temp2 / validn2) >> 6;
+            calib_wedge_ch2.therm_temp3 = (calib_wedge_ch2.therm_temp3 / validn2) >> 6;
+            calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / validn2) >> 6;
+            calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / validn2) >> 6;
+            calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / validn2) >> 6;
         }
 
         int first_valid_line = 0;

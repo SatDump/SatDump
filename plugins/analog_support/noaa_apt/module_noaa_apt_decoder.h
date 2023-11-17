@@ -18,27 +18,27 @@ namespace noaa_apt
     struct APTWedge
     {
         // Info about the wedge
-        int start_line; // Start line
-        int end_line;   // End Line
-        int max_diff;   // Maximum difference (noise est.)
+        int start_line = 0; // Start line
+        int end_line = 0;   // End Line
+        int max_diff = 0;   // Maximum difference (noise est.)
 
         // Values
-        int ref1;
-        int ref2;
-        int ref3;
-        int ref4;
-        int ref5;
-        int ref6;
-        int ref7;
-        int ref8;
-        int zero_mod_ref;
-        int therm_temp1;
-        int therm_temp2;
-        int therm_temp3;
-        int therm_temp4;
-        int patch_temp;
-        int back_scan;
-        int channel;
+        int ref1 = 0;
+        int ref2 = 0;
+        int ref3 = 0;
+        int ref4 = 0;
+        int ref5 = 0;
+        int ref6 = 0;
+        int ref7 = 0;
+        int ref8 = 0;
+        int zero_mod_ref = 0;
+        int therm_temp1 = 0;
+        int therm_temp2 = 0;
+        int therm_temp3 = 0;
+        int therm_temp4 = 0;
+        int patch_temp = 0;
+        int back_scan = 0;
+        int channel = 0;
     };
 
     class NOAAAPTDecoderModule : public ProcessingModule
