@@ -608,13 +608,14 @@ namespace satdump
 
         if (ImGui::CollapsingHeader("RGB Composites"))
         {
-            if (ImGui::Combo("Preset", &select_rgb_presets, rgb_presets_str.c_str()))
+            bool show_info_button = select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "";
+            if (ImGui::Combo(show_info_button ? "##presetcombo" : "Preset##presetcombo", &select_rgb_presets, rgb_presets_str.c_str()))
             {
                 rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
                 updateRGB();
             }
 
-            if (select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "")
+            if (show_info_button)
             {
                 ImGui::SameLine();
 
