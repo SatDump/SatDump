@@ -6,16 +6,16 @@ It tries to reduce the cyan color caused by ice absorption on the *3a21* enhance
 
 ### Appearance
 
-Land appears green (vegetated areas) or yellowish orange (deserts), while sea appears blue.
+Land appears green (vegetated areas) or yellowish orange (deserts), while the sea appears blue.
 Clouds appear white.
 Fog appears whitish-gray.
 
 ### Intended usage
 
-General purpose imagery at daytime.
+General purpose imagery in the daytime.
 
 ### Limitations
 
-Cannot usually be used on NOAA POES satellites as they do not usually transmit channel 3b.
+Cannot usually be used on NOAA POES satellites as they do not usually transmit channel 3a.
 Hard to determine the cloud nature.
 Cannot discriminate between cirrus clouds and fog.

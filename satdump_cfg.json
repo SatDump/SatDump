@@ -605,8 +605,9 @@
                         },
                         "autogen": false
                     },
-                    "Night Time Fire Detection": {
+                    "Night Time Fire Detection (transparent)": {
                         "equation": "((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0, 0, 0, ((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0",
+                        "description": "descriptions/NightFire.md",
                         "ch4": {
                             "min": 0,
                             "max": 1000
@@ -614,7 +615,8 @@
                         "ch5": {
                             "min": 0,
                             "max": 1000
-                        }
+                        },
+                        "autogen": false
                     },
                     "NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod.png",
