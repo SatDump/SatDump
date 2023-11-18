@@ -8,7 +8,9 @@ It also greatly enhances the contrast in the land/sea regions with respect to th
 
 Clouds with progressively higher likelyhood of precipitation, including areas that are already receiving precipitation, appear green, then yellow, then red, and finally black.
 
-Land and sea appear in shades of gray.
+Land and sea appear in shades of brown (hot) to gray (cold).
+
+![NO](lut/cal/WXtoImg-NO.png)
 
 ### Intended usage
 

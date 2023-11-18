@@ -645,12 +645,20 @@
                         "autogen": false
                     },
                     "NO enhancement": {
-                        "lut": "lut/WXtoImg-NO_mod.png",
+                        "lut": "lut/cal/WXtoImg-NO.png",
                         "description": "descriptions/NO.md",
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "autogen": false,
                         "geo_correct": true,
-                        "individual_equalize": true,
                         "draw_map_overlay": true,
                         "borders_color": [
                             1,
@@ -659,79 +667,178 @@
                         ]
                     },
                     "ZA enhancement": {
-                        "channels": "ch3b, ch4",
-                        "lut": "lut/WXtoImg-ZA.png",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
+                        "lut": "lut/cal/WXtoImg-ZA.png",
                         "description": "descriptions/ZA.md",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "MB enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/MB.md",
-                        "lut": "lut/WXtoImg-MB.png",
+                        "lut": "lut/cal/WXtoImg-MB.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "MD enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/MD.md",
                         "lut": "lut/WXtoImg-MD.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "BD enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/BD.md",
-                        "lut": "lut/WXtoImg-BD.png",
+                        "lut": "lut/cal/WXtoImg-BD.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "CC enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/CC.md",
-                        "lut": "lut/WXtoImg-CC.png",
+                        "lut": "lut/cal/WXtoImg-CC.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "EC enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/EC.md",
-                        "lut": "lut/WXtoImg-EC.png",
+                        "lut": "lut/cal/WXtoImg-EC.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "HE enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/HE.md",
-                        "lut": "lut/WXtoImg-HE.png",
+                        "lut": "lut/cal/WXtoImg-HE.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "HF enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/HF.md",
-                        "lut": "lut/WXtoImg-HF.png",
+                        "lut": "lut/cal/WXtoImg-HF.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "JF enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/JF.md",
-                        "lut": "lut/WXtoImg-JF.png",
+                        "lut": "lut/cal/WXtoImg-JF.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "JJ enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/KJ.md",
-                        "lut": "lut/WXtoImg-JJ.png",
+                        "lut": "lut/cal/WXtoImg-JJ.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "TA enhancement": {
-                        "channels": "ch3b, ch4",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "calib_cfg": {
+                                "cch4": {
+                                    "type": "temperature",
+                                    "min": 173.15,
+                                    "max": 323.15
+                                }
+                            }
+                        },
                         "description": "descriptions/TA.md",
-                        "lut": "lut/WXtoImg-TA.png",
+                        "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
                         "geo_correct": true
                     },

@@ -8,6 +8,8 @@ users interested in icing conditions. Multiple, steep, ramp enhancement ranges p
 
 Gray scale.
 
+![JJ](lut/cal/WXtoImg-JJ.png)
+
 ### Intended usage
 
 Meteorology.

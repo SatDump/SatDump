@@ -6,6 +6,8 @@ This enhancement, also called *Cool season precipitation* uses a look-up table t
 
 Gray scale.
 
+![EC](lut/cal/WXtoImg-EC.png)
+
 ### Intended usage
 
 Meteorology (precipitation analysis).
