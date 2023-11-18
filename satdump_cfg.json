@@ -632,15 +632,20 @@
                         "autogen": false
                     },
                     "Night Time Fire Detection (transparent)": {
-                        "equation": "((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0, 0, 0, ((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0",
+                        "channels": "cch3b, cch4",
                         "description": "descriptions/NightFire.md",
-                        "ch4": {
-                            "min": 0,
-                            "max": 1000
-                        },
-                        "ch5": {
-                            "min": 0,
-                            "max": 1000
+                        "lua": "scripted_compos/fire.lua",
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            }
                         },
                         "autogen": false
                     },
