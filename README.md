@@ -9,7 +9,7 @@ There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room 
 
 # Introduction
 
-*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the detailed documentation.* 
+*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the [detailed documentation](https://docs.satdump.org).* 
 
 ## GUI Version
 
