@@ -15,8 +15,8 @@ function process()
 
             --get channels from satdump.json
 
-            local cch2 = get_calibrated_value(0, x, y, true)
-            local cch3a = get_calibrated_value(1, x, y, true)
+            local cch2 = get_calibrated_value(1, x, y, true)
+            local cch3a = get_calibrated_value(3, x, y, true)
             
 
             --perform NDVI
