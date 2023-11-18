@@ -597,12 +597,12 @@
                     "NDWI": {
                         "channels": "cch2, cch3a",
                         "calib_cfg": {
-                            "cch1": {
+                            "cch2": {
                                 "type": "albedo",
                                 "min": 0,
                                 "max": 100
                             },
-                            "cch2": {
+                            "cch3a": {
                                 "type": "albedo",
                                 "min": 0,
                                 "max": 100
