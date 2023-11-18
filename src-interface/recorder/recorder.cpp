@@ -183,7 +183,11 @@ namespace satdump
 
             ImGui::BeginGroup();
             float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
-            ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
+            ImGuiWindowFlags recorder_panel_flags = ImGuiWindowFlags_NoBringToFrontOnFocus;
+            if (show_tracking)
+                recorder_panel_flags |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
+
+            ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, recorder_panel_flags);
             {
                 if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
                 {
@@ -468,7 +472,8 @@ namespace satdump
                     }
                 }
 
-                if (ImGui::CollapsingHeader("Tracking"))
+                show_tracking = ImGui::CollapsingHeader("Tracking");
+                if (show_tracking)
                 {
                     try_init_tracking_widget();
                     tracking_widget->render();

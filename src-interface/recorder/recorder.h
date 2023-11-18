@@ -91,6 +91,7 @@ namespace satdump
         void set_output_sample_format();
 
         TrackingWidget *tracking_widget = nullptr;
+        bool show_tracking = false;
 
         // Debug
         widgets::ConstellationViewer *constellation_debug = nullptr;
