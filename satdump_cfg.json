@@ -634,7 +634,7 @@
                     "Night Time Fire Detection (transparent)": {
                         "channels": "cch3b, cch4",
                         "description": "descriptions/NightFire.md",
-                        "lua": "scripted_compos/fire.lua",
+                        "lua": "scripted_compos/NightFire.lua",
                         "calib_cfg": {
                             "cch3b": {
                                 "type": "temperature",
