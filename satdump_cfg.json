@@ -1507,7 +1507,7 @@
                         "autogen": false
                     },
                     "Snow cover (Transparent)": {
-                        "equation": "cch1, 0, 0, cch2-cch1 < 0.1 ? (cch1 < 0.6 ? 1 : 0) : 0",
+                        "equation": "1-cch1, 0, 0, cch2-cch1 < 0.1 ? (cch1 < 0.6 ? 1 : 0) : 0",
                         "description": "descriptions/sounders/SnowcoverTransparent.md",
                         "apply_lut": true,
                         "autogen": false
