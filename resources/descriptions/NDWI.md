@@ -2,11 +2,11 @@
 
 NDVWI (Normalized Difference Water Index) is a simple enhancement used to monitor changes in water content of leaves using the difference of the two channels used by this enhancement (1.61 and 0.863 µm).
 
+THIS ENHANCEMENT IS EXPERIMENTAL
+
 ### Appearance
 
-Liquid water appears light blue, including flooding.
-Land with vegetation with increasing content of water appears progressively more green.
-Deserts appear gray.
+Scale going from deep blue (high leaf water content) to light blue (low leaf water content)
 Clouds and ambiguous areas appear gray.
 
 
