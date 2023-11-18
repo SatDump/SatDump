@@ -821,7 +821,7 @@
                                 }
                             }
                         },
-                        "description": "descriptions/KJ.md",
+                        "description": "descriptions/JJ.md",
                         "lut": "lut/cal/WXtoImg-JJ.png",
                         "autogen": false,
                         "geo_correct": true
