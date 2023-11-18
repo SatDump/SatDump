@@ -8,6 +8,8 @@ It enhances low and middle level clouds common along the Pacific Coast of North 
 
 Gray scale.
 
+![HF](lut/cal/WXtoImg-HF.png)
+
 ### Intended usage
 
 Meteorology.

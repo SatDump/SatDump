@@ -6,6 +6,8 @@ This enhancement, also called *Thunderstorm*, uses a look-up table to highlight 
 
 Gray scale.
 
+![MB](lut/cal/WXtoImg-MB.png)
+
 ### Intended usage
 
 Meteorology (thunderstorm analysis).

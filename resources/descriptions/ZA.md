@@ -6,6 +6,8 @@ This enhancement, also called *General IR enhancement*, uses a look-up table to 
 
 Gray scale.
 
+![ZA](lut/cal/WXtoImg-ZA.png)
+
 ### Intended usage
 
 Meteorology.

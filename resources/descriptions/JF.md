@@ -6,6 +6,8 @@ This enhancement, also called *simple sea surface/cold cloud*, is a hybrid enhan
 
 Gray scale.
 
+![JF](lut/cal/WXtoImg-JF.png)
+
 ### Intended usage
 
 Meteorology.

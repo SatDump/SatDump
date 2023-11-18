@@ -8,6 +8,8 @@ Otherwise, it is the same as the MB enhancement.
 
 Gray scale.
 
+![MD](lut/cal/WXtoImg-MD.png)
+
 ### Intended usage
 
 Meteorology (thunderstorm analysis).

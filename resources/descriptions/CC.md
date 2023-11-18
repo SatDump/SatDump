@@ -6,6 +6,9 @@ This enhancement, also called *Cold climate MB* uses a look-up table to highligh
 
 Gray scale.
 
+![CC](lut/cal/WXtoImg-CC.png)
+
+
 ### Intended usage
 
 Meteorology (thunderstorm analysis).

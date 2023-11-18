@@ -10,6 +10,8 @@ tropical storm classifications.
 
 Gray scale.
 
+![TA](lut/cal/WXtoImg-TA.png)
+
 ### Intended usage
 
 Meteorology.

@@ -12,6 +12,8 @@ Clouds with no precipitation likelyhood are white or grayish.
 
 Land and sea appear as specified by the map used (by default, a physical map).
 
+![NO](lut/cal/WXtoImg-NO.png)
+
 ### Intended usage
 
 Cloud analysis on APT.

@@ -12,6 +12,8 @@ This curve facilitates those estimating tropical cyclone intensity by highlighti
 
 Gray scale.
 
+![BD](lut/cal/WXtoImg-BD.png)
+
 ### Intended usage
 
 Hurricane analysis.
