@@ -23,14 +23,15 @@ namespace satdump
                 {
                     loadHorizons();
                     updateNextPass();
+                    backend_needs_update = false;
                 }
 
                 if (horizons_data.size() > 0)
                 {
                     double timed = getTime();
 
-                    int iter = 0;
-                    for (int i = 0; i < (int)horizons_data.size(); i++)
+                    size_t iter = 0;
+                    for (size_t i = 0; i < horizons_data.size(); i++)
                         if (horizons_data[i].timestamp < timed)
                             iter = i;
 
@@ -228,9 +229,9 @@ namespace satdump
 
         double curr_time = getTime();
         double start_time = curr_time - 24 * 3600;
-        double stop_time = curr_time + 24 * 3600;
+        double stop_time = curr_time + 48 * 3600;
 
-        auto hdata = pullHorizonsData(start_time, stop_time, 8640);
+        auto hdata = pullHorizonsData(start_time, stop_time, 17280);
 
         if (hdata.size() > 0)
         {
@@ -259,7 +260,7 @@ namespace satdump
                           std::to_string(qth_alt / 1e3) + "'" +
                           "&START_TIME='JD " + std::to_string((start_time / 86400.0) + 2440587.5) + "'" +
                           "&STOP_TIME='JD " + std::to_string((stop_time / 86400.0) + 2440587.5) + "'" +
-                          "&STEP_SIZE='" + std::to_string(num_points) + "'" + // 86400
+                          "&STEP_SIZE='" + std::to_string(num_points) + "'" + // 17280
                           "&QUANTITIES='4,20'";
 
         std::string req_result;
