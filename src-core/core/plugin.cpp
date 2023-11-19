@@ -41,78 +41,68 @@ std::string android_plugins_dir = "";
 
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins)
 {
+    //Get possible paths
+    std::vector<std::string> plugins_paths;
 #ifdef __ANDROID__
-    // std::string plugins_path = satdump::LIBPATH + "plugins/" + (std::string)ANDROID_ABI_LIB;
-    std::string plugins_path = android_plugins_dir + "/";
+    plugins_paths.push_back(android_plugins_dir + "/");
 #else
-    std::string plugins_path = satdump::LIBPATH + "plugins";
-#endif
-
     if (std::filesystem::exists("plugins"))
-#ifdef __ANDROID__
-        ; // plugins_path = "plugins/" + (std::string)ANDROID_ABI_LIB;
-#else
-        plugins_path = "./plugins";
+        plugins_paths.push_back("./plugins"); //Try local plugins directory first
+    plugins_paths.push_back(satdump::LIBPATH + "plugins"); //Followed by system
 #endif
 
+    //Get platform file extensions
 #if defined(_WIN32)
-    std::string extension = ".dll";
+    std::filesystem::path extension = ".dll";
 #elif defined(__APPLE__)
-    std::string extension = ".dylib";
+    std::filesystem::path extension = ".dylib";
 #else
-        std::string extension = ".so";
+    std::filesystem::path extension = ".so";
 #endif
 
-    logger->info("Loading plugins from " + plugins_path);
-
-    std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
-    std::error_code iteratorError;
-    while (pluginIterator != std::filesystem::recursive_directory_iterator())
+    //Load all plugins
+    for (std::string& plugins_path : plugins_paths)
     {
-        if (!std::filesystem::is_directory(pluginIterator->path()))
+        logger->info("Loading plugins from " + plugins_path);
+
+        std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
+        std::error_code iteratorError;
+        while (pluginIterator != std::filesystem::recursive_directory_iterator())
         {
-            if (pluginIterator->path().filename().string().find(extension) != std::string::npos)
-            {
-                std::string path = pluginIterator->path().string();
+            std::string path = pluginIterator->path().string();
+            if (!std::filesystem::is_regular_file(pluginIterator->path()) || pluginIterator->path().extension() != extension)
+                goto skip_this;
 
-                if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path))
-                {
-#if __ANDROID__
-                    if (path.find("libandroid_imgui.so") != std::string::npos)
-                        goto skip_this;
-                    if (path.find("libsatdump_core.so") != std::string::npos)
-                        goto skip_this;
+#ifdef __ANDROID__
+            if (path.find("libandroid_imgui.so") != std::string::npos)
+                goto skip_this;
+            if (path.find("libsatdump_core.so") != std::string::npos)
+                goto skip_this;
 #endif
-
-                    try
-                    {
-                        std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
-                        loaded_plugins.insert({pl->getID(), pl});
-                    }
-                    catch (std::runtime_error &e)
-                    {
-                        logger->error(e.what());
-                    }
-                }
-                else
-                {
-                    logger->error("File " + path + " is not a valid plugin!");
-                }
+            try
+            {
+                std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
+                loaded_plugins.insert({ pl->getID(), pl });
             }
+            catch (std::runtime_error& e)
+            {
+                logger->error(e.what());
+            }
+
+skip_this:
+            pluginIterator.increment(iteratorError);
+            if (iteratorError)
+                logger->critical(iteratorError.message());
         }
 
-#if __ANDROID__
-    skip_this:
-#endif
-        pluginIterator.increment(iteratorError);
-        if (iteratorError)
-            logger->critical(iteratorError.message());
-    }
-
-    if (loaded_plugins.size() > 0)
-    {
-        logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
-        for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : loaded_plugins)
-            logger->debug(" - " + it.first);
+        if (loaded_plugins.size() > 0)
+        {
+            logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
+            for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>>& it : loaded_plugins)
+                logger->debug(" - " + it.first);
+            break;
+        }
+        else
+            logger->warn("No Plugins in " + plugins_path + "!");
     }
 }
