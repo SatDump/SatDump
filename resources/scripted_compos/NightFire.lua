@@ -17,15 +17,11 @@ function process()
       if cch3b > 305 then
         if cch4 > 280 then
           if (cch3b-cch4) > 10 then
-            
             -- output as red and 100% opaque if the pixel passes the thresholds
-            
             set_img_out(0, x, y, 1)
             set_img_out(3, x, y, 1)
           else
-
             -- if not, output as 0 and 100% transparent
-
             set_img_out(0, x, y, 0)
             set_img_out(3, x, y, 0)
           end
@@ -38,6 +34,7 @@ function process()
         set_img_out(3, x, y, 0)
       end
     end
+    --set the progress bar accordingly
     set_progress(x, rgb_output:width())
   end
 end
