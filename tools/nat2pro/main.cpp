@@ -18,6 +18,7 @@
 int main(int argc, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
 
     if (argc < 3)
     {

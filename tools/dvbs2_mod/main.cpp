@@ -94,6 +94,7 @@ namespace
 int main(int argc, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
     build_crc8_table();
 
     if (argc < 3)

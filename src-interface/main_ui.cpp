@@ -60,14 +60,18 @@ namespace satdump
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
 
-        // Logger notify sink
-        notify_logger_sink = std::make_shared<NotifyLoggerSink>();
-        logger->add_sink(notify_logger_sink);
-
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
         if (status_logger_sink->is_shown())
             logger->add_sink(status_logger_sink);
+
+        // Shut down the logger init buffer manually to prevent init warnings
+        // From showing as a toast, or in the product processor screen
+        completeLoggerInit();
+
+        // Logger notify sink
+        notify_logger_sink = std::make_shared<NotifyLoggerSink>();
+        logger->add_sink(notify_logger_sink);
     }
 
     void updateUI(float device_scale)

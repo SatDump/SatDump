@@ -16,6 +16,7 @@
 int main(int /*argc*/, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
 
     image::Image<uint16_t> img_ch1;
     image::Image<uint16_t> img_ch2;

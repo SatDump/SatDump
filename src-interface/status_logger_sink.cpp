@@ -8,11 +8,6 @@ namespace satdump
 {
     StatusLoggerSink::StatusLoggerSink()
     {
-        slog::LogMsg welcome_message;
-        welcome_message.lvl = slog::LOG_INFO;
-        welcome_message.str = "Welcome to SatDump!";
-        receive(welcome_message);
-
         show_bar = config::main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
         show_log = false;
     }

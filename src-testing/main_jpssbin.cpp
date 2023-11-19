@@ -56,6 +56,7 @@ std::string parseArray(std::ifstream &input_bin, std::string datatype, int types
 int main(int argc, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
 
     nlohmann::json data_config = loadJsonFile(argv[1]);
     auto data_fields = data_config["DataProduct"]["ProductData"][0]["Field"];

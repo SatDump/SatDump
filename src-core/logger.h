@@ -151,5 +151,8 @@ void initLogger();
 // Init logger file sink
 void initFileSink();
 
+// Tell the logger that initialization is done so it stops buffering messages
+void completeLoggerInit();
+
 // Change output level, eg Debug, Info, etc
 void setConsoleLevel(slog::LogLevel level);

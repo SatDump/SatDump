@@ -22,6 +22,7 @@
 int main(int argc, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
 
 #if 0
     std::ifstream data_in(argv[1], std::ios::binary);

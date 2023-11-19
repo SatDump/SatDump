@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
+    completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
     if (argc < 9)

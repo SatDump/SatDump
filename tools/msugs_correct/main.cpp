@@ -75,6 +75,7 @@ image::Image<uint8_t> correct_msugs_channel(std::vector<satdump::projection::GCP
 int main(int argc, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
 
     if (argc < 5)
     {
