@@ -9,7 +9,7 @@ function process()
   for x = 0, rgb_output:width() -1, 1 do
     for y = 0, rgb_output:height() -1, 1 do
 
-      -- set variables for each calibrated channels with their respective names
+      -- set variables for each calibrated channel with their respective names
       
       local cch3b = get_calibrated_value(3, x, y, true)
       local cch4 = get_calibrated_value(4, x, y, true)
