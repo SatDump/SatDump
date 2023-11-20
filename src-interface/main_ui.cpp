@@ -145,7 +145,7 @@ namespace satdump
 
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
-            ImGui::Begin("SatDump UI", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus);
+            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
                 main_ui_is_processing_selected = false;
@@ -160,6 +160,7 @@ namespace satdump
                         int live_height = /*ImGui::GetWindowHeight()*/ wheight - ImGui::GetCursorPos().y;
                         float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
                         float currentPos = ImGui::GetCursorPos().y;
+                        ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
                         for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
                         {
                             ImGui::SetNextWindowPos({0, currentPos});
@@ -167,6 +168,7 @@ namespace satdump
                             ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
                             module->drawUI(false);
                         }
+                        ImGui::PopStyleColor();
                         processing::ui_call_list_mutex->unlock();
                         // ImGui::EndChild();
                     }
@@ -256,6 +258,7 @@ namespace satdump
 #endif
             }
             ImGui::EndTabBar();
+            ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();
 
             if (settings::show_imgui_demo)
