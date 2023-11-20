@@ -1104,6 +1104,7 @@
                     "221": {
                         "equation": "ch2, ch2, ch1",
                         "geo_correct": true,
+                        "white_balance": true,
                         "description": "descriptions/221.md",
                         "equalize": true
                     },
@@ -1111,6 +1112,7 @@
                         "equation": "ch3, ch2, ch1",
                         "description": "descriptions/321.md",
                         "geo_correct": true,
+                        "white_balance": true,
                         "project": {
                             "width": 4096,
                             "height": 2048,
@@ -1125,6 +1127,7 @@
                         "equation": "ch1, ch2, ch4",
                         "description": "descriptions/124.md",
                         "geo_correct": true,
+                        "white_balance": true,
                         "individual_equalize": true
                     },
                     "Natural Color": {
