@@ -45,7 +45,7 @@ namespace satdump
     {
         int height = 0;
         if (ImGui::BeginViewportSideBar("##MainStatusBar", ImGui::GetMainViewport(), ImGuiDir_Down, ImGui::GetFrameHeight(),
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar)) {
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNavFocus)) {
             if (ImGui::BeginMenuBar()) {
                 ImGui::TextUnformatted(lvl.c_str());
                 ImGui::SameLine(75 * ui_scale);
@@ -71,10 +71,7 @@ namespace satdump
 
             ImGui::SetNextWindowBgAlpha(1.0);
             ImGui::Begin("SatDump Log", &show_log, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
-            if (ImGui::IsWindowFocused())
-                widgets::LoggerSinkWidget::draw();
-            else
-                show_log = false;
+            widgets::LoggerSinkWidget::draw();
 
             ImGui::End();
         }

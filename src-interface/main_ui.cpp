@@ -145,7 +145,7 @@ namespace satdump
 
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
-            ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
+            ImGui::Begin("SatDump UI", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
                 main_ui_is_processing_selected = false;
