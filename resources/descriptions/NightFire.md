@@ -27,4 +27,4 @@ Currently tested on data from Brazil.
 
 ### References
 
-1. [S. Boles and D. L. Verbyla, “Comparison of three AVHRR-Based fire Detection Algorithms for Interior Alaska,” Remote Sensing of Environment, vol. 72, no. 1, pp. 1–16, Apr. 2000, doi: 10.1016/s0034-4257(99)00079-6.](https://doi.org/10.1016/S0034-4257(99)00079-6)
+1. S. Boles and D. L. Verbyla, “Comparison of three AVHRR-Based fire Detection Algorithms for Interior Alaska,” Remote Sensing of Environment, vol. 72, no. 1, pp. 1–16, Apr. 2000, doi: 10.1016/s0034-4257(99)00079-6. [View Article](https://doi.org/10.1016/S0034-4257(99)00079-6)

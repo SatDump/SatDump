@@ -77,16 +77,12 @@ namespace widgets
 
     MarkdownHelper::MarkdownHelper()
     {
-    }
-
-    void MarkdownHelper::init()
-    {
+        mdConfig.linkCallback = link_callback;
+        mdConfig.imageCallback = image_callback;
     }
 
     void MarkdownHelper::render()
     {
-        mdConfig.linkCallback = link_callback;
-        mdConfig.imageCallback = image_callback;
         mdConfig.headingFormats[0] = {style::bigFont, true};
         mdConfig.headingFormats[1] = {style::bigFont, true};
         mdConfig.headingFormats[2] = {style::baseFont, true};

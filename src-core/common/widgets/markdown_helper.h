@@ -20,7 +20,6 @@ namespace widgets
 
     public:
         MarkdownHelper();
-        void init();
         void render();
         void set_md(std::string md);
     };

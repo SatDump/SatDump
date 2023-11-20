@@ -52,7 +52,6 @@ namespace satdump
         std::ifstream ifs(resources::getResourcePath("credits.md"));
         std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         credits_md.set_md(credits_markdown);
-        credits_md.init();
 
         registerApplications();
         registerViewerHandlers();
