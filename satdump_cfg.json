@@ -691,7 +691,7 @@
                         "geo_correct": true
                     },
                     "MD enhancement": {
-                        "lut": "lut/WXtoImg-MD.png",
+                        "lut": "lut/cal/WXtoImg-MD.png",
                         "description": "descriptions/MD.md",
                         "channels": "cch4",
                         "calib_cfg": {
@@ -722,9 +722,9 @@
                         "channels": "cch4",
                         "calib_cfg": {
                             "cch4": {
-                                "type": "temperature",
-                                "min": 173.15,
-                                "max": 323.15
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/CC.md",
