@@ -9,16 +9,28 @@ private:
     nlohmann::json perLine_perChannel;
     nlohmann::json perChannel;
     double crossover[3];
+    bool per_line;
 
     double calc_rad(int channel, int pos_y, int px_val)
     {
-        double nlin = perLine_perChannel[pos_y][channel]["Ns"].get<double>() +
-                      (perLine_perChannel[pos_y][channel]["Nbb"].get<double>() - perLine_perChannel[pos_y][channel]["Ns"].get<double>()) *
-                          (perLine_perChannel[pos_y][channel]["Spc"].get<double>() - px_val) /
-                          (perLine_perChannel[pos_y][channel]["Spc"].get<double>() - perLine_perChannel[pos_y][channel]["Blb"].get<double>());
-        double out_rad = nlin + perChannel[channel]["b"][0].get<double>() + perChannel[channel]["b"][1].get<double>() * nlin +
-                         perChannel[channel]["b"][2].get<double>() * nlin * nlin;
-        return out_rad;
+        if (per_line)
+        {
+            double nlin = perLine_perChannel[pos_y][channel]["Ns"].get<double>() +
+                          (perLine_perChannel[pos_y][channel]["Nbb"].get<double>() - perLine_perChannel[pos_y][channel]["Ns"].get<double>()) *
+                              (perLine_perChannel[pos_y][channel]["Spc"].get<double>() - px_val) /
+                              (perLine_perChannel[pos_y][channel]["Spc"].get<double>() - perLine_perChannel[pos_y][channel]["Blb"].get<double>());
+            double out_rad = nlin + perChannel[channel]["b"][0].get<double>() + perChannel[channel]["b"][1].get<double>() * nlin +
+                             perChannel[channel]["b"][2].get<double>() * nlin * nlin;
+            return out_rad;
+        } else {
+            double nlin = perChannel[channel]["Ns"].get<double>() +
+                          (perChannel[channel]["Nbb"].get<double>() - perChannel[channel]["Ns"].get<double>()) *
+                              (perChannel[channel]["Spc"].get<double>() - px_val) /
+                              (perChannel[channel]["Spc"].get<double>() - perChannel[channel]["Blb"].get<double>());
+            double out_rad = nlin + perChannel[channel]["b"][0].get<double>() + perChannel[channel]["b"][1].get<double>() * nlin +
+                             perChannel[channel]["b"][2].get<double>() * nlin * nlin;
+            return out_rad;
+        }
     }
 
 public:
@@ -28,7 +40,8 @@ public:
 
     void init()
     {
-        perLine_perChannel = d_calib["vars"]["perLine_perChannel"];
+        per_line = d_calib["vars"].contains("perLine_perChannel");
+        if (per_line) perLine_perChannel = d_calib["vars"]["perLine_perChannel"];
         perChannel = d_calib["vars"]["perChannel"];
         for (int i = 0; i < 3; i++)
             crossover[i] = (perChannel[i]["int_hi"].get<double>() - perChannel[i]["int_lo"].get<double>()) / (perChannel[i]["slope_lo"].get<double>() - perChannel[i]["slope_hi"].get<double>());
@@ -38,6 +51,8 @@ public:
     {
         if (channel < 3)
         {
+            if (!perChannel[channel].contains("slope_lo"))
+                return CALIBRATION_INVALID_VALUE;
             if (px_val <= crossover[channel])
                 return (perChannel[channel]["slope_lo"].get<double>() * px_val + perChannel[channel]["int_lo"].get<double>()) / 100.0;
             else

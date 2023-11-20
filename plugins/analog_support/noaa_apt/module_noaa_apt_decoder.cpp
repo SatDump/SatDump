@@ -12,6 +12,8 @@
 
 #include "common/wav.h"
 
+#include "common/calibration.h"
+
 #define MAX_WEDGE_DIFF_VALID 7000
 
 namespace noaa_apt
@@ -246,6 +248,9 @@ namespace noaa_apt
         auto wedge_1 = wip_apt_image_sync.crop_to(996, 996 + 43);
         auto wedge_2 = wip_apt_image_sync.crop_to(2036, 2036 + 43);
 
+        auto space_1 = wip_apt_image_sync.crop_to(41, 86);
+        auto space_2 = wip_apt_image_sync.crop_to(1082, 1126);
+
         // wedge_1.save_png("wedge1.png");
         // wedge_2.save_png("wedge2.png");
 
@@ -261,6 +266,8 @@ namespace noaa_apt
         get_calib_values_wedge(wedges2, new_white1, new_black1);
 
         APTWedge calib_wedge_ch1, calib_wedge_ch2; // We also extract calibration words, scaled to 10-bits
+        uint16_t prt_counts[4];
+        int space_1v, space_2v;
 
         if (new_white != 0 && new_black != 0 && new_white1 != 0 && new_black1 != 0)
         {
@@ -301,6 +308,7 @@ namespace noaa_apt
                     calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
                     calib_wedge_ch1.patch_temp += wed.patch_temp;
                     calib_wedge_ch1.back_scan += wed.back_scan;
+                    calib_wedge_ch1.channel += wed.channel;
                     validn1++;
                 }
             }
@@ -311,6 +319,14 @@ namespace noaa_apt
             calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / validn1) >> 6;
             calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / validn1) >> 6;
             calib_wedge_ch1.back_scan = (calib_wedge_ch1.back_scan / validn1) >> 6;
+            calib_wedge_ch1.channel = std::round((calib_wedge_ch1.channel / (double)validn1) / (double)new_white * 8) - 1;
+            if (calib_wedge_ch1.channel > 1)
+            {
+                if (calib_wedge_ch1.channel == 5)
+                    calib_wedge_ch1.channel = 2;
+                else
+                    calib_wedge_ch1.channel += 1;
+            }
 
             int validn2 = 0;
             for (auto &wed : wedges2)
@@ -340,6 +356,7 @@ namespace noaa_apt
                     calib_wedge_ch2.therm_temp4 += wed.therm_temp4;
                     calib_wedge_ch2.patch_temp += wed.patch_temp;
                     calib_wedge_ch2.back_scan += wed.back_scan;
+                    calib_wedge_ch2.channel += wed.channel;
                     validn2++;
                 }
             }
@@ -350,6 +367,68 @@ namespace noaa_apt
             calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / validn2) >> 6;
             calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / validn2) >> 6;
             calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / validn2) >> 6;
+            calib_wedge_ch2.channel = std::round((calib_wedge_ch2.channel / (double)validn2) / (double)new_white * 8) - 1;
+            if (calib_wedge_ch2.channel > 1)
+            {
+                if (calib_wedge_ch2.channel == 5)
+                    calib_wedge_ch2.channel = 2;
+                else
+                    calib_wedge_ch2.channel += 1;
+            }
+
+            prt_counts[0] = (calib_wedge_ch1.therm_temp1 + calib_wedge_ch2.therm_temp1) / 2;
+            prt_counts[1] = (calib_wedge_ch1.therm_temp2 + calib_wedge_ch2.therm_temp2) / 2;
+            prt_counts[2] = (calib_wedge_ch1.therm_temp3 + calib_wedge_ch2.therm_temp3) / 2;
+            prt_counts[3] = (calib_wedge_ch1.therm_temp4 + calib_wedge_ch2.therm_temp4) / 2;
+
+            int validl1 = 0, validl2 = 0;
+
+            for (int y = 0; y < space_1.height(); y++)
+            {
+                int min = space_1[y * space_1.width()], max = space_1[y * space_1.width()], avg = 0;
+                for (int i = 0; i < space_1.width(); i++)
+                {
+                    int v = space_1[y * space_1.width() + i];
+                    if (v < min)
+                        min = v;
+                    if (v > max)
+                        max = v;
+                    avg += v;
+                }
+                avg /= space_1.width();
+                scale_val(avg, new_black, new_white);
+                int max_diff = max - min;
+                if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                {
+                    space_1v += avg;
+                    validl1++;
+                }
+            }
+
+            for (int y = 0; y < space_2.height(); y++)
+            {
+                int min = space_2[y * space_2.width()], max = space_2[y * space_2.width()], avg = 0;
+                for (int i = 0; i < space_2.width(); i++)
+                {
+                    int v = space_2[y * space_2.width() + i];
+                    if (v < min)
+                        min = v;
+                    if (v > max)
+                        max = v;
+                    avg += v;
+                }
+                avg /= space_2.width();
+                scale_val(avg, new_black, new_white);
+                int max_diff = max - min;
+                if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                {
+                    space_2v += avg;
+                    validl2++;
+                }
+            }
+
+            space_1v /= validl1;
+            space_2v /= validl2;
         }
 
         int first_valid_line = 0;
@@ -491,12 +570,75 @@ namespace noaa_apt
             logger->info("Lines : " + std::to_string(line_cnt));
 
             satdump::ImageProducts avhrr_products;
-            avhrr_products.instrument_name = "avhrr_apt";
+            avhrr_products.instrument_name = "avhrr_3";
             avhrr_products.bit_depth = 8;
 
-            // std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
-            // for (int i = 0; i < 6; i++)
-            //     avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
+            // CALIBRATION
+            {
+                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
+                nlohmann::json calib_coefsc = calib_coefs;
+                nlohmann::json calib_out;
+                if (calib_coefs.contains(sat_name))
+                {
+                    calib_coefs = calib_coefs[sat_name];
+
+                    // read params
+                    std::vector<std::vector<double>> prt_coefs = calib_coefs["PRT"].get<std::vector<std::vector<double>>>();
+
+                    for (int p = 0; p < 6; p++)
+                    {
+                        calib_out["vars"]["perChannel"][p] = calib_coefs["channels"][p];
+                    }
+                    for (int p = 0; p < 6; p++)
+                        calib_out["wavenumbers"][p] = calib_coefs["channels"][p]["wavnb"].get<double>();
+
+                    // calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/AVHRR.lua"));
+                    calib_out["calibrator"] = "noaa_avhrr3";
+
+                    // PRT counts to temperature
+                    double tbb;
+                    for (int prt = 0; prt < 4; prt++)
+                        for (int p = 0; p < 4; p++)
+                            tbb += prt_coefs[prt][p] * pow(prt_counts[prt], p); // convert PRT counts to temperature
+                    tbb /= 4;
+                    for (int c = 3; c < 6; c++)
+                    {
+                        if (c == calib_wedge_ch1.channel)
+                        {
+                            calib_out["vars"]["perChannel"][c]["Spc"] = space_1v >> 8;
+                            calib_out["vars"]["perChannel"][c]["Blb"] = calib_wedge_ch1.back_scan >> 2;
+                            calib_out["vars"]["perChannel"][c]["Nbb"] =
+                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                        calib_coefs["channels"][c]["Vc"].get<double>());
+                        }
+                        else if (c == calib_wedge_ch2.channel)
+                        {
+                            calib_out["vars"]["perChannel"][c]["Spc"] = space_2v >> 8;
+                            calib_out["vars"]["perChannel"][c]["Blb"] = calib_wedge_ch2.back_scan >> 2;
+                            calib_out["vars"]["perChannel"][c]["Nbb"] =
+                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                        calib_coefs["channels"][c]["Vc"].get<double>());
+                        }
+                    }
+                    avhrr_products.set_calibration(calib_out);
+                    for (int n = 0; n < 3; n++)
+                    {
+                        avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                        avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                    }
+                    for (int c = 0; c < 6; c++)
+                        avhrr_products.set_calibration_default_radiance_range(c, calib_coefsc["all"]["default_display_range"][c][0].get<double>(), calib_coefsc["all"]["default_display_range"][c][1].get<double>());
+                }
+                else
+                    logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+            }
+
+            image::Image<uint16_t> cha, chb, hold;
+            cha = wip_apt_image_sync.crop_to(86, 86 + 909);
+            chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
+            std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
+            for (int i = 0; i < 6; i++)
+                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == calib_wedge_ch1.channel ? cha : (i == calib_wedge_ch2.channel ? chb : hold)});
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
@@ -529,13 +671,6 @@ namespace noaa_apt
                     avhrr_products.set_proj_cfg(proj_cfg);
                 }
             }
-
-            image::Image<uint16_t> cha, chb;
-            cha = wip_apt_image_sync.crop_to(86, 86 + 909);
-            chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
-
-            avhrr_products.images.push_back({"APT-A", "a", cha});
-            avhrr_products.images.push_back({"APT-B", "b", chb});
 
             avhrr_products.save(main_dir);
             dataset.products_list.push_back(".");
