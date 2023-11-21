@@ -6,6 +6,8 @@
 #include "aqua/module_aqua_db_decoder.h"
 #include "eos/module_eos_instruments.h"
 
+#include "eos/instruments/modis/modis_calibrator.h"
+
 class EOSSupport : public satdump::Plugin
 {
 public:
@@ -17,6 +19,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -24,6 +27,12 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, aqua::AquaDBDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, terra::TerraDBDemodModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, eos::instruments::EOSInstrumentsDecoderModule);
+    }
+
+    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    {
+        if (evt.id == "eos_modis")
+            evt.calibrators.push_back(std::make_shared<eos::modis::EosMODISCalibrator>(evt.calib, evt.products));
     }
 };
 

@@ -66,14 +66,32 @@ namespace eos
 
         void MODISReader::processDayPacket(ccsds::CCSDSPacket &packet, MODISHeader &header)
         {
-            // Filter out calibration packets
-            if (header.type_flag == 1 || header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
-                return;
-
             repackBytesTo12bits(&packet.payload[12], 624, modis_ifov);
 
             // Check CRC
             if (compute_crc(modis_ifov, 415) != modis_ifov[415])
+                return;
+
+            // Filter out calibration packets, and process them
+            if (header.type_flag == 1)
+            {
+                for (int i = 0; i < 415; i++)
+                {
+                    int i_off = (packet.header.sequence_flag == 2 ? 415 : 0) + i;
+                    if (header.calib_type == MODISHeader::SOLAR_DIFFUSER_SOURCE)
+                        d_calib[lines / 10]["solar_diffuser_source"][header.calib_frame_count][i_off] = modis_ifov[i];
+                    else if (header.calib_type == MODISHeader::SRCA_CALIB_SOURCE)
+                        d_calib[lines / 10]["srca_diffuser_source"][header.calib_frame_count][i_off] = modis_ifov[i];
+                    else if (header.calib_type == MODISHeader::BLACKBODY_SOURCE)
+                        d_calib[lines / 10]["blackbody_source"][header.calib_frame_count][i_off] = modis_ifov[i];
+                    else if (header.calib_type == MODISHeader::SPACE_SOURCE)
+                        d_calib[lines / 10]["space_source"][header.calib_frame_count][i_off] = modis_ifov[i];
+                }
+                return;
+            }
+
+            // Filter out bad packets
+            if (header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
                 return;
 
             // std::cout << (int)packet.header.sequence_flag << " " << (int)header.earth_frame_data_count << std::endl;
@@ -106,102 +124,75 @@ namespace eos
             {
                 // Channel 1-2 (250m)
                 for (int c = 0; c < 2; c++)
-                {
                     for (int i = 0; i < 4; i++)
-                    {
                         for (int y = 0; y < 4; y++)
-                        {
-                            channels250m[c][((lines + 9) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[0 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 8) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[83 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 7) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[166 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 6) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[249 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 5) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[332 + (c * 16) + (i * 4) + y] << 4;
-                        }
-                    }
-                }
+                            for (int f = 0; f < 5; f++)
+                                channels250m[c][((lines + 5 + f) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[(4 - f) * 83 + (c * 16) + (i * 4) + y] << 4;
 
                 // Channel 3-7 (500m)
                 for (int c = 0; c < 5; c++)
-                {
                     for (int i = 0; i < 2; i++)
-                    {
                         for (int y = 0; y < 2; y++)
-                        {
-                            channels500m[c][((lines + 9) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[32 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 8) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[115 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 7) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[198 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 6) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[281 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 5) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[364 + (c * 4) + (i * 2) + y] << 4;
-                        }
-                    }
-                }
+                            for (int f = 0; f < 5; f++)
+                                channels500m[c][((lines + 5 + f) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[(4 - f) * 83 + 32 + (c * 4) + (i * 2) + y] << 4;
 
-                // 28 1000m channels
+                // 8-38 1000m channels
                 for (int i = 0; i < 31; i++)
-                {
-                    channels1000m[i][(lines + 9) * 1354 + position] = modis_ifov[52 + i] << 4;
-                    channels1000m[i][(lines + 8) * 1354 + position] = modis_ifov[135 + i] << 4;
-                    channels1000m[i][(lines + 7) * 1354 + position] = modis_ifov[218 + i] << 4;
-                    channels1000m[i][(lines + 6) * 1354 + position] = modis_ifov[301 + i] << 4;
-                    channels1000m[i][(lines + 5) * 1354 + position] = modis_ifov[384 + i] << 4;
-                }
+                    for (int f = 0; f < 5; f++)
+                        channels1000m[i][(lines + 5 + f) * 1354 + position] = modis_ifov[(4 - f) * 83 + 52 + i] << 4;
             }
             else if (packet.header.sequence_flag == 2) // Contains IFOVs 6-10
             {
                 // Channel 1-2 (250m)
                 for (int c = 0; c < 2; c++)
-                {
                     for (int i = 0; i < 4; i++)
-                    {
                         for (int y = 0; y < 4; y++)
-                        {
-                            channels250m[c][((lines + 4) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[0 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 3) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[83 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 2) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[166 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 1) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[249 + (c * 16) + (i * 4) + y] << 4;
-                            channels250m[c][((lines + 0) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[332 + (c * 16) + (i * 4) + y] << 4;
-                        }
-                    }
-                }
+                            for (int f = 0; f < 5; f++)
+                                channels250m[c][((lines + f) * 4 + (3 - y)) * (1354 * 4) + position * 4 + i] = modis_ifov[(4 - f) * 83 + (c * 16) + (i * 4) + y] << 4;
 
                 // Channel 3-7 (500m)
                 for (int c = 0; c < 5; c++)
-                {
                     for (int i = 0; i < 2; i++)
-                    {
                         for (int y = 0; y < 2; y++)
-                        {
-                            channels500m[c][((lines + 4) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[32 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 3) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[115 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 2) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[198 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 1) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[281 + (c * 4) + (i * 2) + y] << 4;
-                            channels500m[c][((lines + 0) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[364 + (c * 4) + (i * 2) + y] << 4;
-                        }
-                    }
-                }
+                            for (int f = 0; f < 5; f++)
+                                channels500m[c][((lines + f) * 2 + (1 - y)) * (1354 * 2) + position * 2 + i] = modis_ifov[(4 - f) * 83 + 32 + (c * 4) + (i * 2) + y] << 4;
 
-                // 28 1000m channels
+                // 8-38 1000m channels
                 for (int i = 0; i < 31; i++)
-                {
-                    channels1000m[i][(lines + 4) * 1354 + position] = modis_ifov[52 + i] << 4;
-                    channels1000m[i][(lines + 3) * 1354 + position] = modis_ifov[135 + i] << 4;
-                    channels1000m[i][(lines + 2) * 1354 + position] = modis_ifov[218 + i] << 4;
-                    channels1000m[i][(lines + 1) * 1354 + position] = modis_ifov[301 + i] << 4;
-                    channels1000m[i][(lines + 0) * 1354 + position] = modis_ifov[384 + i] << 4;
-                }
+                    for (int f = 0; f < 5; f++)
+                        channels1000m[i][(lines + f) * 1354 + position] = modis_ifov[(4 - f) * 83 + 52 + i] << 4;
             }
+
+            fillCalib(packet, header);
         }
 
         void MODISReader::processNightPacket(ccsds::CCSDSPacket &packet, MODISHeader &header)
         {
-            // Filter out calibration packets
-            if (header.type_flag == 1 || header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
-                return;
-
             repackBytesTo12bits(&packet.payload[12], 258, modis_ifov);
 
             // Check CRC
             if (compute_crc(modis_ifov, 171) != modis_ifov[171])
+                return;
+
+            // Filter out calibration packets, and process them
+            if (header.type_flag == 1)
+            {
+                for (int i = 0; i < 171; i++)
+                {
+                    if (header.calib_type == MODISHeader::SOLAR_DIFFUSER_SOURCE)
+                        d_calib[lines / 10]["solar_diffuser_source"][header.calib_frame_count][i] = modis_ifov[i];
+                    else if (header.calib_type == MODISHeader::SRCA_CALIB_SOURCE)
+                        d_calib[lines / 10]["srca_diffuser_source"][header.calib_frame_count][i] = modis_ifov[i];
+                    else if (header.calib_type == MODISHeader::BLACKBODY_SOURCE)
+                        d_calib[lines / 10]["blackbody_source"][header.calib_frame_count][i] = modis_ifov[i];
+                    else if (header.calib_type == MODISHeader::SPACE_SOURCE)
+                        d_calib[lines / 10]["space_source"][header.calib_frame_count][i] = modis_ifov[i];
+                }
+                return;
+            }
+
+            // Filter out bad packets
+            if (header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
                 return;
 
             // std::cout << (int)packet.header.sequence_flag << " " << (int)header.earth_frame_data_count << std::endl;
@@ -232,18 +223,28 @@ namespace eos
 
             // 28 1000m channels
             for (int i = 0; i < 16; i++)
-            {
-                channels1000m[14 + i][(lines + 9) * 1354 + position] = modis_ifov[0 + i] << 4;
-                channels1000m[14 + i][(lines + 8) * 1354 + position] = modis_ifov[17 + i] << 4;
-                channels1000m[14 + i][(lines + 7) * 1354 + position] = modis_ifov[34 + i] << 4;
-                channels1000m[14 + i][(lines + 6) * 1354 + position] = modis_ifov[51 + i] << 4;
-                channels1000m[14 + i][(lines + 5) * 1354 + position] = modis_ifov[68 + i] << 4;
-                channels1000m[14 + i][(lines + 4) * 1354 + position] = modis_ifov[85 + i] << 4;
-                channels1000m[14 + i][(lines + 3) * 1354 + position] = modis_ifov[102 + i] << 4;
-                channels1000m[14 + i][(lines + 2) * 1354 + position] = modis_ifov[119 + i] << 4;
-                channels1000m[14 + i][(lines + 1) * 1354 + position] = modis_ifov[136 + i] << 4;
-                channels1000m[14 + i][(lines + 0) * 1354 + position] = modis_ifov[153 + i] << 4;
-            }
+                for (int f = 0; f < 5; f++)
+                    channels1000m[14 + i][(lines + i) * 1354 + position] = modis_ifov[(9 - i) * 17 + i] << 4;
+
+            fillCalib(packet, header);
+        }
+
+        void MODISReader::fillCalib(ccsds::CCSDSPacket &packet, MODISHeader &header)
+        {
+            d_calib[lines / 10]["night_group"] = header.packet_type == MODISHeader::NIGHT_GROUP;
+            d_calib[lines / 10]["mirror_side"] = header.mirror_side;
+            for (int i = 0; i < 12; i++)
+                d_calib[lines / 10]["bb_temp"][i] = last_obc_bb_temp[i];
+            for (int i = 0; i < 2; i++)
+                d_calib[lines / 10]["mir_temp"][i] = last_rct_mir_temp[i];
+            for (int i = 0; i < 4; i++)
+                d_calib[lines / 10]["cav_temp"][i] = last_cav_temp[i];
+            for (int i = 0; i < 4; i++)
+                d_calib[lines / 10]["inst_temp"][i] = last_ao_inst_temp[i];
+            for (int i = 0; i < 4; i++)
+                d_calib[lines / 10]["fp_temp"][i] = last_fp_temp[i];
+            for (int i = 0; i < 4; i++)
+                d_calib[lines / 10]["fp_temp_info"][i] = last_cr_rc_info[i];
         }
 
         void MODISReader::work(ccsds::CCSDSPacket &packet)
@@ -270,6 +271,94 @@ namespace eos
                 night_count++;
                 processNightPacket(packet, modisHeader);
             }
+            else if (modisHeader.packet_type == MODISHeader::ENG_GROUP_1)
+            {
+                // printf("ENG1!\n");
+                if (packet.payload.size() < 636)
+                    return;
+
+                processEng1Packet(packet, modisHeader);
+            }
+            else if (modisHeader.packet_type == MODISHeader::ENG_GROUP_2)
+            {
+                // printf("ENG2!\n");
+                if (packet.payload.size() < 636)
+                    return;
+
+                processEng2Packet(packet, modisHeader);
+            }
+        }
+
+        void MODISReader::processEng1Packet(ccsds::CCSDSPacket &packet, MODISHeader &header)
+        {
+            // printf("ENG1 %d\n", packet.header.sequence_flag);
+            if (packet.header.sequence_flag == 1)
+            {
+            }
+            else if (packet.header.sequence_flag == 2)
+            {
+                repackBytesTo12bits(&packet.payload[298], 18, last_obc_bb_temp);               // Obc BB Temp
+                last_rct_mir_temp[0] = (packet.payload[504] & 0xF) << 8 | packet.payload[505]; // TP_SA_RCT1_MIRE
+                last_rct_mir_temp[1] = packet.payload[506] << 4 | packet.payload[507] >> 4;    // TP_SA_RCT2_MIRE
+
+                last_fp_temp[1] = (packet.payload[496] & 0b111111) << 6 | packet.payload[497] >> 2;                         // TA_AO_NIR_FPAE
+                last_fp_temp[0] = (packet.payload[497] & 0b11) << 10 | packet.payload[498] << 2 | packet.payload[499] >> 6; // TA_AO_VIS_FPAE
+                last_fp_temp[3] = (packet.payload[499] & 0b111111) << 6 | packet.payload[500] >> 2;                         // TA_RC_LWIR_CFPAE
+                last_fp_temp[2] = (packet.payload[500] & 0b11) << 10 | packet.payload[501] << 2 | packet.payload[502] >> 6; // TA_RC_SMIR_CFPAE
+            }
+        }
+
+        void MODISReader::processEng2Packet(ccsds::CCSDSPacket &packet, MODISHeader &header)
+        {
+            // printf("ENG2 %d\n", packet.header.sequence_flag);
+            if (packet.header.sequence_flag == 1)
+            {
+                uint8_t *block_curr = &packet.payload[12];
+                int major_cycle_cnt = block_curr[0] >> 2;
+
+                logger->critical("Major Cycle %d", major_cycle_cnt);
+
+                if (major_cycle_cnt == 0)
+                {
+                    uint16_t words_tp_ao[5 + 1];
+                    repackBytesTo12bits(&block_curr[56], 8, words_tp_ao);
+                    last_ao_inst_temp[0] = words_tp_ao[4]; // TP_AO_SMIR_OBJ
+                    last_ao_inst_temp[1] = words_tp_ao[1]; // TP_AO_LWIR_OBJ
+                    last_ao_inst_temp[2] = words_tp_ao[3]; // TP_AO_SMIR_LENS
+                    last_ao_inst_temp[3] = words_tp_ao[0]; // TP_AO_LWIR_LENS
+                }
+                else if (major_cycle_cnt == 3)
+                {
+                    last_cav_temp[0] = block_curr[56] << 1 | block_curr[57] >> 7;               // TP_MF_CALBKHD_SR
+                    last_cav_temp[3] = (block_curr[57] & 0b1111111) << 2 | block_curr[58] >> 6; // TP_MF_CVR_OP_SR
+                }
+                else if (major_cycle_cnt == 4)
+                {
+                    last_cav_temp[2] = (block_curr[58] & 0b111111) << 3 | block_curr[59] >> 5; // TP_MF_Z_BKHD_BB
+                }
+                else if (major_cycle_cnt == 23)
+                {
+                    last_cav_temp[1] = (block_curr[58] & 0b111111) << 3 | block_curr[59] >> 5; // TP_SR_SNOUT
+                }
+
+                if (major_cycle_cnt == 5 ||
+                    major_cycle_cnt == 13 ||
+                    major_cycle_cnt == 21 ||
+                    major_cycle_cnt == 29 ||
+                    major_cycle_cnt == 37 ||
+                    major_cycle_cnt == 45 ||
+                    major_cycle_cnt == 53 ||
+                    major_cycle_cnt == 61)
+                {
+                    last_cr_rc_info[0] = block_curr[43] >> 7;       // CR_RC_CFPA_T1SET
+                    last_cr_rc_info[1] = (block_curr[43] >> 6) & 1; // CR_RC_CFPA_T3SET
+                    last_cr_rc_info[2] = (block_curr[43] >> 2) & 1; // CR_RC_LWHTR_ON
+                    last_cr_rc_info[3] = (block_curr[44] >> 6) & 1; // CR_RC_SMHTR_ON
+                }
+            }
+            else if (packet.header.sequence_flag == 2)
+            {
+            }
         }
 
         image::Image<uint16_t> MODISReader::getImage250m(int channel)
@@ -285,6 +374,11 @@ namespace eos
         image::Image<uint16_t> MODISReader::getImage1000m(int channel)
         {
             return image::Image<uint16_t>(channels1000m[channel].data(), 1354, lines, 1);
+        }
+
+        nlohmann::json MODISReader::getCalib()
+        {
+            return d_calib;
         }
     } // namespace modis
 } // namespace eos

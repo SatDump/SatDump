@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include "common/image/image.h"
+#include "nlohmann/json.hpp"
 
 namespace eos
 {
@@ -40,10 +41,10 @@ namespace eos
             bool quick_look;
             enum modis_pkt_type
             {
-                DAY_GROUP,
-                NIGHT_GROUP,
-                ENG_GROUP_1,
-                ENG_GROUP_2
+                DAY_GROUP = 0,
+                NIGHT_GROUP = 1,
+                ENG_GROUP_1 = 2,
+                ENG_GROUP_2 = 4,
             };
             uint8_t packet_type;
             uint8_t scan_count;
@@ -76,7 +77,20 @@ namespace eos
             void processDayPacket(ccsds::CCSDSPacket &packet, MODISHeader &header);
             void processNightPacket(ccsds::CCSDSPacket &packet, MODISHeader &header);
 
+            void processEng1Packet(ccsds::CCSDSPacket &packet, MODISHeader &header);
+            void processEng2Packet(ccsds::CCSDSPacket &packet, MODISHeader &header);
+
             uint16_t compute_crc(uint16_t *data, int size);
+
+            nlohmann::json d_calib;
+            void fillCalib(ccsds::CCSDSPacket &packet, MODISHeader &header);
+
+            uint16_t last_obc_bb_temp[12] = {0};
+            uint16_t last_rct_mir_temp[2] = {0};
+            uint16_t last_ao_inst_temp[4] = {0};
+            uint16_t last_cav_temp[4] = {0};
+            uint16_t last_fp_temp[4] = {0};
+            bool last_cr_rc_info[4] = {false};
 
         public:
             MODISReader();
@@ -89,6 +103,7 @@ namespace eos
             image::Image<uint16_t> getImage250m(int channel);
             image::Image<uint16_t> getImage500m(int channel);
             image::Image<uint16_t> getImage1000m(int channel);
+            nlohmann::json getCalib();
         };
     } // namespace modis
 } // namespace eos

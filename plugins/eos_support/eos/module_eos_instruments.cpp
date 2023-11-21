@@ -12,6 +12,8 @@
 #include "resources.h"
 #include "instruments/modis/modis_histmatch.h"
 
+#include "common/calibration.h"
+
 namespace eos
 {
     namespace instruments
@@ -190,6 +192,7 @@ namespace eos
                 modis_products.instrument_name = "modis";
                 modis_products.has_timestamps = true;
                 modis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
+                modis_products.bit_depth = 12;
                 modis_products.set_tle(satellite_tle);
                 modis_products.set_timestamps(modis_reader.timestamps_250);
                 nlohmann::json proj_cfg;
@@ -225,8 +228,8 @@ namespace eos
 
                     // modis::modis_match_detector_histograms(image, 1, 10 * 2);
 
-                    if (d_modis_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                    //   if (d_modis_bowtie)
+                    //       image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     if (i < 5)
                         modis_products.images.push_back({"MODIS-" + std::to_string(i + 8), std::to_string(i + 8), image});
@@ -240,6 +243,47 @@ namespace eos
                         modis_products.images.push_back({"MODIS-14H", "14H", image});
                     else
                         modis_products.images.push_back({"MODIS-" + std::to_string(i + 6), std::to_string(i + 6), image});
+                }
+
+                // Calibration
+                saveJsonFile("modis_calib.json", modis_reader.getCalib());
+                nlohmann::json calib_cfg;
+                calib_cfg["calibrator"] = "eos_modis";
+                calib_cfg["vars"] = modis_reader.getCalib();
+                modis_products.set_calibration(calib_cfg);
+                for (int i = 0; i < 21; i++)
+                    modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);
+                for (int i = 21; i < 38; i++)
+                    modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
+
+                for (int i = 0; i < 38; i++)
+                    modis_products.set_wavenumber(i, 1);
+
+                double wl_table_emissive[] = {
+                    3.75e-6,
+                    3.959e-6,
+                    3.959e-6,
+                    4.050e-6,
+                    4.515e-6,
+                    4.515e-6,
+                    6.715e-6,
+                    7.325e-6,
+                    8.550e-6,
+                    9.730e-6,
+                    11.030e-6,
+                    12.020e-6,
+                    13.335e-6,
+                    13.635e-6,
+                    13.935e-6,
+                    14.235e-6,
+                };
+
+                for (int i = 0; i < 16; i++)
+                {
+                    int ch = i;
+                    if (ch >= 6)
+                        ch++;
+                    modis_products.set_wavenumber(21 + ch, freq_to_wavenumber(299792458.0 / wl_table_emissive[i]));
                 }
 
                 modis_products.save(directory);
