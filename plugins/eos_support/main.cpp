@@ -6,7 +6,7 @@
 #include "aqua/module_aqua_db_decoder.h"
 #include "eos/module_eos_instruments.h"
 
-#include "eos/instruments/modis/modis_calibrator.h"
+#include "eos/instruments/modis/calibrator/modis_calibrator.h"
 
 class EOSSupport : public satdump::Plugin
 {

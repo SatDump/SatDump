@@ -39,6 +39,7 @@ namespace eos
         {
         private:
             nlohmann::json d_vars;
+            bool is_aqua = false;
 
             double compute_emissive(int channel, int pos_x, int pos_y, int px_val);
 
@@ -59,7 +60,7 @@ namespace eos
 
             bool Calculate_Planck(float *RSR, float *wl, int size, float T, float *planck);
 
-            bool get_coeffs(double &a0, double &a2, double &b1, float &L_sm, int DN_sv, int DN_bb, ValsPerScan &scani, int D_emiss);
+            bool get_emissive_coeffs(double &a0, double &a2, double &b1, float &L_sm, int DN_sv, int DN_bb, ValsPerScan &scani, int D_emiss);
 
             std::vector<ValsPerScan> scan_data;
 
@@ -67,6 +68,7 @@ namespace eos
             EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
                 d_vars = calib["vars"];
+                is_aqua = calib["is_aqua"];
             }
 
             void init();

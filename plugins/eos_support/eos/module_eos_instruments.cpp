@@ -250,6 +250,7 @@ namespace eos
                 nlohmann::json calib_cfg;
                 calib_cfg["calibrator"] = "eos_modis";
                 calib_cfg["vars"] = modis_reader.getCalib();
+                calib_cfg["is_aqua"] = d_satellite == AQUA;
                 modis_products.set_calibration(calib_cfg);
                 for (int i = 0; i < 21; i++)
                     modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);

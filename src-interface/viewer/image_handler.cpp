@@ -738,8 +738,8 @@ namespace satdump
 
         if (show_markdown_description)
         {
-            ImGuiIO& io = ImGui::GetIO();
-            ImGui::SetNextWindowSize({ 400 * ui_scale, 400 * ui_scale }, ImGuiCond_Appearing);
+            ImGuiIO &io = ImGui::GetIO();
+            ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale}, ImGuiCond_Appearing);
             ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
             ImGui::Begin("Composite Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
             markdown_composite_info.render();

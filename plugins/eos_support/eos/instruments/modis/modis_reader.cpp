@@ -316,7 +316,7 @@ namespace eos
                 uint8_t *block_curr = &packet.payload[12];
                 int major_cycle_cnt = block_curr[0] >> 2;
 
-                logger->critical("Major Cycle %d", major_cycle_cnt);
+                // logger->critical("Major Cycle %d", major_cycle_cnt);
 
                 if (major_cycle_cnt == 0)
                 {
