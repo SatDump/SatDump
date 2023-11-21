@@ -304,6 +304,11 @@ class MainActivity : NativeActivity(), TextWatcher {
         return tmp;
     }
 
+    public fun openURL(url: String) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
+    }
+
     // Receive results of the above
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data);
