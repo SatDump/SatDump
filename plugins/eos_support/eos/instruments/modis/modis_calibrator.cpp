@@ -60,13 +60,13 @@ namespace eos
                     scaninfo.emissive_DN_SVs[D_emiss] = DN_sv;
                     scaninfo.emissive_DN_BBs[D_emiss] = DN_bb;
 
-                    if (get_coeffs(scaninfo.emissisive_a0[D_emiss],
-                                   scaninfo.emissisive_a2[D_emiss],
-                                   scaninfo.emissisive_b1[D_emiss],
-                                   scaninfo.Planck_mir[D_emiss],
+                    if (get_coeffs(scaninfo.emissive_a0[D_emiss],
+                                   scaninfo.emissive_a2[D_emiss],
+                                   scaninfo.emissive_b1[D_emiss],
+                                   scaninfo.emissive_Planck_mir[D_emiss],
                                    DN_sv, DN_bb, scaninfo, D_emiss))
                     {
-                        scaninfo.emissisive_a0[D_emiss] = -1000;
+                        scaninfo.emissive_a0[D_emiss] = -1000;
                         // goto skip_scan;
                     }
                 }
@@ -79,7 +79,7 @@ namespace eos
                              scan, scaninfo.MS, scaninfo.T_bb, scaninfo.T_mir, scaninfo.T_cav, scaninfo.T_ins,
                              scaninfo.fp_temps[0], scaninfo.fp_temps[1], scaninfo.fp_temps[2], scaninfo.fp_temps[3],
                              (int)scaninfo.valid,
-                             scaninfo.emissisive_a0[0], scaninfo.emissive_DN_BBs[0], scaninfo.emissive_DN_SVs[0]);
+                             scaninfo.emissive_a0[0], scaninfo.emissive_DN_BBs[0], scaninfo.emissive_DN_SVs[0]);
             }
         }
 
@@ -137,10 +137,10 @@ namespace eos
 
             int dn_ev = DN_ev - DN_sv;
 
-            double a0 = scaninfo.emissisive_a0[D_emiss];
-            double a2 = scaninfo.emissisive_a2[D_emiss];
-            double b1 = scaninfo.emissisive_b1[D_emiss];
-            double L_sm = scaninfo.Planck_mir[D_emiss];
+            double a0 = scaninfo.emissive_a0[D_emiss];
+            double a2 = scaninfo.emissive_a2[D_emiss];
+            double b1 = scaninfo.emissive_b1[D_emiss];
+            double L_sm = scaninfo.emissive_Planck_mir[D_emiss];
 
             if (a0 == -1000)
             {
@@ -386,6 +386,16 @@ namespace eos
             {
                 int DN = d_vars[scan]["bb_temp"][thermistor];
 
+#if 1 // Experimental, take most common value if delta is too high
+                std::vector<int> v_DN;
+                for (int scan2 = 0; scan2 < d_products->images[7].image.height() / 10; scan2++)
+                    v_DN.push_back(d_vars[scan2]["bb_temp"][thermistor]);
+
+                int mDN = most_common(v_DN.begin(), v_DN.end());
+                if (abs(DN - mDN) > 200)
+                    DN = mDN;
+#endif
+
                 if (DN > 0 && DN < 4095)
                 {
                     double V0 = 0;
@@ -445,6 +455,16 @@ namespace eos
             for (int i = 0; i < 2; i++)
             {
                 int MIR = d_vars[scan]["mir_temp"][i];
+
+#if 1 // Experimental, take most common value if delta is too high
+                std::vector<int> v_MIR;
+                for (int scan2 = 0; scan2 < d_products->images[7].image.height() / 10; scan2++)
+                    v_MIR.push_back(d_vars[scan2]["mir_temp"][i]);
+
+                int mMIR = most_common(v_MIR.begin(), v_MIR.end());
+                if (abs(MIR - mMIR) > 200)
+                    MIR = mMIR;
+#endif
 
                 if (MIR > 0 && MIR < 4095)
                 {
@@ -532,8 +552,6 @@ namespace eos
                 int mINS = most_common(v_INS.begin(), v_INS.end());
                 if (abs(INS - mINS) > 200)
                     INS = mINS;
-
-                logger->trace("INS %d %d", i, INS);
 #endif
 
                 if (INS > 0 && INS < 4095)
@@ -569,15 +587,6 @@ namespace eos
             int FP3 = d_vars[scan]["fp_temp"][2];
             int FP4 = d_vars[scan]["fp_temp"][3];
 
-            if (FP1 == 0 || FP1 == 4095)
-                return;
-            if (FP2 == 0 || FP2 == 4095)
-                return;
-            if (FP3 == 0 || FP3 == 4095)
-                return;
-            if (FP4 == 0 || FP4 == 4095)
-                return;
-
 #if 1 // Experimental. We assume it does not change during the pass!
             std::vector<bool> v_FP_T1SET;
             std::vector<bool> v_FP_T3SET;
@@ -599,6 +608,34 @@ namespace eos
             bool FP_T3SET = d_vars[scan]["fp_temp_info"][1];
             bool LWHTR_ON = d_vars[scan]["fp_temp_info"][2];
             bool SMHTR_ON = d_vars[scan]["fp_temp_info"][3];
+#endif
+
+#if 1 // Experimental, take most common value if delta is too high
+            std::vector<int> v_FP1;
+            std::vector<int> v_FP2;
+            std::vector<int> v_FP3;
+            std::vector<int> v_FP4;
+            for (int scan2 = 0; scan2 < d_products->images[7].image.height() / 10; scan2++)
+            {
+                v_FP1.push_back(d_vars[scan2]["fp_temp"][0]);
+                v_FP2.push_back(d_vars[scan2]["fp_temp"][1]);
+                v_FP3.push_back(d_vars[scan2]["fp_temp"][2]);
+                v_FP4.push_back(d_vars[scan2]["fp_temp"][3]);
+            }
+
+            int mFP1 = most_common(v_FP1.begin(), v_FP1.end());
+            int mFP2 = most_common(v_FP2.begin(), v_FP2.end());
+            int mFP3 = most_common(v_FP3.begin(), v_FP3.end());
+            int mFP4 = most_common(v_FP4.begin(), v_FP4.end());
+
+            if (FP1 == 0 || FP1 == 4095 || abs(FP1 - mFP1) > 200)
+                FP1 = mFP1;
+            if (FP2 == 0 || FP2 == 4095 || abs(FP2 - mFP2) > 200)
+                FP2 = mFP1;
+            if (FP3 == 0 || FP3 == 4095 || abs(FP3 - mFP3) > 200)
+                FP3 = mFP3;
+            if (FP4 == 0 || FP4 == 4095 || abs(FP4 - mFP4) > 200)
+                FP4 = mFP4;
 #endif
 
             // Compute focal plane assembly 1 and 2 temperatures.

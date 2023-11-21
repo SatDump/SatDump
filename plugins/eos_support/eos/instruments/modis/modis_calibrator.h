@@ -16,9 +16,10 @@ namespace eos
             int emissive_DN_SVs[160];
             int emissive_DN_BBs[160];
 
-            double emissisive_a0[160];
-            double emissisive_a2[160];
-            double emissisive_b1[160];
+            double emissive_a0[160];
+            double emissive_a2[160];
+            double emissive_b1[160];
+            float emissive_Planck_mir[160];
 
             // Temperature
             double T_bb;
@@ -26,7 +27,12 @@ namespace eos
             double T_cav;
             double T_ins;
             double fp_temps[4];
-            float Planck_mir[160];
+
+            NLOHMANN_DEFINE_TYPE_INTRUSIVE(ValsPerScan,
+                                           MS, valid,
+                                           emissive_DN_SVs, emissive_DN_BBs,
+                                           emissive_a0, emissive_a2, emissive_b1, emissive_Planck_mir,
+                                           T_bb, T_mir, T_cav, T_ins, fp_temps)
         };
 
         class EosMODISCalibrator : public satdump::ImageProducts::CalibratorBase
