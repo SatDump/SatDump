@@ -369,7 +369,7 @@ namespace satdump
                 panel_ratio = left_width / viewer_size.x;
             last_width = left_width;
 
-            ImGui::BeginChild("ViewerChildPanel", {left_width, float(viewer_size.y - 10)}, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
+            ImGui::BeginChild("ViewerChildPanel", {left_width, float(viewer_size.y - 10)});
             drawPanel();
             ImGui::EndChild();
 

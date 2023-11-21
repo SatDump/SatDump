@@ -26,6 +26,12 @@ std::shared_ptr<slog::StdOutSink> console_sink;
 std::shared_ptr<slog::FileSink> file_sink;
 SATDUMP_DLL std::shared_ptr<slog::Logger> logger;
 
+// We need a place to buffer log messages during initialization
+// to make sure the messages end up in log sinks added later in
+// the initialization process
+std::vector<slog::LogMsg> init_log_buffer;
+bool init_buffer_active = true;
+
 namespace slog
 {
     const std::string log_schar[] = {"T", "D", "I", "W", "E", "C"};
@@ -179,6 +185,19 @@ namespace slog
         LogMsg m;
         m.str = v;
         m.lvl = lvl;
+
+        // Push to init buffer to dump to sinks added later
+        if (init_buffer_active)
+        {
+            // Once 1000 messages have been logged, assume all sinks have
+            // been attached and we were not notified. Stop buffering
+            if (init_log_buffer.size() >= 1000)
+                completeLoggerInit();
+            else
+                init_log_buffer.push_back(m);
+        }
+
+        // Push to current sinks
         if (m.lvl >= logger_lvl)
             for (auto &l : sinks)
                 l->receive(m);
@@ -235,6 +254,8 @@ namespace slog
     void Logger::add_sink(std::shared_ptr<LoggerSink> sink)
     {
         sink_mtx.lock();
+        for (LogMsg& msg : init_log_buffer)
+            sink->receive(msg);
         sinks.push_back(sink);
         sink_mtx.unlock();
     }
@@ -264,14 +285,9 @@ void initLogger()
 #endif
 
         logger = std::make_shared<slog::Logger>();
-        logger->add_sink(console_sink);
-
-        // Use a custom, nicer log pattern. No color in the file
-        // console_sink->set_pattern("[%D - %T] %^(%L) %v%$");
-
-        // Default log level
-        console_sink->set_level(slog::LOG_TRACE);
         logger->set_level(slog::LOG_TRACE);
+        console_sink->set_level(slog::LOG_TRACE);
+        logger->add_sink(console_sink);
     }
     catch (std::exception &e)
     {
@@ -317,6 +333,12 @@ void initFileSink()
         std::cout << e.what() << std::endl;
         exit(1);
     }
+}
+
+void completeLoggerInit()
+{
+    init_log_buffer.clear();
+    init_buffer_active = false;
 }
 
 void setConsoleLevel(slog::LogLevel level)

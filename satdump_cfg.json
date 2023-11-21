@@ -593,7 +593,6 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-
                     "NDWI": {
                         "channels": "cch2, cch3a",
                         "calib_cfg": {
@@ -613,7 +612,6 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-
                     "Sea Surface Temperature": {
                         "channels": "cch4",
                         "description": "descriptions/SST.md",
@@ -632,15 +630,20 @@
                         "autogen": false
                     },
                     "Night Time Fire Detection (transparent)": {
-                        "equation": "((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0, 0, 0, ((cch3b>0.29)?(cch4>0.28):0)?(cch3b-cch4)>0.1:0",
+                        "channels": "cch3b, cch4",
                         "description": "descriptions/NightFire.md",
-                        "ch4": {
-                            "min": 0,
-                            "max": 1000
-                        },
-                        "ch5": {
-                            "min": 0,
-                            "max": 1000
+                        "lua": "scripted_compos/NightFire.lua",
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            }
                         },
                         "autogen": false
                     },
@@ -649,12 +652,10 @@
                         "description": "descriptions/NO.md",
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "autogen": false,
@@ -669,12 +670,10 @@
                     "ZA enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "lut": "lut/cal/WXtoImg-ZA.png",
@@ -683,46 +682,40 @@
                         "geo_correct": true
                     },
                     "MB enhancement": {
+                        "lut": "lut/cal/WXtoImg-MB.png",
+                        "description": "descriptions/MB.md",
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
-                        "description": "descriptions/MB.md",
-                        "lut": "lut/cal/WXtoImg-MB.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "MD enhancement": {
+                        "lut": "lut/cal/WXtoImg-MD.png",
+                        "description": "descriptions/MD.md",
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
-                        "description": "descriptions/MD.md",
-                        "lut": "lut/WXtoImg-MD.png",
                         "autogen": false,
                         "geo_correct": true
                     },
                     "BD enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/BD.md",
@@ -733,12 +726,10 @@
                     "CC enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/CC.md",
@@ -749,12 +740,10 @@
                     "EC enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/EC.md",
@@ -765,12 +754,10 @@
                     "HE enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/HE.md",
@@ -781,12 +768,10 @@
                     "HF enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/HF.md",
@@ -797,12 +782,10 @@
                     "JF enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/JF.md",
@@ -813,12 +796,10 @@
                     "JJ enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/JJ.md",
@@ -829,12 +810,10 @@
                     "TA enhancement": {
                         "channels": "cch4",
                         "calib_cfg": {
-                            "calib_cfg": {
-                                "cch4": {
-                                    "type": "temperature",
-                                    "min": 173.15,
-                                    "max": 323.15
-                                }
+                            "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
                             }
                         },
                         "description": "descriptions/TA.md",
@@ -1130,6 +1109,7 @@
                     "221": {
                         "equation": "ch2, ch2, ch1",
                         "geo_correct": true,
+                        "white_balance": true,
                         "description": "descriptions/221.md",
                         "equalize": true
                     },
@@ -1137,6 +1117,7 @@
                         "equation": "ch3, ch2, ch1",
                         "description": "descriptions/321.md",
                         "geo_correct": true,
+                        "white_balance": true,
                         "project": {
                             "width": 4096,
                             "height": 2048,
@@ -1151,6 +1132,7 @@
                         "equation": "ch1, ch2, ch4",
                         "description": "descriptions/124.md",
                         "geo_correct": true,
+                        "white_balance": true,
                         "individual_equalize": true
                     },
                     "Natural Color": {
@@ -1507,7 +1489,7 @@
                         "autogen": false
                     },
                     "Snow cover (Transparent)": {
-                        "equation": "cch1, 0, 0, cch2-cch1 < 0.1 ? (cch1 < 0.6 ? 1 : 0) : 0",
+                        "equation": "1-cch1, 0, 0, cch2-cch1 < 0.1 ? (cch1 < 0.6 ? 1 : 0) : 0",
                         "description": "descriptions/sounders/SnowcoverTransparent.md",
                         "apply_lut": true,
                         "autogen": false

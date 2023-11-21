@@ -422,7 +422,7 @@ namespace satdump
                     double tmp_min = (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     double tmp_max = (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
                     buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
@@ -741,11 +741,8 @@ namespace satdump
             ImGuiIO& io = ImGui::GetIO();
             ImGui::SetNextWindowSize({ 400 * ui_scale, 400 * ui_scale }, ImGuiCond_Appearing);
             ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
-            ImGui::Begin("Composite Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
-            if (ImGui::IsWindowFocused())
-                markdown_composite_info.render();
-            else
-                show_markdown_description = false;
+            ImGui::Begin("Composite Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
+            markdown_composite_info.render();
             ImGui::End();
         }
     }

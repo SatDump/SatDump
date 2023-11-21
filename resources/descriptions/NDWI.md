@@ -20,4 +20,4 @@ Cloud dependent.
 
 ### References
 
-Gao, Bo-Cai (1996). "NDWI—A normalized difference water index for remote sensing of vegetation liquid water from space" (PDF). Remote Sensing of Environment. [doi:10.1016/S0034-4257(96)00067-3](https://doi.org/10.1016%2FS0034-4257%2896%2900067-3)
+Gao, Bo-Cai (1996). "NDWI—A normalized difference water index for remote sensing of vegetation liquid water from space" (PDF). Remote Sensing of Environment. doi:10.1016/S0034-4257(96)00067-3. [View Article](https://doi.org/10.1016%2FS0034-4257%2896%2900067-3)

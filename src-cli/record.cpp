@@ -34,6 +34,7 @@ int main_record(int argc, char *argv[])
 
     // Init SatDump
     satdump::initSatdump();
+    completeLoggerInit();
 
     std::string output_file = argv[2];
 

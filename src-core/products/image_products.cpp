@@ -284,7 +284,7 @@ namespace satdump
         }
     }
 
-    bool equation_contains(std::string init, std::string match)
+    bool equation_contains(std::string init, std::string match, int *loc)
     {
         size_t pos = init.find(match);
     retry:
@@ -302,8 +302,10 @@ namespace satdump
                 pos++;
             }
 
-            if (match == final_ex)
+            if (match == final_ex){
+                if (loc != nullptr) *loc = pos;
                 return true;
+            }
 
             pos = init.find(match, pos + 1);
             goto retry;
@@ -355,23 +357,12 @@ namespace satdump
             if (max_width_total < (int)img.image.width())
                 max_width_total = img.image.width();
 
-            if (equation_contains(str_to_find_channels, equ_str) && img.image.size() > 0)
+            int cal_loc = -1;
+            int loc = -1;
+
+            if (equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && img.image.size() > 0 && product.has_calibation())
             {
-                channel_indexes.push_back(i);
-                channel_numbers.push_back(equ_str);
-                images_obj.push_back(img.image);
-                offsets.emplace(equ_str, img.offset_x);
-                logger->debug("Composite needs channel %s", equ_str.c_str());
-
-                if (max_width_used < (int)img.image.width())
-                    max_width_used = img.image.width();
-
-                if (min_offset > img.offset_x)
-                    min_offset = img.offset_x;
-            }
-
-            if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0 && product.has_calibation())
-            {
+                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
                 product.init_calibration();
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str_calib);
@@ -387,7 +378,22 @@ namespace satdump
                     images_obj.push_back(product.get_calibrated_image(i, progress));
                 }
                 offsets.emplace(equ_str_calib, img.offset_x);
-                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
+                
+
+                if (max_width_used < (int)img.image.width())
+                    max_width_used = img.image.width();
+
+                if (min_offset > img.offset_x)
+                    min_offset = img.offset_x;
+            }
+
+            if (equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() > 0 && cal_loc != loc)
+            {
+                channel_indexes.push_back(i);
+                channel_numbers.push_back(equ_str);
+                images_obj.push_back(img.image);
+                offsets.emplace(equ_str, img.offset_x);
+                logger->debug("Composite needs channel %s", equ_str.c_str());
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();

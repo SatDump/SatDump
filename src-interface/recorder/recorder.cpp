@@ -183,9 +183,9 @@ namespace satdump
 
             ImGui::BeginGroup();
             float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
-            ImGuiWindowFlags recorder_panel_flags = ImGuiWindowFlags_NoBringToFrontOnFocus;
+            ImGuiWindowFlags recorder_panel_flags = ImGuiWindowFlags_None;
             if (show_tracking)
-                recorder_panel_flags |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
+                recorder_panel_flags = ImGuiWindowFlags_AlwaysVerticalScrollbar;
 
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, recorder_panel_flags);
             {
@@ -548,7 +548,7 @@ namespace satdump
                 float live_height = 250 * ui_scale;
                 float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
                 float currentPos = 0;
-                ImGui::PushStyleColor(11, ImGui::GetStyleColorVec4(10));
+                ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
                 for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
                 {
                     ImGui::SetNextWindowPos({currentPos, y_pos});

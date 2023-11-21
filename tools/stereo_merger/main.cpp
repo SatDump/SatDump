@@ -20,6 +20,7 @@ double get_cadu_timestamp(uint8_t *data)
 int main(int argc, char *argv[])
 {
     initLogger();
+    completeLoggerInit();
 
     std::vector<double> all_timestamps;
     std::vector<std::array<uint8_t, 1119>> all_frames;
