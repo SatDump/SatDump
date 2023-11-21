@@ -6,6 +6,10 @@
 #include "common/image/image.h"
 #include <filesystem>
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 namespace widgets
 {
     void MarkdownHelper::link_callback(ImGui::MarkdownLinkCallbackData data_)
@@ -16,7 +20,7 @@ namespace widgets
             logger->info("Opening URL " + url);
 
 #if defined(_WIN32)
-            system(std::string("explorer \"" + url + "\"").c_str());
+            ShellExecuteA(0, 0, url.c_str(), 0, 0, SW_SHOW);
 #elif defined(__APPLE__)
             system(std::string("open " + url).c_str());
 #else
