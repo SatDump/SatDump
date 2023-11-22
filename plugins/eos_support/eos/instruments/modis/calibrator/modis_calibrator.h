@@ -1,6 +1,8 @@
 #pragma once
 
 #include "products/image_products.h"
+#include "modis_emiss_table.h"
+// #include "modis_reflec_table.h"
 
 namespace eos
 {
@@ -42,12 +44,17 @@ namespace eos
             bool is_aqua = false;
 
             double compute_emissive(int channel, int pos_x, int pos_y, int px_val);
+            double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
+
+            // HDF4File_Reflective Sat_CoeffsR;
+            Coefficients_Emissive Sat_CoeffsE;
 
         private:
             float RVS_1km_Emiss_BB[160][2];
             float RVS_1km_Emiss_SV[160][2];
             float RVS_1km_Emiss_EV[160][1354][2];
             float sigma_RVS_Emiss_EV[160][1354][2];
+
             void calculate_rvs_correction();
 
             int get_emmissive_view_avg(std::string type, int channel, int det, int scan);

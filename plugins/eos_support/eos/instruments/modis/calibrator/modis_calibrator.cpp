@@ -3,11 +3,10 @@
 #include "logger.h"
 
 #include "modis_defs.h"
-#include "modis_emiss_table.h"
 
 #include "common/utils.h"
 
-HDF4File Aqua_Coeffs;
+#include "nlohmann/json_utils.h"
 
 namespace eos
 {
@@ -15,6 +14,13 @@ namespace eos
     {
         void EosMODISCalibrator::init()
         {
+            logger->trace("Loading emissive!");
+            Sat_CoeffsE = loadCborFile("/home/alan/Documents/SatDump_ReWork/build/emissive_table_aqua.cbor");
+            // Sat_CoeffsE = loadCborFile("/home/alan/Documents/SatDump_ReWork/build/emissive_table_terra.cbor");
+            // logger->trace("Loading reflective!");
+            // Sat_CoeffsR = loadCborFile("/home/alan/Documents/SatDump_ReWork/build/reflective_table_aqua.cbor");
+
+            logger->trace("Calculate RVS/RSB!");
             calculate_rvs_correction();
 
             for (int scan = 0; scan < (int)d_products->images[7].image.height() / 10; scan++)
@@ -101,15 +107,6 @@ namespace eos
                 return compute_emissive(channel, pos_x, pos_y, px_val);
 
             return CALIBRATION_INVALID_VALUE;
-        }
-
-        inline double spectral_radiance_to_radiance(double L, double wavenumber)
-        {
-            double c_1 = 1.191042e8;
-            double c_2 = 1.4387752e4;
-            double lamba = (1e7 / wavenumber) / 1e3;
-            double temp = c_2 / (lamba * log(c_1 / (pow(lamba, 5) * L + 1)));
-            return temperature_to_radiance(temp, wavenumber);
         }
 
         double EosMODISCalibrator::compute_emissive(int channel, int pos_x, int pos_y, int px_val)

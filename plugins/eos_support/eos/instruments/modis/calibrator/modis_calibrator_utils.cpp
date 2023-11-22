@@ -1,9 +1,7 @@
 #include "modis_calibrator.h"
 
 #include "modis_defs.h"
-
-#include "modis_emiss_table.h"
-extern HDF4File Aqua_Coeffs;
+#include "logger.h"
 
 namespace eos
 {
@@ -18,35 +16,37 @@ namespace eos
             if (dn_bb < 1.0E-20) // We cannot calibrate this scan
                 return true;
 
+            // bool PCX_correction_switch = Sat_CoeffsE.PCX_correction_switch[0];
+
             // Calculate a0, a2
             // These are quadratics in instrument temperature (T_ins).
             double T_ins = scani.T_ins;
-            a0 = Aqua_Coeffs.A0[0][0][MS][D_emiss] + T_ins * (Aqua_Coeffs.A0[0][1][MS][D_emiss] + T_ins * Aqua_Coeffs.A0[0][2][MS][D_emiss]);
-            a2 = Aqua_Coeffs.A2[0][0][MS][D_emiss] + T_ins * (Aqua_Coeffs.A2[0][1][MS][D_emiss] + T_ins * Aqua_Coeffs.A2[0][2][MS][D_emiss]);
+            a0 = Sat_CoeffsE.A0[0][MS][D_emiss] + T_ins * (Sat_CoeffsE.A0[1][MS][D_emiss] + T_ins * Sat_CoeffsE.A0[2][MS][D_emiss]);
+            a2 = Sat_CoeffsE.A2[0][MS][D_emiss] + T_ins * (Sat_CoeffsE.A2[1][MS][D_emiss] + T_ins * Sat_CoeffsE.A2[2][MS][D_emiss]);
 
             // Calculate dL_bb
             double T_cav = scani.T_cav;
             double T_bb = scani.T_bb;
-            double delta_T_bb = Aqua_Coeffs.delta_T_bb_beta[D_emiss] * (T_cav - T_bb) + Aqua_Coeffs.delta_T_bb_delta[D_emiss];
+            double delta_T_bb = Sat_CoeffsE.delta_T_bb_beta[D_emiss] * (T_cav - T_bb) + Sat_CoeffsE.delta_T_bb_delta[D_emiss];
 
             // Calculate dL_bb
             float T_mir = scani.T_mir;
-            if (Calculate_Planck(Aqua_Coeffs.RSR[D_emiss],
-                                 Aqua_Coeffs.WAVELENGTH[D_emiss],
+            if (Calculate_Planck(Sat_CoeffsE.RSR[D_emiss],
+                                 Sat_CoeffsE.WAVELENGTH[D_emiss],
                                  66, // tables->NUM_RSR_vs_Lambda[D_emiss],
                                  T_mir, &L_sm))
                 return true;
 
             float L_bb = 0;
-            if (Calculate_Planck(Aqua_Coeffs.RSR[D_emiss],
-                                 Aqua_Coeffs.WAVELENGTH[D_emiss],
+            if (Calculate_Planck(Sat_CoeffsE.RSR[D_emiss],
+                                 Sat_CoeffsE.WAVELENGTH[D_emiss],
                                  66, // tables->NUM_RSR_vs_Lambda[D_emiss],
                                  T_bb + delta_T_bb, &L_bb))
                 return true;
 
             float L_cav = 0;
-            if (Calculate_Planck(Aqua_Coeffs.RSR[D_emiss],
-                                 Aqua_Coeffs.WAVELENGTH[D_emiss],
+            if (Calculate_Planck(Sat_CoeffsE.RSR[D_emiss],
+                                 Sat_CoeffsE.WAVELENGTH[D_emiss],
                                  66, // tables->NUM_RSR_vs_Lambda[D_emiss],
                                  T_cav, &L_cav))
                 return true;
@@ -54,10 +54,10 @@ namespace eos
             float bb_corr = RVS_1km_Emiss_BB[D_emiss][MS];
             float sv_corr = RVS_1km_Emiss_SV[D_emiss][MS];
 
-            double dL_bb = bb_corr * Aqua_Coeffs.epsilon_bb[D_emiss] * L_bb +
+            double dL_bb = bb_corr * Sat_CoeffsE.epsilon_bb[D_emiss] * L_bb +
                            (sv_corr - bb_corr) * L_sm +
-                           (1.0 - Aqua_Coeffs.epsilon_bb[D_emiss]) *
-                               Aqua_Coeffs.epsilon_cav[D_emiss] *
+                           (1.0 - Sat_CoeffsE.epsilon_bb[D_emiss]) *
+                               Sat_CoeffsE.epsilon_cav[D_emiss] *
                                bb_corr * L_cav;
 
             b1 = (dL_bb - a0 - a2 * dn_bb * dn_bb) / dn_bb;
@@ -114,8 +114,8 @@ namespace eos
                 frame_no_squared[frame] = frame * frame;
 
             // Frame numbers to use for BB and SV calculations
-            int BB_frame_no = Aqua_Coeffs.RVS_BB_SV_Frame_No[0];
-            int SV_frame_no = Aqua_Coeffs.RVS_BB_SV_Frame_No[1];
+            int BB_frame_no = Sat_CoeffsE.RVS_BB_SV_Frame_No[0];
+            int SV_frame_no = Sat_CoeffsE.RVS_BB_SV_Frame_No[1];
 
             // Calculate the frame-by-frame RVS Correction Terms for Emissive Bands.
             // Set the emissive detector index to 0.
@@ -129,14 +129,14 @@ namespace eos
                     for (int mirr_side = 0; mirr_side < NUM_MIRROR_SIDES; mirr_side++)
                     {
                         // Read the set of three rvs coefficients.
-                        const float *rvs_coeffs = Aqua_Coeffs.RVS_TEB[0][band][det][mirr_side];
+                        const float *rvs_coeffs = Sat_CoeffsE.RVS_TEB[band][det][mirr_side];
 
                         // If this is not the first detector, check to see whether these
                         // coefficients are the same as those for the detector before it.
                         if (det > 0)
-                            coeffs_same = (Aqua_Coeffs.RVS_TEB[0][band][det - 1][mirr_side][0] == rvs_coeffs[0] &&
-                                           Aqua_Coeffs.RVS_TEB[0][band][det - 1][mirr_side][1] == rvs_coeffs[1] &&
-                                           Aqua_Coeffs.RVS_TEB[0][band][det - 1][mirr_side][2] == rvs_coeffs[2]);
+                            coeffs_same = (Sat_CoeffsE.RVS_TEB[band][det - 1][mirr_side][0] == rvs_coeffs[0] &&
+                                           Sat_CoeffsE.RVS_TEB[band][det - 1][mirr_side][1] == rvs_coeffs[1] &&
+                                           Sat_CoeffsE.RVS_TEB[band][det - 1][mirr_side][2] == rvs_coeffs[2]);
                         else
                             coeffs_same = false;
 
@@ -169,15 +169,15 @@ namespace eos
 
                         // Calculate the sigma RVS for TEB
                         // Read the set of three sigma rvs coefficients.
-                        const float *sigma_rvs_coeffs = Aqua_Coeffs.sigma_RVS_EV[0][band][det][mirr_side];
+                        const float *sigma_rvs_coeffs = Sat_CoeffsE.sigma_RVS_EV[band][det][mirr_side];
 
                         // If this is not the first detector, check to see whether these
                         // coefficients are the same as those for the detector before it.
 
                         if (det > 0)
-                            coeffs_same = (Aqua_Coeffs.sigma_RVS_EV[0][band][det - 1][mirr_side][0] == sigma_rvs_coeffs[0] &&
-                                           Aqua_Coeffs.sigma_RVS_EV[0][band][det - 1][mirr_side][1] == sigma_rvs_coeffs[1] &&
-                                           Aqua_Coeffs.sigma_RVS_EV[0][band][det - 1][mirr_side][2] == sigma_rvs_coeffs[2]);
+                            coeffs_same = (Sat_CoeffsE.sigma_RVS_EV[band][det - 1][mirr_side][0] == sigma_rvs_coeffs[0] &&
+                                           Sat_CoeffsE.sigma_RVS_EV[band][det - 1][mirr_side][1] == sigma_rvs_coeffs[1] &&
+                                           Sat_CoeffsE.sigma_RVS_EV[band][det - 1][mirr_side][2] == sigma_rvs_coeffs[2]);
                         else
                             coeffs_same = false;
 

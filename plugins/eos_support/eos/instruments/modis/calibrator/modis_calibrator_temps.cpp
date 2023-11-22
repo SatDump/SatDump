@@ -179,12 +179,15 @@ namespace eos
 #if 1 // Experimental, take most common value if delta is too high
                 std::vector<int> v_INS;
                 for (int scan2 = 0; scan2 < d_products->images[7].image.height() / 10; scan2++)
-                    v_INS.push_back(d_vars[scan2]["inst_temp"][i]);
+                    if (d_vars[scan2]["inst_temp"][i] != 0)
+                        v_INS.push_back(d_vars[scan2]["inst_temp"][i]);
 
                 int mINS = most_common(v_INS.begin(), v_INS.end());
                 if (abs(INS - mINS) > 200)
                     INS = mINS;
 #endif
+
+                logger->info("INS %d", INS);
 
                 if (INS > 0 && INS < 4095)
                 {

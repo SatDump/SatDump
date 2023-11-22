@@ -17,6 +17,9 @@
 
 #include "common/utils.h"
 
+#include "nlohmann/json.hpp"
+#include "nlohmann/json_utils.h"
+
 char *sanitize_string(char *str, bool sanitize)
 {
     char *new_str = NULL;
@@ -126,16 +129,19 @@ char *get_fmt(int ncid, int varid, nc_type type)
 }
 
 template <typename T>
-std::string dumpArray(T *vals_pr, char *fmt, int depth, long dim_sizes[], int &pos, int curr_dim = 0)
+std::string dumpArray(T *vals_pr, nlohmann::json &json_output, char *fmt, int depth, long dim_sizes[], int &pos, int curr_dim = 0)
 {
     std::string final_decl;
     final_decl += "{";
     for (int i = 0; i < dim_sizes[curr_dim]; i++)
     {
         if (depth > 1)
-            final_decl += dumpArray(vals_pr, fmt, depth - 1, dim_sizes, pos, curr_dim + 1);
+            final_decl += dumpArray(vals_pr, json_output[i], fmt, depth - 1, dim_sizes, pos, curr_dim + 1);
         else
-            final_decl += svformat(fmt, vals_pr[pos++]); // std::to_string(*(vals_pr++));
+        {
+            final_decl += svformat(fmt, vals_pr[pos]); // std::to_string(*(vals_pr++));
+            json_output[i] = vals_pr[pos++];
+        }
         if (i + 1 < dim_sizes[curr_dim])
             final_decl += ", ";
     }
@@ -148,6 +154,8 @@ int main(int /*argc*/, char *argv[])
 {
     initLogger();
     completeLoggerInit();
+
+    nlohmann::json json_output;
 
     int ncid = ncopen(argv[1], NC_NOWRITE); /* netCDF id */
 
@@ -168,6 +176,8 @@ int main(int /*argc*/, char *argv[])
     (void)ncinquire(ncid, &ndims, &nvars, &ngatts, &xdimid);
 
     std::vector<std::pair<std::string, int>> all_dims;
+
+    std::vector<std::string> vals_json_intrusive;
 
     if (ndims > 0)
     {
@@ -199,6 +209,8 @@ int main(int /*argc*/, char *argv[])
 
     printf("struct HDF4File {\n");
 
+    vals_json_intrusive.push_back("HDF4File");
+
     /* get variable info, with variable attributes */
     for (int varid = 0; varid < nvars; varid++)
     {
@@ -221,15 +233,24 @@ int main(int /*argc*/, char *argv[])
 
         printf("    %s %s ", type_name(type).c_str(), fixed_str);
 
-        if (ndims > 0)
-            printf("[");
+        // if (ndims > 0)
+        //     printf("[");
 
         long vdims[100];
+
+        // std::string final_type_str = "    ";
+
+        // for (int id = 0; id < ndims; id++)
+        //    final_type_str += "std::array<";
+
+        int total_dim = 1;
 
         for (int id = 0; id < ndims; id++)
         {
             char *fixed_dim = sanitize_string((char *)all_dims[dims[id]].first.c_str(), true);
             vdims[id] = all_dims[dims[id]].second;
+
+            total_dim *= vdims[id];
 
             if (fixed_dim == NULL)
             {
@@ -238,9 +259,23 @@ int main(int /*argc*/, char *argv[])
                 return 1;
             }
 
-            printf("%s%s", fixed_dim, id < ndims - 1 ? "][ " : "]");
+            //  if (id + 1 == ndims)
+            //      final_type_str += type_name(type);
+            //            final_type_str +=  "std::array< , " + std::string(fixed_dim )
+
+            //  printf("%s%s", fixed_dim, id < ndims - 1 ? "][ " : "]");
             free(fixed_dim);
         }
+
+        printf("[%d]", total_dim);
+        vals_json_intrusive.push_back(std::string(fixed_str));
+
+        //  for (int id = ndims - 1; id >= 0; id--)
+        //      final_type_str += ", " + std::string(sanitize_string((char *)all_dims[dims[id]].first.c_str(), true)) + ">";
+
+        //   final_type_str += " " + std::string(fixed_str);
+
+        //  printf("%s", final_type_str.c_str());
 
         std::vector<float> float_vals;
         std::vector<short> short_vals;
@@ -377,20 +412,34 @@ int main(int /*argc*/, char *argv[])
         char *fmt = get_fmt(ncid, varid, type);
         int pos = 0;
         if (float_vals.size() > 0)
-            printf(" = %s", dumpArray(float_vals.data(), fmt, ndims, vdims, pos).c_str());
+            json_output[std::string(fixed_str)] = float_vals; //  /*printf(" = %s",*/ dumpArray(float_vals.data(), json_output[std::string(fixed_str)], fmt, ndims, vdims, pos).c_str(); //);
         else if (short_vals.size() > 0)
-            printf(" = %s", dumpArray(short_vals.data(), fmt, ndims, vdims, pos).c_str());
+            json_output[std::string(fixed_str)] = short_vals; //      /*printf(" = %s",*/ dumpArray(short_vals.data(), json_output[std::string(fixed_str)], fmt, ndims, vdims, pos).c_str(); //);
         else if (long_vals.size() > 0)
-            printf(" = %s", dumpArray(long_vals.data(), fmt, ndims, vdims, pos).c_str());
+            json_output[std::string(fixed_str)] = long_vals; //      /*printf(" = %s",*/ dumpArray(long_vals.data(), json_output[std::string(fixed_str)], fmt, ndims, vdims, pos).c_str(); //);
         else if (byte_vals.size() > 0)
-            printf(" = %s", dumpArray(byte_vals.data(), fmt, ndims, vdims, pos).c_str());
+            json_output[std::string(fixed_str)] = byte_vals; //    /*printf(" = %s",*/ dumpArray(byte_vals.data(), json_output[std::string(fixed_str)], fmt, ndims, vdims, pos).c_str(); //);
 
         logger->critical("POS %d %d", float_vals.size(), pos);
 
         printf(";\n");
 
+        saveCborFile(argv[2], json_output);
+
         free(fixed_str);
     }
+
+    printf("\n    NLOHMANN_DEFINE_TYPE_INTRUSIVE(");
+    for (int v = 0; v < vals_json_intrusive.size(); v++)
+    {
+        if (vals_json_intrusive.size() - 1 == v)
+            printf("%s", vals_json_intrusive[v].c_str());
+        else
+            printf("%s, ", vals_json_intrusive[v].c_str());
+        if (v % 6 == 5)
+            printf("\n    ");
+    }
+    printf(")\n");
 
     printf("};\n");
 }
