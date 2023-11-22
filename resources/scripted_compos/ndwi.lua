@@ -1,4 +1,4 @@
--- NDVI
+-- NDWI
 
 function init()
     --create an empty image for the LUT

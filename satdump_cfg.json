@@ -1493,6 +1493,24 @@
                         "description": "descriptions/sounders/SnowcoverTransparent.md",
                         "apply_lut": true,
                         "autogen": false
+                    },
+                    "Significant Thunderstorms (Transparent)": {
+                        "channels": "cch2, cch5",
+                        "description": "descriptions/SigThunderstorms.md",
+                        "lua": "scripted_compos/mhs_thunderstorm_detection.lua",
+                        "calib_cfg": {
+                            "cch2": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            },
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            }
+                        },
+                        "autogen": false
                     }
                 },
                 "project_channels": {
