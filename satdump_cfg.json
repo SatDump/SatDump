@@ -822,7 +822,7 @@
                         "geo_correct": true
                     },
                     "Color general cloud IR": {
-                        "channels": "cch4, cch4",
+                        "channels": "cch4",
                         "description": "descriptions/ColorGeneralIR.md",
                         "lut": "lut/Multispectral.png",
                         "autogen": false,
