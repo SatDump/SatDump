@@ -97,7 +97,7 @@ General build instructions (Brew and XCode command line tools required)
 
 ```bash
 # Install dependencies
-brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
+brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf nng pkg-config libomp dylibbundler portaudio
 
 # Build and install libfftw3 to work around issue with brew version
 wget http://www.fftw.org/fftw-3.3.9.tar.gz
@@ -146,7 +146,7 @@ On Linux, building from source is recommended, but builds are provided for x64-b
 
 ```bash
 # Install dependencies on Debian-based systems:
-sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev libluajit-5.1-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev                   # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
 sudo apt install libnng-dev                                                                                   # If this package is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
 sudo apt install libglfw3-dev                                                                                 # Only if you want to build the GUI Version (optional)
@@ -157,7 +157,7 @@ sudo apt install ocl-icd-opencl-dev                                             
 sudo apt install intel-opencl-icd                                                                             # Optional, enables OpenCL for Intel Integrated Graphics
 
 # Install dependencies on Red-Hat-based systems:
-sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel luajit-devel
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel
 sudo dnf install nng-devel
 sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
 sudo dnf install glfw-devel
@@ -168,7 +168,7 @@ sudo dnf install ocl-icd                                                        
 sudo dnf install intel-opencl                                                                                 # Optional, enables OpenCL for Intel Integrated Graphics
 
 # Install dependencies on Alpine-based systems:
-sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev luajit-dev                            # Adding the testing repository is required for libvolk-dev
+sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev                                       # Adding the testing repository is required for libvolk-dev
 # You need to build libnng from source, see below.
 sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev
 sudo apk add glfw-dev
