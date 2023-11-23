@@ -248,8 +248,8 @@ namespace noaa_apt
         auto wedge_1 = wip_apt_image_sync.crop_to(996, 996 + 43);
         auto wedge_2 = wip_apt_image_sync.crop_to(2036, 2036 + 43);
 
-        auto space_1 = wip_apt_image_sync.crop_to(41, 86);
-        auto space_2 = wip_apt_image_sync.crop_to(1082, 1126);
+        auto space_a = wip_apt_image_sync.crop_to(41, 86);
+        auto space_b = wip_apt_image_sync.crop_to(1082, 1126);
 
         // wedge_1.save_png("wedge1.png");
         // wedge_2.save_png("wedge2.png");
@@ -267,7 +267,9 @@ namespace noaa_apt
 
         APTWedge calib_wedge_ch1, calib_wedge_ch2; // We also extract calibration words, scaled to 10-bits
         uint16_t prt_counts[4];
-        int space_1v, space_2v;
+        int space_av, space_av1, space_bv;
+        int bb_a, bb_a1;
+        int channel_a = -1, channel_b = -1, channel_a1 = -1, switchy = -1;
 
         if (new_white != 0 && new_black != 0 && new_white1 != 0 && new_black1 != 0)
         {
@@ -280,7 +282,7 @@ namespace noaa_apt
                 for (size_t x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
                     scale_val(wip_apt_image_sync[l * wip_apt_image_sync.width() + x], new_black, new_white);
 
-            int validn1 = 0;
+            int validn1 = 0, validn1_1 = 0;
             for (auto &wed : wedges1)
             { // Calib wedges 1
                 scale_val(wed.ref1, new_black, new_white);
@@ -307,9 +309,21 @@ namespace noaa_apt
                     calib_wedge_ch1.therm_temp3 += wed.therm_temp3;
                     calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
                     calib_wedge_ch1.patch_temp += wed.patch_temp;
-                    calib_wedge_ch1.back_scan += wed.back_scan;
-                    calib_wedge_ch1.channel += wed.channel;
+                    
                     validn1++;
+
+                    if (channel_a == -1)
+                        channel_a = std::round(wed.channel / (double)new_white * 8) - 1;
+
+                    if (std::round(wed.channel / (double)new_white * 8) - 1 != channel_a)
+                    {
+                        if (channel_a1 == -1)
+                            switchy = wed.start_line;
+                        channel_a1 = std::round(wed.channel / (double)new_white * 8) - 1;
+                        bb_a1 += wed.back_scan;
+                        validn1_1++;
+                    } else
+                        bb_a += wed.back_scan;
                 }
             }
 
@@ -318,14 +332,24 @@ namespace noaa_apt
             calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / validn1) >> 6;
             calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / validn1) >> 6;
             calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / validn1) >> 6;
-            calib_wedge_ch1.back_scan = (calib_wedge_ch1.back_scan / validn1) >> 6;
-            calib_wedge_ch1.channel = std::round((calib_wedge_ch1.channel / (double)validn1) / (double)new_white * 8) - 1;
-            if (calib_wedge_ch1.channel > 1)
+            bb_a = (bb_a / validn1) >> 6;
+            if (validn1_1 != 0)
+                bb_a1 = (bb_a1 / validn1_1) >> 6;
+
+            if (channel_a > 1)
             {
-                if (calib_wedge_ch1.channel == 5)
-                    calib_wedge_ch1.channel = 2;
+                if (channel_a == 5)
+                    channel_a = 2;
                 else
-                    calib_wedge_ch1.channel += 1;
+                    channel_a += 1;
+            }
+
+            if (channel_a1 > 1)
+            {
+                if (channel_a1 == 5)
+                    channel_a1 = 2;
+                else
+                    channel_a1 += 1;
             }
 
             int validn2 = 0;
@@ -371,9 +395,9 @@ namespace noaa_apt
             if (calib_wedge_ch2.channel > 1)
             {
                 if (calib_wedge_ch2.channel == 5)
-                    calib_wedge_ch2.channel = 2;
+                    channel_b = 2;
                 else
-                    calib_wedge_ch2.channel += 1;
+                    channel_b = calib_wedge_ch2.channel + 1;
             }
 
             prt_counts[0] = (calib_wedge_ch1.therm_temp1 + calib_wedge_ch2.therm_temp1) / 2;
@@ -381,54 +405,83 @@ namespace noaa_apt
             prt_counts[2] = (calib_wedge_ch1.therm_temp3 + calib_wedge_ch2.therm_temp3) / 2;
             prt_counts[3] = (calib_wedge_ch1.therm_temp4 + calib_wedge_ch2.therm_temp4) / 2;
 
-            int validl1 = 0, validl2 = 0;
+            int validl1 = 0, validl2 = 0, validl1_1 = 0;
 
-            for (int y = 0; y < space_1.height(); y++)
+            if (channel_a1 != -1)
             {
-                int min = space_1[y * space_1.width()], max = space_1[y * space_1.width()], avg = 0;
-                for (int i = 0; i < space_1.width(); i++)
+                auto space_a1 = space_a;
+                space_a1.crop(0, switchy, space_a1.width(), space_a1.height() - switchy);
+
+                for (int y = 0; y < space_a1.height(); y++)
                 {
-                    int v = space_1[y * space_1.width() + i];
-                    if (v < min)
-                        min = v;
-                    if (v > max)
-                        max = v;
-                    avg += v;
-                }
-                avg /= space_1.width();
-                scale_val(avg, new_black, new_white);
-                int max_diff = max - min;
-                if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
-                {
-                    space_1v += avg;
-                    validl1++;
+                    int min = space_a1[y * space_a1.width()], max = space_a1[y * space_a1.width()], avg = 0;
+                    for (int i = 0; i < space_a1.width(); i++)
+                    {
+                        int v = space_a1[y * space_a1.width() + i];
+                        if (v < min)
+                            min = v;
+                        if (v > max)
+                            max = v;
+                        avg += v;
+                    }
+                    avg /= space_a1.width();
+                    scale_val(avg, new_black, new_white);
+                    int max_diff = max - min;
+                    if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                    {
+                        space_av1 += avg;
+                        validl1_1++;
+                    }
                 }
             }
 
-            for (int y = 0; y < space_2.height(); y++)
+            for (int y = 0; y < switchy != -1 ? switchy : space_a.height(); y++)
             {
-                int min = space_2[y * space_2.width()], max = space_2[y * space_2.width()], avg = 0;
-                for (int i = 0; i < space_2.width(); i++)
+                int min = space_a[y * space_a.width()], max = space_a[y * space_a.width()], avg = 0;
+                for (int i = 0; i < space_a.width(); i++)
                 {
-                    int v = space_2[y * space_2.width() + i];
+                    int v = space_a[y * space_a.width() + i];
                     if (v < min)
                         min = v;
                     if (v > max)
                         max = v;
                     avg += v;
                 }
-                avg /= space_2.width();
+                avg /= space_a.width();
                 scale_val(avg, new_black, new_white);
                 int max_diff = max - min;
                 if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
                 {
-                    space_2v += avg;
+                    space_av += avg;
+                    validl1++;
+                }
+                space_av1 /= validl1_1;
+            }
+
+            for (int y = 0; y < space_b.height(); y++)
+            {
+                int min = space_b[y * space_b.width()], max = space_b[y * space_b.width()], avg = 0;
+                for (int i = 0; i < space_b.width(); i++)
+                {
+                    int v = space_b[y * space_b.width() + i];
+                    if (v < min)
+                        min = v;
+                    if (v > max)
+                        max = v;
+                    avg += v;
+                }
+                avg /= space_b.width();
+                scale_val(avg, new_black, new_white);
+                int max_diff = max - min;
+                if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                {
+                    space_bv += avg;
                     validl2++;
                 }
             }
 
-            space_1v /= validl1;
-            space_2v /= validl2;
+            space_av /= validl1;
+            space_bv /= validl2;
         }
 
         int first_valid_line = 0;
@@ -603,17 +656,25 @@ namespace noaa_apt
                     tbb /= 4;
                     for (int c = 3; c < 6; c++)
                     {
-                        if (c == calib_wedge_ch1.channel)
+                        if (c == channel_a)
                         {
-                            calib_out["vars"]["perChannel"][c]["Spc"] = space_1v >> 8;
-                            calib_out["vars"]["perChannel"][c]["Blb"] = calib_wedge_ch1.back_scan >> 2;
+                            calib_out["vars"]["perChannel"][c]["Spc"] = space_av >> 8;
+                            calib_out["vars"]["perChannel"][c]["Blb"] = bb_a >> 2;
                             calib_out["vars"]["perChannel"][c]["Nbb"] =
                                 temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
                                                         calib_coefs["channels"][c]["Vc"].get<double>());
                         }
-                        else if (c == calib_wedge_ch2.channel)
+                        else if (c == channel_a1)
                         {
-                            calib_out["vars"]["perChannel"][c]["Spc"] = space_2v >> 8;
+                            calib_out["vars"]["perChannel"][c]["Spc"] = space_av1 >> 8;
+                            calib_out["vars"]["perChannel"][c]["Blb"] = bb_a1 >> 2;
+                            calib_out["vars"]["perChannel"][c]["Nbb"] =
+                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                        calib_coefs["channels"][c]["Vc"].get<double>());
+                        }
+                        else if (c == channel_b)
+                        {
+                            calib_out["vars"]["perChannel"][c]["Spc"] = space_bv >> 8;
                             calib_out["vars"]["perChannel"][c]["Blb"] = calib_wedge_ch2.back_scan >> 2;
                             calib_out["vars"]["perChannel"][c]["Nbb"] =
                                 temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
@@ -633,9 +694,13 @@ namespace noaa_apt
                     logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
             }
 
-            image::Image<uint16_t> cha, chb, hold;
+            image::Image<uint16_t> cha, cha1, chb, hold;
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
+
+            if (channel_a1 != -1){
+                cha.draw_line
+            }
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)
                 avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == calib_wedge_ch1.channel ? cha : (i == calib_wedge_ch2.channel ? chb : hold)});
