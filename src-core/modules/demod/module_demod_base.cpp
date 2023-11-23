@@ -74,7 +74,7 @@ namespace demod
         logger->debug("Final SPS : %f", final_sps);
 
         if (final_sps < 1.0)
-            throw std::exception("SPS of %f is invalid. Must be above 1!", final_sps);
+            throw std::exception("SPS is invalid. Must be above 1!");
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
