@@ -10,6 +10,7 @@ private:
     nlohmann::json perChannel;
     double crossover[3];
     bool per_line;
+    int factor;
 
     double calc_rad(int channel, int pos_y, int px_val)
     {
@@ -45,20 +46,23 @@ public:
         perChannel = d_calib["vars"]["perChannel"];
         for (int i = 0; i < 3; i++)
             crossover[i] = (perChannel[i]["int_hi"].get<double>() - perChannel[i]["int_lo"].get<double>()) / (perChannel[i]["slope_lo"].get<double>() - perChannel[i]["slope_hi"].get<double>());
+
+        factor = pow(2, 10-d_products->bit_depth);
     }
 
     double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
     {
-        if (channel > 5)
+        if (channel > 5 || px_val == 0)
             return CALIBRATION_INVALID_VALUE;
         if (channel < 3)
         {
+            int px = px_val * factor;
             if (!perChannel[channel].contains("slope_lo"))
                 return CALIBRATION_INVALID_VALUE;
-            if (px_val <= crossover[channel])
-                return (perChannel[channel]["slope_lo"].get<double>() * px_val + perChannel[channel]["int_lo"].get<double>()) / 100.0;
+            if (px <= crossover[channel])
+                return (perChannel[channel]["slope_lo"].get<double>() * px + perChannel[channel]["int_lo"].get<double>()) / 100.0;
             else
-                return (perChannel[channel]["slope_hi"].get<double>() * px_val + perChannel[channel]["int_hi"].get<double>()) / 100.0;
+                return (perChannel[channel]["slope_hi"].get<double>() * px + perChannel[channel]["int_hi"].get<double>()) / 100.0;
         }
         else
         {

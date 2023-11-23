@@ -417,13 +417,13 @@ namespace noaa_apt
             calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / validn2) >> 6;
             calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / validn2) >> 6;
             calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / validn2) >> 6;
-            channel_b = std::round((calib_wedge_ch2.channel / (double)validn2_0) / (double)new_white * 8) - 1;
-            if (channel_b > 1)
+            channel_b = std::round((channel_b / (double)validn2_0) / (double)new_white * 8) - 1;
+            if (channel_b > 2)
             {
                 if (channel_b == 5)
                     channel_b = 2;
                 else
-                    channel_b = channel_b + 1;
+                    channel_b += 1;
             }
 
             prt_counts[0] = (calib_wedge_ch1.therm_temp1 + calib_wedge_ch2.therm_temp1) / 2;
@@ -646,8 +646,13 @@ namespace noaa_apt
 
         // AVHRR
         {
+            std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             logger->info("----------- AVHRR");
             logger->info("Lines : " + std::to_string(line_cnt));
+            if (channel_a1 != -1)
+                logger->info("Identified channels: A: %s, %s B: %s", names[channel_a], names[channel_a1], names[channel_b]);
+            else
+                logger->info("Identified channels: A: %s B: %s", names[channel_a], names[channel_b]);
 
             satdump::ImageProducts avhrr_products;
             avhrr_products.instrument_name = "avhrr_3";
@@ -740,7 +745,6 @@ namespace noaa_apt
                     for (unsigned int x = 0; x < cha1.width(); x++)
                         cha1[i * cha1.width() + x] = 0;
             }
-            std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)
                 avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == channel_a ? (channel_a1 == -1 ? cha : cha2) : (i == channel_b ? chb : (i == channel_a1 ? cha1 : hold))});
 
