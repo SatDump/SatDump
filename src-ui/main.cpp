@@ -120,6 +120,8 @@ int main(int argc, char *argv[])
         window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
         if (window == nullptr)
         {
+            pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer",
+                pfd::choice::ok, pfd::icon::error);
             logger->critical("Could not init GLFW Window! Exiting");
             exit(1);
         }
