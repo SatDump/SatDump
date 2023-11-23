@@ -38,7 +38,7 @@
                     "rrc_alpha": 0.5,
                     "pll_bw": 0.003
                 }
-            }/*,
+            },
             "cadu": {
                 "metop_ahrpt_decoder": {
                     "viterbi_outsync_after": 10,
@@ -47,7 +47,7 @@
             },
             "products": {
                 "metop_instruments": {}
-            }*/
+            }
         }
     },
     "metop_dump": {
