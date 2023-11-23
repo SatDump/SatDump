@@ -309,7 +309,7 @@ namespace noaa_apt
                     calib_wedge_ch1.therm_temp3 += wed.therm_temp3;
                     calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
                     calib_wedge_ch1.patch_temp += wed.patch_temp;
-                    
+
                     validn1++;
 
                     if (channel_a == -1)
@@ -322,7 +322,8 @@ namespace noaa_apt
                         channel_a1 = std::round(wed.channel / (double)new_white * 8) - 1;
                         bb_a1 += wed.back_scan;
                         validn1_1++;
-                    } else
+                    }
+                    else
                         bb_a += wed.back_scan;
                 }
             }
@@ -433,6 +434,7 @@ namespace noaa_apt
                         validl1_1++;
                     }
                 }
+                space_av1 /= validl1_1;
             }
 
             for (int y = 0; y < switchy != -1 ? switchy : space_a.height(); y++)
@@ -455,7 +457,6 @@ namespace noaa_apt
                     space_av += avg;
                     validl1++;
                 }
-                space_av1 /= validl1_1;
             }
 
             for (int y = 0; y < space_b.height(); y++)
@@ -698,10 +699,11 @@ namespace noaa_apt
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
-            if (channel_a1 != -1){
-                uint16_t black[] = {0,0,0};
+            if (channel_a1 != -1)
+            {
+                uint16_t black[] = {0, 0, 0};
                 cha1 = image::Image<uint16_t>(cha);
-                cha1.draw_rectangle(0, 0, cha1.width(), switchy-1, black);
+                cha1.draw_rectangle(0, 0, cha1.width(), switchy - 1, black);
                 cha.draw_rectangle(0, switchy, cha.width(), cha.height(), black);
             }
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
