@@ -699,11 +699,14 @@ namespace noaa_apt
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
             if (channel_a1 != -1){
-                cha.draw_line
+                uint16_t black[] = {0,0,0};
+                cha1 = image::Image<uint16_t>(cha);
+                cha1.draw_rectangle(0, 0, cha1.width(), switchy-1, black);
+                cha.draw_rectangle(0, switchy, cha.width(), cha.height(), black);
             }
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)
-                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == calib_wedge_ch1.channel ? cha : (i == calib_wedge_ch2.channel ? chb : hold)});
+                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == channel_a ? cha : (i == channel_b ? chb : (i == channel_a1 ? cha1 : hold))});
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
