@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         if (window == nullptr)
         {
             pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer",
-                pfd::choice::ok, pfd::icon::error);
+                         pfd::choice::ok, pfd::icon::error);
             logger->critical("Could not init GLFW Window! Exiting");
             exit(1);
         }
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
                          // Vsync slows down init process when items are logged quickly
 
-    //Set up texture functions
+    // Set up texture functions
     bindBaseTextureFunctions();
 #ifndef IMGUI_IMPL_OPENGL_ES2
     if (!fallback_gl)
@@ -220,6 +220,17 @@ int main(int argc, char *argv[])
     if (argc > 1 && !satdump::processing::is_processing)
         satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
 
+    int x, y, xs, ys;
+    if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::config::main_cfg["user_interface"].contains("window"))
+    {
+        x = satdump::config::main_cfg["user_interface"]["window"]["x"].get<int>();
+        y = satdump::config::main_cfg["user_interface"]["window"]["y"].get<int>();
+        xs = satdump::config::main_cfg["user_interface"]["window"]["xs"].get<int>();
+        ys = satdump::config::main_cfg["user_interface"]["window"]["ys"].get<int>();
+        glfwSetWindowPos(window, x, y);
+        glfwSetWindowSize(window, xs, ys);
+    }
+
     // Init UI
     satdump::initMainUI(display_scale);
 
@@ -300,6 +311,16 @@ int main(int argc, char *argv[])
         glfwSwapBuffers(window);
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
+
+    if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>())
+    {
+        glfwGetWindowPos(window, &x, &y);
+        glfwGetWindowSize(window, &xs, &ys);
+        satdump::config::main_cfg["user_interface"]["window"]["x"] = x;
+        satdump::config::main_cfg["user_interface"]["window"]["y"] = y;
+        satdump::config::main_cfg["user_interface"]["window"]["xs"] = xs;
+        satdump::config::main_cfg["user_interface"]["window"]["ys"] = ys;
+    }
 
     satdump::exitMainUI();
 
