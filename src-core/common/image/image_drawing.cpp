@@ -276,7 +276,7 @@ namespace image
     template <typename T>
     void Image<T>::draw_rectangle(int x0, int y0, int x1, int y1, T color[], bool fill){
         if (fill){
-            for (int y = std::min(y0, y1); y <= std::max(y0, y1); y++)
+            for (int y = std::min(y0, y1); y < std::max(y0, y1); y++)
                 draw_line(x0, y, x1, y, color);
         }else{
             draw_line(x0, y0, x0, y1, color);
