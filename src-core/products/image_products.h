@@ -189,12 +189,12 @@ namespace satdump
         double get_wavenumber(int image_index)
         {
             if (!has_calibation())
-                return 0;
+                return -1;
 
             if (contents["calibration"].contains("wavenumbers"))
                 return contents["calibration"]["wavenumbers"][image_index].get<double>();
             else
-                return 0;
+                return -1;
         }
 
         void set_wavenumber(int image_index, double wavnb)
@@ -215,10 +215,16 @@ namespace satdump
 
         std::pair<double, double> get_calibration_default_radiance_range(int image_index)
         {
-            if (!has_calibation())
+            if (!has_calibation() || get_wavenumber(image_index) == -1)
                 return {0, 0};
             if (contents["calibration"].contains("default_range"))
-                return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+                try
+                {
+                    return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+                }
+                catch (nlohmann::json::exception const &)
+                {
+                }
             if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
                 return {0, 1};
             return {0, 0};

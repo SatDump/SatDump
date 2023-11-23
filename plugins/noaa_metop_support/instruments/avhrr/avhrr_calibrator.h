@@ -49,6 +49,8 @@ public:
 
     double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
     {
+        if (channel > 5)
+            return CALIBRATION_INVALID_VALUE;
         if (channel < 3)
         {
             if (!perChannel[channel].contains("slope_lo"))

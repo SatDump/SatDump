@@ -284,7 +284,7 @@ namespace noaa_apt
 
             int validn1 = 0, validn1_1 = 0, validn1_0 = 0;
             // for (auto &wed : wedges1)
-            for (int i = 0; i < wedges1.size(); i++)
+            for (unsigned int i = 0; i < wedges1.size(); i++)
             { // Calib wedges 1
                 auto &wed = wedges1[i];
                 scale_val(wed.ref1, new_black, new_white);
@@ -439,10 +439,10 @@ namespace noaa_apt
                 logger->info("%d, %d", switchy, space_a1.height());
                 space_a1.crop(0, switchy - 1, space_a1.width(), space_a1.height());
 
-                for (int y = 0; y < space_a1.height() - 1; y++)
+                for (unsigned int y = 0; y < space_a1.height() - 1; y++)
                 {
                     int min = space_a1[y * space_a1.width()], max = space_a1[y * space_a1.width()], avg = 0;
-                    for (int i = 0; i < space_a1.width(); i++)
+                    for (unsigned int i = 0; i < space_a1.width(); i++)
                     {
                         int v = space_a1[y * space_a1.width() + i];
                         if (v < min)
@@ -463,10 +463,10 @@ namespace noaa_apt
                 space_av1 /= validl1_1;
             }
 
-            for (int y = 0; y < (channel_a1 != -1 ? switchy : space_a.height() - 1); y++)
+            for (unsigned int y = 0; y < (channel_a1 != -1 ? switchy : space_a.height() - 1); y++)
             {
                 int min = space_a[y * space_a.width()], max = space_a[y * space_a.width()], avg = 0;
-                for (int i = 0; i < space_a.width(); i++)
+                for (unsigned int i = 0; i < space_a.width(); i++)
                 {
                     int v = space_a[y * space_a.width() + i];
                     if (v < min)
@@ -485,10 +485,10 @@ namespace noaa_apt
                 }
             }
 
-            for (int y = 0; y < space_b.height(); y++)
+            for (unsigned int y = 0; y < space_b.height(); y++)
             {
                 int min = space_b[y * space_b.width()], max = space_b[y * space_b.width()], avg = 0;
-                for (int i = 0; i < space_b.width(); i++)
+                for (unsigned int i = 0; i < space_b.width(); i++)
                 {
                     int v = space_b[y * space_b.width() + i];
                     if (v < min)
@@ -672,6 +672,9 @@ namespace noaa_apt
                     for (int p = 0; p < 6; p++)
                         calib_out["wavenumbers"][p] = calib_coefs["channels"][p]["wavnb"].get<double>();
 
+                    calib_out["wavenumbers"][6] = -1;
+                    calib_out["wavenumbers"][7] = -1;
+
                     // calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/AVHRR.lua"));
                     calib_out["calibrator"] = "noaa_avhrr3";
 
@@ -721,25 +724,28 @@ namespace noaa_apt
                     logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
             }
 
-            image::Image<uint16_t> cha, cha1, chb, hold;
+            image::Image<uint16_t> cha, cha1, cha2, chb, hold;
             cha = wip_apt_image_sync.crop_to(86, 86 + 909);
             chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
 
             if (channel_a1 != -1)
             {
-                uint16_t black[] = {0, 0, 0};
                 cha1 = image::Image<uint16_t>(cha);
-                for (int i = switchy; i < cha1.height(); i++)
-                    for (int x = 0; x < cha.width(); x++)
-                        cha[i * cha.width() + x] = 0;
+                cha2 = image::Image<uint16_t>(cha);
+                for (unsigned int i = switchy; i < cha2.height(); i++)
+                    for (unsigned int x = 0; x < cha2.width(); x++)
+                        cha2[i * cha2.width() + x] = 0;
 
                 for (int i = 0; i < switchy; i++)
-                    for (int x = 0; x < cha1.width(); x++)
+                    for (unsigned int x = 0; x < cha1.width(); x++)
                         cha1[i * cha1.width() + x] = 0;
             }
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)
-                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == channel_a ? cha : (i == channel_b ? chb : (i == channel_a1 ? cha1 : hold))});
+                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == channel_a ? (channel_a1 == -1 ? cha : cha2) : (i == channel_b ? chb : (i == channel_a1 ? cha1 : hold))});
+
+            avhrr_products.images.push_back({"APT-A", "a", cha});
+            avhrr_products.images.push_back({"APT-B", "b", chb}); 
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {

@@ -205,6 +205,8 @@ namespace satdump
         calib_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
         double val2 = CALIBRATION_INVALID_VALUE;
+        if (get_wavenumber(image_index) == -1)
+            return val2;
         if (calibrator_ptr != nullptr)
             val2 = calibrator_ptr->compute(image_index, x, y, val);
         else if (lua_state_ptr != nullptr)
