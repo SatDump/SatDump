@@ -85,7 +85,8 @@ namespace dsp
                 else
                     volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 #else
-                volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
+                // volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
+                sample = buffer[inc] * (1.0 - mu) + buffer[inc + 1] * mu;
 #endif
 
                 // Phase error
@@ -104,7 +105,8 @@ namespace dsp
                 else
                     volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 #else
-                volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+                // volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+                p_0T = buffer[inc] * (1.0 - mu) + buffer[inc + 1] * mu;
 #endif
 
                 // Slice it

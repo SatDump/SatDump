@@ -18,7 +18,8 @@ namespace dsp
         float loop_bw;
         float alpha, beta;
 
-        complex_t tmp_val;
+        // complex_t tmp_val;
+        complex_t vco;
         void work();
 
     public:
