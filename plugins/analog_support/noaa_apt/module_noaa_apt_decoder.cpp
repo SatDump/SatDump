@@ -650,9 +650,9 @@ namespace noaa_apt
             logger->info("----------- AVHRR");
             logger->info("Lines : " + std::to_string(line_cnt));
             if (channel_a1 != -1)
-                logger->info("Identified channels: A: %s, %s B: %s", names[channel_a], names[channel_a1], names[channel_b]);
+                logger->info("Identified channels: A: %s, %s B: %s", names[channel_a].c_str(), names[channel_a1].c_str(), names[channel_b].c_str());
             else
-                logger->info("Identified channels: A: %s B: %s", names[channel_a], names[channel_b]);
+                logger->info("Identified channels: A: %s B: %s", names[channel_a].c_str(), names[channel_b].c_str());
 
             satdump::ImageProducts avhrr_products;
             avhrr_products.instrument_name = "avhrr_3";
