@@ -194,6 +194,7 @@ void RtlSdrSource::stop()
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
+        rtlsdr_set_bias_tee(rtlsdr_dev_obj, false);
         rtlsdr_close(rtlsdr_dev_obj);
     }
     is_started = false;

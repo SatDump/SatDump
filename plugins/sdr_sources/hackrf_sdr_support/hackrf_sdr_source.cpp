@@ -116,6 +116,7 @@ void HackRFSource::stop()
 {
     if (is_started)
     {
+        hackrf_set_antenna_enable(hackrf_dev_obj, false);
         hackrf_stop_rx(hackrf_dev_obj);
         hackrf_close(hackrf_dev_obj);
         is_started = false;
@@ -181,7 +182,7 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
     for (int i = 0; i < devlist->devicecount; i++)
     {
         if (devlist->serial_numbers[i] == nullptr)
-            results.push_back({ "hackrf", "HackRF One [In Use]", 0 });
+            results.push_back({"hackrf", "HackRF One [In Use]", 0});
         else
         {
             std::stringstream ss;
@@ -189,7 +190,7 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
             ss << devlist->serial_numbers[i];
             ss >> std::hex >> id;
             ss << devlist->serial_numbers[i];
-            results.push_back({ "hackrf", "HackRF One " + ss.str().substr(16, 16), id });
+            results.push_back({"hackrf", "HackRF One " + ss.str().substr(16, 16), id});
         }
     }
 #else
