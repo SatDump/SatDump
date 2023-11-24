@@ -13,13 +13,14 @@ namespace satdump
     public:
         struct ImageHolder
         {
-            std::string filename;
-            std::string channel_name;
-            image::Image<uint16_t> image;
-            std::vector<double> timestamps = std::vector<double>();
-            int ifov_y = -1;
-            int ifov_x = -1;
-            int offset_x = 0;
+            std::string filename;                                   // Filename & path of the image. Relative to the product file
+            std::string channel_name;                               // Name of the channel, this is usually just a number but can be a string
+            image::Image<uint16_t> image;                           // The image itself
+            std::vector<double> timestamps = std::vector<double>(); // Timestamps of each image segment. What this means can heavily vary
+            int ifov_y = -1;                                        // Size of an IFOV (image segment) in height
+            int ifov_x = -1;                                        // Size of an IFOV (image segment) in width
+            int offset_x = 0;                                       // Offset in width of this channel
+            int abs_index = -1;                                     // Absolute image index, for calibration, etc. -2 means no calibration possible on this channel
         };
 
         std::vector<ImageHolder> images;
@@ -191,6 +192,11 @@ namespace satdump
             if (!has_calibation())
                 return -1;
 
+            if (images[image_index].abs_index == -2)
+                return -1;
+            else if (images[image_index].abs_index != -1)
+                image_index = images[image_index].abs_index;
+
             if (contents["calibration"].contains("wavenumbers"))
                 return contents["calibration"]["wavenumbers"][image_index].get<double>();
             else
@@ -215,12 +221,16 @@ namespace satdump
 
         std::pair<double, double> get_calibration_default_radiance_range(int image_index)
         {
+            int calib_index = image_index;
+            if (images[image_index].abs_index != -1)
+                calib_index = images[image_index].abs_index;
+
             if (!has_calibation() || get_wavenumber(image_index) == -1)
                 return {0, 0};
             if (contents["calibration"].contains("default_range"))
                 try
                 {
-                    return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+                    return {contents["calibration"]["default_range"][calib_index]["min"].get<double>(), contents["calibration"]["default_range"][calib_index]["max"].get<double>()};
                 }
                 catch (nlohmann::json::exception const &)
                 {
@@ -234,6 +244,10 @@ namespace satdump
         {
             if (!has_calibation())
                 return CALIB_REFLECTANCE;
+
+            if (images[image_index].abs_index != -1)
+                image_index = images[image_index].abs_index;
+
             if (contents["calibration"].contains("type"))
                 return (calib_type_t)contents["calibration"]["type"][image_index].get<int>();
             else

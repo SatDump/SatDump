@@ -658,6 +658,23 @@ namespace noaa_apt
             avhrr_products.instrument_name = "avhrr_3";
             avhrr_products.bit_depth = 8;
 
+            image::Image<uint16_t> cha, cha1, cha2, chb;
+            cha = wip_apt_image_sync.crop_to(86, 86 + 909);
+            chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
+
+            if (channel_a1 != -1)
+            {
+                cha1 = image::Image<uint16_t>(cha);
+                cha2 = image::Image<uint16_t>(cha);
+                for (unsigned int i = switchy; i < cha2.height(); i++)
+                    for (unsigned int x = 0; x < cha2.width(); x++)
+                        cha2[i * cha2.width() + x] = 0;
+
+                for (int i = 0; i < switchy; i++)
+                    for (unsigned int x = 0; x < cha1.width(); x++)
+                        cha1[i * cha1.width() + x] = 0;
+            }
+
             // CALIBRATION
             {
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
@@ -729,27 +746,26 @@ namespace noaa_apt
                     logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
             }
 
-            image::Image<uint16_t> cha, cha1, cha2, chb, hold;
-            cha = wip_apt_image_sync.crop_to(86, 86 + 909);
-            chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
-
-            if (channel_a1 != -1)
-            {
-                cha1 = image::Image<uint16_t>(cha);
-                cha2 = image::Image<uint16_t>(cha);
-                for (unsigned int i = switchy; i < cha2.height(); i++)
-                    for (unsigned int x = 0; x < cha2.width(); x++)
-                        cha2[i * cha2.width() + x] = 0;
-
-                for (int i = 0; i < switchy; i++)
-                    for (unsigned int x = 0; x < cha1.width(); x++)
-                        cha1[i * cha1.width() + x] = 0;
-            }
+#if 0
             for (int i = 0; i < 6; i++)
                 avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], i == channel_a ? (channel_a1 == -1 ? cha : cha2) : (i == channel_b ? chb : (i == channel_a1 ? cha1 : hold))});
+#else
+            if (channel_a != -1)
+            {
+                avhrr_products.images.push_back({"AVHRR-" + names[channel_a], names[channel_a], cha, {}, -1, -1, 0, channel_a});
+            }
+            if (channel_a1 != -1)
+            {
+                avhrr_products.images.push_back({"AVHRR-" + names[channel_a1], names[channel_a1], cha2, {}, -1, -1, 0, channel_a1});
+            }
+            if (channel_b != -1)
+            {
+                avhrr_products.images.push_back({"AVHRR-" + names[channel_b], names[channel_b], chb, {}, -1, -1, 0, channel_b});
+            }
+#endif
 
-            avhrr_products.images.push_back({"APT-A", "a", cha});
-            avhrr_products.images.push_back({"APT-B", "b", chb}); 
+            avhrr_products.images.push_back({"APT-A", "a", cha, {}, -1, -1, 0, -2});
+            avhrr_products.images.push_back({"APT-B", "b", chb, {}, -1, -1, 0, -2});
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {

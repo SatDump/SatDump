@@ -61,6 +61,8 @@ namespace satdump
             contents["images"][c]["ifov_x"] = images[c].ifov_x;
             if (images[c].offset_x != 0)
                 contents["images"][c]["offset_x"] = images[c].offset_x;
+            if (images[c].abs_index != -1)
+                contents["images"][c]["abs_index"] = images[c].abs_index;
 
             savemtx.unlock();
             if (!save_as_matrix)
@@ -140,6 +142,8 @@ namespace satdump
             img_holder.ifov_x = contents["images"][c]["ifov_x"].get<int>();
             if (contents["images"][c].contains("offset_x"))
                 img_holder.offset_x = contents["images"][c]["offset_x"].get<int>();
+            if (contents["images"][c].contains("abs_index"))
+                img_holder.abs_index = contents["images"][c]["abs_index"].get<int>();
 
             images.push_back(img_holder);
         }
@@ -202,17 +206,24 @@ namespace satdump
 
     double ImageProducts::get_calibrated_value(int image_index, int x, int y, bool temp)
     {
+        int calib_index = image_index;
         calib_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
+
         double val2 = CALIBRATION_INVALID_VALUE;
-        if (get_wavenumber(image_index) == -1)
+        if (images[image_index].abs_index == -2)
             return val2;
+        else if (images[image_index].abs_index != -1)
+            calib_index = images[image_index].abs_index;
+
         if (calibrator_ptr != nullptr)
-            val2 = calibrator_ptr->compute(image_index, x, y, val);
+            val2 = calibrator_ptr->compute(calib_index, x, y, val);
         else if (lua_state_ptr != nullptr)
-            val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+            val2 = ((sol::function *)lua_comp_func_ptr)->call(calib_index, x, y, val).get<double>();
+
         if (get_calibration_type(image_index) == calib_type_t::CALIB_RADIANCE && temp)
             val2 = radiance_to_temperature(val2, get_wavenumber(image_index));
+
         calib_mutex.unlock();
         return val2;
     }
@@ -304,8 +315,10 @@ namespace satdump
                 pos++;
             }
 
-            if (match == final_ex){
-                if (loc != nullptr) *loc = pos;
+            if (match == final_ex)
+            {
+                if (loc != nullptr)
+                    *loc = pos;
                 return true;
             }
 
@@ -380,7 +393,6 @@ namespace satdump
                     images_obj.push_back(product.get_calibrated_image(i, progress));
                 }
                 offsets.emplace(equ_str_calib, img.offset_x);
-                
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
