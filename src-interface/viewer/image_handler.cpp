@@ -619,7 +619,7 @@ namespace satdump
             {
                 ImGui::SameLine();
 
-                if (ImGui::Button("Info###compopresetinfo"))
+                if (ImGui::Button("\uf449 Info###compopresetinfo"))
                 {
                     std::ifstream ifs(resources::getResourcePath(rgb_compo_cfg.description_markdown));
                     std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
