@@ -220,17 +220,6 @@ int main(int argc, char *argv[])
     if (argc > 1 && !satdump::processing::is_processing)
         satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
 
-    int x, y, xs, ys;
-    if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::config::main_cfg["user_interface"].contains("window"))
-    {
-        x = satdump::config::main_cfg["user_interface"]["window"]["x"].get<int>();
-        y = satdump::config::main_cfg["user_interface"]["window"]["y"].get<int>();
-        xs = satdump::config::main_cfg["user_interface"]["window"]["xs"].get<int>();
-        ys = satdump::config::main_cfg["user_interface"]["window"]["ys"].get<int>();
-        glfwSetWindowPos(window, x, y);
-        glfwSetWindowSize(window, xs, ys);
-    }
-
     // Init UI
     satdump::initMainUI(display_scale);
 
@@ -258,6 +247,30 @@ int main(int argc, char *argv[])
     {
         satdump::ui_thread_pool.push([&](int)
                                      { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
+    }
+
+    // Set window position
+    int x, y, xs, ys;
+    bool maximized;
+    if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::config::main_cfg["user_interface"].contains("window"))
+    {
+        const bool maximized = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["maximized"], false);
+        if(maximized)
+            glfwMaximizeWindow(window);
+        else
+        {
+            const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            x = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["x"], -1);
+            y = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["y"], -1);
+            xs = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["xs"], -1);
+            ys = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["ys"], -1);
+
+            if (x >= 0 && y >= 0  && x < mode->width && y < mode->height && xs > 0 && ys > 0)
+            {
+                glfwSetWindowPos(window, x, y);
+                glfwSetWindowSize(window, xs, ys);
+            }
+        }
     }
 
     // TLE
@@ -312,14 +325,21 @@ int main(int argc, char *argv[])
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
 
+    //Save window position
     if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>())
     {
-        glfwGetWindowPos(window, &x, &y);
-        glfwGetWindowSize(window, &xs, &ys);
-        satdump::config::main_cfg["user_interface"]["window"]["x"] = x;
-        satdump::config::main_cfg["user_interface"]["window"]["y"] = y;
-        satdump::config::main_cfg["user_interface"]["window"]["xs"] = xs;
-        satdump::config::main_cfg["user_interface"]["window"]["ys"] = ys;
+        bool minimized = glfwGetWindowAttrib(window, GLFW_ICONIFIED) == GLFW_TRUE;
+        maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
+        satdump::config::main_cfg["user_interface"]["window"]["maximized"] = maximized;
+        if (!maximized && !minimized)
+        {
+            glfwGetWindowPos(window, &x, &y);
+            glfwGetWindowSize(window, &xs, &ys);
+            satdump::config::main_cfg["user_interface"]["window"]["x"] = x;
+            satdump::config::main_cfg["user_interface"]["window"]["y"] = y;
+            satdump::config::main_cfg["user_interface"]["window"]["xs"] = xs;
+            satdump::config::main_cfg["user_interface"]["window"]["ys"] = ys;
+        }
     }
 
     satdump::exitMainUI();
