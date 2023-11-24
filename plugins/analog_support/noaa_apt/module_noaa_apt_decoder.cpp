@@ -752,11 +752,11 @@ namespace noaa_apt
 #else
             if (channel_a != -1)
             {
-                avhrr_products.images.push_back({"AVHRR-" + names[channel_a], names[channel_a], cha, {}, -1, -1, 0, channel_a});
+                avhrr_products.images.push_back({"AVHRR-" + names[channel_a], names[channel_a], (channel_a1 == -1 ? cha : cha2), {}, -1, -1, 0, channel_a});
             }
             if (channel_a1 != -1)
             {
-                avhrr_products.images.push_back({"AVHRR-" + names[channel_a1], names[channel_a1], cha2, {}, -1, -1, 0, channel_a1});
+                avhrr_products.images.push_back({"AVHRR-" + names[channel_a1], names[channel_a1], cha1, {}, -1, -1, 0, channel_a1});
             }
             if (channel_b != -1)
             {
