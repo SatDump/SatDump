@@ -8,6 +8,7 @@ namespace eos
 {
     namespace modis
     {
+        // Values to hold per MODIS scan, for all channels
         struct ValsPerScan
         {
             // General
@@ -37,48 +38,103 @@ namespace eos
                                            T_bb, T_mir, T_cav, T_ins, fp_temps)
         };
 
-        class EosMODISCalibrator : public satdump::ImageProducts::CalibratorBase
+        // All values required for final calibration
+        struct CalibrationVars
         {
-        private:
-            nlohmann::json d_vars;
-            bool is_aqua = false;
-
-            double compute_emissive(int channel, int pos_x, int pos_y, int px_val);
-            double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
-
-            // HDF4File_Reflective Sat_CoeffsR;
-            Coefficients_Emissive Sat_CoeffsE;
-
-        private:
             float RVS_1km_Emiss_BB[160][2];
             float RVS_1km_Emiss_SV[160][2];
             float RVS_1km_Emiss_EV[160][1354][2];
             float sigma_RVS_Emiss_EV[160][1354][2];
 
-            void calculate_rvs_correction();
+            std::vector<ValsPerScan> scan_data;
+        };
 
-            int get_emmissive_view_avg(std::string type, int channel, int det, int scan);
+        inline void from_json(const nlohmann::json &j, CalibrationVars &v)
+        {
+            v.scan_data = j["scan_data"];
+            for (int i = 0; i < 160; i++)
+            {
+                for (int x = 0; x < 2; x++)
+                {
+                    v.RVS_1km_Emiss_BB[i][x] = j["RVS_1km_Emiss_BB"];
+                    v.RVS_1km_Emiss_SV[i][x] = j["RVS_1km_Emiss_SV"];
 
-            double get_bb_temperature(int scan);
-            double get_mir_temperature(int scan);
-            double get_cav_temperature(int scan);
-            double get_ins_temperature(int scan);
-            void get_fp_temperature(double *fp_temps, int scan);
+                    for (int z = 0; z < 1354; z++)
+                    {
+                        v.RVS_1km_Emiss_EV[i][z][x] = j["RVS_1km_Emiss_EV"];
+                        v.sigma_RVS_Emiss_EV[i][z][x] = j["sigma_RVS_Emiss_EV"];
+                    }
+                }
+            }
+        }
 
+        inline void to_json(nlohmann::json &j, const CalibrationVars &v)
+        {
+            j["scan_data"] = v.scan_data;
+            for (int i = 0; i < 160; i++)
+            {
+                for (int x = 0; x < 2; x++)
+                {
+                    j["RVS_1km_Emiss_BB"] = v.RVS_1km_Emiss_BB[i][x];
+                    j["RVS_1km_Emiss_SV"] = v.RVS_1km_Emiss_SV[i][x];
+
+                    for (int z = 0; z < 1354; z++)
+                    {
+                        j["RVS_1km_Emiss_EV"] = v.RVS_1km_Emiss_EV[i][z][x];
+                        j["sigma_RVS_Emiss_EV"] = v.sigma_RVS_Emiss_EV[i][z][x];
+                    }
+                }
+            }
+        }
+
+        namespace precompute
+        {
+            // RVS calculation
+            void calculate_rvs_correction(Coefficients_Emissive &Sat_CoeffsE, CalibrationVars &cvars);
+
+            // SV, etc AVG
+            int get_emmissive_view_avg(nlohmann::json &d_vars, std::string type, int channel, int det, int scan);
+
+            // Temperatures
+            double get_bb_temperature(nlohmann::json &d_vars, bool is_aqua, int scan);
+            double get_mir_temperature(nlohmann::json &d_vars, bool is_aqua, int scan);
+            double get_cav_temperature(nlohmann::json &d_vars, bool is_aqua, int scan);
+            double get_ins_temperature(nlohmann::json &d_vars, bool is_aqua, int scan);
+            void get_fp_temperature(nlohmann::json &d_vars, bool is_aqua, double *fp_temps, int scan);
+
+            // Planck, to compute radiance
             bool Calculate_Planck(float *RSR, float *wl, int size, float T, float *planck);
 
-            bool get_emissive_coeffs(double &a0, double &a2, double &b1, float &L_sm, int DN_sv, int DN_bb, ValsPerScan &scani, int D_emiss);
+            // Calibration coeffs
+            bool get_emissive_coeffs(Coefficients_Emissive &Sat_CoeffsE, bool is_aqua, CalibrationVars &cvars, double &a0, double &a2, double &b1, float &L_sm, int DN_sv, int DN_bb, ValsPerScan &scani, int D_emiss);
 
-            std::vector<ValsPerScan> scan_data;
+            // Precompute all variables
+            nlohmann::json precomputeVars(satdump::ImageProducts *d_products, nlohmann::json d_vars, bool is_aqua);
+        };
+
+        // The actual calibrator!
+        class EosMODISCalibrator : public satdump::ImageProducts::CalibratorBase
+        {
+        private:
+            bool is_aqua = false;
+
+            CalibrationVars cvars;
+
+            double compute_emissive(int channel, int pos_x, int pos_y, int px_val);
+            double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
+
+            // Coefficients_Reflective Sat_CoeffsR; // This is WIP
+            Coefficients_Emissive Sat_CoeffsE;
 
         public:
             EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
-                d_vars = calib["vars"];
                 is_aqua = calib["is_aqua"];
+                cvars = calib["vars"]["cvars"];
+                Sat_CoeffsE = calib["vars"]["c_emissive"];
             }
 
-            void init();
+            void init() {}
             double compute(int channel, int pos_x, int pos_y, int px_val);
         };
     }

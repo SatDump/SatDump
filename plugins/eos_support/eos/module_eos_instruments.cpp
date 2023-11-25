@@ -13,6 +13,7 @@
 #include "instruments/modis/modis_histmatch.h"
 
 #include "common/calibration.h"
+#include "instruments/modis/calibrator/modis_calibrator.h"
 
 namespace eos
 {
@@ -249,7 +250,7 @@ namespace eos
                 saveJsonFile("modis_calib.json", modis_reader.getCalib());
                 nlohmann::json calib_cfg;
                 calib_cfg["calibrator"] = "eos_modis";
-                calib_cfg["vars"] = modis_reader.getCalib();
+                calib_cfg["vars"] = modis::precompute::precomputeVars(&modis_products, modis_reader.getCalib(), d_satellite == AQUA);
                 calib_cfg["is_aqua"] = d_satellite == AQUA;
                 modis_products.set_calibration(calib_cfg);
                 for (int i = 0; i < 21; i++)
