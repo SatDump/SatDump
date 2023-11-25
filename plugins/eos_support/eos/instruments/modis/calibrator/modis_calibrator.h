@@ -126,12 +126,17 @@ namespace eos
             // Coefficients_Reflective Sat_CoeffsR; // This is WIP
             Coefficients_Emissive Sat_CoeffsE;
 
+            // BowTie LUTs
+            std::vector<std::vector<int>> bowtie_lut_1km;
+
         public:
             EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
                 is_aqua = calib["is_aqua"];
                 cvars = calib["vars"]["cvars"];
                 Sat_CoeffsE = calib["vars"]["c_emissive"];
+
+                bowtie_lut_1km = calib["bowtie_lut_1km"];
             }
 
             void init() {}

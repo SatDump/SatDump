@@ -36,8 +36,8 @@ struct Coefficients_Emissive
 
     short NUM_RSR_vs_Lambda[NUM_EMISSIVE_DETECTORS];
 
-    char PCX_correction_switch[1];
-    float PC_XT[NUM_PC_XT_BANDS][DETECTORS_PER_1KM_BAND][NUM_PC_XT_PARAMETERS];
+    // char PCX_correction_switch[1];
+    // float PC_XT[NUM_PC_XT_BANDS][DETECTORS_PER_1KM_BAND][NUM_PC_XT_PARAMETERS];
 };
 
 inline void from_json(const nlohmann::json &j, Coefficients_Emissive &v)
@@ -63,6 +63,6 @@ inline void from_json(const nlohmann::json &j, Coefficients_Emissive &v)
 
     memcpy(v.NUM_RSR_vs_Lambda, j["NWL"].get<std::vector<short>>().data(), NUM_EMISSIVE_DETECTORS * sizeof(short));
 
-    memcpy(v.PCX_correction_switch, j["PCX_correction_switch"].get<std::vector<char>>().data(), 1 * sizeof(char));
-    memcpy(v.PC_XT, j["PC_XT"].get<std::vector<float>>().data(), NUM_PC_XT_BANDS * DETECTORS_PER_1KM_BAND * NUM_PC_XT_PARAMETERS * sizeof(char));
+    // memcpy(v.PCX_correction_switch, j["PCX_correction_switch"].get<std::vector<char>>().data(), 1 * sizeof(char));
+    // memcpy(v.PC_XT, j["PC_XT"].get<std::vector<float>>().data(), NUM_PC_XT_BANDS * DETECTORS_PER_1KM_BAND * NUM_PC_XT_PARAMETERS * sizeof(char));
 }

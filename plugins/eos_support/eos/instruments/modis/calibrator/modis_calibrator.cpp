@@ -50,7 +50,12 @@ namespace eos
 
             bool MS = scaninfo.MS; // Mirror side
 
-            int D_emiss = channel * 10 + 9 - (pos_y % 10); // Index of emissive detector
+            // We need the *actual* detector, before bowtie correction!
+            int spos_y = pos_y % 10;
+            if (bowtie_lut_1km.size() > 0)
+                spos_y = bowtie_lut_1km[pos_x][spos_y];
+
+            int D_emiss = channel * 10 + (9 - spos_y);     // Index of emissive detector
             int F = pos_x;                                 // Current frame
             int DN_ev = px_val;                            // Detector value
             int DN_sv = scaninfo.emissive_DN_SVs[D_emiss]; // Space View
@@ -81,6 +86,7 @@ namespace eos
             //              a0, a2, b1,
             //              bb_corr, sv_corr);
 
+#if 0
             // Apply PCX if needed
             if (Sat_CoeffsE.PCX_correction_switch[0] == 1)
             {
@@ -102,6 +108,7 @@ namespace eos
                     }
                 }
             }
+#endif
 
             // Compute L_ev
             double Fn = a0 +

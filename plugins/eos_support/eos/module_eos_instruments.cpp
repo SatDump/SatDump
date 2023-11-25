@@ -223,14 +223,15 @@ namespace eos
                     modis_products.images.push_back({"MODIS-" + std::to_string(i + 3), std::to_string(i + 3), image});
                 }
 
+                std::vector<std::vector<int>> bowtie_lut_1km;
                 for (int i = 0; i < 31; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage1000m(i);
 
                     // modis::modis_match_detector_histograms(image, 1, 10 * 2);
 
-                    //   if (d_modis_bowtie)
-                    //       image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                    if (d_modis_bowtie)
+                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta, &bowtie_lut_1km);
 
                     if (i < 5)
                         modis_products.images.push_back({"MODIS-" + std::to_string(i + 8), std::to_string(i + 8), image});
@@ -252,6 +253,7 @@ namespace eos
                 calib_cfg["calibrator"] = "eos_modis";
                 calib_cfg["vars"] = modis::precompute::precomputeVars(&modis_products, modis_reader.getCalib(), d_satellite == AQUA);
                 calib_cfg["is_aqua"] = d_satellite == AQUA;
+                calib_cfg["bowtie_lut_1km"] = bowtie_lut_1km;
                 modis_products.set_calibration(calib_cfg);
                 for (int i = 0; i < 21; i++)
                     modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);
