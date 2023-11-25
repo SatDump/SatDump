@@ -609,6 +609,7 @@ namespace satdump
             if (ImGui::BeginCombo(show_info_button ? "##presetcombo" : "Preset##presetcombo",
                 select_rgb_presets == -1 ? "" : rgb_presets[select_rgb_presets].first.c_str()))
             {
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
                 for (size_t i = 0; i < rgb_presets.size(); i++)
                 {
