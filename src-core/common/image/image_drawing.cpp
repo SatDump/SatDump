@@ -274,6 +274,19 @@ namespace image
     }
 
     template <typename T>
+    void Image<T>::draw_rectangle(int x0, int y0, int x1, int y1, T color[], bool fill){
+        if (fill){
+            for (int y = std::min(y0, y1); y < std::max(y0, y1); y++)
+                draw_line(x0, y, x1, y, color);
+        }else{
+            draw_line(x0, y0, x0, y1, color);
+            draw_line(x0, y1, x1, y1, color);
+            draw_line(x1, y1, x1, y0, color);
+            draw_line(x1, y0, x0, y0, color);
+        }
+    }
+
+    template <typename T>
     void Image<T>::draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text)
     {
         int pos = x0;

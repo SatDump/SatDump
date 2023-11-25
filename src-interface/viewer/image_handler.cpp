@@ -225,7 +225,7 @@ namespace satdump
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
-                if (products->has_calibation())
+                if (products->has_calibation() && products->get_wavenumber(active_channel_id) != -1)
                 {
                     double radiance = products->get_calibrated_value(active_channel_id, x, y);
                     if (correct_image)
@@ -340,7 +340,7 @@ namespace satdump
 
             if (ImGui::IsItemHovered() && active_channel_id >= 0)
             {
-                if (products->get_wavenumber(active_channel_id) != 0)
+                if (products->get_wavenumber(active_channel_id) != -1)
                 {
                     ImGui::BeginTooltip();
                     ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(active_channel_id));
@@ -368,7 +368,7 @@ namespace satdump
                 }
             }
 
-            if (products->has_calibation() && active_channel_id >= 0)
+            if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)

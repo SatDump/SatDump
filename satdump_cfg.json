@@ -840,36 +840,21 @@
                                 "max": 320
                             }
                         }
-                    }
-                },
-                "project_channels": {
-                    "channels": "4",
-                    "width": 4096,
-                    "height": 2048,
-                    "individual_equalize": true,
-                    "draw_map_overlay": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-                }
-            },
-            "avhrr_apt": {
-                "handler": "image_handler",
-                "name": "AVHRR APT",
-                "rgb_composites": {
-                    "224": {
+                    },
+                    // APT - TO CLEANUP
+                    "APT - 224": {
                         "equation": "cha + 0.01, cha, chb - 0.2",
                         "autogen": false
                     },
-                    "A individual_equalized": {
+                    "APT - A individual_equalized": {
                         "equation": "cha",
                         "individual_equalize": true
                     },
-                    "B individual_equalized": {
+                    "APT - B individual_equalized": {
                         "equation": "chb",
                         "individual_equalize": true
                     },
-                    "Clouds Underlay": {
+                    "APT - Clouds Underlay": {
                         "channels": "chb",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/CloudUnderlay.md",
@@ -881,7 +866,7 @@
                         },
                         "autogen": false
                     },
-                    "MCIR": {
+                    "APT - MCIR": {
                         "channels": "chb",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
@@ -898,7 +883,7 @@
                             0
                         ]
                     },
-                    "MSA": {
+                    "APT - MSA": {
                         "channels": "cha",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
@@ -915,7 +900,7 @@
                             0
                         ]
                     },
-                    "MCIR Rain": {
+                    "APT - MCIR Rain": {
                         "channels": "cha, chb",
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "description": "descriptions/MCIR_precip.md",
@@ -932,95 +917,104 @@
                             0
                         ]
                     },
-                    "WXtoImg HVC N15": {
+                    "APT - WXtoImg HVC N15": {
                         "lut": "lut/WXtoImg-N15-HVC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "WXtoImg HVC N18": {
+                    "APT - WXtoImg HVC N18": {
                         "lut": "lut/WXtoImg-N18-HVC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "WXtoImg HVC N19": {
+                    "APT - WXtoImg HVC N19": {
                         "lut": "lut/WXtoImg-N19-HVC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "NO enhancement": {
+                    "APT - NO enhancement": {
                         "lut": "lut/WXtoImg-NO_mod_APT.png",
                         "description": "descriptions/NO.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "ZA enhancement": {
+                    "APT - ZA enhancement": {
                         "lut": "lut/WXtoImg-ZA.png",
                         "description": "descriptions/ZA.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "MB enhancement": {
+                    "APT - MB enhancement": {
                         "lut": "lut/WXtoImg-MB.png",
                         "description": "descriptions/MB.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "MD enhancement": {
+                    "APT - MD enhancement": {
                         "lut": "lut/WXtoImg-MD.png",
                         "description": "descriptions/MD.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "BD enhancement": {
+                    "APT - BD enhancement": {
                         "lut": "lut/WXtoImg-BD.png",
                         "description": "descriptions/BD.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "CC enhancement": {
+                    "APT - CC enhancement": {
                         "lut": "lut/WXtoImg-CC.png",
                         "description": "descriptions/CC.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "EC enhancement": {
+                    "APT - EC enhancement": {
                         "description": "descriptions/EC.md",
                         "lut": "lut/WXtoImg-EC.png",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "HE enhancement": {
+                    "APT - HE enhancement": {
                         "lut": "lut/WXtoImg-HE.png",
                         "description": "descriptions/HE.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "HF enhancement": {
+                    "APT - HF enhancement": {
                         "lut": "lut/WXtoImg-HF.png",
                         "description": "descriptions/HF.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "JF enhancement": {
+                    "APT - JF enhancement": {
                         "lut": "lut/WXtoImg-JF.png",
                         "description": "descriptions/JF.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "JJ enhancement": {
+                    "APT - JJ enhancement": {
                         "lut": "lut/WXtoImg-JJ.png",
                         "description": "descriptions/JJ.md",
                         "channels": "cha, chb",
                         "autogen": false
                     },
-                    "TA enhancement": {
+                    "APT - TA enhancement": {
                         "lut": "lut/WXtoImg-TA.png",
                         "description": "descriptions/TA.md",
                         "channels": "cha, chb",
                         "autogen": false
                     }
+                },
+                "project_channels": {
+                    "channels": "4",
+                    "width": 4096,
+                    "height": 2048,
+                    "individual_equalize": true,
+                    "draw_map_overlay": true,
+                    "config": {
+                        "type": "equirectangular"
+                    }
                 }
-                //,"project_channels": {}
             },
             "virr": {
                 "handler": "image_handler",
