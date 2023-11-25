@@ -1,8 +1,6 @@
 /*
-* one.c -- Lua core, libraries, and interpreter in a single file
-*/
-
-#ifndef SOL_USE_LUAJIT
+ * one.c -- Lua core, libraries, and interpreter in a single file
+ */
 
 /* default is to build the full interpreter */
 #ifndef MAKE_LIB
@@ -42,7 +40,6 @@
 #include <string.h>
 #include <time.h>
 
-
 /* setup for luaconf.h */
 #define LUA_CORE
 #define LUA_LIB
@@ -54,9 +51,9 @@
 #undef LUAI_FUNC
 #undef LUAI_DDEC
 #undef LUAI_DDEF
-#define LUAI_FUNC	static
-#define LUAI_DDEC(def)	/* empty */
-#define LUAI_DDEF	static
+#define LUAI_FUNC static
+#define LUAI_DDEC(def) /* empty */
+#define LUAI_DDEF static
 
 /* core -- used by all */
 #include "lzio.c"
@@ -106,6 +103,4 @@
 /* luac */
 #ifdef MAKE_LUAC
 #include "luac.c"
-#endif
-
 #endif

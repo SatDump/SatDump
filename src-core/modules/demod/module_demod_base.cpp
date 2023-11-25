@@ -73,6 +73,9 @@ namespace demod
         logger->debug("Dec factor : %f", decimation_factor);
         logger->debug("Final SPS : %f", final_sps);
 
+        if (final_sps < 1.0)
+            throw std::runtime_error("SPS is invalid. Must be above 1!");
+
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
@@ -208,17 +211,17 @@ namespace demod
             ImGui::SetNextWindowSize({400 * (float)ui_scale, (float)(showWaterfall ? 400 : 200) * (float)ui_scale});
             if (ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
             {
-                fft_plot->draw({ float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0) });
+                fft_plot->draw({float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0)});
 
-                //Find "actual" left edge of FFT, before frequency shift.
-                //Inset by 10% (819), then account for > 100% freq shifts via modulo
+                // Find "actual" left edge of FFT, before frequency shift.
+                // Inset by 10% (819), then account for > 100% freq shifts via modulo
                 int pos = (abs((float)d_frequency_shift / (float)d_samplerate) * (float)8192) + 819;
                 pos %= 8192;
 
-                //Compute min and max of the middle 80% of original baseband
+                // Compute min and max of the middle 80% of original baseband
                 float min = 1000;
                 float max = -1000;
-                for (int i = 0; i < 6554; i++) //8192 * 80% = 6554
+                for (int i = 0; i < 6554; i++) // 8192 * 80% = 6554
                 {
                     if (fft_proc->output_stream->writeBuf[pos] < min)
                         min = fft_proc->output_stream->writeBuf[pos];
@@ -233,7 +236,7 @@ namespace demod
                 waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
 
                 if (showWaterfall)
-                    waterfall_plot->draw({ ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2 });
+                    waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2});
             }
 
             ImGui::End();

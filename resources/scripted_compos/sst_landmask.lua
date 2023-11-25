@@ -33,7 +33,7 @@ function process()
 
 
                 if mval < 0.1 then
-                    val = get_channel_value(1)
+                    val = get_channel_value(0)
 
                     lutpos = val * 255
 

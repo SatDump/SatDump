@@ -155,6 +155,7 @@ void MiriSdrSource::stop()
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
+        mirisdr_set_bias(mirisdr_dev_obj, false);
         mirisdr_close(mirisdr_dev_obj);
     }
     is_started = false;

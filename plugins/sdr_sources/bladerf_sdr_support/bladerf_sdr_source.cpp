@@ -223,6 +223,7 @@ void BladeRFSource::stop()
             work_thread.join();
         logger->info("Thread stopped");
 
+        bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), false);
         bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), false);
         bladerf_close(bladerf_dev_obj);
     }

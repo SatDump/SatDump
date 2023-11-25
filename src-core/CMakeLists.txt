@@ -140,17 +140,8 @@ else()
         target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
     endif()
 
-    # LuaJIT
-    include(FindLuaJit)
-
-    if(LUAJIT_FOUND)
-        target_compile_definitions(satdump_core PUBLIC SOL_USE_LUAJIT="1")
-        target_link_libraries(satdump_core PUBLIC ${LUAJIT_LIBRARIES})
-        target_include_directories(satdump_core PUBLIC ${LUAJIT_INCLUDE_DIRS})
-        message("-- Building with LuaJIT!")
-    else()
-        target_include_directories(satdump_core PUBLIC libs/lua)
-    endif()
+    # Lua
+    target_include_directories(satdump_core PUBLIC libs/lua)
 
     # Armadillo
     find_package(Armadillo)

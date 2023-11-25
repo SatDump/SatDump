@@ -17,7 +17,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [libcorrect](https://github.com/quiet/libcorrect), for Reed-Solomon decoding
 - [libjpeg](https://ijg.org/), from the Independent JPEG Group
 - [libpredict](https://github.com/la1k/libpredict), used for orbit prediction
-- [Lua](https://www.lua.org/), used for complex image composites when LuaJIT is not available
+- [Lua](https://www.lua.org/), used for complex image composites
 - [miniz](https://github.com/richgel999/miniz), used to decompress ZIP files in some decoders
 - [MuParser](https://github.com/beltoforion/muparser), for expression parsing (such as in composites)
 - [Nlhohmann's JSON](https://github.com/nlohmann/json), for JSON and CBOR encoding/parsing
@@ -49,7 +49,6 @@ First time here? See the reference documents below to get started using SatDump.
 ### Libraries linked against
 - [fftw3](http://fftw.org/), used for all FFT operations
 - [libpng](https://github.com/glennrp/libpng), for PNG image loading/saving
-- [LuaJIT](https://luajit.org/), used for complex image composites
 - [nng](https://github.com/nanomsg/nng), for network stuff
 - [PortAudio](https://www.portaudio.com/), used for audio output for NOAA APT
 - [Volk](https://github.com/gnuradio/volk), to simplify SIMD utilization
