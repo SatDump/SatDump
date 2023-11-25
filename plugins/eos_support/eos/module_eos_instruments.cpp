@@ -248,7 +248,6 @@ namespace eos
                 }
 
                 // Calibration
-                saveJsonFile("modis_calib.json", modis_reader.getCalib());
                 nlohmann::json calib_cfg;
                 calib_cfg["calibrator"] = "eos_modis";
                 calib_cfg["vars"] = modis::precompute::precomputeVars(&modis_products, modis_reader.getCalib(), d_satellite == AQUA);
@@ -259,35 +258,23 @@ namespace eos
                     modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);
                 for (int i = 21; i < 38; i++)
                     modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
+                modis_products.set_calibration_type(27, satdump::ImageProducts::CALIB_REFLECTANCE);
 
                 for (int i = 0; i < 38; i++)
-                    modis_products.set_wavenumber(i, 1);
+                { // Set to 0 for now
+                    modis_products.set_wavenumber(i, -1);
+                    modis_products.set_calibration_default_radiance_range(i, 0, 0);
+                }
 
-                double wl_table_emissive[] = {
-                    3.75e-6,
-                    3.959e-6,
-                    3.959e-6,
-                    4.050e-6,
-                    4.515e-6,
-                    4.515e-6,
-                    6.715e-6,
-                    7.325e-6,
-                    8.550e-6,
-                    9.730e-6,
-                    11.030e-6,
-                    12.020e-6,
-                    13.335e-6,
-                    13.635e-6,
-                    13.935e-6,
-                    14.235e-6,
-                };
+                auto modis_table = loadJsonFile(resources::getResourcePath("calibration/modis_table.json"));
 
                 for (int i = 0; i < 16; i++)
                 {
                     int ch = i;
                     if (ch >= 6)
                         ch++;
-                    modis_products.set_wavenumber(21 + ch, freq_to_wavenumber(299792458.0 / wl_table_emissive[i]));
+                    modis_products.set_wavenumber(21 + ch, freq_to_wavenumber(299792458.0 / modis_table["wavelengths"][i].get<double>()));
+                    modis_products.set_calibration_default_radiance_range(21 + ch, modis_table["default_ranges"][i][0].get<double>(), modis_table["default_ranges"][i][1].get<double>());
                 }
 
                 modis_products.save(directory);

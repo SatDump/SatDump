@@ -179,8 +179,17 @@ namespace eos
 
                     auto &ifovs = d_vars[scan][type][i];
 
-                    if (night_group) // Night, TODO
+                    if (night_group) // Night
                     {
+                        if (ifovs[det * 17 + channel].is_null())
+                            continue;
+
+                        float val = ifovs[det * 17 + channel];
+                        if (val != 0)
+                        {
+                            final_avg += val;
+                            valid_cnt++;
+                        }
                     }
                     else // Day
                     {
