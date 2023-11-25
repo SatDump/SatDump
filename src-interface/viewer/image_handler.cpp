@@ -40,9 +40,6 @@ namespace satdump
             disaplay_ranges.push_back(products->get_calibration_default_radiance_range(i));
         }
 
-        for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
-            rgb_presets_str += compo.first + '\0';
-
         // generate scale iamge
         updateScaleImage();
 
@@ -60,7 +57,7 @@ namespace satdump
         {
             overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["products_handler"][products->instrument_name]["overlay_cfg"], false);
         }
-        catch (std::exception &e)
+        catch (std::exception &)
         {
         }
 
@@ -609,17 +606,32 @@ namespace satdump
         if (ImGui::CollapsingHeader("RGB Composites"))
         {
             bool show_info_button = select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "";
-            if (ImGui::Combo(show_info_button ? "##presetcombo" : "Preset##presetcombo", &select_rgb_presets, rgb_presets_str.c_str()))
+            if (ImGui::BeginCombo(show_info_button ? "##presetcombo" : "Preset##presetcombo",
+                select_rgb_presets == -1 ? "" : rgb_presets[select_rgb_presets].first.c_str()))
             {
-                rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
-                updateRGB();
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
+                for (size_t i = 0; i < rgb_presets.size(); i++)
+                {
+                    bool show = true;
+                    if (preset_search_str.size() != 0)
+                        show = isStringPresent(rgb_presets[i].first, preset_search_str);
+
+                    if (show && ImGui::Selectable(rgb_presets[i].first.c_str(), i == select_rgb_presets))
+                    {
+                        select_rgb_presets = i;
+                        rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
+                        updateRGB();
+                    }
+                }
+                ImGui::EndCombo();
             }
 
             if (show_info_button)
             {
                 ImGui::SameLine();
 
-                if (ImGui::Button("\uf449 Info###compopresetinfo"))
+                if (ImGui::Button(u8"\uf449 Info###compopresetinfo"))
                 {
                     std::ifstream ifs(resources::getResourcePath(rgb_compo_cfg.description_markdown));
                     std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));

@@ -187,6 +187,7 @@ namespace satdump
         {
             if (ImGui::BeginCombo("###horizonsselectcombo", horizonsoptions[current_horizons].second.c_str()))
             {
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::InputTextWithHint("##horizonssatellitetracking", u8"\uf422   Search", &horizonssearchstr);
                 for (int i = 0; i < (int)horizonsoptions.size(); i++)
                 {
@@ -209,6 +210,7 @@ namespace satdump
         {
             if (ImGui::BeginCombo("###satelliteselectcombo", satoptions[current_satellite].c_str()))
             {
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::InputTextWithHint("##searchsatellitetracking", u8"\uf422   Search", &satsearchstr);
                 for (int i = 0; i < (int)satoptions.size(); i++)
                 {

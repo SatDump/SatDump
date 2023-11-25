@@ -67,7 +67,7 @@ namespace satdump
         float rgb_progress = 0;
         bool rgb_processing = false;
         std::vector<std::pair<std::string, ImageCompositeCfg>> rgb_presets;
-        std::string rgb_presets_str;
+        std::string preset_search_str;
         int select_rgb_presets = -1;
 
         bool show_markdown_description = false;
