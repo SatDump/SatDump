@@ -119,6 +119,28 @@ namespace satdump
 
         upcoming_satellite_passes_sel.clear();
 
+        for (int i = 0; i < (int)upcoming_satellite_passes_all.size() - 1; i++)
+        {
+            auto &pass1 = upcoming_satellite_passes_all[i];
+            auto &pass2 = upcoming_satellite_passes_all[i + 1];
+
+            if (pass1.los_time > pass2.aos_time)
+            {
+                // logger->critical("Overlap : ");
+                // logPass(pass1);
+                // logPass(pass2);
+
+                if (pass1.max_elevation > pass2.max_elevation)
+                    upcoming_satellite_passes_sel.push_back(pass1);
+                else
+                    upcoming_satellite_passes_sel.push_back(pass2);
+            }
+            else
+            {
+                upcoming_satellite_passes_sel.push_back(pass1);
+            }
+        }
+
         // for (auto ppp : upcoming_satellite_passes_sel)
         // logger->debug("Pass of %s at AOS %s LOS %s elevation %.2f",
         //               general_tle_registry.get_from_norad(ppp.norad).value().name.c_str(),
