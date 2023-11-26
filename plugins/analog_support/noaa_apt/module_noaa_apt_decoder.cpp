@@ -14,7 +14,7 @@
 
 #include "common/calibration.h"
 
-#define MAX_WEDGE_DIFF_VALID 7000
+#define MAX_WEDGE_DIFF_VALID 12000
 
 namespace noaa_apt
 {
@@ -510,6 +510,10 @@ namespace noaa_apt
             space_av /= validl1;
             space_bv /= validl2;
         }
+        else
+        {
+            logger->critical("Couldn't calibrate image with wedges! Likely no valid wedge was identified!");
+        }
 
         int first_valid_line = 0;
         int last_valid_line = wip_apt_image_sync.height();
@@ -649,10 +653,12 @@ namespace noaa_apt
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             logger->info("----------- AVHRR");
             logger->info("Lines : " + std::to_string(line_cnt));
-            if (channel_a1 != -1)
+            if (channel_a1 != -1 && channel_a != -1 && channel_b != -1)
                 logger->info("Identified channels: A: %s, %s B: %s", names[channel_a].c_str(), names[channel_a1].c_str(), names[channel_b].c_str());
-            else
+            else if (channel_a != -1 && channel_b != -1)
                 logger->info("Identified channels: A: %s B: %s", names[channel_a].c_str(), names[channel_b].c_str());
+            else
+                logger->warn("Identified channels (debug): A: %d A1: %d B: %d", channel_a, channel_a1, channel_b);
 
             satdump::ImageProducts avhrr_products;
             avhrr_products.instrument_name = "avhrr_3";
