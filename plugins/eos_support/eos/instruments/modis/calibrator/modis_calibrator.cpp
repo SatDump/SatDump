@@ -53,7 +53,13 @@ namespace eos
             // We need the *actual* detector, before bowtie correction!
             int spos_y = pos_y % 10;
             if (bowtie_lut_1km.size() > 0)
+            {
+                if (pos_x >= bowtie_lut_1km.size())
+                    return CALIBRATION_INVALID_VALUE;
+                if (spos_y >= bowtie_lut_1km[pos_x].size())
+                    return CALIBRATION_INVALID_VALUE;
                 spos_y = bowtie_lut_1km[pos_x][spos_y];
+            }
 
             int D_emiss = channel * 10 + (9 - spos_y);     // Index of emissive detector
             int F = pos_x;                                 // Current frame
