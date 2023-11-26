@@ -41,17 +41,17 @@ std::string android_plugins_dir = "";
 
 void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded_plugins)
 {
-    //Get possible paths
+    // Get possible paths
     std::vector<std::string> plugins_paths;
 #ifdef __ANDROID__
     plugins_paths.push_back(android_plugins_dir + "/");
 #else
     if (std::filesystem::exists("plugins"))
-        plugins_paths.push_back("./plugins"); //Try local plugins directory first
-    plugins_paths.push_back(satdump::LIBPATH + "plugins"); //Followed by system
+        plugins_paths.push_back("./plugins");              // Try local plugins directory first
+    plugins_paths.push_back(satdump::LIBPATH + "plugins"); // Followed by system
 #endif
 
-    //Get platform file extensions
+    // Get platform file extensions
 #if defined(_WIN32)
     std::filesystem::path extension = ".dll";
 #elif defined(__APPLE__)
@@ -60,8 +60,8 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
     std::filesystem::path extension = ".so";
 #endif
 
-    //Load all plugins
-    for (std::string& plugins_path : plugins_paths)
+    // Load all plugins
+    for (std::string &plugins_path : plugins_paths)
     {
         logger->info("Loading plugins from " + plugins_path);
 
@@ -82,14 +82,14 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             try
             {
                 std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
-                loaded_plugins.insert({ pl->getID(), pl });
+                loaded_plugins.insert({pl->getID(), pl});
             }
-            catch (std::runtime_error& e)
+            catch (std::runtime_error &e)
             {
                 logger->error(e.what());
             }
 
-skip_this:
+        skip_this:
             pluginIterator.increment(iteratorError);
             if (iteratorError)
                 logger->critical(iteratorError.message());
@@ -98,7 +98,7 @@ skip_this:
         if (loaded_plugins.size() > 0)
         {
             logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
-            for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>>& it : loaded_plugins)
+            for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : loaded_plugins)
                 logger->debug(" - " + it.first);
             break;
         }
