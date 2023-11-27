@@ -344,6 +344,93 @@ namespace satdump
             type = ImageProducts::CALIB_VTYPE_TEMPERATURE;
     }
 
+    bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg)
+    {
+        std::string str_to_find_channels = cfg.equation;
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+            str_to_find_channels = cfg.channels;
+
+        std::vector<std::string> channels_present;
+
+        for (int i = 0; i < str_to_find_channels.size() - 1; i++)
+        {
+            if (str_to_find_channels[i + 0] == 'c' && str_to_find_channels[i + 1] == 'c' && str_to_find_channels[i + 2] == 'h')
+            {
+                std::string final_ch;
+                int fpos = i;
+                for (int ic = i; ic < str_to_find_channels.size(); ic++)
+                {
+                    char v = str_to_find_channels[ic];
+                    if (v < 48 || v > 57)
+                        if (v < 65 || v > 90)
+                            if (v < 97 || v > 122)
+                                break;
+                    final_ch += v;
+                    fpos = ic;
+                }
+
+                bool already_present = false;
+                for (auto &str : channels_present)
+                    if (str == final_ch)
+                        already_present = true;
+                if (!already_present && final_ch.size() > 0)
+                    channels_present.push_back(final_ch);
+
+                i = fpos;
+                continue;
+            }
+
+            if (str_to_find_channels[i + 0] == 'c' && str_to_find_channels[i + 1] == 'h')
+            {
+                std::string final_ch;
+                int fpos = i;
+                for (int ic = i; ic < str_to_find_channels.size(); ic++)
+                {
+                    char v = str_to_find_channels[ic];
+                    if (v < 48 || v > 57)
+                        if (v < 65 || v > 90)
+                            if (v < 97 || v > 122)
+                                break;
+                    final_ch += v;
+                    fpos = ic;
+                }
+
+                bool already_present = false;
+                for (auto &str : channels_present)
+                    if (str == final_ch)
+                        already_present = true;
+                if (!already_present && final_ch.size() > 0)
+                    channels_present.push_back(final_ch);
+
+                i = fpos;
+                continue;
+            }
+        }
+
+        if (channels_present.size() == 0)
+            return false;
+
+        for (int i = 0; i < (int)product.images.size(); i++)
+        {
+            auto &img = product.images[i];
+            std::string equ_str = "ch" + img.channel_name;
+            std::string equ_str_calib = "cch" + img.channel_name;
+
+            auto it_ch = std::find(channels_present.begin(), channels_present.end(), equ_str);
+            if (it_ch != channels_present.end())
+                channels_present.erase(it_ch);
+
+            if (product.has_calibation() && product.get_wavenumber(i) != -1)
+            {
+                auto it_cch = std::find(channels_present.begin(), channels_present.end(), equ_str_calib);
+                if (it_cch != channels_present.end())
+                    channels_present.erase(it_cch);
+            }
+        }
+
+        return channels_present.size() == 0;
+    }
+
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
     {
         std::vector<int> channel_indexes;
@@ -365,7 +452,7 @@ namespace satdump
 
         for (int i = 0; i < (int)product.images.size(); i++)
         {
-            auto img = product.images[i];
+            auto &img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
             std::string equ_str_calib = "cch" + img.channel_name;
 

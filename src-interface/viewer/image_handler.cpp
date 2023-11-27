@@ -26,8 +26,15 @@ namespace satdump
 
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
+        {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
-                rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
+            {
+                if (check_composite_from_product_can_be_made(*products, compo.value().get<ImageCompositeCfg>()))
+                    rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
+                else
+                    logger->debug("Disabling " + compo.key() + " as it can't be made!");
+            }
+        }
 
         select_image_str += std::string("Composite") + '\0';
 
@@ -607,7 +614,7 @@ namespace satdump
         {
             bool show_info_button = select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "";
             if (ImGui::BeginCombo(show_info_button ? "##presetcombo" : "Preset##presetcombo",
-                select_rgb_presets == -1 ? "" : rgb_presets[select_rgb_presets].first.c_str()))
+                                  select_rgb_presets == -1 ? "" : rgb_presets[select_rgb_presets].first.c_str()))
             {
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
@@ -750,8 +757,8 @@ namespace satdump
 
         if (show_markdown_description)
         {
-            ImGuiIO& io = ImGui::GetIO();
-            ImGui::SetNextWindowSize({ 400 * ui_scale, 400 * ui_scale }, ImGuiCond_Appearing);
+            ImGuiIO &io = ImGui::GetIO();
+            ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale}, ImGuiCond_Appearing);
             ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
             ImGui::Begin("Composite Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
             markdown_composite_info.render();

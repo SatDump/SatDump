@@ -353,6 +353,8 @@ namespace satdump
             v.description_markdown = j["description"].get<std::string>();
     }
 
+    bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
+
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);
 
