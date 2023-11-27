@@ -118,6 +118,7 @@ void RTLTCPSource::stop()
             work_thread.join();
         logger->info("Thread stopped");
 
+        client.setBiasTee(false);
         client.disconnect();
     }
     is_started = false;

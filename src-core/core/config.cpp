@@ -4,10 +4,10 @@
 #include "logger.h"
 #include <filesystem>
 
-#if defined (__APPLE__)
+#if defined(__APPLE__)
 #include <sysdir.h>
 #include <glob.h>
-#elif defined (_WIN32)
+#elif defined(_WIN32)
 #include <direct.h>
 #include <Shlobj.h>
 #endif
@@ -25,6 +25,12 @@ namespace satdump
 
         void loadConfig(std::string path, std::string user_path)
         {
+            if (!std::filesystem::exists(path))
+            {
+                logger->error("Couldn't load config file! Was trying : " + path);
+                exit(1);
+            }
+
             logger->info("Loading config " + path);
             master_cfg = loadJsonFile(path);
             main_cfg = master_cfg;
@@ -35,8 +41,8 @@ namespace satdump
         void checkOutputDirs()
         {
             std::string documents_dir = "";
-#if defined (__APPLE__)
-            //Always overwrite . on macOS since inside the app bundle can be writable
+#if defined(__APPLE__)
+            // Always overwrite . on macOS since inside the app bundle can be writable
             char documents_glob[PATH_MAX];
             glob_t globbuf;
             sysdir_search_path_enumeration_state search_state = sysdir_start_search_path_enumeration(SYSDIR_DIRECTORY_DOCUMENT, SYSDIR_DOMAIN_MASK_USER);
@@ -45,8 +51,8 @@ namespace satdump
             documents_dir = std::string(globbuf.gl_pathv[0]);
             globfree(&globbuf);
 
-#elif defined (_WIN32)
-            //Only set output to Documents if the current dir is not writable
+#elif defined(_WIN32)
+            // Only set output to Documents if the current dir is not writable
             HANDLE test_handle = CreateFile(".", GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
             if (test_handle == INVALID_HANDLE_VALUE)
             {

@@ -164,6 +164,7 @@ void AirspySource::stop()
 {
     if (is_started)
     {
+        airspy_set_rf_bias(airspy_dev_obj, false);
         airspy_stop_rx(airspy_dev_obj);
         airspy_close(airspy_dev_obj);
     }

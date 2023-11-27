@@ -384,6 +384,12 @@ namespace satdump
 
     void loadPipelines(std::string filepath)
     {
+        if (!std::filesystem::exists(filepath))
+        {
+            logger->error("Couldn't load pipelines! Was trying : " + filepath);
+            exit(1);
+        }
+
         logger->info("Loading pipelines from " + filepath);
 
         std::vector<std::pair<std::string, std::string>> pipelinesToLoad;

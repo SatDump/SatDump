@@ -103,6 +103,7 @@ namespace image
         void draw_pixel(int x, int y, T color[]);                                                      // Set a pixel's color
         void draw_line(int x0, int y0, int x1, int y1, T color[]);                                     // Draw a line with Bresenham's algorithm
         void draw_circle(int x0, int y0, int radius, T color[], bool fill = false);                    // Draw a circle with Bresenham's Midpoint algorithm
+        void draw_rectangle(int x0, int y0, int x1, int y1, T color[], bool fill = true);               // Draw a rectangle onto the image
         void draw_image(int channel, Image<T> image, int x = 0, int y = 0);                            // Draw a B&W Image onto a channel
         void draw_text(int xs0, int ys0, T color[], int size, std::string text);                       // Draw text onto the image
         void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); // old

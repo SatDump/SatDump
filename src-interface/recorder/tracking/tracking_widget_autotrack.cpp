@@ -170,13 +170,13 @@ namespace satdump
                                  { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
                     if (availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch))
                     {
-                        if(ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
+                        if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
                             tracking_sats_menu_selected_1 = i;
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
                         {
-                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject& t)
-                                { return t.norad == general_tle_registry[i].norad; });
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject &t)
+                                                   { return t.norad == general_tle_registry[i].norad; });
                             if (it == enabled_satellites.end())
                                 enabled_satellites.push_back({general_tle_registry[i].norad});
                         }
@@ -220,8 +220,8 @@ namespace satdump
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
                         {
-                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject& t)
-                                { return t.norad == general_tle_registry[i].norad; });
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject &t)
+                                                   { return t.norad == general_tle_registry[i].norad; });
                             if (it != enabled_satellites.end())
                                 enabled_satellites.erase(it);
                         }
@@ -359,7 +359,7 @@ namespace satdump
                             auto color = ImColor(255, 255, 255, 255);
                             draw_list->AddRect(ImVec2(ImGui::GetCursorScreenPos().x + cpass_xs, ImGui::GetCursorScreenPos().y + thsat_ys),
                                                ImVec2(ImGui::GetCursorScreenPos().x + cpass_xe, ImGui::GetCursorScreenPos().y + thsat_ye),
-                                               color, 3);
+                                               color, 3, 0, 2 * ui_scale);
                         }
                     }
                 }

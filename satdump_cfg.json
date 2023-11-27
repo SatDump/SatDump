@@ -100,6 +100,12 @@
             "value": true,
             "name": "Show Status Bar",
             "description": "Show status bar with last log at the bottom of the UI"
+        },
+        "remember_pos":{
+            "type": "bool",
+            "value": false,
+            "name" : "Remember Window Size and Position",
+            "description" : "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
         }
     },
     // More generic SatDump settings
@@ -566,6 +572,40 @@
                         },
                         "autogen": false
                     },
+                    "MCIR": {
+                        "channels": "cch4",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "description": "descriptions/MCIR.md",
+                        "lua_vars": {
+                            "minoffset": 0.35,
+                            "scalar": 2.5,
+                            "thresold": 0,
+                            "blend": 1
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "MSA": {
+                        "channels": "cch2",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "description": "descriptions/MSA.md",
+                        "lua_vars": {
+                            "minoffset": 0.02,
+                            "scalar": 2.0,
+                            "thresold": 0,
+                            "blend": 1
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
                     "Snow enhancement": {
                         "equation": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/4)^1.7, (ch1-ch3a)^1.7",
                         "description": "descriptions/Snow.md",
@@ -877,19 +917,7 @@
                         "equation": "chb",
                         "individual_equalize": true
                     },
-                    "Clouds Underlay": {
-                        "channels": "chb",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
-                        "description": "descriptions/CloudUnderlay.md",
-                        "lua_vars": {
-                            "minoffset": 0.58,
-                            "scalar": 4.0,
-                            "thresold": 0.15,
-                            "blend": 0
-                        },
-                        "autogen": false
-                    },
-                    "MCIR": {
+                    "MCIR (Uncalibrated)": {
                         "channels": "chb",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
@@ -906,7 +934,7 @@
                             0
                         ]
                     },
-                    "MSA": {
+                    "MSA (Uncalibrated)": {
                         "channels": "cha",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
@@ -923,7 +951,7 @@
                             0
                         ]
                     },
-                    "MCIR Rain": {
+                    "MCIR Rain (Uncalibrated)": {
                         "channels": "cha, chb",
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "description": "descriptions/MCIR_precip.md",
@@ -939,96 +967,18 @@
                             1,
                             0
                         ]
-                    },
-                    "WXtoImg HVC N15": {
-                        "lut": "lut/WXtoImg-N15-HVC.png",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "WXtoImg HVC N18": {
-                        "lut": "lut/WXtoImg-N18-HVC.png",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "WXtoImg HVC N19": {
-                        "lut": "lut/WXtoImg-N19-HVC.png",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "NO enhancement": {
-                        "lut": "lut/WXtoImg-NO_mod_APT.png",
-                        "description": "descriptions/NO.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "ZA enhancement": {
-                        "lut": "lut/WXtoImg-ZA.png",
-                        "description": "descriptions/ZA.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "MB enhancement": {
-                        "lut": "lut/WXtoImg-MB.png",
-                        "description": "descriptions/MB.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "MD enhancement": {
-                        "lut": "lut/WXtoImg-MD.png",
-                        "description": "descriptions/MD.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "BD enhancement": {
-                        "lut": "lut/WXtoImg-BD.png",
-                        "description": "descriptions/BD.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "CC enhancement": {
-                        "lut": "lut/WXtoImg-CC.png",
-                        "description": "descriptions/CC.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "EC enhancement": {
-                        "description": "descriptions/EC.md",
-                        "lut": "lut/WXtoImg-EC.png",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "HE enhancement": {
-                        "lut": "lut/WXtoImg-HE.png",
-                        "description": "descriptions/HE.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "HF enhancement": {
-                        "lut": "lut/WXtoImg-HF.png",
-                        "description": "descriptions/HF.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "JF enhancement": {
-                        "lut": "lut/WXtoImg-JF.png",
-                        "description": "descriptions/JF.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "JJ enhancement": {
-                        "lut": "lut/WXtoImg-JJ.png",
-                        "description": "descriptions/JJ.md",
-                        "channels": "cha, chb",
-                        "autogen": false
-                    },
-                    "TA enhancement": {
-                        "lut": "lut/WXtoImg-TA.png",
-                        "description": "descriptions/TA.md",
-                        "channels": "cha, chb",
-                        "autogen": false
+                    }
+                },
+                "project_channels": {
+                    "channels": "4",
+                    "width": 4096,
+                    "height": 2048,
+                    "individual_equalize": true,
+                    "draw_map_overlay": true,
+                    "config": {
+                        "type": "equirectangular"
                     }
                 }
-                //,"project_channels": {}
             },
             "virr": {
                 "handler": "image_handler",
