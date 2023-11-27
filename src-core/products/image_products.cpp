@@ -184,7 +184,10 @@ namespace satdump
             if (calibrators.size() > 0)
                 calibrator_ptr = calibrators[0];
             else
+            {
                 logger->error("Requested calibrator " + calibrator_id + " does not exist!");
+                calibrator_ptr = std::make_shared<DummyCalibrator>(contents["calibration"], this);
+            }
 
             calibrator_ptr->init();
         }

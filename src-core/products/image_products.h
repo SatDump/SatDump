@@ -158,6 +158,16 @@ namespace satdump
             virtual double compute(int image_index, int x, int y, int val) = 0;
         };
 
+        //////////////////////
+        class DummyCalibrator : public CalibratorBase
+        {
+        public:
+            void init() {}
+            double compute(int image_index, int x, int y, int val) { return CALIBRATION_INVALID_VALUE; }
+            DummyCalibrator(nlohmann::json calib, ImageProducts *products) : CalibratorBase(calib, products) {}
+        };
+        //////////////////////
+
         struct RequestCalibratorEvent
         {
             std::string id;
