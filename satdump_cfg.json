@@ -824,11 +824,25 @@
                     "Color general cloud IR": {
                         "channels": "cch4",
                         "description": "descriptions/ColorGeneralIR.md",
-                        "lut": "lut/Multispectral.png",
+                        "lut": "lut/cal/Multispectral.png",
                         "autogen": false,
                         "geo_correct": true,
                         "calib_cfg": {
                             "cch4": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
+                    },
+                    "Color convection longwave IR": {
+                        "channels": "cch5",
+                        "description": "descriptions/ConvectionLWIR.md",
+                        "lut": "lut/cal/ConvectionLWIR.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch5": {
                                 "type": "temperature",
                                 "min": 180,
                                 "max": 320
