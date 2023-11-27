@@ -46,6 +46,7 @@ namespace image
         {
             // Free memory
             delete[] jpeg_decomp;
+            fclose(fp);
             return;
         }
 
@@ -180,6 +181,7 @@ namespace image
         {
             // Free memory
             delete[] jpeg_decomp;
+            fclose(fp);
             return;
         }
 

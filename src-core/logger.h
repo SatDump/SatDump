@@ -63,36 +63,42 @@ namespace slog
             va_list args;
             va_start(args, fmt);
             logf(LOG_TRACE, fmt, args);
+            va_end(args);
         }
         void debug(std::string fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
             logf(LOG_DEBUG, fmt, args);
+            va_end(args);
         }
         void info(std::string fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
             logf(LOG_INFO, fmt, args);
+            va_end(args);
         }
         void warn(std::string fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
             logf(LOG_WARN, fmt, args);
+            va_end(args);
         }
         void error(std::string fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
             logf(LOG_ERROR, fmt, args);
+            va_end(args);
         }
         void critical(std::string fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
             logf(LOG_CRIT, fmt, args);
+            va_end(args);
         }
 
         // Int formats

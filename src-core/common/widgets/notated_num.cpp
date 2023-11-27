@@ -7,7 +7,7 @@
 namespace widgets
 {
     template <typename T>
-    NotatedNum<T>::NotatedNum(std::string d_id, T input_int, std::string units) : val{ input_int }, d_id{ d_id }, units{ units }
+    NotatedNum<T>::NotatedNum(std::string d_id, T input_int, std::string units) : val{input_int}, d_id{d_id}, units{units}
     {
         last_display = display_val = format_notated(val, units);
     }
@@ -20,12 +20,12 @@ namespace widgets
     template <typename T>
     void NotatedNum<T>::parse_input()
     {
-        //Clean up string
+        // Clean up string
         display_val.erase(std::remove_if(display_val.begin(), display_val.end(), ::isspace), display_val.end());
         std::regex regexp(units, std::regex_constants::icase);
         display_val = std::regex_replace(display_val, regexp, "");
 
-        //Get order of magnitude suffix, if present
+        // Get order of magnitude suffix, if present
         T multiplier = 1;
         bool had_suffix = true;
         const char suffix = toupper(display_val.back());
@@ -47,11 +47,11 @@ namespace widgets
                 had_suffix = false;
         }
 
-        //Remove suffix
-        if(had_suffix)
+        // Remove suffix
+        if (had_suffix)
             display_val.pop_back();
 
-        //Try to parse the rest of it as a number
+        // Try to parse the rest of it as a number
         T decoded_int;
         try
         {
@@ -64,7 +64,7 @@ namespace widgets
             return;
         }
 
-        //Value is good - update and re-render
+        // Value is good - update and re-render
         val = decoded_int;
         last_display = display_val = format_notated(val, units);
     }

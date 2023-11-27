@@ -43,7 +43,7 @@ namespace satdump
                 const double afPL[2] = {gcps[iGCP].x, gcps[iGCP].y};
                 const double afXY[2] = {gcps[iGCP].lon, gcps[iGCP].lat};
 
-                std::map<std::pair<double, double>, int>::iterator oIter(oMapPixelLineToIdx.find(std::pair<double, double>(afPL[0], afPL[1])));
+                auto oIter(oMapPixelLineToIdx.find(std::pair<double, double>(afPL[0], afPL[1])));
 
                 if (oIter != oMapPixelLineToIdx.end())
                 {
@@ -62,8 +62,8 @@ namespace satdump
                     oMapPixelLineToIdx[std::pair<double, double>(afPL[0], afPL[1])] = iGCP;
                 }
 
-                oIter = oMapXYToIdx.find(std::pair<double, double>(afXY[0], afXY[1]));
-                if (oIter != oMapXYToIdx.end())
+                auto oIter2 = oMapXYToIdx.find(std::pair<double, double>(afXY[0], afXY[1]));
+                if (oIter2 != oMapXYToIdx.end())
                 {
                     logger->warn("2 GCPs have the same Lat,Lon!");
                     continue;
