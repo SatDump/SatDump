@@ -174,22 +174,9 @@ namespace eos
             if (compute_crc(modis_ifov, 171) != modis_ifov[171])
                 return;
 
-            // Filter out calibration packets, and process them
+            // Filter out calibration packets. They're always day!
             if (header.type_flag == 1)
-            {
-                for (int i = 0; i < 171; i++)
-                {
-                    if (header.calib_type == MODISHeader::SOLAR_DIFFUSER_SOURCE)
-                        d_calib[lines / 10]["solar_diffuser_source"][header.calib_frame_count][i] = modis_ifov[i];
-                    else if (header.calib_type == MODISHeader::SRCA_CALIB_SOURCE)
-                        d_calib[lines / 10]["srca_diffuser_source"][header.calib_frame_count][i] = modis_ifov[i];
-                    else if (header.calib_type == MODISHeader::BLACKBODY_SOURCE)
-                        d_calib[lines / 10]["blackbody_source"][header.calib_frame_count][i] = modis_ifov[i];
-                    else if (header.calib_type == MODISHeader::SPACE_SOURCE)
-                        d_calib[lines / 10]["space_source"][header.calib_frame_count][i] = modis_ifov[i];
-                }
                 return;
-            }
 
             // Filter out bad packets
             if (header.earth_frame_data_count > 1354 /*|| header.mirror_side > 1*/)
@@ -222,9 +209,9 @@ namespace eos
             lastScanCount = header.scan_count;
 
             // 28 1000m channels
-            for (int i = 0; i < 16; i++)
-                for (int f = 0; f < 5; f++)
-                    channels1000m[14 + i][(lines + i) * 1354 + position] = modis_ifov[(9 - i) * 17 + i] << 4;
+            for (int i = 0; i < 17; i++)
+                for (int f = 0; f < 10; f++)
+                    channels1000m[14 + i][(lines + f) * 1354 + position] = modis_ifov[(9 - f) * 17 + i] << 4;
 
             fillCalib(packet, header);
         }
@@ -313,48 +300,56 @@ namespace eos
             // printf("ENG2 %d\n", packet.header.sequence_flag);
             if (packet.header.sequence_flag == 1)
             {
-                uint8_t *block_curr = &packet.payload[12];
-                int major_cycle_cnt = block_curr[0] >> 2;
+                auto func_m = [this](uint8_t *block_curr, int major_cycle_cnt)
+                {
+                    if (major_cycle_cnt == 0)
+                    {
+                        uint16_t words_tp_ao[5 + 1];
+                        repackBytesTo12bits(&block_curr[56], 8, words_tp_ao);
+                        last_ao_inst_temp[0] = words_tp_ao[4]; // TP_AO_SMIR_OBJ
+                        last_ao_inst_temp[1] = words_tp_ao[1]; // TP_AO_LWIR_OBJ
+                        last_ao_inst_temp[2] = words_tp_ao[3]; // TP_AO_SMIR_LENS
+                        last_ao_inst_temp[3] = words_tp_ao[0]; // TP_AO_LWIR_LENS
+                    }
+                    else if (major_cycle_cnt == 3)
+                    {
+                        last_cav_temp[0] = block_curr[56] << 1 | block_curr[57] >> 7;               // TP_MF_CALBKHD_SR
+                        last_cav_temp[3] = (block_curr[57] & 0b1111111) << 2 | block_curr[58] >> 6; // TP_MF_CVR_OP_SR
+                    }
+                    else if (major_cycle_cnt == 4)
+                    {
+                        last_cav_temp[2] = (block_curr[58] & 0b111111) << 3 | block_curr[59] >> 5; // TP_MF_Z_BKHD_BB
+                    }
+                    else if (major_cycle_cnt == 23)
+                    {
+                        last_cav_temp[1] = (block_curr[58] & 0b111111) << 3 | block_curr[59] >> 5; // TP_SR_SNOUT
+                    }
 
-                // logger->critical("Major Cycle %d", major_cycle_cnt);
+                    if (major_cycle_cnt == 5 ||
+                        major_cycle_cnt == 13 ||
+                        major_cycle_cnt == 21 ||
+                        major_cycle_cnt == 29 ||
+                        major_cycle_cnt == 37 ||
+                        major_cycle_cnt == 45 ||
+                        major_cycle_cnt == 53 ||
+                        major_cycle_cnt == 61)
+                    {
+                        last_cr_rc_info[0] = block_curr[43] >> 7;       // CR_RC_CFPA_T1SET
+                        last_cr_rc_info[1] = (block_curr[43] >> 6) & 1; // CR_RC_CFPA_T3SET
+                        last_cr_rc_info[2] = (block_curr[43] >> 2) & 1; // CR_RC_LWHTR_ON
+                        last_cr_rc_info[3] = (block_curr[44] >> 6) & 1; // CR_RC_SMHTR_ON
+                    }
+                };
 
-                if (major_cycle_cnt == 0)
-                {
-                    uint16_t words_tp_ao[5 + 1];
-                    repackBytesTo12bits(&block_curr[56], 8, words_tp_ao);
-                    last_ao_inst_temp[0] = words_tp_ao[4]; // TP_AO_SMIR_OBJ
-                    last_ao_inst_temp[1] = words_tp_ao[1]; // TP_AO_LWIR_OBJ
-                    last_ao_inst_temp[2] = words_tp_ao[3]; // TP_AO_SMIR_LENS
-                    last_ao_inst_temp[3] = words_tp_ao[0]; // TP_AO_LWIR_LENS
-                }
-                else if (major_cycle_cnt == 3)
-                {
-                    last_cav_temp[0] = block_curr[56] << 1 | block_curr[57] >> 7;               // TP_MF_CALBKHD_SR
-                    last_cav_temp[3] = (block_curr[57] & 0b1111111) << 2 | block_curr[58] >> 6; // TP_MF_CVR_OP_SR
-                }
-                else if (major_cycle_cnt == 4)
-                {
-                    last_cav_temp[2] = (block_curr[58] & 0b111111) << 3 | block_curr[59] >> 5; // TP_MF_Z_BKHD_BB
-                }
-                else if (major_cycle_cnt == 23)
-                {
-                    last_cav_temp[1] = (block_curr[58] & 0b111111) << 3 | block_curr[59] >> 5; // TP_SR_SNOUT
-                }
+                uint8_t *block_curr1 = &packet.payload[12];
+                uint8_t *block_curr2 = &packet.payload[12 + 64];
+                int major_cycle_cnt1 = block_curr1[0] >> 2;
+                int major_cycle_cnt2 = block_curr2[0] >> 2;
 
-                if (major_cycle_cnt == 5 ||
-                    major_cycle_cnt == 13 ||
-                    major_cycle_cnt == 21 ||
-                    major_cycle_cnt == 29 ||
-                    major_cycle_cnt == 37 ||
-                    major_cycle_cnt == 45 ||
-                    major_cycle_cnt == 53 ||
-                    major_cycle_cnt == 61)
-                {
-                    last_cr_rc_info[0] = block_curr[43] >> 7;       // CR_RC_CFPA_T1SET
-                    last_cr_rc_info[1] = (block_curr[43] >> 6) & 1; // CR_RC_CFPA_T3SET
-                    last_cr_rc_info[2] = (block_curr[43] >> 2) & 1; // CR_RC_LWHTR_ON
-                    last_cr_rc_info[3] = (block_curr[44] >> 6) & 1; // CR_RC_SMHTR_ON
-                }
+                func_m(block_curr2, major_cycle_cnt2); // Prior
+                func_m(block_curr1, major_cycle_cnt1); // Current
+
+                // logger->critical("Major Cycle %d - %d", major_cycle_cnt1, major_cycle_cnt2);
             }
             else if (packet.header.sequence_flag == 2)
             {

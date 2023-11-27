@@ -166,7 +166,7 @@ namespace eos
                 float final_avg = 0;
                 if (!d_vars[scan].contains(type))
                     return -1;
-                bool night_group = d_vars[scan]["night_group"];
+                // bool night_group = d_vars[scan]["night_group"];
 
                 if (channel >= MODIS_BAND26_INDEX_AT_RES)
                     channel++;
@@ -179,6 +179,7 @@ namespace eos
 
                     auto &ifovs = d_vars[scan][type][i];
 
+#if 0
                     if (night_group) // Night
                     {
                         if (ifovs[det * 17 + channel].is_null())
@@ -192,6 +193,7 @@ namespace eos
                         }
                     }
                     else // Day
+#endif
                     {
                         if (ifovs[det * 83 + 66 + channel].is_null())
                             continue;
