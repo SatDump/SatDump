@@ -606,7 +606,7 @@ namespace satdump
         image::Image<uint16_t> rgb_composite;
 
         if (cfg.lua != "")
-            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, progress);
+            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, final_timestamps, progress);
         else if (cfg.lut != "")
             rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
         else

@@ -101,11 +101,11 @@
             "name": "Show Status Bar",
             "description": "Show status bar with last log at the bottom of the UI"
         },
-        "remember_pos":{
+        "remember_pos": {
             "type": "bool",
             "value": false,
-            "name" : "Remember Window Size and Position",
-            "description" : "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
+            "name": "Remember Window Size and Position",
+            "description": "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
         }
     },
     // More generic SatDump settings
@@ -556,7 +556,8 @@
                             "minoffset": 0.4,
                             "scalar": 4.0,
                             "thresold": 0,
-                            "blend": 0
+                            "blend": 0,
+                            "invert": 0
                         },
                         "autogen": false
                     },
@@ -568,7 +569,8 @@
                             "minoffset": 0.58,
                             "scalar": 4.0,
                             "thresold": 0.15,
-                            "blend": 0
+                            "blend": 0,
+                            "invert": 0
                         },
                         "autogen": false
                     },
@@ -580,7 +582,8 @@
                             "minoffset": 0.35,
                             "scalar": 2.5,
                             "thresold": 0,
-                            "blend": 1
+                            "blend": 1,
+                            "invert": 0
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -597,7 +600,8 @@
                             "minoffset": 0.02,
                             "scalar": 2.0,
                             "thresold": 0,
-                            "blend": 1
+                            "blend": 1,
+                            "invert": 0
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -925,7 +929,8 @@
                             "minoffset": 0.35,
                             "scalar": 2.5,
                             "thresold": 0,
-                            "blend": 1
+                            "blend": 1,
+                            "invert": 0
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -942,7 +947,8 @@
                             "minoffset": 0.02,
                             "scalar": 2.0,
                             "thresold": 0,
-                            "blend": 1
+                            "blend": 1,
+                            "invert": 0
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1159,6 +1165,29 @@
                             1,
                             0
                         ]
+                    },
+                    "MCIR": {
+                        "channels": "ch4",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "description": "descriptions/MCIR.md",
+                        "lua_vars": {
+                            "minoffset": 0.45,
+                            "scalar": 2.6,
+                            "thresold": 0,
+                            "blend": 1,
+                            "invert": 1
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "Channel 4 Equalized": {
+                        "equation": "1 - ch4",
+                        "individual_equalize": true,
+                        "geo_correct": true
                     }
                 }
             },
