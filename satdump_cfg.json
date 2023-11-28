@@ -579,11 +579,11 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
                         "lua_vars": {
-                            "minoffset": 0.35,
-                            "scalar": 2.5,
+                            "minoffset": 0.05,
+                            "scalar": 1.1,
                             "thresold": 0,
                             "blend": 1,
-                            "invert": 0
+                            "invert": 1
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -597,7 +597,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "lua_vars": {
-                            "minoffset": 0.02,
+                            "minoffset": -0.15,
                             "scalar": 2.0,
                             "thresold": 0,
                             "blend": 1,

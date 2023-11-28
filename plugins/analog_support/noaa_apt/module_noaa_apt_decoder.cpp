@@ -552,6 +552,8 @@ namespace noaa_apt
                 last_valid_line = last_valid_wedge;
                 wip_apt_image_sync.crop(0, first_valid_line,
                                         wip_apt_image_sync.width(), last_valid_line);
+                if (switchy != -1)
+                    switchy -= first_valid_line;
             }
             else
             {
