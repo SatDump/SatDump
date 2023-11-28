@@ -18,9 +18,9 @@ namespace noaa
             : ProcessingModule(input_file, output_file_hint, parameters),
               is_gac(parameters.count("gac_mode") > 0 ? parameters["gac_mode"].get<bool>() : 0),
               is_dsb(parameters.count("dsb_mode") > 0 ? parameters["dsb_mode"].get<bool>() : 0),
-              avhrr_reader(is_gac, parameters["year_override"].get<int>()),
-              hirs_reader(parameters["year_override"].get<int>()),
-              sem_reader(parameters["year_override"].get<int>())
+              avhrr_reader(is_gac, parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
+              hirs_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
+              sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1)
         {
         }
 

@@ -5,6 +5,8 @@
 nlohmann::ordered_json loadJsonFile(std::string path);
 void saveJsonFile(std::string path, nlohmann::ordered_json j);
 
+
+
 // Apply a diff JSON object onto another
 nlohmann::ordered_json merge_json_diffs(nlohmann::ordered_json master, nlohmann::ordered_json diff);
 
@@ -36,4 +38,5 @@ void setValueIfExists(nlohmann::json obj, T &v)
     }
 }
 
+void saveCborFile(std::string path, nlohmann::ordered_json j);
 nlohmann::ordered_json loadCborFile(std::string path);

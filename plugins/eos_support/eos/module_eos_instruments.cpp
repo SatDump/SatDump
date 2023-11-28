@@ -12,6 +12,9 @@
 #include "resources.h"
 #include "instruments/modis/modis_histmatch.h"
 
+#include "common/calibration.h"
+#include "instruments/modis/calibrator/modis_calibrator.h"
+
 namespace eos
 {
     namespace instruments
@@ -190,6 +193,7 @@ namespace eos
                 modis_products.instrument_name = "modis";
                 modis_products.has_timestamps = true;
                 modis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
+                modis_products.bit_depth = 12;
                 modis_products.set_tle(satellite_tle);
                 modis_products.set_timestamps(modis_reader.timestamps_250);
                 nlohmann::json proj_cfg;
@@ -219,6 +223,7 @@ namespace eos
                     modis_products.images.push_back({"MODIS-" + std::to_string(i + 3), std::to_string(i + 3), image});
                 }
 
+                std::vector<std::vector<int>> bowtie_lut_1km;
                 for (int i = 0; i < 31; i++)
                 {
                     image::Image<uint16_t> image = modis_reader.getImage1000m(i);
@@ -226,7 +231,7 @@ namespace eos
                     // modis::modis_match_detector_histograms(image, 1, 10 * 2);
 
                     if (d_modis_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta, &bowtie_lut_1km);
 
                     if (i < 5)
                         modis_products.images.push_back({"MODIS-" + std::to_string(i + 8), std::to_string(i + 8), image});
@@ -240,6 +245,36 @@ namespace eos
                         modis_products.images.push_back({"MODIS-14H", "14H", image});
                     else
                         modis_products.images.push_back({"MODIS-" + std::to_string(i + 6), std::to_string(i + 6), image});
+                }
+
+                // Calibration
+                nlohmann::json calib_cfg;
+                calib_cfg["calibrator"] = "eos_modis";
+                calib_cfg["vars"] = modis::precompute::precomputeVars(&modis_products, modis_reader.getCalib(), d_satellite == AQUA);
+                calib_cfg["is_aqua"] = d_satellite == AQUA;
+                calib_cfg["bowtie_lut_1km"] = bowtie_lut_1km;
+                modis_products.set_calibration(calib_cfg);
+                for (int i = 0; i < 21; i++)
+                    modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);
+                for (int i = 21; i < 38; i++)
+                    modis_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
+                modis_products.set_calibration_type(27, satdump::ImageProducts::CALIB_REFLECTANCE);
+
+                for (int i = 0; i < 38; i++)
+                { // Set to 0 for now
+                    modis_products.set_wavenumber(i, -1);
+                    modis_products.set_calibration_default_radiance_range(i, 0, 0);
+                }
+
+                auto modis_table = loadJsonFile(resources::getResourcePath("calibration/modis_table.json"));
+
+                for (int i = 0; i < 16; i++)
+                {
+                    int ch = i;
+                    if (ch >= 6)
+                        ch++;
+                    modis_products.set_wavenumber(21 + ch, freq_to_wavenumber(299792458.0 / modis_table["wavelengths"][i].get<double>()));
+                    modis_products.set_calibration_default_radiance_range(21 + ch, modis_table["default_ranges"][i][0].get<double>(), modis_table["default_ranges"][i][1].get<double>());
                 }
 
                 modis_products.save(directory);

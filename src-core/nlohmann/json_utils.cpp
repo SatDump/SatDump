@@ -23,6 +23,14 @@ void saveJsonFile(std::string path, nlohmann::ordered_json j)
     ostream.close();
 }
 
+void saveCborFile(std::string path, nlohmann::ordered_json j)
+{
+    std::ofstream ostream(path);
+    auto v = nlohmann::json::to_cbor(j);
+    ostream.write((char *)v.data(), v.size());
+    ostream.close();
+}
+
 nlohmann::ordered_json merge_json_diffs(nlohmann::ordered_json master, nlohmann::ordered_json diff)
 {
     nlohmann::ordered_json output = master;
