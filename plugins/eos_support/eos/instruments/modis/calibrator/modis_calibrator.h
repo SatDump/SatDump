@@ -112,7 +112,7 @@ namespace eos
             nlohmann::json precomputeVars(satdump::ImageProducts *d_products, nlohmann::json d_vars, bool is_aqua);
         };
 
-        // The actual calibrator!
+        // The actual calibrator! - Based on the MODIS ground processing SW, re-written in many places
         class EosMODISCalibrator : public satdump::ImageProducts::CalibratorBase
         {
         private:
