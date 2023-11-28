@@ -894,12 +894,12 @@
                         }
                     },
                     "APT channel A": {
-                        "channels": "cha",
+                        "equation": "cha",
                         "geo_correct": true,
                         "equalize": true
                     },
                     "APT channel B": {
-                        "channels": "chb",
+                        "equation": "chb",
                         "geo_correct": true,
                         "equalize": true
                     },
