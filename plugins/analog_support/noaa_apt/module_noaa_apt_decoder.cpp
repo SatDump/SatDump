@@ -267,8 +267,8 @@ namespace noaa_apt
 
         APTWedge calib_wedge_ch1, calib_wedge_ch2; // We also extract calibration words, scaled to 10-bits
         uint16_t prt_counts[4];
-        int space_av, space_av1, space_bv;
-        int bb_a, bb_a1;
+        int space_av = 0, space_av1 = 0, space_bv = 0;
+        int bb_a = 0, bb_a1 = 0;
         int channel_a = -1, channel_b = -1, channel_a1 = -1, switchy = -1;
 
         if (new_white != 0 && new_black != 0 && new_white1 != 0 && new_black1 != 0)
@@ -353,7 +353,7 @@ namespace noaa_apt
             calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / validn1) >> 6;
             calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / validn1) >> 6;
             calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / validn1) >> 6;
-            bb_a = (bb_a / validn1_0) >> 6;
+            bb_a = (validn1_0 == 0 ? 0 : (bb_a / validn1_0)) >> 6;
             if (validn1_1 != 0)
                 bb_a1 = (bb_a1 / validn1_1) >> 6;
 
@@ -707,7 +707,7 @@ namespace noaa_apt
                     calib_out["calibrator"] = "noaa_avhrr3";
 
                     // PRT counts to temperature
-                    double tbb;
+                    double tbb = 0;
                     for (int prt = 0; prt < 4; prt++)
                         for (int p = 0; p < 4; p++)
                             tbb += prt_coefs[prt][p] * pow(prt_counts[prt], p); // convert PRT counts to temperature
