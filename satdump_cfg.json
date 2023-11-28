@@ -892,34 +892,16 @@
                                 "max": 320
                             }
                         }
-                    }
-                },
-                "project_channels": {
-                    "channels": "4",
-                    "width": 4096,
-                    "height": 2048,
-                    "individual_equalize": true,
-                    "draw_map_overlay": true,
-                    "config": {
-                        "type": "equirectangular"
-                    }
-                }
-            },
-            "avhrr_apt": {
-                "handler": "image_handler",
-                "name": "AVHRR APT",
-                "rgb_composites": {
-                    "224": {
-                        "equation": "cha + 0.01, cha, chb - 0.2",
-                        "autogen": false
                     },
-                    "A individual_equalized": {
-                        "equation": "cha",
-                        "individual_equalize": true
+                    "APT channel A": {
+                        "channels": "cha",
+                        "geo_correct": true,
+                        "equalize": true
                     },
-                    "B individual_equalized": {
-                        "equation": "chb",
-                        "individual_equalize": true
+                    "APT channel B": {
+                        "channels": "chb",
+                        "geo_correct": true,
+                        "equalize": true
                     },
                     "MCIR (Uncalibrated)": {
                         "channels": "chb",
