@@ -8,8 +8,8 @@ function init()
     img_background:load_jpeg(get_resource_path("maps/nasa_hd.jpg"))
     equ_proj = EquirectangularProj.new()
     equ_proj:init(img_background:width(), img_background:height(), -180, 90, 180, -90)
-    cfg_offset = -0.1 --lua_vars["minoffset"]
-    cfg_scalar = 2.5  --lua_vars["scalar"]
+    cfg_offset = lua_vars["minoffset"]
+    cfg_scalar = lua_vars["scalar"]
     cfg_thresold = lua_vars["thresold"]
     cfg_blend = lua_vars["blend"]
     cfg_invert = lua_vars["invert"]

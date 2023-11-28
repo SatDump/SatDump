@@ -119,6 +119,7 @@ namespace satdump
 
         upcoming_satellite_passes_sel.clear();
 
+#if 0
         for (int i = 0; i < (int)upcoming_satellite_passes_all.size() - 1; i++)
         {
             auto &pass1 = upcoming_satellite_passes_all[i];
@@ -140,6 +141,56 @@ namespace satdump
                 upcoming_satellite_passes_sel.push_back(pass1);
             }
         }
+#else
+        satdump::tracking::SatellitePass selectedPass = {-1, -1, -1 - 1};
+        // double busyUntil = 0;
+        if (upcoming_satellite_passes_all.size() > 0)
+        {
+            double start_time = upcoming_satellite_passes_all[0].aos_time;
+            double stop_time = upcoming_satellite_passes_all[upcoming_satellite_passes_all.size() - 1].los_time;
+
+            for (double current_time = start_time; current_time < stop_time; current_time++)
+            {
+                std::vector<satdump::tracking::SatellitePass> ongoing_passes;
+                for (auto &cpass : upcoming_satellite_passes_all)
+                    if (cpass.aos_time <= current_time && current_time <= cpass.los_time)
+                        ongoing_passes.push_back(cpass);
+
+                if (ongoing_passes.size() == 0)
+                    continue;
+
+                // if (current_time < busyUntil)
+                //     continue;
+
+                satdump::tracking::SatellitePass picked_pass = {-1, -1, -1 - 1};
+                for (auto &cpass : ongoing_passes)
+                    if (picked_pass.max_elevation < cpass.max_elevation)
+                        picked_pass = cpass;
+
+                std::vector<satdump::tracking::SatellitePass> picked_pass_overlaping_passes;
+                picked_pass_overlaping_passes.push_back(picked_pass);
+                for (auto &cpass : upcoming_satellite_passes_all)
+                    if (picked_pass.aos_time < cpass.los_time && !(picked_pass.los_time <= cpass.aos_time))
+                        picked_pass_overlaping_passes.push_back(cpass);
+
+                for (auto &cpass : picked_pass_overlaping_passes)
+                    if (picked_pass.max_elevation < cpass.max_elevation)
+                        picked_pass = cpass;
+
+                // if (picked_pass.aos_time < selectedPass.los_time)
+                //     continue;
+
+                if (picked_pass.norad != selectedPass.norad ||
+                    picked_pass.aos_time != selectedPass.aos_time ||
+                    picked_pass.los_time != selectedPass.los_time)
+                {
+                    selectedPass = picked_pass;
+                    upcoming_satellite_passes_sel.push_back(picked_pass);
+                    // busyUntil = picked_pass.los_time;
+                }
+            }
+        }
+#endif
 
         // for (auto ppp : upcoming_satellite_passes_sel)
         // logger->debug("Pass of %s at AOS %s LOS %s elevation %.2f",
