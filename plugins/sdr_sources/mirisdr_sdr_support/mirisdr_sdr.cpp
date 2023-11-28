@@ -186,7 +186,7 @@ void MiriSdrSource::drawControlUI()
     if (is_started)
         RImGui::endDisabled();
 
-    if (RImGui::SliderInt("LNA Gain", &gain, 0, 10))
+    if (RImGui::SteppedSliderInt("LNA Gain", &gain, 0, 10))
         set_gains();
 
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))

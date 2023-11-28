@@ -158,7 +158,7 @@ void AirspyHFSource::drawControlUI()
     if (is_started)
         RImGui::endDisabled();
 
-    if (RImGui::SliderInt("Attenuation", &attenuation, 0, 48))
+    if (RImGui::SteppedSliderInt("Attenuation", &attenuation, 0, 48))
         set_atte();
 
     if (RImGui::Combo("AGC Mode", &agc_mode, "OFF\0"

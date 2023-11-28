@@ -309,7 +309,7 @@ void AaroniaSource::drawControlUI()
 
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= RImGui::SliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
+    gain_changed |= RImGui::SteppedSliderFloat("Ref Level##aaronia_ref_level", &d_level, d_min_level, 10.0f);
     gain_changed |= RImGui::Combo("AGC Mode##aaronia_agc_mode", &d_agc_mode, "Manual\0"
                                                                              "Peak\0"
                                                                              "Power\0");

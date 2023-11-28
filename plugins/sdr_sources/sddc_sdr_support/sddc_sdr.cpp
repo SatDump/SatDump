@@ -161,13 +161,13 @@ void SDDCSource::drawControlUI()
     bool gain_changed = false;
     if (mode == 1)
     {
-        gain_changed |= RImGui::SliderInt("RF Gain", &rf_gain, 0, 29);
-        gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 0, 16);
+        gain_changed |= RImGui::SteppedSliderInt("RF Gain", &rf_gain, 0, 29);
+        gain_changed |= RImGui::SteppedSliderInt("IF Gain", &if_gain, 0, 16);
     }
     else
     {
-        gain_changed |= RImGui::SliderInt("RF Gain", &rf_gain, 0, 64);
-        gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 0, 127);
+        gain_changed |= RImGui::SteppedSliderInt("RF Gain", &rf_gain, 0, 64);
+        gain_changed |= RImGui::SteppedSliderInt("IF Gain", &if_gain, 0, 127);
     }
     if (gain_changed)
         set_att();

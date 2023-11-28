@@ -151,8 +151,8 @@ void HackRFSource::drawControlUI()
     // Gain settings
     bool gain_changed = false;
     gain_changed |= RImGui::Checkbox("Amp", &amp_enabled);
-    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, 49);
-    gain_changed |= RImGui::SliderInt("VGA Gain", &vga_gain, 0, 49);
+    gain_changed |= RImGui::SteppedSliderInt("LNA Gain", &lna_gain, 0, 40, 8, "%d", ImGuiSliderFlags_AlwaysClamp);
+    gain_changed |= RImGui::SteppedSliderInt("VGA Gain", &vga_gain, 0, 49, 2, "%d", ImGuiSliderFlags_AlwaysClamp);
 
     if (gain_changed)
         set_gains();

@@ -283,13 +283,13 @@ void LimeSDRSource::drawControlUI()
 
     if (gain_mode_manual)
     {
-        gain_changed |= RImGui::SliderInt("LNA Gain", &gain_lna, 0, 30);
-        gain_changed |= RImGui::SliderInt("TIA Gain", &gain_tia, 0, 12);
-        gain_changed |= RImGui::SliderInt("PGA Gain", &gain_pga, -12, 19);
+        gain_changed |= RImGui::SteppedSliderInt("LNA Gain", &gain_lna, 0, 30);
+        gain_changed |= RImGui::SteppedSliderInt("TIA Gain", &gain_tia, 0, 12);
+        gain_changed |= RImGui::SteppedSliderInt("PGA Gain", &gain_pga, -12, 19);
     }
     else
     {
-        gain_changed |= RImGui::SliderInt("Gain", &gain, 0, 73);
+        gain_changed |= RImGui::SteppedSliderInt("Gain", &gain, 0, 73);
     }
 
     if (gain_changed)
