@@ -269,7 +269,9 @@ namespace noaa_apt
         uint16_t prt_counts[4];
         int space_av = 0, space_av1 = 0, space_bv = 0;
         int bb_a = 0, bb_a1 = 0;
-        int channel_a = -1, channel_b = -1, channel_a1 = -1, switchy = -1;
+        int channel_a = -1, channel_a1 = -1;
+        int channel_b = -1;
+        int switchy = -1;
 
         if (new_white != 0 && new_black != 0 && new_white1 != 0 && new_black1 != 0)
         {
@@ -304,23 +306,18 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < 30e3)
+                if (wed.max_diff < 20e3)
                 {
                     if (channel_a == -1)
-                        channel_a = std::round(wed.channel / (double)new_white * 8) - 1;
-
-                    if (std::round(wed.channel / (double)new_white * 8) - 1 != channel_a)
                     {
-                        if (i < wedges1.size() - 1)
+                        channel_a = wed.rchannel;
+                    }
+                    else if (channel_a1 == -1)
+                    {
+                        if (channel_a != wed.rchannel)
                         {
-                            auto &wed2 = wedges1[i + 1];
-                            scale_val(wed2.channel, new_black, new_white);
-                            if (std::round(wed.channel / (double)new_white * 8) - 1 == std::round(wed2.channel / (double)new_white * 8) - 1)
-                            {
-                                if (channel_a1 == -1)
-                                    switchy = wed.start_line;
-                                channel_a1 = std::round(wed.channel / (double)new_white * 8) - 1;
-                            }
+                            channel_a1 = wed.rchannel;
+                            switchy = wed.start_line;
                         }
                     }
                 }
@@ -357,20 +354,20 @@ namespace noaa_apt
             if (validn1_1 != 0)
                 bb_a1 = (bb_a1 / validn1_1) >> 6;
 
-            if (channel_a > 1)
+            if (channel_a >= 1)
             {
-                if (channel_a == 5)
-                    channel_a = 2;
-                else
-                    channel_a += 1;
+                if (channel_a > 2)
+                    channel_a++;
+                channel_a--;
+                // logger->critical("CHA %d", channel_a);
             }
 
-            if (channel_a1 > 1)
+            if (channel_a1 >= 1)
             {
-                if (channel_a1 == 5)
-                    channel_a1 = 2;
-                else
-                    channel_a1 += 1;
+                if (channel_a1 > 2)
+                    channel_a1++;
+                channel_a1--;
+                // logger->critical("CHA1 %d", channel_a1);
             }
 
             int validn2 = 0, validn2_0 = 0;
@@ -393,10 +390,10 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < 30e3)
+                if (wed.max_diff < 20e3)
                 {
-                    channel_b += wed.channel;
-                    validn2_0++;
+                    if (channel_b == -1)
+                        channel_b = wed.rchannel;
                 }
 
                 if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
@@ -417,13 +414,13 @@ namespace noaa_apt
             calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / validn2) >> 6;
             calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / validn2) >> 6;
             calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / validn2) >> 6;
-            channel_b = std::round((channel_b / (double)validn2_0) / (double)new_white * 8) - 1;
-            if (channel_b > 2)
+
+            if (channel_b >= 1)
             {
-                if (channel_b == 5)
-                    channel_b = 2;
-                else
-                    channel_b += 1;
+                if (channel_b > 2)
+                    channel_b++;
+                channel_b--;
+                // logger->critical("CHB %d", channel_b);
             }
 
             prt_counts[0] = (calib_wedge_ch1.therm_temp1 + calib_wedge_ch2.therm_temp1) / 2;
@@ -984,6 +981,9 @@ namespace noaa_apt
                           wed.channel, wed.max_diff,
                           best_wedge,
                           int(wed.max_diff < MAX_WEDGE_DIFF_VALID));
+
+            if (1 <= best_wedge && best_wedge <= 5)
+                wed.rchannel = best_wedge;
 
             wedges.push_back(wed);
         }

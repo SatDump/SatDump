@@ -39,6 +39,9 @@ namespace noaa_apt
         int patch_temp = 0;
         int back_scan = 0;
         int channel = 0;
+
+        // Parsed Value
+        int rchannel = -1;
     };
 
     class NOAAAPTDecoderModule : public ProcessingModule
