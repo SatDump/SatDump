@@ -307,7 +307,7 @@ namespace satdump
 
 #pragma omp parallel for
             //  Solve all TPS transforms, multithreaded
-            for (size_t ns = 0; ns < segmentConfigs.size(); ns++)
+            for (int64_t ns = 0; ns < (int64_t)segmentConfigs.size(); ns++)
                 segmentConfigs[ns].tps = initTPSTransform(segmentConfigs[ns].gcps, segmentConfigs[ns].shift_lon, segmentConfigs[ns].shift_lat);
 
             int scnt = 0;

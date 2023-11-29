@@ -447,7 +447,8 @@ namespace image
         init(d_width, d_height, d_channels);
         for (int c = 0; c < d_channels; c++)
         {
-            for (size_t y = 0; y < d_height; y++)
+#pragma omp parallel for
+            for (int64_t y = 0; y < (int64_t)d_height; y++)
             {
                 for (size_t x = 0; x < d_width; x++)
                 {
