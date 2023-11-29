@@ -39,7 +39,7 @@ public:
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextUnformatted("Port");
                 int i = 0;
-                for (auto& servers : additional_servers)
+                for (auto &servers : additional_servers)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -56,7 +56,10 @@ public:
                     }
                     ImGui::TableSetColumnIndex(2);
                     if (ImGui::Button(std::string("Remove##remoteserverremove" + std::to_string(i)).c_str()))
+                    {
                         additional_servers.erase(additional_servers.begin() + i);
+                        break;
+                    }
                     i++;
                 }
                 ImGui::EndTable();
@@ -83,7 +86,7 @@ public:
             struct sockaddr_in sa;
             if (inet_pton(AF_INET, address_to_add.c_str(), &(sa.sin_addr)) > 0)
             {
-                additional_servers.push_back({ address_to_add, port_to_add });
+                additional_servers.push_back({address_to_add, port_to_add});
                 address_to_add = "";
                 port_to_add = 5656;
             }
@@ -95,8 +98,8 @@ public:
     static void save()
     {
         satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"] = nlohmann::json::array();
-        for (auto& server : additional_servers)
-            satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"].push_back({ {"ip", server.first}, {"port", server.second}});
+        for (auto &server : additional_servers)
+            satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"].push_back({{"ip", server.first}, {"port", server.second}});
     }
 
 public:
@@ -109,8 +112,8 @@ public:
     {
         satdump::eventBus->register_handler<dsp::RegisterDSPSampleSourcesEvent>(registerSources);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        for (auto& server : satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"])
-            additional_servers.push_back({ server["ip"], server["port"] });
+        for (auto &server : satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"])
+            additional_servers.push_back({server["ip"], server["port"]});
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)

@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "sdrpp_server.h"
 
-class SpyServerSupport : public satdump::Plugin
+class SDRPPServerSupport : public satdump::Plugin
 {
 public:
     std::string getID()
@@ -21,4 +21,4 @@ public:
     }
 };
 
-PLUGIN_LOADER(SpyServerSupport)
+PLUGIN_LOADER(SDRPPServerSupport)

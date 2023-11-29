@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "rtaudio_sdr.h"
 
-class RtlSdrSDRSupport : public satdump::Plugin
+class RtAudioSDRSupport : public satdump::Plugin
 {
 public:
     std::string getID()
@@ -21,4 +21,4 @@ public:
     }
 };
 
-PLUGIN_LOADER(RtlSdrSDRSupport)
+PLUGIN_LOADER(RtAudioSDRSupport)
