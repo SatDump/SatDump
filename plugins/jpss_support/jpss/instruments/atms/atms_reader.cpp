@@ -52,7 +52,7 @@ namespace jpss
                 }
             }
 
-            int16_t beam_angle;
+            int16_t beam_angle = 0;
             ((uint8_t *)&beam_angle)[1] = packet.payload[8 + 0];
             ((uint8_t *)&beam_angle)[0] = packet.payload[8 + 1];
 
