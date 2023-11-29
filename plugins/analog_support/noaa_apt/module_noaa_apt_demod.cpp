@@ -105,7 +105,7 @@ namespace noaa_apt
                     qua->output_stream->readBuf[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 1.5, dat_size);
 
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);
@@ -170,7 +170,7 @@ namespace noaa_apt
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Signal", { 200 * ui_scale, 20 * ui_scale });
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             /* if (show_freq)
             {
                 ImGui::Text("Freq : ");
