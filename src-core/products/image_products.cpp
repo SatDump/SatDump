@@ -37,7 +37,7 @@ namespace satdump
 
         std::mutex savemtx;
 #pragma omp parallel for
-        for (size_t c = 0; c < images.size(); c++)
+        for (int64_t c = 0; c < (int64_t)images.size(); c++)
         {
             savemtx.lock();
             if (images[c].filename.find(".png") == std::string::npos &&

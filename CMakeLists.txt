@@ -80,6 +80,12 @@ endif()
 if(MSVC OR BUILD_MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 
+    if(BUILD_OPENMP)
+        message("Compiling with OpenMP support!")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /openmp")
+    endif()
+
     # Speed up this to object-level, Suppress type conversion warnings, suppress
     # POSIX function warnings, suppress warnings about DLL-exported functions, and
     # Suppress warnings about template methods defined in another C++ file
