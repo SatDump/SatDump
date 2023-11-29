@@ -73,7 +73,7 @@ namespace demod
         logger->debug("Dec factor : %f", decimation_factor);
         logger->debug("Final SPS : %f", final_sps);
 
-        if (final_sps < 1.0)
+        if (input_sps < 1.0)
             throw std::runtime_error("SPS is invalid. Must be above 1!");
 
         // Init DSP Blocks
