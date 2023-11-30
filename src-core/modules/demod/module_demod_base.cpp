@@ -141,7 +141,11 @@ namespace demod
                 if (d_parameters.count("start_timestamp") > 0)
                     doppler_shift->start_time = d_parameters["start_timestamp"].get<double>();
                 else
-                    throw std::runtime_error("Start Timestamp is required for doppler correction!");
+                {
+                    logger->error("Start Timestamp is required for doppler correction! Disabling doppler.");
+                    doppler_shift.reset();
+                    d_doppler_enable = false;
+                }
             }
         }
 
