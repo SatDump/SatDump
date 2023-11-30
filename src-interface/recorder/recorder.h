@@ -12,7 +12,7 @@
 #include "common/dsp/io/file_sink.h"
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
-
+#include "common/widgets/timed_message.h"
 #include "common/widgets/constellation.h"
 
 #include "pipeline_selector.h"
@@ -53,7 +53,8 @@ namespace satdump
         std::string recorder_filename;
         int select_sample_format = 0;
 
-        std::string sdr_error, error;
+        widgets::TimedMessage sdr_error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
+        widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
         std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;

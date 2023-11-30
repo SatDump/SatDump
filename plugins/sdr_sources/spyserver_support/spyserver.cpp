@@ -140,12 +140,11 @@ void SpyServerSource::drawControlUI()
             try
             {
                 try_connect();
-                error = "";
             }
             catch (std::exception &e)
             {
                 logger->error("Error connecting to SpyServer %s", e.what());
-                error = e.what();
+                error.set_message(e.what());
             }
         }
     }
@@ -158,8 +157,7 @@ void SpyServerSource::drawControlUI()
         }
     }
 
-    ImGui::SameLine();
-    ImGui::TextColored(ImColor(255, 0, 0), "%s", error.c_str());
+    error.draw();
 
     if (ImGui::Combo("Depth", &selected_bit_depth, "32\0"
                                                    "16\0"

@@ -87,11 +87,10 @@ namespace satdump
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
             is_started = true;
-            sdr_error = "";
         }
         catch (std::runtime_error &e)
         {
-            sdr_error = e.what();
+            sdr_error.set_message(e.what());
             logger->error(e.what());
         }
     }
@@ -248,13 +247,13 @@ namespace satdump
             }
             catch (std::runtime_error &e)
             {
-                error = e.what();
+                error.set_message(e.what());
                 logger->error(e.what());
             }
         }
         else
         {
-            error = "Please select a valid output directory!";
+            error.set_message("Please select a valid output directory!");
         }
     }
 

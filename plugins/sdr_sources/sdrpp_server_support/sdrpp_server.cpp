@@ -91,12 +91,11 @@ void SDRPPServerSource::drawControlUI()
             try
             {
                 try_connect();
-                error = "";
             }
             catch (std::exception &e)
             {
                 logger->error("Error connecting to SDR++ Server %s", e.what());
-                error = e.what();
+                error.set_message(e.what());
             }
         }
     }
@@ -109,8 +108,7 @@ void SDRPPServerSource::drawControlUI()
         }
     }
 
-    ImGui::SameLine();
-    ImGui::TextColored(ImColor(255, 0, 0), "%s", error.c_str());
+    error.draw();
 
     if (ImGui::Combo("Depth", &selected_bit_depth, "8\0"
                                                    "16\0"

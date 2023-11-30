@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/widgets/timed_message.h"
 #include "spyserver/spyserver_client.h"
 #include "logger.h"
 #include "imgui/imgui.h"
@@ -31,7 +32,7 @@ protected:
     void set_bias();
     void set_agcs();
 
-    std::string error;
+    widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
 
     uint64_t buffer_samplerate = 0;
 

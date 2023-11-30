@@ -290,8 +290,8 @@ namespace satdump
                         if (ImGui::Button("Stop"))
                             stop();
                     }
-                    ImGui::SameLine();
-                    ImGui::TextColored(ImColor(255, 0, 0), "%s", sdr_error.c_str());
+
+                    sdr_error.draw();
                 }
 
                 if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
@@ -404,8 +404,7 @@ namespace satdump
                             stop_processing();
                     }
 
-                    ImGui::SameLine();
-                    ImGui::TextColored(ImColor(255, 0, 0), "%s", error.c_str());
+                    error.draw();
 
                     if (!is_started)
                         style::endDisabled();
