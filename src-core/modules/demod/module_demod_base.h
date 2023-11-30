@@ -16,6 +16,7 @@
 #include "common/widgets/snr_plot.h"
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
+#include "common/dsp/utils/doppler_correct.h"
 
 namespace demod
 {
@@ -31,6 +32,7 @@ namespace demod
     protected:
         std::shared_ptr<dsp::FileSourceBlock> file_source;
         std::shared_ptr<dsp::FreqShiftBlock> freq_shift;
+        std::shared_ptr<dsp::DopplerCorrectBlock> doppler_shift;
         std::shared_ptr<dsp::SplitterBlock> fft_splitter;
         std::shared_ptr<dsp::FFTPanBlock> fft_proc;
         std::shared_ptr<dsp::CorrectIQBlock<complex_t>> dc_blocker;
@@ -47,6 +49,9 @@ namespace demod
         long d_frequency_shift = 0;
         long d_samplerate = -1;
         int d_symbolrate = 0;
+
+        bool d_doppler_enable = false;
+        float d_doppler_alpha = 0.01;
 
         // Computed values
         float final_samplerate;

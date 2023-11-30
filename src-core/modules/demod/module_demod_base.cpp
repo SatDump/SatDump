@@ -34,6 +34,14 @@ namespace demod
         if (parameters.count("iq_swap") > 0)
             d_iq_swap = parameters["iq_swap"].get<bool>();
 
+        /////////////////////
+        if (parameters.count("enable_doppler") > 0)
+            d_doppler_enable = parameters["enable_doppler"].get<bool>();
+
+        if (parameters.count("doppler_alpha") > 0)
+            d_doppler_alpha = parameters["doppler_alpha"].get<float>();
+        /////////////////////
+
         snr = 0;
         peak_snr = 0;
 
@@ -89,7 +97,56 @@ namespace demod
         if (d_frequency_shift != 0)
             freq_shift = std::make_shared<dsp::FreqShiftBlock>(input_data, d_samplerate, d_frequency_shift);
 
-        std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_frequency_shift != 0 ? freq_shift->output_stream : input_data;
+        if (d_doppler_enable)
+        {
+            double frequency = -1;
+            if (d_parameters.count("frequency"))
+                frequency = d_parameters["frequency"].get<double>();
+            else
+                throw std::runtime_error("Frequency is required for doppler correction!");
+
+            if (d_frequency_shift != 0)
+                frequency += d_frequency_shift;
+
+            int norad = -1;
+            if (d_parameters.count("satellite_norad"))
+                norad = d_parameters["satellite_norad"].get<double>();
+            else
+                throw std::runtime_error("Satellite NORAD is required for doppler correction!");
+
+            // QTH, with a way to override it
+            double qth_lon = 0, qth_lat = 0, qth_alt = 0;
+            try
+            {
+                qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
+                qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
+                qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+            }
+            catch (std::exception &e)
+            {
+            }
+
+            if (d_parameters.count("qth_lon"))
+                qth_lon = d_parameters["qth_lon"].get<double>();
+            if (d_parameters.count("qth_lat"))
+                qth_lat = d_parameters["qth_lat"].get<double>();
+            if (d_parameters.count("qth_alt"))
+                qth_alt = d_parameters["qth_alt"].get<double>();
+
+            doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data,
+                                                                       d_samplerate, d_doppler_alpha, frequency, norad,
+                                                                       qth_lon, qth_lat, qth_alt);
+            if (input_data_type == DATA_FILE)
+            {
+                if (d_parameters.count("start_timestamp") > 0)
+                    doppler_shift->start_time = d_parameters["start_timestamp"].get<double>();
+                else
+                    throw std::runtime_error("Start Timestamp is required for doppler correction!");
+            }
+        }
+
+        std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_doppler_enable ? doppler_shift->output_stream
+                                                                                    : (d_frequency_shift != 0 ? freq_shift->output_stream : input_data);
 
         if (input_data_type == DATA_FILE)
         {
@@ -140,6 +197,8 @@ namespace demod
             dc_blocker->start();
         if (d_frequency_shift != 0)
             freq_shift->start();
+        if (d_doppler_enable)
+            doppler_shift->start();
         if (input_data_type == DATA_FILE)
             fft_splitter->start();
         if (input_data_type == DATA_FILE)
@@ -158,6 +217,8 @@ namespace demod
             dc_blocker->stop();
         if (d_frequency_shift != 0)
             freq_shift->stop();
+        if (d_doppler_enable)
+            doppler_shift->stop();
         if (input_data_type == DATA_FILE)
             fft_splitter->stop();
         if (input_data_type == DATA_FILE)
