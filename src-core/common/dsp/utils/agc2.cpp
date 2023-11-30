@@ -7,6 +7,7 @@ namespace dsp
         : Block<T, T>(input),
           d_target(target), d_bias(bias), d_gain(gain)
     {
+        moving_avg = d_target;
     }
 
     template <typename T>
@@ -25,11 +26,14 @@ namespace dsp
 
             if constexpr (std::is_same_v<T, float>)
             {
-                sample -= bias;                                                  // Apply current DC bias
-                bias = bias * (1 - d_bias) + sample * d_bias;                    // Calculate new DC bias
-                gain = d_target / moving_avg;                                    // Calculate new gain
-                moving_avg = moving_avg * (1 - d_gain) + fabsf(sample) * d_gain; // Moving average to calculate gain
-                sample *= gain;                                                  // Apply gain
+                if (sample != 0)
+                {
+                    sample -= bias;                                                  // Apply current DC bias
+                    bias = bias * (1 - d_bias) + sample * d_bias;                    // Calculate new DC bias
+                    gain = d_target / moving_avg;                                    // Calculate new gain
+                    moving_avg = moving_avg * (1 - d_gain) + fabsf(sample) * d_gain; // Moving average to calculate gain
+                    sample *= gain;                                                  // Apply gain
+                }
             }
             if constexpr (std::is_same_v<T, complex_t>)
             {

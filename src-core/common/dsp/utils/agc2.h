@@ -12,9 +12,9 @@ namespace dsp
         const float d_bias;   // Moving bias, to cancel DC offset
         const float d_gain;   // Current gain
 
-        float bias;       // DC Bias
+        float bias = 0;   // DC Bias
         float moving_avg; // Moving average, used for gain computations
-        float gain;       // Current gain
+        float gain = 0;   // Current gain
 
         void work();
 
