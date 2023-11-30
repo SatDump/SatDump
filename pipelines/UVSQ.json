@@ -59,10 +59,18 @@
                 0
             ]
         ],
+        "parameters": {
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
         "frequencies": [
             [
                 "Main",
-                2245e6
+                435.2e6
             ]
         ],
         "work": {
@@ -70,10 +78,14 @@
             "soft": {
                 "xfsk_burst_demod": {
                     "symbolrate": 2400,
-                    "rrc_alpha": 0.35
+                    "rrc_alpha": 0.35,
+                    "enable_doppler": true,
+                    "satellite_norad": 56211,
+                    "frequency": 435.2e6
                 }
             },
             "frm": {
+                "spino_decoder": {}
                 // Custom AX.25 format, TBD
             }
         }

@@ -48,7 +48,7 @@ namespace ax25
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
 
         logger->info("Using input frames " + d_input_file);
-        logger->info("Decoding to " + directory);
+        logger->info("Decoding to " + d_output_file_hint + ".frm");
 
         diff::NRZIDiff nrzi_decoder;
         common::lfsr g3rhu_descramble(0x21, 0x0, 16);
