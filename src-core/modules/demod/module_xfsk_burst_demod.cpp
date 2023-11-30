@@ -85,8 +85,6 @@ namespace demod
             if (snr > peak_snr)
                 peak_snr = snr;
 
-            logger->trace("%f", rec->output_stream->readBuf[0]);
-
             for (int i = 0; i < dat_size; i++)
                 sym_buffer[i] = clamp(rec->output_stream->readBuf[i] * 10);
 
