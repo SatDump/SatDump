@@ -100,10 +100,10 @@ namespace demod
         if (d_doppler_enable)
         {
             double frequency = -1;
-            if (d_parameters.count("frequency"))
-                frequency = d_parameters["frequency"].get<double>();
+            if (d_parameters.count("satellite_frequency"))
+                frequency = d_parameters["satellite_frequency"].get<double>();
             else
-                throw std::runtime_error("Frequency is required for doppler correction!");
+                throw std::runtime_error("Satellite Frequency is required for doppler correction!");
 
             if (d_frequency_shift != 0)
                 frequency += d_frequency_shift;

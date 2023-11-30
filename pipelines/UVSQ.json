@@ -81,7 +81,7 @@
                     "rrc_alpha": 0.35,
                     "enable_doppler": true,
                     "satellite_norad": 56211,
-                    "frequency": 435.2e6
+                    "satellite_frequency": 435.2e6
                 }
             },
             "frm": {
