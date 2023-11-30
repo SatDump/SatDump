@@ -131,7 +131,7 @@ namespace image
             return *this;
 
         // Compute scaling factor
-        int factor = std::numeric_limits<T>::max() / (max - min);
+        float factor = std::numeric_limits<T>::max() / float(max - min);
 
         // Scale entire image
         for (size_t i = 0; i < data_size; i++)
