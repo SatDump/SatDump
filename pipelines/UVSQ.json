@@ -74,6 +74,7 @@
                 }
             },
             "frm": {
+                "spino_decoder": {}
                 // Custom AX.25 format, TBD
             }
         }

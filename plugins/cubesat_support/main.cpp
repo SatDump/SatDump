@@ -7,6 +7,8 @@
 
 #include "common/module_ax25_decoder.h"
 
+#include "spino/module_spino_decoder.h"
+
 class CubeSatSupport : public satdump::Plugin
 {
 public:
@@ -26,6 +28,8 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, lucky7::Lucky7DecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, ax25::AX25DecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, spino::SpinoDecoderModule);
     }
 };
 
