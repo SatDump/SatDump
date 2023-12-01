@@ -1008,7 +1008,7 @@ namespace noaa_apt
         }
 
         new_white = 0;
-        if (calib_white.size() > 2) // At least 3 wedges "valid"
+        if (calib_white.size() > 0) // At least 3 wedges "valid"
         {
             for (auto &v : calib_white)
                 new_white += v;
@@ -1016,7 +1016,7 @@ namespace noaa_apt
         }
 
         new_black = 0;
-        if (calib_black.size() > 2) // At least 3 wedges "valid"
+        if (calib_black.size() > 0) // At least 3 wedges "valid"
         {
             for (auto &v : calib_black)
                 new_black += v;
