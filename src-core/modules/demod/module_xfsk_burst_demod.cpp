@@ -11,7 +11,7 @@ namespace demod
         name = "xFSK Burst Demodulator";
         show_freq = false;
 
-        constellation.d_hscale = (80.0 / 5.0) / 100.0;
+        constellation.d_hscale = (80.0 / 10.0) / 100.0;
         constellation.d_vscale = 20.0 / 100.0;
 
         MIN_SPS = 8;
@@ -25,8 +25,11 @@ namespace demod
     {
         BaseDemodModule::initb();
 
+        // LPF1
+        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate * 3, 200));
+
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(agc->output_stream, 1.0f);
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, 1.0f);
 
         // AGC2
         agc2 = std::make_shared<dsp::AGC2Block<float>>(qua->output_stream, 5.0, 0.01, 0.001);
@@ -57,6 +60,7 @@ namespace demod
 
         // Start
         BaseDemodModule::start();
+        lpf1->start();
         qua->start();
         agc2->start();
         rec->start();
@@ -119,6 +123,7 @@ namespace demod
     {
         // Stop
         BaseDemodModule::stop();
+        lpf1->stop();
         qua->stop();
         agc2->stop();
         rec->stop();
