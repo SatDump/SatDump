@@ -13,6 +13,7 @@
 #include "loading_screen.h"
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
+#include "common/detect_header.h"
 
 static volatile bool signal_caught = false;
 bool fallback_gl = false;
@@ -245,6 +246,7 @@ int main(int argc, char *argv[])
 
     if (satdump::processing::is_processing)
     {
+        try_get_params_from_input_file(parameters, input_file);
         satdump::ui_thread_pool.push([&](int)
                                      { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
     }
@@ -255,17 +257,17 @@ int main(int argc, char *argv[])
     if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::config::main_cfg["user_interface"].contains("window"))
     {
         const bool maximized = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["maximized"], false);
-        if(maximized)
+        if (maximized)
             glfwMaximizeWindow(window);
         else
         {
-            const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             x = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["x"], -1);
             y = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["y"], -1);
             xs = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["xs"], -1);
             ys = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["ys"], -1);
 
-            if (x >= 0 && y >= 0  && x < mode->width && y < mode->height && xs > 0 && ys > 0)
+            if (x >= 0 && y >= 0 && x < mode->width && y < mode->height && xs > 0 && ys > 0)
             {
                 glfwSetWindowPos(window, x, y);
                 glfwSetWindowSize(window, xs, ys);
@@ -325,7 +327,7 @@ int main(int argc, char *argv[])
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
 
-    //Save window position
+    // Save window position
     if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>())
     {
         bool minimized = glfwGetWindowAttrib(window, GLFW_ICONIFIED) == GLFW_TRUE;

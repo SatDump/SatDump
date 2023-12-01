@@ -68,7 +68,7 @@ namespace satdump
                                     favourite.push_back(i);
                         }
                     }
-                    catch (std::exception&)
+                    catch (std::exception &)
                     {
                     }
                 }
@@ -301,12 +301,10 @@ namespace satdump
 
                     if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
                     {
-                        HeaderInfo hdr = try_parse_header(file_path);
-                        if (hdr.valid)
-                        {
-                            try_set_param("samplerate", hdr.samplerate);
-                            try_set_param("baseband_format", hdr.type);
-                        }
+                        nlohmann::json hdr;
+                        try_get_params_from_input_file(hdr, file_path);
+                        for (auto &v : hdr.items())
+                            try_set_param(v.key(), v.value());
                     }
                 }
 
@@ -323,7 +321,7 @@ namespace satdump
                 ImGui::Combo("##pipelinelevel", &pipelines_levels_select_id, pipeline_levels_str.c_str());
                 ImGui::EndTable();
             }
-            
+
             pipeline_mtx.unlock();
         }
 
@@ -377,7 +375,8 @@ namespace satdump
             pipeline_mtx.unlock();
         }
 
-        std::string get_name(int index){
+        std::string get_name(int index)
+        {
             return pipelines[index].readable_name;
         }
     };

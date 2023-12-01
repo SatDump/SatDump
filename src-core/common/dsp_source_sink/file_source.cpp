@@ -92,10 +92,10 @@ void FileSource::start()
     if (is_ui)
         file_path = file_input.getPath();
 
-    //Sanity Checks
-    if(!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
+    // Sanity Checks
+    if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
         throw std::runtime_error("Invalid file path " + file_path);
-    if(samplerate_input.get() <= 0)
+    if (samplerate_input.get() <= 0)
         throw std::runtime_error("Invalid samplerate " + std::to_string(samplerate_input.get()));
 
     buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
@@ -151,21 +151,30 @@ void FileSource::drawControlUI()
 
         if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
         {
-            HeaderInfo hdr = try_parse_header(file_path);
-            if (hdr.valid)
+            nlohmann::json hdr;
+            try_get_params_from_input_file(hdr, file_path);
+            if (hdr.contains("baseband_format"))
             {
-                if (hdr.type == "u8")
+                if (hdr["baseband_format"].get<std::string>() == "u8")
                     select_sample_format = 3;
-                else if (hdr.type == "s16")
+                else if (hdr["baseband_format"].get<std::string>() == "s16")
                     select_sample_format = 1;
-                else if (hdr.type == "ziq")
+                else if (hdr["baseband_format"].get<std::string>() == "ziq")
                     select_sample_format = 4;
-                else if (hdr.type == "ziq2")
+                else if (hdr["baseband_format"].get<std::string>() == "ziq2")
                     select_sample_format = 5;
-
-                samplerate_input.set(hdr.samplerate);
-
                 update_format = true;
+            }
+
+            if (hdr.contains("samplerate"))
+            {
+                samplerate_input.set(hdr["samplerate"].get<uint64_t>());
+                update_format = true;
+            }
+
+            if (hdr.contains("frequency"))
+            {
+                d_frequency = hdr["frequency"].get<uint64_t>();
             }
         }
     }

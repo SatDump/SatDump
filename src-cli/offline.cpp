@@ -28,15 +28,7 @@ int main_offline(int argc, char *argv[])
     // Parse flags
     nlohmann::json parameters = parse_common_flags(argc - 5, &argv[5]);
 
-    if (std::filesystem::exists(input_file) && !std::filesystem::is_directory(input_file))
-    {
-        HeaderInfo hdr = try_parse_header(input_file);
-        if (hdr.valid)
-        {
-            parameters["samplerate"] = hdr.samplerate;
-            parameters["baseband_format"] = hdr.type;
-        }
-    }
+    try_get_params_from_input_file(parameters, input_file);
 
     // Init SatDump
     satdump::tle_file_override = parameters.contains("tle_override") ? parameters["tle_override"].get<std::string>() : "";

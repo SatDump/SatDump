@@ -88,6 +88,11 @@ namespace noaa_apt
                 logger->warn("Couldn't automatically determine the timestamp, in case of unexpected results, please verify you have specified the correct timestamp manually");
             }
 
+            if (md.frequency == 0 && d_parameters.contains("frequency"))
+                md.frequency = d_parameters["frequency"].get<uint64_t>();
+
+            logger->trace("Freq from meta : %llu", md.frequency);
+
             if (abs(md.frequency - 137.1e6) < 1e4)
             {
                 autodetected_sat = 19;

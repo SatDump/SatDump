@@ -54,6 +54,7 @@ namespace wav
         std::string filename = std::filesystem::path(filepath).stem().string();
 
         uint64_t freq;
+        uint64_t samp;
         std::tm timeS;
         memset(&timeS, 0, sizeof(std::tm));
 
@@ -204,6 +205,67 @@ namespace wav
                 timeS.tm_isdst = -1;
                 md.frequency = freq;
                 md.timestamp = mktime(&timeS);
+            }
+
+            // SatDump Baseband filenames
+            if (sscanf(filename.c_str(),
+                       "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.ziq",
+                       //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
+                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                       &samp, &freq) == 8)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
+                md.frequency = freq;
+                md.samplerate = samp;
+                md.timestamp = mktime_utc(&timeS);
+            }
+            else if (sscanf(filename.c_str(),
+                            "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.f32",
+                            //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
+                            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                            &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                            &samp, &freq) == 8)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
+                md.frequency = freq;
+                md.samplerate = samp;
+                md.timestamp = mktime_utc(&timeS);
+                md.baseband_format = "f32";
+            }
+            else if (sscanf(filename.c_str(),
+                            "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.s16",
+                            //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
+                            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                            &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                            &samp, &freq) == 8)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
+                md.frequency = freq;
+                md.samplerate = samp;
+                md.timestamp = mktime_utc(&timeS);
+                md.baseband_format = "s16";
+            }
+            else if (sscanf(filename.c_str(),
+                            "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.s8",
+                            //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
+                            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                            &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                            &samp, &freq) == 8)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
+                md.frequency = freq;
+                md.samplerate = samp;
+                md.timestamp = mktime_utc(&timeS);
+                md.baseband_format = "s8";
             }
         }
 

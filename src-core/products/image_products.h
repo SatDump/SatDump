@@ -163,7 +163,7 @@ namespace satdump
         {
         public:
             void init() {}
-            double compute(int image_index, int x, int y, int val) { return CALIBRATION_INVALID_VALUE; }
+            double compute(int, int, int, int) { return CALIBRATION_INVALID_VALUE; }
             DummyCalibrator(nlohmann::json calib, ImageProducts *products) : CalibratorBase(calib, products) {}
         };
         //////////////////////
