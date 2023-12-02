@@ -9,6 +9,8 @@
 
 #include "common/ziq2.h"
 
+#include "logger.h"
+
 namespace dsp
 {
     class FileSinkBlock : public Block<complex_t, float>
