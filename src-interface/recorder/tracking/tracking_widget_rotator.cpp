@@ -1,9 +1,10 @@
 #include "tracking_widget.h"
 #include "common/utils.h"
 #include "logger.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 
-#include "rotcl_handler.h"
+#include "common/tracking/rotator/rotcl_handler.h"
 
 namespace satdump
 {
@@ -16,7 +17,7 @@ namespace satdump
             {
                 // logger->info("Rot update!");
 
-                if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el) != RotatorHandler::ROT_ERROR_OK)
+                if (rotator_handler->get_pos(&current_rotator_az, &current_rotator_el) != rotator::ROT_ERROR_OK)
                     logger->error("Error getting rotator position!");
 
                 if (rotator_engaged)
@@ -39,7 +40,7 @@ namespace satdump
                         current_req_rotator_el = 0;
 
                     if (current_reql_rotator_az != current_req_rotator_az || current_reql_rotator_el != current_req_rotator_el)
-                        if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el) != RotatorHandler::ROT_ERROR_OK)
+                        if (rotator_handler->set_pos(current_req_rotator_az, current_req_rotator_el) != rotator::ROT_ERROR_OK)
                             logger->error("Error setting rotator position %f %f!", current_req_rotator_az, current_req_rotator_el);
 
                     current_reql_rotator_az = current_req_rotator_az;
@@ -86,7 +87,6 @@ namespace satdump
         ImGui::Checkbox("Track", &rotator_tracking);
         ImGui::SameLine();
 
-
         if (rotator_handler->is_connected())
             style::beginDisabled();
         if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"
@@ -94,7 +94,16 @@ namespace satdump
         {
             rotator_handler_mtx.lock();
             if (selected_rotator_handler == 0)
-                rotator_handler = std::make_shared<RotctlHandler>();
+                rotator_handler = std::make_shared<rotator::RotctlHandler>();
+
+            try
+            {
+                rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+            }
+            catch (std::exception &e)
+            {
+            }
+
             rotator_handler_mtx.unlock();
         }
         if (rotator_handler->is_connected())

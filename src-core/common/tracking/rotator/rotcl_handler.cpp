@@ -1,33 +1,34 @@
-#pragma once
-
-#include "common/net/tcp.h"
+#include "rotcl_handler.h"
 #include "imgui/imgui.h"
-#include "logger.h"
 #include "core/style.h"
-#include "rotator_handler.h"
+#include "logger.h"
 
-class RotctlHandler : public RotatorHandler
+namespace rotator
 {
-private:
-    net::TCPClient *client = nullptr;
+    RotctlHandler::RotctlHandler()
+    {
+    }
 
-    char input_address[100] = "127.0.0.1";
-    int input_port = 4533;
+    RotctlHandler::~RotctlHandler()
+    {
+        if (client != nullptr)
+            delete client;
+        client = nullptr;
+    }
 
-    const int MAX_CORRUPTED_CMD = 3;
-    int corrupted_cmd_count = 0;
-
-private:
-    std::string command(std::string cmd, int *ret_sz)
+    std::string RotctlHandler::command(std::string cmd, int *ret_sz)
     {
         client->sends((uint8_t *)cmd.data(), cmd.size());
 
         std::string result;
         result.resize(1000);
 
-        try {
-        *ret_sz = client->recvs((uint8_t *)result.data(), result.size());
-        } catch (std::exception &e){
+        try
+        {
+            *ret_sz = client->recvs((uint8_t *)result.data(), result.size());
+        }
+        catch (std::exception &e)
+        {
             logger->error(e.what());
             disconnect();
             return "";
@@ -40,7 +41,7 @@ private:
         return result;
     }
 
-    void connect(char *address, int port)
+    void RotctlHandler::connect(char *address, int port)
     {
         if (client != nullptr)
             delete client;
@@ -57,26 +58,34 @@ private:
         }
     }
 
-    void disconnect()
+    void RotctlHandler::disconnect()
     {
         if (client != nullptr)
             delete client;
         client = nullptr;
     }
 
-public:
-    RotctlHandler()
+    std::string RotctlHandler::get_id()
     {
+        return "rotctl";
     }
 
-    ~RotctlHandler()
+    void RotctlHandler::set_settings(nlohmann::json settings)
     {
-        if (client != nullptr)
-            delete client;
-        client = nullptr;
+        std::string vaddress = getValueOrDefault(settings["address"], std::string(input_address));
+        memcpy(input_address, vaddress.data(), vaddress.size());
+        input_port = getValueOrDefault(settings["port"], input_port);
     }
 
-    rotator_status_t get_pos(float *az, float *el)
+    nlohmann::json RotctlHandler::get_settings()
+    {
+        nlohmann::json v;
+        v["address"] = std::string(input_address);
+        v["port"] = input_port;
+        return v;
+    }
+
+    rotator_status_t RotctlHandler::get_pos(float *az, float *el)
     {
         if (client == nullptr)
             return ROT_ERROR_CON;
@@ -104,7 +113,7 @@ public:
         return ROT_ERROR_CON;
     }
 
-    rotator_status_t set_pos(float az, float el)
+    rotator_status_t RotctlHandler::set_pos(float az, float el)
     {
         if (client == nullptr)
             return ROT_ERROR_CON;
@@ -135,7 +144,7 @@ public:
         return ROT_ERROR_CON;
     }
 
-    void render()
+    void RotctlHandler::render()
     {
         if (client != nullptr)
             style::beginDisabled();
@@ -156,8 +165,8 @@ public:
         }
     }
 
-    bool is_connected()
+    bool RotctlHandler::is_connected()
     {
         return client != nullptr;
     }
-};
+}

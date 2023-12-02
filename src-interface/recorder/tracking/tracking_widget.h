@@ -10,7 +10,7 @@
 #include "core/config.h"
 #include "nlohmann/json_utils.h"
 
-#include "rotator_handler.h"
+#include "common/tracking/rotator/rotator_handler.h"
 
 #include "../../pipeline_selector.h"
 
@@ -139,7 +139,7 @@ namespace satdump
 
         int selected_rotator_handler = 0;
         std::mutex rotator_handler_mtx;
-        std::shared_ptr<RotatorHandler> rotator_handler;
+        std::shared_ptr<rotator::RotatorHandler> rotator_handler;
 
         float rotator_update_period = 1;
 
@@ -173,6 +173,8 @@ namespace satdump
             config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = enabled_satellites;
             config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"] = rotator_update_period;
             config::main_cfg["user"]["recorder_tracking"]["min_elevation"] = autotrack_min_elevation;
+            if (rotator_handler)
+                config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()] = rotator_handler->get_settings();
 
             config::saveUserConfig();
         }

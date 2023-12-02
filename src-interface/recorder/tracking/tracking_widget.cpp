@@ -6,7 +6,7 @@
 #include "core/config.h"
 #include "main_ui.h"
 
-#include "rotcl_handler.h"
+#include "common/tracking/rotator/rotcl_handler.h"
 
 namespace satdump
 {
@@ -47,7 +47,18 @@ namespace satdump
                                                                 
                                                             tle_update_mutex.unlock(); });
 
-        rotator_handler = std::make_shared<RotctlHandler>();
+        rotator_handler = std::make_shared<rotator::RotctlHandler>();
+
+        if (rotator_handler)
+        {
+            try
+            {
+                rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+            }
+            catch (std::exception &e)
+            {
+            }
+        }
 
         // Restore settings
         loadConfig();
