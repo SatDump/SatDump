@@ -12,10 +12,10 @@ namespace noaa_apt
     NOAAAPTDemodModule::NOAAAPTDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         // Parse params
-        // if (parameters.count("demodulator_bw") > 0)
-        //     d_demodulator_bandwidth = parameters["demodulator_bw"].get<long>();
-        // else
-        //     throw std::runtime_error("Demodulator BW parameter must be present!");
+        if (parameters.count("sdrpp_noise_reduction") > 0)
+            sdrpp_noise_reduction = parameters["sdrpp_noise_reduction"].get<bool>();
+        else
+            sdrpp_noise_reduction = true;
 
         name = "NOAA APT Demodulator (FM)";
         show_freq = false;
@@ -35,8 +35,12 @@ namespace noaa_apt
         // Resampler to BW
         res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
 
+        // Noise reduction
+        if (sdrpp_noise_reduction)
+            nr = std::make_shared<dsp::AptNoiseReductionBlock>(res->output_stream, 9);
+
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(sdrpp_noise_reduction ? nr->output_stream : res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
     }
 
     NOAAAPTDemodModule::~NOAAAPTDemodModule()
@@ -65,6 +69,8 @@ namespace noaa_apt
         // Start
         BaseDemodModule::start();
         res->start();
+        if (sdrpp_noise_reduction)
+            nr->start();
         qua->start();
 
         // Buffers to wav
@@ -151,6 +157,8 @@ namespace noaa_apt
         // Stop
         BaseDemodModule::stop();
         res->stop();
+        if (sdrpp_noise_reduction)
+            nr->stop();
         qua->stop();
         qua->output_stream->stopReader();
 

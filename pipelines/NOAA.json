@@ -235,6 +235,12 @@
                 "value": false,
                 "name": "Autocrop with Wedges",
                 "description": "This will automatically crop the image to only include\ntelemetry wedges considered valid.\nMay discard a lot on bad images!"
+            },
+            "sdrpp_noise_reduction": {
+                "type": "bool",
+                "value": false,
+                "name": "SDR++ Noise Reduction",
+                "description": "APT Noise Reduction originally from Ryzerth in SDR++. Performs quite well on APT!"
             }
         },
         "work": {
