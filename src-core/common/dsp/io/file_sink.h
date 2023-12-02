@@ -109,7 +109,7 @@ namespace dsp
             }
 #endif
 
-            if (!std::filesystem::exists(output_file))
+            if (!std::filesystem::exists(finalt))
                 logger->error("We have created the output baseband file, but it does not exist! There may be a permission issue! File : " + finalt);
 
             should_work = true;
