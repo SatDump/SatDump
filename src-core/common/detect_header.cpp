@@ -63,8 +63,10 @@ void try_get_params_from_input_file(nlohmann::json &parameters, std::string inpu
         HeaderInfo hdr = try_parse_header(input_file);
         if (hdr.valid)
         {
-            parameters["samplerate"] = hdr.samplerate;
-            parameters["baseband_format"] = hdr.type;
+            if (!parameters.contains("samplerate"))
+                parameters["samplerate"] = hdr.samplerate;
+            if (!parameters.contains("baseband_format"))
+                parameters["baseband_format"] = hdr.type;
         }
         wav::FileMetadata md = wav::tryParseFilenameMetadata(input_file, false);
         if (!parameters.contains("start_timestamp") && md.timestamp != 0)
