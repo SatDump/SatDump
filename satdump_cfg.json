@@ -714,39 +714,12 @@
                         "description": "descriptions/NO.md",
                         "channels": "cch4",
                         "calib_cfg": {
-                                        "NO enhancement": {
-                        "lut": "lut/cal/WXtoImg-NO.png",
-                        "description": "descriptions/NO.md",
-                        "channels": "cch4",
-                        "calib_cfg": {
                             "cch4": {
                                 "type": "radiance",
                                 "min": 4.261272967687783,
                                 "max": 155.2782819316993
                             }
-                        },
-                        "autogen": false,
-                        "geo_correct": true,
-                        "draw_map_overlay": true,
-                        "borders_color": [
-                            1,
-                            1,
-                            0
-                        ]
-                    },        "cch4": {
-                                "type": "radiance",
-                                "min": 4.261272967687783,
-                                "max": 155.2782819316993
-                            }
-                        },
-                        "autogen": false,
-                        "geo_correct": true,
-                        "draw_map_overlay": true,
-                        "borders_color": [
-                            1,
-                            1,
-                            0
-                        ]
+                        }
                     },
                     "ZA enhancement": {
                         "channels": "cch4",
