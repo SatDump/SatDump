@@ -592,7 +592,25 @@
                             0
                         ]
                     },
-                    "MSA": {
+                    "MSA (channel 1)": {
+                        "channels": "cch1",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "description": "descriptions/MSA.md",
+                        "lua_vars": {
+                            "minoffset": -0.15,
+                            "scalar": 2.0,
+                            "thresold": 0,
+                            "blend": 1,
+                            "invert": 0
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "MSA (channel 2)": {
                         "channels": "cch2",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
@@ -696,7 +714,26 @@
                         "description": "descriptions/NO.md",
                         "channels": "cch4",
                         "calib_cfg": {
+                                        "NO enhancement": {
+                        "lut": "lut/cal/WXtoImg-NO.png",
+                        "description": "descriptions/NO.md",
+                        "channels": "cch4",
+                        "calib_cfg": {
                             "cch4": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "geo_correct": true,
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },        "cch4": {
                                 "type": "radiance",
                                 "min": 4.261272967687783,
                                 "max": 155.2782819316993
@@ -865,6 +902,20 @@
                         "autogen": false,
                         "geo_correct": true
                     },
+                    "Enhanced IR": {
+                        "channels": "cch4",
+                        "description": "descriptions/IREnhanced.md",
+                        "lut": "lut/cal/EnhancedIR.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 320
+                            }
+                        }
+                    },
                     "Color general cloud IR": {
                         "channels": "cch4",
                         "description": "descriptions/ColorGeneralIR.md",
@@ -949,6 +1000,19 @@
                             "thresold": 0,
                             "lut": "lut/WXtoImg-NO_mod_APT.png"
                         },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "HVC": {
+                        "lut": "lut/WXtoImg-HVC.png",
+                        "description": "descriptions/HVC.md",
+                        "channels": "cha, chb",
+                        "autogen": false,
+                        "geo_correct": true,
                         "draw_map_overlay": true,
                         "borders_color": [
                             1,
