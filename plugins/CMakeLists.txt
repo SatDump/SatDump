@@ -349,6 +349,13 @@ if(PLUGIN_SDDC_SDR_SUPPORT)
     add_subdirectory(sdr_sources/sddc_sdr_support)
 endif()
 
+# NOT recommended
+option(PLUGIN_SOAPY_SDR_SUPPORT "Enable Soapy SDR Support plugin (NOT RECOMMENDED!)" OFF)
+
+if(PLUGIN_SOAPY_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/soapy_sdr_support)
+endif()
+
 # ######################
 option(PLUGIN_RTAUDIO_SINK "Enable RtAudio Audio Sink plugin" OFF)
 
