@@ -122,7 +122,9 @@ namespace satdump
 
                     if (overlay_handler.enabled())
                     {
-                        rgb_image.to_rgb(); // Ensure this is RGB!!
+                        // Ensure this is RGB!!
+                        if (rgb_image.channels() < 3)
+                            rgb_image.to_rgb();
                         nlohmann::json proj_cfg = img_products->get_proj_cfg();
                         proj_cfg["metadata"] = final_metadata;
                         proj_cfg["metadata"]["tle"] = img_products->get_tle();
