@@ -584,7 +584,7 @@ namespace satdump
                             {
                                 //  Copy over scanlines
                                 memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
-                                       &product.images[index].image[t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
+                                       &images_obj[i][t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
                                        images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
                                 break;
                             }
