@@ -79,8 +79,6 @@ namespace satdump
                 backend_needs_update = false;
             }
 
-            processAutotrack();
-
             tle_update_mutex.unlock();
         }
     }
@@ -307,9 +305,9 @@ namespace satdump
             if (sscanf(line.c_str(), "%lf%*s    %lf %lf %lf  %lf  %lf",
                        &julian_time, &az, &el, &delta, &deldot, &unk) == 6 ||
                 sscanf(line.c_str(), "%lf %*s   %lf %lf %lf  %lf  %*f",
-                    &julian_time, &az, &el, &delta, &deldot) == 5 ||
+                       &julian_time, &az, &el, &delta, &deldot) == 5 ||
                 sscanf(line.c_str(), "%lf %lf %lf %lf  %lf",
-                    &julian_time, &az, &el, &delta, &deldot) == 5 ||
+                       &julian_time, &az, &el, &delta, &deldot) == 5 ||
                 sscanf(line.c_str(), "%lf    %lf %lf %lf  %lf  %lf",
                        &julian_time, &az, &el, &delta, &deldot, &unk) == 6)
             {
@@ -364,7 +362,7 @@ namespace satdump
                 if (is_valid && name.find("simulation") == std::string::npos)
                     vv.push_back({id, name});
             }
-            catch (std::exception&)
+            catch (std::exception &)
             {
             }
         }

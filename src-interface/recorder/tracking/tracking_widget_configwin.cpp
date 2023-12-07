@@ -18,7 +18,7 @@ namespace satdump
                 if (ImGui::BeginTabItem("Scheduling"))
                 {
                     ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
-                    renderAutotrackConfig();
+
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }

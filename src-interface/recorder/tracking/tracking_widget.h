@@ -144,22 +144,7 @@ namespace satdump
         float rotator_update_period = 1;
 
     private:
-        int tracking_sats_menu_selected_1 = 0, tracking_sats_menu_selected_2 = 0;
-        std::vector<tracking::TrackedObject> enabled_satellites;
-
-        std::mutex upcoming_satellite_passes_mtx;
-        std::vector<tracking::SatellitePass> upcoming_satellite_passes_all;
-        std::vector<tracking::SatellitePass> upcoming_satellite_passes_sel;
-
-        bool autotrack_engaged = false;
-
-        void processAutotrack();
-        void updateAutotrackPasses();
-        void renderAutotrackConfig();
-
-        bool autotrack_pass_has_started = false;
-
-        float autotrack_min_elevation = 0;
+        //
 
     private: // UI Functions
         void renderPolarPlot();
@@ -170,9 +155,7 @@ namespace satdump
 
         void saveConfig()
         {
-            config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = enabled_satellites;
             config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"] = rotator_update_period;
-            config::main_cfg["user"]["recorder_tracking"]["min_elevation"] = autotrack_min_elevation;
             if (rotator_handler)
                 config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()] = rotator_handler->get_settings();
 
@@ -183,9 +166,7 @@ namespace satdump
         {
             if (config::main_cfg["user"].contains("recorder_tracking"))
             {
-                enabled_satellites = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["enabled_objects"], std::vector<tracking::TrackedObject>());
                 rotator_update_period = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["rotator_update_period"], rotator_update_period);
-                autotrack_min_elevation = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["min_elevation"], autotrack_min_elevation);
             }
         }
 
