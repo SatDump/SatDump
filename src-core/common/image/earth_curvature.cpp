@@ -51,8 +51,8 @@ namespace image
                         int nextPixel = correction_factors[i] + 1;
                         float fractionalPx = fmod(correction_factors[i], 1);
 
-                        if (nextPixel >= corrected_width)
-                            nextPixel = corrected_width - 1;
+                        if (nextPixel >= image.width())
+                            nextPixel = image.width() - 1;
 
                         int px1 = image[channel_offset + row * image.width() + currPixel];
                         int px2 = image[channel_offset + row * image.width() + nextPixel];
