@@ -3,6 +3,7 @@
 #include "common/image/image.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/projection/sat_proj/sat_proj.h"
+#include "logger.h"
 
 namespace lua_utils
 {
@@ -16,7 +17,7 @@ namespace lua_utils
             try
             {
                 index = strtol(el.key().c_str(), &ptr, 10);
-                if(*ptr == '\0')
+                if (*ptr == '\0')
                 {
                     if (el.value().is_number_integer())
                         l[index] = el.value().get<int>();
@@ -39,7 +40,7 @@ namespace lua_utils
                         l[el.key()] = mapJsonToLua(lua, el.value());
                 }
             }
-            catch (std::exception&)
+            catch (std::exception &)
             {
             }
         }
@@ -145,5 +146,21 @@ namespace lua_utils
         {   float lon, lat;
             equ.reverse(x, y, lon, lat);
             return {lon, lat}; };
+    }
+
+    void bindLogger(sol::state &lua)
+    {
+        lua["ltrace"] = [](std::string log)
+        { logger->trace(log); };
+        lua["ldebug"] = [](std::string log)
+        { logger->debug(log); };
+        lua["linfo"] = [](std::string log)
+        { logger->info(log); };
+        lua["lwarn"] = [](std::string log)
+        { logger->warn(log); };
+        lua["lerror"] = [](std::string log)
+        { logger->error(log); };
+        lua["lcritical"] = [](std::string log)
+        { logger->critical(log); };
     }
 };

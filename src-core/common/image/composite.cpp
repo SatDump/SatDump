@@ -308,6 +308,7 @@ namespace image
             lua.open_libraries(sol::lib::string);
             lua.open_libraries(sol::lib::math);
 
+            lua_utils::bindLogger(lua);
             lua_utils::bindImageTypes(lua);
             lua_utils::bindGeoTypes(lua);
             lua_utils::bindSatProjType(lua);
