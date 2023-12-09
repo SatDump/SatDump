@@ -104,7 +104,6 @@ namespace satdump
                     {
                         corrected_stuff.resize(rgb_image.width());
                         bool success = false;
-                        image::Image<uint16_t> cor;
                         rgb_image_corr = perform_geometric_correction(*img_products, rgb_image, success, corrected_stuff.data());
                         if (!success)
                         {
