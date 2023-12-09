@@ -198,7 +198,7 @@ public:
         geodetic::geodetic_coords_t pos_curr = sat_positions[currentArrayValue];
         double az_angle = az_angles[currentArrayValue];
 
-        bool ascending = sat_ascendings[y];
+        bool ascending = sat_ascendings[currentArrayValue];
 
         double currentIfovOffset = -(((double(currentIfov) - (double(ifov_count) / 2)) / double(ifov_count)) * scan_angle);
         if (ifov_count == 1)
