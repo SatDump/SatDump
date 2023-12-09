@@ -877,7 +877,7 @@
                     },
                     "Enhanced IR": {
                         "channels": "cch4",
-                        "description": "descriptions/IREnhanced.md",
+                        "description": "descriptions/EnhancedIR.md",
                         "lut": "lut/cal/EnhancedIR.png",
                         "autogen": false,
                         "geo_correct": true,
