@@ -311,7 +311,7 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < 20e3)
+                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
                 {
                     if (channel_a == -1)
                     {
@@ -395,7 +395,7 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < 20e3)
+                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
                 {
                     if (channel_b == -1)
                         channel_b = wed.rchannel;
@@ -1013,7 +1013,7 @@ namespace noaa_apt
         }
 
         new_white = 0;
-        if (calib_white.size() > 0) // At least 3 wedges "valid"
+        if (calib_white.size() > 0) // At least 1 wedge "valid"
         {
             for (auto &v : calib_white)
                 new_white += v;
@@ -1021,7 +1021,7 @@ namespace noaa_apt
         }
 
         new_black = 0;
-        if (calib_black.size() > 0) // At least 3 wedges "valid"
+        if (calib_black.size() > 0) // At least 1 wedge "valid"
         {
             for (auto &v : calib_black)
                 new_black += v;
