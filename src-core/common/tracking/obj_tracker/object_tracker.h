@@ -97,6 +97,9 @@ namespace satdump
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setObject(TrackingMode mode, int objid);
         void setRotator(std::shared_ptr<rotator::RotatorHandler> rot);
+        void setRotatorEngaged(bool v);
+        void setRotatorTracking(bool v);
+        void setRotatorReqPos(float az, float el);
 
         void renderPolarPlot(bool light_theme = false);
         void renderSelectionMenu();

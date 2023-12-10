@@ -100,4 +100,26 @@ namespace satdump
         rotator_handler = rot;
         rotator_handler_mtx.unlock();
     }
+
+    void ObjectTracker::setRotatorEngaged(bool v)
+    {
+        rotator_handler_mtx.lock();
+        rotator_engaged = v;
+        rotator_handler_mtx.unlock();
+    }
+
+    void ObjectTracker::setRotatorTracking(bool v)
+    {
+        rotator_handler_mtx.lock();
+        rotator_tracking = v;
+        rotator_handler_mtx.unlock();
+    }
+
+    void ObjectTracker::setRotatorReqPos(float az, float el)
+    {
+        rotator_handler_mtx.lock();
+        rot_current_req_pos.az = az;
+        rot_current_req_pos.el = el;
+        rotator_handler_mtx.unlock();
+    }
 }
