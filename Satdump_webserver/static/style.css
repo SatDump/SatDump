@@ -1,0 +1,23 @@
+/* Style for the body */
+body {
+    background-color: #9AEBEE;
+}
+
+/* Style for headings */
+h1 {
+    color: #DB15EE;
+}
+
+h2 {
+    color: #DB15EE;
+}
+
+h7 {
+  display: block;
+  font-size: .57em;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
