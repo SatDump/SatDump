@@ -311,7 +311,7 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wed.max_diff < 18e3)
                 {
                     if (channel_a == -1)
                     {
@@ -395,7 +395,7 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wed.max_diff < 18e3)
                 {
                     if (channel_b == -1)
                         channel_b = wed.rchannel;
@@ -838,6 +838,7 @@ namespace noaa_apt
 
         image::Image<uint16_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
 
+#pragma omp parallel for
         for (int line = 0; line < line_cnt - 1; line++)
         {
             int best_cor = 40 * 255 * APT_IMG_OVERS;
