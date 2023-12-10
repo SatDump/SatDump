@@ -838,6 +838,7 @@ namespace noaa_apt
 
         image::Image<uint16_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
 
+#pragma omp parallel for
         for (int line = 0; line < line_cnt - 1; line++)
         {
             int best_cor = 40 * 255 * APT_IMG_OVERS;
