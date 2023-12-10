@@ -11,54 +11,10 @@
 #include "nlohmann/json_utils.h"
 
 #include "common/tracking/obj_tracker/object_tracker.h"
+#include "common/tracking/scheduler/scheduler.h"
 
 namespace satdump
 {
-    namespace tracking
-    { // Autotrack (Basic for now, satellites only, Horizons to be done...)
-        struct SatellitePass
-        {
-            int norad;
-            double aos_time;
-            double los_time;
-            float max_elevation;
-        };
-
-        struct TrackedObject
-        {
-            int norad = -1;
-
-            // Config
-            double frequency = 100e6;
-            bool record = false;
-            bool live = false;
-            // std::string pipeline_name = "";
-
-            // std::shared_ptr<PipelineUISelector> pipeline_selector = std::make_shared<PipelineUISelector>(true);
-        };
-
-        inline void to_json(nlohmann::ordered_json &j, const TrackedObject &v)
-        {
-            j["norad"] = v.norad;
-            j["frequency"] = v.frequency;
-            j["record"] = v.record;
-            j["live"] = v.live;
-            // j["pipeline_name"] = pipelines[v.pipeline_selector->pipeline_id].name;
-            // j["pipeline_params"] = v.pipeline_selector->getParameters();
-        }
-
-        inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
-        {
-            v.norad = j["norad"];
-            v.frequency = j["frequency"];
-            v.record = j["record"];
-            v.live = j["live"];
-            // v.pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
-            // if (j.contains("pipeline_params"))
-            //     v.pipeline_selector->setParameters(j["pipeline_params"]);
-        }
-    }
-
     class TrackingWidget
     {
     private: // QTH Config
@@ -67,16 +23,45 @@ namespace satdump
         double qth_alt = 0;
 
     public: // Handlers
-        std::function<void(tracking::SatellitePass, tracking::TrackedObject)> aos_callback = [](tracking::SatellitePass, tracking::TrackedObject) {};
-        std::function<void(tracking::SatellitePass, tracking::TrackedObject)> los_callback = [](tracking::SatellitePass, tracking::TrackedObject) {};
+        std::function<void(SatellitePass, TrackedObject)> aos_callback = [](SatellitePass, TrackedObject) {};
+        std::function<void(SatellitePass, TrackedObject)> los_callback = [](SatellitePass, TrackedObject) {};
 
     private:
         ObjectTracker object_tracker;
+        AutoTrackScheduler auto_scheduler;
 
         std::shared_ptr<rotator::RotatorHandler> rotator_handler;
         int selected_rotator_handler = 0;
 
         bool config_window_was_asked = false, show_window_config = false;
+
+    private:
+        void saveConfig()
+        {
+            config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = auto_scheduler.getTracked();
+            config::main_cfg["user"]["recorder_tracking"]["rotator_algo"] = object_tracker.getRotatorConfig();
+            config::main_cfg["user"]["recorder_tracking"]["min_elevation"] = auto_scheduler.getMinElevation();
+            if (rotator_handler)
+                config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()] = rotator_handler->get_settings();
+
+            config::saveUserConfig();
+        }
+
+        void loadConfig()
+        {
+            if (config::main_cfg["user"].contains("recorder_tracking"))
+            {
+                auto enabled_satellites = getValueOrDefault(config::main_cfg["user"]["recorder_tracking"]["enabled_objects"], std::vector<TrackedObject>());
+                nlohmann::json rotator_algo_cfg;
+                if (config::main_cfg["user"]["recorder_tracking"].contains("rotator_algo"))
+                    rotator_algo_cfg = config::main_cfg["user"]["recorder_tracking"]["rotator_algo"];
+                int autotrack_min_elevation = getValueOrDefault<int>(config::main_cfg["user"]["recorder_tracking"]["min_elevation"], 0);
+
+                auto_scheduler.setTracked(enabled_satellites);
+                object_tracker.setRotatorConfig(rotator_algo_cfg);
+                auto_scheduler.setMinElevation(autotrack_min_elevation);
+            }
+        }
 
     public:
         TrackingWidget();

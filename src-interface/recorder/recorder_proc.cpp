@@ -338,7 +338,7 @@ namespace satdump
         {
             tracking_widget = new TrackingWidget();
 
-            tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+            tracking_widget->aos_callback = [this](SatellitePass, TrackedObject obj)
             {
                 if (obj.live)
                     stop_processing();
@@ -363,8 +363,8 @@ namespace satdump
 
                 if (obj.live)
                 {
-                    //                                                           pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
-                    //                                                           pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
+                    pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
+                    pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
                     start_processing();
                 }
 
@@ -374,7 +374,7 @@ namespace satdump
                 }
             };
 
-            tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+            tracking_widget->los_callback = [this](SatellitePass, TrackedObject obj)
             {
                 if (obj.record)
                     stop_recording();

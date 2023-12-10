@@ -30,6 +30,19 @@ namespace satdump
                             rot_current_req_pos.az = sat_current_pos.az;
                             rot_current_req_pos.el = sat_current_pos.el;
                         }
+                        else if (rotator_park_while_idle)
+                        {
+                            if (getTime() + rotator_unpark_at_minus > next_aos_time)
+                            {
+                                rot_current_req_pos.az = sat_next_aos_pos.az;
+                                rot_current_req_pos.el = sat_next_aos_pos.el;
+                            }
+                            else
+                            {
+                                rot_current_req_pos.az = rotator_park_position.az;
+                                rot_current_req_pos.el = rotator_park_position.el;
+                            }
+                        }
                         else
                         {
                             rot_current_req_pos.az = sat_next_aos_pos.az;
@@ -47,8 +60,6 @@ namespace satdump
                     rot_current_reqlast_pos.az = rot_current_req_pos.az;
                     rot_current_reqlast_pos.el = rot_current_req_pos.el;
                 }
-
-                double rotator_update_period = 0.1;
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(uint64_t(rotator_update_period * 1e3)));
             }
@@ -93,5 +104,40 @@ namespace satdump
         ImGui::Checkbox("Engage", &rotator_engaged);
         ImGui::SameLine();
         ImGui::Checkbox("Track", &rotator_tracking);
+    }
+
+    void ObjectTracker::renderRotatorConfig()
+    {
+        ImGui::InputDouble("Update Period (s)", &rotator_update_period);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Checkbox("Park while idle", &rotator_park_while_idle);
+        if (rotator_park_while_idle)
+        {
+            ImGui::InputFloat("Park Az##Rot Az", &rotator_park_position.az);
+            ImGui::InputFloat("Park El##Rot El", &rotator_park_position.el);
+            ImGui::InputDouble("Unpark Time##Rot Unpark Time", &rotator_unpark_at_minus);
+        }
+    }
+
+    nlohmann::json ObjectTracker::getRotatorConfig()
+    {
+        nlohmann::json v;
+        v["update_period"] = rotator_update_period;
+        v["park_while_idle"] = rotator_park_while_idle;
+        v["park_position"] = rotator_park_position;
+        v["unpark_at_minus"] = rotator_unpark_at_minus;
+        return v;
+    }
+
+    void ObjectTracker::setRotatorConfig(nlohmann::json v)
+    {
+        rotator_update_period = getValueOrDefault(v["update_period"], rotator_update_period);
+        rotator_park_while_idle = getValueOrDefault(v["park_while_idle"], rotator_park_while_idle);
+        rotator_park_position = getValueOrDefault(v["park_position"], rotator_park_position);
+        rotator_unpark_at_minus = getValueOrDefault(v["unpark_at_minus"], rotator_unpark_at_minus);
     }
 }

@@ -23,6 +23,7 @@ namespace satdump
         {
             float az;
             float el;
+            NLOHMANN_DEFINE_TYPE_INTRUSIVE(SatAzEl, az, el);
         };
 
     private: // QTH Config
@@ -93,6 +94,11 @@ namespace satdump
         std::mutex rotator_handler_mtx;
         std::shared_ptr<rotator::RotatorHandler> rotator_handler;
 
+        double rotator_update_period = 1;
+        bool rotator_park_while_idle = false;
+        SatAzEl rotator_park_position;
+        double rotator_unpark_at_minus = 60;
+
     public: // Functions
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setObject(TrackingMode mode, int objid);
@@ -105,6 +111,10 @@ namespace satdump
         void renderSelectionMenu();
         void renderObjectStatus();
         void renderRotatorStatus();
+        void renderRotatorConfig();
+
+        nlohmann::json getRotatorConfig();
+        void setRotatorConfig(nlohmann::json v);
 
     public:
         ObjectTracker();

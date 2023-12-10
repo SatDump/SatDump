@@ -37,9 +37,34 @@ namespace satdump
             }
         }
 
+        // Init Obj Tracker
         object_tracker.setQTH(qth_lon, qth_lat, qth_alt);
         object_tracker.setRotator(rotator_handler);
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
+
+        // Init scheduler
+        auto_scheduler.eng_callback = [this](SatellitePass, TrackedObject obj)
+        {
+            object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
+            saveConfig();
+        };
+        auto_scheduler.aos_callback = [this](SatellitePass pass, TrackedObject obj)
+        {
+            this->aos_callback(pass, obj);
+            object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
+        };
+        auto_scheduler.los_callback = [this](SatellitePass pass, TrackedObject obj)
+        {
+            this->los_callback(pass, obj);
+        };
+
+        auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);
+
+        // Restore config
+        loadConfig();
+
+        // Start scheduler
+        auto_scheduler.start();
 
         // Attempt to apply provided CLI settings
         if (satdump::config::main_cfg.contains("cli"))
@@ -48,17 +73,19 @@ namespace satdump
 
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
             {
+                auto_scheduler.setEngaged(true, getTime());
             }
         }
     }
 
     TrackingWidget::~TrackingWidget()
     {
+        saveConfig();
     }
 
     void TrackingWidget::render()
     {
-        object_tracker.renderPolarPlot();
+        object_tracker.renderPolarPlot(light_theme);
 
         ImGui::Separator();
 
@@ -119,14 +146,14 @@ namespace satdump
             {
                 if (ImGui::BeginTabItem("Scheduling"))
                 {
-                    // ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
-                    // renderAutotrackConfig();
-                    // ImGui::EndChild();
+                    ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
+                    auto_scheduler.renderAutotrackConfig(light_theme, getTime());
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Rotator Config"))
                 {
-                    // ImGui::InputFloat("Update Period (s)", &rotator_update_period);
+                    object_tracker.renderRotatorConfig();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
