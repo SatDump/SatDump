@@ -311,7 +311,7 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wed.max_diff < 18e3)
                 {
                     if (channel_a == -1)
                     {
@@ -395,7 +395,7 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wed.max_diff < 18e3)
                 {
                     if (channel_b == -1)
                         channel_b = wed.rchannel;
