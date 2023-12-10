@@ -885,7 +885,7 @@
                             "cch4": {
                                 "type": "temperature",
                                 "min": 200,
-                                "max": 320
+                                "max": 300
                             }
                         }
                     },
