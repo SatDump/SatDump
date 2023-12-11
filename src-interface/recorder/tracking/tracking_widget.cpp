@@ -1,11 +1,10 @@
 #include "tracking_widget.h"
-#include "common/tracking/tle.h"
 #include "imgui/imgui.h"
 #include "logger.h"
-#include "core/module.h"
 #include "core/config.h"
 #include "main_ui.h"
-
+#include "core/style.h"
+#include "common/imgui_utils.h"
 #include "common/tracking/rotator/rotcl_handler.h"
 
 namespace satdump
@@ -25,28 +24,6 @@ namespace satdump
 
         logger->trace("Using QTH %f %f Alt %f", qth_lon, qth_lat, qth_alt);
 
-        if (general_tle_registry.size() > 0)
-            has_tle = true;
-
-        for (auto &tle : general_tle_registry)
-            satoptions.push_back(tle.name);
-
-        observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
-
-        // Updates on registry updates
-        eventBus->register_handler<TLEsUpdatedEvent>([this](TLEsUpdatedEvent)
-                                                     {
-                                                            tle_update_mutex.lock();
-
-                                                            if (general_tle_registry.size() > 0)
-                                                                has_tle = true;
-
-                                                            satoptions.clear();
-                                                            for (auto &tle : general_tle_registry)
-                                                                satoptions.push_back(tle.name);
-                                                                
-                                                            tle_update_mutex.unlock(); });
-
         rotator_handler = std::make_shared<rotator::RotctlHandler>();
 
         if (rotator_handler)
@@ -60,12 +37,34 @@ namespace satdump
             }
         }
 
-        // Restore settings
+        // Init Obj Tracker
+        object_tracker.setQTH(qth_lon, qth_lat, qth_alt);
+        object_tracker.setRotator(rotator_handler);
+        object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
+
+        // Init scheduler
+        auto_scheduler.eng_callback = [this](SatellitePass, TrackedObject obj)
+        {
+            object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
+            saveConfig();
+        };
+        auto_scheduler.aos_callback = [this](SatellitePass pass, TrackedObject obj)
+        {
+            this->aos_callback(pass, obj);
+            object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
+        };
+        auto_scheduler.los_callback = [this](SatellitePass pass, TrackedObject obj)
+        {
+            this->los_callback(pass, obj);
+        };
+
+        auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);
+
+        // Restore config
         loadConfig();
 
-        // Start threads
-        backend_thread = std::thread(&TrackingWidget::backend_run, this);
-        rotatorth_thread = std::thread(&TrackingWidget::rotatorth_run, this);
+        // Start scheduler
+        auto_scheduler.start();
 
         // Attempt to apply provided CLI settings
         if (satdump::config::main_cfg.contains("cli"))
@@ -74,69 +73,97 @@ namespace satdump
 
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
             {
-                upcoming_satellite_passes_mtx.lock();
-                autotrack_engaged = true;
-                updateAutotrackPasses();
-
-                if (upcoming_satellite_passes_sel.size() > 0)
-                {
-                    for (int i = 0; i < (int)general_tle_registry.size(); i++)
-                        if (general_tle_registry[i].norad == upcoming_satellite_passes_sel[0].norad)
-                            current_satellite = i;
-                    horizons_mode = false;
-                    backend_needs_update = true;
-                    autotrack_pass_has_started = false;
-                }
-                else
-                {
-                    autotrack_engaged = false;
-                }
-                upcoming_satellite_passes_mtx.unlock();
+                auto_scheduler.setEngaged(true, getTime());
             }
         }
     }
 
     TrackingWidget::~TrackingWidget()
     {
-        predict_destroy_observer(observer_station);
-
-        backend_should_run = false;
-        if (backend_thread.joinable())
-            backend_thread.join();
-
-        rotatorth_should_run = false;
-        if (rotatorth_thread.joinable())
-            rotatorth_thread.join();
+        saveConfig();
     }
 
     void TrackingWidget::render()
     {
-        if (!has_tle)
-            return;
+        object_tracker.renderPolarPlot(light_theme);
 
-        renderPolarPlot();
         ImGui::Separator();
-        renderSelectionMenu();
+
+        object_tracker.renderSelectionMenu();
+
         ImGui::Spacing();
+
         if (ImGui::CollapsingHeader("Object Information"))
-            renderObjectStatus();
+            object_tracker.renderObjectStatus();
+
         if (ImGui::CollapsingHeader("Rotator Configuration"))
-            renderRotatorStatus();
+        {
+            object_tracker.renderRotatorStatus();
+            ImGui::SameLine();
+
+            if (rotator_handler->is_connected())
+                style::beginDisabled();
+            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"))
+            {
+                if (selected_rotator_handler == 0)
+                {
+                    rotator_handler = std::make_shared<rotator::RotctlHandler>();
+                    object_tracker.setRotator(rotator_handler);
+                }
+
+                try
+                {
+                    rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                }
+                catch (std::exception &e)
+                {
+                }
+            }
+            if (rotator_handler->is_connected())
+                style::endDisabled();
+
+            rotator_handler->render();
+        }
+
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
+
         if (ImGui::Button("Schedule and Config"))
             config_window_was_asked = show_window_config = true;
 
-        renderConfigWindow();
+        renderConfig();
     }
 
-    double TrackingWidget::getTime()
+    void TrackingWidget::renderConfig()
     {
-        auto time = std::chrono::system_clock::now();
-        auto since_epoch = time.time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
-        return millis.count() / 1e3;
-    }
+        if (show_window_config)
+        {
+            ImGui::Begin("Tracking Configuration", &show_window_config);
+            ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
 
+            if (ImGui::BeginTabBar("##trackingtabbar"))
+            {
+                if (ImGui::BeginTabItem("Scheduling"))
+                {
+                    ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
+                    auto_scheduler.renderAutotrackConfig(light_theme, getTime());
+                    ImGui::EndChild();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Rotator Config"))
+                {
+                    object_tracker.renderRotatorConfig();
+                    ImGui::EndTabItem();
+                }
+                ImGui::EndTabBar();
+            }
+
+            if (config_window_was_asked)
+                ImGuiUtils_BringCurrentWindowToFront();
+            config_window_was_asked = false;
+
+            ImGui::End();
+        }
+    }
 }

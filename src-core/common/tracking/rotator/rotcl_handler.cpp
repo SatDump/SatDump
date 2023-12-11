@@ -41,7 +41,7 @@ namespace rotator
         return result;
     }
 
-    void RotctlHandler::connect(char *address, int port)
+    void RotctlHandler::l_connect(char *address, int port)
     {
         if (client != nullptr)
             delete client;
@@ -58,7 +58,7 @@ namespace rotator
         }
     }
 
-    void RotctlHandler::disconnect()
+    void RotctlHandler::l_disconnect()
     {
         if (client != nullptr)
             delete client;
@@ -156,17 +156,27 @@ namespace rotator
         if (client != nullptr)
         {
             if (ImGui::Button("Disconnect##rotctldisconnect"))
-                disconnect();
+                l_disconnect();
         }
         else
         {
             if (ImGui::Button("Connect##rotctlconnect"))
-                connect(input_address, input_port);
+                l_connect(input_address, input_port);
         }
     }
 
     bool RotctlHandler::is_connected()
     {
         return client != nullptr;
+    }
+
+    void RotctlHandler::connect()
+    {
+        l_connect(input_address, input_port);
+    }
+
+    void RotctlHandler::disconnect()
+    {
+        l_disconnect();
     }
 }

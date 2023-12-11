@@ -338,7 +338,7 @@ namespace satdump
         {
             tracking_widget = new TrackingWidget();
 
-            tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+            tracking_widget->aos_callback = [this](SatellitePass, TrackedObject obj)
             {
                 if (obj.live)
                     stop_processing();
@@ -374,7 +374,7 @@ namespace satdump
                 }
             };
 
-            tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
+            tracking_widget->los_callback = [this](SatellitePass, TrackedObject obj)
             {
                 if (obj.record)
                     stop_recording();

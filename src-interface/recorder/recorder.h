@@ -15,7 +15,7 @@
 #include "common/widgets/timed_message.h"
 #include "common/widgets/constellation.h"
 
-#include "pipeline_selector.h"
+#include "common/widgets/pipeline_selector.h"
 #include "core/live_pipeline.h"
 
 #include "tracking/tracking_widget.h"

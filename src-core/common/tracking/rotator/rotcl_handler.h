@@ -19,8 +19,8 @@ namespace rotator
     private:
         std::string command(std::string cmd, int *ret_sz);
 
-        void connect(char *address, int port);
-        void disconnect();
+        void l_connect(char *address, int port);
+        void l_disconnect();
 
     public:
         RotctlHandler();
@@ -36,5 +36,8 @@ namespace rotator
 
         void render();
         bool is_connected();
+
+        void connect();
+        void disconnect();
     };
 }
