@@ -13,7 +13,7 @@ namespace eos
 
             nlohmann::json precomputeVars(satdump::ImageProducts *d_products, nlohmann::json d_vars, bool is_aqua)
             {
-                CalibrationVars cvars;
+                CalibrationVars *cvars = new CalibrationVars();
 
                 logger->trace("Loading emissive!");
 
@@ -23,12 +23,13 @@ namespace eos
                 else
                     raw_coeffs_emmissive = loadCborFile(resources::getResourcePath("calibration/modis_emissive_table_terra.cbor"));
 
-                Coefficients_Emissive Sat_CoeffsE = raw_coeffs_emmissive;
+                Coefficients_Emissive* Sat_CoeffsE = new Coefficients_Emissive();
+                *Sat_CoeffsE = raw_coeffs_emmissive;
                 //  logger->trace("Loading reflective!");
                 //  Sat_CoeffsR = loadCborFile("/home/alan/Documents/SatDump_ReWork/build/reflective_table_aqua.cbor");
 
                 logger->trace("Calculate RVS/RSB!");
-                calculate_rvs_correction(Sat_CoeffsE, cvars);
+                calculate_rvs_correction(*Sat_CoeffsE, *cvars);
 
                 for (int scan = 0; scan < (int)d_products->images[7].image.height() / 10; scan++)
                 {
@@ -74,7 +75,7 @@ namespace eos
                         scaninfo.emissive_DN_SVs[D_emiss] = DN_sv;
                         scaninfo.emissive_DN_BBs[D_emiss] = DN_bb;
 
-                        if (get_emissive_coeffs(Sat_CoeffsE, is_aqua, cvars,
+                        if (get_emissive_coeffs(*Sat_CoeffsE, is_aqua, *cvars,
                                                 scaninfo.emissive_a0[D_emiss],
                                                 scaninfo.emissive_a2[D_emiss],
                                                 scaninfo.emissive_b1[D_emiss],
@@ -88,7 +89,7 @@ namespace eos
 
                     scaninfo.valid = true;
                 skip_scan:
-                    cvars.scan_data.push_back(scaninfo);
+                    (*cvars).scan_data.push_back(scaninfo);
 
                     logger->trace("Scan %d - MS %d - T_bb %f - T_mir %f - T_cav %f - T_ins %f - FP1 %f - FP2 %f - FP3 %f - FP4 %f - Valid %d - A0 %f - BB %d - SV %d",
                                   scan, scaninfo.MS, scaninfo.T_bb, scaninfo.T_mir, scaninfo.T_cav, scaninfo.T_ins,
@@ -98,8 +99,10 @@ namespace eos
                 }
 
                 nlohmann::json finalv;
-                finalv["cvars"] = cvars;
+                finalv["cvars"] = *cvars;
                 finalv["c_emissive"] = raw_coeffs_emmissive;
+                delete cvars;
+                delete Sat_CoeffsE;
                 return finalv;
             }
 
