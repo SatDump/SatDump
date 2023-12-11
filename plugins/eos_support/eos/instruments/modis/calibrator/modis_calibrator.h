@@ -41,12 +41,42 @@ namespace eos
         // All values required for final calibration
         struct CalibrationVars
         {
-            float RVS_1km_Emiss_BB[160][2];
-            float RVS_1km_Emiss_SV[160][2];
-            float RVS_1km_Emiss_EV[160][1354][2];
-            float sigma_RVS_Emiss_EV[160][1354][2];
-
+            typedef float CalibrationVars1[2];
+            typedef float CalibrationVars2[1354][2];
+            CalibrationVars1 *RVS_1km_Emiss_BB;         //float RVS_1km_Emiss_BB[160][2];
+            CalibrationVars1 *RVS_1km_Emiss_SV;         //float RVS_1km_Emiss_SV[160][2];
+            CalibrationVars2 *RVS_1km_Emiss_EV;         //float RVS_1km_Emiss_EV[160][1354][2];
+            CalibrationVars2 *sigma_RVS_Emiss_EV;       //float sigma_RVS_Emiss_EV[160][1354][2];
             std::vector<ValsPerScan> scan_data;
+
+            CalibrationVars()
+            {
+                RVS_1km_Emiss_BB = new CalibrationVars1[160];
+                RVS_1km_Emiss_SV = new CalibrationVars1[160];
+                RVS_1km_Emiss_EV = new CalibrationVars2[160];
+                sigma_RVS_Emiss_EV = new CalibrationVars2[160];
+            }
+
+            CalibrationVars(CalibrationVars &t)
+            {
+                RVS_1km_Emiss_BB = new CalibrationVars1[160];
+                RVS_1km_Emiss_SV = new CalibrationVars1[160];
+                RVS_1km_Emiss_EV = new CalibrationVars2[160];
+                sigma_RVS_Emiss_EV = new CalibrationVars2[160];
+                memcpy(RVS_1km_Emiss_BB, t.RVS_1km_Emiss_BB, 160 * 2 * sizeof(float));
+                memcpy(RVS_1km_Emiss_SV, t.RVS_1km_Emiss_SV, 160 * 2 * sizeof(float));
+                memcpy(RVS_1km_Emiss_EV, t.RVS_1km_Emiss_EV, 160 * 1354 * 2 * sizeof(float));
+                memcpy(sigma_RVS_Emiss_EV, t.sigma_RVS_Emiss_EV, 160 * 1354 * 2 * sizeof(float));
+                scan_data = t.scan_data;
+            }
+
+            ~CalibrationVars()
+            {
+                delete[] RVS_1km_Emiss_BB;
+                delete[] RVS_1km_Emiss_SV;
+                delete[] RVS_1km_Emiss_EV;
+                delete[] sigma_RVS_Emiss_EV;
+            }
         };
 
         inline void from_json(const nlohmann::json &j, CalibrationVars &v)
@@ -124,7 +154,7 @@ namespace eos
             double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
 
             // Coefficients_Reflective Sat_CoeffsR; // This is WIP
-            Coefficients_Emissive Sat_CoeffsE;
+            Coefficients_Emissive *Sat_CoeffsE;
 
             // BowTie LUTs
             std::vector<std::vector<int>> bowtie_lut_1km;
@@ -133,10 +163,14 @@ namespace eos
             EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
                 is_aqua = calib["is_aqua"];
+                Sat_CoeffsE = new Coefficients_Emissive(calib["vars"]["c_emissive"]);
                 cvars = calib["vars"]["cvars"];
-                Sat_CoeffsE = calib["vars"]["c_emissive"];
 
                 bowtie_lut_1km = calib["bowtie_lut_1km"];
+            }
+            ~EosMODISCalibrator()
+            {
+                delete Sat_CoeffsE;
             }
 
             void init() {}

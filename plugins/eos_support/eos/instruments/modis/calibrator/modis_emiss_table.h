@@ -47,11 +47,15 @@ inline void from_json(const nlohmann::json &j, Coefficients_Emissive &v)
     memcpy(v.delta_T_bb_beta, j["delta_T_bb_beta"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * sizeof(float));
     memcpy(v.delta_T_bb_delta, j["delta_T_bb_delta"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * sizeof(float));
 
-    memcpy(v.RSR_AQUA, j["RSR"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_AQUA * sizeof(float));
-    memcpy(v.WAVELENGTH_AQUA, j["WAVELENGTH"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_AQUA * sizeof(float));
+    if(j["RSR"].get<std::vector<float>>().size() == NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_AQUA)
+        memcpy(v.RSR_AQUA, j["RSR"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_AQUA * sizeof(float));
+    if(j["WAVELENGTH"].get<std::vector<float>>().size() == NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_AQUA)
+        memcpy(v.WAVELENGTH_AQUA, j["WAVELENGTH"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_AQUA * sizeof(float));
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    memcpy(v.RSR_TERRA, j["RSR"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_TERRA * sizeof(float));
-    memcpy(v.WAVELENGTH_TERRA, j["WAVELENGTH"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_TERRA * sizeof(float));
+    if(j["RSR"].get<std::vector<float>>().size() == NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_TERRA)
+        memcpy(v.RSR_TERRA, j["RSR"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_TERRA * sizeof(float));
+    if (j["WAVELENGTH"].get<std::vector<float>>().size() == NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_TERRA)
+        memcpy(v.WAVELENGTH_TERRA, j["WAVELENGTH"].get<std::vector<float>>().data(), NUM_EMISSIVE_DETECTORS * MAX_NUM_RSR_vs_LAMBDA_TERRA * sizeof(float));
 
     memcpy(v.A0, j["A0"].get<std::vector<float>>().data(), NUM_a0_vs_T_inst_COEFF * NUM_MIRROR_SIDES * NUM_EMISSIVE_DETECTORS * sizeof(float));
     memcpy(v.A2, j["A2"].get<std::vector<float>>().data(), NUM_a2_vs_T_inst_COEFF * NUM_MIRROR_SIDES * NUM_EMISSIVE_DETECTORS * sizeof(float));
