@@ -219,7 +219,7 @@ namespace satdump
                 {
                     predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(ctime));
                     predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos2);
-                    upcoming_pass_points.push_back({observation_pos2.azimuth * RAD_TO_DEG, observation_pos2.elevation * RAD_TO_DEG});
+                    upcoming_pass_points.push_back({float(observation_pos2.azimuth * RAD_TO_DEG), float(observation_pos2.elevation * RAD_TO_DEG)});
                 }
             }
 
