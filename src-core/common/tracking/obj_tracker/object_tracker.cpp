@@ -2,10 +2,11 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/tracking/tle.h"
 #include "core/plugin.h"
+#include "common/utils.h"
 
 namespace satdump
 {
-    ObjectTracker::ObjectTracker()
+    ObjectTracker::ObjectTracker(bool is_gui) : is_gui(is_gui)
     {
         if (general_tle_registry.size() > 0)
             has_tle = true;
@@ -45,6 +46,29 @@ namespace satdump
         rotatorth_should_run = false;
         if (rotatorth_thread.joinable())
             rotatorth_thread.join();
+    }
+
+    nlohmann::json ObjectTracker::getStatus()
+    {
+        nlohmann::json v;
+
+        v["sat_current_pos"] = sat_current_pos;
+        v["next_aos_time"] = next_aos_time;
+        v["next_los_time"] = next_los_time;
+        v["rotator_engaged"] = rotator_engaged;
+        v["rotator_tracking"] = rotator_tracking;
+        v["rot_current_pos"] = rot_current_pos;
+        v["rot_current_req_pos"] = rot_current_req_pos;
+
+        double timeOffset = 0, ctime = getTime();
+        if (next_aos_time > ctime)
+            timeOffset = next_aos_time - ctime;
+        else
+            timeOffset = next_los_time - ctime;
+
+        v["next_event_in"] = timeOffset;
+
+        return v;
     }
 
     void ObjectTracker::setQTH(double qth_lon, double qth_lat, double qth_alt)

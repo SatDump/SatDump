@@ -32,10 +32,14 @@ namespace satdump
     inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
     {
         v.norad = j["norad"];
-        v.frequency = j["frequency"];
-        v.record = j["record"];
-        v.live = j["live"];
-        v.pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
+        if (j.contains("frequency"))
+            v.frequency = j["frequency"];
+        if (j.contains("record"))
+            v.record = j["record"];
+        if (j.contains("live"))
+            v.live = j["live"];
+        if (j.contains("pipeline_name"))
+            v.pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
         if (j.contains("pipeline_params"))
             v.pipeline_selector->setParameters(j["pipeline_params"]);
     }

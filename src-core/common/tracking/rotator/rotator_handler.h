@@ -23,5 +23,7 @@ namespace rotator
         virtual rotator_status_t set_pos(float az, float el) = 0;
         virtual void render() = 0;
         virtual bool is_connected() = 0;
+        virtual void connect() = 0;
+        virtual void disconnect() = 0;
     };
 }

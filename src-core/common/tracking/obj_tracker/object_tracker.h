@@ -21,8 +21,8 @@ namespace satdump
 
         struct SatAzEl
         {
-            float az;
-            float el;
+            float az = 0;
+            float el = 0;
             NLOHMANN_DEFINE_TYPE_INTRUSIVE(SatAzEl, az, el);
         };
 
@@ -33,7 +33,7 @@ namespace satdump
 
     private: // General configs/utils
         TrackingMode tracking_mode = TRACKING_NONE;
-        bool has_tle = false;
+        bool has_tle = false, is_gui;
         std::mutex general_mutex;
 
     private: // Satellite Tracking (libpredict)
@@ -100,6 +100,8 @@ namespace satdump
         double rotator_unpark_at_minus = 60;
 
     public: // Functions
+        nlohmann::json getStatus();
+
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setObject(TrackingMode mode, int objid);
         void setRotator(std::shared_ptr<rotator::RotatorHandler> rot);
@@ -117,7 +119,7 @@ namespace satdump
         void setRotatorConfig(nlohmann::json v);
 
     public:
-        ObjectTracker();
+        ObjectTracker(bool is_gui = false);
         ~ObjectTracker();
     };
 }

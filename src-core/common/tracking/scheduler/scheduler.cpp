@@ -153,6 +153,21 @@ namespace satdump
         upcoming_satellite_passes_mtx.lock();
         autotrack_engaged = v;
         updateAutotrackPasses(curr_time);
+
+        if (autotrack_engaged && upcoming_satellite_passes_sel.size() > 0)
+        {
+            TrackedObject obj;
+            for (auto &v : enabled_satellites)
+                if (v.norad == upcoming_satellite_passes_sel[0].norad)
+                    obj = v;
+            eng_callback(upcoming_satellite_passes_sel[0], obj);
+            autotrack_pass_has_started = false;
+        }
+        else
+        {
+            autotrack_engaged = false;
+        }
+
         upcoming_satellite_passes_mtx.unlock();
     }
 

@@ -161,7 +161,7 @@ namespace satdump
                 }
             }
 
-            if (next_aos_time != 0 && next_los_time != 0)
+            if (is_gui && next_aos_time != 0 && next_los_time != 0)
             {
                 double time_step = abs(next_los_time - next_aos_time) / 50.0;
 
@@ -207,17 +207,20 @@ namespace satdump
             sat_next_aos_pos.az = next_aos.azimuth * RAD_TO_DEG;
             sat_next_aos_pos.el = next_aos.elevation * RAD_TO_DEG;
 
-            // Calculate a few points during the pass
-            predict_position satellite_orbit2;
-            predict_observation observation_pos2;
-
-            double time_step = abs(next_los_time - next_aos_time) / 50.0;
-
-            for (double ctime = next_aos_time; ctime <= next_los_time; ctime += time_step)
+            if (is_gui)
             {
-                predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(ctime));
-                predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos2);
-                upcoming_pass_points.push_back({observation_pos2.azimuth * RAD_TO_DEG, observation_pos2.elevation * RAD_TO_DEG});
+                // Calculate a few points during the pass
+                predict_position satellite_orbit2;
+                predict_observation observation_pos2;
+
+                double time_step = abs(next_los_time - next_aos_time) / 50.0;
+
+                for (double ctime = next_aos_time; ctime <= next_los_time; ctime += time_step)
+                {
+                    predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(ctime));
+                    predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos2);
+                    upcoming_pass_points.push_back({observation_pos2.azimuth * RAD_TO_DEG, observation_pos2.elevation * RAD_TO_DEG});
+                }
             }
 
             upcoming_passes_mtx.unlock();

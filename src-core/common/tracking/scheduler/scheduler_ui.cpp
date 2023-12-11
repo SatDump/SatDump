@@ -103,23 +103,7 @@ namespace satdump
         ImGui::SameLine();
         if (ImGui::Checkbox("Engage Autotrack", &autotrack_engaged))
         {
-            updateAutotrackPasses(curr_time);
-
-            if (upcoming_satellite_passes_sel.size() > 0)
-            {
-                TrackedObject obj;
-                for (auto &v : enabled_satellites)
-                    if (v.norad == upcoming_satellite_passes_sel[0].norad)
-                        obj = v;
-                eng_callback(upcoming_satellite_passes_sel[0], obj);
-                autotrack_pass_has_started = false;
-            }
-            else
-            {
-                autotrack_engaged = false;
-            }
-
-            // saveConfig(); TODO SAVE CONFIG
+            setEngaged(autotrack_engaged, curr_time);
         }
 
 #if 1

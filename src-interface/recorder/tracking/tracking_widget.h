@@ -27,7 +27,7 @@ namespace satdump
         std::function<void(SatellitePass, TrackedObject)> los_callback = [](SatellitePass, TrackedObject) {};
 
     private:
-        ObjectTracker object_tracker;
+        ObjectTracker object_tracker = ObjectTracker(true);
         AutoTrackScheduler auto_scheduler;
 
         std::shared_ptr<rotator::RotatorHandler> rotator_handler;
