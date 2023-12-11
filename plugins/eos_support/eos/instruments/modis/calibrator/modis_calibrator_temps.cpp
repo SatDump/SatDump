@@ -23,7 +23,8 @@ namespace eos
 #if 1 // Experimental, take most common value if delta is too high
                     std::vector<int> v_DN;
                     for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
-                        v_DN.push_back(d_vars[scan2]["bb_temp"][thermistor]);
+                        if(d_vars[scan2].contains("bb_temp"))
+                            v_DN.push_back(d_vars[scan2]["bb_temp"][thermistor]);
 
                     int mDN = most_common(v_DN.begin(), v_DN.end());
                     if (abs(DN - mDN) > 200)
@@ -93,7 +94,8 @@ namespace eos
 #if 1 // Experimental, take most common value if delta is too high
                     std::vector<int> v_MIR;
                     for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
-                        v_MIR.push_back(d_vars[scan2]["mir_temp"][i]);
+                        if (d_vars[scan2].contains("mir_temp"))
+                            v_MIR.push_back(d_vars[scan2]["mir_temp"][i]);
 
                     int mMIR = most_common(v_MIR.begin(), v_MIR.end());
                     if (abs(MIR - mMIR) > 200)
@@ -138,6 +140,8 @@ namespace eos
                     {
                         for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
                         {
+                            if (!d_vars[scan2].contains("cav_temp"))
+                                continue;
                             CAV = d_vars[scan2]["cav_temp"][i];
                             if (CAV != 0)
                                 break;
@@ -181,11 +185,11 @@ namespace eos
 #if 1 // Experimental, take most common value if delta is too high
                     std::vector<int> v_INS;
                     for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
-                        if (d_vars[scan2]["inst_temp"][i] != 0)
+                        if (d_vars[scan2].contains("inst_temp") && d_vars[scan2]["inst_temp"][i] != 0)
                             v_INS.push_back(d_vars[scan2]["inst_temp"][i]);
 
-                    int mINS = most_common(v_INS.begin(), v_INS.end());
-                    if (abs(INS - mINS) > 200)
+                    int mINS = v_INS.size() == 0 ? 0 : most_common(v_INS.begin(), v_INS.end());
+                    if (mINS != 0 && abs(INS - mINS) > 200)
                         INS = mINS;
 #endif
 
@@ -229,12 +233,15 @@ namespace eos
                 std::vector<bool> v_FP_T3SET;
                 std::vector<bool> v_LWHTR_ON;
                 std::vector<bool> v_SMHTR_ON;
-                for (int scan = 0; scan < d_vars.size(); scan++)
+                for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
                 {
-                    v_FP_T1SET.push_back(d_vars[scan]["fp_temp_info"][0]);
-                    v_FP_T3SET.push_back(d_vars[scan]["fp_temp_info"][1]);
-                    v_LWHTR_ON.push_back(d_vars[scan]["fp_temp_info"][2]);
-                    v_SMHTR_ON.push_back(d_vars[scan]["fp_temp_info"][3]);
+                    if (!d_vars[scan2].contains("fp_temp_info"))
+                        continue;
+
+                    v_FP_T1SET.push_back(d_vars[scan2]["fp_temp_info"][0]);
+                    v_FP_T3SET.push_back(d_vars[scan2]["fp_temp_info"][1]);
+                    v_LWHTR_ON.push_back(d_vars[scan2]["fp_temp_info"][2]);
+                    v_SMHTR_ON.push_back(d_vars[scan2]["fp_temp_info"][3]);
                 }
                 bool FP_T1SET = most_common(v_FP_T1SET.begin(), v_FP_T1SET.end());
                 bool FP_T3SET = most_common(v_FP_T3SET.begin(), v_FP_T3SET.end());
@@ -254,6 +261,9 @@ namespace eos
                 std::vector<int> v_FP4;
                 for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
                 {
+                    if (!d_vars[scan2].contains("fp_temp"))
+                        continue;
+
                     v_FP1.push_back(d_vars[scan2]["fp_temp"][0]);
                     v_FP2.push_back(d_vars[scan2]["fp_temp"][1]);
                     v_FP3.push_back(d_vars[scan2]["fp_temp"][2]);
