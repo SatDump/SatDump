@@ -41,12 +41,29 @@ namespace eos
         // All values required for final calibration
         struct CalibrationVars
         {
-            float RVS_1km_Emiss_BB[160][2];
-            float RVS_1km_Emiss_SV[160][2];
-            float RVS_1km_Emiss_EV[160][1354][2];
-            float sigma_RVS_Emiss_EV[160][1354][2];
-
+            typedef float CalibrationVars1[2];
+            typedef float CalibrationVars2[1354][2];
+            CalibrationVars1* RVS_1km_Emiss_BB;
+            CalibrationVars1* RVS_1km_Emiss_SV;
+            CalibrationVars2* RVS_1km_Emiss_EV;
+            CalibrationVars2* sigma_RVS_Emiss_EV;
             std::vector<ValsPerScan> scan_data;
+
+            CalibrationVars()
+            {
+                RVS_1km_Emiss_BB = new CalibrationVars1[160];
+                RVS_1km_Emiss_SV = new CalibrationVars1[160];
+                RVS_1km_Emiss_EV = new CalibrationVars2[160];
+                sigma_RVS_Emiss_EV = new CalibrationVars2[160];
+            }
+
+            ~CalibrationVars()
+            {
+                delete[] RVS_1km_Emiss_BB;
+                delete[] RVS_1km_Emiss_SV;
+                delete[] RVS_1km_Emiss_EV;
+                delete[] sigma_RVS_Emiss_EV;
+            }
         };
 
         inline void from_json(const nlohmann::json &j, CalibrationVars &v)
