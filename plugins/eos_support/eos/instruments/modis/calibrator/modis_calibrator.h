@@ -118,7 +118,7 @@ namespace eos
         private:
             bool is_aqua = false;
 
-            CalibrationVars *cvars;
+            CalibrationVars cvars;
 
             double compute_emissive(int channel, int pos_x, int pos_y, int px_val);
             double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
@@ -132,16 +132,11 @@ namespace eos
         public:
             EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
-                cvars = new CalibrationVars();
                 is_aqua = calib["is_aqua"];
-                *cvars = calib["vars"]["cvars"];
+                cvars = calib["vars"]["cvars"];
                 Sat_CoeffsE = calib["vars"]["c_emissive"];
 
                 bowtie_lut_1km = calib["bowtie_lut_1km"];
-            }
-            ~EosMODISCalibrator()
-            {
-                delete cvars;
             }
 
             void init() {}

@@ -39,7 +39,7 @@ namespace eos
             if (channel >= MODIS_BAND26_INDEX_AT_RES)
                 channel--;
 
-            auto &scaninfo = cvars->scan_data[pos_y / 10];
+            auto &scaninfo = cvars.scan_data[pos_y / 10];
 
             // Calculate & Check variables we need
             if (!scaninfo.valid)
@@ -123,9 +123,9 @@ namespace eos
 
             // Compute radiance
             double L_ev = (Fn -
-                           (cvars->RVS_1km_Emiss_SV[D_emiss][MS] - cvars->RVS_1km_Emiss_EV[D_emiss][F][MS]) *
+                           (cvars.RVS_1km_Emiss_SV[D_emiss][MS] - cvars.RVS_1km_Emiss_EV[D_emiss][F][MS]) *
                                /*PP_emiss->Planck_mir[D_emiss][S]*/ L_sm) /
-                          cvars->RVS_1km_Emiss_EV[D_emiss][F][MS];
+                          cvars.RVS_1km_Emiss_EV[D_emiss][F][MS];
 
             double radiance = spectral_radiance_to_radiance(L_ev, d_products->get_wavenumber(index_channel));
             if (std::isnan(radiance))
