@@ -1,6 +1,6 @@
 {
-    "fengyun4_lrit": {
-        "name": "FengYun-4 LRIT",
+    "fengyun4_a_lrit": {
+        "name": "FengYun-4A LRIT",
         "live": true,
         "live_cfg": {
             "pkt_size": 10240, // 1024 * 10
@@ -72,8 +72,81 @@
             }
         }
     },
-    "fengyun4_hrit23": {
-        "name": "FengYun-4 HRIT-II/III",
+    "fengyun4_b_lrit": {
+        "name": "FengYun-4B LRIT",
+        "live": true,
+        "live_cfg": {
+            "pkt_size": 10240, // 1024 * 10
+            "default": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
+            ],
+            "server": [
+                [
+                    1,
+                    0
+                ],
+                [
+                    2,
+                    0
+                ]
+            ],
+            "client": [
+                [
+                    3,
+                    0
+                ]
+            ]
+        },
+        "frequencies": [
+            [
+                "LRIT",
+                1697e6
+            ]
+        ],
+        "parameters": {
+            "ts_input": {
+                "type": "bool",
+                "value": false,
+                "name": "TS Input",
+                "description": "Input TS instead of BBFrame"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    "symbolrate": 120e3,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.01,
+                    "clock_alpha": 2.5e-3,
+                    "modcod": 10,
+                    "sof_thresold": 10 // Disable locking
+                }
+            },
+            "cadu": {
+                "s2_udp_cadu_extractor": {
+                    "bb_size": 57472,
+                    "pid": 3000
+                }
+            },
+            "products": {
+                "fy4_lrit_data_decoder": {}
+            }
+        }
+    },
+    "fengyun4_a_hrit23": {
+        "name": "FengYun-4A HRIT-II/III",
         "live": true,
         "live_cfg": {
             "pkt_size": 10240, // 1024 * 10
