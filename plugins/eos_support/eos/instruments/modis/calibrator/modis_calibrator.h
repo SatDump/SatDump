@@ -39,6 +39,7 @@ namespace eos
         };
 
         // All values required for final calibration
+        // Stored on the heap for Windows compatibility
         struct CalibrationVars
         {
             typedef float CalibrationVars1[2];
@@ -57,17 +58,24 @@ namespace eos
                 sigma_RVS_Emiss_EV = new CalibrationVars2[160];
             }
 
-            CalibrationVars(CalibrationVars &t)
+            CalibrationVars& operator=(const nlohmann::json& j)
             {
-                RVS_1km_Emiss_BB = new CalibrationVars1[160];
-                RVS_1km_Emiss_SV = new CalibrationVars1[160];
-                RVS_1km_Emiss_EV = new CalibrationVars2[160];
-                sigma_RVS_Emiss_EV = new CalibrationVars2[160];
-                memcpy(RVS_1km_Emiss_BB, t.RVS_1km_Emiss_BB, 160 * 2 * sizeof(float));
-                memcpy(RVS_1km_Emiss_SV, t.RVS_1km_Emiss_SV, 160 * 2 * sizeof(float));
-                memcpy(RVS_1km_Emiss_EV, t.RVS_1km_Emiss_EV, 160 * 1354 * 2 * sizeof(float));
-                memcpy(sigma_RVS_Emiss_EV, t.sigma_RVS_Emiss_EV, 160 * 1354 * 2 * sizeof(float));
-                scan_data = t.scan_data;
+                scan_data = j["scan_data"];
+                for (int i = 0; i < 160; i++)
+                {
+                    for (int x = 0; x < 2; x++)
+                    {
+                        RVS_1km_Emiss_BB[i][x] = j["RVS_1km_Emiss_BB"];
+                        RVS_1km_Emiss_SV[i][x] = j["RVS_1km_Emiss_SV"];
+
+                        for (int z = 0; z < 1354; z++)
+                        {
+                            RVS_1km_Emiss_EV[i][z][x] = j["RVS_1km_Emiss_EV"];
+                            sigma_RVS_Emiss_EV[i][z][x] = j["sigma_RVS_Emiss_EV"];
+                        }
+                    }
+                }
+                return *this;
             }
 
             ~CalibrationVars()
@@ -78,25 +86,6 @@ namespace eos
                 delete[] sigma_RVS_Emiss_EV;
             }
         };
-
-        inline void from_json(const nlohmann::json &j, CalibrationVars &v)
-        {
-            v.scan_data = j["scan_data"];
-            for (int i = 0; i < 160; i++)
-            {
-                for (int x = 0; x < 2; x++)
-                {
-                    v.RVS_1km_Emiss_BB[i][x] = j["RVS_1km_Emiss_BB"];
-                    v.RVS_1km_Emiss_SV[i][x] = j["RVS_1km_Emiss_SV"];
-
-                    for (int z = 0; z < 1354; z++)
-                    {
-                        v.RVS_1km_Emiss_EV[i][z][x] = j["RVS_1km_Emiss_EV"];
-                        v.sigma_RVS_Emiss_EV[i][z][x] = j["sigma_RVS_Emiss_EV"];
-                    }
-                }
-            }
-        }
 
         inline void to_json(nlohmann::json &j, const CalibrationVars &v)
         {
