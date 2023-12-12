@@ -43,7 +43,7 @@ namespace satdump
         if (in.contains("fft_size"))
         {
             fft_size = in["fft_size"].get<int>();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < fft_sizes_lut.size(); i++)
                 if (fft_sizes_lut[i] == fft_size)
                     selected_fft_size = i;
         }
