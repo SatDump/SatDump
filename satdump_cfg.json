@@ -1241,6 +1241,10 @@
                     "Thermal Channel": {
                         "equation": "1-chi4",
                         "individual_equalize": true
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "chi3, chm5, chm4",
+                        "individual_equalize": true
                     }
                 }
             },
@@ -1294,6 +1298,11 @@
                         "geo_correct": true,
                         "individual_equalize": true,
                         "white_balance": true
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "ch2, ch1, ch4",
+                        "individual_equalize": true,
+                        "geo_correct": true
                     }
                 }
             },
@@ -1326,12 +1335,27 @@
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "9.12.11": {
+                    "CIR (Color Infrared)": {
+                        "equation": "ch4, ch3, ch2",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Agriculture": {
+                        "equation": "ch8,ch4,ch1",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Geology": {
+                        "equation": "ch9,ch8,ch1",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "MERSI Airmass": {
                         "equation": "ch9, ch12, ch11",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "AVHRR 221 False COlor": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch4, ch4, ch1",
                         "geo_correct": true
                     },
@@ -1396,6 +1420,21 @@
                     },
                     "Thermal Channel": {
                         "equation": "1.0 - ch5",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "ch4, ch3, ch2",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Agriculture": {
+                        "equation": "ch8,ch4,ch1",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Geology": {
+                        "equation": "ch9,ch8,ch1",
                         "individual_equalize": true,
                         "geo_correct": true
                     }
