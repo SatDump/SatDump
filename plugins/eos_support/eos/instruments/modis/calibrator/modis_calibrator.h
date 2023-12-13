@@ -12,24 +12,24 @@ namespace eos
         struct ValsPerScan
         {
             // General
-            bool MS;
+            bool MS = false;
             bool valid = false;
 
             // Emissive
-            int emissive_DN_SVs[160];
-            int emissive_DN_BBs[160];
+            int emissive_DN_SVs[160] = {0};
+            int emissive_DN_BBs[160] = {0};
 
-            double emissive_a0[160];
-            double emissive_a2[160];
-            double emissive_b1[160];
-            float emissive_Planck_mir[160];
+            double emissive_a0[160] = {0.0};
+            double emissive_a2[160] = {0.0};
+            double emissive_b1[160] = {0.0};
+            float emissive_Planck_mir[160] = {0.0f};
 
             // Temperature
-            double T_bb;
-            double T_mir;
-            double T_cav;
-            double T_ins;
-            double fp_temps[4];
+            double T_bb = 0.0;
+            double T_mir = 0.0;
+            double T_cav = 0.0;
+            double T_ins = 0.0;
+            double fp_temps[4] = {0};
 
             NLOHMANN_DEFINE_TYPE_INTRUSIVE(ValsPerScan,
                                            MS, valid,

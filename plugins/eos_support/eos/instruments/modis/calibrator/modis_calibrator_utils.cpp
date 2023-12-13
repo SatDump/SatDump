@@ -50,6 +50,12 @@ namespace eos
                         goto skip_scan;
                     if (!d_vars[scan].contains("inst_temp"))
                         goto skip_scan;
+                    if (!d_vars[scan].contains("inst_temp"))
+                        goto skip_scan;
+                    if (!d_vars[scan].contains("fp_temp"))
+                        goto skip_scan;
+                    if (!d_vars[scan].contains("fp_temp_info"))
+                        goto skip_scan;
 
                     scaninfo.MS = d_vars[scan]["mirror_side"];                    // Mirror side
                     scaninfo.T_bb = get_bb_temperature(d_vars, is_aqua, scan);    // BB Temperature
