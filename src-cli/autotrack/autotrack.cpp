@@ -331,9 +331,78 @@ int main_autotrack(int argc, char *argv[])
             p["frequency"] = source_ptr->get_frequency();
             return p.dump(4);
         };
-        webserver::handle_callback_html = []()
+        webserver::handle_callback_html = [&selected_src, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx]()
         {
-            return "There might be a webpage coming later :-). For now use /api";
+
+            std::string rot_engaged;
+            std::string rot_tracking;
+            
+            if (object_tracker.getStatus()["rotator_engaged"].get<bool>() == true)
+            {
+               rot_engaged = "<span class=\"fakeinput true\">engaged</span>";
+            } else {
+               rot_engaged = "<span class=\"fakeinput false\">not engaged</span>";
+            }
+
+            if (object_tracker.getStatus()["rotator_tracking"].get<bool>() == true)
+            {
+                rot_tracking = "<span class=\"fakeinput true\">tracking</span>";
+            } else {
+                rot_tracking = "<span class=\"fakeinput false\">not tracking</span>";
+            }
+            
+
+            std::string page = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>SatDump Status Page</title>"
+                                "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+                                "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;"
+                                "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}"
+                                "h2{padding:5px;border-radius:5px;background-color:#3e3e43}"
+                                ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}"
+                                ".true{color:#0f0}.false{color:red}</style></head>"
+                                "<body><h1>SatDump Status Page</h1>"
+                                "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">"
+                                + selected_src.name + "</span></p>"
+                                "<p>Sample rate: <span class=\"fakeinput\">"
+                                + std::to_string(source_ptr->get_samplerate() / 1e6)
+                                + "</span> Msps</p>"
+                                + "<p>Frequency: <span class=\"fakeinput\">"
+                                + std::to_string(source_ptr->get_frequency() / 1e6)
+                                + "</span> MHz</p>"
+                                "<h2>Object Tracker</h2>"
+                                "<p>Next AOS time: <span class=\"fakeinput\">"
+                                + timestamp_to_string(object_tracker.getStatus()["next_aos_time"].get<double>())
+                                + "</span><!-- (in <span class=\"fakeinput\">"
+                                + std::to_string((int)(object_tracker.getStatus()["next_event_in"].get<double>()))
+                                + "</span> seconds)--></p>"
+                                "<p>Next LOS time: <span class=\"fakeinput\">"
+                                + timestamp_to_string(object_tracker.getStatus()["next_los_time"].get<double>())
+                                + "</span></p>"
+                                "<p>Current object: <span class=\"fakeinput\">"
+                                + object_tracker.getStatus()["object_name"].get<std::string>()
+                                + "</span></p>"
+                                "<p>Current position: "
+                                + "Azimuth <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["sat_current_pos"]["az"].get<double>()))
+                                + "</span> °, Elevation <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["sat_current_pos"]["el"].get<double>()))
+                                + "</span> °, Range <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["sat_current_range"].get<double>()))
+                                + "</span> km</p>"
+                                "<h2>Rotator Control</h2>"
+                                "<p>Status:" + rot_engaged +                                  
+                                ", <span class=\"fakeinput false\">"
+                                + rot_tracking + "</span></p>"
+                                "<p>Azimuth: requested <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["rot_current_req_pos"]["az"].get<double>()))
+                                + "</span> °, actual <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["rot_current_pos"]["az"].get<double>()))
+                                + "</span> °</p>"
+                                "<p>Elevation: requested <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["rot_current_req_pos"]["el"].get<double>()))
+                                + "</span> °, actual <span class=\"fakeinput\">"
+                                + svformat("%.2f", (object_tracker.getStatus()["rot_current_pos"]["el"].get<double>()))
+                                + "</span> °</p></body></html>";
+            return page;
         };
         logger->info("Start webserver on %s", http_addr.c_str());
         webserver::start(http_addr);
