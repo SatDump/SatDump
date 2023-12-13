@@ -89,7 +89,6 @@ First time here? See the reference documents below to get started using SatDump.
 ### Contributors
 - Arved MØKDS
 - Blobtoe
-- Felix OK9UWU
 - Fred Jansen
 - Jpjonte
 - LazzSnazz
