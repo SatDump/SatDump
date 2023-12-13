@@ -77,6 +77,7 @@ namespace satdump
             timeOffset = next_los_time - ctime;
 
         v["next_event_in"] = timeOffset;
+        v["next_event_is_aos"] = next_aos_time > ctime;
 
         v["rotator_engaged"] = rotator_engaged;
         v["rotator_tracking"] = rotator_tracking;
