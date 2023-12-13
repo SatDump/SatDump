@@ -50,8 +50,6 @@ namespace eos
                         goto skip_scan;
                     if (!d_vars[scan].contains("inst_temp"))
                         goto skip_scan;
-                    if (!d_vars[scan].contains("inst_temp"))
-                        goto skip_scan;
                     if (!d_vars[scan].contains("fp_temp"))
                         goto skip_scan;
                     if (!d_vars[scan].contains("fp_temp_info"))
