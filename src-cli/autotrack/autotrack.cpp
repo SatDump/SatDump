@@ -349,7 +349,7 @@ int main_autotrack(int argc, char *argv[])
             else
                 rot_tracking = "<span class=\"fakeinput false\">not tracking</span>";
 
-            std::string page = (std::string) "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
+            std::string page = (std::string) "<!DOCTYPE html><html><head><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"><title>SatDump Status Page</title>" +
                                "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
                                "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
                                "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
