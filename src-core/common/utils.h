@@ -9,6 +9,7 @@
 #include <climits>
 #include <fstream>
 #include <optional>
+#include <chrono>
 
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
@@ -188,6 +189,14 @@ std::string svformat(const char *fmt, T &&...args)
         needed = snprintf((char *)&buf[0], size, fmt, args...);
         return std::string(&buf[0]);
     }
+}
+
+inline double getTime()
+{
+    auto time = std::chrono::system_clock::now();
+    auto since_epoch = time.time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
+    return millis.count() / 1e3;
 }
 
 std::string loadFileToString(std::string path);

@@ -23,12 +23,12 @@ namespace eos
                 else
                     raw_coeffs_emmissive = loadCborFile(resources::getResourcePath("calibration/modis_emissive_table_terra.cbor"));
 
-                Coefficients_Emissive Sat_CoeffsE = raw_coeffs_emmissive;
+                Coefficients_Emissive *Sat_CoeffsE = new Coefficients_Emissive(raw_coeffs_emmissive);
                 //  logger->trace("Loading reflective!");
                 //  Sat_CoeffsR = loadCborFile("/home/alan/Documents/SatDump_ReWork/build/reflective_table_aqua.cbor");
 
                 logger->trace("Calculate RVS/RSB!");
-                calculate_rvs_correction(Sat_CoeffsE, cvars);
+                calculate_rvs_correction(*Sat_CoeffsE, cvars);
 
                 for (int scan = 0; scan < (int)d_products->images[7].image.height() / 10; scan++)
                 {
@@ -49,6 +49,10 @@ namespace eos
                     if (!d_vars[scan].contains("cav_temp"))
                         goto skip_scan;
                     if (!d_vars[scan].contains("inst_temp"))
+                        goto skip_scan;
+                    if (!d_vars[scan].contains("fp_temp"))
+                        goto skip_scan;
+                    if (!d_vars[scan].contains("fp_temp_info"))
                         goto skip_scan;
 
                     scaninfo.MS = d_vars[scan]["mirror_side"];                    // Mirror side
@@ -74,7 +78,7 @@ namespace eos
                         scaninfo.emissive_DN_SVs[D_emiss] = DN_sv;
                         scaninfo.emissive_DN_BBs[D_emiss] = DN_bb;
 
-                        if (get_emissive_coeffs(Sat_CoeffsE, is_aqua, cvars,
+                        if (get_emissive_coeffs(*Sat_CoeffsE, is_aqua, cvars,
                                                 scaninfo.emissive_a0[D_emiss],
                                                 scaninfo.emissive_a2[D_emiss],
                                                 scaninfo.emissive_b1[D_emiss],
@@ -100,6 +104,7 @@ namespace eos
                 nlohmann::json finalv;
                 finalv["cvars"] = cvars;
                 finalv["c_emissive"] = raw_coeffs_emmissive;
+                delete Sat_CoeffsE;
                 return finalv;
             }
 

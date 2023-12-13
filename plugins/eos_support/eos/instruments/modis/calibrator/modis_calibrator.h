@@ -12,24 +12,24 @@ namespace eos
         struct ValsPerScan
         {
             // General
-            bool MS;
+            bool MS = false;
             bool valid = false;
 
             // Emissive
-            int emissive_DN_SVs[160];
-            int emissive_DN_BBs[160];
+            int emissive_DN_SVs[160] = {0};
+            int emissive_DN_BBs[160] = {0};
 
-            double emissive_a0[160];
-            double emissive_a2[160];
-            double emissive_b1[160];
-            float emissive_Planck_mir[160];
+            double emissive_a0[160] = {0.0};
+            double emissive_a2[160] = {0.0};
+            double emissive_b1[160] = {0.0};
+            float emissive_Planck_mir[160] = {0.0f};
 
             // Temperature
-            double T_bb;
-            double T_mir;
-            double T_cav;
-            double T_ins;
-            double fp_temps[4];
+            double T_bb = 0.0;
+            double T_mir = 0.0;
+            double T_cav = 0.0;
+            double T_ins = 0.0;
+            double fp_temps[4] = {0};
 
             NLOHMANN_DEFINE_TYPE_INTRUSIVE(ValsPerScan,
                                            MS, valid,
@@ -39,34 +39,53 @@ namespace eos
         };
 
         // All values required for final calibration
+        // Stored on the heap for Windows compatibility
         struct CalibrationVars
         {
-            float RVS_1km_Emiss_BB[160][2];
-            float RVS_1km_Emiss_SV[160][2];
-            float RVS_1km_Emiss_EV[160][1354][2];
-            float sigma_RVS_Emiss_EV[160][1354][2];
-
+            typedef float CalibrationVars1[2];
+            typedef float CalibrationVars2[1354][2];
+            CalibrationVars1 *RVS_1km_Emiss_BB;         //float RVS_1km_Emiss_BB[160][2];
+            CalibrationVars1 *RVS_1km_Emiss_SV;         //float RVS_1km_Emiss_SV[160][2];
+            CalibrationVars2 *RVS_1km_Emiss_EV;         //float RVS_1km_Emiss_EV[160][1354][2];
+            CalibrationVars2 *sigma_RVS_Emiss_EV;       //float sigma_RVS_Emiss_EV[160][1354][2];
             std::vector<ValsPerScan> scan_data;
-        };
 
-        inline void from_json(const nlohmann::json &j, CalibrationVars &v)
-        {
-            v.scan_data = j["scan_data"];
-            for (int i = 0; i < 160; i++)
+            CalibrationVars()
             {
-                for (int x = 0; x < 2; x++)
-                {
-                    v.RVS_1km_Emiss_BB[i][x] = j["RVS_1km_Emiss_BB"];
-                    v.RVS_1km_Emiss_SV[i][x] = j["RVS_1km_Emiss_SV"];
+                RVS_1km_Emiss_BB = new CalibrationVars1[160];
+                RVS_1km_Emiss_SV = new CalibrationVars1[160];
+                RVS_1km_Emiss_EV = new CalibrationVars2[160];
+                sigma_RVS_Emiss_EV = new CalibrationVars2[160];
+            }
 
-                    for (int z = 0; z < 1354; z++)
+            CalibrationVars& operator=(const nlohmann::json& j)
+            {
+                scan_data = j["scan_data"];
+                for (int i = 0; i < 160; i++)
+                {
+                    for (int x = 0; x < 2; x++)
                     {
-                        v.RVS_1km_Emiss_EV[i][z][x] = j["RVS_1km_Emiss_EV"];
-                        v.sigma_RVS_Emiss_EV[i][z][x] = j["sigma_RVS_Emiss_EV"];
+                        RVS_1km_Emiss_BB[i][x] = j["RVS_1km_Emiss_BB"];
+                        RVS_1km_Emiss_SV[i][x] = j["RVS_1km_Emiss_SV"];
+
+                        for (int z = 0; z < 1354; z++)
+                        {
+                            RVS_1km_Emiss_EV[i][z][x] = j["RVS_1km_Emiss_EV"];
+                            sigma_RVS_Emiss_EV[i][z][x] = j["sigma_RVS_Emiss_EV"];
+                        }
                     }
                 }
+                return *this;
             }
-        }
+
+            ~CalibrationVars()
+            {
+                delete[] RVS_1km_Emiss_BB;
+                delete[] RVS_1km_Emiss_SV;
+                delete[] RVS_1km_Emiss_EV;
+                delete[] sigma_RVS_Emiss_EV;
+            }
+        };
 
         inline void to_json(nlohmann::json &j, const CalibrationVars &v)
         {
@@ -124,7 +143,7 @@ namespace eos
             double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
 
             // Coefficients_Reflective Sat_CoeffsR; // This is WIP
-            Coefficients_Emissive Sat_CoeffsE;
+            Coefficients_Emissive *Sat_CoeffsE;
 
             // BowTie LUTs
             std::vector<std::vector<int>> bowtie_lut_1km;
@@ -133,10 +152,14 @@ namespace eos
             EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
             {
                 is_aqua = calib["is_aqua"];
+                Sat_CoeffsE = new Coefficients_Emissive(calib["vars"]["c_emissive"]);
                 cvars = calib["vars"]["cvars"];
-                Sat_CoeffsE = calib["vars"]["c_emissive"];
 
                 bowtie_lut_1km = calib["bowtie_lut_1km"];
+            }
+            ~EosMODISCalibrator()
+            {
+                delete Sat_CoeffsE;
             }
 
             void init() {}

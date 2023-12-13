@@ -3,7 +3,7 @@
 #include <string>
 #include "processing.h"
 #include "main_ui.h"
-#include "pipeline_selector.h"
+#include "common/widgets/pipeline_selector.h"
 #include "common/widgets/timed_message.h"
 
 namespace satdump

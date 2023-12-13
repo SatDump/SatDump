@@ -1,207 +1,15 @@
-#include "tracking_widget.h"
-#include "common/utils.h"
+#include "scheduler.h"
 #include "logger.h"
-#include "imgui/imgui.h"
-#include "common/tracking/tle.h"
-#include "core/module.h"
 #include "core/style.h"
-#include "main_ui.h"
+#include "imgui/imgui.h"
 
 namespace satdump
 {
-    void TrackingWidget::processAutotrack()
+    void AutoTrackScheduler::renderAutotrackConfig(bool light_theme, double curr_time)
     {
-        if (autotrack_engaged)
-        {
-            upcoming_satellite_passes_mtx.lock();
+        if (!has_tle)
+            return;
 
-            if (upcoming_satellite_passes_sel.size() > 0)
-            {
-                if (!autotrack_pass_has_started && getTime() > upcoming_satellite_passes_sel[0].aos_time)
-                {
-                    logger->critical("AOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                    tracking::TrackedObject obj;
-                    for (auto &v : enabled_satellites)
-                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
-                            obj = v;
-                    aos_callback(upcoming_satellite_passes_sel[0], obj);
-                    autotrack_pass_has_started = true;
-                }
-            }
-
-            if (getTime() > upcoming_satellite_passes_sel[0].los_time && upcoming_satellite_passes_sel.size() > 0)
-            {
-                if (autotrack_pass_has_started)
-                {
-                    logger->critical("LOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                    tracking::TrackedObject obj;
-                    for (auto &v : enabled_satellites)
-                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
-                            obj = v;
-                    los_callback(upcoming_satellite_passes_sel[0], obj);
-                }
-                autotrack_pass_has_started = false;
-                updateAutotrackPasses(); // upcoming_satellite_passes_sel.erase(upcoming_satellite_passes_sel.begin());
-                for (int i = 0; i < (int)general_tle_registry.size(); i++)
-                    if (general_tle_registry[i].norad == upcoming_satellite_passes_sel[0].norad)
-                        current_satellite = i;
-                backend_needs_update = true;
-            }
-
-            upcoming_satellite_passes_mtx.unlock();
-        }
-    }
-
-    void TrackingWidget::updateAutotrackPasses()
-    {
-        upcoming_satellite_passes_all.clear();
-
-        double initial_time = getTime();
-
-        for (tracking::TrackedObject &obj : enabled_satellites)
-        {
-            auto tle = general_tle_registry.get_from_norad(obj.norad).value();
-            predict_orbital_elements_t *satellite_object_ = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
-
-            double current_time = initial_time;
-
-            while (current_time < initial_time + 12 * 3600)
-            {
-                predict_observation next_aos, next_los;
-                next_aos = next_los = predict_next_los(observer_station, satellite_object_, predict_to_julian_double(current_time));
-
-                // Calculate the AOS before that LOS
-                double next_aos_time_, next_los_time_;
-                next_aos_time_ = next_los_time_ = predict_from_julian(next_los.time);
-                do
-                {
-                    next_aos = predict_next_aos(observer_station, satellite_object_, predict_to_julian_double(next_aos_time_));
-                    next_aos_time_ -= 10;
-                } while (predict_from_julian(next_aos.time) >= next_los_time_);
-
-                next_los_time_ = predict_from_julian(next_los.time);
-                next_aos_time_ = predict_from_julian(next_aos.time);
-
-                float max_el = 0;
-                predict_position satellite_orbit2;
-                predict_observation observation_pos2;
-                double time_step = abs(next_los_time_ - next_aos_time_) / 50.0;
-                for (double ctime = next_aos_time_; ctime <= next_los_time_; ctime += time_step)
-                {
-                    predict_orbit(satellite_object_, &satellite_orbit2, predict_to_julian_double(ctime));
-                    predict_observe_orbit(observer_station, &satellite_orbit2, &observation_pos2);
-                    if (observation_pos2.elevation * RAD_TO_DEG > max_el)
-                        max_el = observation_pos2.elevation * RAD_TO_DEG;
-                }
-
-                if (max_el >= autotrack_min_elevation)
-                    upcoming_satellite_passes_all.push_back({obj.norad,
-                                                             next_aos_time_,
-                                                             next_los_time_,
-                                                             max_el});
-                // logger->info("Pass of %s at AOS %s LOS %s elevation %.2f", tle.name.c_str(),
-                //              timestamp_to_string(next_aos_time_).c_str(),
-                //              timestamp_to_string(next_los_time_).c_str(),
-                //              max_el);
-
-                current_time = next_los_time_ + 1;
-            }
-
-            predict_destroy_orbital_elements(satellite_object_);
-        }
-
-        std::sort(upcoming_satellite_passes_all.begin(), upcoming_satellite_passes_all.end(),
-                  [](tracking::SatellitePass &el1,
-                     tracking::SatellitePass &el2)
-                  {
-                      return el1.aos_time < el2.aos_time;
-                  });
-
-        upcoming_satellite_passes_sel.clear();
-
-#if 0
-        for (int i = 0; i < (int)upcoming_satellite_passes_all.size() - 1; i++)
-        {
-            auto &pass1 = upcoming_satellite_passes_all[i];
-            auto &pass2 = upcoming_satellite_passes_all[i + 1];
-
-            if (pass1.los_time > pass2.aos_time)
-            {
-                // logger->critical("Overlap : ");
-                // logPass(pass1);
-                // logPass(pass2);
-
-                if (pass1.max_elevation > pass2.max_elevation)
-                    upcoming_satellite_passes_sel.push_back(pass1);
-                else
-                    upcoming_satellite_passes_sel.push_back(pass2);
-            }
-            else
-            {
-                upcoming_satellite_passes_sel.push_back(pass1);
-            }
-        }
-#else
-        satdump::tracking::SatellitePass selectedPass = {-1, -1, -1 - 1};
-        // double busyUntil = 0;
-        if (upcoming_satellite_passes_all.size() > 0)
-        {
-            double start_time = upcoming_satellite_passes_all[0].aos_time;
-            double stop_time = upcoming_satellite_passes_all[upcoming_satellite_passes_all.size() - 1].los_time;
-
-            for (double current_time = start_time; current_time < stop_time; current_time++)
-            {
-                std::vector<satdump::tracking::SatellitePass> ongoing_passes;
-                for (auto &cpass : upcoming_satellite_passes_all)
-                    if (cpass.aos_time <= current_time && current_time <= cpass.los_time)
-                        ongoing_passes.push_back(cpass);
-
-                if (ongoing_passes.size() == 0)
-                    continue;
-
-                // if (current_time < busyUntil)
-                //     continue;
-
-                satdump::tracking::SatellitePass picked_pass = {-1, -1, -1 - 1};
-                for (auto &cpass : ongoing_passes)
-                    if (picked_pass.max_elevation < cpass.max_elevation)
-                        picked_pass = cpass;
-
-                std::vector<satdump::tracking::SatellitePass> picked_pass_overlaping_passes;
-                picked_pass_overlaping_passes.push_back(picked_pass);
-                for (auto &cpass : upcoming_satellite_passes_all)
-                    if (picked_pass.aos_time < cpass.los_time && !(picked_pass.los_time <= cpass.aos_time))
-                        picked_pass_overlaping_passes.push_back(cpass);
-
-                for (auto &cpass : picked_pass_overlaping_passes)
-                    if (picked_pass.max_elevation < cpass.max_elevation)
-                        picked_pass = cpass;
-
-                // if (picked_pass.aos_time < selectedPass.los_time)
-                //     continue;
-
-                if (picked_pass.norad != selectedPass.norad ||
-                    picked_pass.aos_time != selectedPass.aos_time ||
-                    picked_pass.los_time != selectedPass.los_time)
-                {
-                    selectedPass = picked_pass;
-                    upcoming_satellite_passes_sel.push_back(picked_pass);
-                    // busyUntil = picked_pass.los_time;
-                }
-            }
-        }
-#endif
-
-        // for (auto ppp : upcoming_satellite_passes_sel)
-        // logger->debug("Pass of %s at AOS %s LOS %s elevation %.2f",
-        //               general_tle_registry.get_from_norad(ppp.norad).value().name.c_str(),
-        //               timestamp_to_string(ppp.aos_time).c_str(),
-        //               timestamp_to_string(ppp.los_time).c_str(),
-        //               ppp.max_elevation);
-    }
-
-    void TrackingWidget::renderAutotrackConfig()
-    {
         upcoming_satellite_passes_mtx.lock();
 
         if (autotrack_engaged)
@@ -217,7 +25,7 @@ namespace satdump
         if (ImGui::BeginListBox("##trackingavailablesatsbox"))
         {
             for (int i = 0; i < (int)satoptions.size(); i++)
-                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
+                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
                     if (availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch))
                     {
@@ -226,7 +34,7 @@ namespace satdump
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
                         {
-                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject &t)
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](TrackedObject &t)
                                                    { return t.norad == general_tle_registry[i].norad; });
                             if (it == enabled_satellites.end())
                                 enabled_satellites.push_back({general_tle_registry[i].norad});
@@ -240,14 +48,14 @@ namespace satdump
         ImGui::BeginGroup();
         if (ImGui::Button(">>>"))
         {
-            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](tracking::TrackedObject &t)
+            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](TrackedObject &t)
                                    { return t.norad == general_tle_registry[tracking_sats_menu_selected_1].norad; });
             if (it == enabled_satellites.end())
                 enabled_satellites.push_back({general_tle_registry[tracking_sats_menu_selected_1].norad});
         }
         if (ImGui::Button("<<<"))
         {
-            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](tracking::TrackedObject &t)
+            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](TrackedObject &t)
                                    { return t.norad == general_tle_registry[tracking_sats_menu_selected_2].norad; });
             if (it != enabled_satellites.end())
                 enabled_satellites.erase(it);
@@ -262,7 +70,7 @@ namespace satdump
         if (ImGui::BeginListBox("##trackingselectedsatsbox"))
         {
             for (int i = 0; i < (int)satoptions.size(); i++)
-                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](tracking::TrackedObject &c)
+                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](TrackedObject &c)
                                  { return c.norad == general_tle_registry[i].norad; }) != enabled_satellites.end())
                     if (selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch))
                     {
@@ -271,7 +79,7 @@ namespace satdump
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
                         {
-                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](tracking::TrackedObject &t)
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](TrackedObject &t)
                                                    { return t.norad == general_tle_registry[i].norad; });
                             if (it != enabled_satellites.end())
                                 enabled_satellites.erase(it);
@@ -288,31 +96,12 @@ namespace satdump
         ImGui::InputFloat("Minimum Elevation", &autotrack_min_elevation);
         if (ImGui::Button("Update Passes"))
         {
-            updateAutotrackPasses();
+            updateAutotrackPasses(curr_time);
         }
         if (autotrack_engaged)
             style::endDisabled();
         ImGui::SameLine();
-        if (ImGui::Checkbox("Engage Autotrack", &autotrack_engaged))
-        {
-            updateAutotrackPasses();
-
-            if (upcoming_satellite_passes_sel.size() > 0)
-            {
-                for (int i = 0; i < (int)general_tle_registry.size(); i++)
-                    if (general_tle_registry[i].norad == upcoming_satellite_passes_sel[0].norad)
-                        current_satellite = i;
-                horizons_mode = false;
-                backend_needs_update = true;
-                autotrack_pass_has_started = false;
-            }
-            else
-            {
-                autotrack_engaged = false;
-            }
-
-            saveConfig();
-        }
+        bool set_engaged = ImGui::Checkbox("Engage Autotrack", &autotrack_engaged);
 
 #if 1
         {
@@ -324,8 +113,7 @@ namespace satdump
                                      ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_height + 20 * ui_scale),
                                      light_theme ? ImColor(255, 255, 255, 255) : ImColor::HSV(0, 0, 0));
 
-            double current_time = getTime();
-            time_t tttime = current_time;
+            time_t tttime = curr_time;
             std::tm *timeReadable = gmtime(&tttime);
             int curr_hour = timeReadable->tm_hour;
             int offset = d_pplot_size / 12 * (timeReadable->tm_min / 60.0);
@@ -349,8 +137,8 @@ namespace satdump
                 {
                     if (cpass.norad == norad)
                     {
-                        double cpass_xs = ((cpass.aos_time - current_time) / (12.0 * 3600.0)) * d_pplot_size;
-                        double cpass_xe = ((cpass.los_time - current_time) / (12.0 * 3600.0)) * d_pplot_size;
+                        double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
+                        double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
                         std::string name = general_tle_registry.get_from_norad(norad)->name;
 
@@ -397,8 +185,8 @@ namespace satdump
                     {
                         if (cpass.norad == norad)
                         {
-                            double cpass_xs = ((cpass.aos_time - current_time) / (12.0 * 3600.0)) * d_pplot_size;
-                            double cpass_xe = ((cpass.los_time - current_time) / (12.0 * 3600.0)) * d_pplot_size;
+                            double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
+                            double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
                             if (cpass_xs < 0)
                                 cpass_xs = 0;
@@ -477,5 +265,7 @@ namespace satdump
 #endif
 
         upcoming_satellite_passes_mtx.unlock();
+        if(set_engaged)
+            setEngaged(autotrack_engaged, curr_time);
     }
 }

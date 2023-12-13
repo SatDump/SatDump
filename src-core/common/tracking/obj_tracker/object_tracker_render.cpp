@@ -1,15 +1,14 @@
-#include "tracking_widget.h"
-#include "common/utils.h"
-#include "logger.h"
+#include "object_tracker.h"
+#include "common/geodetic/geodetic_coordinates.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "main_ui.h"
 #include "core/module.h"
+#include "common/utils.h"
 #include "core/style.h"
 
 namespace satdump
 {
-    void TrackingWidget::renderPolarPlot()
+    void ObjectTracker::renderPolarPlot(bool light_theme)
     {
         int d_pplot_size = ImGui::GetWindowContentRegionMax().x;
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -55,11 +54,11 @@ namespace satdump
                 point_x1 = point_x2 = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
                 point_y1 = point_y2 = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-                point_x1 += sin(p1.first * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p1.second) / 90.0);
-                point_y1 -= cos(p1.first * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p1.second) / 90.0);
+                point_x1 += sin(p1.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p1.el) / 90.0);
+                point_y1 -= cos(p1.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p1.el) / 90.0);
 
-                point_x2 += sin(p2.first * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p2.second) / 90.0);
-                point_y2 -= cos(p2.first * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p2.second) / 90.0);
+                point_x2 += sin(p2.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p2.el) / 90.0);
+                point_y2 -= cos(p2.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p2.el) / 90.0);
 
                 draw_list->AddLine({point_x1, point_y1},
                                    {point_x2, point_y2},
@@ -68,25 +67,25 @@ namespace satdump
             upcoming_passes_mtx.unlock();
         }
 
-        if (current_el > 0)
+        if (sat_current_pos.el > 0)
         {
             float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
             float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-            point_x += sin(current_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_el) / 90.0);
-            point_y -= cos(current_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_el) / 90.0);
+            point_x += sin(sat_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - sat_current_pos.el) / 90.0);
+            point_y -= cos(sat_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - sat_current_pos.el) / 90.0);
 
             draw_list->AddCircleFilled({point_x, point_y}, 5 * ui_scale, ImColor(255, 0, 0, 255));
         }
 
-        if (rotator_handler->is_connected())
+        if (rotator_handler && rotator_handler->is_connected())
         {
             {
                 float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
                 float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-                point_x += sin(current_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_rotator_el) / 90.0);
-                point_y -= cos(current_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_rotator_el) / 90.0);
+                point_x += sin(rot_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_pos.el) / 90.0);
+                point_y -= cos(rot_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_pos.el) / 90.0);
 
                 draw_list->AddCircle({point_x, point_y}, 9 * ui_scale, ImColor(0, 237, 255, 255), 0, 2.0);
             }
@@ -96,8 +95,8 @@ namespace satdump
                 float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
                 float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-                point_x += sin(current_req_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_req_rotator_el) / 90.0);
-                point_y -= cos(current_req_rotator_az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - current_req_rotator_el) / 90.0);
+                point_x += sin(rot_current_req_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_req_pos.el) / 90.0);
+                point_y -= cos(rot_current_req_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_req_pos.el) / 90.0);
 
                 draw_list->AddLine({point_x - 5 * ui_scale, point_y}, {point_x - 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
                 draw_list->AddLine({point_x + 5 * ui_scale, point_y}, {point_x + 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
@@ -124,25 +123,33 @@ namespace satdump
 
             ImVec2 cur = ImGui::GetCursorPos();
             ImVec2 curs = ImGui::GetCursorScreenPos();
-            ImVec2 size = ImGui::CalcTextSize((horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite]).c_str());
+            std::string obj_name = "None";
+            if (tracking_mode == TRACKING_HORIZONS)
+                obj_name = horizonsoptions[current_horizons_id].second;
+            else if (tracking_mode == TRACKING_SATELLITE)
+                obj_name = satoptions[current_satellite_id];
+            ImVec2 size = ImGui::CalcTextSize(obj_name.c_str());
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
-            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s", horizons_mode ? horizonsoptions[current_horizons].second.c_str() : satoptions[current_satellite].c_str());
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "%s", obj_name.c_str());
             curs = ImGui::GetCursorScreenPos();
             char buff[9];
-            snprintf(buff, sizeof(buff), "Az: %.1f", current_az);
+            snprintf(buff, sizeof(buff), "Az: %.1f", sat_current_pos.az);
             size = ImGui::CalcTextSize(buff);
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
-            ImGui::TextColored(ImColor(0, 255, 0, 255), "Az: %.1f", current_az);
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "Az: %.1f", sat_current_pos.az);
             curs = ImGui::GetCursorScreenPos();
-            snprintf(buff, sizeof(buff), "El: %.1f", current_el);
+            snprintf(buff, sizeof(buff), "El: %.1f", sat_current_pos.el);
             size = ImGui::CalcTextSize(buff);
             draw_list->AddRectFilled(curs, ImVec2(curs.x + size.x + 2 * ImGui::GetStyle().FramePadding.x, curs.y + size.y), ImColor(0, 0, 0, 180));
-            ImGui::TextColored(ImColor(0, 255, 0, 255), "El: %.1f", current_el);
+            ImGui::TextColored(ImColor(0, 255, 0, 255), "El: %.1f", sat_current_pos.el);
 
-            if (next_aos_time > ctime)
-                size = ImGui::CalcTextSize(("AOS in" + time_dis).c_str());
-            else
-                size = ImGui::CalcTextSize(("LOS in" + time_dis).c_str());
+            if (next_aos_time != -1 && next_los_time != -1)
+            {
+                if (next_aos_time > ctime)
+                    size = ImGui::CalcTextSize(("AOS in" + time_dis).c_str());
+                else
+                    size = ImGui::CalcTextSize(("LOS in" + time_dis).c_str());
+            }
 
             ImGui::SetCursorPosY(cur.y + d_pplot_size - 20 * ui_scale);
             curs = ImGui::GetCursorScreenPos();
@@ -155,7 +162,7 @@ namespace satdump
         ImGui::Dummy(ImVec2(d_pplot_size + 3 * ui_scale, d_pplot_size + 3 * ui_scale));
     }
 
-    void TrackingWidget::renderSelectionMenu()
+    void ObjectTracker::renderSelectionMenu()
     {
         bool update_global = false;
 
@@ -166,39 +173,39 @@ namespace satdump
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            if (ImGui::RadioButton("Satellites", !horizons_mode))
+            if (ImGui::RadioButton("Satellites", tracking_mode == TRACKING_SATELLITE))
             {
-                horizons_mode = false;
+                tracking_mode = TRACKING_SATELLITE;
                 update_global = true;
             }
             ImGui::TableSetColumnIndex(1);
-            if (ImGui::RadioButton("Horizons", horizons_mode))
+            if (ImGui::RadioButton("Horizons", tracking_mode == TRACKING_HORIZONS))
             {
                 if (horizonsoptions.size() == 1)
                     horizonsoptions = pullHorizonsList();
-                horizons_mode = true;
+                tracking_mode = TRACKING_HORIZONS;
                 update_global = true;
             }
             ImGui::EndTable();
         }
 
         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionMax().x);
-        if (horizons_mode)
+        if (tracking_mode == TRACKING_HORIZONS)
         {
-            if (ImGui::BeginCombo("###horizonsselectcombo", horizonsoptions[current_horizons].second.c_str()))
+            if (ImGui::BeginCombo("###horizonsselectcombo", horizonsoptions[current_horizons_id].second.c_str()))
             {
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                ImGui::InputTextWithHint("##horizonssatellitetracking", u8"\uf422   Search", &horizonssearchstr);
+                ImGui::InputTextWithHint("##horizonssatellitetracking", u8"\uf422   Search", &horizons_searchstr);
                 for (int i = 0; i < (int)horizonsoptions.size(); i++)
                 {
                     bool show = true;
-                    if (horizonssearchstr.size() != 0)
-                        show = isStringPresent(horizonsoptions[i].second, horizonssearchstr);
+                    if (horizons_searchstr.size() != 0)
+                        show = isStringPresent(horizonsoptions[i].second, horizons_searchstr);
                     if (show)
                     {
-                        if (ImGui::Selectable(horizonsoptions[i].second.c_str(), i == current_horizons))
+                        if (ImGui::Selectable(horizonsoptions[i].second.c_str(), i == current_horizons_id))
                         {
-                            current_horizons = i;
+                            current_horizons_id = i;
                             update_global = true;
                         }
                     }
@@ -206,22 +213,22 @@ namespace satdump
                 ImGui::EndCombo();
             }
         }
-        else
+        else if (tracking_mode == TRACKING_SATELLITE)
         {
-            if (ImGui::BeginCombo("###satelliteselectcombo", satoptions[current_satellite].c_str()))
+            if (ImGui::BeginCombo("###satelliteselectcombo", satoptions[current_satellite_id].c_str()))
             {
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                ImGui::InputTextWithHint("##searchsatellitetracking", u8"\uf422   Search", &satsearchstr);
+                ImGui::InputTextWithHint("##searchsatellitetracking", u8"\uf422   Search", &satellite_searchstr);
                 for (int i = 0; i < (int)satoptions.size(); i++)
                 {
                     bool show = true;
-                    if (satsearchstr.size() != 0)
-                        show = isStringPresent(satoptions[i], satsearchstr);
+                    if (satellite_searchstr.size() != 0)
+                        show = isStringPresent(satoptions[i], satellite_searchstr);
                     if (show)
                     {
-                        if (ImGui::Selectable(satoptions[i].c_str(), i == current_satellite))
+                        if (ImGui::Selectable(satoptions[i].c_str(), i == current_satellite_id))
                         {
-                            current_satellite = i;
+                            current_satellite_id = i;
                             update_global = true;
                         }
                     }
@@ -237,7 +244,7 @@ namespace satdump
             backend_needs_update = true;
     }
 
-    void TrackingWidget::renderObjectStatus()
+    void ObjectTracker::renderObjectStatus()
     {
         if (ImGui::BeginTable("##trackingwidgettable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
@@ -245,13 +252,13 @@ namespace satdump
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Azimuth");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.3f", current_az);
+            ImGui::Text("%.3f", sat_current_pos.az);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Elevation");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.3f", current_el);
+            ImGui::Text("%.3f", sat_current_pos.el);
 
             if (next_aos_time != 0 && next_los_time != 0)
             {
@@ -276,19 +283,19 @@ namespace satdump
                 ImGui::Text("%s", time_dis.c_str());
             }
 
-            if (!horizons_mode && satellite_object != nullptr)
+            if (tracking_mode == TRACKING_SATELLITE && satellite_object != nullptr)
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Azimuth Rate");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%.2f", observation_pos.azimuth_rate * RAD_TO_DEG);
+                ImGui::Text("%.2f", satellite_observation_pos.azimuth_rate * RAD_TO_DEG);
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Elevation Rate");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%.2f", observation_pos.elevation_rate * RAD_TO_DEG);
+                ImGui::Text("%.2f", satellite_observation_pos.elevation_rate * RAD_TO_DEG);
             }
 
             ImGui::EndTable();
