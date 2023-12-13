@@ -5,6 +5,7 @@
 #include "core/module.h"
 #include "common/utils.h"
 #include "core/style.h"
+#include "common/tracking/tle.h"
 
 namespace satdump
 {
@@ -212,6 +213,9 @@ namespace satdump
                 }
                 ImGui::EndCombo();
             }
+
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Horizons ID %d", horizonsoptions[current_horizons_id].first);
         }
         else if (tracking_mode == TRACKING_SATELLITE)
         {
@@ -235,6 +239,9 @@ namespace satdump
                 }
                 ImGui::EndCombo();
             }
+
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("NORAD ID %d", general_tle_registry[current_satellite_id].norad);
         }
 
         if (backend_needs_update)
@@ -296,6 +303,12 @@ namespace satdump
                 ImGui::Text("Elevation Rate");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.2f", satellite_observation_pos.elevation_rate * RAD_TO_DEG);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Range (km)");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%.2f", satellite_observation_pos.range);
             }
 
             ImGui::EndTable();

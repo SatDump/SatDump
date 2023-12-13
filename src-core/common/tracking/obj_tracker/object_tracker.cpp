@@ -64,6 +64,7 @@ namespace satdump
         {
             v["sat_azimuth_rate"] = satellite_observation_pos.azimuth_rate * RAD_TO_DEG;
             v["sat_elevation_rate"] = satellite_observation_pos.elevation_rate * RAD_TO_DEG;
+            v["sat_current_range"] = satellite_observation_pos.range;
         }
 
         v["next_aos_time"] = next_aos_time;
