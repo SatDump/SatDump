@@ -21,7 +21,7 @@ namespace satdump
         {
             out["fft_min"] = fft_plot->scale_min;
             out["fft_max"] = fft_plot->scale_max;
-            out["fft_avg"] = fft->avg_rate;
+            out["fft_avgn"] = fft->avg_num;
         }
         return out;
     }
@@ -37,8 +37,8 @@ namespace satdump
                 fft_plot->scale_min = in["fft_min"];
             if (in.contains("fft_max"))
                 fft_plot->scale_max = in["fft_max"];
-            if (in.contains("fft_avg"))
-                fft->avg_rate = in["fft_avg"];
+            if (in.contains("fft_avgn"))
+                fft->avg_num = in["fft_avgn"];
         }
         if (in.contains("fft_size"))
         {

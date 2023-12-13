@@ -77,7 +77,7 @@ namespace satdump
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
-        fft->avg_rate = 0.1;
+        fft->avg_num = 10;
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
@@ -328,7 +328,7 @@ namespace satdump
                     }
                     widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
-                    widgets::SteppedSliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99, 0.1);
+                    widgets::SteppedSliderFloat("Avg Num", &fft->avg_num, 1, 500, 1);
                     if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                         waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
                     ImGui::Checkbox("Show Waterfall", &show_waterfall);
@@ -576,6 +576,7 @@ namespace satdump
                     fft_plot->scale_min -= 0.5;
                 else if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
                     fft_plot->scale_min += 0.5;
+#if 0
                 else if (ImGui::IsKeyDown(ImGuiKey_PageUp))
                     fft->avg_rate += 0.001;
                 else if (ImGui::IsKeyDown(ImGuiKey_PageDown))
@@ -585,6 +586,7 @@ namespace satdump
                     fft->avg_rate = 0.99;
                 else if (fft->avg_rate < 0.01)
                     fft->avg_rate = 0.01;
+#endif
             }
         }
     }

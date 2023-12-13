@@ -360,8 +360,8 @@ int main_live(int argc, char *argv[])
                     final_stream = splitter->output_stream;
                     fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
                     fft->set_fft_settings(fft_size, samplerate, fft_rate);
-                    if (parameters.contains("fft_avg"))
-                        fft->avg_rate = parameters["fft_avg"].get<float>();
+                    if (parameters.contains("fft_avgn"))
+                        fft->avg_num = parameters["fft_avgn"].get<float>();
                     splitter->start();
                     fft->start();
 
