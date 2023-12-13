@@ -884,7 +884,7 @@
                         "calib_cfg": {
                             "cch4": {
                                 "type": "temperature",
-                                "min": 200,
+                                "min": 190,
                                 "max": 300
                             }
                         }
