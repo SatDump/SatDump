@@ -9,6 +9,9 @@
 
 namespace satdump
 {
+    inline float az_el_to_plot_x(float plot_size, float radius, float az, float el) { return sin(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
+    inline float az_el_to_plot_y(float plot_size, float radius, float az, float el) { return cos(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
+
     void ObjectTracker::renderPolarPlot(bool light_theme)
     {
         int d_pplot_size = ImGui::GetWindowContentRegionMax().x;
@@ -17,6 +20,7 @@ namespace satdump
                                  ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_size),
                                  light_theme ? ImColor(255, 255, 255, 255) : ImColor::HSV(0, 0, 0));
 
+        // Draw the "target-like" plot with elevation rings
         float radius = 0.45;
         float radius1 = d_pplot_size * radius * (3.0 / 9.0);
         float radius2 = d_pplot_size * radius * (6.0 / 9.0);
@@ -43,6 +47,7 @@ namespace satdump
                             ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
                            ImColor(0, 255, 0, 255), 2);
 
+        // Draw the satellite's trace
         if (upcoming_pass_points.size() > 1)
         {
             upcoming_passes_mtx.lock();
@@ -55,11 +60,11 @@ namespace satdump
                 point_x1 = point_x2 = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
                 point_y1 = point_y2 = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-                point_x1 += sin(p1.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p1.el) / 90.0);
-                point_y1 -= cos(p1.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p1.el) / 90.0);
+                point_x1 += az_el_to_plot_x(d_pplot_size, radius, p1.az, p1.el);
+                point_y1 -= az_el_to_plot_y(d_pplot_size, radius, p1.az, p1.el);
 
-                point_x2 += sin(p2.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p2.el) / 90.0);
-                point_y2 -= cos(p2.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - p2.el) / 90.0);
+                point_x2 += az_el_to_plot_x(d_pplot_size, radius, p2.az, p2.el);
+                point_y2 -= az_el_to_plot_y(d_pplot_size, radius, p2.az, p2.el);
 
                 draw_list->AddLine({point_x1, point_y1},
                                    {point_x2, point_y2},
@@ -68,36 +73,67 @@ namespace satdump
             upcoming_passes_mtx.unlock();
         }
 
+        // Draw the current satellite position
         if (sat_current_pos.el > 0)
         {
             float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
             float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-            point_x += sin(sat_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - sat_current_pos.el) / 90.0);
-            point_y -= cos(sat_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - sat_current_pos.el) / 90.0);
+            point_x += az_el_to_plot_x(d_pplot_size, radius, sat_current_pos.az, sat_current_pos.el);
+            point_y -= az_el_to_plot_y(d_pplot_size, radius, sat_current_pos.az, sat_current_pos.el);
 
             draw_list->AddCircleFilled({point_x, point_y}, 5 * ui_scale, ImColor(255, 0, 0, 255));
         }
 
         if (rotator_handler && rotator_handler->is_connected())
         {
+#if 1
             {
                 float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
                 float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-                point_x += sin(rot_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_pos.el) / 90.0);
-                point_y -= cos(rot_current_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_pos.el) / 90.0);
+                point_x += az_el_to_plot_x(d_pplot_size, radius, rot_current_pos.az, rot_current_pos.el);
+                point_y -= az_el_to_plot_y(d_pplot_size, radius, rot_current_pos.az, rot_current_pos.el);
 
                 draw_list->AddCircle({point_x, point_y}, 9 * ui_scale, ImColor(0, 237, 255, 255), 0, 2.0);
             }
+#else // WIP, the idea is to draw the *actual* antenna beamwidth
+            {
+                float beamwidth = 10;
+
+                for (int i = 0; i < 50; i++)
+                {
+                    float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
+                    float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
+                    float point_x2 = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
+                    float point_y2 = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
+
+                    float az1 = rot_current_req_pos.az + beamwidth * sin((i / 50.0) * 2 * M_PI);
+                    float el1 = rot_current_req_pos.el + beamwidth * cos((i / 50.0) * 2 * M_PI);
+
+                    int y = i + 1;
+
+                    float az2 = rot_current_req_pos.az + beamwidth * sin((y / 50.0) * 2 * M_PI);
+                    float el2 = rot_current_req_pos.el + beamwidth * cos((y / 50.0) * 2 * M_PI);
+
+                    point_x += az_el_to_plot_x(d_pplot_size, radius, az1, el1);
+                    point_y -= az_el_to_plot_y(d_pplot_size, radius, az1, el1);
+
+                    point_x2 += az_el_to_plot_x(d_pplot_size, radius, az2, el2);
+                    point_y2 -= az_el_to_plot_y(d_pplot_size, radius, az2, el2);
+
+                    draw_list->AddLine({point_x, point_y}, {point_x2, point_y2}, ImColor(0, 237, 255, 255), 2.0);
+                }
+            }
+#endif
 
             if (rotator_engaged)
             {
                 float point_x = ImGui::GetCursorScreenPos().x + (d_pplot_size / 2);
                 float point_y = ImGui::GetCursorScreenPos().y + (d_pplot_size / 2);
 
-                point_x += sin(rot_current_req_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_req_pos.el) / 90.0);
-                point_y -= cos(rot_current_req_pos.az * DEG_TO_RAD) * d_pplot_size * radius * ((90.0 - rot_current_req_pos.el) / 90.0);
+                point_x += az_el_to_plot_x(d_pplot_size, radius, rot_current_req_pos.az, rot_current_req_pos.el);
+                point_y -= az_el_to_plot_y(d_pplot_size, radius, rot_current_req_pos.az, rot_current_req_pos.el);
 
                 draw_list->AddLine({point_x - 5 * ui_scale, point_y}, {point_x - 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
                 draw_list->AddLine({point_x + 5 * ui_scale, point_y}, {point_x + 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
