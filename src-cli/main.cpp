@@ -3,7 +3,7 @@
 #include "live.h"
 #include "offline.h"
 #include "record.h"
-#include "autotrack.h"
+#include "autotrack/autotrack.h"
 
 #include "sdr_probe.h"
 

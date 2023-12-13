@@ -10,9 +10,7 @@
 namespace webserver
 {
     extern std::function<std::string()> handle_callback;
-
-    // HTTP Handler for stats
-    void http_handle(nng_aio *aio);
+    extern std::function<std::string()> handle_callback_html;
 
     void start(std::string http_server_url);
 

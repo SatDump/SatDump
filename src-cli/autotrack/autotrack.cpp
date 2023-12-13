@@ -1,4 +1,4 @@
-#include "live.h"
+#include "autotrack.h"
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include "core/live_pipeline.h"
 #include <signal.h>
@@ -8,7 +8,7 @@
 #include <filesystem>
 #include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
-#include "webserver.h"
+#include "../webserver.h"
 
 #include "common/tracking/obj_tracker/object_tracker.h"
 #include "common/tracking/scheduler/scheduler.h"
@@ -330,6 +330,10 @@ int main_autotrack(int argc, char *argv[])
             p["object_tracker"] = object_tracker.getStatus();
             p["frequency"] = source_ptr->get_frequency();
             return p.dump(4);
+        };
+        webserver::handle_callback_html = []()
+        {
+            return "There might be a webpage coming later :-). For now use /api";
         };
         logger->info("Start webserver on %s", http_addr.c_str());
         webserver::start(http_addr);

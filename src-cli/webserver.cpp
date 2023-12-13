@@ -7,6 +7,7 @@ namespace webserver
     nng_http_server *http_server;
     nng_url *url;
     nng_http_handler *handler;
+    nng_http_handler *handler_html;
 
     bool is_active = false;
 
@@ -14,6 +15,9 @@ namespace webserver
 
     std::function<std::string()> handle_callback = []() -> std::string
     { return ""; };
+
+    std::function<std::string()> handle_callback_html = []() -> std::string
+    { return "Please use /api for JSON data"; };
 
     // HTTP Handler for stats
     void http_handle(nng_aio *aio)
@@ -31,14 +35,36 @@ namespace webserver
         request_mutex.unlock();
     }
 
+    // HTTP Handler for HTML
+    void http_handle_html(nng_aio *aio)
+    {
+        request_mutex.lock();
+
+        std::string jsonstr = handle_callback_html();
+
+        nng_http_res *res;
+        nng_http_res_alloc(&res);
+        nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
+        nng_http_res_set_header(res, "Content-Type", "text/html; charset=utf-8");
+        nng_aio_set_output(aio, 0, res);
+        nng_aio_finish(aio, 0);
+        request_mutex.unlock();
+    }
+
     void start(std::string http_server_url)
     {
         http_server_url = "http://" + http_server_url;
         nng_url_parse(&url, http_server_url.c_str());
         nng_http_server_hold(&http_server, url);
-        nng_http_handler_alloc(&handler, url->u_path, http_handle);
+
+        nng_http_handler_alloc(&handler, "/api", http_handle);
         nng_http_handler_set_method(handler, "GET");
         nng_http_server_add_handler(http_server, handler);
+
+        nng_http_handler_alloc(&handler_html, "", http_handle_html);
+        nng_http_handler_set_method(handler_html, "GET");
+        nng_http_server_add_handler(http_server, handler_html);
+
         nng_http_server_start(http_server);
         nng_url_free(url);
         is_active = true;
