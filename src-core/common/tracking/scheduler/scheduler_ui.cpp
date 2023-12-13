@@ -101,10 +101,7 @@ namespace satdump
         if (autotrack_engaged)
             style::endDisabled();
         ImGui::SameLine();
-        if (ImGui::Checkbox("Engage Autotrack", &autotrack_engaged))
-        {
-            setEngaged(autotrack_engaged, curr_time);
-        }
+        bool set_engaged = ImGui::Checkbox("Engage Autotrack", &autotrack_engaged);
 
 #if 1
         {
@@ -268,5 +265,7 @@ namespace satdump
 #endif
 
         upcoming_satellite_passes_mtx.unlock();
+        if(set_engaged)
+            setEngaged(autotrack_engaged, curr_time);
     }
 }
