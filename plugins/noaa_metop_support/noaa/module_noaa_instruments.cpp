@@ -20,7 +20,8 @@ namespace noaa
               is_dsb(parameters.count("dsb_mode") > 0 ? parameters["dsb_mode"].get<bool>() : 0),
               avhrr_reader(is_gac, parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               hirs_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
-              sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1)
+              sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
+              telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1)
         {
         }
 
@@ -61,6 +62,7 @@ namespace noaa
                                     {
                                         hirs_reader.work(frameBuffer);
                                         sem_reader.work(frameBuffer);
+                                        telemetry_reader.work(frameBuffer);
 
                                         // push the timestamps to AIP, since it depends on TIP for that (ridiculous)
                                         amsu_reader.last_TIP_timestamp = hirs_reader.last_timestamp;
@@ -92,6 +94,7 @@ namespace noaa
                                 }
                                 hirs_reader.work(frameBuffer);
                                 sem_reader.work(frameBuffer);
+                                telemetry_reader.work(frameBuffer);
                                 // push the timestamps to AIP, since it depends on TIP for that (ridiculous)
                                 amsu_reader.last_TIP_timestamp = hirs_reader.last_timestamp;
 
@@ -296,6 +299,17 @@ namespace noaa
                     sem_status = DONE;
                 }
 
+                // telemetry
+                {
+                    telemetry_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/telemetry";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+                    telemetry_status = DONE;
+                }
+
                 // MHS
                 if (scid == 15)
                 { // only N19 has operational MHS
@@ -401,6 +415,7 @@ namespace noaa
                     data_in.read((char *)&buffer[0], 104);
                     hirs_reader.work(buffer);
                     sem_reader.work(buffer);
+                    telemetry_reader.work(buffer);
                     scid_list.push_back(buffer[2] & 0b00001111);
 
                     progress = data_in.tellg();
@@ -503,6 +518,17 @@ namespace noaa
                     sem_products.save(directory);
                     dataset.products_list.push_back("SEM");
                     sem_status = DONE;
+                }
+
+                // telemetry
+                {
+                    telemetry_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/telemetry";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+                    telemetry_status = DONE;
                 }
                 dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
             }
