@@ -10,7 +10,10 @@ int HackRFSource::_rx_callback(hackrf_transfer *t)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)t->rx_ctx);
     for (int i = 0; i < t->buffer_length / 2; i++)
-        stream->writeBuf[i] = complex_t(((int8_t *)t->buffer)[i * 2 + 0] / 128.0f, ((int8_t *)t->buffer)[i * 2 + 1] / 128.0f);
+    {
+        stream->writeBuf[i].real = ((int8_t *)t->buffer)[i * 2 + 0] / 128.0f;
+        stream->writeBuf[i].imag = ((int8_t *)t->buffer)[i * 2 + 1] / 128.0f;
+    }
     stream->swap(t->buffer_length / 2);
     return 0;
 }
