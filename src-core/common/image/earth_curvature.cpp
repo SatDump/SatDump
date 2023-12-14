@@ -41,6 +41,7 @@ namespace image
                 int channel_offset_output = channel * (output_image.width() * output_image.height());
 
                 // Process each row
+#pragma omp parallel for
                 for (int row = 0; row < (int)image.height(); row++)
                 {
                     for (int i = 0; i < corrected_width; i++)
@@ -51,7 +52,7 @@ namespace image
                         int nextPixel = correction_factors[i] + 1;
                         float fractionalPx = fmod(correction_factors[i], 1);
 
-                        if (nextPixel >= image.width())
+                        if ((size_t)nextPixel >= image.width())
                             nextPixel = image.width() - 1;
 
                         int px1 = image[channel_offset + row * image.width() + currPixel];
