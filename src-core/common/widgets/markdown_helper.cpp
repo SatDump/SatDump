@@ -53,7 +53,8 @@ namespace widgets
             if (jni_return != JNI_OK)
                 throw std::runtime_error("Could not detach from thread");
 #else
-            system(std::string("xdg-open " + url).c_str());
+            if (system(std::string("xdg-open " + url).c_str()) != 0)
+                logger->error("Error opening URL!");
 #endif
         }
     }

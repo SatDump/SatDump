@@ -355,13 +355,13 @@ namespace satdump
 
         std::vector<std::string> channels_present;
 
-        for (int i = 0; i < str_to_find_channels.size() - 1; i++)
+        for (size_t i = 0; i < str_to_find_channels.size() - 1; i++)
         {
             if (str_to_find_channels[i + 0] == 'c' && str_to_find_channels[i + 1] == 'c' && str_to_find_channels[i + 2] == 'h')
             {
                 std::string final_ch;
                 int fpos = i;
-                for (int ic = i; ic < str_to_find_channels.size(); ic++)
+                for (size_t ic = i; ic < str_to_find_channels.size(); ic++)
                 {
                     char v = str_to_find_channels[ic];
                     if (v < 48 || v > 57)
@@ -387,7 +387,7 @@ namespace satdump
             {
                 std::string final_ch;
                 int fpos = i;
-                for (int ic = i; ic < str_to_find_channels.size(); ic++)
+                for (size_t ic = i; ic < str_to_find_channels.size(); ic++)
                 {
                     char v = str_to_find_channels[ic];
                     if (v < 48 || v > 57)
