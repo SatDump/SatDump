@@ -385,7 +385,7 @@ int main_autotrack(int argc, char *argv[])
                                    std::to_string(source_ptr->get_frequency() / 1e6) +
                                    "</span> MHz</p>" +
                                    "<h2>Object Tracker</h2>" +
-                                   "<img src=\"polarplot.jpeg?r=" + std::to_string(random) + "\" width=256 height=256/>" +
+                                   "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(random) + "\" width=256 height=256/></div>" +
                                    "<p>Next AOS time: <span class=\"fakeinput\">" +
                                    timestamp_to_string(status["next_aos_time"].get<double>()) +
                                    "</span>" +
@@ -457,7 +457,7 @@ int main_autotrack(int argc, char *argv[])
                                     "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
                                     "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
                                     ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
-                                    ".true{color:#0f0}.false{color:red}</style></head>" +
+                                    ".true{color:#0f0}.false{color:red}.image-div{color:black;width:256px;height:256px;}</style></head>" +
                                     "<body><h1>SatDump Status Page</h1>" +
                                     "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
                                     "</body></html>";
