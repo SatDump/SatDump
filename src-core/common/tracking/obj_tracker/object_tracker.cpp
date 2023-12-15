@@ -48,45 +48,6 @@ namespace satdump
             rotatorth_thread.join();
     }
 
-    nlohmann::json ObjectTracker::getStatus()
-    {
-        nlohmann::json v;
-
-        std::string obj_name = "None";
-        if (tracking_mode == TRACKING_HORIZONS)
-            obj_name = horizonsoptions[current_horizons_id].second;
-        else if (tracking_mode == TRACKING_SATELLITE)
-            obj_name = satoptions[current_satellite_id];
-        v["object_name"] = obj_name;
-        v["sat_current_pos"] = sat_current_pos;
-
-        if (tracking_mode == TRACKING_SATELLITE && satellite_object != nullptr)
-        {
-            v["sat_azimuth_rate"] = satellite_observation_pos.azimuth_rate * RAD_TO_DEG;
-            v["sat_elevation_rate"] = satellite_observation_pos.elevation_rate * RAD_TO_DEG;
-            v["sat_current_range"] = satellite_observation_pos.range;
-        }
-
-        v["next_aos_time"] = next_aos_time;
-        v["next_los_time"] = next_los_time;
-
-        double timeOffset = 0, ctime = getTime();
-        if (next_aos_time > ctime)
-            timeOffset = next_aos_time - ctime;
-        else
-            timeOffset = next_los_time - ctime;
-
-        v["next_event_in"] = timeOffset;
-        v["next_event_is_aos"] = next_aos_time > ctime;
-
-        v["rotator_engaged"] = rotator_engaged;
-        v["rotator_tracking"] = rotator_tracking;
-        v["rot_current_pos"] = rot_current_pos;
-        v["rot_current_req_pos"] = rot_current_req_pos;
-
-        return v;
-    }
-
     void ObjectTracker::setQTH(double qth_lon, double qth_lat, double qth_alt)
     {
         general_mutex.lock();

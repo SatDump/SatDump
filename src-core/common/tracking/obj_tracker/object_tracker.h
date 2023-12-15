@@ -6,6 +6,8 @@
 #include "libs/predict/predict.h"
 #include <thread>
 #include "common/tracking/rotator/rotator_handler.h"
+#include "common/geodetic/geodetic_coordinates.h"
+#include "common/image/image.h"
 
 namespace satdump
 {
@@ -35,6 +37,9 @@ namespace satdump
         TrackingMode tracking_mode = TRACKING_NONE;
         bool has_tle = false, is_gui;
         std::mutex general_mutex;
+
+        inline float az_el_to_plot_x(float plot_size, float radius, float az, float el) { return sin(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
+        inline float az_el_to_plot_y(float plot_size, float radius, float az, float el) { return cos(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
 
     private: // Satellite Tracking (libpredict)
         std::vector<std::string> satoptions;
@@ -101,6 +106,7 @@ namespace satdump
 
     public: // Functions
         nlohmann::json getStatus();
+        image::Image<uint8_t> getPolarPlotImg(int size = 256);
 
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setObject(TrackingMode mode, int objid);

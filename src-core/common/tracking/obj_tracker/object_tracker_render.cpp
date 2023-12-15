@@ -9,9 +9,6 @@
 
 namespace satdump
 {
-    inline float az_el_to_plot_x(float plot_size, float radius, float az, float el) { return sin(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
-    inline float az_el_to_plot_y(float plot_size, float radius, float az, float el) { return cos(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
-
     void ObjectTracker::renderPolarPlot(bool light_theme)
     {
         int d_pplot_size = ImGui::GetWindowContentRegionMax().x;

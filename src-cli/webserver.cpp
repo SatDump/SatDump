@@ -8,6 +8,7 @@ namespace webserver
     nng_url *url;
     nng_http_handler *handler;
     nng_http_handler *handler_html;
+    nng_http_handler *handler_polarplot;
 
     bool is_active = false;
 
@@ -18,6 +19,9 @@ namespace webserver
 
     std::function<std::string()> handle_callback_html = []() -> std::string
     { return "Please use /api for JSON data"; };
+
+    std::function<std::vector<uint8_t>()> handle_callback_polarplot = []() -> std::vector<uint8_t>
+    { return {}; };
 
     // HTTP Handler for stats
     void http_handle(nng_aio *aio)
@@ -40,12 +44,34 @@ namespace webserver
     {
         request_mutex.lock();
 
+        nng_aio_get_input(aio, 0);
+
         std::string jsonstr = handle_callback_html();
 
         nng_http_res *res;
         nng_http_res_alloc(&res);
         nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
         nng_http_res_set_header(res, "Content-Type", "text/html; charset=utf-8");
+        nng_aio_set_output(aio, 0, res);
+        nng_aio_finish(aio, 0);
+        request_mutex.unlock();
+    }
+
+    bool add_polarplot_handler = false;
+
+    // HTTP Handler for HTML
+    void http_handle_polarplot(nng_aio *aio)
+    {
+        request_mutex.lock();
+
+        nng_aio_get_input(aio, 0);
+
+        std::vector<uint8_t> img = handle_callback_polarplot();
+
+        nng_http_res *res;
+        nng_http_res_alloc(&res);
+        nng_http_res_copy_data(res, img.data(), img.size());
+        nng_http_res_set_header(res, "Content-Type", "image/jpeg");
         nng_aio_set_output(aio, 0, res);
         nng_aio_finish(aio, 0);
         request_mutex.unlock();
@@ -64,6 +90,13 @@ namespace webserver
         nng_http_handler_alloc(&handler_html, "", http_handle_html);
         nng_http_handler_set_method(handler_html, "GET");
         nng_http_server_add_handler(http_server, handler_html);
+
+        if (add_polarplot_handler)
+        {
+            nng_http_handler_alloc(&handler_polarplot, "/polarplot.jpeg", http_handle_polarplot);
+            nng_http_handler_set_method(handler_polarplot, "GET");
+            nng_http_server_add_handler(http_server, handler_polarplot);
+        }
 
         nng_http_server_start(http_server);
         nng_url_free(url);
