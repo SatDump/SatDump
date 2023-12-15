@@ -334,15 +334,7 @@ int main_autotrack(int argc, char *argv[])
         webserver::add_polarplot_handler = true;
         webserver::handle_callback_polarplot = [&object_tracker]() -> std::vector<uint8_t>
         {
-            object_tracker.getPolarPlotImg().save_jpeg("test.jpg");
-            std::vector<uint8_t> vec;
-            std::ifstream data_in("test.jpg", std::ios::binary);
-            char v;
-            while (!data_in.eof())
-            {
-                data_in.read((char *)&v, 1);
-                vec.push_back(v);
-            }
+            std::vector<uint8_t> vec = object_tracker.getPolarPlotImg().save_jpeg_mem();
             return vec;
         };
         webserver::handle_callback_html = [&selected_src, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx]()
