@@ -16,22 +16,23 @@ void sourceStreamThread()
         source_stream_mtx.lock();
         if (source_should_stream)
         {
+            int nsamples = current_sample_source->output_stream->read();
+
+            if (nsamples <= 0)
             {
-                int nsamples = current_sample_source->output_stream->read();
-
-                if (nsamples <= 0)
-                    continue;
-
-                int pktlen = 1;
-                buffer_tx[0] = dsp::remote::PKT_TYPE_IQ;
-
-                pktlen += remote_sdr::encode_iq_pkt(&buffer_tx[1], current_sample_source->output_stream->readBuf, mag_buffer, nsamples, streaming_bit_depth);
-
-                tcp_server->swrite(buffer_tx, pktlen);
-
-                // logger->trace(nsamples);
-                current_sample_source->output_stream->flush();
+                source_stream_mtx.unlock();
+                continue;
             }
+
+            int pktlen = 1;
+            buffer_tx[0] = dsp::remote::PKT_TYPE_IQ;
+
+            pktlen += remote_sdr::encode_iq_pkt(&buffer_tx[1], current_sample_source->output_stream->readBuf, mag_buffer, nsamples, streaming_bit_depth);
+
+            tcp_server->swrite(buffer_tx, pktlen);
+
+            // logger->trace(nsamples);
+            current_sample_source->output_stream->flush();
         }
         source_stream_mtx.unlock();
 
