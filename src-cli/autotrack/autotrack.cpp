@@ -403,12 +403,12 @@ int main_autotrack(int argc, char *argv[])
                                "<p>Current object: <span class=\"fakeinput\">" +
                                status["object_name"].get<std::string>() +
                                "</span></p>" +
-                               "<p>Current position: " +
+                               "<p>Current position:<br />" +
                                "Azimuth <span class=\"fakeinput\">" +
                                svformat("%.2f", (status["sat_current_pos"]["az"].get<double>())) +
-                               "</span> °, Elevation <span class=\"fakeinput\">" +
+                               "</span> °<br />Elevation <span class=\"fakeinput\">" +
                                svformat("%.2f", (status["sat_current_pos"]["el"].get<double>())) +
-                               "</span> °, Range <span class=\"fakeinput\">" +
+                               "</span> °<br /> Range <span class=\"fakeinput\">" +
                                svformat("%.2f", (status["sat_current_range"].get<double>())) +
                                "</span> km</p>" +
                                "<h2>Rotator Control</h2>" +
