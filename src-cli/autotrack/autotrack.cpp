@@ -339,7 +339,7 @@ int main_autotrack(int argc, char *argv[])
         };
         webserver::handle_callback_html = [&selected_src, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx](std::string uri) -> std::string
         {
-            if (uri == "/")
+            if (uri == "/status")
             {
                 live_pipeline_mtx.lock();
                 auto status = object_tracker.getStatus();
@@ -373,14 +373,7 @@ int main_autotrack(int argc, char *argv[])
                     aos_in = "";
                 }
 
-                std::string page = (std::string) "<!DOCTYPE html><html><head><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"><title>SatDump Status Page</title>" +
-                                   "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
-                                   "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
-                                   "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
-                                   "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
-                                   ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
-                                   ".true{color:#0f0}.false{color:red}</style></head>" +
-                                   "<body><h1>SatDump Status Page</h1>" +
+                std::string page = (std::string) 
                                    "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
                                    "<p>Sample rate: <span class=\"fakeinput\">" +
@@ -425,8 +418,34 @@ int main_autotrack(int argc, char *argv[])
                                    svformat("%.2f", (status["rot_current_req_pos"]["el"].get<double>())) +
                                    "</span> °, actual <span class=\"fakeinput\">" +
                                    svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) +
-                                   "</span> °</p></body></html>";
+                                   "</span> °</p>";
                 live_pipeline_mtx.unlock();
+                return page;
+            }
+            else if (uri == "/")
+            {
+                std::string page = (std::string) "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
+                                   "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
+                                   "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
+                                   "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
+                                   ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
+                                   ".true{color:#0f0}.false{color:red}</style></head>" +
+                                   "<body><h1>SatDump Status Page</h1>" +
+                                   "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
+                                   "</body>"
+                                   "<script type=\"text/javascript\">" +
+                                   "document.addEventListener(\"DOMContentLoaded\", function() {" +
+                                   "xhr();" +
+                                   "setInterval(xhr, 1000);" +
+                                   "});" +
+                                   "function xhr() {" +
+                                   "var xhttp = new XMLHttpRequest();" +
+                                   "xhttp.onreadystatechange = function() {" +
+                                   "if (this.readyState == 4 && this.status == 200) {" +
+                                   "document.getElementById(\"main-content\").innerHTML = xhttp.response}};" +
+                                   "xhttp.open(\"GET\", \"/status\", true);" +
+                                   "xhttp.send();}</script>" +
+                                   "</body></html>";
                 return page;
             }
             else
