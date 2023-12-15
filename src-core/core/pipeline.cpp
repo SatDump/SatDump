@@ -417,6 +417,15 @@ namespace satdump
 
         for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
             loadPipeline(pipeline.first);
+
+        std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
+                                                      {
+                                                          std::string lname = l.readable_name;
+                                                          std::string rname = r.readable_name;
+                                                          std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
+                                                          std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
+                                                          return lname < rname;
+                                                      });
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)
