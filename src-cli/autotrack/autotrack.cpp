@@ -430,7 +430,7 @@ int main_autotrack(int argc, char *argv[])
                                     "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
                                     "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
                                     "<script type=\"text/javascript\">" +
-                                    "function foo() {\n" +
+                                    "function xhr() {\n" +
                                     "var http;\n" +
                                     "if (window.XMLHttpRequest) {\n" +
                                     "http = new XMLHttpRequest();\n"+
@@ -448,8 +448,8 @@ int main_autotrack(int argc, char *argv[])
                                     "http.send(null);\n"+
                                     "}\n"+
                                     "window.onload = function() {\n"+
-                                    "foo();\n"
-                                    "setInterval(\"foo()\", 1000)\n"+
+                                    "xhr();\n"
+                                    "setInterval(\"xhr()\", 1000)\n"+
                                     "}\n"+
                                     "</script>" +
                                     "<!--[if lt IE 7 ]><style>body{width:600px;}</style><![endif]-->"
