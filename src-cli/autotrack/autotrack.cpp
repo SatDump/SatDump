@@ -389,6 +389,7 @@ int main_autotrack(int argc, char *argv[])
                                std::to_string(source_ptr->get_frequency() / 1e6) +
                                "</span> MHz</p>" +
                                "<h2>Object Tracker</h2>" +
+                               "<img src=\"polarplot.jpeg\" width=256 height=256/>" +
                                "<p>Next AOS time: <span class=\"fakeinput\">" +
                                timestamp_to_string(status["next_aos_time"].get<double>()) +
                                "</span>" +
