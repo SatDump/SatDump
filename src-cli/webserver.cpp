@@ -1,4 +1,5 @@
 #include "webserver.h"
+#include <vector>
 #include <mutex>
 
 // Webserver for stats
