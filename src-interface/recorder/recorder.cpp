@@ -199,6 +199,7 @@ namespace satdump
                         // Try to open a device, if it doesn't work, we re-open a device we can
                         try
                         {
+                            source_ptr.reset();
                             source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                             source_ptr->open();
                         }
@@ -210,6 +211,7 @@ namespace satdump
                             {
                                 try
                                 {
+                                    source_ptr.reset();
                                     source_ptr = dsp::getSourceFromDescriptor(sources[i]);
                                     source_ptr->open();
                                     sdr_select_id = i;
