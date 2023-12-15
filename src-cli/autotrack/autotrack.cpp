@@ -424,7 +424,9 @@ int main_autotrack(int argc, char *argv[])
             }
             else if (uri == "/")
             {
-                std::string page = (std::string) "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
+                std::string page = (std::string) "<!DOCTYPE html><html lang=\"EN\"><head>" +
+                                   "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                                   "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
                                    "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
                                    "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
                                    "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
@@ -432,7 +434,6 @@ int main_autotrack(int argc, char *argv[])
                                    ".true{color:#0f0}.false{color:red}</style></head>" +
                                    "<body><h1>SatDump Status Page</h1>" +
                                    "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
-                                   "</body>"
                                    "<script type=\"text/javascript\">" +
                                    "document.addEventListener(\"DOMContentLoaded\", function() {" +
                                    "xhr();" +
