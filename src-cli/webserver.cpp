@@ -17,7 +17,7 @@ namespace webserver
     std::function<std::string()> handle_callback = []() -> std::string
     { return ""; };
 
-    std::function<std::string()> handle_callback_html = []() -> std::string
+    std::function<std::string(std::string)> handle_callback_html = [](std::string) -> std::string
     { return "Please use /api for JSON data"; };
 
     std::function<std::vector<uint8_t>()> handle_callback_polarplot = []() -> std::vector<uint8_t>
@@ -44,9 +44,9 @@ namespace webserver
     {
         request_mutex.lock();
 
-        nng_aio_get_input(aio, 0);
+        std::string uri = nng_http_req_get_uri((nng_http_req *)nng_aio_get_input(aio, 0));
 
-        std::string jsonstr = handle_callback_html();
+        std::string jsonstr = handle_callback_html(uri);
 
         nng_http_res *res;
         nng_http_res_alloc(&res);
@@ -63,8 +63,6 @@ namespace webserver
     void http_handle_polarplot(nng_aio *aio)
     {
         request_mutex.lock();
-
-        nng_aio_get_input(aio, 0);
 
         std::vector<uint8_t> img = handle_callback_polarplot();
 
@@ -89,6 +87,7 @@ namespace webserver
 
         nng_http_handler_alloc(&handler_html, "", http_handle_html);
         nng_http_handler_set_method(handler_html, "GET");
+        nng_http_handler_set_tree(handler_html);
         nng_http_server_add_handler(http_server, handler_html);
 
         if (add_polarplot_handler)
