@@ -338,6 +338,8 @@ int main_autotrack(int argc, char *argv[])
             auto status = object_tracker.getStatus();
             std::string rot_engaged;
             std::string rot_tracking;
+            std::string aos_in;
+            std::string los_in;
 
             if (status["rotator_engaged"].get<bool>() == true)
                 rot_engaged = "<span class=\"fakeinput true\">engaged</span>";
@@ -348,6 +350,21 @@ int main_autotrack(int argc, char *argv[])
                 rot_tracking = "<span class=\"fakeinput true\">tracking</span>";
             else
                 rot_tracking = "<span class=\"fakeinput false\">not tracking</span>";
+
+            if (status["next_event_is_aos"].get<bool>() == true)
+            {
+                aos_in = "(in <span class=\"fakeinput\">" +
+                          std::to_string((int)(status["next_event_in"].get<double>())) +
+                          "</span> seconds)";
+                los_in = "";
+            }
+            else
+            {
+                los_in = "(in <span class=\"fakeinput\">" +
+                          std::to_string((int)(status["next_event_in"].get<double>())) +
+                          "</span> seconds)"; 
+                aos_in = "";
+            }
 
             std::string page = (std::string) "<!DOCTYPE html><html><head><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"><title>SatDump Status Page</title>" +
                                "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
@@ -368,12 +385,14 @@ int main_autotrack(int argc, char *argv[])
                                "<h2>Object Tracker</h2>" +
                                "<p>Next AOS time: <span class=\"fakeinput\">" +
                                timestamp_to_string(status["next_aos_time"].get<double>()) +
-                               "</span><!-- (in <span class=\"fakeinput\">" +
-                               std::to_string((int)(status["next_event_in"].get<double>())) +
-                               "</span> seconds)--></p>" +
+                               "</span>" +
+                               aos_in +
+                               "</p>" +
                                "<p>Next LOS time: <span class=\"fakeinput\">" +
                                timestamp_to_string(status["next_los_time"].get<double>()) +
-                               "</span></p>" +
+                               "</span>" +
+                               los_in +
+                               "</p>" +
                                "<p>Current object: <span class=\"fakeinput\">" +
                                status["object_name"].get<std::string>() +
                                "</span></p>" +
