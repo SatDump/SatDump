@@ -452,6 +452,7 @@ int main_autotrack(int argc, char *argv[])
                                     "setInterval(\"foo()\", 1000)\n"+
                                     "}\n"+
                                     "</script>" +
+                                    "<!--[if lt IE 7 ]><style>body{width:600px;}</style><![endif]-->"
                                     "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
                                     "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
                                     "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
