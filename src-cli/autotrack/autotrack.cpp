@@ -384,6 +384,8 @@ int main_autotrack(int argc, char *argv[])
                                    "<p>Frequency: <span class=\"fakeinput\">" +
                                    std::to_string(source_ptr->get_frequency() / 1e6) +
                                    "</span> MHz</p>" +
+                                   "<h2>FFT</h2>" +
+                                   "<div class=\"image-div\"><img src=\"fft.jpeg?r=" + std::to_string(random) + "\" /></div>" +
                                    "<h2>Object Tracker</h2>" +
                                    "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(random) + "\" width=256 height=256/></div>" +
                                    "<p>Next AOS time: <span class=\"fakeinput\">" +
