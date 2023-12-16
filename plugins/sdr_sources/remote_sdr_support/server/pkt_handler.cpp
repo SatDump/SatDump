@@ -6,6 +6,8 @@
 #include "actions.h"
 #include "streaming.h"
 
+std::vector<dsp::SourceDescriptor> sources;
+
 void tcp_rx_handler(uint8_t *buffer, int len)
 {
     int pkt_type = buffer[0];
@@ -20,7 +22,7 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 
         if (pkt_type == dsp::remote::PKT_TYPE_SOURCELIST)
         {
-            std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+            sources = dsp::getAllAvailableSources(true);
             std::vector<dsp::SourceDescriptor> sources_final;
 
             logger->trace("Found devices (sources) :");
@@ -52,7 +54,8 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 
             logger->info("Opening " + source.name);
 
-            std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+            if(sources.size() == 0)
+                sources = dsp::getAllAvailableSources(true);
             for (dsp::SourceDescriptor src : sources)
             {
                 if (src.name == source.name && src.unique_id == source.unique_id)
