@@ -462,7 +462,7 @@ int main_autotrack(int argc, char *argv[])
                                    svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) +
                                    "</span> °</p>" +
                                    "<h2>FFT</h2>" +
-                                   "<div class=\"fake-div\"><img src=\"fft.jpeg?r=" + std::to_string(random) + "\" /></div>";
+                                   "<img src=\"fft.jpeg?r=" + std::to_string(random) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
 
                 live_pipeline_mtx.unlock();
                 return page;
@@ -500,8 +500,8 @@ int main_autotrack(int argc, char *argv[])
                                    "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
                                    "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
                                    ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
+                                   ".resp-img{max-width:100%;height:auto}img{vertical-align:middle}" +
                                    ".true{color:#0f0}.false{color:red}.image-div{background-color:black;width:256px;height:256px;}</style></head>" +
-                                   "<body><h1>SatDump Status Page</h1>" +
                                    "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
                                    "</body></html>";
                 return page;
