@@ -373,6 +373,8 @@ int main_autotrack(int argc, char *argv[])
                     aos_in = "";
                 }
 
+                int random = rand();
+
                 std::string page = (std::string) 
                                    "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
@@ -383,7 +385,7 @@ int main_autotrack(int argc, char *argv[])
                                    std::to_string(source_ptr->get_frequency() / 1e6) +
                                    "</span> MHz</p>" +
                                    "<h2>Object Tracker</h2>" +
-                                   "<img src=\"polarplot.jpeg\" width=256 height=256/>" +
+                                   "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(random) + "\" width=256 height=256/></div>" +
                                    "<p>Next AOS time: <span class=\"fakeinput\">" +
                                    timestamp_to_string(status["next_aos_time"].get<double>()) +
                                    "</span>" +
@@ -425,28 +427,40 @@ int main_autotrack(int argc, char *argv[])
             else if (uri == "/")
             {
                 std::string page = (std::string) "<!DOCTYPE html><html lang=\"EN\"><head>" +
-                                   "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
-                                   "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
-                                   "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
-                                   "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
-                                   "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
-                                   ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
-                                   ".true{color:#0f0}.false{color:red}</style></head>" +
-                                   "<body><h1>SatDump Status Page</h1>" +
-                                   "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
-                                   "<script type=\"text/javascript\">" +
-                                   "document.addEventListener(\"DOMContentLoaded\", function() {" +
-                                   "xhr();" +
-                                   "setInterval(xhr, 1000);" +
-                                   "});" +
-                                   "function xhr() {" +
-                                   "var xhttp = new XMLHttpRequest();" +
-                                   "xhttp.onreadystatechange = function() {" +
-                                   "if (this.readyState == 4 && this.status == 200) {" +
-                                   "document.getElementById(\"main-content\").innerHTML = xhttp.response}};" +
-                                   "xhttp.open(\"GET\", \"/status\", true);" +
-                                   "xhttp.send();}</script>" +
-                                   "</body></html>";
+                                    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                                    "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
+                                    "<script type=\"text/javascript\">" +
+                                    "function xhr() {\n" +
+                                    "var http;\n" +
+                                    "if (window.XMLHttpRequest) {\n" +
+                                    "http = new XMLHttpRequest();\n"+
+                                    "} else {\n"+
+                                    "http = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"+
+                                    "}"+
+                                    "var url = \"/status\";\n"+
+                                    "http.open(\"GET\", url, true);\n"+
+                                    "http.onreadystatechange = function() { \n"+
+                                    "if (http.readyState == 4 && http.status == 200) {\n"+
+                                    "document.getElementById('main-content').innerHTML = http.responseText;\n"+
+                                    "}\n"+
+                                    "}\n"+
+                                    "http.setRequestHeader(\"If-Modified-Since\", \"Sat, 1 Jan 2000 00:00:00 GMT\");\n"+
+                                    "http.send(null);\n"+
+                                    "}\n"+
+                                    "window.onload = function() {\n"+
+                                    "xhr();\n"
+                                    "setInterval(\"xhr()\", 1000)\n"+
+                                    "}\n"+
+                                    "</script>" +
+                                    "<!--[if lt IE 7 ]><style>body{width:600px;}</style><![endif]-->"
+                                    "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
+                                    "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
+                                    "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
+                                    ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
+                                    ".true{color:#0f0}.false{color:red}.image-div{background-color:black;width:256px;height:256px;}</style></head>" +
+                                    "<body><h1>SatDump Status Page</h1>" +
+                                    "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
+                                    "</body></html>";
                 return page;
             }
             else
