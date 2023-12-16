@@ -378,7 +378,7 @@ int main_autotrack(int argc, char *argv[])
                 std::vector<uint8_t> vec = fft_plot->drawImg(512, 512).save_jpeg_mem();
                 return vec;
             };
-        webserver::handle_callback_html = [&selected_src, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx](std::string uri) -> std::string
+        webserver::handle_callback_html = [&selected_src, &parameters, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx](std::string uri) -> std::string
         {
             if (uri == "/status")
             {
@@ -388,6 +388,9 @@ int main_autotrack(int argc, char *argv[])
                 std::string rot_tracking;
                 std::string aos_in;
                 std::string los_in;
+                std::string fft;
+
+                int random = rand();
 
                 if (status["rotator_engaged"].get<bool>() == true)
                     rot_engaged = "<span class=\"fakeinput true\">engaged</span>";
@@ -414,7 +417,11 @@ int main_autotrack(int argc, char *argv[])
                     aos_in = "";
                 }
 
-                int random = rand();
+                if(parameters.contains("fft_enable"))
+                    fft = (std::string) "<h2>FFT</h2><img src=\"fft.jpeg?r=" + std::to_string(random) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
+
+
+
 
                 std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
@@ -461,8 +468,7 @@ int main_autotrack(int argc, char *argv[])
                                    "</span> °, actual <span class=\"fakeinput\">" +
                                    svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) +
                                    "</span> °</p>" +
-                                   "<h2>FFT</h2>" +
-                                   "<img src=\"fft.jpeg?r=" + std::to_string(random) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
+                                   fft;
 
                 live_pipeline_mtx.unlock();
                 return page;
