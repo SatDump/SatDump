@@ -231,7 +231,7 @@ int main_autotrack(int argc, char *argv[])
             if (settings.contains("finish_processing") && settings["finish_processing"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
             {
                 std::string input_file = live_pipeline->getOutputFiles()[0];
-                auto fun = [pipeline_id, pipeline_output_dir, &input_file, pipeline_params](int)
+                auto fun = [pipeline_id, pipeline_output_dir, input_file, pipeline_params](int)
                 {
                     satdump::Pipeline pipeline = satdump::pipelines[pipeline_id];
                     int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;

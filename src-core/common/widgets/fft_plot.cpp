@@ -137,7 +137,7 @@ namespace widgets
         for (float i = size_y; i >= 0; i -= step)
         {
             ImVec2 pos0 = {0, i};
-            ImVec2 pos1 = {size_x - 1, i};
+            ImVec2 pos1 = {(float)(size_x - 1), i};
             img.draw_line(pos0.x, pos0.y, pos1.x, pos1.y, color_scale);
             value += vscale;
             img.draw_text(pos0.x, pos0.y + 2, color_scale, 10, std::string(std::to_string(int(value)) + " dB").c_str());
@@ -190,8 +190,8 @@ namespace widgets
             const float v1 = finals; // values[v1_idx];
             const ImVec2 tp1 = ImVec2(t1, 1.0f - ImSaturate((v1 - scale_min) * inv_scale));
 
-            ImVec2 pos0 = ImLerp({0, 0}, {size_x, size_y}, tp0);
-            ImVec2 pos1 = ImLerp({0, 0}, {size_x, size_y}, tp1);
+            ImVec2 pos0 = ImLerp({0, 0}, {(float)size_x, (float)size_y}, tp0);
+            ImVec2 pos1 = ImLerp({0, 0}, {(float)size_x, (float)size_y}, tp1);
 
             img.draw_line(pos0.x, pos0.y, pos1.x, pos1.y, color_cyan);
 
