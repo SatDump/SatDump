@@ -197,7 +197,7 @@ jobs:
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: arm64-pi5
+    runs-on: ARM64
 
     steps:
       - uses: actions/checkout@v4
@@ -294,7 +294,7 @@ jobs:
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_linux", "build_macos"] #, "build_android"]
+    needs: ["build_windows", "build_linux", "build_linux_arm64", "build_macos"] #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
