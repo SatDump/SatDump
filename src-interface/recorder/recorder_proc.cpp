@@ -68,9 +68,11 @@ namespace satdump
         set_frequency(frequency_mhz);
         try
         {
-            source_ptr->start();
-
             current_samplerate = source_ptr->get_samplerate();
+            if(current_samplerate == 0)
+                throw std::runtime_error("Samplerate not set!");
+
+            source_ptr->start();
 
             if (current_decimation > 1)
             {
