@@ -15,6 +15,8 @@
 
 #include "common/tracking/rotator/rotcl_handler.h"
 
+#include "common/widgets/fft_plot.h"
+
 // Catch CTRL+C to exit live properly!
 bool autotrack_should_exit = false;
 void sig_handler_autotrack(int signo)
@@ -122,6 +124,10 @@ int main_autotrack(int argc, char *argv[])
 
     // Init splitter
     std::unique_ptr<dsp::SplitterBlock> splitter;
+    std::unique_ptr<dsp::FFTPanBlock> fft;
+    std::unique_ptr<widgets::FFTPlot> fft_plot;
+    double last_fft_access = 0;
+    bool fft_is_enabled = false;
 
     // Attempt to start the source and splitter
     try
@@ -131,7 +137,29 @@ int main_autotrack(int argc, char *argv[])
         splitter->set_main_enabled(false);
         splitter->add_output("record");
         splitter->add_output("live");
+
+        // Optional FFT
+        if (parameters.contains("fft_enable"))
+        {
+            int fft_size = parameters.contains("fft_size") ? parameters["fft_size"].get<int>() : 512;
+            int fft_rate = parameters.contains("fft_rate") ? parameters["fft_rate"].get<int>() : 30;
+
+            splitter->add_output("fft");
+            fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
+            fft->set_fft_settings(fft_size, samplerate, fft_rate);
+            if (parameters.contains("fft_avgn"))
+                fft->avg_num = parameters["fft_avgn"].get<float>();
+
+            fft_plot = std::make_unique<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -150, 150, 40);
+            logger->critical("FFT GOOD!");
+        }
+
         splitter->start();
+
+        if (parameters.contains("fft_enable"))
+        {
+            fft->start();
+        }
     }
     catch (std::exception &e)
     {
@@ -337,6 +365,19 @@ int main_autotrack(int argc, char *argv[])
             std::vector<uint8_t> vec = object_tracker.getPolarPlotImg().save_jpeg_mem();
             return vec;
         };
+        if (parameters.contains("fft_enable"))
+            webserver::handle_callback_fft = [&fft_plot, &splitter, &fft_is_enabled, &last_fft_access]() -> std::vector<uint8_t>
+            {
+                if (!fft_is_enabled)
+                {
+                    splitter->set_enabled("fft", true);
+                    fft_is_enabled = true;
+                    logger->trace("Enabling FFT");
+                }
+                last_fft_access = time(0);
+                std::vector<uint8_t> vec = fft_plot->drawImg(1024, 1024).save_jpeg_mem();
+                return vec;
+            };
         webserver::handle_callback_html = [&selected_src, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx](std::string uri) -> std::string
         {
             if (uri == "/status")
@@ -375,8 +416,7 @@ int main_autotrack(int argc, char *argv[])
 
                 int random = rand();
 
-                std::string page = (std::string) 
-                                   "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
+                std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
                                    "<p>Sample rate: <span class=\"fakeinput\">" +
                                    std::to_string(source_ptr->get_samplerate() / 1e6) +
@@ -430,40 +470,40 @@ int main_autotrack(int argc, char *argv[])
             else if (uri == "/")
             {
                 std::string page = (std::string) "<!DOCTYPE html><html lang=\"EN\"><head>" +
-                                    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
-                                    "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
-                                    "<script type=\"text/javascript\">" +
-                                    "function xhr() {\n" +
-                                    "var http;\n" +
-                                    "if (window.XMLHttpRequest) {\n" +
-                                    "http = new XMLHttpRequest();\n"+
-                                    "} else {\n"+
-                                    "http = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"+
-                                    "}"+
-                                    "var url = \"/status\";\n"+
-                                    "http.open(\"GET\", url, true);\n"+
-                                    "http.onreadystatechange = function() { \n"+
-                                    "if (http.readyState == 4 && http.status == 200) {\n"+
-                                    "document.getElementById('main-content').innerHTML = http.responseText;\n"+
-                                    "}\n"+
-                                    "}\n"+
-                                    "http.setRequestHeader(\"If-Modified-Since\", \"Sat, 1 Jan 2000 00:00:00 GMT\");\n"+
-                                    "http.send(null);\n"+
-                                    "}\n"+
-                                    "window.onload = function() {\n"+
-                                    "xhr();\n"
-                                    "setInterval(\"xhr()\", 1000)\n"+
-                                    "}\n"+
-                                    "</script>" +
-                                    "<!--[if lt IE 7 ]><style>body{width:600px;}</style><![endif]-->"
-                                    "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
-                                    "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
-                                    "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
-                                    ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
-                                    ".true{color:#0f0}.false{color:red}.image-div{background-color:black;width:256px;height:256px;}</style></head>" +
-                                    "<body><h1>SatDump Status Page</h1>" +
-                                    "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
-                                    "</body></html>";
+                                   "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                                   "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
+                                   "<script type=\"text/javascript\">" +
+                                   "function xhr() {\n" +
+                                   "var http;\n" +
+                                   "if (window.XMLHttpRequest) {\n" +
+                                   "http = new XMLHttpRequest();\n" +
+                                   "} else {\n" +
+                                   "http = new ActiveXObject(\"Microsoft.XMLHTTP\");\n" +
+                                   "}" +
+                                   "var url = \"/status\";\n" +
+                                   "http.open(\"GET\", url, true);\n" +
+                                   "http.onreadystatechange = function() { \n" +
+                                   "if (http.readyState == 4 && http.status == 200) {\n" +
+                                   "document.getElementById('main-content').innerHTML = http.responseText;\n" +
+                                   "}\n" +
+                                   "}\n" +
+                                   "http.setRequestHeader(\"If-Modified-Since\", \"Sat, 1 Jan 2000 00:00:00 GMT\");\n" +
+                                   "http.send(null);\n" +
+                                   "}\n" +
+                                   "window.onload = function() {\n" +
+                                   "xhr();\n"
+                                   "setInterval(\"xhr()\", 1000)\n" +
+                                   "}\n" +
+                                   "</script>" +
+                                   "<!--[if lt IE 7 ]><style>body{width:600px;}</style><![endif]-->"
+                                   "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
+                                   "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
+                                   "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
+                                   ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
+                                   ".true{color:#0f0}.false{color:red}.image-div{background-color:black;width:256px;height:256px;}</style></head>" +
+                                   "<body><h1>SatDump Status Page</h1>" +
+                                   "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
+                                   "</body></html>";
                 return page;
             }
             else
@@ -488,6 +528,16 @@ int main_autotrack(int argc, char *argv[])
         {
             logger->warn("Signal Received. Stopping.");
             break;
+        }
+
+        if (fft_is_enabled)
+        {
+            if (time(0) - last_fft_access > 10)
+            {
+                splitter->set_enabled("fft", false);
+                fft_is_enabled = false;
+                logger->trace("Shutting down FFT");
+            }
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
