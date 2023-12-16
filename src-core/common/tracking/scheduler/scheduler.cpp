@@ -194,6 +194,7 @@ namespace satdump
         while (backend_should_run)
         {
             processAutotrack(getTime());
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 

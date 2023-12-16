@@ -375,7 +375,7 @@ int main_autotrack(int argc, char *argv[])
                     logger->trace("Enabling FFT");
                 }
                 last_fft_access = time(0);
-                std::vector<uint8_t> vec = fft_plot->drawImg(1024, 1024).save_jpeg_mem();
+                std::vector<uint8_t> vec = fft_plot->drawImg(512, 512).save_jpeg_mem();
                 return vec;
             };
         webserver::handle_callback_html = [&selected_src, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx](std::string uri) -> std::string
