@@ -4,7 +4,7 @@ This enhancement uses the MTVZA channels 14, 13 and 12 (48 GHz horizontal and ve
 
 ### Appearance
 
-High soil moisture appears as green, low soil moisture as purple, sea or lakes appear white.
+High vegetation appears as green, low soil moisture as purple, sea or lakes appear white.
 
 ### Intended usage
 
