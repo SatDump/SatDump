@@ -1940,6 +1940,11 @@
                         "description": "descriptions/sounders/MTVZASoilMoisture.md",
                         "individual_equalize": true
                     },
+                    "Vegetation": {
+                        "equation": "ch16, ch15, ch17",
+                        "description": "descriptions/sounders/MTVZAVegetation.md",
+                        "individual_equalize": true
+                    },
                     "MTVZA False Color (WIP)": {
                         "equation": "ch17,1-ch16,1-ch15",
                         "individual_equalize": true
