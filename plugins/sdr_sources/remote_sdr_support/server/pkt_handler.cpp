@@ -28,11 +28,10 @@ void tcp_rx_handler(uint8_t *buffer, int len)
             logger->trace("Found devices (sources) :");
             for (dsp::SourceDescriptor src : sources)
             {
-                logger->trace("- " + src.name);
-
                 if (!src.remote_ok)
                     continue;
 
+                logger->trace("- " + src.name);
                 sources_final.push_back(src);
             }
 
