@@ -143,6 +143,7 @@ void RemoteSource::drawControlUI()
 
 void RemoteSource::set_samplerate(uint64_t samplerate)
 {
+    samplerate_current = samplerate;
     std::vector<uint8_t> pkt(8);
     *((uint64_t *)&pkt[0]) = samplerate;
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SAMPLERATESET, pkt);
