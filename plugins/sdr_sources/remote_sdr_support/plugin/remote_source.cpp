@@ -10,8 +10,8 @@ void RemoteSource::set_others()
 
 void RemoteSource::set_settings(nlohmann::json settings)
 {
-    if (d_settings.contains("remote_bit_depth"))
-        bit_depth_used = d_settings["remote_bit_depth"];
+    if (settings.contains("remote_bit_depth"))
+        bit_depth_used = settings["remote_bit_depth"];
 
     if (bit_depth_used == 8)
         selected_bit_depth = 0;
