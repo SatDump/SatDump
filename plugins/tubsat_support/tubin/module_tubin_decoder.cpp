@@ -157,8 +157,8 @@ namespace tubin
                 img_color.save_png(directory + "/TUBIN_DEBAYER_RGB.png");
 
                 logger->info("----------- TUBIN Vis");
-                logger->info("Width  : " + std::to_string(image.width() / 2));
-                logger->info("Height : " + std::to_string(image.height() / 2));
+                logger->info("Width  : " + std::to_string(image.width()));
+                logger->info("Height : " + std::to_string(image.height()));
 
                 satdump::ImageProducts tubin_products;
                 tubin_products.instrument_name = "tubin_vis";
