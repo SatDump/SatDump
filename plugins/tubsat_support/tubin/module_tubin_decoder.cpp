@@ -7,6 +7,7 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "../png_fix.h"
+#include "common/image/bayer/bayer.h"
 
 namespace tubin
 {
@@ -134,28 +135,26 @@ namespace tubin
 
             if (image.size() > 0)
             {
-                image::Image<uint16_t> image_ch1(image.width() / 2, image.height() / 2, 1);
-                image::Image<uint16_t> image_ch2(image.width() / 2, image.height() / 2, 1);
-                image::Image<uint16_t> image_ch3(image.width() / 2, image.height() / 2, 1);
-                image::Image<uint16_t> image_ch4(image.width() / 2, image.height() / 2, 1);
-
-                // Deinterleave
-                for (int x = 0; x < (int)image.width() / 2; x++)
-                {
-                    for (int y = 0; y < (int)image.height() / 2; y++)
-                    {
-                        image_ch1[y * image_ch1.width() + x] = image[(y * 2 + 0) * image.width() + (x * 2 + 0)];
-                        image_ch2[y * image_ch1.width() + x] = image[(y * 2 + 0) * image.width() + (x * 2 + 1)];
-                        image_ch3[y * image_ch1.width() + x] = image[(y * 2 + 1) * image.width() + (x * 2 + 0)];
-                        image_ch4[y * image_ch1.width() + x] = image[(y * 2 + 1) * image.width() + (x * 2 + 1)];
-                    }
-                }
-
                 std::string product_name = "VIS_" + std::to_string(f.first);
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/" + product_name;
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
+
+                image.save_png(directory + "/TUBIN_RAW.png");
+
+                image::Image<uint16_t> img_color(image.width(), image.height(), 3);
+                dc1394_bayer_decoding_16bit(image.data(), img_color.data(), image.width(), image.height(), DC1394_COLOR_FILTER_GBRG, DC1394_BAYER_METHOD_NEAREST, 16);
+
+                {
+                    auto cpi = img_color;
+
+                    for (size_t dddd = 0; dddd < cpi.width() * cpi.height(); dddd++)
+                        for (int c = 0; c < 3; c++)
+                            img_color.channel(c)[dddd] = cpi[dddd * 3 + c];
+                }
+
+                img_color.save_png(directory + "/TUBIN_DEBAYER_RGB.png");
 
                 logger->info("----------- TUBIN Vis");
                 logger->info("Width  : " + std::to_string(image.width() / 2));
@@ -170,10 +169,9 @@ namespace tubin
                 // tubin_products.set_timestamps(avhrr_reader.timestamps);
                 // tubin_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
-                tubin_products.images.push_back({"TUBIN-1", "1", image_ch1});
-                tubin_products.images.push_back({"TUBIN-2", "2", image_ch2});
-                tubin_products.images.push_back({"TUBIN-3", "3", image_ch3});
-                tubin_products.images.push_back({"TUBIN-4", "4", image_ch4});
+                tubin_products.images.push_back({"TUBIN-1", "1", image::Image<uint16_t>(img_color.channel(0), image.width(), image.height(), 1)});
+                tubin_products.images.push_back({"TUBIN-2", "2", image::Image<uint16_t>(img_color.channel(1), image.width(), image.height(), 1)});
+                tubin_products.images.push_back({"TUBIN-3", "3", image::Image<uint16_t>(img_color.channel(2), image.width(), image.height(), 1)});
 
                 tubin_products.save(directory);
                 dataset.products_list.push_back(product_name);

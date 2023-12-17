@@ -2198,14 +2198,17 @@
                 "handler": "image_handler",
                 "name": "TUBIN Visible",
                 "rgb_composites": {
-                    "241": {
-                        "equation": "ch2 * 6 - 0.4, ch4 * 6 - 0.43, ch1 * 6 - 0.4"
+                    "211": {
+                        "equation": "ch2, ch1, ch1",
+                        "individual_equalize": true
                     },
                     "231": {
-                        "equation": "ch2 * 6 - 0.4, ch3 * 6 - 0.43, ch1 * 6 - 0.4"
+                        "equation": "ch2, ch3, ch1",
+                        "individual_equalize": true
                     },
                     "321": {
-                        "equation": "ch3 * 6 - 0.4, ch2 * 6 - 0.43, ch1 * 6 - 0.4"
+                        "equation": "ch3, ch2, ch1",
+                        "individual_equalize": true
                     }
                 }
             }
