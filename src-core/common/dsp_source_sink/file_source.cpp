@@ -157,8 +157,12 @@ void FileSource::drawControlUI()
             {
                 if (hdr["baseband_format"].get<std::string>() == "u8")
                     select_sample_format = 3;
+                else if (hdr["baseband_format"].get<std::string>() == "s8")
+                    select_sample_format = 2;
                 else if (hdr["baseband_format"].get<std::string>() == "s16")
                     select_sample_format = 1;
+                else if (hdr["baseband_format"].get<std::string>() == "f32")
+                    select_sample_format = 0;
                 else if (hdr["baseband_format"].get<std::string>() == "ziq")
                     select_sample_format = 4;
                 else if (hdr["baseband_format"].get<std::string>() == "ziq2")
