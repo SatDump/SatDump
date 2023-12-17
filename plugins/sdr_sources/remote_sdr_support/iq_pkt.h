@@ -32,17 +32,17 @@ namespace remote_sdr
         if (bit_depth == 8)
         {
             volk_32f_s32f_convert_8i((int8_t *)&output[final_size], (float *)input, scale, nsamples * 2);
-            final_size = nsamples * sizeof(int8_t) * 2;
+            final_size += nsamples * sizeof(int8_t) * 2;
         }
         else if (bit_depth == 16)
         {
             volk_32f_s32f_convert_16i((int16_t *)&output[final_size], (float *)input, scale, nsamples * 2);
-            final_size = nsamples * sizeof(int16_t) * 2;
+            final_size += nsamples * sizeof(int16_t) * 2;
         }
         else if (bit_depth == 32)
         {
             memcpy(&output[final_size], input, nsamples * sizeof(complex_t));
-            final_size = nsamples * sizeof(complex_t);
+            final_size += nsamples * sizeof(complex_t);
         }
 
         // printf("Final Size %d\n", final_size);
@@ -58,7 +58,6 @@ namespace remote_sdr
         memcpy(nsamples, input + 5, sizeof(*nsamples));
 
         int final_size = 9;
-
         if (bit_depth == 8)
             volk_8i_s32f_convert_32f((float *)output, (int8_t *)&input[final_size], scale, *nsamples * 2);
         else if (bit_depth == 16)
