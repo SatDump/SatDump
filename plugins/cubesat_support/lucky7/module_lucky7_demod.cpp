@@ -215,6 +215,10 @@ namespace lucky7
                 ImGui::SameLine();
                 ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), UITO_C_STR(frm_cnt));
             }
+
+            if (!streamingInput)
+                if (ImGui::Checkbox("Show FFT", &show_fft))
+                    fft_splitter->set_enabled("fft", show_fft);
         }
         ImGui::EndGroup();
 
