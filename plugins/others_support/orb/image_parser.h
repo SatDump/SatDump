@@ -108,8 +108,7 @@ namespace orb
         void saveAll(int channel = -1)
         {
             std::string dirpath = directory + "/" +
-                                  // timestamp_to_string(last_timestamp) +
-                                  std::to_string(last_timestamp);
+                                  timestamp_to_string(last_timestamp); //+std::to_string(last_timestamp);
 
             if (!std::filesystem::exists(dirpath))
                 std::filesystem::create_directories(dirpath);
@@ -122,7 +121,8 @@ namespace orb
                                        "/" +
                                        std::to_string(ch.first);
 
-                    decoded_imgs[ch.first].img.save_img(path);
+                    if (decoded_imgs[ch.first].is_dling)
+                        decoded_imgs[ch.first].img.save_img(path);
                     decoded_imgs[ch.first].is_dling = false;
                 }
             }
@@ -134,6 +134,7 @@ namespace orb
 
                 decoded_imgs[channel].img.save_img(path);
                 decoded_imgs[channel].is_dling = false;
+                decoded_imgs[channel].img.fill(0);
             }
         }
     };

@@ -42,10 +42,10 @@ namespace orb
             std::string l3_dir = directory + "/ELEKTRO-L3";
             if (!std::filesystem::exists(l3_dir))
                 std::filesystem::create_directories(l3_dir);
-            l2_parser.directory = l3_dir;
+            l3_parser.directory = l3_dir;
         }
 
-        while (!data_in.eof())
+        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
             if (input_data_type == DATA_FILE)
@@ -79,6 +79,7 @@ namespace orb
         data_in.close();
 
         l2_parser.saveAll();
+        l3_parser.saveAll();
     }
 
     void ORBDecoderModule::drawUI(bool window)
