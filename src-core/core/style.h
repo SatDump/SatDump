@@ -7,7 +7,8 @@ namespace style
 {
     SATDUMP_DLL extern ImFont *baseFont;
     SATDUMP_DLL extern ImFont *bigFont;
-    SATDUMP_DLL extern ImFont *hugeFont;
+    SATDUMP_DLL extern ImFont *freqFont;
+    //SATDUMP_DLL extern ImFont *hugeFont;
 
     bool setDefaultStyle();
     bool setLightStyle();

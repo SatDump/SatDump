@@ -18,7 +18,8 @@ namespace style
 {
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
-    SATDUMP_DLL ImFont *hugeFont;
+    SATDUMP_DLL ImFont *freqFont;
+    //SATDUMP_DLL ImFont *hugeFont;
 
     bool setDefaultStyle()
     {
@@ -184,21 +185,24 @@ namespace style
         ImGuiIO &io = ImGui::GetIO();
         (void)io;
         io.Fonts->Clear();
-        static const ImWchar def[] = {0x20, 0x2300, 0}; //default range
+        const ImWchar def[] = {0x20, 0x2300, 0}; //default range
+        const ImWchar numerals[] = { 0x2e, 0x39, 0 };   //just numbers
+        const ImWchar list[6][3] = { {0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0},
+            {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0} };
         static ImFontConfig config;
         float macos_fbs = macos_framebuffer_scale();
         float font_scaling = dpi_scaling * macos_fbs;
 
         baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 16.0f * font_scaling, &config, def);
         config.MergeMode = true;
-        static const ImWchar list[6][3] = {{0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0}, {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0}};   
 
         for (int i = 0; i < 6; i++)
             baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * font_scaling, &config, list[i]);
-
         config.MergeMode = false;
+
         bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * font_scaling);   //, &config, ranges);
         //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
+        freqFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 24.0f * font_scaling, &config, numerals);
         io.Fonts->Build();
         io.FontGlobalScale = 1 / macos_fbs;
     }

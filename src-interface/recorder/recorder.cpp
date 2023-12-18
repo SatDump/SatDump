@@ -6,6 +6,7 @@
 #include "imgui/imgui_stdlib.h"
 #include "core/pipeline.h"
 #include "common/widgets/stepped_slider.h"
+#include "common/widgets/frequency_input.h"
 
 #include "main_ui.h"
 
@@ -277,9 +278,10 @@ namespace satdump
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if (ImGui::InputDouble("MHz", &frequency_mhz))
+                    if(widgets::FrequencyInput("Hz", &frequency_mhz))
                         set_frequency(frequency_mhz);
 
+                    ImGui::Spacing();
                     source_ptr->drawControlUI();
 
                     if (!is_started)
