@@ -11,7 +11,7 @@ namespace satdump
         int norad = -1;
 
         // Config
-        double frequency = 100e6;
+        uint64_t frequency = 100000000;
         bool record = false;
         bool live = false;
         // std::string pipeline_name = "";

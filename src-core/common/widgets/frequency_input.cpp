@@ -6,31 +6,30 @@
 
 namespace widgets
 {
-	bool FrequencyInput(const char *label, double *frequency_mhz)
+	bool FrequencyInput(const char *label, uint64_t *frequency_hz)
 	{
 		//Set up
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
-		double change_by = 0;
+		int64_t change_by = 0;
 		bool num_started = false;
 		std::string this_id;
 		ImVec2 screen_pos;
 		ImVec2 pos = ImGui::GetCursorPos();
-		pos.x += 3 * ui_scale;
+		pos.x += 2 * ui_scale;
 		ImGui::PushFont(style::freqFont);
 		ImVec2 dot_size = ImGui::CalcTextSize(".");
 		ImVec2 digit_size = ImGui::CalcTextSize("0");
 		int mouse_wheel = ImGui::GetIO().MouseWheel;
-		uint64_t int_freq = *frequency_mhz * 10e5;
 		float offset = 0.0f;
 
 		for (int i = 11; i >= 0; i--)
 		{
 			//Render the digit
 			ImGui::SetCursorPos(pos);
-			int this_place = (int_freq / (uint64_t)pow(10, i) % 10);
+			int this_place = (*frequency_hz / (uint64_t)pow(10, i) % 10);
 			num_started = num_started || this_place != 0;
-			if (this_place == 0 && !num_started)
+			if (!num_started)
 				ImGui::TextDisabled("%d", this_place);
 			else
 				ImGui::Text("%d", this_place);
@@ -40,12 +39,12 @@ namespace widgets
 			ImGui::SetCursorPos(pos);
 			screen_pos = ImGui::GetCursorScreenPos();
 			if(ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat))
-				change_by += pow(10, i - 6);
+				change_by += pow(10, i);
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 			if (ImGui::IsItemHovered())
 			{
 				//Handle mouse wheel (can be up or down)
-				change_by += mouse_wheel * pow(10, i - 6);
+				change_by += mouse_wheel * pow(10, i);
 
 				//Draw rect
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -59,12 +58,12 @@ namespace widgets
 			ImGui::SetCursorPos(ImVec2(pos.x, pos.y + (digit_size.y / 2)));
 			screen_pos = ImGui::GetCursorScreenPos();
 			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat))
-				change_by -= pow(10, i - 6);
+				change_by -= pow(10, i);
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 			if (ImGui::IsItemHovered())
 			{
 				//Handle mouse wheel (can be up or down)
-				change_by += mouse_wheel * pow(10, i - 6);
+				change_by += mouse_wheel * pow(10, i);
 
 				//Draw rect
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -86,18 +85,22 @@ namespace widgets
 			}
 		}
 
-		//Display Label
+		// Remove hidden tag and display
+		std::string display_label(label);
+		size_t tag_start = display_label.find_first_of('#');
+		if(tag_start != std::string::npos)
+			display_label.erase(tag_start);
 		ImGui::PopFont();
-		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + (digit_size.y - ImGui::CalcTextSize(label).y)));
-		ImGui::TextDisabled("%s", label);
+		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + (digit_size.y - ImGui::CalcTextSize(label).y - 2 * ui_scale)));
+		ImGui::TextUnformatted(display_label.c_str());
 		ImGui::PopID();
 		ImGui::EndGroup();
 
 		// Finish up
-		if (*frequency_mhz + change_by <= 0 || *frequency_mhz + change_by > 10e5)
+		if (*frequency_hz + change_by <= 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
 		
-		*frequency_mhz += change_by;
+		*frequency_hz += change_by;
 		return change_by != 0;
 	}
 }

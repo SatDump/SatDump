@@ -69,7 +69,7 @@ namespace satdump
             }
         }
 
-        set_frequency(frequency_mhz);
+        set_frequency(frequency_hz);
         try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
@@ -85,7 +85,7 @@ namespace satdump
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
-        fft_plot->frequency = frequency_mhz * 1e6;
+        fft_plot->frequency = frequency_hz;
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
 
         fft->on_fft = [this](float *v)
@@ -225,7 +225,7 @@ namespace satdump
                             }
                         }
 
-                        set_frequency(frequency_mhz);
+                        set_frequency(frequency_hz);
                         try_load_sdr_settings();
                     }
                     ImGui::SameLine();
@@ -245,7 +245,7 @@ namespace satdump
 
                         source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                         source_ptr->open();
-                        set_frequency(frequency_mhz);
+                        set_frequency(frequency_hz);
                         try_load_sdr_settings();
                     }
                     /*
@@ -267,7 +267,7 @@ namespace satdump
                     if (pushed_color_xconv)
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
                     if (ImGui::InputDouble("MHz (LO)##downupconverter", &xconverter_frequency))
-                        set_frequency(frequency_mhz);
+                        set_frequency(frequency_hz);
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
 
@@ -278,8 +278,8 @@ namespace satdump
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if(widgets::FrequencyInput("Hz", &frequency_mhz))
-                        set_frequency(frequency_mhz);
+                    if(widgets::FrequencyInput("Hz", &frequency_hz))
+                        set_frequency(frequency_hz);
 
                     ImGui::Spacing();
                     source_ptr->drawControlUI();
@@ -371,7 +371,7 @@ namespace satdump
                     Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
                     if (selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_mhz * 1e6 ? selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
                             for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
                             {
@@ -382,8 +382,8 @@ namespace satdump
 
                                     if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
                                     {
-                                        frequency_mhz = double(selected_pipeline.preset.frequencies[pipeline_preset_id].second) / 1e6;
-                                        set_frequency(frequency_mhz);
+                                        frequency_hz = selected_pipeline.preset.frequencies[pipeline_preset_id].second;
+                                        set_frequency(frequency_hz);
                                     }
                                 }
 
