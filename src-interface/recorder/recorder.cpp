@@ -278,7 +278,7 @@ namespace satdump
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if(widgets::FrequencyInput("Hz", &frequency_hz))
+                    if(widgets::FrequencyInput("Hz##mainfreq", &frequency_hz))
                         set_frequency(frequency_hz);
 
                     ImGui::Spacing();

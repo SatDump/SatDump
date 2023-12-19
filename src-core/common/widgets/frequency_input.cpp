@@ -9,23 +9,68 @@ namespace widgets
 	bool FrequencyInput(const char *label, uint64_t *frequency_hz)
 	{
 		//Set up
-		ImGui::BeginGroup();
+		ImGuiContext &g = *GImGui;
+		ImGuiStyle style = ImGui::GetStyle();
+		ImVec2 pos = ImGui::GetCursorPos();
+		static ImGuiID enable_temp_input_on = 0;
+		static bool first_show_temp = false;
 		ImGui::PushID(label);
+		const ImGuiID id = ImGui::GetID(label);
+		std::string display_label(label);
+		size_t tag_start = display_label.find_first_of('#');
+		if (tag_start != std::string::npos)
+			display_label.erase(tag_start);
+
+		if (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput))
+		{
+			enable_temp_input_on = id;
+			first_show_temp = true;
+		}
+
+		if (enable_temp_input_on != id)
+		{
+			const float w = ImGui::CalcItemWidth();
+			const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+			const ImVec2 frame_size = ImVec2(w, label_size.y + style.FramePadding.y * 2.0f);
+			const ImVec2 total_size = ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f);
+			const ImRect frame_bb(pos, ImVec2(pos.x + frame_size.x, pos.y + frame_size.y));
+			const ImRect total_bb(frame_bb.Min, ImVec2(frame_bb.Max.x + total_size.x, frame_bb.Max.y + total_size.y));
+			ImGui::ItemAdd(total_bb, id, &frame_bb, ImGuiItemFlags_Inputable);
+		}
+
+		// Old-style input field
+		else
+		{
+			double frequency_mhz = *frequency_hz / 1e6;
+			if (first_show_temp)
+				ImGui::SetKeyboardFocusHere();
+			display_label = "M" + display_label + "##tempinput";
+			bool retval = ImGui::InputDouble(display_label.c_str(), &frequency_mhz);
+			if (!first_show_temp && !ImGui::IsItemActive())
+				enable_temp_input_on = 0;
+
+			first_show_temp = false;
+			if (retval)
+				*frequency_hz = frequency_mhz * 1e6;
+			ImGui::PopID();
+			return retval;
+		}
+
+		// Modern input
+		ImGuiIO& io = ImGui::GetIO();
 		int64_t change_by = 0;
 		bool num_started = false;
 		std::string this_id;
 		ImVec2 screen_pos;
-		ImVec2 pos = ImGui::GetCursorPos();
-		pos.x += 2 * ui_scale;
+		pos.x += 1 * ui_scale;
 		ImGui::PushFont(style::freqFont);
 		ImVec2 dot_size = ImGui::CalcTextSize(".");
 		ImVec2 digit_size = ImGui::CalcTextSize("0");
-		int mouse_wheel = ImGui::GetIO().MouseWheel;
 		float offset = 0.0f;
 
 		for (int i = 11; i >= 0; i--)
 		{
-			//Render the digit
+			// Render the digit
 			ImGui::SetCursorPos(pos);
 			int this_place = (*frequency_hz / (uint64_t)pow(10, i) % 10);
 			num_started = num_started || this_place != 0;
@@ -34,21 +79,28 @@ namespace widgets
 			else
 				ImGui::Text("%d", this_place);
 
-			//Handle "up" events
+			// Handle "up" events
 			this_id = "topbutton" + std::to_string(i);
 			ImGui::SetCursorPos(pos);
 			screen_pos = ImGui::GetCursorScreenPos();
-			if(ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat))
-				change_by += pow(10, i);
+			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
+			{
+				if (io.KeyCtrl)
+				{
+					enable_temp_input_on = id;
+					first_show_temp = true;
+				}
+				else
+					change_by += pow(10, i);
+			}
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 			if (ImGui::IsItemHovered())
 			{
 				//Handle mouse wheel (can be up or down)
-				change_by += mouse_wheel * pow(10, i);
+				change_by += io.MouseWheel * pow(10, i);
 
 				//Draw rect
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
-				ImGuiStyle style = ImGui::GetStyle();
 				draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
 					ImGui::ColorConvertFloat4ToU32(ImVec4(0.75, 0.75, 0.75, 0.5)), style.ChildRounding);
 			}
@@ -57,13 +109,21 @@ namespace widgets
 			this_id = "bottombutton" + std::to_string(i);
 			ImGui::SetCursorPos(ImVec2(pos.x, pos.y + (digit_size.y / 2)));
 			screen_pos = ImGui::GetCursorScreenPos();
-			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat))
-				change_by -= pow(10, i);
+			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
+			{
+				if (io.KeyCtrl)
+				{
+					enable_temp_input_on = id;
+					first_show_temp = true;
+				}
+				else
+					change_by -= pow(10, i);
+			}
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 			if (ImGui::IsItemHovered())
 			{
 				//Handle mouse wheel (can be up or down)
-				change_by += mouse_wheel * pow(10, i);
+				change_by += io.MouseWheel * pow(10, i);
 
 				//Draw rect
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -77,7 +137,7 @@ namespace widgets
 			if (i % 3 == 0 && i != 0)
 			{
 				ImGui::SetCursorPos(pos);
-				if(num_started)
+				if (num_started)
 					ImGui::Text("%s", ".");
 				else
 					ImGui::TextDisabled("%s", ".");
@@ -85,21 +145,16 @@ namespace widgets
 			}
 		}
 
-		// Remove hidden tag and display
-		std::string display_label(label);
-		size_t tag_start = display_label.find_first_of('#');
-		if(tag_start != std::string::npos)
-			display_label.erase(tag_start);
+		//Display Label
 		ImGui::PopFont();
 		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + (digit_size.y - ImGui::CalcTextSize(label).y - 2 * ui_scale)));
 		ImGui::TextUnformatted(display_label.c_str());
-		ImGui::PopID();
-		ImGui::EndGroup();
 
 		// Finish up
+		ImGui::PopID();
 		if (*frequency_hz + change_by <= 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
-		
+
 		*frequency_hz += change_by;
 		return change_by != 0;
 	}
