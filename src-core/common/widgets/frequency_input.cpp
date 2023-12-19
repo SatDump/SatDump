@@ -41,12 +41,15 @@ namespace widgets
 		// Old-style input field
 		else
 		{
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2 * ui_scale);
 			double frequency_mhz = *frequency_hz / 1e6;
 			if (first_show_temp)
 				ImGui::SetKeyboardFocusHere();
-			display_label = "M" + display_label + "##tempinput";
-			bool retval = ImGui::InputDouble(display_label.c_str(), &frequency_mhz);
+			bool retval = ImGui::InputDouble("##tempinput", &frequency_mhz);
 			if (!first_show_temp && !ImGui::IsItemActive())
+				enable_temp_input_on = 0;
+			ImGui::SameLine();
+			if (ImGui::Button(("M" + display_label).c_str()))
 				enable_temp_input_on = 0;
 
 			first_show_temp = false;
@@ -102,7 +105,7 @@ namespace widgets
 				//Draw rect
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
 				draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-					ImGui::ColorConvertFloat4ToU32(ImVec4(0.75, 0.75, 0.75, 0.5)), style.ChildRounding);
+					ImGui::ColorConvertFloat4ToU32(ImVec4(0.596, 0.728, 0.884, 0.5)), style.ChildRounding);
 			}
 
 			//Handle "down" events
@@ -129,7 +132,7 @@ namespace widgets
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
 				ImGuiStyle style = ImGui::GetStyle();
 				draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-					ImGui::ColorConvertFloat4ToU32(ImVec4(0.75, 0.75, 0.75, 0.5)), style.ChildRounding);
+					ImGui::ColorConvertFloat4ToU32(ImVec4(0.596, 0.728, 0.884, 0.5)), style.ChildRounding);
 			}
 
 			//Add decimal, if needed
@@ -145,10 +148,16 @@ namespace widgets
 			}
 		}
 
-		//Display Label
+		// Display Label
 		ImGui::PopFont();
-		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + (digit_size.y - ImGui::CalcTextSize(label).y - 2 * ui_scale)));
-		ImGui::TextUnformatted(display_label.c_str());
+		ImVec2 label_size = ImGui::CalcTextSize(label);
+		float button_height = label_size.y + style.FramePadding.y * 2.0f;
+		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + 1 * ui_scale + (digit_size.y / 2 - button_height / 2)));
+		if(ImGui::Button(display_label.c_str()))
+		{
+			enable_temp_input_on = id;
+			first_show_temp = true;
+		}
 
 		// Finish up
 		ImGui::PopID();
