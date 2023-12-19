@@ -596,6 +596,8 @@
                         "channels": "cch1",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
+                        "equalize": true,
+                        "geo_correct": true,
                         "lua_vars": {
                             "minoffset": -0.29,
                             "scalar": 2.0,
@@ -614,6 +616,8 @@
                         "channels": "cch2",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
+                        "equalize": true,
+                        "geo_correct": true,
                         "lua_vars": {
                             "minoffset": -0.15,
                             "scalar": 2.0,
