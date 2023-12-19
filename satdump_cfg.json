@@ -597,7 +597,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "lua_vars": {
-                            "minoffset": -0.15,
+                            "minoffset": -0.29,
                             "scalar": 2.0,
                             "thresold": 0,
                             "blend": 1,
