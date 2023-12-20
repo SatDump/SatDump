@@ -278,7 +278,7 @@ int main_autotrack(int argc, char *argv[])
 
         if (obj.live || obj.record)
         {
-            source_ptr->set_frequency(obj.frequency * 1e6);
+            source_ptr->set_frequency(obj.frequency);
         }
 
         if (obj.live)

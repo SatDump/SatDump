@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
+#include "common/widgets/frequency_input.h"
 
 namespace satdump
 {
@@ -220,8 +221,7 @@ namespace satdump
                 ImGui::SetNextItemWidth(100 * ui_scale);
                 ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
                 ImGui::TableSetColumnIndex(1);
-                ImGui::SetNextItemWidth(120 * ui_scale);
-                ImGui::InputDouble(((std::string) "Frequency##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0, 0, "%f MHz");
+                widgets::FrequencyInput(((std::string)"Hz##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0.75f);
                 ImGui::TableSetColumnIndex(2);
                 ImGui::SetNextItemWidth(100 * ui_scale);
                 ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + std::to_string(cpass.norad)).c_str(), &cpass.record);

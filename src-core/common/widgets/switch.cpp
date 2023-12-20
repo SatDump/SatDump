@@ -1,3 +1,6 @@
+#include "../../imgui/imgui_internal.h"
+#include "../../core/module.h"
+
 #include "switch.h"
 
 void ToggleButton(const char* str_id, int* v)

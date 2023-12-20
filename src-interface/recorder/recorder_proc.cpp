@@ -65,7 +65,7 @@ namespace satdump
 
     void RecorderApplication::start()
     {
-        set_frequency(frequency_mhz);
+        set_frequency(frequency_hz);
         try
         {
             current_samplerate = source_ptr->get_samplerate();
@@ -106,7 +106,7 @@ namespace satdump
         is_started = false;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_hz;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
         config::saveUserConfig();
@@ -132,8 +132,8 @@ namespace satdump
                 }
                 if (cfg.contains("frequency"))
                 {
-                    frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
-                    set_frequency(frequency_mhz);
+                    frequency_hz = cfg["frequency"].get<uint64_t>();
+                    set_frequency(frequency_hz);
                 }
                 if (cfg.contains("xconverter_frequency"))
                     xconverter_frequency = cfg["xconverter_frequency"].get<double>();
@@ -314,7 +314,7 @@ namespace satdump
 
         std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
                                "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
-                               std::to_string(long(frequency_mhz * 1e6)) + "Hz";
+                               std::to_string(frequency_hz) + "Hz";
 
         recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
 
@@ -349,9 +349,9 @@ namespace satdump
 
                 if (obj.live || obj.record)
                 {
-                    frequency_mhz = obj.frequency;
+                    frequency_hz = obj.frequency;
                     if (is_started)
-                        set_frequency(frequency_mhz);
+                        set_frequency(frequency_hz);
                     else
                         start();
 
