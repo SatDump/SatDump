@@ -81,6 +81,7 @@ namespace lua_utils
         image_type["resize_bilinear"] = &image::Image<T>::resize_bilinear;
         image_type["brightness_contrast_old"] = &image::Image<T>::brightness_contrast_old;
         image_type["linear_invert"] = &image::Image<T>::linear_invert;
+        image_type["equalize"] = &image::Image<T>::equalize;
         image_type["simple_despeckle"] = &image::Image<T>::simple_despeckle;
         image_type["median_blur"] = &image::Image<T>::median_blur;
         image_type["despeckle"] = &image::Image<T>::kuwahara_filter;
