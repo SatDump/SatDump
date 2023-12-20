@@ -40,7 +40,7 @@ namespace widgets
 				change_by += pow(10, i);
 			if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
 				change_by -= pow(10, i);
-			if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow))
+			if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_Backspace))
 				helper_left(i, digit_size, screen_pos, dot_width, top);
 			if (ImGui::IsKeyPressed(ImGuiKey_RightArrow))
 				helper_right(i, digit_size, screen_pos, dot_width, top);
@@ -74,9 +74,11 @@ namespace widgets
 		ImVec2 pos = ImGui::GetCursorPos();
 		static ImGuiID enable_temp_input_on = 0;
 		static bool first_show_temp = false;
-		const float item_width = ImGui::CalcItemWidth();
 		ImGui::PushID(label);
 		const ImGuiID id = ImGui::GetID(label);
+		const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+		const ImVec2 frame_size = ImVec2(ImGui::CalcItemWidth(), label_size.y + style.FramePadding.y * 2.0f);
+		const ImVec2 button_size = ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, frame_size.y);
 		std::string display_label(label);
 		size_t tag_start = display_label.find_first_of('#');
 		if (tag_start != std::string::npos)
@@ -90,11 +92,8 @@ namespace widgets
 
 		if (enable_temp_input_on != id)
 		{
-			const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
-			const ImVec2 frame_size = ImVec2(item_width, label_size.y + style.FramePadding.y * 2.0f);
-			const ImVec2 total_size = ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f);
 			const ImRect frame_bb(pos, ImVec2(pos.x + frame_size.x, pos.y + frame_size.y));
-			const ImRect total_bb(frame_bb.Min, ImVec2(frame_bb.Max.x + total_size.x, frame_bb.Max.y + total_size.y));
+			const ImRect total_bb(frame_bb.Min, ImVec2(frame_bb.Max.x + button_size.x, frame_bb.Max.y + button_size.y));
 			ImGui::ItemAdd(total_bb, id, &frame_bb, ImGuiItemFlags_Inputable);
 		}
 
@@ -130,11 +129,12 @@ namespace widgets
 
 		// Calculate the total size
 		float target_size = digit_size.x * 12 + dot_size.x * 3;
-		if (scale != 0.0f || item_width < target_size)
+		float available_size = ImGui::GetContentRegionAvail().x - button_size.x - style.ItemSpacing.x * 2;
+		if (scale != 0.0f || available_size < target_size)
 		{
 			float freq_scale;
 			if (scale == 0.0f)
-				freq_scale = (item_width < 150.0f ? 150.0f : item_width) / target_size;
+				freq_scale = (available_size < 150.0f ? 150.0f : available_size) / target_size;
 			else
 				freq_scale = scale;
 			freq_size *= freq_scale;
@@ -204,9 +204,7 @@ namespace widgets
 		}
 
 		// Display Label
-		ImVec2 label_size = ImGui::CalcTextSize(label);
-		float button_height = label_size.y + style.FramePadding.y * 2.0f;
-		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + 1 * ui_scale + (digit_size.y / 2 - button_height / 2)));
+		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + 1 * ui_scale + (digit_size.y / 2 - button_size.y / 2)));
 		if(ImGui::Button(display_label.c_str()))
 		{
 			enable_temp_input_on = id;
