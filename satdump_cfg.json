@@ -1559,7 +1559,8 @@
                         "autogen": false
                     },
                     "Snow cover (Transparent)": {
-                        "equation": "1-cch1, 0, 0, cch2-cch1 < 0.1 ? (cch1 < 0.6 ? 1 : 0) : 0",
+                        "channels": "cch1, cch2",
+                        "lua": "scripted_compos/mhs_snowfall.lua",
                         "description": "descriptions/sounders/SnowcoverTransparent.md",
                         "apply_lut": true,
                         "autogen": false
