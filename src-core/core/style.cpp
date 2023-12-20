@@ -185,7 +185,6 @@ namespace style
         (void)io;
         io.Fonts->Clear();
         const ImWchar def[] = {0x20, 0x2300, 0}; //default range
-        const ImWchar numerals[] = { 0x2e, 0x39, 0 };   //just numbers
         const ImWchar list[6][3] = { {0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0},
             {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0} };
         static ImFontConfig config;

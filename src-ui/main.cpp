@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <filesystem>
+#include "backend.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "gl.h"
 #include "logger.h"
@@ -15,6 +15,7 @@
 #include "../src-core/resources.h"
 #include "common/detect_header.h"
 
+GLFWwindow *window;
 static volatile bool signal_caught = false;
 bool fallback_gl = false;
 
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
@@ -132,7 +133,8 @@ int main(int argc, char *argv[])
     glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
                          // Vsync slows down init process when items are logged quickly
 
-    // Set up texture functions
+    // Bind texture/backend functions
+    bindBackendFunctions();
     bindBaseTextureFunctions();
 #ifndef IMGUI_IMPL_OPENGL_ES2
     if (!fallback_gl)

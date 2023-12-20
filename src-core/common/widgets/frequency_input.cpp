@@ -1,12 +1,67 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
+#include "core/backend.h"
 #include "frequency_input.h"
 #include "imgui/imgui_internal.h"
 #include "core/module.h"
 
 namespace widgets
 {
-	bool FrequencyInput(const char *label, uint64_t *frequency_hz)
+	inline void helper_left(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
+	{
+		float x = screen_pos.x - digit_size.x / 2;
+		if ((i + 1) % 3 == 0)
+			x -= dot_width;
+		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
+	}
+	inline void helper_right(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
+	{
+		float x = screen_pos.x + digit_size.x * 1.5;
+		if (i % 3 == 0)
+			x += dot_width;
+		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
+	}
+	inline void digit_helper(int &i, uint64_t* frequency_hz, int64_t &change_by,
+		ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top)
+	{
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+			change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
+		ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
+		if (ImGui::IsItemHovered())
+		{
+			ImGuiIO &io = ImGui::GetIO();
+
+			// Handle Arrow Keys
+			if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
+				change_by += pow(10, i);
+			if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
+				change_by -= pow(10, i);
+			if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) && i != 11)
+				helper_left(i, digit_size, screen_pos, dot_width, top);
+			if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) && i != 0)
+				helper_right(i, digit_size, screen_pos, dot_width, top);
+
+			// Handle number keys
+			for (auto& this_char : io.InputQueueCharacters)
+			{
+				if (this_char >= '0' && this_char <= '9')
+				{
+					change_by = pow(10, i) * (this_char - '0' - (int64_t)(*frequency_hz / (uint64_t)pow(10, i) % 10));
+					helper_right(i, digit_size, screen_pos, dot_width, top);
+				}
+			}
+
+			// Handle mouse wheel (can be up or down)
+			change_by += io.MouseWheel * pow(10, i);
+
+			// Draw rect
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
+				ImGui::ColorConvertFloat4ToU32(ImVec4(0.596, 0.728, 0.884, 0.5)), rounding);
+		}
+	}
+
+	bool FrequencyInput(const char *label, uint64_t *frequency_hz, float scale)
 	{
 		//Set up
 		ImGuiContext &g = *GImGui;
@@ -42,7 +97,6 @@ namespace widgets
 		// Old-style input field
 		else
 		{
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2 * ui_scale);
 			double frequency_mhz = *frequency_hz / 1e6;
 			if (first_show_temp)
 				ImGui::SetKeyboardFocusHere();
@@ -61,7 +115,6 @@ namespace widgets
 		}
 
 		// Modern input
-		ImGuiIO& io = ImGui::GetIO();
 		int64_t change_by = 0;
 		bool num_started = false;
 		std::string this_id;
@@ -70,13 +123,16 @@ namespace widgets
 		pos.x += 1 * ui_scale;
 		ImVec2 dot_size = style::bigFont->CalcTextSizeA(freq_size, FLT_MAX, 0.0f, ".");
 		ImVec2 digit_size = style::bigFont->CalcTextSizeA(freq_size, FLT_MAX, 0.0f, "0");
-		ImU32 hover_color = ImGui::ColorConvertFloat4ToU32(ImVec4(0.596, 0.728, 0.884, 0.5));
 
 		// Calculate the total size
 		float target_size = digit_size.x * 12 + dot_size.x * 3;
-		if (item_width < target_size)
+		if (scale != 0.0f || item_width < target_size)
 		{
-			float freq_scale = (item_width < 150.0f ? 150.0f : item_width) / target_size;
+			float freq_scale;
+			if (scale == 0.0f)
+				freq_scale = (item_width < 150.0f ? 150.0f : item_width) / target_size;
+			else
+				freq_scale = scale;
 			freq_size *= freq_scale;
 			dot_size.x *= freq_scale;
 			dot_size.y *= freq_scale;
@@ -106,7 +162,7 @@ namespace widgets
 			ImGui::SetCursorPos(pos);
 			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
 			{
-				if (io.KeyCtrl)
+				if (ImGui::GetIO().KeyCtrl)
 				{
 					enable_temp_input_on = id;
 					first_show_temp = true;
@@ -114,19 +170,7 @@ namespace widgets
 				else
 					change_by += pow(10, i);
 			}
-			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-				change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
-			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
-			if (ImGui::IsItemHovered())
-			{
-				//Handle mouse wheel (can be up or down)
-				change_by += io.MouseWheel * pow(10, i);
-
-				//Draw rect
-				ImDrawList* draw_list = ImGui::GetWindowDrawList();
-				draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-					hover_color, style.ChildRounding);
-			}
+			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true);
 
 			//Handle "down" events
 			this_id = "bottombutton" + std::to_string(i);
@@ -134,7 +178,7 @@ namespace widgets
 			screen_pos = ImGui::GetCursorScreenPos();
 			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
 			{
-				if (io.KeyCtrl)
+				if (ImGui::GetIO().KeyCtrl)
 				{
 					enable_temp_input_on = id;
 					first_show_temp = true;
@@ -142,15 +186,7 @@ namespace widgets
 				else
 					change_by -= pow(10, i);
 			}
-			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-				change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
-			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
-			if (ImGui::IsItemHovered())
-			{
-				change_by += io.MouseWheel * pow(10, i);
-				draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-					hover_color, style.ChildRounding);
-			}
+			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false);
 
 			//Add decimal, if needed
 			pos.x += digit_size.x;
