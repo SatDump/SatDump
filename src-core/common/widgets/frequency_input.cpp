@@ -214,7 +214,7 @@ namespace widgets
 		// Finish up
 		ImGui::SetCursorPosY(pos.y + digit_size.y + style.ItemSpacing.y);
 		ImGui::PopID();
-		if (*frequency_hz + change_by < 0 || *frequency_hz + change_by > 1e12)
+		if ((int64_t)(*frequency_hz) + change_by < 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
 
 		*frequency_hz += change_by;
