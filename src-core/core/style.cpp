@@ -18,7 +18,6 @@ namespace style
 {
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
-    SATDUMP_DLL ImFont *freqFont;
     //SATDUMP_DLL ImFont *hugeFont;
 
     bool setDefaultStyle()
@@ -202,7 +201,6 @@ namespace style
 
         bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * font_scaling);   //, &config, ranges);
         //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
-        freqFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 24.0f * font_scaling, &config, numerals);
         io.Fonts->Build();
         io.FontGlobalScale = 1 / macos_fbs;
     }
