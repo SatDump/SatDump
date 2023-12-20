@@ -90,7 +90,7 @@ namespace widgets
 			ImGui::SetCursorPos(pos);
 			screen_pos = ImGui::GetCursorScreenPos();
 			char place_char[2];
-			int this_place = (*frequency_hz / (uint64_t)pow(10, i) % 10);
+			int this_place = *frequency_hz / (uint64_t)pow(10, i) % 10;
 			sprintf(place_char, "%d", this_place);
 			num_started = num_started || this_place != 0;
 			ImU32 font_color;
@@ -114,6 +114,8 @@ namespace widgets
 				else
 					change_by += pow(10, i);
 			}
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+				change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 			if (ImGui::IsItemHovered())
 			{
@@ -140,6 +142,8 @@ namespace widgets
 				else
 					change_by -= pow(10, i);
 			}
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+				change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 			if (ImGui::IsItemHovered())
 			{
@@ -172,7 +176,7 @@ namespace widgets
 		// Finish up
 		ImGui::SetCursorPosY(pos.y + digit_size.y + style.ItemSpacing.y);
 		ImGui::PopID();
-		if (*frequency_hz + change_by <= 0 || *frequency_hz + change_by > 1e12)
+		if (*frequency_hz + change_by < 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
 
 		*frequency_hz += change_by;
