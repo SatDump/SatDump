@@ -134,7 +134,7 @@ namespace widgets
 		{
 			float freq_scale;
 			if (scale == 0.0f)
-				freq_scale = (available_size < 150.0f ? 150.0f : available_size) / target_size;
+				freq_scale = (available_size < 150.0f * ui_scale ? 150.0f * ui_scale : available_size) / target_size;
 			else
 				freq_scale = scale;
 			freq_size *= freq_scale;
