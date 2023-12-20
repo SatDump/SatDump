@@ -77,19 +77,18 @@ namespace volk_fixed
     } decision_t __attribute__((aligned(16)));
 #endif
 
-    static inline void renormalize(unsigned char *X, unsigned char /*threshold*/)
+    static inline void renormalize(unsigned char *X)
     {
         int NUMSTATES = 64;
         int i;
 
         unsigned char min = X[0];
-        // if(min > threshold) {
+
         for (i = 0; i < NUMSTATES; i++)
             if (min > X[i])
                 min = X[i];
         for (i = 0; i < NUMSTATES; i++)
             X[i] -= min;
-        //}
     }
 
     // helper BFLY for GENERIC version
@@ -101,18 +100,20 @@ namespace volk_fixed
                             decision_t *d,
                             unsigned char *Branchtab)
     {
-        int j, decision0, decision1;
+        int j;
+        unsigned int decision0, decision1;
         unsigned char metric, m0, m1, m2, m3;
+        unsigned short metricsum;
 
         int NUMSTATES = 64;
         int RATE = 2;
-        int METRICSHIFT = 2;
+        int METRICSHIFT = 1;
         int PRECISIONSHIFT = 2;
 
-        metric = 0;
+        metricsum = 1;
         for (j = 0; j < RATE; j++)
-            metric += (Branchtab[i + j * NUMSTATES / 2] ^ syms[s * RATE + j]) >> METRICSHIFT;
-        metric = metric >> PRECISIONSHIFT;
+            metricsum += (Branchtab[i + j * NUMSTATES / 2] ^ syms[s * RATE + j]);
+        metric = (metricsum >> METRICSHIFT) >> PRECISIONSHIFT;
 
         unsigned char max = ((RATE * ((256 - 1) >> METRICSHIFT)) >> PRECISIONSHIFT);
 
@@ -121,8 +122,8 @@ namespace volk_fixed
         m2 = X[i] + (max - metric);
         m3 = X[i + NUMSTATES / 2] + metric;
 
-        decision0 = (signed int)(m0 - m1) > 0;
-        decision1 = (signed int)(m2 - m3) > 0;
+        decision0 = (signed int)(m0 - m1) >= 0;
+        decision1 = (signed int)(m2 - m3) >= 0;
 
         Y[2 * i] = decision0 ? m1 : m0;
         Y[2 * i + 1] = decision1 ? m3 : m2;
@@ -142,7 +143,6 @@ namespace volk_fixed
     {
         int nbits = framebits + excess;
         int NUMSTATES = 64;
-        int RENORMALIZE_THRESHOLD = 210;
 
         int s, i;
         for (s = 0; s < nbits; s++)
@@ -153,7 +153,7 @@ namespace volk_fixed
                 BFLY(i, s, syms, Y, X, (decision_t *)dec, Branchtab);
             }
 
-            renormalize(Y, RENORMALIZE_THRESHOLD);
+            renormalize(Y);
 
             ///     Swap pointers to old and new metrics
             tmp = (void *)X;
