@@ -9,6 +9,8 @@ namespace widgets
 {
 	inline void helper_left(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
 	{
+		if (i == 11)
+			return;
 		float x = screen_pos.x - digit_size.x / 2;
 		if ((i + 1) % 3 == 0)
 			x -= dot_width;
@@ -16,6 +18,8 @@ namespace widgets
 	}
 	inline void helper_right(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
 	{
+		if (i == 0)
+			return;
 		float x = screen_pos.x + digit_size.x * 1.5;
 		if (i % 3 == 0)
 			x += dot_width;
@@ -36,9 +40,9 @@ namespace widgets
 				change_by += pow(10, i);
 			if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
 				change_by -= pow(10, i);
-			if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) && i != 11)
+			if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow))
 				helper_left(i, digit_size, screen_pos, dot_width, top);
-			if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) && i != 0)
+			if (ImGui::IsKeyPressed(ImGuiKey_RightArrow))
 				helper_right(i, digit_size, screen_pos, dot_width, top);
 
 			// Handle number keys
