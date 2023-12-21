@@ -72,8 +72,10 @@ namespace image
     {
         for (int c = 0; c < (per_channel ? channels() : 1); c++)
         {
-            T *data_ptr = channel(c);
+            if (c == 3) //Do not individual equalize alpha channel
+                break;
 
+            T *data_ptr = channel(c);
             int nlevels = std::numeric_limits<T>::max() + 1;
             int size = d_width * d_height * (per_channel ? 1 : d_channels);
 
