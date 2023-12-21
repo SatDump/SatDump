@@ -97,7 +97,7 @@ General build instructions (Brew and XCode command line tools required)
 
 ```bash
 # Install dependencies
-brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf nng pkg-config libomp dylibbundler portaudio
+brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio
 
 # Build and install libfftw3 to work around issue with brew version
 wget http://www.fftw.org/fftw-3.3.9.tar.gz
@@ -110,12 +110,21 @@ make
 sudo make install
 cd ../..
 
+# Build and install nng since the brew version does not support TLS
+git clone -b v1.6.0 https://github.com/nanomsg/nng
+cd nng
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON ..
+make -j`nproc`
+sudo make install
+cd ../..
+
 # Build and install airspyhf
 git clone https://github.com/airspy/airspyhf.git
 cd airspyhf
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
+make -j`nproc`
 sudo make install
 cd ../..
 

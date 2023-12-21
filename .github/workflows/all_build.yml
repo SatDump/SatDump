@@ -251,10 +251,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf nng pkg-config libomp dylibbundler portaudio
+        run: brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio
 
       - name: Build airspyhf
         run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
+
+      - name: Build mbedtls
+        run: git clone -b v1.6.0 https://github.com/nanomsg/nng && cd nng && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON .. && make -j`nproc` && sudo make install
 
       - name: Build FFTW3
         run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true .. && make -j8 && sudo make install
