@@ -30,7 +30,9 @@ namespace widgets
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 			change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
-		ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
+		ImGuiContext& g = *GImGui;
+		if (g.WheelingWindowReleaseTimer == 0.0f)
+			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 		if (ImGui::IsItemHovered())
 		{
 			ImGuiIO &io = ImGui::GetIO();
@@ -56,7 +58,8 @@ namespace widgets
 			}
 
 			// Handle mouse wheel (can be up or down)
-			change_by += io.MouseWheel * pow(10, i);
+			if (g.WheelingWindowReleaseTimer == 0.0f)
+				change_by += io.MouseWheel * pow(10, i);
 
 			// Draw rect
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
