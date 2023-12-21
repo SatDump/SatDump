@@ -32,6 +32,16 @@ void HackRFSink::set_bias()
     logger->debug("Set HackRF bias to %d", (int)bias_enabled);
 }
 
+void HackRFSink::set_others()
+{
+    if (!is_started)
+        return;
+
+    int set_to = manual_bandwidth ? filter_bw : current_samplerate;
+    hackrf_set_baseband_filter_bandwidth(hackrf_dev_obj, set_to);
+    logger->debug("Set HackRF filter bandwidth to %d", set_to);
+}
+
 void HackRFSink::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
@@ -39,13 +49,24 @@ void HackRFSink::set_settings(nlohmann::json settings)
     amp_enabled = getValueOrDefault(d_settings["amp"], amp_enabled);
     lna_gain = getValueOrDefault(d_settings["lna_gain"], lna_gain);
     vga_gain = getValueOrDefault(d_settings["vga_gain"], vga_gain);
-
+    manual_bandwidth = getValueOrDefault(d_settings["manual_bandwidth"], manual_bandwidth);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
+
+    filter_bw = getValueOrDefault(d_settings["filter_bw"], current_samplerate);
+    for (int i = 0; i < (int)available_bandwidths.size(); i++)
+    {
+        if (filter_bw == available_bandwidths[i])
+        {
+            selected_bw = i;
+            break;
+        }
+    }
 
     if (is_open)
     {
         set_gains();
         set_bias();
+        set_others();
     }
 }
 
@@ -54,6 +75,8 @@ nlohmann::json HackRFSink::get_settings()
     d_settings["amp"] = amp_enabled;
     d_settings["lna_gain"] = lna_gain;
     d_settings["vga_gain"] = vga_gain;
+    d_settings["manual_bandwidth"] = manual_bandwidth;
+    d_settings["filter_bw"] = filter_bw;
 
     d_settings["bias"] = bias_enabled;
 
@@ -74,8 +97,30 @@ void HackRFSink::open()
     for (int i = 21; i < 38; i++)
         available_samplerates_exp.push_back(i * 1e6);
 
+    // Set available bandwidths
+    available_bandwidths = {
+        1750000,
+        2500000,
+        3500000,
+        5000000,
+        5500000,
+        6000000,
+        7000000,
+        8000000,
+        9000000,
+        10000000,
+        12000000,
+        14000000,
+        15000000,
+        20000000,
+        24000000,
+        28000000
+    };
+
     // Init UI stuff
-    samplerate_option_str = samplerate_option_str_exp = "";
+    bandwidth_option_str = samplerate_option_str = samplerate_option_str_exp = "";
+    for (uint64_t bandwidth : available_bandwidths)
+        bandwidth_option_str += format_notated(bandwidth, "Hz") + '\0';
     for (uint64_t samplerate : available_samplerates)
         samplerate_option_str += format_notated(samplerate, "sps") + '\0';
     for (uint64_t samplerate : available_samplerates_exp)
@@ -103,12 +148,12 @@ void HackRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
 
     logger->debug("Set HackRF samplerate to " + std::to_string(current_samplerate));
     hackrf_set_sample_rate(hackrf_dev_obj, current_samplerate);
-    hackrf_set_baseband_filter_bandwidth(hackrf_dev_obj, current_samplerate);
 
     is_started = true;
 
     set_frequency(d_frequency);
 
+    set_others();
     set_gains();
     set_bias();
 
@@ -166,6 +211,16 @@ void HackRFSink::drawControlUI()
 
     if (ImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
+
+    bool bw_update = ImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
+    if (manual_bandwidth)
+    {
+        bw_update = bw_update || ImGui::Combo("Bandwidth", &selected_bw, bandwidth_option_str.c_str());
+        if (bw_update)
+            filter_bw = available_bandwidths[selected_bw];
+    }
+    if (bw_update)
+        set_others();
 }
 
 void HackRFSink::set_samplerate(uint64_t samplerate)

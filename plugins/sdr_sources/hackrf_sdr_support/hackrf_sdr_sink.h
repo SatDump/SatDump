@@ -18,20 +18,23 @@ protected:
     hackrf_device *hackrf_dev_obj;
     static int _tx_callback(hackrf_transfer *t);
 
-    int selected_samplerate = 0;
+    int selected_samplerate = 0, selected_bw = 0;
     bool enable_experimental_samplerates = false;
-    std::string samplerate_option_str, samplerate_option_str_exp;
-    std::vector<uint64_t> available_samplerates, available_samplerates_exp;
+    std::string bandwidth_option_str, samplerate_option_str, samplerate_option_str_exp;
+    std::vector<uint64_t> available_bandwidths, available_samplerates, available_samplerates_exp;
     uint64_t current_samplerate = 0;
 
     int lna_gain = 0;
     int vga_gain = 0;
+    int filter_bw = 0;
 
     bool amp_enabled = false;
     bool bias_enabled = false;
+    bool manual_bandwidth = false;
 
     void set_gains();
     void set_bias();
+    void set_others();
 
     dsp::RingBuffer<uint8_t> fifo_out;
     int8_t *repack_buffer;

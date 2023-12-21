@@ -30,6 +30,8 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `lna_gain` : LNA Gain in dBs
 - `vga_gain` : VGA Gain in dBs
 - `bias` : Enable Bias-Tee power
+- `manual_bandwidth`: Enablue manual bandwidth filter
+- `filter_bw` The bandwidth filter width in Hz
 
 ## BladeRF
 
