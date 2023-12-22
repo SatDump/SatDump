@@ -55,8 +55,8 @@ void HackRFSource::set_settings(nlohmann::json settings)
     amp_enabled = getValueOrDefault(d_settings["amp"], amp_enabled);
     lna_gain = getValueOrDefault(d_settings["lna_gain"], lna_gain);
     vga_gain = getValueOrDefault(d_settings["vga_gain"], vga_gain);
-    manual_bandwidth = getValueOrDefault(d_settings["manual_bandwidth"], manual_bandwidth);
-    bandwidth_widget.set_value(getValueOrDefault(d_settings["filter_bw"], samplerate_widget.get_value()));
+    manual_bandwidth = getValueOrDefault(d_settings["manual_bw"], manual_bandwidth);
+    bandwidth_widget.set_value(getValueOrDefault(d_settings["manual_bw_value"], samplerate_widget.get_value()));
 
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
 
@@ -73,8 +73,8 @@ nlohmann::json HackRFSource::get_settings()
     d_settings["amp"] = amp_enabled;
     d_settings["lna_gain"] = lna_gain;
     d_settings["vga_gain"] = vga_gain;
-    d_settings["manual_bandwidth"] = manual_bandwidth;
-    d_settings["filter_bw"] = bandwidth_widget.get_value();
+    d_settings["manual_bw"] = manual_bandwidth;
+    d_settings["manual_bw_value"] = bandwidth_widget.get_value();
 
     d_settings["bias"] = bias_enabled;
 

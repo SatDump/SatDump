@@ -30,8 +30,8 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
 - `lna_gain` : LNA Gain in dBs
 - `vga_gain` : VGA Gain in dBs
 - `bias` : Enable Bias-Tee power
-- `manual_bandwidth`: Enablue manual bandwidth filter
-- `filter_bw` The bandwidth filter width in Hz
+- `manual_bw`: Enable manual bandwidth filter
+- `manual_bw_value` The bandwidth filter width in Hz
 
 ## BladeRF
 
@@ -43,10 +43,14 @@ Where possible, consistency was kept to be rather easy to "guess" if you know wh
     - 4 is hybrid AGC
 - `gain` : General Gain in dBs
 - `bias` : Bias-Tee power (BladeRF 2.0 only)
+- `manual_bw`: Enable manual bandwidth filter
+- `manual_bw_value` The bandwidth filter width in Hz
 
 ## LimeSDR
 
 - `gain` : Gain in dBs
+- `manual_bw`: Enable manual bandwidth filter
+- `manual_bw_value` The bandwidth filter width in Hz
 
 ## RTL-SDR
 

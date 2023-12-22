@@ -37,7 +37,7 @@ void HackRFSink::set_others()
     if (!is_started)
         return;
 
-    int set_to = manual_bandwidth ? filter_bw : current_samplerate;
+    int set_to = manual_bandwidth ? manual_bw_value : current_samplerate;
     hackrf_set_baseband_filter_bandwidth(hackrf_dev_obj, set_to);
     logger->debug("Set HackRF filter bandwidth to %d", set_to);
 }
@@ -49,13 +49,13 @@ void HackRFSink::set_settings(nlohmann::json settings)
     amp_enabled = getValueOrDefault(d_settings["amp"], amp_enabled);
     lna_gain = getValueOrDefault(d_settings["lna_gain"], lna_gain);
     vga_gain = getValueOrDefault(d_settings["vga_gain"], vga_gain);
-    manual_bandwidth = getValueOrDefault(d_settings["manual_bandwidth"], manual_bandwidth);
+    manual_bandwidth = getValueOrDefault(d_settings["manual_bw"], manual_bandwidth);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
 
-    filter_bw = getValueOrDefault(d_settings["filter_bw"], current_samplerate);
+    manual_bw_value = getValueOrDefault(d_settings["manual_bw_value"], current_samplerate);
     for (int i = 0; i < (int)available_bandwidths.size(); i++)
     {
-        if (filter_bw == available_bandwidths[i])
+        if (manual_bw_value == available_bandwidths[i])
         {
             selected_bw = i;
             break;
@@ -75,8 +75,8 @@ nlohmann::json HackRFSink::get_settings()
     d_settings["amp"] = amp_enabled;
     d_settings["lna_gain"] = lna_gain;
     d_settings["vga_gain"] = vga_gain;
-    d_settings["manual_bandwidth"] = manual_bandwidth;
-    d_settings["filter_bw"] = filter_bw;
+    d_settings["manual_bw"] = manual_bandwidth;
+    d_settings["manual_bw_value"] = manual_bw_value;
 
     d_settings["bias"] = bias_enabled;
 
@@ -217,7 +217,7 @@ void HackRFSink::drawControlUI()
     {
         bw_update = bw_update || ImGui::Combo("Bandwidth", &selected_bw, bandwidth_option_str.c_str());
         if (bw_update)
-            filter_bw = available_bandwidths[selected_bw];
+            manual_bw_value = available_bandwidths[selected_bw];
     }
     if (bw_update)
         set_others();
