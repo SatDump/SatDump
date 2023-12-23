@@ -29,13 +29,15 @@ namespace widgets
 		ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-			change_by = 0 - (*frequency_hz % (uint64_t)pow(10, i + 1));
+			change_by = -(*frequency_hz % (uint64_t)pow(10, i + 1));
 		ImGuiContext& g = *GImGui;
 		if (g.WheelingWindowReleaseTimer == 0.0f)
 			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 		if (ImGui::IsItemHovered())
 		{
-			ImGuiIO &io = ImGui::GetIO();
+			//Handle Enter
+			if(ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
+				change_by = -(*frequency_hz % (uint64_t)pow(10, i + 1));
 
 			// Handle Arrow Keys
 			if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
@@ -48,6 +50,7 @@ namespace widgets
 				helper_right(i, digit_size, screen_pos, dot_width, top);
 
 			// Handle number keys
+			ImGuiIO& io = ImGui::GetIO();
 			for (auto& this_char : io.InputQueueCharacters)
 			{
 				if (this_char >= '0' && this_char <= '9')
