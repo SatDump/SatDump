@@ -1322,6 +1322,11 @@
                         "equation": "ch1, ch4, ch9",
                         "individual_equalize": true,
                         "geo_correct": true
+                    },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "1-cch32, 1-cch31, 1-cch20",
+                        "individual_equalize": true,
+                        "geo_correct": true
                     }
                 }
             },
