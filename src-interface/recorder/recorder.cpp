@@ -263,7 +263,7 @@ namespace satdump
                     bool pushed_color_xconv = xconverter_frequency != 0;
                     if (pushed_color_xconv)
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
-                    if (ImGui::InputDouble("MHz (LO)##downupconverter", &xconverter_frequency))
+                    if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
                         set_frequency(frequency_hz);
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
