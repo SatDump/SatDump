@@ -308,7 +308,7 @@
     // TLE settings
     "tle_settings": {
         "urls_to_fetch": [
-            "http://celestrak.org/NORAD/elements/active.txt" // Most sats
+            "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle" // Most sats
         ],
         "url_template": "http://www.celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
         "tles_to_fetch": [
