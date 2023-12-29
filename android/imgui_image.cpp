@@ -1,12 +1,11 @@
 #include "imgui/imgui_image.h"
 
-
 // GL includes
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #if (defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV))
-#include <OpenGLES/ES2/gl.h>    // Use GL ES 2
+#include <OpenGLES/ES2/gl.h> // Use GL ES 2
 #else
-#include <GLES2/gl2.h>          // Use GL ES 2
+#include <GLES2/gl2.h> // Use GL ES 2
 #endif
 #if defined(__EMSCRIPTEN__)
 #ifndef GL_GLEXT_PROTOTYPES
@@ -19,9 +18,9 @@
 #include <TargetConditionals.h>
 #endif
 #if (defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV))
-#include <OpenGLES/ES3/gl.h>    // Use GL ES 3
+#include <OpenGLES/ES3/gl.h> // Use GL ES 3
 #else
-#include <GLES3/gl3.h>          // Use GL ES 3
+#include <GLES3/gl3.h> // Use GL ES 3
 #endif
 #elif !defined(IMGUI_IMPL_OPENGL_LOADER_CUSTOM)
 // Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -59,7 +58,7 @@ void funcUpdateImageTexture(unsigned int gl_text, uint32_t *buffer, int width, i
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void funcUpdateMMImageTexture(unsigned int gl_text, uint32_t* buffer, int width, int height)
+void funcUpdateMMImageTexture(unsigned int gl_text, uint32_t *buffer, int width, int height)
 {
     glBindTexture(GL_TEXTURE_2D, gl_text);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -72,9 +71,9 @@ void funcUpdateMMImageTexture(unsigned int gl_text, uint32_t* buffer, int width,
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void funcDeleteImageTexture(unsigned int /*gl_text*/)
+void funcDeleteImageTexture(unsigned int gl_text)
 {
-    //glDeleteTextures(1, &gl_text);
+    glDeleteTextures(1, &gl_text);
 }
 
 void bindImageTextureFunctions()
