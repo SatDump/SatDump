@@ -99,13 +99,22 @@ General build instructions (Brew and XCode command line tools required)
 # Install dependencies
 brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio
 
+# On Apple Silicon also run
+brew link --force libomp
+
 # Build and install libfftw3 to work around issue with brew version
 wget http://www.fftw.org/fftw-3.3.9.tar.gz
 tar xf fftw-3.3.9.tar.gz
 rm fftw-3.3.9.tar.gz
 cd fftw-3.3.9
 mkdir build && cd build
+
+# For Intel Macs
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
+
+# For Apple Silicon Macs
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false ..
+
 make
 sudo make install
 cd ../..

@@ -46,7 +46,14 @@ if(APPLE)
     include_directories(/usr/local/Cellar/fftw/3.3.9/include)
     link_directories(/usr/local/lib)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+        include_directories(/opt/homebrew/include/)
+        link_directories(/opt/homebrew/lib/)
+    endif()
+
 endif()
+
 
 if(UNIX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
