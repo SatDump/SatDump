@@ -55,10 +55,6 @@ namespace satdump
     	const std::string slogan = "General Purpose Satellite Data Processor";
     	
         std::pair<int, int> dims = backend::beginFrame();
-        float macos_scale = style::macos_framebuffer_scale();
-        dims.first /= macos_scale;
-        dims.second /= macos_scale;
-
         ImGui::SetNextWindowPos({ 0, 0 });
         ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
         ImGui::Begin("Loading Screen", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
