@@ -1,26 +1,27 @@
-// dear imgui: standalone example application for Android + OpenGL ES 3
-// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
-
-#include "backend.h"
 #include <android/log.h>
 #include <android/asset_manager.h>
+#include <android_native_app_glue.h>
+#include "backend.h"
 
 // Data
 EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;
 EGLSurface g_EglSurface = EGL_NO_SURFACE;
 static EGLContext g_EglContext = EGL_NO_CONTEXT;
-struct android_app *g_App = NULL;
+static struct android_app *g_App = NULL;
 static bool g_Initialized = false;
 static char g_LogTag[] = "SatDump";
 
 // Forward declarations of helper functions
+static int ShowSoftKeyboardInput();
+static int HideSoftKeyboardInput();
+static int PollUnicodeChars();
 static int GetAssetData(const char *filename, void **out_data);
 static float get_dpi();
 
 #include "logger.h"
 #include "init.h"
-#include "main_ui.h"
 #include "loader/loader.h"
+#include "core/style.h"
 
 bool was_init = false;
 
@@ -124,6 +125,22 @@ void init(struct android_app *app)
 
 void tick()
 {
+    ImGuiIO& io = ImGui::GetIO();
+    if (g_EglDisplay == EGL_NO_DISPLAY)
+        return;
+
+    // Poll Unicode characters via JNI
+    // FIXME: do not call this every frame because of JNI overhead
+    PollUnicodeChars();
+
+    // Open on-screen (soft) input if requested by Dear ImGui
+    static bool WantTextInputLast = false;
+    if (io.WantTextInput && !WantTextInputLast)
+        ShowSoftKeyboardInput();
+    if (!io.WantTextInput && WantTextInputLast)
+        HideSoftKeyboardInput();
+    WantTextInputLast = io.WantTextInput;
+
     // Rendering
     std::pair<int, int> dims = funcBeginFrame();
     satdump::renderMainUI(dims.first, dims.second);
@@ -268,6 +285,7 @@ void android_main(struct android_app *app)
 
     {
         bindImageTextureFunctions();
+        bindBackendFunctions();
 
         std::string path = getAppFilesDir(app);
         android_plugins_dir = getPluginsDir(app);
@@ -305,6 +323,113 @@ void android_main(struct android_app *app)
         // Initiate a new frame
         tick();
     }
+}
+
+// Unfortunately, there is no way to show the on-screen input from native code.
+// Therefore, we call ShowSoftKeyboardInput() of the main activity implemented in MainActivity.kt via JNI.
+static int ShowSoftKeyboardInput()
+{
+    JavaVM *java_vm = g_App->activity->vm;
+    JNIEnv *java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        return -1;
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        return -2;
+
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
+    if (native_activity_clazz == NULL)
+        return -3;
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "showSoftInput", "()V");
+    if (method_id == NULL)
+        return -4;
+
+    java_env->CallVoidMethod(g_App->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        return -5;
+
+    return 0;
+}
+
+static int HideSoftKeyboardInput()
+{
+    JavaVM *java_vm = g_App->activity->vm;
+    JNIEnv *java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        return -1;
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        return -2;
+
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
+    if (native_activity_clazz == NULL)
+        return -3;
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "hideSoftInput", "()V");
+    if (method_id == NULL)
+        return -4;
+
+    java_env->CallVoidMethod(g_App->activity->clazz, method_id);
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        return -5;
+
+    return 0;
+}
+
+// Unfortunately, the native KeyEvent implementation has no getUnicodeChar() function.
+// Therefore, we implement the processing of KeyEvents in MainActivity.kt and poll
+// the resulting Unicode characters here via JNI and send them to Dear ImGui.
+static int PollUnicodeChars()
+{
+    JavaVM *java_vm = g_App->activity->vm;
+    JNIEnv *java_env = NULL;
+
+    jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
+    if (jni_return == JNI_ERR)
+        return -1;
+
+    jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+    if (jni_return != JNI_OK)
+        return -2;
+
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
+    if (native_activity_clazz == NULL)
+        return -3;
+
+    jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "pollUnicodeChar", "()I");
+    if (method_id == NULL)
+        return -4;
+
+    // Send the actual characters to Dear ImGui
+    ImGuiIO &io = ImGui::GetIO();
+    jint unicode_character;
+    while ((unicode_character = java_env->CallIntMethod(g_App->activity->clazz, method_id)) != 0)
+    {
+        if (unicode_character == 0x08) // BackSpace
+        {
+            io.AddKeyEvent(ImGuiKey_Backspace, true);
+            io.AddKeyEvent(ImGuiKey_Backspace, false);
+        }
+        else
+            io.AddInputCharacter(unicode_character);
+    }
+
+    jni_return = java_vm->DetachCurrentThread();
+    if (jni_return != JNI_OK)
+        return -5;
+
+    return 0;
 }
 
 static float get_dpi()

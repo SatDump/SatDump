@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 #include "logger.h"
 
 namespace satdump
@@ -13,6 +14,6 @@ namespace satdump
         void receive(slog::LogMsg log);
     private:
         float scale;
-        unsigned int image_texture;
+        intptr_t image_texture;
     };
 }

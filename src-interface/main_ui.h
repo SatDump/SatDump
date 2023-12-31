@@ -9,9 +9,6 @@
 
 namespace satdump
 {
-    extern std::string error_message;
-    extern bool isError_UI;
-
     extern ctpl::thread_pool ui_thread_pool;
 
     extern bool light_theme;
