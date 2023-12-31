@@ -1,16 +1,12 @@
 #include <signal.h>
 #include <filesystem>
 #include "backend.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_opengl3.h"
-#include "gl.h"
 #include "logger.h"
 #include "core/style.h"
 #include "init.h"
 #include "processing.h"
-#include "main_ui.h"
 #include "satdump_vars.h"
-#include "loading_screen.h"
+#include "loader/loader.h"
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
 #include "common/detect_header.h"
@@ -159,39 +155,6 @@ int main(int argc, char *argv[])
 #endif
         ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[selected_glsl]);
 
-    // Setup Icon
-    GLFWimage img;
-    {
-        image::Image<uint8_t> image;
-        image.load_png(resources::getResourcePath("icon.png"));
-        uint8_t *px = new uint8_t[image.width() * image.height() * 4];
-        memset(px, 255, image.width() * image.height() * 4);
-        img.height = image.height();
-        img.width = image.width();
-
-        if (image.channels() == 4)
-        {
-            for (int y = 0; y < (int)image.height(); y++)
-                for (int x = 0; x < (int)image.width(); x++)
-                    for (int c = 0; c < 4; c++)
-                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
-        }
-        else if (image.channels() == 3)
-        {
-            for (int y = 0; y < (int)image.height(); y++)
-                for (int x = 0; x < (int)image.width(); x++)
-                    for (int c = 0; c < 3; c++)
-                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
-        }
-        image.clear();
-
-        img.pixels = px;
-    }
-
-#ifndef _WIN32
-    glfwSetWindowIcon(window, 1, &img);
-#endif
-
     // Handle DPI changes
     float display_scale;
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
@@ -206,7 +169,7 @@ int main(int argc, char *argv[])
     style::setFonts(display_scale);
 
     // Init Loading Screen
-    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(window, display_scale, &img, fallback_gl);
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(display_scale);
     logger->add_sink(loading_screen_sink);
 
     // Init SatDump
@@ -288,45 +251,7 @@ int main(int argc, char *argv[])
     // Main loop
     do
     {
-        // Start the Dear ImGui frame
-#ifndef IMGUI_IMPL_OPENGL_ES2
-        if (fallback_gl)
-            ImGui_ImplOpenGL2_NewFrame();
-        else
-#endif
-            ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        int wwidth, wheight;
-        glfwGetWindowSize(window, &wwidth, &wheight);
-        // std::cout<<wwidth<<std::endl;
-
-        // User rendering
-        satdump::renderMainUI(wwidth, wheight);
-
-        // Rendering
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-
-        if (satdump::light_theme)
-            glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-        else
-            glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
-        // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-#ifndef IMGUI_IMPL_OPENGL_ES2
-        if (fallback_gl)
-            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-        else
-#endif
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        satdump::renderMainUI();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
 
     // Save window position

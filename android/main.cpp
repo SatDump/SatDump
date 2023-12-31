@@ -1,18 +1,11 @@
-// dear imgui: standalone example application for Android + OpenGL ES 3
-// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
-
-#include "imgui/imgui.h"
-#include "imgui_impl_android.h"
-#include "imgui_impl_opengl3.h"
 #include <android/log.h>
-#include <android_native_app_glue.h>
 #include <android/asset_manager.h>
-#include <EGL/egl.h>
-#include <GLES3/gl3.h>
+#include <android_native_app_glue.h>
+#include "backend.h"
 
 // Data
-static EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;
-static EGLSurface g_EglSurface = EGL_NO_SURFACE;
+EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;
+EGLSurface g_EglSurface = EGL_NO_SURFACE;
 static EGLContext g_EglContext = EGL_NO_CONTEXT;
 static struct android_app *g_App = NULL;
 static bool g_Initialized = false;
@@ -27,8 +20,7 @@ static float get_dpi();
 
 #include "logger.h"
 #include "init.h"
-#include "main_ui.h"
-#include "loading_screen.h"
+#include "loader/loader.h"
 #include "core/style.h"
 
 bool was_init = false;
@@ -103,7 +95,7 @@ void init(struct android_app *app)
         style::setFonts(display_scale);
         HideSoftKeyboardInput();
         eglSwapInterval(g_EglDisplay, 0);
-        std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(&g_EglDisplay, &g_EglSurface, display_scale);
+        std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(display_scale);
         logger->add_sink(loading_screen_sink);
 
         satdump::tle_do_update_on_init = false;
@@ -133,7 +125,7 @@ void init(struct android_app *app)
 
 void tick()
 {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     if (g_EglDisplay == EGL_NO_DISPLAY)
         return;
 
@@ -149,25 +141,8 @@ void tick()
         HideSoftKeyboardInput();
     WantTextInputLast = io.WantTextInput;
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplAndroid_NewFrame();
-    ImGui::NewFrame();
-
     // Rendering
-    satdump::renderMainUI((int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    ImGui::Render();
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-
-    if (satdump::light_theme)
-        glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-    else
-        glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
-    // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    eglSwapBuffers(g_EglDisplay, g_EglSurface);
+    satdump::renderMainUI();
 }
 
 void shutdown()
@@ -308,6 +283,7 @@ void android_main(struct android_app *app)
 
     {
         bindImageTextureFunctions();
+        bindBackendFunctions();
 
         std::string path = getAppFilesDir(app);
         android_plugins_dir = getPluginsDir(app);
@@ -344,8 +320,6 @@ void android_main(struct android_app *app)
 
         // Initiate a new frame
         tick();
-
-        // logger->info("Hey!");
     }
 }
 

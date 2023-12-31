@@ -7,6 +7,7 @@
 #include "satdump_vars.h"
 #include "core/config.h"
 #include "core/style.h"
+#include "core/backend.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
 #include "common/audio/audio_sink.h"
@@ -98,8 +99,9 @@ namespace satdump
 
     bool main_ui_is_processing_selected = false;
 
-    void renderMainUI(int wwidth, int wheight)
+    void renderMainUI()
     {
+        std::pair<int, int> dims = backend::beginFrame();
         // ImGui::ShowDemoWindow();
 
         /*if (in_app)
@@ -140,10 +142,10 @@ namespace satdump
                 }
             }
             if (status_bar)
-                wheight -= status_logger_sink->draw();
+                dims.second -= status_logger_sink->draw();
 
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
+            ImGui::SetNextWindowSize({(float)dims.first, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)dims.second});
             ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
@@ -155,8 +157,8 @@ namespace satdump
                     {
                         // ImGui::BeginChild("OfflineProcessingChild");
                         processing::ui_call_list_mutex->lock();
-                        int live_width = wwidth; // ImGui::GetWindowWidth();
-                        int live_height = /*ImGui::GetWindowHeight()*/ wheight - ImGui::GetCursorPos().y;
+                        int live_width = dims.first; // ImGui::GetWindowWidth();
+                        int live_height = /*ImGui::GetWindowHeight()*/ dims.second - ImGui::GetCursorPos().y;
                         float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
                         float currentPos = ImGui::GetCursorPos().y;
                         ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
@@ -275,6 +277,8 @@ namespace satdump
         notify_logger_sink->notify_mutex.unlock();
         ImGui::PopStyleVar(1);
         ImGui::PopStyleColor(1);
+
+        backend::endFrame();
     }
 
     bool light_theme;
