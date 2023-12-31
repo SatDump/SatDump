@@ -15,5 +15,8 @@ namespace satdump
     private:
         float scale;
         intptr_t image_texture;
+        bool loader_constant;
+        std::string title;
+        std::string slogan;
     };
 }

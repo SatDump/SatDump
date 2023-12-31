@@ -1,3 +1,4 @@
+#include <random>
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imgui_image.h"
@@ -6,13 +7,24 @@
 #include "core/style.h"
 #include "core/backend.h"
 #include "loader.h"
+#include "const.h"
 
 namespace satdump
 {
     LoadingScreenSink::LoadingScreenSink(float scale) : scale{ scale }
     {
         image::Image<uint8_t> image;
-        image.load_png(resources::getResourcePath("icon.png"));
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> check(1, 1000);
+        loader_constant = (check(rng) == 42);
+        title = loader_constant ? satdump::loader_constant_title : "SatDump";
+        slogan = loader_constant ? satdump::loader_constant_slogan : "General Purpose Satellite Data Processor";
+        if (loader_constant)
+            image.load_png((uint8_t*)satdump::loader_constant_icon, sizeof(satdump::loader_constant_icon));
+        else
+            image.load_png(resources::getResourcePath("icon.png"));
+
         uint8_t *px = new uint8_t[image.width() * image.height() * 4];
         memset(px, 255, image.width() * image.height() * 4);
 
@@ -51,9 +63,6 @@ namespace satdump
 
     void LoadingScreenSink::push_frame(std::string str)
     {
-    	const std::string title = "SatDump";
-    	const std::string slogan = "General Purpose Satellite Data Processor";
-    	
         std::pair<int, int> dims = backend::beginFrame();
         ImGui::SetNextWindowPos({ 0, 0 });
         ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
