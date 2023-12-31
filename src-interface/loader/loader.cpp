@@ -1,53 +1,103 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
+#include "imgui/imgui_image.h"
+#include "common/image/image.h"
+#include "resources.h"
 #include "core/style.h"
+#include "core/backend.h"
 #include "loader.h"
 
 namespace satdump
 {
-    void draw_loader(int width, int height, float scale, GLuint *image_texture, std::string str)
+    LoadingScreenSink::LoadingScreenSink(float scale) : scale{ scale }
+    {
+        image::Image<uint8_t> image;
+        image.load_png(resources::getResourcePath("icon.png"));
+        uint8_t* px = new uint8_t[image.width() * image.height() * 4];
+        memset(px, 255, image.width() * image.height() * 4);
+
+        if (image.channels() == 4)
+        {
+            for (int y = 0; y < (int)image.height(); y++)
+                for (int x = 0; x < (int)image.width(); x++)
+                    for (int c = 0; c < 4; c++)
+                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        }
+        else if (image.channels() == 3)
+        {
+            for (int y = 0; y < (int)image.height(); y++)
+                for (int x = 0; x < (int)image.width(); x++)
+                    for (int c = 0; c < 3; c++)
+                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+        }
+
+        image_texture = makeImageTexture();
+        updateImageTexture(image_texture, (uint32_t*)px, image.width(), image.height());
+        backend::setIcon(px);
+        image.clear();
+        delete[] px;
+        push_frame("Initializing");
+    }
+
+    LoadingScreenSink::~LoadingScreenSink()
+    {
+        deleteImageTexture(image_texture);
+    }
+
+    void LoadingScreenSink::receive(slog::LogMsg log)
+    {
+        if (log.lvl == slog::LOG_INFO)
+            push_frame(log.str);
+    }
+
+    void LoadingScreenSink::push_frame(std::string str)
     {
     	const std::string title = "SatDump";
     	const std::string slogan = "General Purpose Satellite Data Processor";
     	
-    	ImGui::NewFrame();
+        std::pair<int, int> dims = backend::beginFrame();
+        float macos_scale = style::macos_framebuffer_scale();
+        dims.first /= macos_scale;
+        dims.second /= macos_scale;
+
         ImGui::SetNextWindowPos({ 0, 0 });
-        ImGui::SetNextWindowSize({(float)width, (float)height});
+        ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
         ImGui::Begin("Loading Screen", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
 
-        if(width > height)
+        if(dims.first > dims.second)
         {
-            ImVec2 reference_pos = { ((float)width * 0.5f) - (300 * scale), ((float)height * 0.5f) - (125 * scale)};
+            ImVec2 reference_pos = { ((float)dims.first * 0.5f) - (300 * scale), ((float)dims.second * 0.5f) - (125 * scale)};
             ImGui::SetCursorPos(reference_pos);
-            ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(200 * scale, 200 * scale));
+            ImGui::Image((void*)image_texture, ImVec2(200 * scale, 200 * scale));
             ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (40 * scale) });
             ImGui::PushFont(style::bigFont);
             ImGui::TextUnformatted(title.c_str());
             ImGui::PopFont();
             ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (87 * scale) });
             ImGui::TextUnformatted(slogan.c_str());
-            ImGui::GetWindowDrawList()->AddLine({reference_pos.x + (230 * scale), reference_pos.y + (112 * scale)}, {reference_pos.x + (490 * scale), reference_pos.y + (112 * scale)}, IM_COL32(155, 155, 155, 255));
+            ImGui::GetWindowDrawList()->AddLine({reference_pos.x + (230 * scale), reference_pos.y + (112 * scale)},
+                {reference_pos.x + (490 * scale), reference_pos.y + (112 * scale)}, IM_COL32(155, 155, 155, 255));
             ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (120 * scale) });
         }
         else
         {
             ImGui::PushFont(style::bigFont);
             ImVec2 title_size = ImGui::CalcTextSize(title.c_str());
-            ImGui::SetCursorPos({((float)width / 2) - (75 * scale), ((float)height / 2) - title_size.y - (90 * scale)});
-            ImGui::Image((void*)(intptr_t)(*image_texture), ImVec2(150 * scale, 150 * scale));
-            ImGui::SetCursorPos({((float)width / 2) - (title_size.x / 2), ((float)height / 2) - title_size.y + (75 * scale)});
+            ImGui::SetCursorPos({((float)dims.first / 2) - (75 * scale), ((float)dims.second / 2) - title_size.y - (90 * scale)});
+            ImGui::Image((void*)image_texture, ImVec2(150 * scale, 150 * scale));
+            ImGui::SetCursorPos({((float)dims.first / 2) - (title_size.x / 2), ((float)dims.second / 2) - title_size.y + (75 * scale)});
             ImGui::TextUnformatted(title.c_str());
             ImGui::PopFont();
             ImVec2 slogan_size = ImGui::CalcTextSize(slogan.c_str());
-            ImGui::SetCursorPos({ ((float)width / 2) - (slogan_size.x / 2), ((float)height / 2) + (80 * scale) });
+            ImGui::SetCursorPos({ ((float)dims.first / 2) - (slogan_size.x / 2), ((float)dims.second / 2) + (80 * scale) });
             ImGui::TextUnformatted(slogan.c_str());
-            ImGui::GetWindowDrawList()->AddLine({((float)width / 2) - (slogan_size.x / 2), ((float)height / 2) + (90 * scale) + slogan_size.y}, 
-                {((float)width / 2) + (slogan_size.x / 2), ((float)height / 2) + (90 * scale) + slogan_size.y}, IM_COL32(155, 155, 155, 255));
-            ImGui::SetCursorPos({((float)width / 2) - (ImGui::CalcTextSize(str.c_str()).x / 2), ((float)height / 2) + (95 * scale) + slogan_size.y});
+            ImGui::GetWindowDrawList()->AddLine({((float)dims.first / 2) - (slogan_size.x / 2), ((float)dims.second / 2) + (90 * scale) + slogan_size.y},
+                {((float)dims.first / 2) + (slogan_size.x / 2), ((float)dims.second / 2) + (90 * scale) + slogan_size.y}, IM_COL32(155, 155, 155, 255));
+            ImGui::SetCursorPos({((float)dims.first / 2) - (ImGui::CalcTextSize(str.c_str()).x / 2), ((float)dims.second / 2) + (95 * scale) + slogan_size.y});
         }
 
         ImGui::TextDisabled("%s", str.c_str());
         ImGui::End();
-        ImGui::Render();
+        backend::endFrame();
     }
 }
