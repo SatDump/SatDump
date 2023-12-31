@@ -15,5 +15,5 @@ static int HideSoftKeyboardInput();
 void funcSetMousePos(int, int);
 std::pair<int, int> funcBeginFrame();
 void funcEndFrame();
-void funcSetIcon(uint8_t*);
+void funcSetIcon(uint8_t*, int, int);
 void bindBackendFunctions();

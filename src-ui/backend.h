@@ -10,5 +10,5 @@
 void funcSetMousePos(int x, int y);
 std::pair<int, int> funcBeginFrame();
 void funcEndFrame();
-void funcSetIcon(uint8_t *image);
+void funcSetIcon(uint8_t *image, int w, int h);
 void bindBackendFunctions();

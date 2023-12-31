@@ -14,5 +14,6 @@ namespace satdump
     private:
         float scale;
         unsigned int image_texture;
+        uint8_t *px;
     };
 }

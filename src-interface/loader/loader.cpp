@@ -13,7 +13,7 @@ namespace satdump
     {
         image::Image<uint8_t> image;
         image.load_png(resources::getResourcePath("icon.png"));
-        uint8_t* px = new uint8_t[image.width() * image.height() * 4];
+        px = new uint8_t[image.width() * image.height() * 4];
         memset(px, 255, image.width() * image.height() * 4);
 
         if (image.channels() == 4)
@@ -33,15 +33,15 @@ namespace satdump
 
         image_texture = makeImageTexture();
         updateImageTexture(image_texture, (uint32_t*)px, image.width(), image.height());
-        backend::setIcon(px);
+        backend::setIcon(px, image.width(), image.height());
         image.clear();
-        delete[] px;
         push_frame("Initializing");
     }
 
     LoadingScreenSink::~LoadingScreenSink()
     {
         deleteImageTexture(image_texture);
+        delete[] px;
     }
 
     void LoadingScreenSink::receive(slog::LogMsg log)

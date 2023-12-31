@@ -53,19 +53,21 @@ void funcEndFrame()
     glfwPollEvents();
 }
 
-void funcSetIcon(uint8_t *image)
+void funcSetIcon(uint8_t *image, int w, int h)
 {
 #ifndef _WIN32
     GLFWimage img;
     img.pixels = image;
+    img.width = w;
+    img.height = h;
     glfwSetWindowIcon(window, 1, &img);
 #endif
 }
 
 void bindBackendFunctions()
 {
-	backend::setMousePos = funcSetMousePos;
-	backend::beginFrame = funcBeginFrame;
-	backend::endFrame = funcEndFrame;
+    backend::setMousePos = funcSetMousePos;
+    backend::beginFrame = funcBeginFrame;
+    backend::endFrame = funcEndFrame;
     backend::setIcon = funcSetIcon;
 }

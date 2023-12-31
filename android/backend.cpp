@@ -160,7 +160,7 @@ void funcEndFrame()
     eglSwapBuffers(g_EglDisplay, g_EglSurface);
 }
 
-void funcSetIcon(uint8_t* image)
+void funcSetIcon(uint8_t*, int, int)
 {
     // Not implemented on Android
 }
