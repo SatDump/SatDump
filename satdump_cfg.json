@@ -1984,7 +1984,7 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     },
-                    "Antenna Brightness Temperature (Ch. 2)": {
+                    "Brightness Temperature (Ch. 2)": {
                         "channels": "cch2",
                         "calib_cfg": {
                             "cch2": {
