@@ -24,4 +24,4 @@ No specific limitations.
 
 ### References
 
-1. https://disc.gsfc.nasa.gov/datasets/SNDRJ1ATMSL1B_2/summary?keywords=atms
+1. Jet Propulsion Laboratory: Bjorn Lambrigtsen (2018), JPSS-1 ATMS Level 1B Brightness Temperature V2, Greenbelt, MD, Goddard Earth Sciences Data and Information Services Center (GES DISC), Accessed: [31-12-2023], [10.5067/VP66V3OTXOPY](https://doi.org/10.5067/VP66V3OTXOPY)
