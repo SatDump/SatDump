@@ -21,7 +21,7 @@ namespace demod
         //  std::shared_ptr<dsp::GardnerClockRecovery2Block> rec;
         std::shared_ptr<dsp::MMClockRecoveryBlock<float>> rec;
 
-        const float d_deviation = 5e3;
+        const float d_deviation;
 
         int8_t *sym_buffer;
 

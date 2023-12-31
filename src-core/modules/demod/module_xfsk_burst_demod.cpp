@@ -8,7 +8,7 @@ namespace demod
 {
     XFSKBurstDemodModule::XFSKBurstDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : BaseDemodModule(input_file, output_file_hint, parameters),
-          d_deviation(parameters.contains("fsk_deviation") ? parameters["fsk_deviation"].get<float>() : d_deviation)
+          d_deviation(parameters.contains("fsk_deviation") ? parameters["fsk_deviation"].get<float>() : 5e3)
     {
         name = "xFSK Burst Demodulator";
         show_freq = false;
