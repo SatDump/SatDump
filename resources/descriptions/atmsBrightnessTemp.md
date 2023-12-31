@@ -2,7 +2,7 @@
 
 This is a composite based on the *JPSS-1 ATMS Level 1B Brightness Temperature V2 (SNDRJ1ATMSL1B)*[1].
 
-Calibrated temperature values from channel 2 are used.
+Calibrated temperature values from channel 2 (31.4 GHz) are used.
 
 ### Appearance
 
