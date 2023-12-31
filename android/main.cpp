@@ -21,7 +21,6 @@ static float get_dpi();
 #include "init.h"
 #include "main_ui.h"
 #include "loader/loader.h"
-#include "core/style.h"
 
 bool was_init = false;
 

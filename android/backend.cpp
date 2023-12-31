@@ -1,4 +1,5 @@
 #include "core/backend.h"
+#include "core/style.h"
 #include "backend.h"
 
 extern EGLDisplay g_EglDisplay;
