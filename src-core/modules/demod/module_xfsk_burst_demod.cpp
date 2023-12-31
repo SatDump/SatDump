@@ -6,7 +6,9 @@
 
 namespace demod
 {
-    XFSKBurstDemodModule::XFSKBurstDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
+    XFSKBurstDemodModule::XFSKBurstDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : BaseDemodModule(input_file, output_file_hint, parameters),
+          d_deviation(parameters.contains("fsk_deviation") ? parameters["fsk_deviation"].get<float>() : d_deviation)
     {
         name = "xFSK Burst Demodulator";
         show_freq = false;
@@ -14,19 +16,24 @@ namespace demod
         constellation.d_hscale = (80.0 / 10.0) / 100.0;
         constellation.d_vscale = 20.0 / 100.0;
 
-        MIN_SPS = 8;
-        MAX_SPS = 32.0;
+        // MIN_SPS = 8;
+        // MAX_SPS = 32.0;
 
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 4];
     }
 
+    /*
+    The values for recovery here are from old GRC flowchart I had around.
+    Not sure who was the original author, but as they work it wasn't worth re-doing all the work.
+    */
     void XFSKBurstDemodModule::init()
     {
         BaseDemodModule::initb();
 
         // LPF1
-        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate * 3, 200));
+        float carson_cuttoff = d_deviation + d_symbolrate / 2.0;
+        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, carson_cuttoff, 2000));
 
         // Quadrature demod
         qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, 1.0f);
@@ -34,7 +41,11 @@ namespace demod
         // AGC2
         agc2 = std::make_shared<dsp::AGC2Block<float>>(qua->output_stream, 5.0, 0.01, 0.001);
 
-        rec = std::make_shared<dsp::GardnerClockRecovery2Block>(agc2->output_stream, final_samplerate, d_symbolrate, 0.707, 24);
+        // LPF2
+        lpf2 = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate / 2, 2000));
+
+        // rec = std::make_shared<dsp::GardnerClockRecovery2Block>(agc2->output_stream, final_samplerate, d_symbolrate, 0.707, 24);
+        rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(lpf2->output_stream, final_sps, (final_sps * M_PI) / 100.0, 0.5, 0.5 / 8.0, 0.01);
     }
 
     XFSKBurstDemodModule::~XFSKBurstDemodModule()
@@ -63,6 +74,7 @@ namespace demod
         lpf1->start();
         qua->start();
         agc2->start();
+        lpf2->start();
         rec->start();
 
         uint8_t wip_byte = 0;
@@ -126,6 +138,7 @@ namespace demod
         lpf1->stop();
         qua->stop();
         agc2->stop();
+        lpf2->stop();
         rec->stop();
         rec->output_stream->stopReader();
 

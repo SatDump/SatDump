@@ -9,6 +9,9 @@
 
 #include "spino/module_spino_decoder.h"
 
+#include "geoscan/module_geoscan_decoder.h"
+#include "geoscan/module_geoscan_data_decoder.h"
+
 class CubeSatSupport : public satdump::Plugin
 {
 public:
@@ -30,6 +33,9 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, ax25::AX25DecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, spino::SpinoDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, geoscan::GEOSCANDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, geoscan::GEOSCANDataDecoderModule);
     }
 };
 
