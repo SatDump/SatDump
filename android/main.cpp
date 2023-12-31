@@ -142,9 +142,7 @@ void tick()
     WantTextInputLast = io.WantTextInput;
 
     // Rendering
-    std::pair<int, int> dims = funcBeginFrame();
-    satdump::renderMainUI(dims.first, dims.second);
-    funcEndFrame();
+    satdump::renderMainUI();
 }
 
 void shutdown()

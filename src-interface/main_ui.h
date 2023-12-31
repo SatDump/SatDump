@@ -19,5 +19,5 @@ namespace satdump
     void initMainUI(float device_scale);
     void updateUI(float device_scale);
     void exitMainUI();
-    void renderMainUI(int wwidth, int wheight);
+    void renderMainUI();
 }

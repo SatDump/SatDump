@@ -251,9 +251,7 @@ int main(int argc, char *argv[])
     // Main loop
     do
     {
-        std::pair<int, int> dims = funcBeginFrame();
-        satdump::renderMainUI(dims.first, dims.second);
-        funcEndFrame();
+        satdump::renderMainUI();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
 
     // Save window position
