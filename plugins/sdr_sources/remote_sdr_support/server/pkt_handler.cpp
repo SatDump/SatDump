@@ -126,6 +126,13 @@ void tcp_rx_handler(uint8_t *buffer, int len)
             logger->debug("Samplerate sent %llu", last_samplerate);
             if (source_is_open)
                 current_sample_source->set_samplerate(last_samplerate);
+
+            // Acknowledge the packet to prevent the client from thinking we changed
+            // the samplerate if they get a late packet from sourceGuiThread()
+            std::vector<uint8_t> pkt(8);
+            *((uint64_t*)&pkt[0]) = last_samplerate;
+            sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_SAMPLERATEFBK, pkt);
+
             source_mtx.unlock();
         }
 
