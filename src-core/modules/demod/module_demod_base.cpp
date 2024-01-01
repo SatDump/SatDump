@@ -42,6 +42,9 @@ namespace demod
             d_doppler_alpha = parameters["doppler_alpha"].get<float>();
         /////////////////////
 
+        if (parameters.count("dump_intermediate") > 0)
+            d_dump_intermediate = parameters["dump_intermediate"].get<std::string>();
+
         snr = 0;
         peak_snr = 0;
 
@@ -158,6 +161,13 @@ namespace demod
             fft_splitter->add_output("fft");
             fft_splitter->set_enabled("fft", show_fft);
 
+            if (d_dump_intermediate != "")
+            {
+                fft_splitter->add_output("intermediate");
+                fft_splitter->set_enabled("intermediate", true);
+                intermediate_file_sink = std::make_shared<dsp::FileSinkBlock>(fft_splitter->get_output("intermediate"));
+            }
+
             fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->get_output("fft"));
             fft_proc->set_fft_settings(8192, final_samplerate, 120);
             fft_proc->avg_num = 10;
@@ -205,6 +215,14 @@ namespace demod
             doppler_shift->start();
         if (input_data_type == DATA_FILE)
             fft_splitter->start();
+        if (input_data_type == DATA_FILE && d_dump_intermediate != "")
+        {
+            intermediate_file_sink->start();
+            intermediate_file_sink->set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
+            std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)final_samplerate) + "_intermediate_iq";
+            logger->trace("Recording intermediate to " + int_file);
+            intermediate_file_sink->start_recording(int_file, final_samplerate);
+        }
         if (input_data_type == DATA_FILE)
             fft_proc->start();
         if (resample)
@@ -225,6 +243,11 @@ namespace demod
             doppler_shift->stop();
         if (input_data_type == DATA_FILE)
             fft_splitter->stop();
+        if (input_data_type == DATA_FILE && d_dump_intermediate != "")
+        {
+            intermediate_file_sink->stop_recording();
+            intermediate_file_sink->stop();
+        }
         if (input_data_type == DATA_FILE)
             fft_proc->stop();
         if (resample)

@@ -17,6 +17,7 @@
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
 #include "common/dsp/utils/doppler_correct.h"
+#include "common/dsp/io/file_sink.h"
 
 namespace demod
 {
@@ -52,6 +53,9 @@ namespace demod
 
         bool d_doppler_enable = false;
         float d_doppler_alpha = 0.01;
+
+        std::string d_dump_intermediate = "";
+        std::shared_ptr<dsp::FileSinkBlock> intermediate_file_sink;
 
         // Computed values
         float final_samplerate;
