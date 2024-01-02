@@ -79,6 +79,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
                     img.channel(j)[i] = map_cache->channel(j)[i];
         }
 
+        last_color_borders = color_borders;
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }
@@ -109,7 +110,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
                     img.channel(j)[i] = shores_cache->channel(j)[i];
         }
 
-        last_color_borders = color_borders;
+        last_color_shores = color_shores;
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }
