@@ -177,35 +177,45 @@ namespace satdump
                 proj_cfg["metadata"]["tle"] = products->get_tle();
             if (products->has_timestamps)
                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
-            auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                                                                            pre_corrected_height,
-                                                                            proj_cfg,
-                                                                            !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
 
-            if (corrected_stuff.size() != 0 && correct_image)
+            if (corrected_stuff.size() != last_corrected_stuff_size || correct_image != last_correct_image || rotate_image != last_rotate_image)
             {
-                int fwidth = current_image.width();
-                int fheight = current_image.height();
-                bool rotate = rotate_image;
+                overlay_handler.clear_cache();
+                proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
+                    pre_corrected_height,
+                    proj_cfg,
+                    !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
 
-                std::function<std::pair<int, int>(float, float, int, int)> newfun =
-                    [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                if (corrected_stuff.size() != 0 && correct_image)
                 {
-                    std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                    if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
-                    {
-                        ret.first = corrected_stuff[ret.first];
-                        if (rotate)
+                    int fwidth = current_image.width();
+                    int fheight = current_image.height();
+                    bool rotate = rotate_image;
+                    auto &proj_func = this->proj_func;
+
+                    std::function<std::pair<int, int>(float, float, int, int)> newfun =
+                        [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                         {
-                            ret.first = (fwidth - 1) - ret.first;
-                            ret.second = (fheight - 1) - ret.second;
-                        }
-                    }
-                    else
-                        ret.second = ret.first = -1;
-                    return ret;
-                };
-                proj_func = newfun;
+                            std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                            if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                            {
+                                ret.first = corrected_stuff[ret.first];
+                                if (rotate)
+                                {
+                                    ret.first = (fwidth - 1) - ret.first;
+                                    ret.second = (fheight - 1) - ret.second;
+                                }
+                            }
+                            else
+                                ret.second = ret.first = -1;
+                            return ret;
+                        };
+                    proj_func = newfun;
+                }
+
+                last_corrected_stuff_size = (int)corrected_stuff.size();
+                last_correct_image = correct_image;
+                last_rotate_image = rotate_image;
             }
 
             overlay_handler.apply(current_image, proj_func);

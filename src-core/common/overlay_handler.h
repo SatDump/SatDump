@@ -18,6 +18,13 @@ public:
     ImVec4 color_qth = {1, 0, 1, 1};
     ImVec4 color_latlon = {0, 0, 1, 1};
 
+    // Overlay caches
+    image::Image<uint16_t> *map_cache = nullptr;
+    image::Image<uint16_t> *shores_cache = nullptr;
+    image::Image<uint16_t> *cities_cache = nullptr;
+    image::Image<uint16_t> *qth_cache = nullptr;
+    image::Image<uint16_t> *latlon_cache = nullptr;
+
     // Settings
     bool draw_map_overlay = false;
     bool draw_shores_overlay = false;
@@ -30,11 +37,16 @@ public:
     int cities_scale_rank = 3;
 
     void set_defaults();
+    void clear_cache();
 
 public:
     OverlayHandler()
     {
         set_defaults();
+    }
+    ~OverlayHandler()
+    {
+        clear_cache();
     }
 
     int enabled();
