@@ -219,9 +219,9 @@ namespace demod
         {
             intermediate_file_sink->start();
             intermediate_file_sink->set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
-            std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)final_samplerate) + "_intermediate_iq";
+            std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)d_samplerate) + "_intermediate_iq";
             logger->trace("Recording intermediate to " + int_file);
-            intermediate_file_sink->start_recording(int_file, final_samplerate);
+            intermediate_file_sink->start_recording(int_file, d_samplerate);
         }
         if (input_data_type == DATA_FILE)
             fft_proc->start();
