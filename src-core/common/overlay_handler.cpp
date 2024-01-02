@@ -202,7 +202,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             map::drawProjectedMapLatLonGrid(*latlon_cache, color, proj_func);
         }
         else
-            logger->info("Applying lat/lon overlay...");
+            logger->info("Applying cached lat/lon overlay...");
 
         for (size_t i = 0; i < width * height; i++)
         {
