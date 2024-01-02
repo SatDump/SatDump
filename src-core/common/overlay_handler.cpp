@@ -56,11 +56,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw map borders
     if (draw_map_overlay)
     {
-        if (map_cache == nullptr || map_cache->width() != width || map_cache->height() != height)
+        if (map_cache == nullptr || map_cache->width() != width || map_cache->height() != height ||
+            last_color_borders.w != color_borders.w || last_color_borders.x != color_borders.x ||
+            last_color_borders.y != color_borders.y || last_color_borders.z != color_borders.z)
         {
             logger->info("Drawing map overlay...");
-            if (map_cache != nullptr)
-                delete map_cache;
+            delete map_cache;
             map_cache = new image::Image<uint16_t>(width, height, 4);
             unsigned short color[4] = { (unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f), 65535 };
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
@@ -74,7 +75,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         for (size_t i = 0; i < width * height; i++)
         {
             if (map_cache->channel(3)[i] != 0)
-                for (size_t j = 0; j < img.channels(); j++)
+                for (int j = 0; j < img.channels(); j++)
                     img.channel(j)[i] = map_cache->channel(j)[i];
         }
 
@@ -85,11 +86,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw map shorelines
     if (draw_shores_overlay)
     {
-        if (shores_cache == nullptr || shores_cache->width() != width || shores_cache->height() != height)
+        if (shores_cache == nullptr || shores_cache->width() != width || shores_cache->height() != height ||
+            last_color_shores.w != color_shores.w || last_color_shores.x != color_shores.x ||
+            last_color_shores.y != color_shores.y || last_color_shores.z != color_shores.z)
         {
             logger->info("Drawing shores overlay...");
-            if (shores_cache != nullptr)
-                delete shores_cache;
+            delete shores_cache;
             shores_cache = new image::Image<uint16_t>(width, height, 4);
             unsigned short color[4] = { (unsigned short)(color_shores.x * 65535.0f), (unsigned short)(color_shores.y * 65535.0f), (unsigned short)(color_shores.z * 65535.0f), 65535 };
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
@@ -103,9 +105,11 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         for (size_t i = 0; i < width * height; i++)
         {
             if (shores_cache->channel(3)[i] != 0)
-                for (size_t j = 0; j < img.channels(); j++)
+                for (int j = 0; j < img.channels(); j++)
                     img.channel(j)[i] = shores_cache->channel(j)[i];
         }
+
+        last_color_borders = color_borders;
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }
@@ -113,11 +117,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw cities points
     if (draw_cities_overlay)
     {
-        if (cities_cache == nullptr || cities_cache->width() != width || cities_cache->height() != height)
+        if (cities_cache == nullptr || cities_cache->width() != width || cities_cache->height() != height ||
+            last_color_cities.w != color_cities.w || last_color_cities.x != color_cities.x ||
+            last_color_cities.y != color_cities.y || last_color_cities.z != color_cities.z)
         {
             logger->info("Drawing cities overlay...");
-            if (cities_cache != nullptr)
-                delete cities_cache;
+            delete cities_cache;
             cities_cache = new image::Image<uint16_t>(width, height, 4);
             unsigned short color[4] = { (unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f), 65535 };
             map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
@@ -134,10 +139,11 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         for (size_t i = 0; i < width * height; i++)
         {
             if (cities_cache->channel(3)[i] != 0)
-                for (size_t j = 0; j < img.channels(); j++)
+                for (int j = 0; j < img.channels(); j++)
                     img.channel(j)[i] = cities_cache->channel(j)[i];
         }
 
+        last_color_cities = color_cities;
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }
@@ -145,11 +151,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw qth overlay
     if (draw_qth_overlay)
     {
-        if (qth_cache == nullptr || qth_cache->width() != width || qth_cache->height() != height)
+        if (qth_cache == nullptr || qth_cache->width() != width || qth_cache->height() != height ||
+            last_color_qth.w != color_qth.w || last_color_qth.x != color_qth.x ||
+            last_color_qth.y != color_qth.y || last_color_qth.z != color_qth.z)
         {
             logger->info("Drawing QTH overlay...");
-            if (qth_cache != nullptr)
-                delete qth_cache;
+            delete qth_cache;
             qth_cache = new image::Image<uint16_t>(width, height, 4);
             unsigned short color[4] = { (unsigned short)(color_qth.x * 65535.0f), (unsigned short)(color_qth.y * 65535.0f), (unsigned short)(color_qth.z * 65535.0f), 65535 };
             double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
@@ -168,13 +175,14 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         else
             logger->info("Applying cached QTH overlay...");
 
-        for (size_t i = 0; i < width * height; i++)
+        for (int i = 0; i < width * height; i++)
         {
             if (qth_cache->channel(3)[i] != 0)
                 for (size_t j = 0; j < img.channels(); j++)
                     img.channel(j)[i] = qth_cache->channel(j)[i];
         }
 
+        last_color_qth = color_qth;
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }
@@ -182,11 +190,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw latlon grid
     if (draw_latlon_overlay)
     {
-        if (latlon_cache == nullptr || latlon_cache->width() != width || latlon_cache->height() != height)
+        if (latlon_cache == nullptr || latlon_cache->width() != width || latlon_cache->height() != height ||
+            last_color_latlon.w != color_latlon.w || last_color_latlon.x != color_latlon.x ||
+            last_color_latlon.y != color_latlon.y || last_color_latlon.z != color_latlon.z)
         {
             logger->info("Drawing lat/lon overlay...");
-            if (latlon_cache != nullptr)
-                delete latlon_cache;
+            delete latlon_cache;
             latlon_cache = new image::Image<uint16_t>(width, height, 4);
             unsigned short color[4] = { (unsigned short)(color_latlon.x * 65535.0f), (unsigned short)(color_latlon.y * 65535.0f), (unsigned short)(color_latlon.z * 65535.0f), 65535 };
             map::drawProjectedMapLatLonGrid(*latlon_cache, color, proj_func);
@@ -201,6 +210,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
                     img.channel(j)[i] = latlon_cache->channel(j)[i];
         }
 
+        last_color_latlon = color_latlon;
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }

@@ -18,6 +18,12 @@ public:
     ImVec4 color_qth = {1, 0, 1, 1};
     ImVec4 color_latlon = {0, 0, 1, 1};
 
+    ImVec4 last_color_borders = { 0, 0, 0, 0 };
+    ImVec4 last_color_shores = { 0, 0, 0, 0 };
+    ImVec4 last_color_cities = { 0, 0, 0, 0 };
+    ImVec4 last_color_qth = { 0, 0, 0, 0 };
+    ImVec4 last_color_latlon = { 0, 0, 0, 0 };
+
     // Overlay caches
     image::Image<uint16_t> *map_cache = nullptr;
     image::Image<uint16_t> *shores_cache = nullptr;
