@@ -1984,6 +1984,18 @@
                         "individual_equalize": true,
                         "apply_lut": true
                     },
+                    "Brightness Temperature (Ch. 2)": {
+                        "channels": "cch2",
+                        "calib_cfg": {
+                            "cch2": {
+                                "type": "temperature",
+                                "min": 140,
+                                "max": 300
+                            }
+                        },
+                        "description": "descriptions/atmsBrightnessTemp.md",
+                        "lut": "lut/cal/atmsBrightTemp.png"
+                    },
                     "550hPa Temperature (~5 km)": {
                         "equation": "cch6",
                         "apply_lut": true
