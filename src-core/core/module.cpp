@@ -76,6 +76,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/products/module_products_processor.h"
 
+#include "modules/generic/module_soft2hard.h"
+
 void registerModules()
 {
     // Register modules
@@ -103,6 +105,9 @@ void registerModules()
 
     // Products Processor. This one is a bit different!
     REGISTER_MODULE(products::ProductsProcessorModule);
+
+    // Generic
+    REGISTER_MODULE(generic::Soft2HardModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});
