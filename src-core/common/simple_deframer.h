@@ -15,6 +15,7 @@ namespace def
         const int d_frame_length;
         const int d_thresold;
         const bool d_byte_aligned;
+        const bool d_soft_bits_in;
 
         bool in_frame = false;
         std::vector<uint8_t> current_frame;
@@ -33,19 +34,6 @@ namespace def
         uint8_t byte_shifter;
         int in_byte_buffer = 0;
 
-    public:
-        SimpleDeframer(uint64_t syncword, int syncword_bit_length, int frame_length_bits, int thresold, bool byte_aligned = false)
-            : d_syncword(syncword),
-              d_syncword_length(syncword_bit_length),
-              d_frame_length(frame_length_bits),
-              d_thresold(thresold),
-              d_byte_aligned(byte_aligned)
-        {
-            d_sync_mask = 0;
-            for(int i = 0; i < syncword_bit_length; i++)
-                d_sync_mask = d_sync_mask << 1 | 1;
-        }
-
         void push_bit(uint8_t bit)
         {
             byte_shifter = (byte_shifter << 1) | bit;
@@ -55,6 +43,20 @@ namespace def
                 current_frame.push_back(byte_shifter);
                 in_byte_buffer = 0;
             }
+        }
+
+    public:
+        SimpleDeframer(uint64_t syncword, int syncword_bit_length, int frame_length_bits, int thresold, bool byte_aligned = false, bool soft_bits_in = false)
+            : d_syncword(syncword),
+              d_syncword_length(syncword_bit_length),
+              d_frame_length(frame_length_bits),
+              d_thresold(thresold),
+              d_byte_aligned(byte_aligned),
+              d_soft_bits_in(soft_bits_in)
+        {
+            d_sync_mask = 0;
+            for (int i = 0; i < syncword_bit_length; i++)
+                d_sync_mask = d_sync_mask << 1 | 1;
         }
 
         std::vector<std::vector<uint8_t>> work(uint8_t *data, int size)
@@ -108,8 +110,10 @@ namespace def
                 {
                     for (int i = 7; i >= 0; i--)
                     {
-                        uint8_t bit = (data[byten] >> i) & 1;
-                        asm_shifter = (asm_shifter << 1 | bit) & d_sync_mask;//% d_sync_modulo;
+                        uint8_t bit = d_soft_bits_in
+                                          ? (((int8_t *)data)[byten * 8 + (7 - i)] > 0)
+                                          : ((data[byten] >> i) & 1);
+                        asm_shifter = (asm_shifter << 1 | bit) & d_sync_mask; //% d_sync_modulo;
 
                         if (in_frame)
                         {

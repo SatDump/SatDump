@@ -21,6 +21,8 @@ namespace geoscan
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
+        std::unique_ptr<def::SimpleDeframer> deframer;
+
         int frm_cnt = 0;
 
         codings::crc::GenericCRC crc_check = codings::crc::GenericCRC(16, 0x8005, 0xFFFF, 0x0000, false, false);
