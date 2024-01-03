@@ -62,8 +62,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             logger->info("Drawing map overlay...");
             delete map_cache;
-            map_cache = new image::Image<uint16_t>(width, height, 4);
-            unsigned short color[4] = { (unsigned short)(color_borders.x * 65535.0f), (unsigned short)(color_borders.y * 65535.0f), (unsigned short)(color_borders.z * 65535.0f), 65535 };
+            map_cache = new image::Image<uint8_t>(width, height, 4);
+            uint8_t color[4] = { (uint8_t)(color_borders.x * 255.0f), (uint8_t)(color_borders.y * 255.0f), (uint8_t)(color_borders.z * 255.0f), 255 };
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            *map_cache,
                                            color,
@@ -76,7 +76,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             if (map_cache->channel(3)[i] != 0)
                 for (int j = 0; j < img.channels(); j++)
-                    img.channel(j)[i] = map_cache->channel(j)[i];
+                    img.channel(j)[i] = map_cache->channel(j)[i] << 8;
         }
 
         last_color_borders = color_borders;
@@ -93,8 +93,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             logger->info("Drawing shores overlay...");
             delete shores_cache;
-            shores_cache = new image::Image<uint16_t>(width, height, 4);
-            unsigned short color[4] = { (unsigned short)(color_shores.x * 65535.0f), (unsigned short)(color_shores.y * 65535.0f), (unsigned short)(color_shores.z * 65535.0f), 65535 };
+            shores_cache = new image::Image<uint8_t>(width, height, 4);
+            uint8_t color[4] = { (uint8_t)(color_shores.x * 255.0f), (uint8_t)(color_shores.y * 255.0f), (uint8_t)(color_shores.z * 255.0f), 255 };
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                            *shores_cache,
                                            color,
@@ -107,7 +107,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             if (shores_cache->channel(3)[i] != 0)
                 for (int j = 0; j < img.channels(); j++)
-                    img.channel(j)[i] = shores_cache->channel(j)[i];
+                    img.channel(j)[i] = shores_cache->channel(j)[i] << 8;
         }
 
         last_color_shores = color_shores;
@@ -124,8 +124,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             logger->info("Drawing cities overlay...");
             delete cities_cache;
-            cities_cache = new image::Image<uint16_t>(width, height, 4);
-            unsigned short color[4] = { (unsigned short)(color_cities.x * 65535.0f), (unsigned short)(color_cities.y * 65535.0f), (unsigned short)(color_cities.z * 65535.0f), 65535 };
+            cities_cache = new image::Image<uint8_t>(width, height, 4);
+            uint8_t color[4] = { (uint8_t)(color_cities.x * 255.0f), (uint8_t)(color_cities.y * 255.0f), (uint8_t)(color_cities.z * 255.0f), 255 };
             map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                             *cities_cache,
                                             color,
@@ -141,7 +141,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             if (cities_cache->channel(3)[i] != 0)
                 for (int j = 0; j < img.channels(); j++)
-                    img.channel(j)[i] = cities_cache->channel(j)[i];
+                    img.channel(j)[i] = cities_cache->channel(j)[i] << 8;
         }
 
         last_color_cities = color_cities;
@@ -158,8 +158,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             logger->info("Drawing QTH overlay...");
             delete qth_cache;
-            qth_cache = new image::Image<uint16_t>(width, height, 4);
-            unsigned short color[4] = { (unsigned short)(color_qth.x * 65535.0f), (unsigned short)(color_qth.y * 65535.0f), (unsigned short)(color_qth.z * 65535.0f), 65535 };
+            qth_cache = new image::Image<uint8_t>(width, height, 4);
+            uint8_t color[4] = { (uint8_t)(color_qth.x * 255.0f), (uint8_t)(color_qth.y * 255.0f), (uint8_t)(color_qth.z * 255.0f), 255 };
             double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
             double qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
             std::pair<float, float> cc = proj_func(qth_lat, qth_lon,
@@ -180,7 +180,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             if (qth_cache->channel(3)[i] != 0)
                 for (size_t j = 0; j < img.channels(); j++)
-                    img.channel(j)[i] = qth_cache->channel(j)[i];
+                    img.channel(j)[i] = qth_cache->channel(j)[i] << 8;
         }
 
         last_color_qth = color_qth;
@@ -197,8 +197,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             logger->info("Drawing lat/lon overlay...");
             delete latlon_cache;
-            latlon_cache = new image::Image<uint16_t>(width, height, 4);
-            unsigned short color[4] = { (unsigned short)(color_latlon.x * 65535.0f), (unsigned short)(color_latlon.y * 65535.0f), (unsigned short)(color_latlon.z * 65535.0f), 65535 };
+            latlon_cache = new image::Image<uint8_t>(width, height, 4);
+            uint8_t color[4] = { (uint8_t)(color_latlon.x * 255.0f), (uint8_t)(color_latlon.y * 255.0f), (uint8_t)(color_latlon.z * 255.0f), 255 };
             map::drawProjectedMapLatLonGrid(*latlon_cache, color, proj_func);
         }
         else
@@ -208,7 +208,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         {
             if (latlon_cache->channel(3)[i] != 0)
                 for (size_t j = 0; j < img.channels(); j++)
-                    img.channel(j)[i] = latlon_cache->channel(j)[i];
+                    img.channel(j)[i] = latlon_cache->channel(j)[i] << 8;
         }
 
         last_color_latlon = color_latlon;

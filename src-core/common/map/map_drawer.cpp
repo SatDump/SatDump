@@ -7,7 +7,7 @@
 namespace map
 {
     template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -155,11 +155,11 @@ namespace map
         }
     }
 
-    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
-    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>, int);
+    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>, int);
 
     template <typename T>
-    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
+    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
     {
         if (!map_image.font_ready())
             return;
@@ -201,11 +201,11 @@ namespace map
         }
     }
 
-    template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
-    template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
+    template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
+    template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
 
     template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -257,11 +257,11 @@ namespace map
         }
     }
 
-    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>);
 
     template <typename T>
-    void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
     {
         for (float lon = -180; lon < 180; lon += 10)
         {
@@ -298,11 +298,11 @@ namespace map
         }
     }
 
-    template void drawProjectedMapLatLonGrid(image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapLatLonGrid(image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapLatLonGrid(image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>);
+    template void drawProjectedMapLatLonGrid(image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>);
 
     template <typename T>
-    void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[3], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
+    void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
     {
         std::vector<image::Image<uint8_t>> font = image::make_font(50 * ratio);
 
@@ -322,6 +322,6 @@ namespace map
         }
     }
 
-    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint8_t> &, uint8_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
-    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint16_t> &, uint16_t[3], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>, float);
+    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>, float);
 }

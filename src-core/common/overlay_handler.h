@@ -25,11 +25,11 @@ public:
     ImVec4 last_color_latlon = { 0, 0, 0, 0 };
 
     // Overlay caches
-    image::Image<uint16_t> *map_cache = nullptr;
-    image::Image<uint16_t> *shores_cache = nullptr;
-    image::Image<uint16_t> *cities_cache = nullptr;
-    image::Image<uint16_t> *qth_cache = nullptr;
-    image::Image<uint16_t> *latlon_cache = nullptr;
+    image::Image<uint8_t> *map_cache = nullptr;
+    image::Image<uint8_t> *shores_cache = nullptr;
+    image::Image<uint8_t> *cities_cache = nullptr;
+    image::Image<uint8_t> *qth_cache = nullptr;
+    image::Image<uint8_t> *latlon_cache = nullptr;
 
     // Settings
     bool draw_map_overlay = false;
