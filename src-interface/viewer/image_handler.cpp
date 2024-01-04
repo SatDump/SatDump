@@ -54,10 +54,6 @@ namespace satdump
         updateCorrectionFactors(true);
 
         lut_image = image::LUT_jet<uint16_t>();
-
-        // font
-        current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
-
         asyncUpdate();
 
         try
@@ -177,35 +173,48 @@ namespace satdump
                 proj_cfg["metadata"]["tle"] = products->get_tle();
             if (products->has_timestamps)
                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
-            auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                                                                            pre_corrected_height,
-                                                                            proj_cfg,
-                                                                            !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
 
-            if (corrected_stuff.size() != 0 && correct_image)
+            bool do_correction = corrected_stuff.size() != 0 && correct_image;
+            if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
+                current_image.width() != last_width || current_image.height() != last_height)
             {
-                int fwidth = current_image.width();
-                int fheight = current_image.height();
-                bool rotate = rotate_image;
+                overlay_handler.clear_cache();
+                proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
+                    pre_corrected_height,
+                    proj_cfg,
+                    !do_correction && rotate_image);
 
-                std::function<std::pair<int, int>(float, float, int, int)> newfun =
-                    [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                if (do_correction)
                 {
-                    std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                    if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
-                    {
-                        ret.first = corrected_stuff[ret.first];
-                        if (rotate)
+                    int fwidth = current_image.width();
+                    int fheight = current_image.height();
+                    bool rotate = rotate_image;
+                    auto &proj_func = this->proj_func;
+
+                    std::function<std::pair<int, int>(float, float, int, int)> newfun =
+                        [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                         {
-                            ret.first = (fwidth - 1) - ret.first;
-                            ret.second = (fheight - 1) - ret.second;
-                        }
-                    }
-                    else
-                        ret.second = ret.first = -1;
-                    return ret;
-                };
-                proj_func = newfun;
+                            std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                            if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                            {
+                                ret.first = corrected_stuff[ret.first];
+                                if (rotate)
+                                {
+                                    ret.first = (fwidth - 1) - ret.first;
+                                    ret.second = (fheight - 1) - ret.second;
+                                }
+                            }
+                            else
+                                ret.second = ret.first = -1;
+                            return ret;
+                        };
+                    proj_func = newfun;
+                }
+
+                last_correct_image = do_correction;
+                last_rotate_image = rotate_image;
+                last_width = current_image.width();
+                last_height = current_image.height();
             }
 
             overlay_handler.apply(current_image, proj_func);

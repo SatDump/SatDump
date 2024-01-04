@@ -183,6 +183,12 @@
             "name": "QTH Altitude",
             "description": "Altitude (meters) of your station's QTH"
         },
+        "default_qth_label": {
+            "type": "string",
+            "value": "QTH",
+            "name":  "Default QTH Label",
+            "description": "Default map label for QTH marker"
+        },
         "default_borders_color": {
             "type": "color",
             "value": [
@@ -235,7 +241,7 @@
                 1,
                 1
             ],
-            "name": "Default LatLon Color",
+            "name": "Default Lat/Lon Color",
             "description": "Default map latlon grid overlay color"
         },
         "tle_update_interval": {

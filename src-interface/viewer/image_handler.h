@@ -29,6 +29,13 @@ namespace satdump
         std::vector<image::Image<uint16_t>> images_obj;
         ImageViewWidget image_view;
 
+        // Map projection stuff
+        std::function<std::pair<int, int>(float, float, int, int)> proj_func;
+        bool last_correct_image = false;
+        bool last_rotate_image = false;
+        size_t last_width = 0;
+        size_t last_height = 0;
+
         // Other controls
         bool median_blur = false;
         bool despeckle = false;

@@ -526,6 +526,7 @@ namespace satdump
         auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, cfg, {});
 
         // Draw map borders
+        projection_overlay_handler.clear_cache();
         projection_overlay_handler.apply(projected_image_result, proj_func, &general_progress);
 
         // Update ImageView
