@@ -8,8 +8,29 @@
 #include "resources.h"
 #include "common/widgets/stepped_slider.h"
 
+struct OverlayCache
+{
+    size_t width = 0;
+    size_t height = 0;
+    std::vector<size_t> map;
+};
+
+struct GrayscaleOverlayCache
+{
+    size_t width = 0;
+    size_t height = 0;
+    std::map<size_t, float> map;
+};
+
 class OverlayHandler
 {
+private:
+    OverlayCache map_cache;
+    OverlayCache shores_cache;
+    OverlayCache latlon_cache;
+    GrayscaleOverlayCache cities_cache;
+    GrayscaleOverlayCache qth_cache;
+
 public:
     // Colors
     ImVec4 color_borders = {0, 1, 0, 1};
@@ -17,6 +38,10 @@ public:
     ImVec4 color_cities = {1, 0, 0, 1};
     ImVec4 color_qth = {1, 0, 1, 1};
     ImVec4 color_latlon = {0, 0, 1, 1};
+
+    // QTH Label
+    std::string qth_label;
+    std::string last_qth_label = "";
 
     // Settings
     bool draw_map_overlay = false;
@@ -28,8 +53,12 @@ public:
     int cities_type = 0;
     int cities_size = 50;
     int cities_scale_rank = 3;
+    int last_cities_type = -1;
+    int last_cities_size = -1;
+    int last_cities_scale_rank = -1;
 
     void set_defaults();
+    void clear_cache();
 
 public:
     OverlayHandler()

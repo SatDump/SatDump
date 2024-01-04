@@ -259,9 +259,9 @@ namespace image
                     {
                         float mf = m / 255.0;
                         T col[] = {static_cast<T>((color[0] - channel(0)[pos2]) * mf + channel(0)[pos2]),
-                                   static_cast<T>((color[1] - channel(1)[pos2]) * mf + channel(1)[pos2]),
-                                   static_cast<T>((color[2] - channel(2)[pos2]) * mf + channel(2)[pos2]),
-                                   d_channels == 4 ? static_cast<T>((color[3] - channel(3)[pos2]) * mf + channel(3)[pos2]) : std::numeric_limits<T>::max()};
+                                   d_channels > 1 ? static_cast<T>((color[1] - channel(1)[pos2]) * mf + channel(1)[pos2]) : std::numeric_limits<T>::max(),
+                                   d_channels > 2 ? static_cast<T>((color[2] - channel(2)[pos2]) * mf + channel(2)[pos2]) : std::numeric_limits<T>::max(),
+                                   d_channels > 3 ? static_cast<T>((color[3] - channel(3)[pos2]) * mf + channel(3)[pos2]) : std::numeric_limits<T>::max()};
                         draw_pixel(x, y, col);
                     }
                     pos++;
