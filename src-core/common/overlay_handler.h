@@ -39,6 +39,10 @@ public:
     ImVec4 color_qth = {1, 0, 1, 1};
     ImVec4 color_latlon = {0, 0, 1, 1};
 
+    // QTH Label
+    std::string qth_label;
+    std::string last_qth_label = "";
+
     // Settings
     bool draw_map_overlay = false;
     bool draw_shores_overlay = false;

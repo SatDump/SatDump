@@ -1,5 +1,6 @@
 #include "overlay_handler.h"
 #include "core/config.h"
+#include "imgui/imgui_stdlib.h"
 
 int OverlayHandler::enabled()
 {
@@ -32,7 +33,8 @@ bool OverlayHandler::drawUI()
     ImGui::Checkbox("QTH Overlay##Projs", &draw_qth_overlay);
     ImGui::SameLine();
     ImGui::ColorEdit3("##qth##Projs", (float *)&color_qth, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-    ImGui::IsItemDeactivatedAfterEdit();
+    if (draw_qth_overlay)
+        ImGui::InputText("QTH Label##Projs", &qth_label);
 
     widgets::SteppedSliderInt("Map Labels Font Size", &cities_size, 10, 500);
     static const char *city_categories[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
@@ -161,12 +163,14 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw qth overlay
     if (draw_qth_overlay)
     {
-        if (qth_cache.map.size() == 0 || qth_cache.width != width || qth_cache.height != height || last_cities_size != cities_size)
+        if (qth_cache.map.size() == 0 || qth_cache.width != width || qth_cache.height != height ||
+            last_cities_size != cities_size || last_qth_label != qth_label)
         {
             logger->info("Drawing QTH overlay...");
             qth_cache.map.clear();
             qth_cache.width = width;
             qth_cache.height = height;
+            last_qth_label = qth_label;
             image::Image<uint8_t> bitmask(width, height, 1);
             bitmask.init_font(resources::getResourcePath("fonts/font.ttf"));
             uint8_t color[1] = { 255 };
@@ -179,7 +183,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
                 bitmask.draw_line(cc.first - cities_size * 0.3, cc.second - cities_size * 0.3, cc.first + cities_size * 0.3, cc.second + cities_size * 0.3, color);
                 bitmask.draw_line(cc.first + cities_size * 0.3, cc.second - cities_size * 0.3, cc.first - cities_size * 0.3, cc.second + cities_size * 0.3, color);
                 bitmask.draw_circle(cc.first, cc.second, 0.15 * cities_size, color, true);
-                bitmask.draw_text(cc.first, cc.second + cities_size * 0.15, color, cities_size, "QTH");
+                bitmask.draw_text(cc.first, cc.second + cities_size * 0.15, color, cities_size, qth_label);
             }
 
             for (size_t i = 0; i < bitmask.size(); i++)
@@ -243,6 +247,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
 nlohmann::json OverlayHandler::get_config()
 {
     nlohmann::json out;
+    out["qth_label"] = qth_label;
     out["cities_type"] = cities_type;
     out["cities_size"] = cities_size;
     out["cities_scale_rank"] = cities_scale_rank;
@@ -264,6 +269,7 @@ nlohmann::json OverlayHandler::get_config()
 
 void OverlayHandler::set_config(nlohmann::json in, bool status)
 {
+    setValueIfExists(in["qth_label"], qth_label);
     if (in.contains("borders_color"))
     {
         std::vector<float> color = in["borders_color"].get<std::vector<float>>();
@@ -323,6 +329,7 @@ void OverlayHandler::set_config(nlohmann::json in, bool status)
 
 void OverlayHandler::set_defaults()
 {
+    qth_label = satdump::config::main_cfg["satdump_general"]["default_qth_label"]["value"].get<std::string>();
     std::vector<float> dcolor_borders = satdump::config::main_cfg["satdump_general"]["default_borders_color"]["value"].get<std::vector<float>>();
     color_borders.x = dcolor_borders[0];
     color_borders.y = dcolor_borders[1];
