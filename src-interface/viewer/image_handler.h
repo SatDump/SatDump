@@ -31,9 +31,10 @@ namespace satdump
 
         // Map projection stuff
         std::function<std::pair<int, int>(float, float, int, int)> proj_func;
-        int last_corrected_stuff_size = -1;
         bool last_correct_image = false;
         bool last_rotate_image = false;
+        size_t last_width = 0;
+        size_t last_height = 0;
 
         // Other controls
         bool median_blur = false;

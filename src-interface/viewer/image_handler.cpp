@@ -54,10 +54,6 @@ namespace satdump
         updateCorrectionFactors(true);
 
         lut_image = image::LUT_jet<uint16_t>();
-
-        // font
-        current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
-
         asyncUpdate();
 
         try
@@ -178,15 +174,17 @@ namespace satdump
             if (products->has_timestamps)
                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
 
-            if (corrected_stuff.size() != last_corrected_stuff_size || correct_image != last_correct_image || rotate_image != last_rotate_image)
+            bool do_correction = corrected_stuff.size() != 0 && correct_image;
+            if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
+                current_image.width() != last_width || current_image.height() != last_height)
             {
                 overlay_handler.clear_cache();
                 proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
                     pre_corrected_height,
                     proj_cfg,
-                    !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
+                    !do_correction && rotate_image);
 
-                if (corrected_stuff.size() != 0 && correct_image)
+                if (do_correction)
                 {
                     int fwidth = current_image.width();
                     int fheight = current_image.height();
@@ -213,9 +211,10 @@ namespace satdump
                     proj_func = newfun;
                 }
 
-                last_corrected_stuff_size = (int)corrected_stuff.size();
-                last_correct_image = correct_image;
+                last_correct_image = do_correction;
                 last_rotate_image = rotate_image;
+                last_width = current_image.width();
+                last_height = current_image.height();
             }
 
             overlay_handler.apply(current_image, proj_func);
