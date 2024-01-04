@@ -30,16 +30,6 @@ namespace geoscan
         return {DATA_FILE};
     }
 
-    // Compare 2 32-bits values and return the difference count
-    inline int compare_32(uint32_t v1, uint32_t v2)
-    {
-        int cor = 0;
-        uint32_t diff = v1 ^ v2;
-        for (; diff; cor++)
-            diff &= diff - 1;
-        return cor;
-    }
-
     void GEOSCANDecoderModule::process()
     {
         if (input_data_type == DATA_FILE)

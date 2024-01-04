@@ -39,7 +39,7 @@ namespace geoscan
             {
                 logger->error("Telemetry Packet. TODO : IMPLEMENT!");
             }
-            else if (frame_buffer[4] == 0x02) // Imagery
+            else if (frame_buffer[4] == 0x02 || frame_buffer[4] == 0x01) // Imagery
             {
                 uint16_t hdr = frame_buffer[4 + 1] << 8 | frame_buffer[4 + 0];
                 uint8_t data_size = frame_buffer[4 + 2];
@@ -51,6 +51,8 @@ namespace geoscan
                     memcpy(&img_vector[pkt_offset], &frame_buffer[4 + 8], 56);
                     has_chunks[pkt_offset / 56] = true;
                 }
+
+                // logger->trace("%d", pkt_offset / 56);
             }
 
             progress = data_in.tellg();
