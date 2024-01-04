@@ -8,8 +8,29 @@
 #include "resources.h"
 #include "common/widgets/stepped_slider.h"
 
+struct OverlayCache
+{
+    size_t width = 0;
+    size_t height = 0;
+    std::vector<size_t> map;
+};
+
+struct GrayscaleOverlayCache
+{
+    size_t width = 0;
+    size_t height = 0;
+    std::map<size_t, float> map;
+};
+
 class OverlayHandler
 {
+private:
+    OverlayCache map_cache;
+    OverlayCache shores_cache;
+    OverlayCache latlon_cache;
+    GrayscaleOverlayCache cities_cache;
+    GrayscaleOverlayCache qth_cache;
+
 public:
     // Colors
     ImVec4 color_borders = {0, 1, 0, 1};
@@ -17,19 +38,6 @@ public:
     ImVec4 color_cities = {1, 0, 0, 1};
     ImVec4 color_qth = {1, 0, 1, 1};
     ImVec4 color_latlon = {0, 0, 1, 1};
-
-    ImVec4 last_color_borders = { 0, 0, 0, 0 };
-    ImVec4 last_color_shores = { 0, 0, 0, 0 };
-    ImVec4 last_color_cities = { 0, 0, 0, 0 };
-    ImVec4 last_color_qth = { 0, 0, 0, 0 };
-    ImVec4 last_color_latlon = { 0, 0, 0, 0 };
-
-    // Overlay caches
-    image::Image<uint8_t> *map_cache = nullptr;
-    image::Image<uint8_t> *shores_cache = nullptr;
-    image::Image<uint8_t> *cities_cache = nullptr;
-    image::Image<uint8_t> *qth_cache = nullptr;
-    image::Image<uint8_t> *latlon_cache = nullptr;
 
     // Settings
     bool draw_map_overlay = false;
@@ -49,10 +57,6 @@ public:
     OverlayHandler()
     {
         set_defaults();
-    }
-    ~OverlayHandler()
-    {
-        clear_cache();
     }
 
     int enabled();

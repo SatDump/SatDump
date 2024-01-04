@@ -186,7 +186,7 @@ namespace map
                     std::pair<float, float> cc = projectionFunc(coordinates.second, coordinates.first,
                                                                 map_image.height(), map_image.width());
 
-                    if (cc.first == -1 || cc.first == -1)
+                    if (cc.first == -1 || cc.second == -1)
                         continue;
 
                     map_image.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
