@@ -6,7 +6,6 @@
 #include "common/dsp/utils/agc2.h"
 #include "common/dsp/clock_recovery/clock_recovery_mm.h"
 #include "common/dsp/clock_recovery/clock_recovery_gardner.h"
-#include "common/dsp/clock_recovery/clock_recovery_gardner2.h"
 #include "common/dsp/filter/fir.h"
 
 namespace demod
