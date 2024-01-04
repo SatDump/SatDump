@@ -118,7 +118,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw cities points
     if (draw_cities_overlay)
     {
-        if (cities_cache.map.size() == 0 || cities_cache.width != width || cities_cache.height != height)
+        if (cities_cache.map.size() == 0 || cities_cache.width != width || cities_cache.height != height ||
+            last_cities_size != cities_size || last_cities_type != cities_type || last_cities_scale_rank != cities_scale_rank)
         {
             logger->info("Drawing cities overlay...");
             cities_cache.map.clear();
@@ -160,7 +161,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
     // Draw qth overlay
     if (draw_qth_overlay)
     {
-        if (qth_cache.map.size() == 0 || qth_cache.width != width || qth_cache.height != height)
+        if (qth_cache.map.size() == 0 || qth_cache.width != width || qth_cache.height != height || last_cities_size != cities_size)
         {
             logger->info("Drawing QTH overlay...");
             qth_cache.map.clear();
@@ -232,6 +233,11 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         if (step_cnt != nullptr)
             (*step_cnt)++;
     }
+
+    // Clean up
+    last_cities_size = cities_size;
+    last_cities_type = cities_type;
+    last_cities_scale_rank = cities_scale_rank;
 }
 
 nlohmann::json OverlayHandler::get_config()

@@ -49,6 +49,9 @@ public:
     int cities_type = 0;
     int cities_size = 50;
     int cities_scale_rank = 3;
+    int last_cities_type = -1;
+    int last_cities_size = -1;
+    int last_cities_scale_rank = -1;
 
     void set_defaults();
     void clear_cache();
