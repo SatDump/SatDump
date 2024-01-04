@@ -225,7 +225,7 @@ namespace demod
         }
         if (input_data_type == DATA_FILE)
             fft_proc->start();
-        if (resample)
+        if (resample && resampler)
             resampler->start();
         agc->start();
     }
@@ -250,7 +250,7 @@ namespace demod
         }
         if (input_data_type == DATA_FILE)
             fft_proc->stop();
-        if (resample)
+        if (resample && resampler)
             resampler->stop();
         agc->stop();
     }

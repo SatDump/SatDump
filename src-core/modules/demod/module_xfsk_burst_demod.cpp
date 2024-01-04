@@ -4,6 +4,8 @@
 #include "imgui/imgui.h"
 #include <volk/volk.h>
 
+// #include "common/audio/audio_sink.h"
+
 namespace demod
 {
     XFSKBurstDemodModule::XFSKBurstDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -16,8 +18,8 @@ namespace demod
         constellation.d_hscale = (80.0 / 10.0) / 100.0;
         constellation.d_vscale = 20.0 / 100.0;
 
-        // MIN_SPS = 8;
-        // MAX_SPS = 32.0;
+        // MIN_SPS = 5; // 8;
+        // MAX_SPS = 5; // 32.0;
 
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 4];
@@ -29,23 +31,27 @@ namespace demod
     */
     void XFSKBurstDemodModule::init()
     {
-        BaseDemodModule::initb();
+        BaseDemodModule::initb(false);
 
         // LPF1
         float carson_cuttoff = d_deviation + d_symbolrate / 2.0;
-        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, carson_cuttoff, 2000));
+        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, d_samplerate, carson_cuttoff, 2000));
 
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, 1.0f);
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, d_samplerate / (2.0 * M_PI * d_deviation));
+
+        // Resampling
+        resamplerf = std::make_shared<dsp::SmartResamplerBlock<float>>(qua->output_stream, final_samplerate, d_samplerate);
 
         // AGC2
-        agc2 = std::make_shared<dsp::AGC2Block<float>>(qua->output_stream, 5.0, 0.01, 0.001);
+        agc2 = std::make_shared<dsp::AGC2Block<float>>(resamplerf->output_stream, 5.0, 0.01, 0.001);
 
         // LPF2
         lpf2 = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate / 2, 2000));
 
         // rec = std::make_shared<dsp::GardnerClockRecovery2Block>(agc2->output_stream, final_samplerate, d_symbolrate, 0.707, 24);
-        rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(lpf2->output_stream, final_sps, (final_sps * M_PI) / 100.0, 0.5, 0.5 / 8.0, 0.01);
+        rec = std::make_shared<dsp::GardnerClockRecoveryBlock<float>>(lpf2->output_stream, final_sps, (final_sps * M_PI) / 100.0, 0.5, 0.5 / 8.0, 0.01);
+        //  rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(agc2->output_stream, final_sps, 0.0689062, 0.5, 0.525, 0.01);
     }
 
     XFSKBurstDemodModule::~XFSKBurstDemodModule()
@@ -75,14 +81,29 @@ namespace demod
         qua->start();
         agc2->start();
         lpf2->start();
+        resamplerf->start();
         rec->start();
 
         uint8_t wip_byte = 0;
         int wipbitn = 0;
 
+        ////////////////////////////////////////////////////////////////
+        /*std::shared_ptr<audio::AudioSink> audio_sink;
+        if (input_data_type != DATA_FILE && audio::has_sink())
+        {
+            logger->critical(final_samplerate);
+            audio_sink = audio::get_default_sink();
+            audio_sink->set_samplerate(final_samplerate);
+            audio_sink->start();
+        }
+
+        int16_t *output_wav_buffer = new int16_t[d_buffer_size * 4];*/
+        ////////////////////////////////////////////////////////////////
+
         int dat_size = 0;
         while (demod_should_run())
         {
+#if 1
             dat_size = rec->output_stream->read();
 
             if (dat_size <= 0)
@@ -117,6 +138,21 @@ namespace demod
             // Update module stats
             module_stats["snr"] = snr;
             module_stats["peak_snr"] = peak_snr;
+#else
+            dat_size = agc2->output_stream->read();
+
+            if (dat_size <= 0)
+            {
+                agc2->output_stream->flush();
+                continue;
+            }
+
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)agc2->output_stream->readBuf, 65535 * 0.2, dat_size);
+
+            audio_sink->push_samples(output_wav_buffer, dat_size);
+
+            agc2->output_stream->flush();
+#endif
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -139,8 +175,10 @@ namespace demod
         qua->stop();
         agc2->stop();
         lpf2->stop();
+        resamplerf->stop();
         rec->stop();
         rec->output_stream->stopReader();
+        // agc2->output_stream->stopReader();
 
         if (output_data_type == DATA_FILE)
             data_out.close();

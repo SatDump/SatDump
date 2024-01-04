@@ -6,6 +6,7 @@
 #include "common/dsp/utils/agc2.h"
 #include "common/dsp/clock_recovery/clock_recovery_mm.h"
 #include "common/dsp/clock_recovery/clock_recovery_gardner.h"
+#include "common/dsp/clock_recovery/clock_recovery_gardner2.h"
 #include "common/dsp/filter/fir.h"
 
 namespace demod
@@ -17,8 +18,9 @@ namespace demod
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
         std::shared_ptr<dsp::AGC2Block<float>> agc2;
         std::shared_ptr<dsp::FIRBlock<float>> lpf2;
-        //  std::shared_ptr<dsp::GardnerClockRecovery2Block> rec;
-        std::shared_ptr<dsp::MMClockRecoveryBlock<float>> rec;
+        std::shared_ptr<dsp::SmartResamplerBlock<float>> resamplerf;
+        // std::shared_ptr<dsp::GardnerClockRecovery2Block> rec;
+        std::shared_ptr<dsp::GardnerClockRecoveryBlock<float>> rec;
 
         const float d_deviation;
 

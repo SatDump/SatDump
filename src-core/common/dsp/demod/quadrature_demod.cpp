@@ -37,7 +37,7 @@ namespace dsp
 #else
         for (int i = 0; i < nsamples; i++)
         {
-            float p = fast_atan2f(input_stream->readBuf[i].imag, input_stream->readBuf[i].real);
+            float p = atan2f(input_stream->readBuf[i].imag, input_stream->readBuf[i].real);
             float phase_diff = p - phase;
 
             if (phase_diff > M_PI)
