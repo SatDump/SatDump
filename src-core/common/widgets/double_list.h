@@ -23,5 +23,7 @@ namespace widgets
 
         double get_value();
         bool set_value(double v, double manual_max = 0);
+
+        std::vector<double> &get_list() { return available_values; }
     };
 }

@@ -11,4 +11,5 @@ namespace lua_utils
     void bindSatProjType(sol::state &lua);
     void bindGeoTypes(sol::state &lua);
     void bindImageTypes(sol::state &lua);
+    void bindLogger(sol::state &lua);
 };

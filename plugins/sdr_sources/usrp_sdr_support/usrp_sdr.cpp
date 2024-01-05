@@ -237,7 +237,7 @@ void USRPSource::drawControlUI()
         RImGui::endDisabled();
 
     // Gain settings
-    if (RImGui::SliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
+    if (RImGui::SteppedSliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
         set_gains();
 }
 

@@ -11,7 +11,6 @@ libfftw3-dev
 libhackrf-dev
 libiio-dev
 liblimesuite-dev
-libluajit-5.1-dev
 libnng-dev
 libomp-dev
 libpng-dev

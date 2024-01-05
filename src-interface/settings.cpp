@@ -10,6 +10,7 @@
 
 #include "init.h"
 #include "common/tracking/tle.h"
+#include "common/widgets/timed_message.h"
 
 #include "core/style.h"
 
@@ -32,6 +33,8 @@ namespace satdump
         char tle_last_update[80];
 
         bool show_imgui_demo = false;
+
+        widgets::TimedMessage saved_message(ImColor(0, 255, 0), 4);
 
         void setup()
         {
@@ -201,8 +204,10 @@ namespace satdump
                     plugin_hdl.save();
 
                 config::saveUserConfig();
+                saved_message.set_message("Settings saved");
             }
 
+            saved_message.draw();
             ImGui::TextColored(ImColor(255, 255, 0), "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
     }

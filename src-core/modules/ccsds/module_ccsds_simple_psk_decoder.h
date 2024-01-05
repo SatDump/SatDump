@@ -54,6 +54,7 @@ namespace ccsds
         const int d_rs_fill_bytes;         // RS Frame size, if -1, no puncturing
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
+        const bool d_rs_usecheck;          // RS Used as frame check?
 
         uint8_t *bits_out;
         int8_t *soft_buffer, *soft_buffer2;
@@ -63,8 +64,8 @@ namespace ccsds
         std::ifstream data_in;
         std::ofstream data_out;
 
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
         std::shared_ptr<deframing::BPSK_CCSDS_Deframer> deframer_qpsk;

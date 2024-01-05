@@ -78,7 +78,9 @@ namespace wav
     struct FileMetadata
     {
         uint64_t frequency = 0;
+        uint64_t samplerate = 0;
         time_t timestamp = 0;
+        std::string baseband_format = "";
     };
 
     FileMetadata tryParseFilenameMetadata(std::string filepath, bool audio = false);

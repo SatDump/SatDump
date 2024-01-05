@@ -30,6 +30,7 @@ protected:
 #endif
 
     widgets::DoubleList samplerate_widget;
+    widgets::DoubleList bandwidth_widget;
 
     int channel_id = 0;
 
@@ -39,7 +40,10 @@ protected:
     int gain_lna = 0, gain_tia = 0, gain_pga = 0;
     int gain = 0;
 
+    bool manual_bandwidth = false;
+
     void set_gains();
+    void set_others();
 
     std::thread work_thread;
     bool thread_should_run = false;
@@ -66,7 +70,7 @@ protected:
     }
 
 public:
-    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
     {
     }
 

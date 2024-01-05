@@ -1,14 +1,14 @@
 {
     "type": "normal_single_line",
-    "scan_angle": 126,
-    "roll_offset": 0, // -2.4,
+    "scan_angle": 130,
+    "roll_offset": 0.5, // -2.4,
     "pitch_offset": 49,
     "yaw_offset": 0,
     "rotate_yaw": true,
     "image_width": 492,
     "gcp_spacing_x": 20,
     "gcp_spacing_y": 20,
-    "timestamp_offset": -1,
+    "timestamp_offset": 1,
     ///////////////////////
     "timefilter": {
         "type": "simple",

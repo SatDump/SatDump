@@ -46,7 +46,14 @@ if(APPLE)
     include_directories(/usr/local/Cellar/fftw/3.3.9/include)
     link_directories(/usr/local/lib)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+        include_directories(/opt/homebrew/include/)
+        link_directories(/opt/homebrew/lib/)
+    endif()
+
 endif()
+
 
 if(UNIX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra")
@@ -80,6 +87,12 @@ endif()
 if(MSVC OR BUILD_MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 
+    if(BUILD_OPENMP)
+        message("Compiling with OpenMP support!")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /openmp")
+    endif()
+
     # Speed up this to object-level, Suppress type conversion warnings, suppress
     # POSIX function warnings, suppress warnings about DLL-exported functions, and
     # Suppress warnings about template methods defined in another C++ file
@@ -96,7 +109,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project(SatDump VERSION "1.1.1")
+project(SatDump VERSION "1.1.3")
 
 # Check if the current commit has a tag
 execute_process(
@@ -219,6 +232,9 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
     set(CPACK_PACKAGE_VENDOR "SatDump")
     set(CPACK_PACKAGE_CONTACT "Aang23")
+    
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1")
+    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libomp5-14, ocl-icd-libopencl1, intel-opencl-icd, mesa-opencl-icd")
 
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
@@ -265,7 +281,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         install(TARGETS satdump_core DESTINATION bin)
     else()
         set(CPACK_GENERATOR DEB)
-        set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+        #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
         set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
         set(CPACK_DEB_COMPONENT_INSTALL ON)
     endif()

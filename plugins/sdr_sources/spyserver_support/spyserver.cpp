@@ -1,5 +1,6 @@
 #include "spyserver.h"
 #include "imgui/imgui_stdlib.h"
+#include "common/widgets/stepped_slider.h"
 
 SpyServerStreamFormat depth_to_format(int depth)
 {
@@ -139,12 +140,11 @@ void SpyServerSource::drawControlUI()
             try
             {
                 try_connect();
-                error = "";
             }
             catch (std::exception &e)
             {
                 logger->error("Error connecting to SpyServer %s", e.what());
-                error = e.what();
+                error.set_message(e.what());
             }
         }
     }
@@ -157,8 +157,7 @@ void SpyServerSource::drawControlUI()
         }
     }
 
-    ImGui::SameLine();
-    ImGui::TextColored(ImColor(255, 0, 0), "%s", error.c_str());
+    error.draw();
 
     if (ImGui::Combo("Depth", &selected_bit_depth, "32\0"
                                                    "16\0"
@@ -178,8 +177,8 @@ void SpyServerSource::drawControlUI()
     if (is_connected)
     {
         bool gain_changed = false;
-        gain_changed |= ImGui::SliderInt("Gain", &gain, 0, client->devInfo.MaximumGainIndex);
-        gain_changed |= ImGui::SliderInt("Digital Gain", &digital_gain, 0, client->devInfo.MaximumGainIndex);
+        gain_changed |= widgets::SteppedSliderInt("Gain", &gain, 0, client->devInfo.MaximumGainIndex);
+        gain_changed |= widgets::SteppedSliderInt("Digital Gain", &digital_gain, 0, client->devInfo.MaximumGainIndex);
         if (gain_changed)
             set_gains();
     }

@@ -4,6 +4,8 @@
 #include "common/image/image.h"
 #include <mutex>
 
+#define CALIBRATION_INVALID_VALUE -999.99
+
 namespace satdump
 {
     class ImageProducts : public Products
@@ -11,13 +13,14 @@ namespace satdump
     public:
         struct ImageHolder
         {
-            std::string filename;
-            std::string channel_name;
-            image::Image<uint16_t> image;
-            std::vector<double> timestamps = std::vector<double>();
-            int ifov_y = -1;
-            int ifov_x = -1;
-            int offset_x = 0;
+            std::string filename;                                   // Filename & path of the image. Relative to the product file
+            std::string channel_name;                               // Name of the channel, this is usually just a number but can be a string
+            image::Image<uint16_t> image;                           // The image itself
+            std::vector<double> timestamps = std::vector<double>(); // Timestamps of each image segment. What this means can heavily vary
+            int ifov_y = -1;                                        // Size of an IFOV (image segment) in height
+            int ifov_x = -1;                                        // Size of an IFOV (image segment) in width
+            int offset_x = 0;                                       // Offset in width of this channel
+            int abs_index = -1;                                     // Absolute image index, for calibration, etc. -2 means no calibration possible on this channel
         };
 
         std::vector<ImageHolder> images;
@@ -146,19 +149,31 @@ namespace satdump
         {
         public:
             const nlohmann::json d_calib;
+            ImageProducts *d_products;
 
         public:
-            CalibratorBase(nlohmann::json calib) : d_calib(calib) {}
+            CalibratorBase(nlohmann::json calib, ImageProducts *products) : d_calib(calib), d_products(products) {}
             ~CalibratorBase() {}
             virtual void init() = 0;
             virtual double compute(int image_index, int x, int y, int val) = 0;
         };
+
+        //////////////////////
+        class DummyCalibrator : public CalibratorBase
+        {
+        public:
+            void init() {}
+            double compute(int, int, int, int) { return CALIBRATION_INVALID_VALUE; }
+            DummyCalibrator(nlohmann::json calib, ImageProducts *products) : CalibratorBase(calib, products) {}
+        };
+        //////////////////////
 
         struct RequestCalibratorEvent
         {
             std::string id;
             std::vector<std::shared_ptr<CalibratorBase>> &calibrators;
             nlohmann::json calib;
+            ImageProducts *products;
         };
 
         bool has_calibation()
@@ -185,12 +200,17 @@ namespace satdump
         double get_wavenumber(int image_index)
         {
             if (!has_calibation())
-                return 0;
+                return -1;
+
+            if (images[image_index].abs_index == -2)
+                return -1;
+            else if (images[image_index].abs_index != -1)
+                image_index = images[image_index].abs_index;
 
             if (contents["calibration"].contains("wavenumbers"))
                 return contents["calibration"]["wavenumbers"][image_index].get<double>();
             else
-                return 0;
+                return -1;
         }
 
         void set_wavenumber(int image_index, double wavnb)
@@ -211,10 +231,20 @@ namespace satdump
 
         std::pair<double, double> get_calibration_default_radiance_range(int image_index)
         {
-            if (!has_calibation())
+            int calib_index = image_index;
+            if (images[image_index].abs_index != -1)
+                calib_index = images[image_index].abs_index;
+
+            if (!has_calibation() || get_wavenumber(image_index) == -1)
                 return {0, 0};
             if (contents["calibration"].contains("default_range"))
-                return {contents["calibration"]["default_range"][image_index]["min"].get<double>(), contents["calibration"]["default_range"][image_index]["max"].get<double>()};
+                try
+                {
+                    return {contents["calibration"]["default_range"][calib_index]["min"].get<double>(), contents["calibration"]["default_range"][calib_index]["max"].get<double>()};
+                }
+                catch (nlohmann::json::exception const &)
+                {
+                }
             if (get_calibration_type(image_index) == CALIB_REFLECTANCE)
                 return {0, 1};
             return {0, 0};
@@ -224,6 +254,10 @@ namespace satdump
         {
             if (!has_calibation())
                 return CALIB_REFLECTANCE;
+
+            if (images[image_index].abs_index != -1)
+                image_index = images[image_index].abs_index;
+
             if (contents["calibration"].contains("type"))
                 return (calib_type_t)contents["calibration"]["type"][image_index].get<int>();
             else
@@ -252,6 +286,7 @@ namespace satdump
     struct ImageCompositeCfg
     {
         std::string equation;
+        bool despeckle = false;
         bool equalize = false;
         bool individual_equalize = false;
         bool invert = false;
@@ -264,11 +299,14 @@ namespace satdump
         std::string lua = "";
         nlohmann::json lua_vars;
         nlohmann::json calib_cfg;
+
+        std::string description_markdown = "";
     };
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
     {
         j["equation"] = v.equation;
+        j["despeckle"] = v.despeckle;
         j["equalize"] = v.equalize;
         j["individual_equalize"] = v.individual_equalize;
         j["invert"] = v.invert;
@@ -306,6 +344,8 @@ namespace satdump
         if (j.contains("calib_cfg"))
             v.calib_cfg = j["calib_cfg"];
 
+        if (j.contains("despeckle"))
+            v.despeckle = j["despeckle"].get<bool>();
         if (j.contains("equalize"))
             v.equalize = j["equalize"].get<bool>();
         if (j.contains("individual_equalize"))
@@ -318,7 +358,12 @@ namespace satdump
             v.white_balance = j["white_balance"].get<bool>();
         if (j.contains("apply_lut"))
             v.apply_lut = j["apply_lut"].get<bool>();
+
+        if (j.contains("description"))
+            v.description_markdown = j["description"].get<std::string>();
     }
+
+    bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);

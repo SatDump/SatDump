@@ -390,10 +390,10 @@ namespace fengyun3
                     }
                     else if (vcdu.vcid == 12) // CCSDS-Compliant VCID
                     {
+#if 0
                         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid12.work(cadu);
                         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         {
-#if 0
                             printf("APID %d\n", pkt.header.apid);
                             if (pkt.header.apid == 1)
                             {
@@ -408,8 +408,8 @@ namespace fengyun3
                                     idk_out.write((char *)pkt.payload.data(), 862);
                                 }
                             }
-#endif
                         }
+#endif
                         //    if (pkt.header.apid == 16) // MWHS-2
                         //        mwhs2_reader.work(pkt, true);
                         //    else if (pkt.header.apid == 7) // MWTS-3
@@ -422,7 +422,7 @@ namespace fengyun3
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
 
@@ -615,7 +615,7 @@ namespace fengyun3
 
                 virr_products.set_timestamps(virr_reader.timestamps);
                 if (d_downlink == AHRPT)
-                    dataset.timestamp = get_median(virr_reader.timestamps); //Re-set dataset timestamp since we just adjusted it
+                    dataset.timestamp = get_median(virr_reader.timestamps); // Re-set dataset timestamp since we just adjusted it
 
                 virr_products.save(directory);
                 dataset.products_list.push_back("VIRR");
@@ -947,16 +947,18 @@ namespace fengyun3
                 mersirm_products.set_timestamps(mersirm_reader.timestamps);
                 mersirm_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_g_mersirm.json")));
 
+                bool rotate = d_parameters.contains("satellite_rotated") ? d_parameters["satellite_rotated"].get<bool>() : false;
+
                 // Channel offsets relative to Ch1
                 int offset[8] = {
                     0,
+                    rotate ? -2 : 2,
+                    rotate ? -4 : 4,
+                    rotate ? -2 : 2,
                     0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
+                    rotate ? -7 : 7,
+                    rotate ? -2 : 2,
+                    rotate ? 2 : -1,
                 };
 
                 for (int i = 0; i < 8; i++)
@@ -969,7 +971,7 @@ namespace fengyun3
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     // What did you do NSMC.... Why did you turn FY-3G 180 degs!?
-                    if (d_parameters.contains("satellite_rotated") ? d_parameters["satellite_rotated"].get<bool>() : false)
+                    if (rotate)
                     {
                         auto img2 = image;
                         for (int l = 0; l < (int)img2.height() / 10; l++)
@@ -1479,7 +1481,7 @@ namespace fengyun3
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

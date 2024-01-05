@@ -6,6 +6,8 @@
 #include "actions.h"
 #include "streaming.h"
 
+std::vector<dsp::SourceDescriptor> sources;
+
 void tcp_rx_handler(uint8_t *buffer, int len)
 {
     int pkt_type = buffer[0];
@@ -20,17 +22,16 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 
         if (pkt_type == dsp::remote::PKT_TYPE_SOURCELIST)
         {
-            std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+            sources = dsp::getAllAvailableSources(true);
             std::vector<dsp::SourceDescriptor> sources_final;
 
             logger->trace("Found devices (sources) :");
             for (dsp::SourceDescriptor src : sources)
             {
-                logger->trace("- " + src.name);
-
                 if (!src.remote_ok)
                     continue;
 
+                logger->trace("- " + src.name);
                 sources_final.push_back(src);
             }
 
@@ -52,7 +53,8 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 
             logger->info("Opening " + source.name);
 
-            std::vector<dsp::SourceDescriptor> sources = dsp::getAllAvailableSources(true);
+            if(sources.size() == 0)
+                sources = dsp::getAllAvailableSources(true);
             for (dsp::SourceDescriptor src : sources)
             {
                 if (src.name == source.name && src.unique_id == source.unique_id)
@@ -120,10 +122,17 @@ void tcp_rx_handler(uint8_t *buffer, int len)
         if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATESET)
         {
             source_mtx.lock();
-            uint64_t sampr = *((uint64_t *)&buffer[1]);
-            logger->debug("Samplerate sent %llu", sampr);
+            last_samplerate = *((uint64_t *)&buffer[1]);
+            logger->debug("Samplerate sent %llu", last_samplerate);
             if (source_is_open)
-                current_sample_source->set_samplerate(sampr);
+                current_sample_source->set_samplerate(last_samplerate);
+
+            // Acknowledge the packet to prevent the client from thinking we changed
+            // the samplerate if they get a late packet from sourceGuiThread()
+            std::vector<uint8_t> pkt(8);
+            *((uint64_t*)&pkt[0]) = last_samplerate;
+            sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_SAMPLERATEFBK, pkt);
+
             source_mtx.unlock();
         }
 

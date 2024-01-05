@@ -117,7 +117,7 @@ namespace elektro
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
 
@@ -149,14 +149,16 @@ namespace elektro
                     {
                         dec->textureID = makeImageTexture();
                         dec->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        dec->hasToUpdate = true;
                     }
 
                     if (dec->imageStatus != IDLE)
                     {
                         if (dec->hasToUpdate)
                         {
-                            dec->hasToUpdate = true;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, dec->img_width, dec->img_height);
+                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
+                            dec->hasToUpdate = false;
                         }
 
                         hasImage = true;
@@ -185,17 +187,18 @@ namespace elektro
                     {
                         elektro_221_composer_full_disk->textureID = makeImageTexture();
                         elektro_221_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(elektro_221_composer_full_disk->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        elektro_221_composer_full_disk->hasToUpdate = true;
                     }
 
                     if (elektro_221_composer_full_disk->imageStatus != IDLE)
                     {
                         if (elektro_221_composer_full_disk->hasToUpdate)
                         {
-                            elektro_221_composer_full_disk->hasToUpdate = true;
+                            elektro_221_composer_full_disk->hasToUpdate = false;
                             updateImageTexture(elektro_221_composer_full_disk->textureID,
                                                elektro_221_composer_full_disk->textureBuffer,
-                                               elektro_221_composer_full_disk->img_width,
-                                               elektro_221_composer_full_disk->img_height);
+                                               1000, 1000);
                         }
 
                         hasImage = true;
@@ -224,17 +227,18 @@ namespace elektro
                     {
                         elektro_321_composer_full_disk->textureID = makeImageTexture();
                         elektro_321_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(elektro_321_composer_full_disk->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        elektro_321_composer_full_disk->hasToUpdate = true;
                     }
 
                     if (elektro_321_composer_full_disk->imageStatus != IDLE)
                     {
                         if (elektro_321_composer_full_disk->hasToUpdate)
                         {
-                            elektro_321_composer_full_disk->hasToUpdate = true;
+                            elektro_321_composer_full_disk->hasToUpdate = false;
                             updateImageTexture(elektro_321_composer_full_disk->textureID,
                                                elektro_321_composer_full_disk->textureBuffer,
-                                               elektro_321_composer_full_disk->img_width,
-                                               elektro_321_composer_full_disk->img_height);
+                                               1000, 1000);
                         }
 
                         hasImage = true;
@@ -274,7 +278,7 @@ namespace elektro
             ImGui::EndTabBar();
 
             if (!streamingInput)
-                ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

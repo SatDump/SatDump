@@ -10,7 +10,6 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
-#include "init.h"
 #include "logger.h"
 #include "common/image/image.h"
 int main(int argc, char *argv[])

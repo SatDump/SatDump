@@ -91,18 +91,23 @@ namespace image
 
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
         if (!png)
+        {
+            fclose(fp);
             return;
+        }
 
         png_infop info = png_create_info_struct(png);
         if (!info)
         {
             png_destroy_read_struct(&png, NULL, NULL);
+            fclose(fp);
             return;
         }
 
         if (setjmp(png_jmpbuf(png)))
         {
             png_destroy_read_struct(&png, &info, NULL);
+            fclose(fp);
             return;
         }
 

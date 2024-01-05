@@ -638,5 +638,28 @@
             },
             "cadu": {}
         }
+    },
+    "chinese_spaceplane_sband": {
+        "name": "Chinese Spaceplane S-Band link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 3.06e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.008
+                }
+            },
+            "cadu": {}
+        }
     }
 }

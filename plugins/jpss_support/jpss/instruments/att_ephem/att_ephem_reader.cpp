@@ -40,7 +40,7 @@ namespace jpss
 
             uint8_t *dat = &packet.payload[8];
 
-            uint8_t scid = dat[0];
+            // uint8_t scid = dat[0];
 
             double ephem_timestamp = get_timestamp(&dat[1]);
             double ephem_x = get_float(&dat[9]);
@@ -50,11 +50,21 @@ namespace jpss
             double ephem_vy = get_float(&dat[25]);
             double ephem_vz = get_float(&dat[29]);
 
-            double atti_timestamp = get_timestamp(&dat[33]);
-            float atti_q1 = get_float(&dat[41]);
-            float atti_q2 = get_float(&dat[45]);
-            float atti_q3 = get_float(&dat[49]);
-            float atti_q4 = get_float(&dat[53]);
+            // double atti_timestamp = get_timestamp(&dat[33]);
+            // float atti_q1 = get_float(&dat[41]);
+            // float atti_q2 = get_float(&dat[45]);
+            // float atti_q3 = get_float(&dat[49]);
+            // float atti_q4 = get_float(&dat[53]);
+
+            if (fabs(ephem_x) > 8000000 || fabs(ephem_y) > 8000000 || fabs(ephem_z) > 8000000)
+                return;
+            if (fabs(ephem_vx) > 8000000 || fabs(ephem_vy) > 8000000 || fabs(ephem_vz) > 8000000)
+                return;
+
+            // printf("%f - %f %f %f - %f %f %f\n",
+            //        ephem_timestamp,
+            //        ephem_x, ephem_y, ephem_z,
+            //        ephem_vx, ephem_vy, ephem_vz);
 
             ecef_epehem_to_eci(ephem_timestamp, ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
 

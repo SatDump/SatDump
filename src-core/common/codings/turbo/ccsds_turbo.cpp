@@ -116,7 +116,7 @@ namespace codings
 
         CCSDSTurbo::~CCSDSTurbo()
         {
-            delete[] d_pi;
+            free(d_pi);
         }
 
         void CCSDSTurbo::encode(uint8_t *frame, uint8_t *codeword)

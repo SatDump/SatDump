@@ -71,7 +71,7 @@ function process()
 
                 for c = 0, 2, 1 do
                     mval = img_background:get(img_background:width() * img_background:height() * c + mappos) / 255.0
-                    fval = mval * (1.0 - max_val) + val[c] * max_val;
+                    fval = mval * (1.0 - get_channel_value(1)) + val[c] * max_val;
                     set_img_out(c, x, y, fval)
                 end
             end

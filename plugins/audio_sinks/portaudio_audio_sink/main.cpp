@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "portaudio_sink.h"
 
-class RtAudioAudioSupport : public satdump::Plugin
+class PortAudioAudioSupport : public satdump::Plugin
 {
 public:
     std::string getID()
@@ -21,4 +21,4 @@ public:
     }
 };
 
-PLUGIN_LOADER(RtAudioAudioSupport)
+PLUGIN_LOADER(PortAudioAudioSupport)

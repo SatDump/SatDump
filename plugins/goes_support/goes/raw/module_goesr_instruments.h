@@ -10,8 +10,8 @@ namespace goes
         class GOESRInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             // Readers
             suvi::SUVIReader suvi_reader;

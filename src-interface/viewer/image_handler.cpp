@@ -26,8 +26,15 @@ namespace satdump
 
         // TMP
         if (instrument_cfg.contains("rgb_composites"))
+        {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
-                rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
+            {
+                if (check_composite_from_product_can_be_made(*products, compo.value().get<ImageCompositeCfg>()))
+                    rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
+                else
+                    logger->debug("Disabling " + compo.key() + " as it can't be made!");
+            }
+        }
 
         select_image_str += std::string("Composite") + '\0';
 
@@ -40,9 +47,6 @@ namespace satdump
             disaplay_ranges.push_back(products->get_calibration_default_radiance_range(i));
         }
 
-        for (std::pair<std::string, ImageCompositeCfg> &compo : rgb_presets)
-            rgb_presets_str += compo.first + '\0';
-
         // generate scale iamge
         updateScaleImage();
 
@@ -50,11 +54,15 @@ namespace satdump
         updateCorrectionFactors(true);
 
         lut_image = image::LUT_jet<uint16_t>();
-
-        // font
-        current_image.init_font(resources::getResourcePath("fonts/font.ttf"));
-
         asyncUpdate();
+
+        try
+        {
+            overlay_handler.set_config(config::main_cfg["user"]["viewer_state"]["products_handler"][products->instrument_name]["overlay_cfg"], false);
+        }
+        catch (std::exception &)
+        {
+        }
 
 #ifdef USE_OPENCL
         opencl::initOpenCL();
@@ -69,6 +77,9 @@ namespace satdump
             if (handler_thread_pool.get_thread(i).joinable())
                 handler_thread_pool.get_thread(i).join();
         }
+
+        config::main_cfg["user"]["viewer_state"]["products_handler"][products->instrument_name]["overlay_cfg"] = overlay_handler.get_config();
+        config::saveUserConfig();
     }
 
     void ImageViewerHandler::updateImage()
@@ -98,6 +109,9 @@ namespace satdump
         if (median_blur)
             current_image.median_blur();
 
+        if (despeckle)
+            current_image.kuwahara_filter();
+
         if (rotate_image)
             current_image.mirror(true, true);
 
@@ -119,7 +133,8 @@ namespace satdump
         // TODO : Cleanup?
         if (using_lut)
         {
-            current_image.to_rgb();
+            if (current_image.channels() < 3)
+                current_image.to_rgb();
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
                 uint16_t val = current_image[i];
@@ -147,88 +162,62 @@ namespace satdump
                 corrected_stuff.clear();
         }
 
-        if (shores_overlay || map_overlay || cities_overlay || latlon_overlay)
+        if (overlay_handler.enabled())
         {
-            current_image.to_rgb(); // Ensure this is RGB!!
+            // Ensure this is RGB!!
+            if(current_image.channels() < 3)
+                current_image.to_rgb();
             nlohmann::json proj_cfg = products->get_proj_cfg();
             proj_cfg["metadata"] = current_proj_metadata;
             if (products->has_tle())
                 proj_cfg["metadata"]["tle"] = products->get_tle();
             if (products->has_timestamps)
                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
-            auto proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                                                                            pre_corrected_height,
-                                                                            proj_cfg,
-                                                                            !(corrected_stuff.size() != 0 && correct_image) && rotate_image);
 
-            if (corrected_stuff.size() != 0 && correct_image)
+            bool do_correction = corrected_stuff.size() != 0 && correct_image;
+            if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
+                current_image.width() != last_width || current_image.height() != last_height)
             {
-                int fwidth = current_image.width();
-                int fheight = current_image.height();
-                bool rotate = rotate_image;
+                overlay_handler.clear_cache();
+                proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
+                    pre_corrected_height,
+                    proj_cfg,
+                    !do_correction && rotate_image);
 
-                std::function<std::pair<int, int>(float, float, int, int)> newfun =
-                    [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                if (do_correction)
                 {
-                    std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                    if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
-                    {
-                        ret.first = corrected_stuff[ret.first];
-                        if (rotate)
+                    int fwidth = current_image.width();
+                    int fheight = current_image.height();
+                    bool rotate = rotate_image;
+                    auto &proj_func = this->proj_func;
+
+                    std::function<std::pair<int, int>(float, float, int, int)> newfun =
+                        [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                         {
-                            ret.first = (fwidth - 1) - ret.first;
-                            ret.second = (fheight - 1) - ret.second;
-                        }
-                    }
-                    else
-                        ret.second = ret.first = -1;
-                    return ret;
-                };
-                proj_func = newfun;
+                            std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                            if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                            {
+                                ret.first = corrected_stuff[ret.first];
+                                if (rotate)
+                                {
+                                    ret.first = (fwidth - 1) - ret.first;
+                                    ret.second = (fheight - 1) - ret.second;
+                                }
+                            }
+                            else
+                                ret.second = ret.first = -1;
+                            return ret;
+                        };
+                    proj_func = newfun;
+                }
+
+                last_correct_image = do_correction;
+                last_rotate_image = rotate_image;
+                last_width = current_image.width();
+                last_height = current_image.height();
             }
 
-            if (map_overlay)
-            {
-                logger->info("Drawing map overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_borders.x * 65535.0f), (unsigned short)(viewer_app->color_borders.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_borders.z * 65535.0f)};
-                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                               current_image,
-                                               color,
-                                               proj_func);
-            }
-            if (shores_overlay)
-            {
-                logger->info("Drawing shores overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_shores.x * 65535.0f), (unsigned short)(viewer_app->color_shores.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_shores.z * 65535.0f)};
-                map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
-                                               current_image,
-                                               color,
-                                               proj_func);
-            }
-            if (cities_overlay)
-            {
-                logger->info("Drawing cities overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_cities.x * 65535.0f), (unsigned short)(viewer_app->color_cities.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_cities.z * 65535.0f)};
-                map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
-                                                current_image,
-                                                color,
-                                                proj_func,
-                                                viewer_app->cities_size,
-                                                viewer_app->cities_type,
-                                                viewer_app->cities_scale_rank);
-            }
-            if (latlon_overlay)
-            {
-                logger->info("Drawing latlon overlay...");
-                unsigned short color[3] = {(unsigned short)(viewer_app->color_latlon.x * 65535.0f), (unsigned short)(viewer_app->color_latlon.y * 65535.0f),
-                                           (unsigned short)(viewer_app->color_latlon.z * 65535.0f)};
-                map::drawProjectedMapLatLonGrid(current_image,
-                                                color,
-                                                proj_func);
-            }
+            overlay_handler.apply(current_image, proj_func);
         }
 
         projection_ready = false;
@@ -251,7 +240,7 @@ namespace satdump
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
-                if (products->has_calibation())
+                if (products->has_calibation() && products->get_wavenumber(active_channel_id) != -1)
                 {
                     double radiance = products->get_calibrated_value(active_channel_id, x, y);
                     if (correct_image)
@@ -259,14 +248,21 @@ namespace satdump
                         updateCorrectionFactors();
                         radiance = products->get_calibrated_value(active_channel_id, correction_factors[x], y);
                     }
-                    if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
+                    if (radiance != CALIBRATION_INVALID_VALUE)
                     {
-                        ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
+                        if (products->get_calibration_type(active_channel_id) == products->CALIB_REFLECTANCE)
+                        {
+                            ImGui::Text("Albedo : %.2f %%", radiance * 100.0);
+                        }
+                        else
+                        {
+                            ImGui::Text("Radiance : %.10f", radiance);
+                            ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                        }
                     }
                     else
                     {
-                        ImGui::Text("Radiance : %.10f", radiance);
-                        ImGui::Text("Temperature : %.2f °C", radiance_to_temperature(radiance, products->get_wavenumber(active_channel_id)) - 273.15);
+                        ImGui::Text("Calibration Error! - Invalid Value");
                     }
                 }
                 ImGui::EndTooltip();
@@ -283,7 +279,7 @@ namespace satdump
     {
         handler_thread_pool.clear_queue();
         handler_thread_pool.push([this](int)
-                            {   async_image_mutex.lock();
+                                 {   async_image_mutex.lock();
                                     is_updating = true;
                                     logger->info("Update image...");
                                     updateImage();
@@ -298,7 +294,7 @@ namespace satdump
         active_channel_id = -1;
         handler_thread_pool.clear_queue();
         handler_thread_pool.push([this](int)
-                            { 
+                                 { 
                     async_image_mutex.lock();
                     logger->info("Generating RGB Composite");
                     satdump::ImageCompositeCfg cfg;
@@ -309,6 +305,7 @@ namespace satdump
                     cfg.lua_vars = rgb_compo_cfg.lua_vars;
                     cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
 
+                    despeckle = rgb_compo_cfg.despeckle;
                     equalize_image = rgb_compo_cfg.equalize;
                     individual_equalize_image = rgb_compo_cfg.individual_equalize;
                     invert_image = rgb_compo_cfg.invert;
@@ -358,7 +355,7 @@ namespace satdump
 
             if (ImGui::IsItemHovered() && active_channel_id >= 0)
             {
-                if (products->get_wavenumber(active_channel_id) != 0)
+                if (products->get_wavenumber(active_channel_id) != -1)
                 {
                     ImGui::BeginTooltip();
                     ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(active_channel_id));
@@ -386,7 +383,7 @@ namespace satdump
                 }
             }
 
-            if (products->has_calibation() && active_channel_id >= 0)
+            if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)
@@ -440,7 +437,7 @@ namespace satdump
                     double tmp_min = (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     double tmp_max = (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Minium", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
                     buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
@@ -546,6 +543,9 @@ namespace satdump
             if (ImGui::Checkbox("Median Blur", &median_blur))
                 asyncUpdate();
 
+            if (ImGui::Checkbox("Despeckle", &despeckle))
+                asyncUpdate();
+
             if (ImGui::Checkbox("Rotate", &rotate_image))
                 asyncUpdate();
 
@@ -592,13 +592,13 @@ namespace satdump
             }
 
             bool save_disabled = is_updating || rgb_processing;
-            if(save_disabled)
+            if (save_disabled)
                 style::beginDisabled();
             if (ImGui::Button("Save"))
             {
                 handler_thread_pool.clear_queue();
                 handler_thread_pool.push([this](int)
-                    {   async_image_mutex.lock();
+                                         {   async_image_mutex.lock();
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
@@ -623,10 +623,39 @@ namespace satdump
 
         if (ImGui::CollapsingHeader("RGB Composites"))
         {
-            if (ImGui::Combo("Preset", &select_rgb_presets, rgb_presets_str.c_str()))
+            bool show_info_button = select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "";
+            if (ImGui::BeginCombo(show_info_button ? "##presetcombo" : "Preset##presetcombo",
+                                  select_rgb_presets == -1 ? "" : rgb_presets[select_rgb_presets].first.c_str()))
             {
-                rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
-                updateRGB();
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
+                for (size_t i = 0; i < rgb_presets.size(); i++)
+                {
+                    bool show = true;
+                    if (preset_search_str.size() != 0)
+                        show = isStringPresent(rgb_presets[i].first, preset_search_str);
+
+                    if (show && ImGui::Selectable(rgb_presets[i].first.c_str(), i == select_rgb_presets))
+                    {
+                        select_rgb_presets = i;
+                        rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
+                        updateRGB();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            if (show_info_button)
+            {
+                ImGui::SameLine();
+
+                if (ImGui::Button(u8"\uf449 Info###compopresetinfo"))
+                {
+                    std::ifstream ifs(resources::getResourcePath(rgb_compo_cfg.description_markdown));
+                    std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+                    markdown_composite_info.set_md(desc_markdown);
+                    show_markdown_description = true;
+                }
             }
 
             if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
@@ -692,32 +721,7 @@ namespace satdump
         {
             if (ImGui::CollapsingHeader("Map Overlay"))
             {
-                if (ImGui::Checkbox("Lat/Lon Grid", &latlon_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##latlongrid", (float *)&viewer_app->color_latlon, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-                if (ImGui::Checkbox("Borders", &map_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##borders", (float *)&viewer_app->color_borders, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-                if (ImGui::Checkbox("Shores", &shores_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##shores", (float *)&viewer_app->color_shores, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-                if (ImGui::Checkbox("Cities", &cities_overlay))
-                    asyncUpdate();
-                ImGui::SameLine();
-                ImGui::ColorEdit3("##cities", (float *)&viewer_app->color_cities, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                if (widgets::SteppedSliderInt("Cities Font Size", &viewer_app->cities_size, 10, 500) && cities_overlay)
-                    asyncUpdate();
-                static const char *items[] = {"Capitals Only", "Capitals + Regional Capitals", "All (by Scale Rank)"};
-                if (ImGui::Combo("Cities Type", &viewer_app->cities_type, items, IM_ARRAYSIZE(items)) && cities_overlay)
-                    asyncUpdate();
-
-                if (viewer_app->cities_type == 2 && widgets::SteppedSliderInt("Cities Scale Rank", &viewer_app->cities_scale_rank, 0, 10) && cities_overlay)
+                if (overlay_handler.drawUI())
                     asyncUpdate();
             }
 
@@ -760,6 +764,16 @@ namespace satdump
                     ImGui::EndTooltip();
                 }
             }
+        }
+
+        if (show_markdown_description)
+        {
+            ImGuiIO &io = ImGui::GetIO();
+            ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale}, ImGuiCond_Appearing);
+            ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
+            ImGui::Begin("Composite Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
+            markdown_composite_info.render();
+            ImGui::End();
         }
     }
 

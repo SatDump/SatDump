@@ -113,7 +113,7 @@ void PlutoSDRSource::drawControlUI()
     if (gain_mode == 0)
     {
         // Gain settings
-        if (RImGui::SliderInt("Gain", &gain, 0, 76))
+        if (RImGui::SteppedSliderInt("Gain", &gain, 0, 76))
             set_gains();
     }
 

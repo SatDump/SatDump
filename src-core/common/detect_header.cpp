@@ -1,4 +1,5 @@
 #include "detect_header.h"
+#include "common/wav.h"
 #include <cstdint>
 #include "wav.h"
 #ifdef BUILD_ZIQ
@@ -53,4 +54,28 @@ HeaderInfo try_parse_header(std::string file)
 #endif
 
     return info;
+}
+
+void try_get_params_from_input_file(nlohmann::json &parameters, std::string input_file)
+{
+    if (std::filesystem::exists(input_file) && !std::filesystem::is_directory(input_file))
+    {
+        HeaderInfo hdr = try_parse_header(input_file);
+        if (hdr.valid)
+        {
+            if (!parameters.contains("samplerate"))
+                parameters["samplerate"] = hdr.samplerate;
+            if (!parameters.contains("baseband_format"))
+                parameters["baseband_format"] = hdr.type;
+        }
+        wav::FileMetadata md = wav::tryParseFilenameMetadata(input_file, false);
+        if (!parameters.contains("start_timestamp") && md.timestamp != 0)
+            parameters["start_timestamp"] = md.timestamp;
+        if (!parameters.contains("samplerate") && md.samplerate != 0)
+            parameters["samplerate"] = md.samplerate;
+        if (!parameters.contains("frequency") && md.frequency != 0)
+            parameters["frequency"] = md.frequency;
+        if (!parameters.contains("baseband_format") && md.baseband_format != "")
+            parameters["baseband_format"] = md.baseband_format;
+    }
 }

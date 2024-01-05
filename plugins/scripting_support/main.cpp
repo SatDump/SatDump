@@ -23,6 +23,7 @@ void pipeline_done_processing_callback(const satdump::events::PipelineDoneProces
             lua.open_libraries(sol::lib::string);
             lua.open_libraries(sol::lib::math);
             lua.open_libraries(sol::lib::io);
+            lua.open_libraries(sol::lib::os);
 
             lua["pipeline_id"] = evt.pipeline_id;
             lua["pipeline_output_directory"] = evt.output_directory;

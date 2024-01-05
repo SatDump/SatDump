@@ -111,6 +111,12 @@ if(PLUGIN_MATS OR PLUGINS_ALL)
     add_subdirectory(mats_support)
 endif()
 
+option(PLUGIN_HINODE "Enable the Hinode support plugin" OFF)
+
+if(PLUGIN_HINODE OR PLUGINS_ALL)
+    add_subdirectory(hinode_support)
+endif()
+
 option(PLUGIN_OCEANSAT "Enable the Oceansat (X-Band, etc) support plugin" OFF)
 
 if(PLUGIN_OCEANSAT OR PLUGINS_ALL)
@@ -341,6 +347,13 @@ option(PLUGIN_SDDC_SDR_SUPPORT "Enable SDDC (RX666, RX888, etc) SDR Support plug
 
 if(PLUGIN_SDDC_SDR_SUPPORT)
     add_subdirectory(sdr_sources/sddc_sdr_support)
+endif()
+
+# NOT recommended
+option(PLUGIN_SOAPY_SDR_SUPPORT "Enable Soapy SDR Support plugin (NOT RECOMMENDED!)" OFF)
+
+if(PLUGIN_SOAPY_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/soapy_sdr_support)
 endif()
 
 # ######################

@@ -2,6 +2,7 @@
 
 #include "imgui/imgui.h"
 #include <mutex>
+#include "common/image/image.h"
 
 namespace widgets
 {
@@ -25,7 +26,9 @@ namespace widgets
 
     public:
         FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
+
         void draw(ImVec2 size);
+        image::Image<uint8_t> drawImg(int size_x, int size_y);
 
         void set_size(int size)
         {

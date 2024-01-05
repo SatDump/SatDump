@@ -14,13 +14,24 @@
                 437.525e6
             ]
         ],
+        "parameters": {
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
         "work": {
             "baseband": {},
             "frm": {
                 "lucky7_demod": {
                     "symbolrate": 4800,
                     "custom_samplerate": 48e3,
-                    "corr_thresold": 60
+                    "corr_thresold": 60,
+                    "enable_doppler": true,
+                    "satellite_norad": 44406,
+                    "satellite_frequency": 437.525e6
                 }
             },
             "products": {

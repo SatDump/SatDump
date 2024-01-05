@@ -37,13 +37,14 @@ namespace satdump
 
         std::mutex savemtx;
 #pragma omp parallel for
-        for (size_t c = 0; c < images.size(); c++)
+        for (int64_t c = 0; c < (int64_t)images.size(); c++)
         {
             savemtx.lock();
             if (images[c].filename.find(".png") == std::string::npos &&
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
-                images[c].filename.find(".j2k") == std::string::npos)
+                images[c].filename.find(".j2k") == std::string::npos &&
+                images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
             else
                 logger->trace("Image format was specified in product call. Not supposed to happen!");
@@ -60,6 +61,8 @@ namespace satdump
             contents["images"][c]["ifov_x"] = images[c].ifov_x;
             if (images[c].offset_x != 0)
                 contents["images"][c]["offset_x"] = images[c].offset_x;
+            if (images[c].abs_index != -1)
+                contents["images"][c]["abs_index"] = images[c].abs_index;
 
             savemtx.unlock();
             if (!save_as_matrix)
@@ -139,6 +142,8 @@ namespace satdump
             img_holder.ifov_x = contents["images"][c]["ifov_x"].get<int>();
             if (contents["images"][c].contains("offset_x"))
                 img_holder.offset_x = contents["images"][c]["offset_x"].get<int>();
+            if (contents["images"][c].contains("abs_index"))
+                img_holder.abs_index = contents["images"][c]["abs_index"].get<int>();
 
             images.push_back(img_holder);
         }
@@ -175,11 +180,14 @@ namespace satdump
             std::string calibrator_id = contents["calibration"]["calibrator"].get<std::string>();
 
             std::vector<std::shared_ptr<CalibratorBase>> calibrators;
-            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"]});
+            satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"], this});
             if (calibrators.size() > 0)
                 calibrator_ptr = calibrators[0];
             else
+            {
                 logger->error("Requested calibrator " + calibrator_id + " does not exist!");
+                calibrator_ptr = std::make_shared<DummyCalibrator>(contents["calibration"], this);
+            }
 
             calibrator_ptr->init();
         }
@@ -201,15 +209,24 @@ namespace satdump
 
     double ImageProducts::get_calibrated_value(int image_index, int x, int y, bool temp)
     {
+        int calib_index = image_index;
         calib_mutex.lock();
         uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
-        double val2;
+
+        double val2 = CALIBRATION_INVALID_VALUE;
+        if (images[image_index].abs_index == -2)
+            return val2;
+        else if (images[image_index].abs_index != -1)
+            calib_index = images[image_index].abs_index;
+
         if (calibrator_ptr != nullptr)
-            val2 = calibrator_ptr->compute(image_index, x, y, val);
+            val2 = calibrator_ptr->compute(calib_index, x, y, val);
         else if (lua_state_ptr != nullptr)
-            val2 = ((sol::function *)lua_comp_func_ptr)->call(image_index, x, y, val).get<double>();
+            val2 = ((sol::function *)lua_comp_func_ptr)->call(calib_index, x, y, val).get<double>();
+
         if (get_calibration_type(image_index) == calib_type_t::CALIB_RADIANCE && temp)
             val2 = radiance_to_temperature(val2, get_wavenumber(image_index));
+
         calib_mutex.unlock();
         return val2;
     }
@@ -283,7 +300,7 @@ namespace satdump
         }
     }
 
-    bool equation_contains(std::string init, std::string match)
+    bool equation_contains(std::string init, std::string match, int *loc)
     {
         size_t pos = init.find(match);
     retry:
@@ -302,7 +319,11 @@ namespace satdump
             }
 
             if (match == final_ex)
+            {
+                if (loc != nullptr)
+                    *loc = pos;
                 return true;
+            }
 
             pos = init.find(match, pos + 1);
             goto retry;
@@ -326,6 +347,93 @@ namespace satdump
             type = ImageProducts::CALIB_VTYPE_TEMPERATURE;
     }
 
+    bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg)
+    {
+        std::string str_to_find_channels = cfg.equation;
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+            str_to_find_channels = cfg.channels;
+
+        std::vector<std::string> channels_present;
+
+        for (size_t i = 0; i < str_to_find_channels.size() - 1; i++)
+        {
+            if (str_to_find_channels[i + 0] == 'c' && str_to_find_channels[i + 1] == 'c' && str_to_find_channels[i + 2] == 'h')
+            {
+                std::string final_ch;
+                int fpos = i;
+                for (size_t ic = i; ic < str_to_find_channels.size(); ic++)
+                {
+                    char v = str_to_find_channels[ic];
+                    if (v < 48 || v > 57)
+                        if (v < 65 || v > 90)
+                            if (v < 97 || v > 122)
+                                break;
+                    final_ch += v;
+                    fpos = ic;
+                }
+
+                bool already_present = false;
+                for (auto &str : channels_present)
+                    if (str == final_ch)
+                        already_present = true;
+                if (!already_present && final_ch.size() > 0)
+                    channels_present.push_back(final_ch);
+
+                i = fpos;
+                continue;
+            }
+
+            if (str_to_find_channels[i + 0] == 'c' && str_to_find_channels[i + 1] == 'h')
+            {
+                std::string final_ch;
+                int fpos = i;
+                for (size_t ic = i; ic < str_to_find_channels.size(); ic++)
+                {
+                    char v = str_to_find_channels[ic];
+                    if (v < 48 || v > 57)
+                        if (v < 65 || v > 90)
+                            if (v < 97 || v > 122)
+                                break;
+                    final_ch += v;
+                    fpos = ic;
+                }
+
+                bool already_present = false;
+                for (auto &str : channels_present)
+                    if (str == final_ch)
+                        already_present = true;
+                if (!already_present && final_ch.size() > 0)
+                    channels_present.push_back(final_ch);
+
+                i = fpos;
+                continue;
+            }
+        }
+
+        if (channels_present.size() == 0)
+            return false;
+
+        for (int i = 0; i < (int)product.images.size(); i++)
+        {
+            auto &img = product.images[i];
+            std::string equ_str = "ch" + img.channel_name;
+            std::string equ_str_calib = "cch" + img.channel_name;
+
+            auto it_ch = std::find(channels_present.begin(), channels_present.end(), equ_str);
+            if (it_ch != channels_present.end())
+                channels_present.erase(it_ch);
+
+            if (product.has_calibation() && product.get_wavenumber(i) != -1)
+            {
+                auto it_cch = std::find(channels_present.begin(), channels_present.end(), equ_str_calib);
+                if (it_cch != channels_present.end())
+                    channels_present.erase(it_cch);
+            }
+        }
+
+        return channels_present.size() == 0;
+    }
+
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
     {
         std::vector<int> channel_indexes;
@@ -347,30 +455,19 @@ namespace satdump
 
         for (int i = 0; i < (int)product.images.size(); i++)
         {
-            auto img = product.images[i];
+            auto &img = product.images[i];
             std::string equ_str = "ch" + img.channel_name;
             std::string equ_str_calib = "cch" + img.channel_name;
 
             if (max_width_total < (int)img.image.width())
                 max_width_total = img.image.width();
 
-            if (equation_contains(str_to_find_channels, equ_str) && img.image.size() > 0)
+            int cal_loc = -1;
+            int loc = -1;
+
+            if (equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && img.image.size() > 0 && product.has_calibation())
             {
-                channel_indexes.push_back(i);
-                channel_numbers.push_back(equ_str);
-                images_obj.push_back(img.image);
-                offsets.emplace(equ_str, img.offset_x);
-                logger->debug("Composite needs channel %s", equ_str.c_str());
-
-                if (max_width_used < (int)img.image.width())
-                    max_width_used = img.image.width();
-
-                if (min_offset > img.offset_x)
-                    min_offset = img.offset_x;
-            }
-
-            if (equation_contains(str_to_find_channels, equ_str_calib) && img.image.size() > 0 && product.has_calibation())
-            {
+                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
                 product.init_calibration();
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str_calib);
@@ -386,7 +483,21 @@ namespace satdump
                     images_obj.push_back(product.get_calibrated_image(i, progress));
                 }
                 offsets.emplace(equ_str_calib, img.offset_x);
-                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
+
+                if (max_width_used < (int)img.image.width())
+                    max_width_used = img.image.width();
+
+                if (min_offset > img.offset_x)
+                    min_offset = img.offset_x;
+            }
+
+            if (equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() > 0 && cal_loc != loc)
+            {
+                channel_indexes.push_back(i);
+                channel_numbers.push_back(equ_str);
+                images_obj.push_back(img.image);
+                offsets.emplace(equ_str, img.offset_x);
+                logger->debug("Composite needs channel %s", equ_str.c_str());
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
@@ -473,7 +584,7 @@ namespace satdump
                             {
                                 //  Copy over scanlines
                                 memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
-                                       &product.images[index].image[t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
+                                       &images_obj[i][t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
                                        images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
                                 break;
                             }
@@ -498,11 +609,14 @@ namespace satdump
         image::Image<uint16_t> rgb_composite;
 
         if (cfg.lua != "")
-            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, progress);
+            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, final_timestamps, progress);
         else if (cfg.lut != "")
             rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
         else
             rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
+
+        if (cfg.despeckle)
+            rgb_composite.kuwahara_filter();
 
         if (cfg.equalize)
             rgb_composite.equalize();

@@ -18,18 +18,21 @@ protected:
     static int _rx_callback(hackrf_transfer *t);
 
     widgets::DoubleList samplerate_widget;
+    widgets::DoubleList bandwidth_widget;
 
     int lna_gain = 0;
     int vga_gain = 0;
 
     bool amp_enabled = false;
     bool bias_enabled = false;
+    bool manual_bandwidth = false;
 
     void set_gains();
     void set_bias();
+    void set_others();
 
 public:
-    HackRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
+    HackRFSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
     {
     }
 

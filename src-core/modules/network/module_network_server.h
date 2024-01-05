@@ -12,8 +12,8 @@ namespace network
         uint8_t *buffer;
 
         std::ifstream data_in;
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         int pkt_size;
         std::string address;

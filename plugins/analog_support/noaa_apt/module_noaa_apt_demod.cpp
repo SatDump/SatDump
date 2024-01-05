@@ -1,5 +1,6 @@
 #include "module_noaa_apt_demod.h"
 #include "common/dsp/filter/firdes.h"
+#include "core/config.h"
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
@@ -11,13 +12,14 @@ namespace noaa_apt
     NOAAAPTDemodModule::NOAAAPTDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         // Parse params
-        // if (parameters.count("demodulator_bw") > 0)
-        //     d_demodulator_bandwidth = parameters["demodulator_bw"].get<long>();
-        // else
-        //     throw std::runtime_error("Demodulator BW parameter must be present!");
+        if (parameters.count("sdrpp_noise_reduction") > 0)
+            sdrpp_noise_reduction = parameters["sdrpp_noise_reduction"].get<bool>();
+        else
+            sdrpp_noise_reduction = true;
 
         name = "NOAA APT Demodulator (FM)";
         show_freq = false;
+        play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
 
         constellation.d_hscale = 1.0; // 80.0 / 100.0;
         constellation.d_vscale = 0.5; // 20.0 / 100.0;
@@ -33,8 +35,12 @@ namespace noaa_apt
         // Resampler to BW
         res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
 
+        // Noise reduction
+        if (sdrpp_noise_reduction)
+            nr = std::make_shared<dsp::AptNoiseReductionBlock>(res->output_stream, 9);
+
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(sdrpp_noise_reduction ? nr->output_stream : res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
     }
 
     NOAAAPTDemodModule::~NOAAAPTDemodModule()
@@ -63,6 +69,8 @@ namespace noaa_apt
         // Start
         BaseDemodModule::start();
         res->start();
+        if (sdrpp_noise_reduction)
+            nr->start();
         qua->start();
 
         // Buffers to wav
@@ -103,9 +111,9 @@ namespace noaa_apt
                     qua->output_stream->readBuf[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 0.68, dat_size);
 
-            if (enable_audio)
+            if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);
 
             if (output_data_type == DATA_FILE)
@@ -126,7 +134,7 @@ namespace noaa_apt
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
             }
         }
 
@@ -149,11 +157,71 @@ namespace noaa_apt
         // Stop
         BaseDemodModule::stop();
         res->stop();
+        if (sdrpp_noise_reduction)
+            nr->stop();
         qua->stop();
         qua->output_stream->stopReader();
 
         if (output_data_type == DATA_FILE)
             data_out.close();
+    }
+
+    void NOAAAPTDemodModule::drawUI(bool window)
+    {
+        ImGui::Begin(name.c_str(), NULL, window ? 0 : NOWINDOW_FLAGS);
+
+        ImGui::BeginGroup();
+        constellation.draw(); // Constellation
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+
+        ImGui::BeginGroup();
+        {
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            /* if (show_freq)
+            {
+                ImGui::Text("Freq : ");
+                ImGui::SameLine();
+                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+            }
+            snr_plot.draw(snr, peak_snr); */
+            if (!streamingInput)
+                if (ImGui::Checkbox("Show FFT", &show_fft))
+                    fft_splitter->set_enabled("fft", show_fft);
+            if (enable_audio)
+            {
+                const char *btn_icon, *label;
+                ImU32 color;
+                if (play_audio)
+                {
+                    color = IM_COL32(0, 255, 0, 255);
+                    btn_icon = u8"\uF028##aptaudio";
+                    label = "Audio Playing";
+                }
+                else
+                {
+                    color = IM_COL32(255, 0, 0, 255);
+                    btn_icon = u8"\uF026##aptaudio";
+                    label = "Audio Muted";
+                }
+
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                if (ImGui::Button(btn_icon))
+                    play_audio = !play_audio;
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+                ImGui::TextUnformatted(label);
+            }
+        }
+        ImGui::EndGroup();
+
+        if (!streamingInput)
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+
+        drawStopButton();
+        ImGui::End();
+        drawFFT();
     }
 
     std::string NOAAAPTDemodModule::getID()

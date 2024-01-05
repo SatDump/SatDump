@@ -18,9 +18,10 @@ namespace noaa
             : ProcessingModule(input_file, output_file_hint, parameters),
               is_gac(parameters.count("gac_mode") > 0 ? parameters["gac_mode"].get<bool>() : 0),
               is_dsb(parameters.count("dsb_mode") > 0 ? parameters["dsb_mode"].get<bool>() : 0),
-              avhrr_reader(is_gac, parameters["year_override"].get<int>()),
-              hirs_reader(parameters["year_override"].get<int>()),
-              sem_reader(parameters["year_override"].get<int>())
+              avhrr_reader(is_gac, parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
+              hirs_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
+              sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
+              telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1)
         {
         }
 
@@ -61,6 +62,7 @@ namespace noaa
                                     {
                                         hirs_reader.work(frameBuffer);
                                         sem_reader.work(frameBuffer);
+                                        telemetry_reader.work(frameBuffer);
 
                                         // push the timestamps to AIP, since it depends on TIP for that (ridiculous)
                                         amsu_reader.last_TIP_timestamp = hirs_reader.last_timestamp;
@@ -92,6 +94,7 @@ namespace noaa
                                 }
                                 hirs_reader.work(frameBuffer);
                                 sem_reader.work(frameBuffer);
+                                telemetry_reader.work(frameBuffer);
                                 // push the timestamps to AIP, since it depends on TIP for that (ridiculous)
                                 amsu_reader.last_TIP_timestamp = hirs_reader.last_timestamp;
 
@@ -110,7 +113,7 @@ namespace noaa
                     if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                     {
                         lastTime = time(NULL);
-                        logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                        logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                     }
                 } // done with the frames
                 data_in.close();
@@ -296,6 +299,17 @@ namespace noaa
                     sem_status = DONE;
                 }
 
+                // telemetry
+                {
+                    telemetry_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/telemetry";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+                    telemetry_status = DONE;
+                }
+
                 // MHS
                 if (scid == 15)
                 { // only N19 has operational MHS
@@ -401,13 +415,14 @@ namespace noaa
                     data_in.read((char *)&buffer[0], 104);
                     hirs_reader.work(buffer);
                     sem_reader.work(buffer);
+                    telemetry_reader.work(buffer);
                     scid_list.push_back(buffer[2] & 0b00001111);
 
                     progress = data_in.tellg();
                     if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                     {
                         lastTime = time(NULL);
-                        logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                        logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                     }
                 }
 
@@ -504,6 +519,17 @@ namespace noaa
                     dataset.products_list.push_back("SEM");
                     sem_status = DONE;
                 }
+
+                // telemetry
+                {
+                    telemetry_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/telemetry";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
+
+                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+                    telemetry_status = DONE;
+                }
                 dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
             }
         }
@@ -565,7 +591,7 @@ namespace noaa
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

@@ -7,6 +7,7 @@
 #include "satdump_vars.h"
 #include "core/config.h"
 #include "core/style.h"
+#include "core/backend.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
 #include "common/audio/audio_sink.h"
@@ -52,7 +53,6 @@ namespace satdump
         std::ifstream ifs(resources::getResourcePath("credits.md"));
         std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         credits_md.set_md(credits_markdown);
-        credits_md.init();
 
         registerApplications();
         registerViewerHandlers();
@@ -60,14 +60,18 @@ namespace satdump
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
 
-        // Logger notify sink
-        notify_logger_sink = std::make_shared<NotifyLoggerSink>();
-        logger->add_sink(notify_logger_sink);
-
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
         if (status_logger_sink->is_shown())
             logger->add_sink(status_logger_sink);
+
+        // Shut down the logger init buffer manually to prevent init warnings
+        // From showing as a toast, or in the product processor screen
+        completeLoggerInit();
+
+        // Logger notify sink
+        notify_logger_sink = std::make_shared<NotifyLoggerSink>();
+        logger->add_sink(notify_logger_sink);
     }
 
     void updateUI(float device_scale)
@@ -95,8 +99,9 @@ namespace satdump
 
     bool main_ui_is_processing_selected = false;
 
-    void renderMainUI(int wwidth, int wheight)
+    void renderMainUI()
     {
+        std::pair<int, int> dims = backend::beginFrame();
         // ImGui::ShowDemoWindow();
 
         /*if (in_app)
@@ -137,11 +142,11 @@ namespace satdump
                 }
             }
             if (status_bar)
-                wheight -= status_logger_sink->draw();
+                dims.second -= status_logger_sink->draw();
 
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)wheight});
-            ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
+            ImGui::SetNextWindowSize({(float)dims.first, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)dims.second});
+            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
                 main_ui_is_processing_selected = false;
@@ -152,10 +157,11 @@ namespace satdump
                     {
                         // ImGui::BeginChild("OfflineProcessingChild");
                         processing::ui_call_list_mutex->lock();
-                        int live_width = wwidth; // ImGui::GetWindowWidth();
-                        int live_height = /*ImGui::GetWindowHeight()*/ wheight - ImGui::GetCursorPos().y;
+                        int live_width = dims.first; // ImGui::GetWindowWidth();
+                        int live_height = /*ImGui::GetWindowHeight()*/ dims.second - ImGui::GetCursorPos().y;
                         float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
                         float currentPos = ImGui::GetCursorPos().y;
+                        ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
                         for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
                         {
                             ImGui::SetNextWindowPos({0, currentPos});
@@ -163,12 +169,15 @@ namespace satdump
                             ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
                             module->drawUI(false);
                         }
+                        ImGui::PopStyleColor();
                         processing::ui_call_list_mutex->unlock();
                         // ImGui::EndChild();
                     }
                     else
                     {
+                        ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
                         offline::render();
+                        ImGui::EndChild();
                     }
 
                     ImGui::EndTabItem();
@@ -210,7 +219,9 @@ namespace satdump
 #endif
                 if (ImGui::BeginTabItem("Settings"))
                 {
+                    ImGui::BeginChild("settings", ImGui::GetContentRegionAvail());
                     settings::render();
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("About"))
@@ -248,6 +259,7 @@ namespace satdump
 #endif
             }
             ImGui::EndTabBar();
+            ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();
 
             if (settings::show_imgui_demo)
@@ -260,9 +272,13 @@ namespace satdump
         float notification_transparency = (light_theme ? 200.f : 100.f) / 255.f;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
+        notify_logger_sink->notify_mutex.lock();
         ImGui::RenderNotifications();
+        notify_logger_sink->notify_mutex.unlock();
         ImGui::PopStyleVar(1);
         ImGui::PopStyleColor(1);
+
+        backend::endFrame();
     }
 
     bool light_theme;

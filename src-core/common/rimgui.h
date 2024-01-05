@@ -8,6 +8,7 @@
 #include <cstdint>
 #include "core/style.h"
 #include "dll_export.h"
+#include "common/widgets/stepped_slider.h"
 
 /*
 Super Basic & Crappy remote ImGui Scheme,
@@ -25,8 +26,8 @@ namespace RImGui
         UI_ELEMENT_TEXT,
         UI_ELEMENT_BUTTON,
         UI_ELEMENT_RADIOBUTTON,
-        UI_ELEMENT_SLIDERINT,
-        UI_ELEMENT_SLIDERFLOAT,
+        UI_ELEMENT_STEPPEDSLIDERINT,
+        UI_ELEMENT_STEPPEDSLIDERFLOAT,
         UI_ELEMENT_CHECKBOX,
         UI_ELEMENT_COMBO,
         UI_ELEMENT_INPUTDOUBLE,
@@ -82,9 +83,9 @@ namespace RImGui
             buffer[pos++] = id >> 8;
             buffer[pos++] = id & 0xFF;
 
-            *((float *)&buffer[pos]) = size_x;
+            memcpy(buffer + pos, &size_x, sizeof(size_x));
             pos += 4;
-            *((float *)&buffer[pos]) = size_y;
+            memcpy(buffer + pos, &size_y, sizeof(size_y));
             pos += 4;
 
             buffer[pos++] = (sv.size() >> 8) & 0xFF;
@@ -97,12 +98,12 @@ namespace RImGui
 
             buffer[pos++] = bv;
 
-            *((float *)&buffer[pos]) = fv;
+            memcpy(buffer + pos, &fv, sizeof(fv));
             pos += 4;
 
-            *((double *)&buffer[pos]) = min;
+            memcpy(buffer + pos, &min, sizeof(min));
             pos += 8;
-            *((double *)&buffer[pos]) = max;
+            memcpy(buffer + pos, &max, sizeof(max));
             pos += 8;
 
             buffer[pos++] = (sv2.size() >> 8) & 0xFF;
@@ -124,9 +125,9 @@ namespace RImGui
             id = buffer[pos + 0] << 8 | buffer[pos + 1];
             pos += 2;
 
-            size_x = *((float *)&buffer[pos]);
+            memcpy(&size_x, buffer + pos, sizeof(size_x));
             pos += 4;
-            size_y = *((float *)&buffer[pos]);
+            memcpy(&size_y, buffer + pos, sizeof(size_y));
             pos += 4;
 
             int svsize = buffer[pos + 0] << 8 | buffer[pos + 1];
@@ -135,17 +136,17 @@ namespace RImGui
             for (int i = 0; i < (int)sv.size(); i++)
                 sv[i] = buffer[pos++];
 
-            iv = *((int *)&buffer[pos]);
+            memcpy(&iv, buffer + pos, sizeof(iv));
             pos += 4;
 
             bv = buffer[pos++];
 
-            fv = *((float *)&buffer[pos]);
+            memcpy(&fv, buffer + pos, sizeof(fv));
             pos += 4;
 
-            min = *((double *)&buffer[pos]);
+            memcpy(&min, buffer + pos, sizeof(min));
             pos += 8;
-            max = *((double *)&buffer[pos]);
+            memcpy(&max, buffer + pos, sizeof(max));
             pos += 8;
 
             int sv2size = buffer[pos + 0] << 8 | buffer[pos + 1];
@@ -253,10 +254,12 @@ namespace RImGui
                 el.clicked = ImGui::Button(el.sv.c_str(), {el.size_x, el.size_y});
             else if (el.t == UI_ELEMENT_RADIOBUTTON)
                 el.clicked = ImGui::RadioButton(el.sv.c_str(), el.bv);
-            else if (el.t == UI_ELEMENT_SLIDERINT)
-                el.clicked = ImGui::SliderInt(el.sv.c_str(), &el.iv, el.min, el.max);
-            else if (el.t == UI_ELEMENT_SLIDERFLOAT)
-                el.clicked = ImGui::SliderFloat(el.sv.c_str(), &el.fv, el.min, el.max);
+            else if (el.t == UI_ELEMENT_STEPPEDSLIDERINT)
+                el.clicked = widgets::SteppedSliderInt(el.sv.c_str(), &el.iv, el.min, el.max, (int)(el.size_x == 0.0f ? 1.0f : el.size_x),
+                    el.sv2.c_str(), (ImGuiSliderFlags)el.size_y);
+            else if (el.t == UI_ELEMENT_STEPPEDSLIDERFLOAT)
+                el.clicked = widgets::SteppedSliderFloat(el.sv.c_str(), &el.fv, el.min, el.max, (el.size_x == 0.0f ? 1.0f : el.size_x),
+                    el.sv2.c_str(), (ImGuiSliderFlags)el.size_y);
             else if (el.t == UI_ELEMENT_CHECKBOX)
                 el.clicked = ImGui::Checkbox(el.sv.c_str(), &el.bv);
             else if (el.t == UI_ELEMENT_COMBO)
@@ -338,24 +341,23 @@ namespace RImGui
         }
     }
 
-    inline bool SliderInt(const char *label, int *v, int v_min, int v_max)
+    inline bool SteppedSliderInt(const char* label, int* v, int v_min, int v_max, int v_rate = 1, const char* format = "%d", ImGuiSliderFlags flags = 0)
     {
         if (is_local)
-        {
-            return ImGui::SliderInt(label, v, v_min, v_max);
-        }
+            return widgets::SteppedSliderInt(label, v, v_min, v_max, v_rate, format, flags);
         else
         {
-            for (auto &el : current_instance->ui_elems_fbk)
-                if (el.t == UI_ELEMENT_SLIDERINT)
+            for (auto& el : current_instance->ui_elems_fbk)
+                if (el.t == UI_ELEMENT_STEPPEDSLIDERINT)
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *v = el.iv;
-            current_instance->ui_elements.push_back({UI_ELEMENT_SLIDERINT,
+            current_instance->ui_elements.push_back({ UI_ELEMENT_STEPPEDSLIDERINT,
                                                      current_instance->current_id++,
-                                                     0, 0, std::string(label), *v, false, 0, (double)v_min, (double)v_max});
+                                                     (float)v_rate, (float)flags, std::string(label), *v, false, 0,
+                                                     (double)v_min, (double)v_max, format});
             for (auto &el : current_instance->ui_elems_fbk)
-                if (el.t == UI_ELEMENT_SLIDERINT)
+                if (el.t == UI_ELEMENT_STEPPEDSLIDERINT)
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id - 1)
                             return el.clicked;
@@ -363,25 +365,25 @@ namespace RImGui
         }
     }
 
-    inline bool SliderFloat(const char *label, float *v, float v_min, float v_max)
+    inline bool SteppedSliderFloat(const char *label, float *v, float v_min, float v_max, float v_rate = 1.0f, const char *format = "%.3f", ImGuiSliderFlags flags = 0)
     {
         if (is_local)
         {
-            return ImGui::SliderFloat(label, v, v_min, v_max);
+            return widgets::SteppedSliderFloat(label, v, v_min, v_max, v_rate, format, flags);
         }
         else
         {
             for (auto &el : current_instance->ui_elems_fbk)
-                if (el.t == UI_ELEMENT_SLIDERFLOAT)
+                if (el.t == UI_ELEMENT_STEPPEDSLIDERFLOAT)
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *v = el.fv;
-            current_instance->ui_elements.push_back({UI_ELEMENT_SLIDERFLOAT,
+            current_instance->ui_elements.push_back({UI_ELEMENT_STEPPEDSLIDERFLOAT,
                                                      current_instance->current_id++,
-                                                     0, 0, std::string(label), 0,
-                                                     false, *v, v_min, v_max});
+                                                     v_rate, (float)flags, std::string(label), 0,
+                                                     false, *v, v_min, v_max, format});
             for (auto &el : current_instance->ui_elems_fbk)
-                if (el.t == UI_ELEMENT_SLIDERFLOAT)
+                if (el.t == UI_ELEMENT_STEPPEDSLIDERFLOAT)
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id - 1)
                             return el.clicked;
@@ -437,7 +439,7 @@ namespace RImGui
             current_instance->ui_elements.push_back({UI_ELEMENT_COMBO,
                                                      current_instance->current_id++,
                                                      0, 0, std::string(label), *current_item,
-                                                     false, 0, 0, 0,
+                                                     false, 0, 0, 0, 
                                                      separated_elems});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_COMBO)

@@ -230,7 +230,7 @@ namespace gk2a
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
 
@@ -257,14 +257,16 @@ namespace gk2a
                     {
                         dec->textureID = makeImageTexture();
                         dec->textureBuffer = new uint32_t[1000 * 1000];
+                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
+                        dec->hasToUpdate = true;
                     }
 
                     if (dec->imageStatus != IDLE)
                     {
                         if (dec->hasToUpdate)
                         {
-                            dec->hasToUpdate = true;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, dec->img_width, dec->img_height);
+                            dec->hasToUpdate = false;
+                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
                         }
 
                         hasImage = true;
@@ -304,7 +306,7 @@ namespace gk2a
             ImGui::EndTabBar();
 
             if (!streamingInput)
-                ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
         }

@@ -7,7 +7,7 @@ namespace widgets {
     {
     private:
         struct tm timestamp;
-        bool auto_time, show_picker;
+        bool auto_time, show_picker, start_edit;
         int year_holder, month_holder, seconds_decimal;
         std::string d_id;
         void handle_input(double input_time);

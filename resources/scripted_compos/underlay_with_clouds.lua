@@ -12,6 +12,7 @@ function init()
     cfg_scalar = lua_vars["scalar"]
     cfg_thresold = lua_vars["thresold"]
     cfg_blend = lua_vars["blend"]
+    cfg_invert = lua_vars["invert"]
     return 3
 end
 
@@ -25,7 +26,11 @@ function process()
             if not sat_proj:get_position(x, y, pos) then
                 x2, y2 = equ_proj:forward(pos.lon, pos.lat)
 
-                val = (get_channel_value(0) - cfg_offset) * cfg_scalar
+                if cfg_invert == 1 then
+                    val = ((1.0 - get_channel_value(0)) - cfg_offset) * cfg_scalar
+                else
+                    val = (get_channel_value(0) - cfg_offset) * cfg_scalar
+                end
 
                 mappos = y2 * img_background:width() + x2
 

@@ -223,6 +223,7 @@ void BladeRFSource::stop()
             work_thread.join();
         logger->info("Thread stopped");
 
+        bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), false);
         bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), false);
         bladerf_close(bladerf_dev_obj);
     }
@@ -264,7 +265,7 @@ void BladeRFSource::drawControlUI()
                                                "Hybrid\0") &&
         is_started)
         set_gains();
-    if (RImGui::SliderInt("Gain", &general_gain, bladerf_range_gain->min, bladerf_range_gain->max) && is_started)
+    if (RImGui::SteppedSliderInt("Gain", &general_gain, bladerf_range_gain->min, bladerf_range_gain->max) && is_started)
         set_gains();
 
     if (bladerf_model == 2)

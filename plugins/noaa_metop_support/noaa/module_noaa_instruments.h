@@ -7,6 +7,7 @@
 #include "instruments/hirs/hirs_reader.h"
 #include "../instruments/amsu/amsu_reader.h"
 #include "instruments/sem/sem_reader.h"
+#include "instruments/telemetry/telemetry_reader.h"
 
 namespace noaa
 {
@@ -15,8 +16,8 @@ namespace noaa
         class NOAAInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
             const bool is_gac;
             const bool is_dsb;
 
@@ -26,6 +27,7 @@ namespace noaa
             hirs::HIRSReader hirs_reader;
             noaa_metop::amsu::AMSUReader amsu_reader;
             sem::SEMReader sem_reader;
+            telemetry::TelemetryReader telemetry_reader;
 
             // Statuses
             instrument_status_t avhrr_status = DECODING;
@@ -33,6 +35,7 @@ namespace noaa
             instrument_status_t amsu_status = DECODING;
             instrument_status_t hirs_status = DECODING;
             instrument_status_t sem_status = DECODING;
+            instrument_status_t telemetry_status = DECODING;
 
         public:
             NOAAInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

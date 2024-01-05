@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/widgets/timed_message.h"
 #include "sdrpp_server/sdrpp_server_client.h"
 #include "logger.h"
 #include "imgui/imgui.h"
@@ -19,7 +20,7 @@ protected:
     int bit_depth = 32;
     bool compression = false;
 
-    std::string error;
+    widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
 
     std::shared_ptr<dsp::stream<uint8_t>> client_output_stream;
 

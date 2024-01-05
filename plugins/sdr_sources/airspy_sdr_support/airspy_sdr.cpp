@@ -164,6 +164,7 @@ void AirspySource::stop()
 {
     if (is_started)
     {
+        airspy_set_rf_bias(airspy_dev_obj, false);
         airspy_stop_rx(airspy_dev_obj);
         airspy_close(airspy_dev_obj);
     }
@@ -214,13 +215,13 @@ void AirspySource::drawControlUI()
 
     if (gain_type == 2)
     {
-        gain_changed |= RImGui::SliderInt("LNA Gain", &manual_gains[0], 0, 15);
-        gain_changed |= RImGui::SliderInt("Mixer Gain", &manual_gains[1], 0, 15);
-        gain_changed |= RImGui::SliderInt("VGA Gain", &manual_gains[2], 0, 15);
+        gain_changed |= RImGui::SteppedSliderInt("LNA Gain", &manual_gains[0], 0, 15);
+        gain_changed |= RImGui::SteppedSliderInt("Mixer Gain", &manual_gains[1], 0, 15);
+        gain_changed |= RImGui::SteppedSliderInt("VGA Gain", &manual_gains[2], 0, 15);
     }
     else
     {
-        gain_changed |= RImGui::SliderInt("Gain", &general_gain, 0, 21);
+        gain_changed |= RImGui::SteppedSliderInt("Gain", &general_gain, 0, 21);
     }
 
     if (gain_changed)

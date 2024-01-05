@@ -24,7 +24,7 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
     {
         img_chunks.resize(0);
     }
-    else if (image.width() <= 8192 && image.height() <= 8192)
+    else if (image.width() <= maxTextureSize && image.height() <= maxTextureSize)
     {
         img_chunks.resize(1);
         fimg_width = img_chunks[0].img_width = image.width();
@@ -39,8 +39,8 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
         fimg_width = image.width();
         fimg_height = image.height();
 
-        int chunksx = fimg_width / 4096;
-        int chunksy = fimg_height / 4096;
+        int chunksx = fimg_width / (maxTextureSize / 2);
+        int chunksy = fimg_height / (maxTextureSize / 2);
         if (chunksx == 0)
             chunksx = 1;
         if (chunksy == 0)
@@ -80,7 +80,7 @@ void ImageViewWidget::update(image::Image<uint8_t> image)
     {
         img_chunks.resize(0);
     }
-    else if (image.width() <= 8192 && image.height() <= 8192)
+    else if (image.width() <= maxTextureSize && image.height() <= maxTextureSize)
     {
         img_chunks.resize(1);
         fimg_width = img_chunks[0].img_width = image.width();
@@ -95,8 +95,8 @@ void ImageViewWidget::update(image::Image<uint8_t> image)
         fimg_width = image.width();
         fimg_height = image.height();
 
-        int chunksx = fimg_width / 4096;
-        int chunksy = fimg_height / 4096;
+        int chunksx = fimg_width / (maxTextureSize / 2);
+        int chunksy = fimg_height / (maxTextureSize / 2);
         if (chunksx == 0)
             chunksx = 1;
         if (chunksy == 0)
@@ -197,7 +197,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
     {
         for (auto &chunk : img_chunks)
         {
-            updateImageTexture(chunk.texture_id, chunk.texture_buffer.data(), chunk.img_width, chunk.img_height);
+            updateMMImageTexture(chunk.texture_id, chunk.texture_buffer.data(), chunk.img_width, chunk.img_height);
             chunk.texture_buffer.clear();
         }
         has_to_update = false;

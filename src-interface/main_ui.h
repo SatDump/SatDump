@@ -9,9 +9,6 @@
 
 namespace satdump
 {
-    extern std::string error_message;
-    extern bool isError_UI;
-
     extern ctpl::thread_pool ui_thread_pool;
 
     extern bool light_theme;
@@ -22,5 +19,5 @@ namespace satdump
     void initMainUI(float device_scale);
     void updateUI(float device_scale);
     void exitMainUI();
-    void renderMainUI(int wwidth, int wheight);
+    void renderMainUI();
 }

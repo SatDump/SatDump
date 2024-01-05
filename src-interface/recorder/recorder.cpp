@@ -6,6 +6,7 @@
 #include "imgui/imgui_stdlib.h"
 #include "core/pipeline.h"
 #include "common/widgets/stepped_slider.h"
+#include "common/widgets/frequency_input.h"
 
 #include "main_ui.h"
 
@@ -68,7 +69,7 @@ namespace satdump
             }
         }
 
-        set_frequency(frequency_mhz);
+        set_frequency(frequency_hz);
         try_load_sdr_settings();
 
         splitter = std::make_shared<dsp::SplitterBlock>(source_ptr->output_stream);
@@ -77,14 +78,14 @@ namespace satdump
 
         fft = std::make_shared<dsp::FFTPanBlock>(splitter->output_stream);
         fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
-        fft->avg_rate = 0.1;
+        fft->avg_num = 10;
         fft->start();
 
         file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
         file_sink->start();
 
         fft_plot = std::make_shared<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -10, 20, 10);
-        fft_plot->frequency = frequency_mhz * 1e6;
+        fft_plot->frequency = frequency_hz;
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
 
         fft->on_fft = [this](float *v)
@@ -98,6 +99,54 @@ namespace satdump
         fft_plot->set_size(fft_size);
         waterfall_plot->set_size(fft_size);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
+
+        // Attempt to apply provided CLI settings
+        if (satdump::config::main_cfg.contains("cli"))
+        {
+            auto &cli_settings = satdump::config::main_cfg["cli"];
+
+            if (cli_settings.contains("source"))
+            {
+                std::string source = cli_settings["source"];
+                for (int i = 0; i < (int)sources.size(); i++)
+                {
+                    if (sources[i].source_type == source)
+                    {
+                        if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
+                            continue;
+
+                        try
+                        {
+                            source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                            source_ptr->open();
+                            try_load_sdr_settings();
+                            sdr_select_id = i;
+                            break;
+                        }
+                        catch (std::runtime_error &e)
+                        {
+                            logger->error(e.what());
+                        }
+                    }
+                }
+            }
+
+            if (source_ptr)
+            {
+                if (cli_settings.contains("samplerate"))
+                    source_ptr->set_samplerate(cli_settings["samplerate"].get<uint64_t>());
+                source_ptr->set_settings(cli_settings);
+            }
+
+            if (cli_settings.contains("start_recorder_device") && cli_settings["start_recorder_device"].get<bool>())
+            {
+                logger->warn("Recorder was asked to autostart!");
+                start();
+            }
+
+            if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
+                try_init_tracking_widget();
+        }
     }
 
     RecorderApplication::~RecorderApplication()
@@ -135,7 +184,8 @@ namespace satdump
 
             ImGui::BeginGroup();
             float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
-            ImGui::BeginChild("RecorderChildPanel", { left_width, wf_size }, false, ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+            ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
                 if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
                 {
@@ -147,6 +197,7 @@ namespace satdump
                         // Try to open a device, if it doesn't work, we re-open a device we can
                         try
                         {
+                            source_ptr.reset();
                             source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                             source_ptr->open();
                         }
@@ -158,6 +209,7 @@ namespace satdump
                             {
                                 try
                                 {
+                                    source_ptr.reset();
                                     source_ptr = dsp::getSourceFromDescriptor(sources[i]);
                                     source_ptr->open();
                                     sdr_select_id = i;
@@ -170,7 +222,7 @@ namespace satdump
                             }
                         }
 
-                        set_frequency(frequency_mhz);
+                        set_frequency(frequency_hz);
                         try_load_sdr_settings();
                     }
                     ImGui::SameLine();
@@ -190,7 +242,7 @@ namespace satdump
 
                         source_ptr = getSourceFromDescriptor(sources[sdr_select_id]);
                         source_ptr->open();
-                        set_frequency(frequency_mhz);
+                        set_frequency(frequency_hz);
                         try_load_sdr_settings();
                     }
                     /*
@@ -211,8 +263,8 @@ namespace satdump
                     bool pushed_color_xconv = xconverter_frequency != 0;
                     if (pushed_color_xconv)
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
-                    if (ImGui::InputDouble("MHz (LO)##downupconverter", &xconverter_frequency))
-                        set_frequency(frequency_mhz);
+                    if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
+                        set_frequency(frequency_hz);
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
 
@@ -223,9 +275,10 @@ namespace satdump
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if (ImGui::InputDouble("MHz", &frequency_mhz))
-                        set_frequency(frequency_mhz);
+                    if(widgets::FrequencyInput("Hz##mainfreq", &frequency_hz))
+                        set_frequency(frequency_hz);
 
+                    ImGui::Spacing();
                     source_ptr->drawControlUI();
 
                     if (!is_started)
@@ -238,8 +291,8 @@ namespace satdump
                         if (ImGui::Button("Stop"))
                             stop();
                     }
-                    ImGui::SameLine();
-                    ImGui::TextColored(ImColor(255, 0, 0), "%s", sdr_error.c_str());
+
+                    sdr_error.draw();
                 }
 
                 if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
@@ -276,7 +329,7 @@ namespace satdump
                     }
                     widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
-                    widgets::SteppedSliderFloat("Avg Rate", &fft->avg_rate, 0.01, 0.99, 0.1);
+                    widgets::SteppedSliderFloat("Avg Num", &fft->avg_num, 1, 500, 1);
                     if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                         waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
                     ImGui::Checkbox("Show Waterfall", &show_waterfall);
@@ -315,8 +368,7 @@ namespace satdump
                     Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
                     if (selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_mhz * 1e6 ?
-                            selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
                             for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
                             {
@@ -327,8 +379,8 @@ namespace satdump
 
                                     if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
                                     {
-                                        frequency_mhz = double(selected_pipeline.preset.frequencies[pipeline_preset_id].second) / 1e6;
-                                        set_frequency(frequency_mhz);
+                                        frequency_hz = selected_pipeline.preset.frequencies[pipeline_preset_id].second;
+                                        set_frequency(frequency_hz);
                                     }
                                 }
 
@@ -353,8 +405,7 @@ namespace satdump
                             stop_processing();
                     }
 
-                    ImGui::SameLine();
-                    ImGui::TextColored(ImColor(255, 0, 0), "%s", error.c_str());
+                    error.draw();
 
                     if (!is_started)
                         style::endDisabled();
@@ -421,56 +472,10 @@ namespace satdump
                     }
                 }
 
-                if (ImGui::CollapsingHeader("Tracking"))
+                show_tracking = ImGui::CollapsingHeader("Tracking");
+                if (show_tracking)
                 {
-                    if (tracking_widget == nullptr)
-                    {
-                        tracking_widget = new TrackingWidget();
-
-                        tracking_widget->aos_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
-                        {
-                            if(obj.live)
-                                stop_processing();
-                            if (obj.record)
-                                stop_recording();
-
-                            if (obj.live || obj.record)
-                            {
-                                frequency_mhz = obj.frequency;
-                                if (is_started)
-                                    set_frequency(frequency_mhz);
-                                else
-                                    start();
-
-                                //Catch situations where source could not start
-                                if (!is_started)
-                                {
-                                    logger->error("Could not start recorder/processor since the source could not be started!");
-                                    return;
-                                }
-                            }
-
-                            if (obj.live)
-                            {
-                                pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
-                                pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
-                                start_processing();
-                            }
-
-                            if (obj.record)
-                            {
-                                start_recording();
-                            }
-                        };
-
-                        tracking_widget->los_callback = [this](tracking::SatellitePass, tracking::TrackedObject obj)
-                        {
-                            if(obj.record)
-                                stop_recording();
-                            if (obj.live)
-                                stop_processing();
-                        };
-                    }
+                    try_init_tracking_widget();
                     tracking_widget->render();
                 }
 
@@ -488,10 +493,11 @@ namespace satdump
 
             ImGui::TableNextColumn();
             ImGui::BeginGroup();
-            ImGui::BeginChild("RecorderFFT", { right_width, wf_size }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
+                float wfft_widht = right_width - 9 * ui_scale;
                 bool t = true;
 #ifdef __ANDROID__
                 int offset = 8;
@@ -504,7 +510,7 @@ namespace satdump
                 if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
-                    fft_plot->draw({float(right_width - 9 * ui_scale), fft_height});
+                    fft_plot->draw({float(wfft_widht), fft_height});
                     if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered())
@@ -520,7 +526,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
-                    waterfall_plot->draw({float(right_width - 9 * ui_scale), wf_height}, is_started);
+                    waterfall_plot->draw({wfft_widht, wf_height}, is_started);
                 }
             }
             ImGui::EndChild();
@@ -542,7 +548,7 @@ namespace satdump
                 float live_height = 250 * ui_scale;
                 float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
                 float currentPos = 0;
-                ImGui::PushStyleColor(11, ImGui::GetStyleColorVec4(10));
+                ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
                 for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
                 {
                     ImGui::SetNextWindowPos({currentPos, y_pos});
@@ -571,6 +577,7 @@ namespace satdump
                     fft_plot->scale_min -= 0.5;
                 else if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
                     fft_plot->scale_min += 0.5;
+#if 0
                 else if (ImGui::IsKeyDown(ImGuiKey_PageUp))
                     fft->avg_rate += 0.001;
                 else if (ImGui::IsKeyDown(ImGuiKey_PageDown))
@@ -580,6 +587,7 @@ namespace satdump
                     fft->avg_rate = 0.99;
                 else if (fft->avg_rate < 0.01)
                     fft->avg_rate = 0.01;
+#endif
             }
         }
     }

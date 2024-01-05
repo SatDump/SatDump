@@ -11,8 +11,8 @@ namespace elektro
         class ELEKTROLRITDataDecoderModule : public ProcessingModule
         {
         protected:
-            std::atomic<size_t> filesize;
-            std::atomic<size_t> progress;
+            std::atomic<uint64_t> filesize;
+            std::atomic<uint64_t> progress;
 
             std::shared_ptr<ELEKTRO221Composer> elektro_221_composer_full_disk;
             std::shared_ptr<ELEKTRO321Composer> elektro_321_composer_full_disk;

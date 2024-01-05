@@ -5,7 +5,7 @@
 #include "common/codings/randomization.h"
 
 // Return filesize
-size_t getFilesize(std::string filepath);
+uint64_t getFilesize(std::string filepath);
 
 namespace ccsds
 {
@@ -36,7 +36,8 @@ namespace ccsds
           d_rs_interleaving_depth(parameters["rs_i"].get<int>()),
           d_rs_fill_bytes(parameters.count("rs_fill_bytes") > 0 ? parameters["rs_fill_bytes"].get<int>() : -1),
           d_rs_dualbasis(parameters.count("rs_dualbasis") > 0 ? parameters["rs_dualbasis"].get<bool>() : true),
-          d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none")
+          d_rs_type(parameters.count("rs_type") > 0 ? parameters["rs_type"].get<std::string>() : "none"),
+          d_rs_usecheck(parameters.count("rs_usecheck") > 0 ? parameters["rs_usecheck"].get<bool>() : false)
     {
         viterbi_out = new uint8_t[d_buffer_size * 8];
         soft_buffer = new int8_t[d_buffer_size];
@@ -217,14 +218,22 @@ namespace ccsds
                 if (d_rs_interleaving_depth != 0) // RS Correction
                     reed_solomon->decode_interlaved(&cadu[4], d_rs_dualbasis, d_rs_interleaving_depth, errors);
 
+                bool valid = true;
+                for (int i = 0; i < d_rs_interleaving_depth; i++)
+                    if (errors[i] == -1)
+                        valid = false;
+
                 if (d_derand && d_derand_after_rs) // Derand if required, after RS
                     derand_ccsds(&cadu[d_derand_from], d_cadu_bytes - d_derand_from);
 
-                // Write it out
-                if (output_data_type == DATA_STREAM)
-                    output_fifo->write((uint8_t *)cadu, d_cadu_bytes);
-                else
-                    data_out.write((char *)cadu, d_cadu_bytes);
+                if (!d_rs_usecheck || valid)
+                {
+                    // Write it out
+                    if (output_data_type == DATA_STREAM)
+                        output_fifo->write((uint8_t *)cadu, d_cadu_bytes);
+                    else
+                        data_out.write((char *)cadu, d_cadu_bytes);
+                }
             }
 
             if (input_data_type == DATA_FILE)
@@ -242,7 +251,7 @@ namespace ccsds
                 lastTime = time(NULL);
                 std::string viterbi_state = viterbi_lock == 0 ? "NOSYNC" : "SYNCED";
                 std::string deframer_state = deframer->getState() == deframer->STATE_NOSYNC ? "NOSYNC" : (deframer->getState() == deframer->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi_ber) + ", Deframer : " + deframer_state);
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0f) / 10.0f) + "%%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi_ber) + ", Deframer : " + deframer_state);
             }
         }
 
@@ -372,7 +381,7 @@ namespace ccsds
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         ImGui::End();
     }

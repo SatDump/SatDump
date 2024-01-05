@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include "nlohmann/json.hpp"
 
 struct HeaderInfo
 {
@@ -11,3 +12,4 @@ struct HeaderInfo
 };
 
 HeaderInfo try_parse_header(std::string file);
+void try_get_params_from_input_file(nlohmann::json &parameters, std::string input_file);

@@ -135,12 +135,14 @@ namespace image
 
         // Output image
         bool isRgb = outValsCnt == 3;
-        Image<T> rgb_output(f.img_width, f.img_height, isRgb ? 3 : 1);
+        bool isRgbA = outValsCnt == 4;
+        Image<T> rgb_output(f.img_width, f.img_height, isRgbA ? 4 : (isRgb ? 3 : 1));
 
         // Utils
         double R = 0;
         double G = 0;
         double B = 0;
+        double A = 0;
 
         // Run though the entire image
         for (size_t line = 0; line < (size_t)f.img_height; line++)
@@ -154,11 +156,13 @@ namespace image
 
                 // Get output and scale back
                 R = rgbOut[0] * double(std::numeric_limits<T>::max());
-                if (isRgb)
+                if (isRgb || isRgbA)
                 {
                     G = rgbOut[1] * double(std::numeric_limits<T>::max());
                     B = rgbOut[2] * double(std::numeric_limits<T>::max());
                 }
+                if (isRgbA)
+                    A = rgbOut[3] * double(std::numeric_limits<T>::max());
 
                 // Clamp
                 if (R < 0)
@@ -166,7 +170,7 @@ namespace image
 
                 if (R > std::numeric_limits<T>::max())
                     R = std::numeric_limits<T>::max();
-                if (isRgb)
+                if (isRgb || isRgbA)
                 {
                     if (G < 0)
                         G = 0;
@@ -177,14 +181,19 @@ namespace image
                     if (B > std::numeric_limits<T>::max())
                         B = std::numeric_limits<T>::max();
                 }
+                if (isRgbA)
+                    if (A > std::numeric_limits<T>::max())
+                        A = std::numeric_limits<T>::max();
 
                 // Write output
                 rgb_output[img_fullch * 0 + line * f.img_width + pixel] = R;
-                if (isRgb)
+                if (isRgb || isRgbA)
                 {
                     rgb_output[img_fullch * 1 + line * f.img_width + pixel] = G;
                     rgb_output[img_fullch * 2 + line * f.img_width + pixel] = B;
                 }
+                if (isRgbA)
+                    rgb_output[img_fullch * 3 + line * f.img_width + pixel] = A;
             }
 
             if (progress != nullptr)
@@ -279,7 +288,7 @@ namespace image
 
     // Generate a composite from channels and a Lua script
     template <typename T>
-    Image<T> generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, float *progress)
+    Image<T> generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, std::vector<double> *final_timestamps, float *progress)
     {
         compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
 
@@ -299,6 +308,7 @@ namespace image
             lua.open_libraries(sol::lib::string);
             lua.open_libraries(sol::lib::math);
 
+            lua_utils::bindLogger(lua);
             lua_utils::bindImageTypes(lua);
             lua_utils::bindGeoTypes(lua);
             lua_utils::bindSatProjType(lua);
@@ -306,8 +316,9 @@ namespace image
 
             lua["has_sat_proj"] = [img_pro]()
             { return img_pro->has_proj_cfg() && img_pro->has_tle() && img_pro->has_timestamps; };
-            lua["get_sat_proj"] = [img_pro]()
-            { return satdump::get_sat_proj(img_pro->get_proj_cfg(), img_pro->get_tle(), img_pro->get_timestamps()); };
+            if (final_timestamps != nullptr)
+                lua["get_sat_proj"] = [img_pro, &final_timestamps]()
+                { return satdump::get_sat_proj(img_pro->get_proj_cfg(), img_pro->get_tle(), *final_timestamps); };
             lua["get_resource_path"] = resources::getResourcePath;
 
             lua.script_file(lua_path);
@@ -363,6 +374,6 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_lua<uint8_t>(satdump::ImageProducts *, std::vector<Image<uint8_t>>, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_lua<uint16_t>(satdump::ImageProducts *, std::vector<Image<uint16_t>>, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, float *);
+    template Image<uint8_t> generate_composite_from_lua<uint8_t>(satdump::ImageProducts *, std::vector<Image<uint8_t>>, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
+    template Image<uint16_t> generate_composite_from_lua<uint16_t>(satdump::ImageProducts *, std::vector<Image<uint16_t>>, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
 }

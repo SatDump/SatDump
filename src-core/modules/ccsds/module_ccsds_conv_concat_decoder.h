@@ -72,6 +72,7 @@ namespace ccsds
         const int d_rs_fill_bytes;         // RS Frame size, if -1, no puncturing
         const bool d_rs_dualbasis;         // RS Representation. Dual basis or none?
         const std::string d_rs_type;       // RS Type identifier
+        const bool d_rs_usecheck;          // RS Used as frame check?
 
         enum vitrate_t
         {
@@ -91,8 +92,8 @@ namespace ccsds
         std::ifstream data_in;
         std::ofstream data_out;
 
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         std::shared_ptr<viterbi::Viterbi1_2> viterbi, viterbi2;
         std::shared_ptr<viterbi::Viterbi_Depunc> viterbip, viterbip2;

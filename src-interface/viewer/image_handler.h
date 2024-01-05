@@ -9,6 +9,7 @@
 #include "common/image/composite.h"
 #include "core/style.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/widgets/markdown_helper.h"
 
 namespace satdump
 {
@@ -28,8 +29,16 @@ namespace satdump
         std::vector<image::Image<uint16_t>> images_obj;
         ImageViewWidget image_view;
 
+        // Map projection stuff
+        std::function<std::pair<int, int>(float, float, int, int)> proj_func;
+        bool last_correct_image = false;
+        bool last_rotate_image = false;
+        size_t last_width = 0;
+        size_t last_height = 0;
+
         // Other controls
         bool median_blur = false;
+        bool despeckle = false;
         bool rotate_image = false;
         bool equalize_image = false;
         bool individual_equalize_image = false;
@@ -38,16 +47,13 @@ namespace satdump
         bool normalize_image = false;
         bool white_balance_image = false;
 
-        bool map_overlay = false;
-        bool shores_overlay = false;
-        bool cities_overlay = false;
-        bool latlon_overlay = false;
-
         // GUI
         bool range_window = false;
         std::vector<std::pair<double, double>> disaplay_ranges;
         bool update_needed;
         bool is_updating = false;
+
+        OverlayHandler overlay_handler;
 
         // Calibration
         bool is_temp = false;
@@ -68,8 +74,11 @@ namespace satdump
         float rgb_progress = 0;
         bool rgb_processing = false;
         std::vector<std::pair<std::string, ImageCompositeCfg>> rgb_presets;
-        std::string rgb_presets_str;
+        std::string preset_search_str;
         int select_rgb_presets = -1;
+
+        bool show_markdown_description = false;
+        widgets::MarkdownHelper markdown_composite_info;
 
         std::vector<double> current_timestamps;
         nlohmann::json current_proj_metadata;

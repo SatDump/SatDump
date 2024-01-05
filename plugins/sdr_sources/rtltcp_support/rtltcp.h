@@ -38,7 +38,7 @@ protected:
         {
             client.receiveData(in_buf, 8192);
             for (int i = 0; i < (int)8192 / 2; i++)
-                output_stream->writeBuf[i] = complex_t((in_buf[i * 2 + 0] - 127.0f) / 128.0f, (in_buf[i * 2 + 1] - 127.0f) / 128.0f);
+                output_stream->writeBuf[i] = complex_t((in_buf[i * 2 + 0] - 127.4f) / 128.0f, (in_buf[i * 2 + 1] - 127.4f) / 128.0f);
             output_stream->swap(8192 / 2);
         }
     }

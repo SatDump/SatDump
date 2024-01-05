@@ -35,7 +35,8 @@
                 "pm_demod": {
                     "symbolrate": 665400,
                     "pll_bw": 0.01,
-                    "rrc_alpha": 0.5
+                    "rrc_alpha": 0.5,
+                    "clock_omega_relative_limit": 0.001
                 }
             },
             "cadu": {
@@ -149,7 +150,8 @@
                     "derandomize": true,
                     "rs_i": 4,
                     "rs_dualbasis": false,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {

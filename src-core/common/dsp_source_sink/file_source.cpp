@@ -56,7 +56,7 @@ void FileSource::run_thread()
                     output_stream->writeBuf[i] = complex_t(output_stream->writeBuf[i].imag, output_stream->writeBuf[i].real);
 
             output_stream->swap(read);
-            file_progress = (float(baseband_reader.progress) / float(baseband_reader.filesize)) * 100.0;
+            file_progress = (double(baseband_reader.progress) / double(baseband_reader.filesize)) * 100.0;
 
             if (!fast_playback)
             {
@@ -92,10 +92,10 @@ void FileSource::start()
     if (is_ui)
         file_path = file_input.getPath();
 
-    //Sanity Checks
-    if(!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
+    // Sanity Checks
+    if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
         throw std::runtime_error("Invalid file path " + file_path);
-    if(samplerate_input.get() <= 0)
+    if (samplerate_input.get() <= 0)
         throw std::runtime_error("Invalid samplerate " + std::to_string(samplerate_input.get()));
 
     buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
@@ -109,7 +109,7 @@ void FileSource::start()
     baseband_reader.set_file(file_path, baseband_type_e);
     baseband_reader.should_repeat = true;
 
-    logger->debug("Opening %s filesize %d", file_path.c_str(), baseband_reader.filesize);
+    logger->debug("Opening %s filesize " PRIu64, file_path.c_str(), baseband_reader.filesize);
 
     is_started = true;
 }
@@ -151,21 +151,34 @@ void FileSource::drawControlUI()
 
         if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
         {
-            HeaderInfo hdr = try_parse_header(file_path);
-            if (hdr.valid)
+            nlohmann::json hdr;
+            try_get_params_from_input_file(hdr, file_path);
+            if (hdr.contains("baseband_format"))
             {
-                if (hdr.type == "u8")
+                if (hdr["baseband_format"].get<std::string>() == "u8")
                     select_sample_format = 3;
-                else if (hdr.type == "s16")
+                else if (hdr["baseband_format"].get<std::string>() == "s8")
+                    select_sample_format = 2;
+                else if (hdr["baseband_format"].get<std::string>() == "s16")
                     select_sample_format = 1;
-                else if (hdr.type == "ziq")
+                else if (hdr["baseband_format"].get<std::string>() == "f32")
+                    select_sample_format = 0;
+                else if (hdr["baseband_format"].get<std::string>() == "ziq")
                     select_sample_format = 4;
-                else if (hdr.type == "ziq2")
+                else if (hdr["baseband_format"].get<std::string>() == "ziq2")
                     select_sample_format = 5;
-
-                samplerate_input.set(hdr.samplerate);
-
                 update_format = true;
+            }
+
+            if (hdr.contains("samplerate"))
+            {
+                samplerate_input.set(hdr["samplerate"].get<uint64_t>());
+                update_format = true;
+            }
+
+            if (hdr.contains("frequency"))
+            {
+                d_frequency = hdr["frequency"].get<uint64_t>();
             }
         }
     }

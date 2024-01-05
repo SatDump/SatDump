@@ -6,7 +6,7 @@ namespace image
     namespace bowtie
     {
         template <typename T>
-        Image<T> correctGenericBowTie(Image<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta)
+        Image<T> correctGenericBowTie(Image<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta, std::vector<std::vector<int>> *reverse_lut)
         {
             // Compute everything we'll need
             const long height = inputImage.height();
@@ -23,11 +23,18 @@ namespace image
             T *col_buffer_input = new T[scanHeight];
             T *col_buffer_output = new T[scanHeight];
 
+            if (reverse_lut != nullptr)
+            {
+                reverse_lut->resize(width);
+                for (int i = 0; i < width; i++)
+                    (*reverse_lut)[i].resize(scanHeight);
+            }
+
             for (int channel = 0; channel < channelCount; channel++)
             {
                 for (int scanNumber = 0; scanNumber < scanCount; scanNumber++)
                 {
-                    //std::cout << "Processing scan " << scanNumber << std::endl;
+                    // std::cout << "Processing scan " << scanNumber << std::endl;
 
                     // Load out input buffer
                     for (int lineNumber = 0; lineNumber < scanHeight; lineNumber++)
@@ -51,11 +58,15 @@ namespace image
 
                         int paddingPixels = (scanHeight - centerPixelCounts) / 2;
 
-                        //std::cout << pixelsOffCenter << " " << centerPixelCounts << " " << paddingPixels << std::endl;
+                        // std::cout << pixelsOffCenter << " " << centerPixelCounts << " " << paddingPixels << std::endl;
 
                         for (int i = 0; i < scanHeight; i++)
                         {
-                            col_buffer_output[i] = col_buffer_input[paddingPixels + int(((float)i / (float)scanHeight) * centerPixelCounts)];
+                            int pxpos = paddingPixels + int(((float)i / (float)scanHeight) * centerPixelCounts);
+                            col_buffer_output[i] = col_buffer_input[pxpos];
+
+                            if (reverse_lut != nullptr)
+                                (*reverse_lut)[rowNumber][i] = pxpos;
                         }
 
                         // Offload our columm
@@ -84,8 +95,8 @@ namespace image
             return outputImage;
         }
 
-        template Image<uint8_t> correctGenericBowTie(Image<uint8_t> &, const int, const long, const float, const float);
-        template Image<uint16_t> correctGenericBowTie(Image<uint16_t> &, const int, const long, const float, const float);
+        template Image<uint8_t> correctGenericBowTie(Image<uint8_t> &, const int, const long, const float, const float, std::vector<std::vector<int>> *);
+        template Image<uint16_t> correctGenericBowTie(Image<uint16_t> &, const int, const long, const float, const float, std::vector<std::vector<int>> *);
 
         /*
         template <typename T>

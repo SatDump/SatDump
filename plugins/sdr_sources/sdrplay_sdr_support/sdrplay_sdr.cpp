@@ -347,8 +347,8 @@ void SDRPlaySource::drawControlUI()
         RImGui::beginDisabled();
     // Gain settings
     bool gain_changed = false;
-    gain_changed |= RImGui::SliderInt("LNA Gain", &lna_gain, 0, max_gain - 1);
-    gain_changed |= RImGui::SliderInt("IF Gain", &if_gain, 20, 59);
+    gain_changed |= RImGui::SteppedSliderInt("LNA Gain", &lna_gain, 0, max_gain - 1);
+    gain_changed |= RImGui::SteppedSliderInt("IF Gain", &if_gain, 20, 59);
     if (gain_changed)
         set_gains();
 

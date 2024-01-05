@@ -5,6 +5,11 @@ void rotate_soft(int8_t *soft, int size, phase_t phase, bool iqswap)
 {
     int8_t tmp;
 
+    // Scale down to avoid overflows
+    for (int i = 0; i < size; i++)
+        if (soft[i] == -128)
+            soft[i] = -127;
+
     // Swap I & Q if requested
     if (iqswap)
     {

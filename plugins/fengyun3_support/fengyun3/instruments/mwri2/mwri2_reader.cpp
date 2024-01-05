@@ -47,7 +47,7 @@ namespace fengyun3
 
             uint16_t days = timestamp[0] << 8 | timestamp[1];
             uint64_t milliseconds_of_day = timestamp[2] << 24 | timestamp[3] << 16 | timestamp[4] << 8 | timestamp[5];
-            uint16_t subsecond_cnt = (packet[20] & 0b11) << 8 | packet[21];
+            // uint16_t subsecond_cnt = (packet[20] & 0b11) << 8 | packet[21];
 
             double currentTime = double(10957 + days) * 86400.0 +
                                  double(milliseconds_of_day) / double(1e4) + 12 * 3600;

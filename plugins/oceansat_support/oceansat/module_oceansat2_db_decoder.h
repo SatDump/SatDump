@@ -15,8 +15,8 @@ namespace oceansat
 
         std::ifstream data_in;
         std::ofstream data_out;
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         uint8_t dqpsk_demod(int8_t *buffer)
         {

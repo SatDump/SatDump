@@ -3,15 +3,15 @@
 #include <string>
 #include "processing.h"
 #include "main_ui.h"
-#include "pipeline_selector.h"
+#include "common/widgets/pipeline_selector.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
     namespace offline
     {
         std::unique_ptr<PipelineUISelector> pipeline_selector;
-
-        std::string error_message = "";
+        widgets::TimedMessage error_message(ImColor(255, 0, 0), 4);
 
         void setup()
         {
@@ -41,9 +41,9 @@ namespace satdump
                 nlohmann::json params2 = pipeline_selector->getParameters();
 
                 if (!pipeline_selector->inputfileselect.isValid())
-                    error_message = "Input file is invalid!";
+                    error_message.set_message("Input file is invalid!");
                 else if (!pipeline_selector->outputdirselect.isValid())
-                    error_message = "Output folder is invalid!";
+                    error_message.set_message("Output folder is invalid!");
                 else
                     ui_thread_pool.push([&, params2](int)
                                         { processing::process(pipelines[pipeline_selector->pipeline_id].name,
@@ -53,11 +53,7 @@ namespace satdump
                                                               params2); });
             }
 
-            if (error_message.size() > 0)
-            {
-                ImGui::SameLine();
-                ImGui::TextColored(ImColor(255, 0, 0), "%s", error_message.c_str());
-            }
+            error_message.draw();
         }
     }
 }

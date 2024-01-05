@@ -118,7 +118,8 @@
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
                     "rs_i": 4,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {
@@ -188,7 +189,8 @@
                     "derandomize": true,
                     "oqpsk_mode": true,
                     "rs_i": 4,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {

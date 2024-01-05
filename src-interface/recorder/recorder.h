@@ -12,10 +12,10 @@
 #include "common/dsp/io/file_sink.h"
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
-
+#include "common/widgets/timed_message.h"
 #include "common/widgets/constellation.h"
 
-#include "pipeline_selector.h"
+#include "common/widgets/pipeline_selector.h"
 #include "core/live_pipeline.h"
 
 #include "tracking/tracking_widget.h"
@@ -27,7 +27,7 @@ namespace satdump
     protected:
         void drawUI();
 
-        double frequency_mhz = 100;
+        uint64_t frequency_hz = 100000000;
         bool show_waterfall = true;
         bool is_started = false, is_recording = false, is_processing = false;
 
@@ -53,7 +53,8 @@ namespace satdump
         std::string recorder_filename;
         int select_sample_format = 0;
 
-        std::string sdr_error, error;
+        widgets::TimedMessage sdr_error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
+        widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
         std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
@@ -91,6 +92,7 @@ namespace satdump
         void set_output_sample_format();
 
         TrackingWidget *tracking_widget = nullptr;
+        bool show_tracking = false;
 
         // Debug
         widgets::ConstellationViewer *constellation_debug = nullptr;
@@ -105,6 +107,8 @@ namespace satdump
         void start_recording();
         void stop_recording();
 
+        void try_init_tracking_widget();
+
         uint64_t get_samplerate()
         {
             if (current_decimation > 0)
@@ -113,23 +117,22 @@ namespace satdump
                 return current_samplerate;
         }
 
-        void set_frequency(double freq_mhz)
+        void set_frequency(uint64_t freq_hz)
         {
-            double xconv_freq = freq_mhz;
-            if (xconv_freq > xconverter_frequency)
-                xconv_freq -= xconverter_frequency;
+            double xconv_freq = frequency_hz = freq_hz;
+            if (xconv_freq > xconverter_frequency * 1e6)
+                xconv_freq -= xconverter_frequency * 1e6;
             else
-                xconv_freq = xconverter_frequency - xconv_freq;
+                xconv_freq = xconverter_frequency * 1e6 - xconv_freq;
 
-            frequency_mhz = freq_mhz;
-            source_ptr->set_frequency(xconv_freq * 1e6);
+            source_ptr->set_frequency(xconv_freq);
             if (fft_plot)
             {
-                fft_plot->frequency = freq_mhz * 1e6;
+                fft_plot->frequency = freq_hz;
                 if (xconverter_frequency == 0)
                     fft_plot->actual_sdr_freq = -1;
                 else
-                    fft_plot->actual_sdr_freq = xconv_freq * 1e6;
+                    fft_plot->actual_sdr_freq = xconv_freq;
             }
         }
 

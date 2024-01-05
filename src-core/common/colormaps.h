@@ -9,8 +9,8 @@ namespace colormaps
     {
         std::string name;
         std::string author;
-        float *map;
-        int entryCount;
+        float *map = nullptr;
+        int entryCount = 0;
     };
 
     Map loadMap(std::string path);

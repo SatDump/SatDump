@@ -15,7 +15,7 @@
 bool live_should_exit = false;
 void sig_handler_live(int signo)
 {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         live_should_exit = true;
 }
 
@@ -42,6 +42,7 @@ int main_live(int argc, char *argv[])
     // Init SatDump
     satdump::tle_file_override = parameters.contains("tle_override") ? parameters["tle_override"].get<std::string>() : "";
     satdump::initSatdump();
+    completeLoggerInit();
 
     if (parameters.contains("client"))
     {
@@ -91,13 +92,14 @@ int main_live(int argc, char *argv[])
 
         // Attach signal
         signal(SIGINT, sig_handler_live);
+        signal(SIGTERM, sig_handler_live);
 
         // Now, we wait
         while (1)
         {
             if (live_should_exit)
             {
-                logger->warn("SIGINT Received. Stopping.");
+                logger->warn("Signal Received. Stopping.");
                 break;
             }
 
@@ -274,6 +276,7 @@ int main_live(int argc, char *argv[])
 
             // Attach signal
             signal(SIGINT, sig_handler_live);
+            signal(SIGTERM, sig_handler_live);
 
             // Now, we wait
             uint64_t start_time = time(0);
@@ -293,7 +296,7 @@ int main_live(int argc, char *argv[])
 
                 if (live_should_exit)
                 {
-                    logger->warn("SIGINT Received. Stopping.");
+                    logger->warn("Signal Received. Stopping.");
                     break;
                 }
 
@@ -357,8 +360,8 @@ int main_live(int argc, char *argv[])
                     final_stream = splitter->output_stream;
                     fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
                     fft->set_fft_settings(fft_size, samplerate, fft_rate);
-                    if (parameters.contains("fft_avg"))
-                        fft->avg_rate = parameters["fft_avg"].get<float>();
+                    if (parameters.contains("fft_avgn"))
+                        fft->avg_num = parameters["fft_avgn"].get<float>();
                     splitter->start();
                     fft->start();
 
@@ -397,6 +400,7 @@ int main_live(int argc, char *argv[])
 
             // Attach signal
             signal(SIGINT, sig_handler_live);
+            signal(SIGTERM, sig_handler_live);
 
             // Now, we wait
             uint64_t start_time = time(0);
@@ -416,7 +420,7 @@ int main_live(int argc, char *argv[])
 
                 if (live_should_exit)
                 {
-                    logger->warn("SIGINT Received. Stopping.");
+                    logger->warn("Signal Received. Stopping.");
                     break;
                 }
 

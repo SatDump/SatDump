@@ -36,7 +36,7 @@ namespace noaa_metop
 
             {
                 uint16_t *prts = &avhrr_buffer[10295];
-                prt_buffer.push_back(prts[2] * prts[3] * prts[4] == 0 ? 0 : (prts[2] + prts[3] + prts[4]) / 3);
+                prt_buffer.push_back(prts[2] + prts[3] + prts[4] < 20 ? 0 : (prts[2] + prts[3] + prts[4]) / 3);
 
                 // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
                 uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
@@ -44,12 +44,13 @@ namespace noaa_metop
                 for (int i = 0; i < 10; i++)
                     for (int j = 0; j < 3; j++)
                     {
-                        avg_blb[j] += avhrr_buffer[10305 + 5 * i + j + 2];
+                        if (i != 9)
+                            avg_blb[j] += avhrr_buffer[10305 + 5 * i + j + 2];
                         avg_spc[j] += avhrr_buffer[0 + 5 * i + j + 2];
                     }
                 for (int j = 0; j < 3; j++)
                 {
-                    avg_blb[j] /= 10;
+                    avg_blb[j] /= 9; // for whatever reason last scan on metop is all 0s (?)
                     avg_spc[j] /= 10;
                 }
 
@@ -149,31 +150,30 @@ namespace noaa_metop
             for (unsigned int i = 0; i < prt_buffer.size(); i++)
             {
                 // PRT counts to temperature but NOAA made it annoying
-                if (i >= 4 && prt_buffer[i] == 0)
+                if (i > 4 && prt_buffer[i] == 0)
                 {
                     double tbb = 0;
-                    int chk = 0;
+                    int chk = 1;
                     std::array<view_pair, 3> avgpair;
-                    for (int n = 1; n <= 4; n++)
+                    do
                     {
-                        if (!prt_buffer[i - n] == 0)
+
+                        for (int p = 0; p < 4; p++)
                         {
-                            for (int p = 0; p < 5; p++)
-                                tbb += prt_coefs[4 - n][p] * pow(prt_buffer[i - n], p); // convert PRT counts to temperature
-
-                            for (int p = 0; p < 3; p++)
-                                avgpair[p] += views[i - n][p]; // average the views
-
-                            chk++;
+                            tbb += prt_coefs[4 - chk][p] * pow(prt_buffer[i - chk], p); // convert PRT counts to temperature
                         }
-                        else
-                            break;
-                    }
-                    tbb /= chk != 0 ? chk : 1;
+                        for (int p = 0; p < 3; p++)
+                            avgpair[p] += views[i - chk][p]; // average the views
+
+                        chk++;
+                    } while (chk <= 4 && prt_buffer[i - chk] != 0);
+
+                    tbb /= (chk - 1) == 0 ? 1 : (chk - 1);
                     for (int p = 0; p < 3; p++)
-                        avgpair[p] /= chk != 0 ? chk : 1;
+                        avgpair[p] /= (chk - 1) == 0 ? 1 : (chk - 1);
                     ltbb = tbb;
-                    for (int n = 0; n <= chk; n++)
+                    for (int n = 1; n <= chk; n++)
+                    {
                         for (int c = 3; c < 6; c++)
                         { // replace chk + 1 lines from [i] back
                             calib_out["vars"]["perLine_perChannel"][i - n][c]["Spc"] = avgpair[c - 3].space;
@@ -182,6 +182,7 @@ namespace noaa_metop
                                 temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
                                                         calib_coefs["channels"][c]["Vc"].get<double>());
                         }
+                    }
                 }
                 for (int c = 3; c < 6; c++)
                 {

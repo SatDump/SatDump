@@ -31,7 +31,7 @@
                 "value": 3e6
             },
             "year_override": {
-                "type":"int",
+                "type": "int",
                 "value": -1,
                 "name": "Year Override",
                 "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
@@ -43,7 +43,8 @@
                 "pm_demod": {
                     "symbolrate": 665400,
                     "pll_bw": 0.01,
-                    "rrc_alpha": 0.6
+                    "rrc_alpha": 0.6,
+                    "clock_omega_relative_limit": 0.001
                 }
             },
             "frames": {
@@ -94,7 +95,7 @@
                 "value": 6e6
             },
             "year_override": {
-                "type":"int",
+                "type": "int",
                 "value": -1,
                 "name": "Year Override",
                 "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
@@ -151,7 +152,7 @@
                 "value": 6e6
             },
             "year_override": {
-                "type":"int",
+                "type": "int",
                 "value": -1,
                 "name": "Year Override",
                 "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
@@ -234,11 +235,17 @@
                 "value": false,
                 "name": "Autocrop with Wedges",
                 "description": "This will automatically crop the image to only include\ntelemetry wedges considered valid.\nMay discard a lot on bad images!"
+            },
+            "sdrpp_noise_reduction": {
+                "type": "bool",
+                "value": false,
+                "name": "SDR++ Noise Reduction",
+                "description": "APT Noise Reduction originally from Ryzerth in SDR++. Performs quite well on APT!"
             }
         },
         "work": {
             "baseband": {},
-            "wav": {
+            "audio_wav": {
                 "noaa_apt_demod": {
                     "symbolrate": 50e3
                 }

@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
 
     initLogger();
     satdump::initSatdump();
+    completeLoggerInit();
 
     // Single-Instance tests
     if (config["run"]["singleinstance_offline"].get<bool>())

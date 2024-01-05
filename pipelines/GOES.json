@@ -138,7 +138,8 @@
                     "derandomize": true,
                     "nrzm": true,
                     "rs_i": 4,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {
@@ -194,7 +195,8 @@
                     "derandomize": true,
                     "nrzm": true,
                     "rs_i": 4,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "tcp": {
@@ -393,7 +395,8 @@
                     "derandomize": true,
                     "nrzm": false,
                     "rs_i": 4,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {

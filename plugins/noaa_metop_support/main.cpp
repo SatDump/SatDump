@@ -44,9 +44,9 @@ public:
     static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
     {
         if (evt.id == "noaa_avhrr3")
-            evt.calibrators.push_back(std::make_shared<NoaaAVHRR3Calibrator>(evt.calib));
+            evt.calibrators.push_back(std::make_shared<NoaaAVHRR3Calibrator>(evt.calib, evt.products));
         else if (evt.id == "noaa_mhs" || evt.id == "noaa_amsu")
-            evt.calibrators.push_back(std::make_shared<NoaaMHSCalibrator>(evt.calib));
+            evt.calibrators.push_back(std::make_shared<NoaaMHSCalibrator>(evt.calib, evt.products));
     }
 };
 

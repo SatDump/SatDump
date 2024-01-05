@@ -51,7 +51,10 @@ void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
     for (int i = 0; i < (int)len / 2; i++)
-        stream->writeBuf[i] = complex_t((buf[i * 2 + 0] - 127.0f) / 128.0f, (buf[i * 2 + 1] - 127.0f) / 128.0f);
+    {
+        stream->writeBuf[i].real = (buf[i * 2 + 0] - 127.4f) / 128.0f;
+        stream->writeBuf[i].imag = (buf[i * 2 + 1] - 127.4f) / 128.0f;
+    }
     stream->swap(len / 2);
 };
 
@@ -194,6 +197,7 @@ void RtlSdrSource::stop()
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
+        rtlsdr_set_bias_tee(rtlsdr_dev_obj, false);
         rtlsdr_close(rtlsdr_dev_obj);
     }
     is_started = false;
@@ -228,7 +232,7 @@ void RtlSdrSource::drawControlUI()
     if (ppm_widget.draw())
         set_ppm();
 
-    if (RImGui::SliderInt("LNA Gain", &gain, 0, 49))
+    if (RImGui::SteppedSliderInt("LNA Gain", &gain, 0, 49))
         set_gains();
 
     if (RImGui::Checkbox("AGC", &lna_agc_enabled))

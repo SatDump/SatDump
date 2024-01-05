@@ -10,8 +10,8 @@ void RemoteSource::set_others()
 
 void RemoteSource::set_settings(nlohmann::json settings)
 {
-    if (d_settings.contains("remote_bit_depth"))
-        bit_depth_used = d_settings["remote_bit_depth"];
+    if (settings.contains("remote_bit_depth"))
+        bit_depth_used = settings["remote_bit_depth"];
 
     if (bit_depth_used == 8)
         selected_bit_depth = 0;
@@ -143,6 +143,7 @@ void RemoteSource::drawControlUI()
 
 void RemoteSource::set_samplerate(uint64_t samplerate)
 {
+    samplerate_current = samplerate;
     std::vector<uint8_t> pkt(8);
     *((uint64_t *)&pkt[0]) = samplerate;
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_SAMPLERATESET, pkt);

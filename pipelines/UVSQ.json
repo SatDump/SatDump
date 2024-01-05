@@ -49,5 +49,48 @@
             },
             "products": {}
         }
+    },
+    "spino_2400": {
+        "name": "AMSAT-F Spino 2400bps",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "frequencies": [
+            [
+                "Main",
+                435.2e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "xfsk_burst_demod": {
+                    "symbolrate": 2400,
+                    "enable_doppler": true,
+                    "satellite_norad": 56211,
+                    "satellite_frequency": 435.2e6
+                }
+            },
+            "frm": {
+                "spino_decoder": {}
+                // Custom AX.25 format, TBD
+            }
+        }
     }
 }

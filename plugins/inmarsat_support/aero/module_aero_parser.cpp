@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "core/config.h"
 #include "common/utils.h"
 #include "decode_utils.h"
 #include "common/dsp/io/wav_writer.h"
@@ -35,6 +36,8 @@ namespace inmarsat
                 do_save_files = parameters["save_files"].get<bool>();
             else
                 do_save_files = true;
+
+            play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
         }
 
         std::vector<ModuleDataType> AeroParserModule::getInputTypes()
@@ -292,7 +295,7 @@ namespace inmarsat
                     file_wav->write((char *)audio_out, 320 * 25);
                     final_wav_size += 320 * 25;
 
-                    if (enable_audio)
+                    if (enable_audio && play_audio)
                         audio_sink->push_samples(audio_out, 160 * 25);
                 }
                 else
@@ -312,7 +315,7 @@ namespace inmarsat
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((float)progress / (float)filesize) * 1000.0f) / 10.0f) + "%%");
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
 
@@ -346,8 +349,34 @@ namespace inmarsat
 
             ImGui::Text("Do remember you should not keep nor share data that is\nnot intended for you.");
 
+            if (enable_audio)
+            {
+                ImGui::Spacing();
+                const char* btn_icon, * label;
+                ImU32 color;
+                if (play_audio)
+                {
+                    color = IM_COL32(0, 255, 0, 255);
+                    btn_icon = u8"\uF028##aeroaudio";
+                    label = "Audio Playing";
+                }
+                else
+                {
+                    color = IM_COL32(255, 0, 0, 255);
+                    btn_icon = u8"\uF026##aeroaudio";
+                    label = "Audio Muted";
+                }
+
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                if (ImGui::Button(btn_icon))
+                    play_audio = !play_audio;
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+                ImGui::TextUnformatted(label);
+            }
+
             if (input_data_type == DATA_FILE)
-                ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
             ImGui::End();
 

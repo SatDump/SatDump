@@ -3,6 +3,7 @@
 #include "live.h"
 #include "offline.h"
 #include "record.h"
+#include "autotrack/autotrack.h"
 
 #include "sdr_probe.h"
 
@@ -26,6 +27,12 @@ int main(int argc, char *argv[])
     else if (std::string(argv[1]) == "record")
     {
         int ret = main_record(argc, argv);
+        if (ret != 0)
+            return ret;
+    }
+    else if (std::string(argv[1]) == "autotrack")
+    {
+        int ret = main_autotrack(argc, argv);
         if (ret != 0)
             return ret;
     }

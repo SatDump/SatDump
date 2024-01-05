@@ -7,8 +7,8 @@ namespace geonetcast
     class GeoNetCastDecoderModule : public ProcessingModule
     {
     protected:
-        std::atomic<size_t> filesize;
-        std::atomic<size_t> progress;
+        std::atomic<uint64_t> filesize;
+        std::atomic<uint64_t> progress;
 
         std::string directory;
 

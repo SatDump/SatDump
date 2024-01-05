@@ -46,6 +46,7 @@ namespace image
         {
             // Free memory
             delete[] jpeg_decomp;
+            fclose(fp);
             return;
         }
 
@@ -180,6 +181,7 @@ namespace image
         {
             // Free memory
             delete[] jpeg_decomp;
+            fclose(fp);
             return;
         }
 
@@ -226,6 +228,112 @@ namespace image
         // Free memory
         fclose(fp);
         delete[] jpeg_decomp;
+    }
+
+    namespace
+    {
+        std::vector<uint8_t> j_buffer;
+#define BLOCK_SIZE 16384
+
+        void jpeg_init_destination(j_compress_ptr cinfo)
+        {
+            j_buffer.resize(BLOCK_SIZE);
+            cinfo->dest->next_output_byte = &j_buffer[0];
+            cinfo->dest->free_in_buffer = j_buffer.size();
+        }
+
+        jboolean jpeg_empty_output_buffer(j_compress_ptr cinfo)
+        {
+            size_t oldsize = j_buffer.size();
+            j_buffer.resize(oldsize + BLOCK_SIZE);
+            cinfo->dest->next_output_byte = &j_buffer[oldsize];
+            cinfo->dest->free_in_buffer = j_buffer.size() - oldsize;
+            return true;
+        }
+
+        void jpeg_term_destination(j_compress_ptr cinfo)
+        {
+            j_buffer.resize(j_buffer.size() - cinfo->dest->free_in_buffer);
+        }
+
+        std::mutex jpeg_mem_mtex;
+    }
+
+    template <typename T>
+    std::vector<uint8_t> Image<T>::save_jpeg_mem()
+    {
+        jpeg_mem_mtex.lock();
+        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        {
+            logger->trace("Tried to save empty JPEG!");
+            jpeg_mem_mtex.unlock();
+            return std::vector<uint8_t>();
+        }
+
+        unsigned char *jpeg_decomp = NULL;
+        jpeg_error_struct_l jerr;
+        jpeg_compress_struct cinfo;
+
+        // Init
+        cinfo.err = jpeg_std_error(&jerr.pub);
+        jerr.pub.error_exit = libjpeg_error_func_l;
+
+        if (setjmp(jerr.setjmp_buffer))
+        {
+            // Free memory
+            delete[] jpeg_decomp;
+            jpeg_mem_mtex.unlock();
+            return std::vector<uint8_t>();
+        }
+
+        jpeg_create_compress(&cinfo);
+
+        // Parse and start decompressing
+        cinfo.dest = (struct jpeg_destination_mgr *)malloc(sizeof(struct jpeg_destination_mgr));
+        cinfo.dest->init_destination = &jpeg_init_destination;
+        cinfo.dest->empty_output_buffer = &jpeg_empty_output_buffer;
+        cinfo.dest->term_destination = &jpeg_term_destination;
+
+        cinfo.image_width = d_width;
+        cinfo.image_height = d_height;
+        int jpeg_channels = d_channels == 4 ? 3 : d_channels;
+        cinfo.input_components = jpeg_channels;
+        cinfo.in_color_space = jpeg_channels == 3 ? JCS_RGB : JCS_GRAYSCALE;
+        jpeg_set_defaults(&cinfo);
+        jpeg_set_quality(&cinfo, 90, true);
+        jpeg_start_compress(&cinfo, true);
+
+        // Init output buffer
+        jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height * cinfo.num_components];
+
+        // Copy over
+        if (d_depth == 8)
+        {
+            for (int i = 0; i < (int)d_width * (int)d_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i];
+        }
+        else if (d_depth == 16)
+        {
+            for (int i = 0; i < (int)d_width * (int)d_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i] >> 8; // Scale down to 8 if required
+        }
+
+        // Compress
+        while (cinfo.next_scanline < cinfo.image_height)
+        {
+            unsigned char *buffer_array[1];
+            buffer_array[0] = jpeg_decomp + (cinfo.next_scanline) * cinfo.image_width * cinfo.num_components;
+            jpeg_write_scanlines(&cinfo, buffer_array, 1);
+        }
+
+        jpeg_finish_compress(&cinfo);
+
+        // Free memory
+        delete[] jpeg_decomp;
+        jpeg_mem_mtex.unlock();
+        return j_buffer;
     }
 
     // Generate Images for uint16_t and uint8_t

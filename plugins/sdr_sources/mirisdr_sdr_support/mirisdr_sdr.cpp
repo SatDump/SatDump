@@ -155,6 +155,7 @@ void MiriSdrSource::stop()
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
+        mirisdr_set_bias(mirisdr_dev_obj, false);
         mirisdr_close(mirisdr_dev_obj);
     }
     is_started = false;
@@ -185,7 +186,7 @@ void MiriSdrSource::drawControlUI()
     if (is_started)
         RImGui::endDisabled();
 
-    if (RImGui::SliderInt("LNA Gain", &gain, 0, 10))
+    if (RImGui::SteppedSliderInt("LNA Gain", &gain, 0, 10))
         set_gains();
 
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))

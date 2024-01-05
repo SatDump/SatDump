@@ -34,6 +34,17 @@ namespace demod
         if (parameters.count("iq_swap") > 0)
             d_iq_swap = parameters["iq_swap"].get<bool>();
 
+        /////////////////////
+        if (parameters.count("enable_doppler") > 0)
+            d_doppler_enable = parameters["enable_doppler"].get<bool>();
+
+        if (parameters.count("doppler_alpha") > 0)
+            d_doppler_alpha = parameters["doppler_alpha"].get<float>();
+        /////////////////////
+
+        if (parameters.count("dump_intermediate") > 0)
+            d_dump_intermediate = parameters["dump_intermediate"].get<std::string>();
+
         snr = 0;
         peak_snr = 0;
 
@@ -73,6 +84,9 @@ namespace demod
         logger->debug("Dec factor : %f", decimation_factor);
         logger->debug("Final SPS : %f", final_sps);
 
+        if (input_sps < 1.0)
+            throw std::runtime_error("SPS is invalid. Must be above 1!");
+
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
             file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
@@ -86,7 +100,60 @@ namespace demod
         if (d_frequency_shift != 0)
             freq_shift = std::make_shared<dsp::FreqShiftBlock>(input_data, d_samplerate, d_frequency_shift);
 
-        std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_frequency_shift != 0 ? freq_shift->output_stream : input_data;
+        if (d_doppler_enable)
+        {
+            double frequency = -1;
+            if (d_parameters.count("satellite_frequency"))
+                frequency = d_parameters["satellite_frequency"].get<double>();
+            else
+                throw std::runtime_error("Satellite Frequency is required for doppler correction!");
+
+            if (d_frequency_shift != 0)
+                frequency += d_frequency_shift;
+
+            int norad = -1;
+            if (d_parameters.count("satellite_norad"))
+                norad = d_parameters["satellite_norad"].get<double>();
+            else
+                throw std::runtime_error("Satellite NORAD is required for doppler correction!");
+
+            // QTH, with a way to override it
+            double qth_lon = 0, qth_lat = 0, qth_alt = 0;
+            try
+            {
+                qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
+                qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
+                qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+            }
+            catch (std::exception &e)
+            {
+            }
+
+            if (d_parameters.count("qth_lon"))
+                qth_lon = d_parameters["qth_lon"].get<double>();
+            if (d_parameters.count("qth_lat"))
+                qth_lat = d_parameters["qth_lat"].get<double>();
+            if (d_parameters.count("qth_alt"))
+                qth_alt = d_parameters["qth_alt"].get<double>();
+
+            doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data,
+                                                                       d_samplerate, d_doppler_alpha, frequency, norad,
+                                                                       qth_lon, qth_lat, qth_alt);
+            if (input_data_type == DATA_FILE)
+            {
+                if (d_parameters.count("start_timestamp") > 0)
+                    doppler_shift->start_time = d_parameters["start_timestamp"].get<double>();
+                else
+                {
+                    logger->error("Start Timestamp is required for doppler correction! Disabling doppler.");
+                    doppler_shift.reset();
+                    d_doppler_enable = false;
+                }
+            }
+        }
+
+        std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_doppler_enable ? doppler_shift->output_stream
+                                                                                    : (d_frequency_shift != 0 ? freq_shift->output_stream : input_data);
 
         if (input_data_type == DATA_FILE)
         {
@@ -94,9 +161,16 @@ namespace demod
             fft_splitter->add_output("fft");
             fft_splitter->set_enabled("fft", show_fft);
 
+            if (d_dump_intermediate != "")
+            {
+                fft_splitter->add_output("intermediate");
+                fft_splitter->set_enabled("intermediate", true);
+                intermediate_file_sink = std::make_shared<dsp::FileSinkBlock>(fft_splitter->get_output("intermediate"));
+            }
+
             fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->get_output("fft"));
             fft_proc->set_fft_settings(8192, final_samplerate, 120);
-            fft_proc->avg_rate = 0.02;
+            fft_proc->avg_num = 10;
             fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
             waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 500);
             waterfall_plot->set_rate(120, 10);
@@ -137,11 +211,21 @@ namespace demod
             dc_blocker->start();
         if (d_frequency_shift != 0)
             freq_shift->start();
+        if (d_doppler_enable)
+            doppler_shift->start();
         if (input_data_type == DATA_FILE)
             fft_splitter->start();
+        if (input_data_type == DATA_FILE && d_dump_intermediate != "")
+        {
+            intermediate_file_sink->start();
+            intermediate_file_sink->set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
+            std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)d_samplerate) + "_intermediate_iq";
+            logger->trace("Recording intermediate to " + int_file);
+            intermediate_file_sink->start_recording(int_file, d_samplerate);
+        }
         if (input_data_type == DATA_FILE)
             fft_proc->start();
-        if (resample)
+        if (resample && resampler)
             resampler->start();
         agc->start();
     }
@@ -155,11 +239,18 @@ namespace demod
             dc_blocker->stop();
         if (d_frequency_shift != 0)
             freq_shift->stop();
+        if (d_doppler_enable)
+            doppler_shift->stop();
         if (input_data_type == DATA_FILE)
             fft_splitter->stop();
+        if (input_data_type == DATA_FILE && d_dump_intermediate != "")
+        {
+            intermediate_file_sink->stop_recording();
+            intermediate_file_sink->stop();
+        }
         if (input_data_type == DATA_FILE)
             fft_proc->stop();
-        if (resample)
+        if (resample && resampler)
             resampler->stop();
         agc->stop();
     }
@@ -192,7 +283,7 @@ namespace demod
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((float)progress / (float)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
 
         drawStopButton();
 
@@ -208,17 +299,17 @@ namespace demod
             ImGui::SetNextWindowSize({400 * (float)ui_scale, (float)(showWaterfall ? 400 : 200) * (float)ui_scale});
             if (ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
             {
-                fft_plot->draw({ float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0) });
+                fft_plot->draw({float(ImGui::GetWindowSize().x - 0), float(ImGui::GetWindowSize().y - 40 * ui_scale) * float(showWaterfall ? 0.5 : 1.0)});
 
-                //Find "actual" left edge of FFT, before frequency shift.
-                //Inset by 10% (819), then account for > 100% freq shifts via modulo
+                // Find "actual" left edge of FFT, before frequency shift.
+                // Inset by 10% (819), then account for > 100% freq shifts via modulo
                 int pos = (abs((float)d_frequency_shift / (float)d_samplerate) * (float)8192) + 819;
                 pos %= 8192;
 
-                //Compute min and max of the middle 80% of original baseband
+                // Compute min and max of the middle 80% of original baseband
                 float min = 1000;
                 float max = -1000;
-                for (int i = 0; i < 6554; i++) //8192 * 80% = 6554
+                for (int i = 0; i < 6554; i++) // 8192 * 80% = 6554
                 {
                     if (fft_proc->output_stream->writeBuf[pos] < min)
                         min = fft_proc->output_stream->writeBuf[pos];
@@ -233,7 +324,7 @@ namespace demod
                 waterfall_plot->scale_max = fft_plot->scale_max = fft_plot->scale_max * 0.99 + max * 0.01;
 
                 if (showWaterfall)
-                    waterfall_plot->draw({ ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2 });
+                    waterfall_plot->draw({ImGui::GetWindowSize().x - 0, (float)(ImGui::GetWindowSize().y - 45 * ui_scale) / 2});
             }
 
             ImGui::End();

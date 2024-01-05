@@ -14,7 +14,7 @@
 bool rec_should_exit = false;
 void sig_handler_rec(int signo)
 {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         rec_should_exit = true;
 }
 
@@ -34,6 +34,7 @@ int main_record(int argc, char *argv[])
 
     // Init SatDump
     satdump::initSatdump();
+    completeLoggerInit();
 
     std::string output_file = argv[2];
 
@@ -57,7 +58,6 @@ int main_record(int argc, char *argv[])
             decimation = parameters["decimation"].get<int>();
         if (parameters.contains("source_id"))
             hdl_dev_id = parameters["source_id"].get<uint64_t>();
-        
     }
     catch (std::exception &e)
     {
@@ -114,7 +114,7 @@ int main_record(int argc, char *argv[])
         logger->error("Could not find a handler for source type : %s!", handler_id.c_str());
         return 1;
     }
- 
+
     // Init source
     std::shared_ptr<dsp::DSPSampleSource> source_ptr = getSourceFromDescriptor(selected_src);
     source_ptr->open();
@@ -139,7 +139,8 @@ int main_record(int argc, char *argv[])
     }
 
     // Decimation if requested
-    if (decimation > 1){
+    if (decimation > 1)
+    {
         decim = std::make_unique<dsp::SmartResamplerBlock<complex_t>>(source_ptr->output_stream, 1, decimation);
         decim->start();
         logger->info("Setting up resampler...");
@@ -160,8 +161,8 @@ int main_record(int argc, char *argv[])
         final_stream = splitter->output_stream;
         fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
         fft->set_fft_settings(fft_size, samplerate / decimation, fft_rate);
-        if (parameters.contains("fft_avg"))
-            fft->avg_rate = parameters["fft_avg"].get<float>();
+        if (parameters.contains("fft_avgn"))
+            fft->avg_num = parameters["fft_avgn"].get<float>();
         splitter->start();
         fft->start();
     }
@@ -222,6 +223,7 @@ int main_record(int argc, char *argv[])
 
     // Attach signal
     signal(SIGINT, sig_handler_rec);
+    signal(SIGTERM, sig_handler_rec);
 
     // Now, we wait
     uint64_t start_time = time(0);
@@ -240,7 +242,7 @@ int main_record(int argc, char *argv[])
 
         if (rec_should_exit)
         {
-            logger->warn("SIGINT Received. Stopping.");
+            logger->warn("Signal Received. Stopping.");
             break;
         }
 

@@ -1,5 +1,6 @@
 #include "rtltcp.h"
 #include "imgui/imgui_stdlib.h"
+#include "common/widgets/stepped_slider.h"
 
 void RTLTCPSource::set_gains()
 {
@@ -118,6 +119,7 @@ void RTLTCPSource::stop()
             work_thread.join();
         logger->info("Thread stopped");
 
+        client.setBiasTee(false);
         client.disconnect();
     }
     is_started = false;
@@ -161,7 +163,7 @@ void RTLTCPSource::drawControlUI()
     if (!is_started)
         style::beginDisabled();
     bool gain_changed = false;
-    gain_changed |= ImGui::SliderInt("Gain", &gain, 0, 49);
+    gain_changed |= widgets::SteppedSliderInt("Gain", &gain, 0, 49);
     gain_changed |= ImGui::Checkbox("AGC", &lna_agc_enabled);
     if (gain_changed)
         set_gains();

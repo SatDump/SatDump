@@ -61,6 +61,7 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 #include "modules/demod/module_pm_demod.h"
 #include "modules/demod/module_psk_demod.h"
 #include "modules/demod/module_sdpsk_demod.h"
+#include "modules/demod/module_xfsk_burst_demod.h"
 
 #include "modules/network/module_network_server.h"
 #include "modules/network/module_network_client.h"
@@ -75,6 +76,8 @@ SATDUMP_DLL std::map<std::string, std::function<std::shared_ptr<ProcessingModule
 
 #include "modules/products/module_products_processor.h"
 
+#include "modules/generic/module_soft2hard.h"
+
 void registerModules()
 {
     // Register modules
@@ -84,6 +87,7 @@ void registerModules()
     REGISTER_MODULE(demod::PMDemodModule);
     REGISTER_MODULE(demod::PSKDemodModule);
     REGISTER_MODULE(demod::SDPSKDemodModule);
+    REGISTER_MODULE(demod::XFSKBurstDemodModule);
 
     // Network
     REGISTER_MODULE(network::NetworkServerModule);
@@ -101,6 +105,9 @@ void registerModules()
 
     // Products Processor. This one is a bit different!
     REGISTER_MODULE(products::ProductsProcessorModule);
+
+    // Generic
+    REGISTER_MODULE(generic::Soft2HardModule);
 
     // Plugin modules
     satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

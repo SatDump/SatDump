@@ -9,7 +9,7 @@ There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room 
 
 # Introduction
 
-*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the detailed documentation.* 
+*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the [detailed documentation](https://docs.satdump.org).* 
 
 ## GUI Version
 
@@ -65,7 +65,7 @@ Sample command :
 satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
 ```
 
-You can find a list of all SDR Options [Here](docs/SDR-Options.md).
+You can find a list of all SDR Options [Here](docs/SDR-Options.md). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
 
 ### Recording
 
@@ -97,7 +97,10 @@ General build instructions (Brew and XCode command line tools required)
 
 ```bash
 # Install dependencies
-brew install cmake volk jpeg libpng glew glfw airspy rtl-sdr hackrf nng pkg-config libomp luajit dylibbundler portaudio
+brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio
+
+# On Apple Silicon also run
+brew link --force libomp
 
 # Build and install libfftw3 to work around issue with brew version
 wget http://www.fftw.org/fftw-3.3.9.tar.gz
@@ -105,8 +108,23 @@ tar xf fftw-3.3.9.tar.gz
 rm fftw-3.3.9.tar.gz
 cd fftw-3.3.9
 mkdir build && cd build
+
+# For Intel Macs
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
+
+# For Apple Silicon Macs
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false ..
+
 make
+sudo make install
+cd ../..
+
+# Build and install nng since the brew version does not support TLS
+git clone -b v1.6.0 https://github.com/nanomsg/nng
+cd nng
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON ..
+make -j`nproc`
 sudo make install
 cd ../..
 
@@ -115,7 +133,7 @@ git clone https://github.com/airspy/airspyhf.git
 cd airspyhf
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
+make -j`nproc`
 sudo make install
 cd ../..
 
@@ -146,10 +164,10 @@ On Linux, building from source is recommended, but builds are provided for x64-b
 
 ```bash
 # Install dependencies on Debian-based systems:
-sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev libluajit-5.1-dev # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev                   # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
 sudo apt install libnng-dev                                                                                   # If this package is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
-sudo apt install libglew-dev libglfw3-dev                                                                     # Only if you want to build the GUI Version (optional)
+sudo apt install libglfw3-dev                                                                                 # Only if you want to build the GUI Version (optional)
 sudo apt install libzstd-dev                                                                                  # Only if you want to build with ZIQ Recording compression 
 (optional)
 sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
@@ -157,15 +175,24 @@ sudo apt install ocl-icd-opencl-dev                                             
 sudo apt install intel-opencl-icd                                                                             # Optional, enables OpenCL for Intel Integrated Graphics
 
 # Install dependencies on Red-Hat-based systems:
-sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel luajit-devel
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel
 sudo dnf install nng-devel
 sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
-sudo dnf install glew-devel glfw-devel
+sudo dnf install glfw-devel
 sudo dnf install libzstd-devel
 (optional)
 sudo dnf install libomp-devel
 sudo dnf install ocl-icd                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 sudo dnf install intel-opencl                                                                                 # Optional, enables OpenCL for Intel Integrated Graphics
+
+# Install dependencies on Alpine-based systems:
+sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev                                       # Adding the testing repository is required for libvolk-dev
+# You need to build libnng from source, see below.
+sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev
+sudo apk add glfw-dev
+sudo apk add zstd-dev
+(optional)
+sudo apk add opencl-dev                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
 
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
@@ -195,13 +222,12 @@ ln -s ../satdump_cfg.json . # Symlink settings so it can run
 sudo make install
 
 # Run (if you want!)
-# On Raspberry PIs, you will need to export MESA_GL_VERSION_OVERRIDE=4.5
 ./satdump-ui
 ```
 
 ### Android
 
-On Android, the preferred source is F-Droid [INSERT LINK WHEN POSSIBLE].   
+On Android, the preferred source is F-Droid - [https://f-droid.org/en/packages/org.satdump.SatDump/](https://f-droid.org/en/packages/org.satdump.SatDump/).   
 
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 

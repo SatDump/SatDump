@@ -259,9 +259,9 @@ namespace image
                     {
                         float mf = m / 255.0;
                         T col[] = {static_cast<T>((color[0] - channel(0)[pos2]) * mf + channel(0)[pos2]),
-                                   static_cast<T>((color[1] - channel(1)[pos2]) * mf + channel(1)[pos2]),
-                                   static_cast<T>((color[2] - channel(2)[pos2]) * mf + channel(2)[pos2]),
-                                   d_channels == 4 ? static_cast<T>((color[3] - channel(3)[pos2]) * mf + channel(3)[pos2]) : std::numeric_limits<T>::max()};
+                                   d_channels > 1 ? static_cast<T>((color[1] - channel(1)[pos2]) * mf + channel(1)[pos2]) : std::numeric_limits<T>::max(),
+                                   d_channels > 2 ? static_cast<T>((color[2] - channel(2)[pos2]) * mf + channel(2)[pos2]) : std::numeric_limits<T>::max(),
+                                   d_channels > 3 ? static_cast<T>((color[3] - channel(3)[pos2]) * mf + channel(3)[pos2]) : std::numeric_limits<T>::max()};
                         draw_pixel(x, y, col);
                     }
                     pos++;
@@ -270,6 +270,19 @@ namespace image
             // stbtt_FreeBitmap(bitmap, font.fontp.userdata);
 
             CP += SF * info.advance;
+        }
+    }
+
+    template <typename T>
+    void Image<T>::draw_rectangle(int x0, int y0, int x1, int y1, T color[], bool fill){
+        if (fill){
+            for (int y = std::min(y0, y1); y < std::max(y0, y1); y++)
+                draw_line(x0, y, x1, y, color);
+        }else{
+            draw_line(x0, y0, x0, y1, color);
+            draw_line(x0, y1, x1, y1, color);
+            draw_line(x1, y1, x1, y0, color);
+            draw_line(x1, y0, x0, y0, color);
         }
     }
 

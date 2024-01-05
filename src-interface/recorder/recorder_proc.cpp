@@ -21,7 +21,7 @@ namespace satdump
         {
             out["fft_min"] = fft_plot->scale_min;
             out["fft_max"] = fft_plot->scale_max;
-            out["fft_avg"] = fft->avg_rate;
+            out["fft_avgn"] = fft->avg_num;
         }
         return out;
     }
@@ -37,13 +37,13 @@ namespace satdump
                 fft_plot->scale_min = in["fft_min"];
             if (in.contains("fft_max"))
                 fft_plot->scale_max = in["fft_max"];
-            if (in.contains("fft_avg"))
-                fft->avg_rate = in["fft_avg"];
+            if (in.contains("fft_avgn"))
+                fft->avg_num = in["fft_avgn"];
         }
         if (in.contains("fft_size"))
         {
             fft_size = in["fft_size"].get<int>();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < fft_sizes_lut.size(); i++)
                 if (fft_sizes_lut[i] == fft_size)
                     selected_fft_size = i;
         }
@@ -65,12 +65,14 @@ namespace satdump
 
     void RecorderApplication::start()
     {
-        set_frequency(frequency_mhz);
+        set_frequency(frequency_hz);
         try
         {
-            source_ptr->start();
-
             current_samplerate = source_ptr->get_samplerate();
+            if(current_samplerate == 0)
+                throw std::runtime_error("Samplerate not set!");
+
+            source_ptr->start();
 
             if (current_decimation > 1)
             {
@@ -87,11 +89,10 @@ namespace satdump
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
             is_started = true;
-            sdr_error = "";
         }
         catch (std::runtime_error &e)
         {
-            sdr_error = e.what();
+            sdr_error.set_message(e.what());
             logger->error(e.what());
         }
     }
@@ -105,7 +106,7 @@ namespace satdump
         is_started = false;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_mhz * 1e6;
+        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_hz;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
         config::saveUserConfig();
@@ -125,14 +126,14 @@ namespace satdump
                     {
                         source_ptr->set_samplerate(cfg["samplerate"]);
                     }
-                    catch (std::exception&)
+                    catch (std::exception &)
                     {
                     }
                 }
                 if (cfg.contains("frequency"))
                 {
-                    frequency_mhz = cfg["frequency"].get<uint64_t>() / 1e6;
-                    set_frequency(frequency_mhz);
+                    frequency_hz = cfg["frequency"].get<uint64_t>();
+                    set_frequency(frequency_hz);
                 }
                 if (cfg.contains("xconverter_frequency"))
                     xconverter_frequency = cfg["xconverter_frequency"].get<double>();
@@ -154,13 +155,13 @@ namespace satdump
             2,
             3,
 #ifdef BUILD_ZIQ
-                            4,
-                            5,
-                            6,
+            4,
+            5,
+            6,
 #endif
 #ifdef BUILD_ZIQ2
-                            7,
-                            8,
+            7,
+            8,
 #endif
         };
 
@@ -248,13 +249,13 @@ namespace satdump
             }
             catch (std::runtime_error &e)
             {
-                error = e.what();
+                error.set_message(e.what());
                 logger->error(e.what());
             }
         }
         else
         {
-            error = "Please select a valid output directory!";
+            error.set_message("Please select a valid output directory!");
         }
     }
 
@@ -307,13 +308,13 @@ namespace satdump
             std::ostringstream ss;
 
             double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
-            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0')  << ms_val;
+            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0') << ms_val;
             timestamp += ss.str();
         }
 
         std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
                                "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
-                               std::to_string(long(frequency_mhz * 1e6)) + "Hz";
+                               std::to_string(frequency_hz) + "Hz";
 
         recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
 
@@ -330,6 +331,58 @@ namespace satdump
             splitter->set_enabled("record", false);
             recorder_filename = "";
             is_recording = false;
+        }
+    }
+
+    void RecorderApplication::try_init_tracking_widget()
+    {
+        if (tracking_widget == nullptr)
+        {
+            tracking_widget = new TrackingWidget();
+
+            tracking_widget->aos_callback = [this](SatellitePass, TrackedObject obj)
+            {
+                if (obj.live)
+                    stop_processing();
+                if (obj.record)
+                    stop_recording();
+
+                if (obj.live || obj.record)
+                {
+                    frequency_hz = obj.frequency;
+                    if (is_started)
+                        set_frequency(frequency_hz);
+                    else
+                        start();
+
+                    // Catch situations where source could not start
+                    if (!is_started)
+                    {
+                        logger->error("Could not start recorder/processor since the source could not be started!");
+                        return;
+                    }
+                }
+
+                if (obj.live)
+                {
+                    pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
+                    pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
+                    start_processing();
+                }
+
+                if (obj.record)
+                {
+                    start_recording();
+                }
+            };
+
+            tracking_widget->los_callback = [this](SatellitePass, TrackedObject obj)
+            {
+                if (obj.record)
+                    stop_recording();
+                if (obj.live)
+                    stop_processing();
+            };
         }
     }
 }

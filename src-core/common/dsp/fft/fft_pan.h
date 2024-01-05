@@ -40,6 +40,6 @@ namespace dsp
 
         std::function<void(float *)> on_fft = [](float *) {};
 
-        float avg_rate = 0.01;
+        float avg_num = 10;
     };
 }
