@@ -1,0 +1,30 @@
+{
+    "cluster_lr_link": {
+        "name": "CLUSTER-IIFM S-Band Lowrate Link",
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 43.7e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 262e3
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 8880,
+                    "viterbi_ber_thresold": 0.3,
+		    "viterbi_outsync_after": 20,
+		    "nrzm": true,
+		    "derandomize": false,
+		    "rs_i": 5,
+		    "rs_type": "rs239"
+                }
+            }
+        }
+    }
+}
