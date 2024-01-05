@@ -3,8 +3,6 @@
 
 #define DO_BRANCH 0
 
-#include "interpolator_taps.h"
-
 namespace dsp
 {
     template <typename T>
@@ -88,7 +86,6 @@ namespace dsp
                     volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 #else
                 volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
-                // volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], taps[127 - imu], pfb.ntaps);
 #endif
 
                 // Phase error
@@ -108,7 +105,6 @@ namespace dsp
                     volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 #else
                 volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
-                // volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], taps[127 - imu], pfb.ntaps);
 #endif
 
                 // Slice it
