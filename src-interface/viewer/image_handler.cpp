@@ -585,11 +585,13 @@ namespace satdump
                 asyncUpdate();
             }
 
+            /*
             if (ImGui::Checkbox("Apply LUT##lutoption", &using_lut))
             {
                 asyncUpdate();
                 updateScaleImage();
             }
+            */
 
             bool save_disabled = is_updating || rgb_processing;
             if (save_disabled)
@@ -621,7 +623,7 @@ namespace satdump
             }
         }
 
-        if (ImGui::CollapsingHeader("RGB Composites"))
+        if (ImGui::CollapsingHeader("RGB Composites & LUTs"))
         {
             bool show_info_button = select_rgb_presets != -1 && rgb_compo_cfg.description_markdown != "";
             if (ImGui::BeginCombo(show_info_button ? "##presetcombo" : "Preset##presetcombo",
@@ -658,12 +660,22 @@ namespace satdump
                 }
             }
 
-            if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
+            if (ImGui::InputTextWithHint("##rgbEquation", "Equation", &rgb_compo_cfg.equation))
             {
                 select_rgb_presets = -1; // Editing, NOT the compo anymore!
                 rgb_compo_cfg.lua = "";
                 rgb_compo_cfg.lut = "";
             }
+
+            ImGui::Separator();
+            bool tmp;
+            ImGui::Checkbox("Use LUT", &tmp);
+            scale_view_horizontal.draw(ImVec2(ImGui::GetWindowWidth()-50*ui_scale, 20*ui_scale));
+            ImGui::SameLine();
+            if(ImGui::Button("Edit")){
+
+            }
+
             if (rgb_processing)
                 style::beginDisabled();
             if (ImGui::Button("Apply") && !rgb_processing)

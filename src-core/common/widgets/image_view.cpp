@@ -209,7 +209,10 @@ void ImageViewWidget::draw(ImVec2 win_size)
     {
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
-        if (ImPlot::BeginPlot((id_str + "plot").c_str(), ImVec2(win_size.x, win_size.y - 16 * ui_scale), ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
+        ImPlotFlags flags = ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal;
+        if (!allow_zoom_and_move)
+            flags |= ImPlotFlags_NoInputs;
+        if (ImPlot::BeginPlot((id_str + "plot").c_str(), ImVec2(win_size.x, win_size.y - 16 * ui_scale), flags))
         {
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
 

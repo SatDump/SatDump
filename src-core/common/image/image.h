@@ -114,6 +114,10 @@ namespace image
         void draw_text(int xs0, int ys0, T color[], int size, std::string text);                       // Draw text onto the image
         void draw_text(int x0, int y0, T color[], std::vector<Image<uint8_t>> font, std::string text); // old
 
+        // Rotation functions
+        void rotate_left();
+        void rotate_right();
+
     public:
         Image();                                                     // Init null image
         Image(size_t width, size_t height, int channels);            // Init emtpy image, set to 0

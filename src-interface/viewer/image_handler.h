@@ -59,7 +59,7 @@ namespace satdump
         bool is_temp = false;
         bool show_scale = false;
         image::Image<uint16_t> scale_image; // 512x25
-        ImageViewWidget scale_view;
+        ImageViewWidget scale_view, scale_view_horizontal;
 
         // LUT
         bool using_lut = false;
