@@ -48,7 +48,7 @@
                     "pll_bw": 0.002,
                     "rrc_alpha": 0.5,
                     "rrc_taps": 31,
-                    "costas_bw": 0.0006
+                    "costas_bw": 0.001
                 }
             },
             "cadu": {
