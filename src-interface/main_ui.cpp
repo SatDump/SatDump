@@ -32,6 +32,7 @@ namespace satdump
     std::shared_ptr<ViewerApplication> viewer_app;
 
     bool in_app = false; // true;
+    bool open_recorder;
 
     widgets::MarkdownHelper credits_md;
 
@@ -59,6 +60,7 @@ namespace satdump
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
+        open_recorder = satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("start_recorder_device");
 
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
@@ -183,8 +185,9 @@ namespace satdump
                     ImGui::EndTabItem();
                     main_ui_is_processing_selected = true;
                 }
-                if (ImGui::BeginTabItem("Recorder"))
+                if (ImGui::BeginTabItem("Recorder", nullptr, open_recorder ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
                 {
+                    open_recorder = false;
                     recorder_app->draw();
                     ImGui::EndTabItem();
                 }

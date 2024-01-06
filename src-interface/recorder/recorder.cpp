@@ -168,7 +168,10 @@ namespace satdump
             }
 
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
+            {
+                tracking_started_cli = true;
                 try_init_tracking_widget();
+            }
         }
     }
 
@@ -210,7 +213,7 @@ namespace satdump
 
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
-                if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
+                if (ImGui::CollapsingHeader("Device", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     ImGui::Spacing();
                     if (is_started)
@@ -318,7 +321,7 @@ namespace satdump
                     sdr_error.draw();
                 }
 
-                if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
+                if (ImGui::CollapsingHeader("FFT", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     if (ImGui::Combo("FFT Size", &selected_fft_size, "131072\0"
                                                                      "65536\0"
@@ -495,7 +498,7 @@ namespace satdump
                     }
                 }
 
-                show_tracking = ImGui::CollapsingHeader("Tracking");
+                show_tracking = ImGui::CollapsingHeader("Tracking", tracking_started_cli ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None);
                 if (show_tracking)
                 {
                     try_init_tracking_widget();
