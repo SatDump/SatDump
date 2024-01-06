@@ -66,7 +66,7 @@ namespace satdump
 
         std::vector<dsp::SourceDescriptor> sources;
 
-        int sdr_select_id = 0;
+        int sdr_select_id = -1;
         std::string sdr_select_string;
 
         bool processing_modules_floating_windows = false;

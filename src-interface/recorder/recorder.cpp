@@ -34,14 +34,64 @@ namespace satdump
             sdr_select_string += src.name + '\0';
         }
 
-        for (int i = 0; i < (int)sources.size(); i++)
+        // First, check to see if a source was passed via command line
+        if (satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("source"))
+        {
+            auto& cli_settings = satdump::config::main_cfg["cli"];
+            std::string source = cli_settings["source"];
+            for (int i = 0; i < (int)sources.size(); i++)
+            {
+                if (sources[i].source_type == source)
+                {
+                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
+                        continue;
+
+                    try
+                    {
+                        source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                        source_ptr->open();
+                        sdr_select_id = i;
+                        break;
+                    }
+                    catch (std::runtime_error& e)
+                    {
+                        logger->error(e.what());
+                    }
+                }
+            }
+        }
+
+        // If not, or it failed to open, revert to last used SDR
+        if (sdr_select_id == -1 && config::main_cfg["user"]["recorder_sdr_settings"].contains("last_used_sdr"))
+        {
+            std::string last_used_sdr = config::main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"].get<std::string>();
+            for (int i = 0; i < (int)sources.size(); i++)
+            {
+                if (sources[i].name != last_used_sdr)
+                    continue;
+                try
+                {
+                    source_ptr = dsp::getSourceFromDescriptor(sources[i]);
+                    source_ptr->open();
+                    sdr_select_id = i;
+                    break;
+                }
+                catch (std::runtime_error& e)
+                {
+                    logger->error(e.what());
+                    break;
+                }
+            }
+        }
+
+        //If no source has been opened yet, open the first possible one
+        for (int i = 0; sdr_select_id == -1 && i < (int)sources.size(); i++)
         {
             try
             {
                 source_ptr = dsp::getSourceFromDescriptor(sources[i]);
                 source_ptr->open();
                 sdr_select_id = i;
-                break;
             }
             catch (std::runtime_error &e)
             {
@@ -103,34 +153,7 @@ namespace satdump
         // Attempt to apply provided CLI settings
         if (satdump::config::main_cfg.contains("cli"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
-
-            if (cli_settings.contains("source"))
-            {
-                std::string source = cli_settings["source"];
-                for (int i = 0; i < (int)sources.size(); i++)
-                {
-                    if (sources[i].source_type == source)
-                    {
-                        if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
-                            continue;
-
-                        try
-                        {
-                            source_ptr = dsp::getSourceFromDescriptor(sources[i]);
-                            source_ptr->open();
-                            try_load_sdr_settings();
-                            sdr_select_id = i;
-                            break;
-                        }
-                        catch (std::runtime_error &e)
-                        {
-                            logger->error(e.what());
-                        }
-                    }
-                }
-            }
-
+            auto& cli_settings = satdump::config::main_cfg["cli"];
             if (source_ptr)
             {
                 if (cli_settings.contains("samplerate"))
