@@ -50,19 +50,19 @@
                     "rrc_taps": 31,
                     "costas_bw": 0.0006
                 }
-            }//,
-//            "cadu": {
-//                "ccsds_conv_concat_decoder": {
-//                    "constellation": "bpsk_90",
-//                    "cadu_size": 10232,
-//                    "viterbi_ber_thresold": 0.4,
-//		            "viterbi_outsync_after": 20,
-//		            "nrzm": false,
-//		            "derandomize": false,
-//		            "rs_i": 5,
-//		            "rs_type": "rs239"
-//                }
-//            }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.3,
+		            "viterbi_outsync_after": 1,
+		            "nrzm": false,
+		            "derandomize": false,
+		            "rs_i": 5,
+		            "rs_type": "rs239"
+                }
+            }
         }
     }
 }
