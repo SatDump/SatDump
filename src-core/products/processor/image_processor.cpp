@@ -206,15 +206,22 @@ namespace satdump
 
             for (int chanid : ch_to_prj)
             {
-                auto &img = img_products->images[chanid];
+                try
+                {
+                    auto &img = img_products->images[chanid];
 
-                logger->debug("Reprojecting channel %s", img.channel_name.c_str());
-                reprojection::ProjectionResult ret = projectImg(instrument_viewer_settings["project_channels"],
-                                                                img_products->get_channel_proj_metdata(chanid),
-                                                                img.image,
-                                                                img_products->get_timestamps(chanid),
-                                                                *img_products);
-                ret.img.save_img(product_path + "/channel_" + img.channel_name + "_projected");
+                    logger->debug("Reprojecting channel %s", img.channel_name.c_str());
+                    reprojection::ProjectionResult ret = projectImg(instrument_viewer_settings["project_channels"],
+                                                                    img_products->get_channel_proj_metdata(chanid),
+                                                                    img.image,
+                                                                    img_products->get_timestamps(chanid),
+                                                                    *img_products);
+                    ret.img.save_img(product_path + "/channel_" + img.channel_name + "_projected");
+                }
+                catch (std::exception& e)
+                {
+                    logger->error("Error projecting channel : %s!", e.what());
+                }
             }
         }
     }
