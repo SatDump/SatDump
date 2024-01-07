@@ -1,6 +1,17 @@
 {
     "cluster_lr_link": {
         "name": "Cluster-IIFM S-Band Lowrate Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
@@ -16,7 +27,7 @@
             "cadu": {
                 "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk_90",
-                    "cadu_size": 10232, //8880,
+                    "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.3,
                     "viterbi_outsync_after": 1,
                     "nrzm": false,
@@ -30,7 +41,7 @@
     "cluster_hr_link": {
         "name": "Cluster-IIFM S-Band Highrate Link",
         "live": true,
-        "live_cfg":[
+        "live_cfg": [
             [
                 1,
                 0
@@ -56,11 +67,11 @@
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.3,
-		            "viterbi_outsync_after": 1,
-		            "nrzm": false,
-		            "derandomize": false,
-		            "rs_i": 5,
-		            "rs_type": "rs239"
+                    "viterbi_outsync_after": 1,
+                    "nrzm": false,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
                 }
             }
         }
