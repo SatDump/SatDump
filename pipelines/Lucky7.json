@@ -15,6 +15,12 @@
             ]
         ],
         "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
             "enable_doppler": {
                 "type": "bool",
                 "value": true,
