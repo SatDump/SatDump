@@ -227,7 +227,12 @@ sudo make install
 
 ### Android
 
-On Android, the preferred source is F-Droid - [https://f-droid.org/en/packages/org.satdump.SatDump/](https://f-droid.org/en/packages/org.satdump.SatDump/).   
+On Android, the preferred source is F-Droid.  
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/org.satdump.SatDump)
+
 
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 
