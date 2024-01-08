@@ -34,7 +34,7 @@ namespace satdump
         *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
         if (default_path == ".")
         {
             char* cwd;
@@ -43,6 +43,10 @@ namespace satdump
                 default_path = cwd;
         }
         default_path += "\\";
+#elif defined(__ANDROID__)
+        if (default_path == ".")
+            default_path = "/storage/emulated/0";
+        default_path += "/";
 #else
         default_path += "/";
 #endif
@@ -63,8 +67,8 @@ namespace satdump
                 *default_ext = extension.substr(1);
         }
 #else
-        path = "/storage/emulated/0/" + save_name;
-        image->save_img("" + path);
+        path = save_name;
+        image->save_img(save_name);
 #endif
         return path;
     }
