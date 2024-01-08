@@ -52,7 +52,8 @@ namespace wav
         FileMetadata md;
 
         std::string filename = std::filesystem::path(filepath).stem().string();
-
+        char month_str[4];
+        double freq_mhz;
         uint64_t freq;
         uint64_t samp;
         std::tm timeS;
@@ -204,6 +205,46 @@ namespace wav
                 timeS.tm_mon -= 1;
                 timeS.tm_isdst = -1;
                 md.frequency = freq;
+                md.timestamp = mktime(&timeS);
+            }
+
+            // SDR Console File names
+            if (sscanf(filename.c_str(),
+                "%d-%[^-]-%d %2d%2d%2d.%*d %lfMHz",
+                &timeS.tm_mday, month_str, &timeS.tm_year,
+                &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                &freq_mhz) == 7)
+            {
+                month_str[3] = '\0';
+                if (strcmp(month_str, "Jan") == 0)
+                    timeS.tm_mon = 0;
+                else if (strcmp(month_str, "Feb") == 0)
+                    timeS.tm_mon = 1;
+                else if (strcmp(month_str, "Mar") == 0)
+                    timeS.tm_mon = 2;
+                else if (strcmp(month_str, "Apr") == 0)
+                    timeS.tm_mon = 3;
+                else if (strcmp(month_str, "May") == 0)
+                    timeS.tm_mon = 4;
+                else if (strcmp(month_str, "Jun") == 0)
+                    timeS.tm_mon = 5;
+                else if (strcmp(month_str, "Jul") == 0)
+                    timeS.tm_mon = 6;
+                else if (strcmp(month_str, "Aug") == 0)
+                    timeS.tm_mon = 7;
+                else if (strcmp(month_str, "Sep") == 0)
+                    timeS.tm_mon = 8;
+                else if (strcmp(month_str, "Oct") == 0)
+                    timeS.tm_mon = 9;
+                else if (strcmp(month_str, "Nov") == 0)
+                    timeS.tm_mon = 10;
+                else if (strcmp(month_str, "Dec") == 0)
+                    timeS.tm_mon = 11;
+
+
+                timeS.tm_year -= 1900;
+                timeS.tm_isdst = -1;
+                md.frequency = freq_mhz * 1e6;
                 md.timestamp = mktime(&timeS);
             }
 
