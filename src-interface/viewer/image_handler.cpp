@@ -176,7 +176,7 @@ namespace satdump
 
             bool do_correction = corrected_stuff.size() != 0 && correct_image;
             if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
-                current_image.width() != last_width || current_image.height() != last_height)
+                current_image.width() != last_width || current_image.height() != last_height || last_proj_cfg != proj_cfg)
             {
                 overlay_handler.clear_cache();
                 proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
@@ -215,6 +215,7 @@ namespace satdump
                 last_rotate_image = rotate_image;
                 last_width = current_image.width();
                 last_height = current_image.height();
+                last_proj_cfg = proj_cfg;
             }
 
             overlay_handler.apply(current_image, proj_func);

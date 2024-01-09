@@ -31,6 +31,7 @@ namespace satdump
 
         // Map projection stuff
         std::function<std::pair<int, int>(float, float, int, int)> proj_func;
+        nlohmann::json last_proj_cfg;
         bool last_correct_image = false;
         bool last_rotate_image = false;
         size_t last_width = 0;
