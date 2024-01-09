@@ -67,6 +67,7 @@ namespace satdump
         std::function<std::pair<int, int>(float, float, int, int)> proj_func;
         std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
         size_t last_width = 0, last_height = 0, last_corr_width = 0, last_corr_height = 0;
+        nlohmann::json last_proj_cfg;
 
         // Get instrument settings
         nlohmann::ordered_json instrument_viewer_settings;
@@ -133,19 +134,22 @@ namespace satdump
                         if (rgb_image.channels() < 3)
                             rgb_image.to_rgb();
 
-                        if (last_width != rgb_image.width() || last_height != rgb_image.height())
+                        nlohmann::json proj_cfg = img_products->get_proj_cfg();
+                        proj_cfg["metadata"] = final_metadata;
+                        proj_cfg["metadata"]["tle"] = img_products->get_tle();
+                        proj_cfg["metadata"]["timestamps"] = final_timestamps;
+
+                        if (last_width != rgb_image.width() || last_height != rgb_image.height() || last_proj_cfg != proj_cfg)
                         {
                             overlay_handler.clear_cache();
-                            nlohmann::json proj_cfg = img_products->get_proj_cfg();
-                            proj_cfg["metadata"] = final_metadata;
-                            proj_cfg["metadata"]["tle"] = img_products->get_tle();
-                            proj_cfg["metadata"]["timestamps"] = final_timestamps;
+
                             proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
-                                rgb_image.height(),
-                                proj_cfg);
+                                                                                       rgb_image.height(),
+                                                                                       proj_cfg);
 
                             last_width = rgb_image.width();
                             last_height = rgb_image.height();
+                            last_proj_cfg = proj_cfg;
                         }
 
                         if (geo_correct && (last_corr_width != rgb_image_corr.width() || last_corr_height != rgb_image_corr.height()))
@@ -153,16 +157,16 @@ namespace satdump
                             corrected_overlay_handler.clear_cache();
                             corr_proj_func =
                                 [proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                            {
+                                std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                                if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
                                 {
-                                    std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                                    if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
-                                    {
-                                        ret.first = corrected_stuff[ret.first];
-                                    }
-                                    else
-                                        ret.second = ret.first = -1;
-                                    return ret;
-                                };
+                                    ret.first = corrected_stuff[ret.first];
+                                }
+                                else
+                                    ret.second = ret.first = -1;
+                                return ret;
+                            };
 
                             last_corr_width = rgb_image_corr.width();
                             last_corr_height = rgb_image_corr.height();
@@ -234,7 +238,7 @@ namespace satdump
                                                                     *img_products);
                     ret.img.save_img(product_path + "/channel_" + img.channel_name + "_projected");
                 }
-                catch (std::exception& e)
+                catch (std::exception &e)
                 {
                     logger->error("Error projecting channel : %s!", e.what());
                 }
