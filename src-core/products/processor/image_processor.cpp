@@ -90,13 +90,16 @@ namespace satdump
                     std::string initial_name = compo.key();
                     std::replace(initial_name.begin(), initial_name.end(), ' ', '_');
                     std::replace(initial_name.begin(), initial_name.end(), '/', '_');
-
                     ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
+                    if (!check_composite_from_product_can_be_made(*img_products, cfg))
+                    {
+                        logger->debug("Skipping " + compo.key() + " as it can't be made!");
+                        continue;
+                    }
+
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
                     image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
-                    if (rgb_image.width() == 0 || rgb_image.height() == 0)
-                        continue;
 
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
