@@ -3,6 +3,17 @@
 #include "common/repack.h"
 #include "logger.h"
 
+inline int get_i4(uint8_t *buff)
+{
+    // if (isbig) return *((int_4 *) buff);
+    uint8_t i4[4];
+    i4[0] = buff[3];
+    i4[1] = buff[2];
+    i4[2] = buff[1];
+    i4[3] = buff[0];
+    return *((int *)i4);
+}
+
 void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
 {
     uint8_t *buf = msg_file.data();
@@ -98,6 +109,33 @@ void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
         vis_ir_imgs[channel].init((channel == 11 ? hrv_x_size : vis_ir_x_size), (channel == 11 ? hrv_y_size : vis_ir_y_size), 1);
     }
 
+    // Read Trailer
+    //{
+    uint8_t *trailer_ptr = buf + trailerpos;
+
+    int trailer_version = trailer_ptr[0];
+
+    int offset = 38 + 1 + 2 +
+                 14 +
+                 12 +
+                 192 +
+                 6 * 12 +
+                 16;
+
+    int LowerSouthLineActual = get_i4(&trailer_ptr[offset + 0]);
+    int LowerNorthLineActual = get_i4(&trailer_ptr[offset + 4]);
+    int LowerEastColumnActual = get_i4(&trailer_ptr[offset + 8]);
+    int LowerWestColumnActual = get_i4(&trailer_ptr[offset + 12]);
+
+    int UpperSouthLineActual = get_i4(&trailer_ptr[offset + 16]);
+    int UpperNorthLineActual = get_i4(&trailer_ptr[offset + 20]);
+    int UpperEastColumnActual = get_i4(&trailer_ptr[offset + 24]);
+    int UpperWestColumnActual = get_i4(&trailer_ptr[offset + 28]);
+
+    logger->critical("LowerSouthLineActual : %d, LowerNorthLineActual : %d, LowerEastColumnActual : %d, LowerWestColumnActual : %d",
+                     LowerSouthLineActual, LowerNorthLineActual, LowerEastColumnActual, LowerWestColumnActual);
+    // }
+
     uint16_t repacked_line[81920];
 
     // Read line data
@@ -121,8 +159,29 @@ void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
 
                 repackBytesTo10bits(data_ptr + 38 + 27, datasize, repacked_line);
 
-                for (int x = 0; x < (channel == 11 ? hrv_x_size : vis_ir_x_size); x++)
-                    vis_ir_imgs[channel][(channel == 11 ? (line * 3 + i) : line) * (channel == 11 ? hrv_x_size : vis_ir_x_size) + x] = repacked_line[x] << 6;
+                if (channel < 11)
+                {
+                    for (int x = 0; x < vis_ir_x_size; x++)
+                        vis_ir_imgs[channel][line * vis_ir_x_size + x] = repacked_line[x] << 6;
+                }
+                else
+                {
+                    for (int x = 0; x < hrv_x_size; x++)
+                    {
+                        if (line * 3 + 4 > UpperSouthLineActual)
+                        {
+                            int xpos = x + UpperEastColumnActual;
+                            if (xpos >= 0 && xpos < hrv_x_size)
+                                vis_ir_imgs[channel][(line * 3 + i) * hrv_x_size + xpos] = repacked_line[x] << 6;
+                        }
+                        else
+                        {
+                            int xpos = x + LowerEastColumnActual;
+                            if (xpos >= 0 && xpos < hrv_x_size)
+                                vis_ir_imgs[channel][(line * 3 + i) * hrv_x_size + xpos] = repacked_line[x] << 6;
+                        }
+                    }
+                }
 
                 data_ptr += 38 + 27 + datasize;
             }
