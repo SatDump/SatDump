@@ -31,18 +31,15 @@ namespace satdump
 
                 if (horizons_data.size() > 0)
                 {
-                    double timed = current_time;
-
-                    size_t iter = 0;
-                    for (size_t i = 0; i < horizons_data.size(); i++)
-                        if (horizons_data[i].timestamp < timed)
-                            iter = i;
+                    //    size_t iter = 0;
+                    //    for (size_t i = 0; i < horizons_data.size(); i++)
+                    //        if (horizons_data[i].timestamp < current_time)
+                    //            iter = i;
 
                     if (current_time > next_los_time)
                         updateNextPass(current_time);
 
-                    sat_current_pos.az = horizons_data[iter].az;
-                    sat_current_pos.el = horizons_data[iter].el;
+                    horizons_interpolate(current_time, &sat_current_pos.az, &sat_current_pos.el);
                 }
             }
             else if (tracking_mode == TRACKING_SATELLITE)

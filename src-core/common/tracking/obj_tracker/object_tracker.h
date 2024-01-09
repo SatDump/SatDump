@@ -63,6 +63,36 @@ namespace satdump
         std::vector<HorizonsV> horizons_data;
         std::string horizons_searchstr;
 
+        inline void horizons_interpolate(double xvalue, float *az_out, float *el_out)
+        {
+            int start_pos = 0;
+            while (start_pos < (int)horizons_data.size() && xvalue > horizons_data[start_pos].timestamp)
+                start_pos++;
+
+            if (start_pos + 1 == (int)horizons_data.size())
+                start_pos--;
+            if (start_pos == 0)
+                start_pos++;
+
+            double x1 = horizons_data[start_pos].timestamp;
+            double x2 = horizons_data[start_pos + 1].timestamp;
+            double az_y1 = horizons_data[start_pos].az;
+            double az_y2 = horizons_data[start_pos + 1].az;
+            double el_y1 = horizons_data[start_pos].el;
+            double el_y2 = horizons_data[start_pos + 1].el;
+
+            // printf("%d - %f %f %f - %f %f\n", start_pos, x1, xvalue, x2, y1, y2);
+
+            double x_len = x2 - x1;
+            xvalue -= x1;
+
+            double az_y_len = az_y2 - az_y1;
+            double el_y_len = el_y2 - el_y1;
+
+            *az_out = az_y1 + (xvalue / x_len) * az_y_len;
+            *el_out = el_y1 + (xvalue / x_len) * el_y_len;
+        }
+
         double last_horizons_fetch_time = 0;
 
         std::vector<std::pair<int, std::string>> pullHorizonsList();
