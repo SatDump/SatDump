@@ -61,6 +61,13 @@ namespace satdump
     {
         ImageProducts *img_products = (ImageProducts *)products;
 
+        // Overlay stuff
+        OverlayHandler overlay_handler;
+        OverlayHandler corrected_overlay_handler;
+        std::function<std::pair<int, int>(float, float, int, int)> proj_func;
+        std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
+        size_t last_width = 0, last_height = 0, last_corr_width = 0, last_corr_height = 0;
+
         // Get instrument settings
         nlohmann::ordered_json instrument_viewer_settings;
         if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
@@ -88,17 +95,16 @@ namespace satdump
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
                     image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
-                    image::Image<uint16_t> rgb_image_corr;
+                    if (rgb_image.width() == 0 || rgb_image.height() == 0)
+                        continue;
 
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
                                        initial_name;
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
-
-                    std::function<std::pair<int, int>(float, float, int, int)> proj_func;
-                    std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
                     std::vector<float> corrected_stuff;
+                    image::Image<uint16_t> rgb_image_corr;
 
                     if (geo_correct)
                     {
@@ -112,53 +118,60 @@ namespace satdump
                         }
                     }
 
-                    OverlayHandler overlay_handler;
-                    overlay_handler.set_config(compo.value());
-
                     rgb_image.save_img(product_path + "/" + name);
                     if (geo_correct)
                         rgb_image_corr.save_img(product_path + "/" + name + "_corrected");
 
+                    overlay_handler.set_config(compo.value());
+                    corrected_overlay_handler.set_config(compo.value());
                     if (overlay_handler.enabled())
                     {
                         // Ensure this is RGB!!
                         if (rgb_image.channels() < 3)
                             rgb_image.to_rgb();
-                        nlohmann::json proj_cfg = img_products->get_proj_cfg();
-                        proj_cfg["metadata"] = final_metadata;
-                        proj_cfg["metadata"]["tle"] = img_products->get_tle();
-                        proj_cfg["metadata"]["timestamps"] = final_timestamps;
-                        proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
-                                                                                   rgb_image.height(),
-                                                                                   proj_cfg);
 
-                        if (geo_correct)
+                        if (last_width != rgb_image.width() || last_height != rgb_image.height())
                         {
-                            std::function<std::pair<int, int>(float, float, int, int)> newfun =
+                            overlay_handler.clear_cache();
+                            nlohmann::json proj_cfg = img_products->get_proj_cfg();
+                            proj_cfg["metadata"] = final_metadata;
+                            proj_cfg["metadata"]["tle"] = img_products->get_tle();
+                            proj_cfg["metadata"]["timestamps"] = final_timestamps;
+                            proj_func = satdump::reprojection::setupProjectionFunction(rgb_image.width(),
+                                rgb_image.height(),
+                                proj_cfg);
+
+                            last_width = rgb_image.width();
+                            last_height = rgb_image.height();
+                        }
+
+                        if (geo_correct && (last_corr_width != rgb_image_corr.width() || last_corr_height != rgb_image_corr.height()))
+                        {
+                            corrected_overlay_handler.clear_cache();
+                            corr_proj_func =
                                 [proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
-                            {
-                                std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                                if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
                                 {
-                                    ret.first = corrected_stuff[ret.first];
-                                }
-                                else
-                                    ret.second = ret.first = -1;
-                                return ret;
-                            };
-                            corr_proj_func = newfun;
+                                    std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                                    if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                                    {
+                                        ret.first = corrected_stuff[ret.first];
+                                    }
+                                    else
+                                        ret.second = ret.first = -1;
+                                    return ret;
+                                };
+
+                            last_corr_width = rgb_image_corr.width();
+                            last_corr_height = rgb_image_corr.height();
                         }
 
                         overlay_handler.apply(rgb_image, proj_func);
-                        if (geo_correct)
-                            overlay_handler.apply(rgb_image_corr, corr_proj_func);
-                    }
-
-                    if (overlay_handler.enabled())
-                    {
                         rgb_image.save_img(product_path + "/" + name + "_map");
                         if (geo_correct)
+                        {
+                            corrected_overlay_handler.apply(rgb_image_corr, corr_proj_func);
                             rgb_image_corr.save_img(product_path + "/" + name + "_corrected_map");
+                        }
                     }
 
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
