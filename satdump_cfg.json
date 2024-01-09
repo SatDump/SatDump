@@ -978,7 +978,7 @@
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "description": "descriptions/MCIR_precip.md",
                         "lua_vars": {
-                            "minoffset": 0.2,
+                            "minoffset": 0.25,
                             "scalar": 1.5,
                             "thresold": 0,
                             "lut": "lut/WXtoImg-NO_mod_APT.png"
