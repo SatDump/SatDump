@@ -156,7 +156,7 @@ namespace satdump
                         {
                             corrected_overlay_handler.clear_cache();
                             corr_proj_func =
-                                [proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                                [&proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
                             {
                                 std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
                                 if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
