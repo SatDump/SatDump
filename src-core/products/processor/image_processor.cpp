@@ -95,7 +95,8 @@ namespace satdump
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
                     image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
-                    image::Image<uint16_t> rgb_image_corr;
+                    if (rgb_image.width() == 0 || rgb_image.height() == 0)
+                        continue;
 
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
@@ -103,6 +104,7 @@ namespace satdump
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
                     std::vector<float> corrected_stuff;
+                    image::Image<uint16_t> rgb_image_corr;
 
                     if (geo_correct)
                     {
