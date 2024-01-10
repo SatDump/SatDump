@@ -524,7 +524,7 @@ namespace satdump
             img_off.second /= ratio;
             logger->trace("Offset for %s is %d", img_off.first.c_str(), img_off.second);
 
-            if (final_metadata != nullptr)
+            if (final_metadata != nullptr && min_offset != 0)
                 (*final_metadata)["img_x_offset"] = min_offset;
         }
 
