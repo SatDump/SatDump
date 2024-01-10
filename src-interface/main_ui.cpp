@@ -99,8 +99,6 @@ namespace satdump
         viewer_app.reset();
     }
 
-    bool main_ui_is_processing_selected = false;
-
     void renderMainUI()
     {
         std::pair<int, int> dims = backend::beginFrame();
@@ -130,6 +128,7 @@ namespace satdump
         }*/
         // else
         {
+            bool main_ui_is_processing_selected = ImGuiUtils_OfflineProcessingSelected();
             bool status_bar = status_logger_sink->is_shown();
             if (status_bar && processing::is_processing && main_ui_is_processing_selected)
             {
@@ -147,12 +146,10 @@ namespace satdump
                 dims.second -= status_logger_sink->draw();
 
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)dims.first, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)dims.second});
+            ImGui::SetNextWindowSize({(float)dims.first, (processing::is_processing && main_ui_is_processing_selected) ? -1.0f : (float)dims.second});
             ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
-                main_ui_is_processing_selected = false;
-
                 if (ImGui::BeginTabItem("Offline processing"))
                 {
                     if (processing::is_processing)
@@ -183,7 +180,6 @@ namespace satdump
                     }
 
                     ImGui::EndTabItem();
-                    main_ui_is_processing_selected = true;
                 }
                 if (ImGui::BeginTabItem("Recorder", nullptr, open_recorder ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
                 {
