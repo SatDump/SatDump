@@ -15,8 +15,6 @@ namespace ccsds
 
           d_constellation_str(parameters["constellation"].get<std::string>()),
 
-          d_oqpsk_delay(parameters.count("oqpsk_delay") > 0 ? parameters["oqpsk_delay"].get<bool>() : false),
-          d_oqpsk_mode(parameters.count("oqpsk_mode") > 0 ? parameters["oqpsk_mode"].get<bool>() : false),
           d_iq_invert(parameters.count("iq_invert") > 0 ? parameters["iq_invert"].get<bool>() : false),
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
@@ -43,6 +41,7 @@ namespace ccsds
         soft_buffer = new int8_t[d_buffer_size];
         frame_buffer = new uint8_t[d_cadu_size * 8]; // Larger by safety
         d_bpsk_90 = false;
+        d_oqpsk_mode = false;
 
         // Get constellation
         if (d_constellation_str == "bpsk")
@@ -57,6 +56,11 @@ namespace ccsds
         }
         else if (d_constellation_str == "qpsk")
             d_constellation = dsp::QPSK;
+        else if (d_constellation_str == "oqpsk")
+        {
+            d_constellation = dsp::QPSK;
+            d_oqpsk_mode = true;
+        }
         else
             throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
 
@@ -172,17 +176,6 @@ namespace ccsds
                 data_in.read((char *)soft_buffer, d_buffer_size);
             else
                 input_fifo->read((uint8_t *)soft_buffer, d_buffer_size);
-
-            // OQPSK Delay
-            if (d_oqpsk_delay)
-            {
-                for (int i = 0; i < d_buffer_size / 2; i++)
-                {
-                    int8_t back = soft_buffer[i * 2 + 0];
-                    soft_buffer[i * 2 + 0] = last_q_oqpsk;
-                    last_q_oqpsk = back;
-                }
-            }
 
             if (d_bpsk_90 || d_iq_invert) // Symbols are swapped for some Q/BPSK sats
                 rotate_soft((int8_t *)soft_buffer, d_buffer_size, PHASE_0, true);

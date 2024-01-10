@@ -141,8 +141,7 @@
                     "diff_decode": true
                 }*/
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_mode": true,
+                    "constellation": "oqpsk",
                     "nrzm": true,
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,

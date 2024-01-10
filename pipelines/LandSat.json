@@ -21,13 +21,12 @@
             },
             "cadu": {
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
+                    "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
                     "nrzm": true,
-                    "oqpsk_mode": true,
                     "rs_i": 5,
                     "rs_type": "rs223"
                 }
