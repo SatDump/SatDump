@@ -10,9 +10,9 @@ function process()
     for y = 0, rgb_output:height() -1, 1 do
 
       -- set variables for each calibrated channel with their respective names
-      
-      local cch3b = get_calibrated_value(3, x, y, true)
-      local cch4 = get_calibrated_value(4, x, y, true)
+      get_channel_values(x, y)
+      local cch3b = get_channel_value(0) * 1000
+      local cch4 = get_channel_value(1) * 1000
       
       if cch3b > 305 then
         if cch4 > 280 then
