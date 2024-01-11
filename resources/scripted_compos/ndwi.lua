@@ -15,8 +15,8 @@ function process()
 
             --get channels from satdump.json
             get_channel_values(x, y)
-            local cch2 = get_channel_value(0) * 1000
-            local cch3a = get_channel_value(1) * 1000
+            local cch2 = get_channel_value(0)
+            local cch3a = get_channel_value(1)
             
             --perform NDWI
             local ndwi = (cch2-cch3a)/(cch2+cch3a)
