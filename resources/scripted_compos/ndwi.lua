@@ -4,7 +4,7 @@ function init()
     --create an empty image for the LUT
     img_lut = image8.new()
     --load the LUT
-    img_lut:load_png(get_resource_path("lut/NDWI.png"))
+    img_lut:load_png(get_resource_path("lut/NDWI.png"), false)
     --return 3 channels, RGB
     return 3
 end
@@ -14,10 +14,9 @@ function process()
         for y = 0, rgb_output:height() - 1, 1 do
 
             --get channels from satdump.json
-
-            local cch2 = get_calibrated_value(1, x, y, true)
-            local cch3a = get_calibrated_value(2, x, y, true)
-            
+            get_channel_values(x, y)
+            local cch2 = get_channel_value(0)
+            local cch3a = get_channel_value(1)
             
             --perform NDWI
             local ndwi = (cch2-cch3a)/(cch2+cch3a)
