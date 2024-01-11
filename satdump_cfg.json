@@ -684,6 +684,25 @@
                         "geo_correct": true,
                         "autogen": false
                     },
+                    "Fog BTD (VERY experimental)": {
+                        "channels": "cch3b, cch4",
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            }
+                        },
+                        "lua": "scripted_compos/fog_btd.lua",
+                        "description": "descriptions/sfog_btd.md",
+                        "geo_correct": true,
+                        "autogen": false
+                    },
                     "Sea Surface Temperature": {
                         "channels": "cch4",
                         "description": "descriptions/SST.md",
