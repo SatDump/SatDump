@@ -326,6 +326,8 @@ namespace image
             lua["lua_vars"] = lua_utils::mapJsonToLua(lua, lua_vars);
 
             int n_ch = lua["init"]().get<int>();
+            if (n_ch == 0)
+                return rgb_output;
 
             rgb_output.init(f.img_width, f.img_height, n_ch);
 

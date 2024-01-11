@@ -3,6 +3,11 @@
 -- Usually used for APT imagery
 
 function init()
+    if not has_sat_proj() then
+        lerror("This composite requires projection info")
+        return 0
+    end
+
     sat_proj = get_sat_proj()
     img_background = image8.new()
     img_background:load_jpeg(get_resource_path("maps/nasa_hd.jpg"))
