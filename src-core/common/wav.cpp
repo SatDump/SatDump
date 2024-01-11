@@ -209,8 +209,8 @@ namespace wav
             }
 
             // SDR Console File names
-            if (sscanf(filename.c_str(),
-                "%d-%[^-]-%d %2d%2d%2d.%*d %lfMHz",
+            else if (sscanf(filename.c_str(),
+                "%d-%3s-%d %2d%2d%2d.%*d %lfMHz",
                 &timeS.tm_mday, month_str, &timeS.tm_year,
                 &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                 &freq_mhz) == 7)
@@ -248,10 +248,9 @@ namespace wav
                 md.timestamp = mktime(&timeS);
             }
 
-            // SatDump Baseband filenames
-            if (sscanf(filename.c_str(),
-                       "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.ziq",
-                       //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
+            // SatDump Baseband
+            else if (sscanf(filename.c_str(),
+                       "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz",
                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
                        &samp, &freq) == 8)
@@ -260,53 +259,33 @@ namespace wav
                 timeS.tm_mon -= 1;
                 timeS.tm_isdst = -1;
                 md.frequency = freq;
-                md.samplerate = samp;
                 md.timestamp = mktime_utc(&timeS);
+
+                std::string ext = std::filesystem::path(filepath).extension().string();
+                if (ext == ".f32" || ext == ".s16" || ext == ".s8")
+                    md.baseband_format = ext.substr(1);
+                if(ext != ".wav")
+                    md.samplerate = samp;
             }
+
+            // SatDump Baseband with milliseconds
             else if (sscanf(filename.c_str(),
-                            "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.f32",
-                            //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
-                            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
-                            &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
-                            &samp, &freq) == 8)
+                "%d-%d-%d_%d-%d-%d-%*d_%" PRIu64 "SPS_%" PRIu64 "Hz",
+                &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
+                &samp, &freq) == 8)
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 timeS.tm_isdst = -1;
                 md.frequency = freq;
-                md.samplerate = samp;
                 md.timestamp = mktime_utc(&timeS);
-                md.baseband_format = "f32";
-            }
-            else if (sscanf(filename.c_str(),
-                            "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.s16",
-                            //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
-                            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
-                            &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
-                            &samp, &freq) == 8)
-            {
-                timeS.tm_year -= 1900;
-                timeS.tm_mon -= 1;
-                timeS.tm_isdst = -1;
-                md.frequency = freq;
-                md.samplerate = samp;
-                md.timestamp = mktime_utc(&timeS);
-                md.baseband_format = "s16";
-            }
-            else if (sscanf(filename.c_str(),
-                            "%d-%d-%d_%d-%d-%d_%" PRIu64 "SPS_%" PRIu64 "Hz.s8",
-                            //"baseband_%" PRIu64 "Hz_%d-%d-%d_%d-%d-%d",
-                            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
-                            &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec,
-                            &samp, &freq) == 8)
-            {
-                timeS.tm_year -= 1900;
-                timeS.tm_mon -= 1;
-                timeS.tm_isdst = -1;
-                md.frequency = freq;
-                md.samplerate = samp;
-                md.timestamp = mktime_utc(&timeS);
-                md.baseband_format = "s8";
+
+                std::string ext = std::filesystem::path(filepath).extension().string();
+                if (ext == ".f32" || ext == ".s16" || ext == ".s8")
+                    md.baseband_format = ext.substr(1);
+                if (ext != ".wav")
+                    md.samplerate = samp;
             }
         }
 
