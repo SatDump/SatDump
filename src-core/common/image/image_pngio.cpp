@@ -121,6 +121,8 @@ namespace image
 
         if (color_type == PNG_COLOR_TYPE_GRAY)
             d_channels = 1;
+        else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+            d_channels = 2;
         else if (color_type == PNG_COLOR_TYPE_RGB)
             d_channels = 3;
         else if (color_type == PNG_COLOR_TYPE_RGBA)
@@ -179,6 +181,9 @@ namespace image
 
             delete[] image_row;
         }
+
+        if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+            to_rgba();
 
         fclose(fp);
         png_destroy_read_struct(&png, &info, NULL);

@@ -173,6 +173,19 @@ namespace image
             for (size_t i = 0; i < d_width * d_height; i++)
                 channel(3)[i] = std::numeric_limits<T>::max();
         }
+        else if (d_channels == 22)
+        {
+            Image<T> tmp = *this;       // Backup image
+            init(d_width, d_height, 4); // Init new image as RGBA
+
+            // Copy over all 3 channels
+            memcpy(&d_data[d_width * d_height * 0], tmp.data(), d_width * d_height * sizeof(T));
+            memcpy(&d_data[d_width * d_height * 1], tmp.data(), d_width * d_height * sizeof(T));
+            memcpy(&d_data[d_width * d_height * 2], tmp.data(), d_width * d_height * sizeof(T));
+
+            // Copy over RGBA
+            memcpy(&d_data[d_width * d_height * 3], tmp.data() + d_width * d_height, d_width * d_height * sizeof(T));
+        }
         else if (d_channels == 3)
         {
             Image<T> tmp = *this;       // Backup image
