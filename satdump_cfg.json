@@ -690,15 +690,16 @@
                             "cch3b": {
                                 "type": "temperature",
                                 "min": 0,
-                                "max": 1000
+                                "max": 500
                             },
                             "cch4": {
                                 "type": "temperature",
                                 "min": 0,
-                                "max": 1000
+                                "max": 500
                             }
                         },
                         "lua": "scripted_compos/fog_btd.lua",
+                        "lut": "lut/cal/fog_btd.png",
                         "description": "descriptions/sfog_btd.md",
                         "geo_correct": true,
                         "autogen": false
