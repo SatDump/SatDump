@@ -57,7 +57,7 @@ namespace goes
             }
         }
 
-        void GOESRFalseColorComposer::push2(image::Image<uint8_t> img, time_t time)
+        void GOESRFalseColorComposer::push2(image::Image<uint8_t> &img, time_t time)
         {
             if (time2 != 0 && time2 != time)
                 save();
@@ -74,7 +74,7 @@ namespace goes
                 generateCompo();
         }
 
-        void GOESRFalseColorComposer::push13(image::Image<uint8_t> img, time_t time)
+        void GOESRFalseColorComposer::push13(image::Image<uint8_t> &img, time_t time)
         {
             if (time13 != 0 && time13 != time)
                 save();
