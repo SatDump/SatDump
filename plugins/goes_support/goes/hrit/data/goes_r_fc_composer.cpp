@@ -32,7 +32,8 @@ namespace goes
             else
                 ch2.resize(ch13.width(), ch13.height());
 
-            falsecolor = image::Image<uint8_t>(ch2.width(), ch2.height(), 3); // Init image
+            if(!hasData || falsecolor.width() != ch2.width())
+                falsecolor = image::Image<uint8_t>(ch2.width(), ch2.height(), 3); // Init image
 
             for (size_t i = 0; i < ch2.width() * ch2.height(); i++)
             {
@@ -48,11 +49,8 @@ namespace goes
             if (textureID > 0)
             {
                 // Downscale image
-                img_height = 1000;
-                img_width = 1000;
-                image::Image<uint8_t> imageScaled = falsecolor;
-                imageScaled.resize(img_width, img_height);
-                uchar_to_rgba(imageScaled.data(), textureBuffer, img_height * img_width, 3);
+                image::Image<uint8_t> imageScaled = falsecolor.resize_to(1000, 1000);
+                uchar_to_rgba(imageScaled.data(), textureBuffer, 1000 * 1000, 3);
                 hasToUpdate = true;
             }
         }

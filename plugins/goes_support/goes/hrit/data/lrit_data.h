@@ -61,7 +61,6 @@ namespace goes
         public:
             // UI Stuff
             lrit_image_status imageStatus;
-            int img_width, img_height;
             bool hasToUpdate = false;
             unsigned int textureID = 0;
             uint32_t *textureBuffer;
