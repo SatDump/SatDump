@@ -351,7 +351,7 @@ namespace satdump
                     if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
                     {
                         waterfall_plot->set_rate(fft_rate, waterfall_rate);
-                        logger->info("Set Waterfall rate to %d", fft_rate);
+                        logger->info("Set Waterfall rate to %d", waterfall_rate);
                     }
                     widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
