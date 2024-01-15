@@ -11,7 +11,7 @@
 
 namespace satdump
 {
-    LoadingScreenSink::LoadingScreenSink(float scale) : scale{ scale }
+    LoadingScreenSink::LoadingScreenSink(float scale) : scale{scale}
     {
         image::Image<uint8_t> image;
         std::random_device dev;
@@ -21,7 +21,7 @@ namespace satdump
         title = loader_constant ? satdump::loader_constant_title : "SatDump";
         slogan = loader_constant ? satdump::loader_constant_slogan : "General Purpose Satellite Data Processor";
         if (loader_constant)
-            image.load_png((uint8_t*)satdump::loader_constant_icon, sizeof(satdump::loader_constant_icon));
+            image.load_png((uint8_t *)satdump::loader_constant_icon, sizeof(satdump::loader_constant_icon));
         else
             image.load_png(resources::getResourcePath("icon.png"));
 
@@ -44,7 +44,7 @@ namespace satdump
         }
 
         image_texture = makeImageTexture();
-        updateImageTexture(image_texture, (uint32_t*)px, image.width(), image.height());
+        updateImageTexture(image_texture, (uint32_t *)px, image.width(), image.height());
         backend::setIcon(px, image.width(), image.height());
         delete[] px;
         push_frame("Initializing");
@@ -52,7 +52,7 @@ namespace satdump
 
     LoadingScreenSink::~LoadingScreenSink()
     {
-        deleteImageTexture(image_texture);
+        // deleteImageTexture(image_texture);
     }
 
     void LoadingScreenSink::receive(slog::LogMsg log)
@@ -64,39 +64,39 @@ namespace satdump
     void LoadingScreenSink::push_frame(std::string str)
     {
         std::pair<int, int> dims = backend::beginFrame();
-        ImGui::SetNextWindowPos({ 0, 0 });
+        ImGui::SetNextWindowPos({0, 0});
         ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
         ImGui::Begin("Loading Screen", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
 
-        if(dims.first > dims.second)
+        if (dims.first > dims.second)
         {
-            ImVec2 reference_pos = { ((float)dims.first * 0.5f) - (300 * scale), ((float)dims.second * 0.5f) - (125 * scale)};
+            ImVec2 reference_pos = {((float)dims.first * 0.5f) - (300 * scale), ((float)dims.second * 0.5f) - (125 * scale)};
             ImGui::SetCursorPos(reference_pos);
-            ImGui::Image((void*)image_texture, ImVec2(200 * scale, 200 * scale));
-            ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (40 * scale) });
+            ImGui::Image((void *)image_texture, ImVec2(200 * scale, 200 * scale));
+            ImGui::SetCursorPos({reference_pos.x + (230 * scale), reference_pos.y + (40 * scale)});
             ImGui::PushFont(style::bigFont);
             ImGui::TextUnformatted(title.c_str());
             ImGui::PopFont();
-            ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (87 * scale) });
+            ImGui::SetCursorPos({reference_pos.x + (230 * scale), reference_pos.y + (87 * scale)});
             ImGui::TextUnformatted(slogan.c_str());
             ImGui::GetWindowDrawList()->AddLine({reference_pos.x + (230 * scale), reference_pos.y + (112 * scale)},
-                {reference_pos.x + (490 * scale), reference_pos.y + (112 * scale)}, IM_COL32(155, 155, 155, 255));
-            ImGui::SetCursorPos({ reference_pos.x + (230 * scale), reference_pos.y + (120 * scale) });
+                                                {reference_pos.x + (490 * scale), reference_pos.y + (112 * scale)}, IM_COL32(155, 155, 155, 255));
+            ImGui::SetCursorPos({reference_pos.x + (230 * scale), reference_pos.y + (120 * scale)});
         }
         else
         {
             ImGui::PushFont(style::bigFont);
             ImVec2 title_size = ImGui::CalcTextSize(title.c_str());
             ImGui::SetCursorPos({((float)dims.first / 2) - (75 * scale), ((float)dims.second / 2) - title_size.y - (90 * scale)});
-            ImGui::Image((void*)image_texture, ImVec2(150 * scale, 150 * scale));
+            ImGui::Image((void *)image_texture, ImVec2(150 * scale, 150 * scale));
             ImGui::SetCursorPos({((float)dims.first / 2) - (title_size.x / 2), ((float)dims.second / 2) - title_size.y + (75 * scale)});
             ImGui::TextUnformatted(title.c_str());
             ImGui::PopFont();
             ImVec2 slogan_size = ImGui::CalcTextSize(slogan.c_str());
-            ImGui::SetCursorPos({ ((float)dims.first / 2) - (slogan_size.x / 2), ((float)dims.second / 2) + (80 * scale) });
+            ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size.x / 2), ((float)dims.second / 2) + (80 * scale)});
             ImGui::TextUnformatted(slogan.c_str());
             ImGui::GetWindowDrawList()->AddLine({((float)dims.first / 2) - (slogan_size.x / 2), ((float)dims.second / 2) + (90 * scale) + slogan_size.y},
-                {((float)dims.first / 2) + (slogan_size.x / 2), ((float)dims.second / 2) + (90 * scale) + slogan_size.y}, IM_COL32(155, 155, 155, 255));
+                                                {((float)dims.first / 2) + (slogan_size.x / 2), ((float)dims.second / 2) + (90 * scale) + slogan_size.y}, IM_COL32(155, 155, 155, 255));
             ImGui::SetCursorPos({((float)dims.first / 2) - (ImGui::CalcTextSize(str.c_str()).x / 2), ((float)dims.second / 2) + (95 * scale) + slogan_size.y});
         }
 

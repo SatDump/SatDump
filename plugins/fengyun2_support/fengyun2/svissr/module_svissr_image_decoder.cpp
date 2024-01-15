@@ -130,7 +130,7 @@ namespace fengyun_svissr
         if (textureID != 0)
         {
             delete[] textureBuffer;
-            deleteImageTexture(textureID);
+            // deleteImageTexture(textureID);
         }
     }
 
