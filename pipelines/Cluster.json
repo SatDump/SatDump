@@ -73,7 +73,10 @@
                     "rs_i": 5,
                     "rs_type": "rs239"
                 }
-            }
+            },
+            "products":{ 
+                "cluster_instruments": {} 
+            } 
         }
     }
 }
