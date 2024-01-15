@@ -313,14 +313,20 @@ namespace satdump
             timestamp += ss.str();
         }
 
-        std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
-                               "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
-                               std::to_string(frequency_hz) + "Hz";
+        std::string recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+#if defined(_MSC_VER)
+        recording_path += "\\";
+#elif defined(__ANDROID__)
+        if (recording_path == ".")
+            recording_path = "/storage/emulated/0";
+        recording_path += "/";
+#else
+        recording_path += "/";
+#endif
 
+        std::string filename = recording_path + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" + std::to_string(frequency_hz) + "Hz";
         recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
-
         logger->info("Recording to " + recorder_filename);
-
         is_recording = true;
     }
 
