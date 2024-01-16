@@ -19,6 +19,9 @@ namespace cluster{
         int hgagc = 0;
     };
     class WBDdecoder{
+        private:
+        MajorFrame wbdwip;
+        
         public: 
         std::vector<MajorFrame> work(uint8_t *frm);
     };

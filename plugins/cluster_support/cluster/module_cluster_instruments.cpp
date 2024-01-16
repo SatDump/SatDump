@@ -9,6 +9,8 @@
 #include "products/products.h"
 #include "products/dataset.h"
 #include "common/simple_deframer.h"
+#include "instruments/wbd_decoder.h"
+#include "common/audio/audio_sink.h"
 
 namespace cluster
 {
@@ -21,8 +23,11 @@ namespace cluster
 
         void CLUSTERInstrumentsDecoderModule::process()
         {
+            if (input_data_type == DATA_FILE)
             filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
+            std::ifstream data_in;
+            if (input_data_type == DATA_FILE)
+            data_in = std::ifstream(d_input_file, std::ios::binary);
 
             logger->info("Using input frames " + d_input_file);
 
@@ -35,12 +40,28 @@ namespace cluster
             def::SimpleDeframer wbddeframer(0xFAF334, 24, 8768, 0);
 
 
-             std::ofstream output("file.ccsds");
+            std::ofstream output("file.ccsds");
+            WBDdecoder wbddecode;
 
-            while (!data_in.eof())
+
+            bool enable_audio = false;
+            std::shared_ptr<audio::AudioSink> audio_sink;
+                if (input_data_type != DATA_FILE && audio::has_sink())
             {
+                enable_audio = true;
+                audio_sink = audio::get_default_sink();
+                audio_sink->set_samplerate(27443);
+                audio_sink->start();
+            }            
+
+            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            {
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)&cadu, 1279);
+                else
+                    input_fifo->read((uint8_t *)&cadu, 1279);
+
                 // Read buffer
-                data_in.read((char *)&cadu, 1279);
 
                 // Parse this transport frame
                 ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
@@ -55,7 +76,22 @@ namespace cluster
                     {
                         std::vector<std::vector<uint8_t>> minorframes = wbddeframer.work(pkt.payload.data(), pkt.payload.size());
                         for(auto &frm : minorframes){
-                            output.write((char *)frm.data(),frm.size());
+                            std::vector<MajorFrame> majorframes = wbddecode.work(frm.data());
+                            for(auto &majorframe : majorframes){
+                                int16_t audiobuf[4352];
+                                for(int i = 0; i < 4352; i++){
+                                    audiobuf[i] = (int(majorframe.payload[i]) - 127) * 255;
+                                }
+
+                                if(enable_audio){
+                                    audio_sink->push_samples(audiobuf,4352);
+                                }
+                                if(majorframe.VCXO == 0 && majorframe.antennaselect == 0){
+                                     output.write((char *)majorframe.payload.data(),majorframe.payload.size());
+                                     
+
+                                }
+                            }
                         }
                     }
                 }
@@ -67,6 +103,7 @@ namespace cluster
                     logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
+            if (input_data_type == DATA_FILE)
 
             data_in.close();
 
