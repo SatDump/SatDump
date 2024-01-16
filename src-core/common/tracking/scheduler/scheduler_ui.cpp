@@ -1,7 +1,9 @@
 #include "scheduler.h"
 #include "logger.h"
-#include "core/style.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_stdlib.h"
+#include "core/style.h"
+#include "common/utils.h"
 #include "common/widgets/frequency_input.h"
 
 namespace satdump

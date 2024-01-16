@@ -1,4 +1,5 @@
 #include "viewer.h"
+#include "imgui/imgui_stdlib.h"
 #include "common/map/map_drawer.h"
 #include "common/projection/reprojector.h"
 #include "logger.h"
