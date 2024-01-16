@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
     io.IniFilename = NULL;
 
     logger->debug("Starting with OpenGL %s", (char *)glGetString(GL_VERSION));
+    logger->debug("Max texture size: %zu", maxTextureSize);
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
