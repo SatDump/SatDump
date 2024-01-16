@@ -88,9 +88,9 @@ int main_autotrack(int argc, char *argv[])
                 char cmp_buff1[100];
                 char cmp_buff2[100];
 
-                snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
+                snprintf(cmp_buff1, sizeof(cmp_buff1), "%" PRIu64, hdl_dev_id);
                 std::string cmp1 = cmp_buff1;
-                snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
+                snprintf(cmp_buff2, sizeof(cmp_buff2), "%" PRIu64, src.unique_id);
                 std::string cmp2 = cmp_buff2;
                 if (cmp1 == cmp2)
 #else
@@ -325,7 +325,7 @@ int main_autotrack(int argc, char *argv[])
         {
             rotator_handler->set_settings(settings["tracking"]["rotator_cfg"]);
         }
-        catch (std::exception &e)
+        catch (std::exception &)
         {
         }
 

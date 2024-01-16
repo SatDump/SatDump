@@ -37,9 +37,9 @@ void HackRFSink::set_others()
     if (!is_started)
         return;
 
-    int set_to = manual_bandwidth ? manual_bw_value : current_samplerate;
-    hackrf_set_baseband_filter_bandwidth(hackrf_dev_obj, set_to);
-    logger->debug("Set HackRF filter bandwidth to %d", set_to);
+    uint64_t set_to = manual_bandwidth ? manual_bw_value : current_samplerate;
+    hackrf_set_baseband_filter_bandwidth(hackrf_dev_obj, (uint32_t)set_to);
+    logger->debug("Set HackRF filter bandwidth to %" PRIu64, set_to);
 }
 
 void HackRFSink::set_settings(nlohmann::json settings)
