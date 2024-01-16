@@ -26,7 +26,7 @@ protected:
 
     int lna_gain = 0;
     int vga_gain = 0;
-    int manual_bw_value = 0;
+    uint64_t manual_bw_value = 0;
 
     bool amp_enabled = false;
     bool bias_enabled = false;

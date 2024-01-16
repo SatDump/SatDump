@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "logger.h"
 #include "core/plugin.h"
+#include "common/utils.h"
 
 namespace satdump
 {
