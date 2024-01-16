@@ -71,6 +71,7 @@ namespace lrit
                 {
                     logger->error("LRIT CRC is invalid... Skipping.");
                     current_file.file_in_progress = false;
+                    std::vector<uint8_t>().swap(current_file.lrit_data);
                 }
                 continue;
             }
@@ -99,6 +100,7 @@ namespace lrit
                     processLRITData(current_file, pkt);
                     finalizeLRITData(current_file);
                     current_file.file_in_progress = false;
+                    std::vector<uint8_t>().swap(current_file.lrit_data);
                 }
             }
 

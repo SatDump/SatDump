@@ -28,12 +28,19 @@ namespace goes
 
             // Not really necessary, but good to be safe
             if (ch2.height() > 0)
-                ch13.resize(ch2.width(), ch2.height());
+            {
+                if(ch13.height() != ch2.height())
+                {
+                    ch13.resize(ch2.width(), ch2.height());
+                }
+            }
             else
+            {
                 ch2.resize(ch13.width(), ch13.height());
+            }
 
-            if(!hasData || falsecolor.width() != ch2.width())
-                falsecolor = image::Image<uint8_t>(ch2.width(), ch2.height(), 3); // Init image
+
+            falsecolor.init(ch2.width(), ch2.height(), 3); // Init image
 
             for (size_t i = 0; i < ch2.width() * ch2.height(); i++)
             {
