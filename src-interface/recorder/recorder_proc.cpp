@@ -66,6 +66,7 @@ namespace satdump
     void RecorderApplication::start()
     {
         set_frequency(frequency_hz);
+
         try
         {
             current_samplerate = source_ptr->get_samplerate();

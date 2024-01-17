@@ -132,7 +132,6 @@ int main_autotrack(int argc, char *argv[])
     // Attempt to start the source and splitter
     try
     {
-        source_ptr->start();
         splitter = std::make_unique<dsp::SplitterBlock>(source_ptr->output_stream);
         splitter->set_main_enabled(false);
         splitter->add_output("record");
@@ -154,12 +153,8 @@ int main_autotrack(int argc, char *argv[])
             logger->critical("FFT GOOD!");
         }
 
-        splitter->start();
-
         if (parameters.contains("fft_enable"))
-        {
             fft->start();
-        }
     }
     catch (std::exception &e)
     {
@@ -262,6 +257,8 @@ int main_autotrack(int argc, char *argv[])
     // object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
 
     // Init scheduler
+    bool source_started = false;
+
     auto_scheduler.eng_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
         // logger->critical(obj.norad);
@@ -278,6 +275,22 @@ int main_autotrack(int argc, char *argv[])
 
         if (obj.live || obj.record)
         {
+            if (!source_started)
+            {
+                try
+                {
+                    logger->info("Starting source...");
+                    source_ptr->start();
+                    splitter->input_stream = source_ptr->output_stream;
+                    splitter->start();
+                    source_started = true;
+                }
+                catch (std::runtime_error &e)
+                {
+                    logger->error("%s", e.what());
+                }
+            }
+
             source_ptr->set_frequency(obj.frequency);
         }
 
@@ -299,6 +312,13 @@ int main_autotrack(int argc, char *argv[])
             logger->error("Recording Not Implemented Yet!"); // stop_recording();
         if (obj.live)
             stop_processing();
+        if (source_started && autotrack_cfg.stop_sdr_when_idle)
+        {
+            logger->info("Stopping source...");
+            splitter->stop_tmp();
+            source_ptr->stop();
+            source_started = false;
+        }
     };
 
     auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);
@@ -313,6 +333,27 @@ int main_autotrack(int argc, char *argv[])
     auto_scheduler.setTracked(enabled_satellites);
     object_tracker.setRotatorConfig(rotator_algo_cfg);
     auto_scheduler.setMinElevation(autotrack_min_elevation);
+
+    auto_scheduler.autotrack_cfg = getValueOrDefault<satdump::AutoTrackCfg>(settings["tracking"]["autotrack_cfg"], satdump::AutoTrackCfg());
+
+    logger->critical(auto_scheduler.autotrack_cfg.stop_sdr_when_idle);
+
+    // If needed, start the SDR
+    try
+    {
+        if (!auto_scheduler.autotrack_cfg.stop_sdr_when_idle)
+        {
+            source_ptr->start();
+            splitter->input_stream = source_ptr->output_stream;
+            splitter->start();
+            source_started = true;
+        }
+    }
+    catch (std::exception &e)
+    {
+        logger->error("Fatal error running device : " + std::string(e.what()));
+        return 1;
+    }
 
     // Rotator
     std::shared_ptr<rotator::RotatorHandler> rotator_handler;
@@ -378,7 +419,7 @@ int main_autotrack(int argc, char *argv[])
                 std::vector<uint8_t> vec = fft_plot->drawImg(512, 512).save_jpeg_mem();
                 return vec;
             };
-        webserver::handle_callback_html = [&selected_src, &parameters, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx](std::string uri) -> std::string
+        webserver::handle_callback_html = [&selected_src, &parameters, &live_pipeline, &object_tracker, &source_ptr, &live_pipeline_mtx, &source_started](std::string uri) -> std::string
         {
             if (uri == "/status")
             {
@@ -422,6 +463,9 @@ int main_autotrack(int argc, char *argv[])
 
                 std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
+                                   "<p>Started: <span class=\"fakeinput\">" +
+                                   std::string(source_started ? "YES" : "NO") +
+                                   "</span></p>" +
                                    "<p>Sample rate: <span class=\"fakeinput\">" +
                                    std::to_string(source_ptr->get_samplerate() / 1e6) +
                                    "</span> Msps</p>" +
@@ -546,15 +590,23 @@ int main_autotrack(int argc, char *argv[])
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    stop_processing();
-
     // Stop cleanly
-    source_ptr->stop();
-    splitter->stop();
-    source_ptr->close();
-
     if (parameters.contains("http_server"))
         webserver::stop();
+
+    stop_processing();
+    splitter->input_stream = std::make_shared<dsp::stream<complex_t>>();
+    splitter->stop();
+    if (parameters.contains("fft_enable"))
+        fft->stop();
+
+    if (source_started)
+    {
+        source_ptr->stop();
+        source_started = false;
+    }
+
+    source_ptr->close();
 
     general_thread_pool.stop();
     for (int i = 0; i < general_thread_pool.size(); i++)
