@@ -259,12 +259,12 @@ int main_autotrack(int argc, char *argv[])
     // Init scheduler
     bool source_started = false;
 
-    auto_scheduler.eng_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass, satdump::TrackedObject obj)
+    auto_scheduler.eng_callback = [&](satdump::AutoTrackCfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
         // logger->critical(obj.norad);
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
     };
-    auto_scheduler.aos_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass pass, satdump::TrackedObject obj)
+    auto_scheduler.aos_callback = [&](satdump::AutoTrackCfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
 
@@ -306,7 +306,7 @@ int main_autotrack(int argc, char *argv[])
             logger->error("Recording Not Implemented Yet!"); // start_recording();
         }
     };
-    auto_scheduler.los_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass pass, satdump::TrackedObject obj)
+    auto_scheduler.los_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
         if (obj.record)
             logger->error("Recording Not Implemented Yet!"); // stop_recording();
@@ -335,8 +335,7 @@ int main_autotrack(int argc, char *argv[])
     auto_scheduler.setMinElevation(autotrack_min_elevation);
 
     auto_scheduler.autotrack_cfg = getValueOrDefault<satdump::AutoTrackCfg>(settings["tracking"]["autotrack_cfg"], satdump::AutoTrackCfg());
-
-    logger->critical(auto_scheduler.autotrack_cfg.stop_sdr_when_idle);
+    logger->info("Stop SDR when Idle: %d", auto_scheduler.autotrack_cfg.stop_sdr_when_idle);
 
     // If needed, start the SDR
     try
@@ -415,7 +414,7 @@ int main_autotrack(int argc, char *argv[])
                     fft_is_enabled = true;
                     logger->trace("Enabling FFT");
                 }
-                last_fft_access = time(0);
+                last_fft_access = time(nullptr);
                 std::vector<uint8_t> vec = fft_plot->drawImg(512, 512).save_jpeg_mem();
                 return vec;
             };
@@ -431,7 +430,7 @@ int main_autotrack(int argc, char *argv[])
                 std::string los_in;
                 std::string fft;
 
-                int random = rand();
+                time_t cache_buster = time(nullptr);
 
                 if (status["rotator_engaged"].get<bool>() == true)
                     rot_engaged = "<span class=\"fakeinput true\">engaged</span>";
@@ -459,7 +458,7 @@ int main_autotrack(int argc, char *argv[])
                 }
 
                 if (parameters.contains("fft_enable"))
-                    fft = (std::string) "<h2>FFT</h2><img src=\"fft.jpeg?r=" + std::to_string(random) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
+                    fft = (std::string) "<h2>FFT</h2><img src=\"fft.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
 
                 std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
@@ -473,7 +472,7 @@ int main_autotrack(int argc, char *argv[])
                                    std::to_string(source_ptr->get_frequency() / 1e6) +
                                    "</span> MHz</p>" +
                                    "<h2>Object Tracker</h2>" +
-                                   "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(random) + "\" width=256 height=256/></div>" +
+                                   "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(cache_buster) + "\" width=256 height=256/></div>" +
                                    "<p>Next AOS time: <span class=\"fakeinput\">" +
                                    timestamp_to_string(status["next_aos_time"].get<double>()) +
                                    "</span>" +
@@ -591,7 +590,7 @@ int main_autotrack(int argc, char *argv[])
     }
 
     // Stop cleanly
-    if (parameters.contains("http_server"))
+    if (settings.contains("http_server"))
         webserver::stop();
 
     stop_processing();
