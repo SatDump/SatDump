@@ -27,7 +27,6 @@ namespace cluster
             int param_convfrq = 0;
             int param_band = 0;
 
-
         public:
             CLUSTERInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
