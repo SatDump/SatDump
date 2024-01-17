@@ -229,3 +229,4 @@ namespace cluster
         }
     } // namespace amsu
 } // namespace metop
+// For Michal B. : This is what i am doing in your classes instead of boring python tasks :) -RS
