@@ -37,7 +37,7 @@ namespace cluster
             // Demuxers
             ccsds::ccsds_standard::Demuxer demuxer_vcid1(1101, false);
 
-            std::ofstream output("file.ccsds");
+            std::ofstream output(d_output_file_hint + "/file.ccsds", std::ios::binary);
             def::SimpleDeframer wbddeframer(0xFAF334, 24, 8768, 0);
             WBDdecoder wbddecode;
 
