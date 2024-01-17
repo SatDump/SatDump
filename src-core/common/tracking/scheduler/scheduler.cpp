@@ -210,14 +210,4 @@ namespace satdump
         autotrack_min_elevation = v;
         upcoming_satellite_passes_mtx.unlock();
     }
-
-    bool AutoTrackScheduler::getStopIdleSource()
-    {
-        return stop_idle_source;
-    }
-
-    void AutoTrackScheduler::setStopIdleSource(bool v)
-    {
-        stop_idle_source = v;
-    }
 }

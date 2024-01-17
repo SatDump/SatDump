@@ -40,7 +40,6 @@ int main_autotrack(int argc, char *argv[])
     nlohmann::json settings = loadJsonFile(argv[2]);
     nlohmann::json parameters = settings["parameters"];
     std::string output_folder = settings["output_folder"];
-    bool source_started = !getValueOrDefault(settings["stop_idle_source"], false);
 
     // Init SatDump
     satdump::initSatdump();
@@ -133,6 +132,7 @@ int main_autotrack(int argc, char *argv[])
     // Attempt to start the source and splitter
     try
     {
+        source_ptr->start();
         splitter = std::make_unique<dsp::SplitterBlock>(source_ptr->output_stream);
         splitter->set_main_enabled(false);
         splitter->add_output("record");
@@ -154,14 +154,11 @@ int main_autotrack(int argc, char *argv[])
             logger->critical("FFT GOOD!");
         }
 
-        if (parameters.contains("fft_enable"))
-            fft->start();
+        splitter->start();
 
-        if (source_started)
+        if (parameters.contains("fft_enable"))
         {
-            source_ptr->start();
-            splitter->input_stream = source_ptr->output_stream;
-            splitter->start();
+            fft->start();
         }
     }
     catch (std::exception &e)
@@ -169,10 +166,6 @@ int main_autotrack(int argc, char *argv[])
         logger->error("Fatal error running device : " + std::string(e.what()));
         return 1;
     }
-
-    // Tracker vars
-    satdump::ObjectTracker object_tracker(false); // TODO
-    satdump::AutoTrackScheduler auto_scheduler;
 
     // Live pipeline stuff
     std::mutex live_pipeline_mtx;
@@ -254,6 +247,9 @@ int main_autotrack(int argc, char *argv[])
     };
 
     // Init object tracker & scheduler
+    satdump::ObjectTracker object_tracker(false); // TODO
+    satdump::AutoTrackScheduler auto_scheduler;
+
     double qth_lon = settings["qth"]["lon"];
     double qth_lat = settings["qth"]["lat"];
     double qth_alt = settings["qth"]["alt"];
@@ -266,13 +262,12 @@ int main_autotrack(int argc, char *argv[])
     // object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
 
     // Init scheduler
-    auto_scheduler.setStopIdleSource(!source_started);
     auto_scheduler.eng_callback = [&](satdump::SatellitePass, satdump::TrackedObject obj)
     {
         // logger->critical(obj.norad);
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
     };
-    auto_scheduler.aos_callback = [&](satdump::SatellitePass, satdump::TrackedObject obj)
+    auto_scheduler.aos_callback = [&](satdump::SatellitePass pass, satdump::TrackedObject obj)
     {
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
 
@@ -284,23 +279,6 @@ int main_autotrack(int argc, char *argv[])
         if (obj.live || obj.record)
         {
             source_ptr->set_frequency(obj.frequency);
-            if (!source_started)
-            {
-                try
-                {
-                    logger->info("Starting source...");
-                    source_ptr->start();
-                    splitter->input_stream = source_ptr->output_stream;
-                    splitter->start();
-                    source_started = true;
-                }
-                catch (std::runtime_error& e)
-                {
-                    logger->error("%s", e.what());
-                    live_pipeline_mtx.unlock();
-                    return;
-                }
-            }
         }
 
         if (obj.live)
@@ -315,20 +293,12 @@ int main_autotrack(int argc, char *argv[])
             logger->error("Recording Not Implemented Yet!"); // start_recording();
         }
     };
-    auto_scheduler.los_callback = [&](satdump::SatellitePass, satdump::TrackedObject obj)
+    auto_scheduler.los_callback = [&](satdump::SatellitePass pass, satdump::TrackedObject obj)
     {
         if (obj.record)
             logger->error("Recording Not Implemented Yet!"); // stop_recording();
         if (obj.live)
             stop_processing();
-
-        if (source_started && auto_scheduler.getStopIdleSource())
-        {
-            logger->info("Stopping source...");
-            splitter->stop_tmp();
-            source_ptr->stop();
-            source_started = false;
-        }
     };
 
     auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);
@@ -579,22 +549,15 @@ int main_autotrack(int argc, char *argv[])
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    // Stop cleanly
-    if (settings.contains("http_server"))
-        webserver::stop();
-
     stop_processing();
-    splitter->input_stream = std::make_shared<dsp::stream<complex_t>>();
-    splitter->stop();
-    if (parameters.contains("fft_enable"))
-        fft->stop();
 
-    if (source_started)
-    {
-        source_ptr->stop();
-        source_started = false;
-    }
+    // Stop cleanly
+    source_ptr->stop();
+    splitter->stop();
     source_ptr->close();
+
+    if (parameters.contains("http_server"))
+        webserver::stop();
 
     general_thread_pool.stop();
     for (int i = 0; i < general_thread_pool.size(); i++)

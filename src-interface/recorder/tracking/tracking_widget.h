@@ -41,7 +41,6 @@ namespace satdump
             config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = auto_scheduler.getTracked();
             config::main_cfg["user"]["recorder_tracking"]["rotator_algo"] = object_tracker.getRotatorConfig();
             config::main_cfg["user"]["recorder_tracking"]["min_elevation"] = auto_scheduler.getMinElevation();
-            config::main_cfg["user"]["recorder_tracking"]["stop_idle_source"] = auto_scheduler.getStopIdleSource();
             if (rotator_handler)
                 config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()] = rotator_handler->get_settings();
 
@@ -57,12 +56,10 @@ namespace satdump
                 if (config::main_cfg["user"]["recorder_tracking"].contains("rotator_algo"))
                     rotator_algo_cfg = config::main_cfg["user"]["recorder_tracking"]["rotator_algo"];
                 int autotrack_min_elevation = getValueOrDefault<int>(config::main_cfg["user"]["recorder_tracking"]["min_elevation"], 0);
-                bool stop_idle_source = getValueOrDefault<bool>(config::main_cfg["user"]["recorder_tracking"]["stop_idle_source"], false);
 
                 auto_scheduler.setTracked(enabled_satellites);
                 object_tracker.setRotatorConfig(rotator_algo_cfg);
                 auto_scheduler.setMinElevation(autotrack_min_elevation);
-                auto_scheduler.setStopIdleSource(stop_idle_source);
             }
         }
 
@@ -72,7 +69,5 @@ namespace satdump
 
         void render();
         void renderConfig();
-
-        bool getStopIdleSource();
     };
 }
