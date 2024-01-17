@@ -84,6 +84,7 @@ namespace satdump
 
     private:
         float autotrack_min_elevation = 0;
+        bool stop_idle_source = false;
 
     public:
         AutoTrackScheduler();
@@ -98,6 +99,9 @@ namespace satdump
 
         float getMinElevation();
         void setMinElevation(float v);
+
+        bool getStopIdleSource();
+        void setStopIdleSource(bool v);
 
         void renderAutotrackConfig(bool light_theme, double curr_time);
     };

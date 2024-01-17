@@ -389,6 +389,8 @@ namespace satdump
                     stop_recording();
                 if (obj.live)
                     stop_processing();
+                if (tracking_widget->getStopIdleSource() && is_started)
+                    stop();
             };
         }
     }

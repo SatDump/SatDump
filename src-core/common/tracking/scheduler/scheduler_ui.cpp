@@ -97,6 +97,9 @@ namespace satdump
         ImGui::Spacing();
         ImGui::SetNextItemWidth(150 * ui_scale);
         ImGui::InputFloat("Minimum Elevation", &autotrack_min_elevation);
+        ImGui::SameLine();
+        ImGui::Checkbox("Stop Source at LOS", &stop_idle_source);
+
         if (ImGui::Button("Update Passes"))
         {
             updateAutotrackPasses(curr_time);

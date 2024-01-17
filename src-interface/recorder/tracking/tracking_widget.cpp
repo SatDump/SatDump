@@ -32,7 +32,7 @@ namespace satdump
             {
                 rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
             }
         }
@@ -115,7 +115,7 @@ namespace satdump
                 {
                     rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
                 }
-                catch (std::exception &e)
+                catch (std::exception &)
                 {
                 }
             }
@@ -165,5 +165,10 @@ namespace satdump
 
             ImGui::End();
         }
+    }
+
+    bool TrackingWidget::getStopIdleSource()
+    {
+        return auto_scheduler.getStopIdleSource();
     }
 }
