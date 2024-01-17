@@ -66,10 +66,11 @@ namespace satdump
     void RecorderApplication::start()
     {
         set_frequency(frequency_hz);
+
         try
         {
             current_samplerate = source_ptr->get_samplerate();
-            if(current_samplerate == 0)
+            if (current_samplerate == 0)
                 throw std::runtime_error("Samplerate not set!");
 
             source_ptr->start();
@@ -347,7 +348,7 @@ namespace satdump
         {
             tracking_widget = new TrackingWidget();
 
-            tracking_widget->aos_callback = [this](SatellitePass, TrackedObject obj)
+            tracking_widget->aos_callback = [this](AutoTrackCfg, SatellitePass, TrackedObject obj)
             {
                 if (obj.live)
                     stop_processing();
@@ -383,12 +384,14 @@ namespace satdump
                 }
             };
 
-            tracking_widget->los_callback = [this](SatellitePass, TrackedObject obj)
+            tracking_widget->los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
                 if (obj.record)
                     stop_recording();
                 if (obj.live)
                     stop_processing();
+                if (autotrack_cfg.stop_sdr_when_idle)
+                    stop();
             };
         }
     }

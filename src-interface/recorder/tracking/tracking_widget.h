@@ -23,8 +23,8 @@ namespace satdump
         double qth_alt = 0;
 
     public: // Handlers
-        std::function<void(SatellitePass, TrackedObject)> aos_callback = [](SatellitePass, TrackedObject) {};
-        std::function<void(SatellitePass, TrackedObject)> los_callback = [](SatellitePass, TrackedObject) {};
+        std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> aos_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
+        std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> los_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
 
     private:
         ObjectTracker object_tracker = ObjectTracker(true);
@@ -44,6 +44,8 @@ namespace satdump
             if (rotator_handler)
                 config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()] = rotator_handler->get_settings();
 
+            config::main_cfg["user"]["recorder_tracking"]["autotrack_cfg"] = auto_scheduler.autotrack_cfg;
+
             config::saveUserConfig();
         }
 
@@ -60,6 +62,8 @@ namespace satdump
                 auto_scheduler.setTracked(enabled_satellites);
                 object_tracker.setRotatorConfig(rotator_algo_cfg);
                 auto_scheduler.setMinElevation(autotrack_min_elevation);
+
+                auto_scheduler.autotrack_cfg = getValueOrDefault<AutoTrackCfg>(config::main_cfg["user"]["recorder_tracking"]["autotrack_cfg"], AutoTrackCfg());
             }
         }
 
