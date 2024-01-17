@@ -11,6 +11,8 @@
 #include "common/simple_deframer.h"
 #include "instruments/wbd_decoder.h"
 #include "common/audio/audio_sink.h"
+#include "common/dsp/io/wav_writer.h"
+
 
 namespace cluster
 {
@@ -37,7 +39,7 @@ namespace cluster
             // Demuxers
             ccsds::ccsds_standard::Demuxer demuxer_vcid1(1101, false);
 
-            std::ofstream output(d_output_file_hint + "/file.ccsds", std::ios::binary);
+            std::ofstream output(d_output_file_hint + "_wbd.frm", std::ios::binary);
             def::SimpleDeframer wbddeframer(0xFAF334, 24, 8768, 0);
             WBDdecoder wbddecode;
 
@@ -52,6 +54,27 @@ namespace cluster
                 audio_sink->set_samplerate(27443);
                 audio_sink->start();
             }
+
+            // Buffers to wav...for all the antennas
+            std::ofstream out_antenna_Ez(d_output_file_hint + "_Ez.wav", std::ios::binary);
+            int final_data_size_ant_Ez = 0;
+            dsp::WavWriter wave_writer_Ez(out_antenna_Ez);
+                    wave_writer_Ez.write_header(27443, 1);
+
+            std::ofstream out_antenna_Bx(d_output_file_hint + "_Bx.wav", std::ios::binary);
+            int final_data_size_ant_Bx = 0;
+            dsp::WavWriter wave_writer_Bx(out_antenna_Bx);
+                    wave_writer_Bx.write_header(27443, 1);
+
+            std::ofstream out_antenna_By(d_output_file_hint + "_By.wav", std::ios::binary);
+            int final_data_size_ant_By = 0;
+            dsp::WavWriter wave_writer_By(out_antenna_By);
+                    wave_writer_By.write_header(27443, 1);
+            
+            std::ofstream out_antenna_Ey(d_output_file_hint + "_Ey.wav", std::ios::binary);
+            int final_data_size_ant_Ey = 0;
+            dsp::WavWriter wave_writer_Ey(out_antenna_Ey);
+                    wave_writer_Ey.write_header(27443, 1);
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -81,10 +104,36 @@ namespace cluster
                                 if (enable_audio)
                                     audio_sink->push_samples(audio_buffer, 4352);
 
-                                if (majorframe.VCXO == 0 && majorframe.antennaselect == 0)
+                                if (majorframe.VCXO == 0)
                                 {
                                     output.write((char *)majorframe.payload.data(), majorframe.payload.size());
+                                    if (majorframe.antennaselect == 0)
+                                    {
+                                        out_antenna_Ez.write((char *) audio_buffer, 4352*sizeof(int16_t));
+                                        final_data_size_ant_Ez += 4352*sizeof(int16_t);
+                                    }
+                                    if (majorframe.antennaselect == 1)
+                                    {
+                                        out_antenna_Bx.write((char *) audio_buffer, 4352*sizeof(int16_t));
+                                        final_data_size_ant_Bx += 4352*sizeof(int16_t);
+                                    }
+                                    if (majorframe.antennaselect == 2)
+                                    {
+                                        out_antenna_By.write((char *) audio_buffer, 4352*sizeof(int16_t));
+                                        final_data_size_ant_By += 4352*sizeof(int16_t);
+                                    }
+                                    if (majorframe.antennaselect == 3)
+                                    {
+                                        out_antenna_Ey.write((char *) audio_buffer, 4352*sizeof(int16_t));
+                                        final_data_size_ant_Ey += 4352*sizeof(int16_t);
+                                    }
                                 }
+                                param_antenna = majorframe.antennaselect;
+                                param_convfrq = majorframe.convfreq;
+                                param_band = majorframe.outputmode;
+                                param_VCXO = majorframe.VCXO;
+                                param_OBDH = majorframe.OBDH;
+                                param_commands = majorframe.commands;
                             }
                         }
                     }
@@ -97,6 +146,11 @@ namespace cluster
                     logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
                 }
             }
+            wave_writer_Ez.finish_header(final_data_size_ant_Ez);
+            wave_writer_Bx.finish_header(final_data_size_ant_Bx);
+            wave_writer_By.finish_header(final_data_size_ant_By);
+            wave_writer_Ey.finish_header(final_data_size_ant_Ey);
+
 
             if (input_data_type == DATA_FILE)
                 data_in.close();
@@ -105,6 +159,31 @@ namespace cluster
         void CLUSTERInstrumentsDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("Cluster Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+            
+            ImGui::Text("Antenna:"); 
+            ImGui::SameLine();
+            ImGui::Text("%d", param_antenna);
+
+            ImGui::Text("Conversion Freq:"); 
+            ImGui::SameLine();
+            ImGui::Text("%d", param_convfrq);
+
+            //ImGui::Text("Freq Band:"); 
+            //ImGui::SameLine();
+            //ImGui::Text("%d", param_band);
+
+            ImGui::Text("VCXO:"); 
+            ImGui::SameLine();
+            ImGui::Text("%d", param_VCXO);
+
+            ImGui::Text("OBDH:"); 
+            ImGui::SameLine();
+            ImGui::Text("%d", param_OBDH);
+
+            ImGui::Text("CMD:"); 
+            ImGui::SameLine();
+            ImGui::Text("%d", param_commands);
+            
             // /
             // /if (ImGui::BeginTable("##clusterinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             // /{
