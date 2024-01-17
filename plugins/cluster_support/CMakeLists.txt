@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(cluster_support)
 
-
 file(GLOB_RECURSE cluster_support_CPPS *.cpp)
 add_library(cluster_support SHARED ${cluster_support_CPPS})
 target_link_libraries(cluster_support PUBLIC satdump_core)

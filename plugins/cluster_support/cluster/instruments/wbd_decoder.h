@@ -2,8 +2,10 @@
 #include <vector>
 #include <cstdint>
 
-namespace cluster{
-    struct MajorFrame{
+namespace cluster
+{
+    struct MajorFrame
+    {
         std::vector<uint8_t> payload;
         bool VCXO = false;
         bool ADpower = false;
@@ -18,11 +20,13 @@ namespace cluster{
         int lwagc = 0;
         int hgagc = 0;
     };
-    class WBDdecoder{
-        private:
+
+    class WBDdecoder
+    {
+    private:
         MajorFrame wbdwip;
-        
-        public: 
+
+    public:
         std::vector<MajorFrame> work(uint8_t *frm);
     };
 }

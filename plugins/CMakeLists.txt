@@ -213,7 +213,7 @@ if(PLUGIN_DVB OR PLUGINS_ALL)
     add_subdirectory(dvb_support)
 endif()
 
-option(PLUGIN_CLUSTER "Enable the CLUSTER-II FM support plugin" OFF)
+option(PLUGIN_CLUSTER "Enable the CLUSTER support plugin" OFF)
 
 if(PLUGIN_CLUSTER OR PLUGINS_ALL)
     add_subdirectory(cluster_support)

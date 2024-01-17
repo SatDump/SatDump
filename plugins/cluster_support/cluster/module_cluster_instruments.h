@@ -15,10 +15,10 @@ namespace cluster
             std::atomic<uint64_t> progress;
 
             // Readers
-            //cips::CIPSReader cips_readers[4];
-            //totally not stolen AIM decoder.....
+            // cips::CIPSReader cips_readers[4];
+            // totally not stolen AIM decoder.....
             // Statuses
-            //instrument_status_t cips_status[4] = {DECODING, DECODING, DECODING, DECODING};
+            // instrument_status_t cips_status[4] = {DECODING, DECODING, DECODING, DECODING};
 
         public:
             CLUSTERInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
