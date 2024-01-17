@@ -213,6 +213,12 @@ if(PLUGIN_DVB OR PLUGINS_ALL)
     add_subdirectory(dvb_support)
 endif()
 
+option(PLUGIN_CLUSTER "Enable the CLUSTER support plugin" OFF)
+
+if(PLUGIN_CLUSTER OR PLUGINS_ALL)
+    add_subdirectory(cluster_support)
+endif()
+
 # add_subdirectory(sample)
 option(PLUGIN_GVAR_EXTENDED "Enable the GVAR Extended plugin" OFF)
 

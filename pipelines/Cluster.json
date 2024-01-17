@@ -49,6 +49,10 @@
             [
                 2,
                 0
+            ],
+            [
+                3,
+                0
             ]
         ],
         "work": {
@@ -73,7 +77,10 @@
                     "rs_i": 5,
                     "rs_type": "rs239"
                 }
-            }
+            },
+            "products":{ 
+                "cluster_instruments": {} 
+            } 
         }
     }
 }
