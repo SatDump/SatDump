@@ -43,19 +43,19 @@ namespace satdump
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
 
         // Init scheduler
-        auto_scheduler.eng_callback = [this](SatellitePass, TrackedObject obj)
+        auto_scheduler.eng_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
         {
             object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
             saveConfig();
         };
-        auto_scheduler.aos_callback = [this](SatellitePass pass, TrackedObject obj)
+        auto_scheduler.aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass pass, TrackedObject obj)
         {
-            this->aos_callback(pass, obj);
+            this->aos_callback(autotrack_cfg, pass, obj);
             object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
         };
-        auto_scheduler.los_callback = [this](SatellitePass pass, TrackedObject obj)
+        auto_scheduler.los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass pass, TrackedObject obj)
         {
-            this->los_callback(pass, obj);
+            this->los_callback(autotrack_cfg, pass, obj);
         };
 
         auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);

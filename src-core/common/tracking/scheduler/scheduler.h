@@ -6,6 +6,21 @@
 
 namespace satdump
 {
+    struct AutoTrackCfg
+    {
+        bool stop_sdr_when_idle = false;
+    };
+
+    inline void to_json(nlohmann::ordered_json &j, const AutoTrackCfg &v)
+    {
+        j["stop_sdr_when_idle"] = v.stop_sdr_when_idle;
+    }
+
+    inline void from_json(const nlohmann::ordered_json &j, AutoTrackCfg &v)
+    {
+        v.stop_sdr_when_idle = j["stop_sdr_when_idle"];
+    }
+
     struct TrackedObject
     {
         int norad = -1;
@@ -63,9 +78,11 @@ namespace satdump
         std::string availablesatssearch, selectedsatssearch;
 
     public: // Handlers
-        std::function<void(SatellitePass, TrackedObject)> eng_callback = [](SatellitePass, TrackedObject) {};
-        std::function<void(SatellitePass, TrackedObject)> aos_callback = [](SatellitePass, TrackedObject) {};
-        std::function<void(SatellitePass, TrackedObject)> los_callback = [](SatellitePass, TrackedObject) {};
+        std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> eng_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
+        std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> aos_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
+        std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> los_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
+
+        AutoTrackCfg autotrack_cfg;
 
     private:
         int tracking_sats_menu_selected_1 = 0, tracking_sats_menu_selected_2 = 0;

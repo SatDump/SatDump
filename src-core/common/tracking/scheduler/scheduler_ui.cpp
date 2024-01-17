@@ -97,6 +97,7 @@ namespace satdump
         ImGui::Spacing();
         ImGui::SetNextItemWidth(150 * ui_scale);
         ImGui::InputFloat("Minimum Elevation", &autotrack_min_elevation);
+        ImGui::Checkbox("Stop SDR When IDLE", &autotrack_cfg.stop_sdr_when_idle);
         if (ImGui::Button("Update Passes"))
         {
             updateAutotrackPasses(curr_time);
@@ -223,7 +224,7 @@ namespace satdump
                 ImGui::SetNextItemWidth(100 * ui_scale);
                 ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
                 ImGui::TableSetColumnIndex(1);
-                widgets::FrequencyInput(((std::string)"Hz##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0.75f);
+                widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &cpass.frequency, 0.75f);
                 ImGui::TableSetColumnIndex(2);
                 ImGui::SetNextItemWidth(100 * ui_scale);
                 ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + std::to_string(cpass.norad)).c_str(), &cpass.record);
@@ -267,7 +268,7 @@ namespace satdump
 #endif
 
         upcoming_satellite_passes_mtx.unlock();
-        if(set_engaged)
+        if (set_engaged)
             setEngaged(autotrack_engaged, curr_time);
     }
 }

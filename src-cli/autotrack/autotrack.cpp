@@ -262,12 +262,12 @@ int main_autotrack(int argc, char *argv[])
     // object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
 
     // Init scheduler
-    auto_scheduler.eng_callback = [&](satdump::SatellitePass, satdump::TrackedObject obj)
+    auto_scheduler.eng_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
         // logger->critical(obj.norad);
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
     };
-    auto_scheduler.aos_callback = [&](satdump::SatellitePass pass, satdump::TrackedObject obj)
+    auto_scheduler.aos_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass pass, satdump::TrackedObject obj)
     {
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
 
@@ -293,7 +293,7 @@ int main_autotrack(int argc, char *argv[])
             logger->error("Recording Not Implemented Yet!"); // start_recording();
         }
     };
-    auto_scheduler.los_callback = [&](satdump::SatellitePass pass, satdump::TrackedObject obj)
+    auto_scheduler.los_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass pass, satdump::TrackedObject obj)
     {
         if (obj.record)
             logger->error("Recording Not Implemented Yet!"); // stop_recording();
@@ -417,11 +417,8 @@ int main_autotrack(int argc, char *argv[])
                     aos_in = "";
                 }
 
-                if(parameters.contains("fft_enable"))
+                if (parameters.contains("fft_enable"))
                     fft = (std::string) "<h2>FFT</h2><img src=\"fft.jpeg?r=" + std::to_string(random) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
-
-
-
 
                 std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
