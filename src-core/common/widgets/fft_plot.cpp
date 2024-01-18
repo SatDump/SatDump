@@ -92,7 +92,7 @@ namespace widgets
 
                 window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base_vfo, 3);
 
-                window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 30 * ui_scale},
+                window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 45 * ui_scale},
                                           col_base_vfo,
                                           vfo.first.c_str());
             }

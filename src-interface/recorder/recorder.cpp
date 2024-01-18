@@ -216,7 +216,12 @@ namespace satdump
             last_width = left_width;
 
             ImGui::BeginGroup();
-            float wf_size = recorder_size.y - (((vfo_list.size() > 0 || is_processing) && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
+            float wf_size_offset = 0;
+            if (is_processing && !processing_modules_floating_windows)
+                wf_size_offset = 250 * ui_scale;
+            if (vfo_list.size() > 0)
+                wf_size_offset = 270 * ui_scale;
+            float wf_size = recorder_size.y - wf_size_offset; // + 13 * ui_scale;
 
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
@@ -542,7 +547,7 @@ namespace satdump
 
                     vfos_mtx.unlock();
 
-#if 0
+#if 1
                     if (ImGui::Button("Add Test"))
                     {
                         int idp = 0;
