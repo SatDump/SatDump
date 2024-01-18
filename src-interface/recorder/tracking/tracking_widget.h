@@ -40,11 +40,9 @@ namespace satdump
         {
             config::main_cfg["user"]["recorder_tracking"]["enabled_objects"] = auto_scheduler.getTracked();
             config::main_cfg["user"]["recorder_tracking"]["rotator_algo"] = object_tracker.getRotatorConfig();
-            config::main_cfg["user"]["recorder_tracking"]["min_elevation"] = auto_scheduler.getMinElevation();
+            config::main_cfg["user"]["recorder_tracking"]["autotrack_cfg"] = auto_scheduler.getAutoTrackCfg();
             if (rotator_handler)
                 config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()] = rotator_handler->get_settings();
-
-            config::main_cfg["user"]["recorder_tracking"]["autotrack_cfg"] = auto_scheduler.autotrack_cfg;
 
             config::saveUserConfig();
         }
@@ -57,13 +55,10 @@ namespace satdump
                 nlohmann::json rotator_algo_cfg;
                 if (config::main_cfg["user"]["recorder_tracking"].contains("rotator_algo"))
                     rotator_algo_cfg = config::main_cfg["user"]["recorder_tracking"]["rotator_algo"];
-                int autotrack_min_elevation = getValueOrDefault<int>(config::main_cfg["user"]["recorder_tracking"]["min_elevation"], 0);
 
                 auto_scheduler.setTracked(enabled_satellites);
                 object_tracker.setRotatorConfig(rotator_algo_cfg);
-                auto_scheduler.setMinElevation(autotrack_min_elevation);
-
-                auto_scheduler.autotrack_cfg = getValueOrDefault<AutoTrackCfg>(config::main_cfg["user"]["recorder_tracking"]["autotrack_cfg"], AutoTrackCfg());
+                auto_scheduler.setAutoTrackCfg(getValueOrDefault<AutoTrackCfg>(config::main_cfg["user"]["recorder_tracking"]["autotrack_cfg"], AutoTrackCfg()));
             }
         }
 

@@ -36,5 +36,7 @@ namespace widgets
             values_size = size;
             work_mutex.unlock();
         }
+
+        std::vector<std::pair<std::string, double>> vfo_freqs;
     };
 }

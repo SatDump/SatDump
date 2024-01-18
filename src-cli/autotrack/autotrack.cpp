@@ -328,19 +328,17 @@ int main_autotrack(int argc, char *argv[])
     nlohmann::json rotator_algo_cfg;
     if (settings["tracking"].contains("rotator_algo"))
         rotator_algo_cfg = settings["tracking"]["rotator_algo"];
-    int autotrack_min_elevation = getValueOrDefault<int>(settings["tracking"]["min_elevation"], 0);
 
     auto_scheduler.setTracked(enabled_satellites);
     object_tracker.setRotatorConfig(rotator_algo_cfg);
-    auto_scheduler.setMinElevation(autotrack_min_elevation);
+    auto_scheduler.setAutoTrackCfg(getValueOrDefault<satdump::AutoTrackCfg>(settings["tracking"]["autotrack_cfg"], satdump::AutoTrackCfg()));
 
-    auto_scheduler.autotrack_cfg = getValueOrDefault<satdump::AutoTrackCfg>(settings["tracking"]["autotrack_cfg"], satdump::AutoTrackCfg());
-    logger->info("Stop SDR when Idle: %d", auto_scheduler.autotrack_cfg.stop_sdr_when_idle);
+    logger->info("Stop SDR when Idle: %d", auto_scheduler.getAutoTrackCfg().stop_sdr_when_idle);
 
     // If needed, start the SDR
     try
     {
-        if (!auto_scheduler.autotrack_cfg.stop_sdr_when_idle)
+        if (!auto_scheduler.getAutoTrackCfg().stop_sdr_when_idle)
         {
             source_ptr->start();
             splitter->input_stream = source_ptr->output_stream;

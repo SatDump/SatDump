@@ -79,6 +79,25 @@ namespace widgets
             }
         }
 
+        // Draw VFOs
+        if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
+        {
+            const ImU32 col_base_vfo = ImColor(255, 0, 0, 255);
+
+            for (auto vfo : vfo_freqs)
+            {
+                double vfreq = vfo.second - frequency;
+                float y_level = inner_bb.Max.y - 8 * ui_scale;
+                float x_line = inner_bb.Min.x + (((bandwidth / 2) + vfreq) / bandwidth) * res_w;
+
+                window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base_vfo, 3);
+
+                window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 30 * ui_scale},
+                                          col_base_vfo,
+                                          vfo.first.c_str());
+            }
+        }
+
         // Draw lines
         double fz = (double)values_size / (double)res_w;
         for (int n = 0; n < res_w; n++)

@@ -37,7 +37,7 @@ namespace satdump
         // First, check to see if a source was passed via command line
         if (satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("source"))
         {
-            auto& cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump::config::main_cfg["cli"];
             std::string source = cli_settings["source"];
             for (int i = 0; i < (int)sources.size(); i++)
             {
@@ -53,7 +53,7 @@ namespace satdump
                         sdr_select_id = i;
                         break;
                     }
-                    catch (std::runtime_error& e)
+                    catch (std::runtime_error &e)
                     {
                         logger->error(e.what());
                     }
@@ -76,7 +76,7 @@ namespace satdump
                     sdr_select_id = i;
                     break;
                 }
-                catch (std::runtime_error& e)
+                catch (std::runtime_error &e)
                 {
                     logger->error(e.what());
                     break;
@@ -84,7 +84,7 @@ namespace satdump
             }
         }
 
-        //If no source has been opened yet, open the first possible one
+        // If no source has been opened yet, open the first possible one
         for (int i = 0; sdr_select_id == -1 && i < (int)sources.size(); i++)
         {
             try
@@ -153,7 +153,7 @@ namespace satdump
         // Attempt to apply provided CLI settings
         if (satdump::config::main_cfg.contains("cli"))
         {
-            auto& cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump::config::main_cfg["cli"];
             if (source_ptr)
             {
                 if (cli_settings.contains("samplerate"))
@@ -177,6 +177,13 @@ namespace satdump
 
     RecorderApplication::~RecorderApplication()
     {
+    retry_vfo:
+        for (auto &vfo : vfo_list)
+        {
+            del_vfo(vfo.id);
+            goto retry_vfo;
+        }
+
         stop_processing();
         if (is_started)
             stop();
@@ -209,7 +216,7 @@ namespace satdump
             last_width = left_width;
 
             ImGui::BeginGroup();
-            float wf_size = recorder_size.y - ((is_processing && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
+            float wf_size = recorder_size.y - (((vfo_list.size() > 0 || is_processing) && !processing_modules_floating_windows) ? 250 * ui_scale : 0); // + 13 * ui_scale;
 
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
@@ -301,7 +308,7 @@ namespace satdump
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if(widgets::FrequencyInput("Hz##mainfreq", &frequency_hz))
+                    if (widgets::FrequencyInput("Hz##mainfreq", &frequency_hz))
                         set_frequency(frequency_hz);
 
                     ImGui::Spacing();
@@ -505,6 +512,56 @@ namespace satdump
                     tracking_widget->render();
                 }
 
+                if (ImGui::CollapsingHeader("VFOs"))
+                {
+                    vfos_mtx.lock();
+
+                    if (ImGui::BeginTable("##eosinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("ID");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("Name");
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("Frequency");
+
+                        for (auto &vfo : vfo_list)
+                        {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text("%s", vfo.id.c_str());
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%s", vfo.name.c_str());
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("%s", format_notated(vfo.freq, "Hz").c_str());
+                        }
+
+                        ImGui::EndTable();
+                    }
+
+                    vfos_mtx.unlock();
+
+#if 0
+                    if (ImGui::Button("Add Test"))
+                    {
+                        int idp = 0;
+                        for (int n = 0; n < (int)pipelines.size(); n++)
+                        {
+                            if ("meteor_m2-x_lrpt" == pipelines[n].name)
+                                idp = n;
+                        }
+
+                        add_vfo("meteor_test", "Meteor Test", 137.9e6, idp, {});
+                    }
+
+                    if (ImGui::Button("Del Test"))
+                    {
+                        del_vfo("meteor_test");
+                    }
+#endif
+                }
+
                 if (ImGui::CollapsingHeader("Debug"))
                 {
                     if (constellation_debug == nullptr)
@@ -560,7 +617,68 @@ namespace satdump
             ImGui::EndTable();
         }
 
-        if (is_processing)
+        if (vfo_list.size() > 0 || is_processing)
+        {
+            if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
+            {
+                if (is_processing)
+                {
+                    if (ImGui::BeginTabItem("Offline processing"))
+                    {
+                        float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
+                        float live_width = recorder_size.x + 16 * ui_scale;
+                        float live_height = 250 * ui_scale;
+                        float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
+                        float currentPos = 0;
+                        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
+                        for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
+                        {
+                            ImGui::SetNextWindowPos({currentPos, y_pos});
+                            ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
+                            module->drawUI(false);
+                            currentPos += winwidth;
+
+                            // if (ImGui::GetCurrentContext()->last_window != NULL)
+                            //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
+                            //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
+                        }
+                        ImGui::PopStyleColor();
+                        ImGui::EndTabItem();
+                    }
+                }
+
+                vfos_mtx.lock();
+                for (auto &vfo : vfo_list)
+                {
+                    if (ImGui::BeginTabItem(vfo.id.c_str()))
+                    {
+                        float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
+                        float live_width = recorder_size.x + 16 * ui_scale;
+                        float live_height = 250 * ui_scale;
+                        float winwidth = vfo.live_pipeline->modules.size() > 0 ? live_width / vfo.live_pipeline->modules.size() : live_width;
+                        float currentPos = 0;
+                        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
+                        for (std::shared_ptr<ProcessingModule> &module : vfo.live_pipeline->modules)
+                        {
+                            ImGui::SetNextWindowPos({currentPos, y_pos});
+                            ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
+                            module->drawUI(false);
+                            currentPos += winwidth;
+
+                            // if (ImGui::GetCurrentContext()->last_window != NULL)
+                            //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
+                            //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
+                        }
+                        ImGui::PopStyleColor();
+                        ImGui::EndTabItem();
+                    }
+                }
+                vfos_mtx.unlock();
+
+                ImGui::EndTabBar();
+            }
+        }
+        else if (is_processing)
         {
             if (processing_modules_floating_windows)
             {

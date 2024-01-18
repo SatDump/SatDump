@@ -8,17 +8,26 @@ namespace satdump
 {
     struct AutoTrackCfg
     {
+        float autotrack_min_elevation = 0;
         bool stop_sdr_when_idle = false;
+        bool vfo_mode = false;
     };
 
     inline void to_json(nlohmann::ordered_json &j, const AutoTrackCfg &v)
     {
+        j["autotrack_min_elevation"] = v.autotrack_min_elevation;
         j["stop_sdr_when_idle"] = v.stop_sdr_when_idle;
+        j["vfo_mode"] = v.vfo_mode;
     }
 
     inline void from_json(const nlohmann::ordered_json &j, AutoTrackCfg &v)
     {
-        v.stop_sdr_when_idle = j["stop_sdr_when_idle"];
+        if (j.contains("autotrack_min_elevation"))
+            v.autotrack_min_elevation = j["autotrack_min_elevation"];
+        if (j.contains("stop_sdr_when_idle"))
+            v.stop_sdr_when_idle = j["stop_sdr_when_idle"];
+        if (j.contains("vfo_mode"))
+            v.vfo_mode = j["vfo_mode"];
     }
 
     struct TrackedObject
@@ -67,6 +76,9 @@ namespace satdump
         double qth_alt = 0;
 
     private:
+        AutoTrackCfg autotrack_cfg;
+
+    private:
         bool has_tle = false;
         std::vector<std::string> satoptions;
 
@@ -77,12 +89,12 @@ namespace satdump
 
         std::string availablesatssearch, selectedsatssearch;
 
+        std::vector<int> vfo_mode_norads_vis;
+
     public: // Handlers
         std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> eng_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
         std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> aos_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
         std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> los_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
-
-        AutoTrackCfg autotrack_cfg;
 
     private:
         int tracking_sats_menu_selected_1 = 0, tracking_sats_menu_selected_2 = 0;
@@ -99,9 +111,6 @@ namespace satdump
 
         bool autotrack_pass_has_started = false;
 
-    private:
-        float autotrack_min_elevation = 0;
-
     public:
         AutoTrackScheduler();
         ~AutoTrackScheduler();
@@ -113,8 +122,8 @@ namespace satdump
         std::vector<TrackedObject> getTracked();
         void setTracked(std::vector<TrackedObject> tracked);
 
-        float getMinElevation();
-        void setMinElevation(float v);
+        AutoTrackCfg getAutoTrackCfg();
+        void setAutoTrackCfg(AutoTrackCfg v);
 
         void renderAutotrackConfig(bool light_theme, double curr_time);
     };

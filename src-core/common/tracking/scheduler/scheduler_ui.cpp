@@ -96,7 +96,8 @@ namespace satdump
         ImGui::Separator();
         ImGui::Spacing();
         ImGui::SetNextItemWidth(150 * ui_scale);
-        ImGui::InputFloat("Minimum Elevation", &autotrack_min_elevation);
+        ImGui::Checkbox("VFO Mode", &autotrack_cfg.vfo_mode);
+        ImGui::InputFloat("Minimum Elevation", &autotrack_cfg.autotrack_min_elevation);
         ImGui::Checkbox("Stop SDR When IDLE", &autotrack_cfg.stop_sdr_when_idle);
         if (ImGui::Button("Update Passes"))
         {

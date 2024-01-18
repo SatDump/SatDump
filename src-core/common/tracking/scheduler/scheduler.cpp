@@ -44,40 +44,88 @@ namespace satdump
         {
             upcoming_satellite_passes_mtx.lock();
 
-            if (upcoming_satellite_passes_sel.size() > 0)
+            if (autotrack_cfg.vfo_mode)
             {
-                if (!autotrack_pass_has_started && getTime() > upcoming_satellite_passes_sel[0].aos_time)
+                for (int i = 0; i < upcoming_satellite_passes_sel.size(); i++)
                 {
-                    logger->critical("AOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                    TrackedObject obj;
-                    for (auto &v : enabled_satellites)
-                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
-                            obj = v;
-                    aos_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
-                    autotrack_pass_has_started = true;
+                    auto &pass = upcoming_satellite_passes_sel[i];
+                    if (curr_time > pass.aos_time)
+                    {
+                        auto it2 = std::find_if(vfo_mode_norads_vis.begin(), vfo_mode_norads_vis.end(), [&pass](auto &c)
+                                                { return c == pass.norad; });
+                        if (it2 == vfo_mode_norads_vis.end())
+                        {
+                            vfo_mode_norads_vis.push_back(pass.norad);
+
+                            logger->critical("AOS!!!!!!!!!!!!!! %d", pass.norad);
+                            TrackedObject obj;
+                            for (auto &v : enabled_satellites)
+                                if (v.norad == pass.norad)
+                                    obj = v;
+                            aos_callback(autotrack_cfg, pass, obj);
+                        }
+                    }
+
+                    if (curr_time > pass.los_time)
+                    {
+                        auto it2 = std::find_if(vfo_mode_norads_vis.begin(), vfo_mode_norads_vis.end(), [&pass](auto &c)
+                                                { return c == pass.norad; });
+                        if (it2 != vfo_mode_norads_vis.end())
+                        {
+                            vfo_mode_norads_vis.erase(it2);
+
+                            logger->critical("LOS!!!!!!!!!!!!!! %d", pass.norad);
+                            TrackedObject obj;
+                            for (auto &v : enabled_satellites)
+                                if (v.norad == pass.norad)
+                                    obj = v;
+                            los_callback(autotrack_cfg, pass, obj);
+
+                            upcoming_satellite_passes_sel.erase(upcoming_satellite_passes_sel.begin() + i);
+                            updateAutotrackPasses(curr_time);
+                            upcoming_satellite_passes_mtx.unlock();
+                            return;
+                        }
+                    }
                 }
             }
-
-            if (curr_time > upcoming_satellite_passes_sel[0].los_time && upcoming_satellite_passes_sel.size() > 0)
+            else
             {
-                if (autotrack_pass_has_started)
+                if (upcoming_satellite_passes_sel.size() > 0)
                 {
-                    logger->critical("LOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                    TrackedObject obj;
-                    for (auto &v : enabled_satellites)
-                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
-                            obj = v;
-                    los_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                    if (!autotrack_pass_has_started && curr_time > upcoming_satellite_passes_sel[0].aos_time)
+                    {
+                        logger->critical("AOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
+                        TrackedObject obj;
+                        for (auto &v : enabled_satellites)
+                            if (v.norad == upcoming_satellite_passes_sel[0].norad)
+                                obj = v;
+                        aos_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                        autotrack_pass_has_started = true;
+                    }
                 }
-                autotrack_pass_has_started = false;
-                updateAutotrackPasses(curr_time);
 
+                if (curr_time > upcoming_satellite_passes_sel[0].los_time && upcoming_satellite_passes_sel.size() > 0)
                 {
-                    TrackedObject obj;
-                    for (auto &v : enabled_satellites)
-                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
-                            obj = v;
-                    eng_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                    if (autotrack_pass_has_started)
+                    {
+                        logger->critical("LOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
+                        TrackedObject obj;
+                        for (auto &v : enabled_satellites)
+                            if (v.norad == upcoming_satellite_passes_sel[0].norad)
+                                obj = v;
+                        los_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                    }
+                    autotrack_pass_has_started = false;
+                    updateAutotrackPasses(curr_time);
+
+                    {
+                        TrackedObject obj;
+                        for (auto &v : enabled_satellites)
+                            if (v.norad == upcoming_satellite_passes_sel[0].norad)
+                                obj = v;
+                        eng_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                    }
                 }
             }
 
@@ -118,7 +166,7 @@ namespace satdump
             }
         }
 
-        upcoming_satellite_passes_all = filterPassesByElevation(upcoming_satellite_passes_all, autotrack_min_elevation, 90); // TODO
+        upcoming_satellite_passes_all = filterPassesByElevation(upcoming_satellite_passes_all, autotrack_cfg.autotrack_min_elevation, 90); // TODO
 
         std::sort(upcoming_satellite_passes_all.begin(), upcoming_satellite_passes_all.end(),
                   [](SatellitePass &el1,
@@ -129,7 +177,10 @@ namespace satdump
 
         upcoming_satellite_passes_sel.clear();
 
-        upcoming_satellite_passes_sel = selectPassesForAutotrack(upcoming_satellite_passes_all);
+        if (autotrack_cfg.vfo_mode)
+            upcoming_satellite_passes_sel = upcoming_satellite_passes_all;
+        else
+            upcoming_satellite_passes_sel = selectPassesForAutotrack(upcoming_satellite_passes_all);
 
         // for (auto ppp : upcoming_satellite_passes_sel)
         // logger->debug("Pass of %s at AOS %s LOS %s elevation %.2f",
@@ -199,15 +250,15 @@ namespace satdump
         }
     }
 
-    float AutoTrackScheduler::getMinElevation()
+    AutoTrackCfg AutoTrackScheduler::getAutoTrackCfg()
     {
-        return autotrack_min_elevation;
+        return autotrack_cfg;
     }
 
-    void AutoTrackScheduler::setMinElevation(float v)
+    void AutoTrackScheduler::setAutoTrackCfg(AutoTrackCfg v)
     {
         upcoming_satellite_passes_mtx.lock();
-        autotrack_min_elevation = v;
+        autotrack_cfg = v;
         upcoming_satellite_passes_mtx.unlock();
     }
 }

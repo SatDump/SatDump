@@ -231,7 +231,7 @@ namespace satdump
                 pipeline_output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
                                       timestamp + "_" +
                                       pipelines[pipeline_selector.pipeline_id].name + "_" +
-                                      std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
+                                      format_notated(source_ptr->d_frequency, "Hz");
                 std::filesystem::create_directories(pipeline_output_dir);
                 logger->info("Generated folder name : " + pipeline_output_dir);
             }
@@ -348,50 +348,80 @@ namespace satdump
         {
             tracking_widget = new TrackingWidget();
 
-            tracking_widget->aos_callback = [this](AutoTrackCfg, SatellitePass, TrackedObject obj)
+            tracking_widget->aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (obj.live)
-                    stop_processing();
-                if (obj.record)
-                    stop_recording();
-
-                if (obj.live || obj.record)
+                if (autotrack_cfg.vfo_mode)
                 {
-                    frequency_hz = obj.frequency;
-                    if (is_started)
-                        set_frequency(frequency_hz);
-                    else
-                        start();
+                    if (obj.live || obj.record)
+                        if (!is_started)
+                            start();
 
-                    // Catch situations where source could not start
-                    if (!is_started)
+                    if (obj.live)
                     {
-                        logger->error("Could not start recorder/processor since the source could not be started!");
-                        return;
+                        std::string id = std::to_string(obj.norad) + "_" + std::to_string(obj.frequency);
+                        add_vfo(id, std::to_string(obj.norad), obj.frequency, obj.pipeline_selector->pipeline_id, obj.pipeline_selector->getParameters());
                     }
                 }
-
-                if (obj.live)
+                else
                 {
-                    pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
-                    pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
-                    start_processing();
-                }
+                    if (obj.live)
+                        stop_processing();
+                    if (obj.record)
+                        stop_recording();
 
-                if (obj.record)
-                {
-                    start_recording();
+                    if (obj.live || obj.record)
+                    {
+                        frequency_hz = obj.frequency;
+                        if (is_started)
+                            set_frequency(frequency_hz);
+                        else
+                            start();
+
+                        // Catch situations where source could not start
+                        if (!is_started)
+                        {
+                            logger->error("Could not start recorder/processor since the source could not be started!");
+                            return;
+                        }
+                    }
+
+                    if (obj.live)
+                    {
+                        pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
+                        pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
+                        start_processing();
+                    }
+
+                    if (obj.record)
+                    {
+                        start_recording();
+                    }
                 }
             };
 
             tracking_widget->los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (obj.record)
-                    stop_recording();
-                if (obj.live)
-                    stop_processing();
-                if (autotrack_cfg.stop_sdr_when_idle)
-                    stop();
+                if (autotrack_cfg.vfo_mode)
+                {
+                    if (obj.live)
+                    {
+                        std::string id = std::to_string(obj.norad) + "_" + std::to_string(obj.frequency);
+                        del_vfo(id);
+                    }
+
+                    if (obj.live || obj.record)
+                        if (is_started && vfo_list.size() == 0)
+                            stop();
+                }
+                else
+                {
+                    if (obj.record)
+                        stop_recording();
+                    if (obj.live)
+                        stop_processing();
+                    if (autotrack_cfg.stop_sdr_when_idle)
+                        stop();
+                }
             };
         }
     }

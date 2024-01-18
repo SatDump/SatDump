@@ -98,6 +98,27 @@ namespace satdump
         // Debug
         widgets::ConstellationViewer *constellation_debug = nullptr;
 
+    private: // VFO Stuff
+        struct VFOInfo
+        {
+            ////
+            std::string id;
+            std::string name;
+            double freq;
+
+            ////
+            int pipeline_id;
+            nlohmann::json pipeline_params;
+            std::shared_ptr<ctpl::thread_pool> lpool;
+            std::shared_ptr<satdump::LivePipeline> live_pipeline;
+        };
+
+        std::mutex vfos_mtx;
+        std::vector<VFOInfo> vfo_list;
+
+        void add_vfo(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params);
+        void del_vfo(std::string id);
+
     private:
         void start();
         void stop();
