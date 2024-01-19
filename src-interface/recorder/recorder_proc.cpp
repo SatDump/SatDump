@@ -359,7 +359,16 @@ namespace satdump
                     if (obj.live)
                     {
                         std::string id = std::to_string(obj.norad) + "_" + std::to_string(obj.frequency);
-                        add_vfo(id, std::to_string(obj.norad), obj.frequency, obj.pipeline_selector->pipeline_id, obj.pipeline_selector->getParameters());
+                        std::string name = std::to_string(obj.norad);
+                        if (general_tle_registry.get_from_norad(obj.norad).has_value())
+                            name = general_tle_registry.get_from_norad(obj.norad)->name;
+                        name += " - " + format_notated(obj.frequency, "Hz");
+                        add_vfo(id, name, obj.frequency, obj.pipeline_selector->pipeline_id, obj.pipeline_selector->getParameters());
+                    }
+
+                    if (obj.record)
+                    {
+                        logger->error("Recording is not supported in VFO mode yet!");
                     }
                 }
                 else

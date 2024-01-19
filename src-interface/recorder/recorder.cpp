@@ -525,21 +525,21 @@ namespace satdump
                     {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("ID");
-                        ImGui::TableSetColumnIndex(1);
                         ImGui::Text("Name");
-                        ImGui::TableSetColumnIndex(2);
+                        ImGui::TableSetColumnIndex(1);
                         ImGui::Text("Frequency");
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("Pipeline");
 
                         for (auto &vfo : vfo_list)
                         {
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("%s", vfo.id.c_str());
-                            ImGui::TableSetColumnIndex(1);
                             ImGui::Text("%s", vfo.name.c_str());
-                            ImGui::TableSetColumnIndex(2);
+                            ImGui::TableSetColumnIndex(1);
                             ImGui::Text("%s", format_notated(vfo.freq, "Hz").c_str());
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("%s", pipelines[vfo.pipeline_id].readable_name.c_str());
                         }
 
                         ImGui::EndTable();
@@ -547,7 +547,7 @@ namespace satdump
 
                     vfos_mtx.unlock();
 
-#if 1
+#if 0
                     if (ImGui::Button("Add Test"))
                     {
                         int idp = 0;
@@ -622,9 +622,9 @@ namespace satdump
             ImGui::EndTable();
         }
 
-        if (vfo_list.size() > 0 || is_processing)
+        if (vfo_list.size() > 0)
         {
-            if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
+            if (ImGui::BeginTabBar("VFO TabBar", ImGuiTabBarFlags_None))
             {
                 if (is_processing)
                 {
@@ -655,7 +655,7 @@ namespace satdump
                 vfos_mtx.lock();
                 for (auto &vfo : vfo_list)
                 {
-                    if (ImGui::BeginTabItem(vfo.id.c_str()))
+                    if (ImGui::BeginTabItem(vfo.name.c_str()))
                     {
                         float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                         float live_width = recorder_size.x + 16 * ui_scale;
