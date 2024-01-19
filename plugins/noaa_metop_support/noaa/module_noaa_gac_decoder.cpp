@@ -175,11 +175,11 @@ namespace noaa
                 ImGui::SameLine();
 
                 if (deframer->getState() == deframer->STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                 else if (deframer->getState() == deframer->STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
 
                 ImGui::Text("Frames : ");
 

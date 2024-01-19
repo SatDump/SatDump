@@ -183,7 +183,7 @@ namespace noaa_apt
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+                ImGui::TextColored(IMCOLOR_ORANGE, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr); */
             if (!streamingInput)

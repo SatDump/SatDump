@@ -497,11 +497,11 @@ namespace goes
                 ImGui::Text("State : ");
                 ImGui::SameLine();
                 if (isSavingInProgress)
-                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
+                    ImGui::TextColored(IMCOLOR_GREEN, "Writing images...");
                 else if (isImageInProgress)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                    ImGui::TextColored(IMCOLOR_ORANGE, "Receiving...");
                 else
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "IDLE");
+                    ImGui::TextColored(IMCOLOR_RED, "IDLE");
             }
             ImGui::EndGroup();
 

@@ -31,6 +31,7 @@ namespace satdump
     std::shared_ptr<RecorderApplication> recorder_app;
     std::shared_ptr<ViewerApplication> viewer_app;
 
+    bool light_theme;
     bool in_app = false; // true;
     bool open_recorder;
 
@@ -279,8 +280,6 @@ namespace satdump
 
         backend::endFrame();
     }
-
-    bool light_theme;
 
     ctpl::thread_pool ui_thread_pool(8);
 }

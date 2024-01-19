@@ -380,13 +380,13 @@ namespace meteor
                     ImGui::SameLine();
 
                     if (viterbi_lock == 0)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                        ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                        ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
 
                     ImGui::Text("BER   : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(viterbi_lock == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
+                    ImGui::TextColored(viterbi_lock == 0 ? IMCOLOR_RED : IMCOLOR_GREEN, UITO_C_STR(ber));
 
                     std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                     ber_history[200 - 1] = ber;
@@ -403,11 +403,11 @@ namespace meteor
                     ImGui::SameLine();
 
                     if (deframer->getState() == deframer->STATE_NOSYNC)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                        ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                     else if (deframer->getState() == deframer->STATE_SYNCING)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                        ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                        ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
                 }
 
                 ImGui::Spacing();
@@ -420,11 +420,11 @@ namespace meteor
                         ImGui::SameLine();
 
                         if (errors[i] == -1)
-                            ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
+                            ImGui::TextColored(IMCOLOR_RED, "%i ", i);
                         else if (errors[i] > 0)
-                            ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
+                            ImGui::TextColored(IMCOLOR_ORANGE, "%i ", i);
                         else
-                            ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
+                            ImGui::TextColored(IMCOLOR_GREEN, "%i ", i);
                     }
                 }
             }
@@ -436,7 +436,7 @@ namespace meteor
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
+                    ImGui::TextColored(locked ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(cor));
 
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                     cor_history[200 - 1] = cor;
@@ -450,7 +450,7 @@ namespace meteor
                 {
                     ImGui::Text("BER   : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(ber < 0.22 ? IMCOLOR_SYNCED : IMCOLOR_NOSYNC, UITO_C_STR(ber));
+                    ImGui::TextColored(ber < 0.22 ? IMCOLOR_GREEN : IMCOLOR_RED, UITO_C_STR(ber));
 
                     std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                     ber_history[200 - 1] = ber;
@@ -468,11 +468,11 @@ namespace meteor
                         ImGui::SameLine();
 
                         if (errors[i] == -1)
-                            ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
+                            ImGui::TextColored(IMCOLOR_RED, "%i ", i);
                         else if (errors[i] > 0)
-                            ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
+                            ImGui::TextColored(IMCOLOR_ORANGE, "%i ", i);
                         else
-                            ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
+                            ImGui::TextColored(IMCOLOR_GREEN, "%i ", i);
                     }
                 }
             }

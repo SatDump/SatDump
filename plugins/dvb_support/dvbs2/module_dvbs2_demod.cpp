@@ -363,7 +363,7 @@ namespace dvb
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             ImGui::Text("Freq : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+            ImGui::TextColored(IMCOLOR_ORANGE, "%.0f Hz", display_freq);
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
@@ -373,13 +373,13 @@ namespace dvb
             ImGui::Button("Header", {200 * ui_scale, 20 * ui_scale});
             ImGui::Text("MODCOD : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCED, UITO_C_STR(detected_modcod));
+            ImGui::TextColored(IMCOLOR_GREEN, UITO_C_STR(detected_modcod));
             ImGui::Text("Frames : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCED, detected_shortframes ? "Short" : "Normal");
+            ImGui::TextColored(IMCOLOR_GREEN, detected_shortframes ? "Short" : "Normal");
             ImGui::Text("Pilots : ");
             ImGui::SameLine();
-            ImGui::TextColored(detected_pilots ? IMCOLOR_SYNCED : IMCOLOR_NOSYNC, detected_pilots ? "ON" : "OFF");
+            ImGui::TextColored(detected_pilots ? IMCOLOR_GREEN : IMCOLOR_RED, detected_pilots ? "ON" : "OFF");
         }
         ImGui::EndGroup();
 

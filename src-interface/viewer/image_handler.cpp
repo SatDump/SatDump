@@ -748,19 +748,19 @@ namespace satdump
                 {
                     ImGui::BeginTooltip();
                     if (current_timestamps.size() == 0)
-                        ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
+                        ImGui::TextColored(IMCOLOR_RED, "No timestamps!");
                     else if (correct_image)
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
+                        ImGui::TextColored(IMCOLOR_RED, "Disable correction!");
                     else
-                        ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
-                                                                 "deal with very bad (noisy) data\n"
-                                                                 "better.\n"
-                                                                 "The new one is preferred if\n"
-                                                                 "possible though, as results\n"
-                                                                 "are a lot nicer! :-)\n"
-                                                                 "If you had to use this\n"
-                                                                 "and the data was not that bad\n"
-                                                                 "please report as a bug!");
+                        ImGui::TextColored(IMCOLOR_YELLOW, "The old algorithm will\n"
+                                                                                    "deal with very bad (noisy) data\n"
+                                                                                    "better.\n"
+                                                                                    "The new one is preferred if\n"
+                                                                                    "possible though, as results\n"
+                                                                                    "are a lot nicer! :-)\n"
+                                                                                    "If you had to use this\n"
+                                                                                    "and the data was not that bad\n"
+                                                                                    "please report as a bug!");
 
                     ImGui::EndTooltip();
                 }

@@ -53,7 +53,7 @@ namespace widgets
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
         draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                  ImVec2(ImGui::GetCursorScreenPos().x + d_constellation_size * ui_scale, ImGui::GetCursorScreenPos().y + d_constellation_size * ui_scale),
-                                 ImColor::HSV(0, 0, 0));
+                                 ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_PopupBg]));
 
         // Draw PLHeader
         for (int i = 0; i < CONST_SIZE / 4; i++)
@@ -61,7 +61,7 @@ namespace widgets
             draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
                                               ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
-                                       ImColor(255, 0, 0));
+                                       IMCOLOR_RED);
         }
 
         // Draw Slots
@@ -70,7 +70,7 @@ namespace widgets
             draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
                                               ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
-                                       ImColor(0, 255, 0));
+                                       IMCOLOR_GREEN);
         }
 
         if (has_pilots)
@@ -81,7 +81,7 @@ namespace widgets
                 draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
                                                   ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
                                            2 * ui_scale * (d_constellation_size / 200.0f),
-                                           ImColor(255, 0, 0));
+                                           IMCOLOR_RED);
             }
         }
 

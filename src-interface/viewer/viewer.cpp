@@ -171,7 +171,7 @@ namespace satdump
             ImGui::Text("  ");
             ImGui::SameLine();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+            ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
@@ -225,7 +225,7 @@ namespace satdump
                                 ImGui::Text("  ");
                                 ImGui::SameLine();
 
-                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+                                ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
                                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                                 if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {
@@ -379,12 +379,6 @@ namespace satdump
             {
                 if (products_and_handlers.size() > 0)
                     products_and_handlers[current_handler_id]->handler->drawContents({float(right_width - 4), float(viewer_size.y)});
-                else
-                    ImGui::GetWindowDrawList()
-                        ->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                        ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
-                                               ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
-                                        ImColor::HSV(0, 0, 0));
             }
             else if (current_selected_tab == 1)
             {

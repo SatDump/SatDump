@@ -125,7 +125,7 @@ namespace demod
                 qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
                 qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
             }
 
@@ -273,7 +273,7 @@ namespace demod
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+                ImGui::TextColored(IMCOLOR_ORANGE, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)

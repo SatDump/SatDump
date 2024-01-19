@@ -145,7 +145,7 @@ namespace satdump
         void setRotatorTracking(bool v);
         void setRotatorReqPos(float az, float el);
 
-        void renderPolarPlot(bool light_theme = false);
+        void renderPolarPlot();
         void renderSelectionMenu();
         void renderObjectStatus();
         void renderRotatorStatus();

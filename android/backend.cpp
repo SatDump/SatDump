@@ -1,3 +1,4 @@
+#include "core/style.h"
 #include "core/backend.h"
 #include "backend.h"
 
@@ -29,12 +30,7 @@ void funcEndFrame()
     ImGui::Render();
     ImGuiIO& io = ImGui::GetIO();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-
-    if (satdump::light_theme)
-        glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-    else
-        glClearColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
-    // glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+    glClearColor(IMCOLOR_WINDOWBG.Value.x, IMCOLOR_WINDOWBG.Value.y, IMCOLOR_WINDOWBG.Value.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -94,11 +94,11 @@ namespace network
 
         ImGui::Text("Server Address  : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, "%s", address.c_str());
+        ImGui::TextColored(IMCOLOR_GREEN, "%s", address.c_str());
 
         ImGui::Text("Server Port    : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, UITO_C_STR(port));
+        ImGui::TextColored(IMCOLOR_GREEN, UITO_C_STR(port));
 
         ImGui::End();
     }

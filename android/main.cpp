@@ -2,6 +2,7 @@
 #include <android/asset_manager.h>
 #include <android_native_app_glue.h>
 #include "backend.h"
+#include "main_ui.h"
 
 // Data
 EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;

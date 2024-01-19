@@ -32,7 +32,7 @@ protected:
     void set_bias();
     void set_agcs();
 
-    widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
+    widgets::TimedMessage error;
 
     uint64_t buffer_samplerate = 0;
 

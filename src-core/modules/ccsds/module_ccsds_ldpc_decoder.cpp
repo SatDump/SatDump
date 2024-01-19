@@ -318,7 +318,7 @@ namespace ccsds
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(correlator_locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(correlator_cor));
+                ImGui::TextColored(correlator_locked ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(correlator_cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = correlator_cor;
@@ -333,7 +333,7 @@ namespace ccsds
             {
                 ImGui::Text("Diff  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ldpc_corr > 10 ? IMCOLOR_SYNCING : IMCOLOR_SYNCED, UITO_C_STR(ldpc_corr));
+                ImGui::TextColored(ldpc_corr > 10 ? IMCOLOR_ORANGE : IMCOLOR_GREEN, UITO_C_STR(ldpc_corr));
 
                 std::memmove(&ldpc_history[0], &ldpc_history[1], (200 - 1) * sizeof(float));
                 ldpc_history[200 - 1] = ldpc_corr;
@@ -352,11 +352,11 @@ namespace ccsds
                     ImGui::SameLine();
 
                     if (deframer->getState() == deframer->STATE_NOSYNC)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                        ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                     else if (deframer->getState() == deframer->STATE_SYNCING)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                        ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                        ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
                 }
             }
         }

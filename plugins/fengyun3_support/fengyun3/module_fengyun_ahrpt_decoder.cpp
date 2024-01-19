@@ -218,11 +218,11 @@ namespace fengyun3
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_RED, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_ORANGE, "%i ", i);
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
+                        ImGui::TextColored(IMCOLOR_GREEN, "%i ", i);
                 }
             }
         }
@@ -240,13 +240,13 @@ namespace fengyun3
                 ImGui::SameLine();
 
                 if (viterbi1.getState() == 0)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi1.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber1));
+                ImGui::TextColored(viterbi1.getState() == 0 ? IMCOLOR_RED : IMCOLOR_GREEN, UITO_C_STR(ber1));
 
                 std::memmove(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
                 ber_history1[200 - 1] = ber1;
@@ -261,13 +261,13 @@ namespace fengyun3
                 ImGui::SameLine();
 
                 if (viterbi2.getState() == 0)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi2.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber2));
+                ImGui::TextColored(viterbi2.getState() == 0 ? IMCOLOR_RED : IMCOLOR_GREEN, UITO_C_STR(ber2));
 
                 std::memmove(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
                 ber_history2[200 - 1] = ber2;
@@ -284,11 +284,11 @@ namespace fengyun3
                 ImGui::SameLine();
 
                 if (deframer.getState() == deframer.STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
                 else if (deframer.getState() == deframer.STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
             }
         }
         ImGui::EndGroup();

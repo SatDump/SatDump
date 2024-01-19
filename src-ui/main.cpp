@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <filesystem>
 #include "backend.h"
+#include "main_ui.h"
 #include "logger.h"
 #include "core/style.h"
 #include "init.h"

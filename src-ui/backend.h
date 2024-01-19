@@ -5,7 +5,6 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "gl.h"
-#include "main_ui.h"
 
 void funcSetMousePos(int x, int y);
 std::pair<int, int> funcBeginFrame();

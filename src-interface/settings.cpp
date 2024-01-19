@@ -34,7 +34,7 @@ namespace satdump
 
         bool show_imgui_demo = false;
 
-        widgets::TimedMessage saved_message(ImColor(0, 255, 0), 4);
+        widgets::TimedMessage saved_message;
 
         void setup()
         {
@@ -204,11 +204,11 @@ namespace satdump
                     plugin_hdl.save();
 
                 config::saveUserConfig();
-                saved_message.set_message("Settings saved");
+                saved_message.set_message(IMCOLOR_GREEN, "Settings saved");
             }
 
             saved_message.draw();
-            ImGui::TextColored(ImColor(255, 255, 0), "Note : Some settings will require SatDump to be restarted\nto take effect!");
+            ImGui::TextColored(IMCOLOR_YELLOW, "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
     }
 }

@@ -116,6 +116,6 @@ namespace satdump
         float getMinElevation();
         void setMinElevation(float v);
 
-        void renderAutotrackConfig(bool light_theme, double curr_time);
+        void renderAutotrackConfig(double curr_time);
     };
 }

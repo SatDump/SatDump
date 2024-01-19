@@ -8,7 +8,7 @@
 
 namespace satdump
 {
-    void AutoTrackScheduler::renderAutotrackConfig(bool light_theme, double curr_time)
+    void AutoTrackScheduler::renderAutotrackConfig(double curr_time)
     {
         if (!has_tle)
             return;
@@ -115,7 +115,7 @@ namespace satdump
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
             draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                      ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_height + 20 * ui_scale),
-                                     light_theme ? ImColor(255, 255, 255, 255) : ImColor::HSV(0, 0, 0));
+                                     ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_PopupBg]));
 
             time_t tttime = curr_time;
             std::tm *timeReadable = gmtime(&tttime);

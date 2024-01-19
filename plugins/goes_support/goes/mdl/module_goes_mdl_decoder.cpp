@@ -151,7 +151,7 @@ namespace goes
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
+                    ImGui::TextColored(locked ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(cor));
 
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                     cor_history[200 - 1] = cor;

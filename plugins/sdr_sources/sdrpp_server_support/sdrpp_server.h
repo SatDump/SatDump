@@ -20,7 +20,7 @@ protected:
     int bit_depth = 32;
     bool compression = false;
 
-    widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
+    widgets::TimedMessage error;
 
     std::shared_ptr<dsp::stream<uint8_t>> client_output_stream;
 
