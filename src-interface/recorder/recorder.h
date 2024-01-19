@@ -109,6 +109,7 @@ namespace satdump
             ////
             int pipeline_id;
             nlohmann::json pipeline_params;
+            std::string output_dir;
             std::shared_ptr<ctpl::thread_pool> lpool;
             std::shared_ptr<satdump::LivePipeline> live_pipeline;
         };

@@ -37,10 +37,12 @@ namespace satdump
                 output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
                              timestamp + "_" +
                              pipelines[vpipeline_id].name + "_" +
-                             format_notated(source_ptr->d_frequency, "Hz");
+                             format_notated(freq, "Hz");
                 std::filesystem::create_directories(output_dir);
                 logger->info("Generated folder name : " + output_dir);
             }
+
+            wipInfo.output_dir = output_dir;
 
             wipInfo.live_pipeline = std::make_shared<LivePipeline>(pipelines[vpipeline_id], vpipeline_params, output_dir);
             splitter->add_vfo(id, get_samplerate(), frequency_hz - freq);
@@ -82,8 +84,10 @@ namespace satdump
                 std::string input_file = it->live_pipeline->getOutputFiles()[0];
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                 std::string input_level = pipeline.steps[start_level].level_name;
+                std::string output_dir = it->output_dir;
+                nlohmann::json pipeline_params = it->pipeline_params;
                 ui_thread_pool.push([=](int)
-                                    { processing::process(pipeline.name, input_level, input_file, pipeline_output_dir, it->pipeline_params); });
+                                    { processing::process(pipeline.name, input_level, input_file, output_dir, pipeline_params); });
             }
 
             vfo_list.erase(it);
