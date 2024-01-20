@@ -352,35 +352,38 @@ namespace satdump
             {
                 if (autotrack_cfg.vfo_mode)
                 {
-                    if (obj.live || obj.record)
-                        if (!is_started)
-                            start();
-
-                    if (obj.live)
+                    for (auto &dl : obj.downlinks)
                     {
-                        std::string id = std::to_string(obj.norad) + "_" + std::to_string(obj.frequency);
-                        std::string name = std::to_string(obj.norad);
-                        if (general_tle_registry.get_from_norad(obj.norad).has_value())
-                            name = general_tle_registry.get_from_norad(obj.norad)->name;
-                        name += " - " + format_notated(obj.frequency, "Hz");
-                        add_vfo(id, name, obj.frequency, obj.pipeline_selector->pipeline_id, obj.pipeline_selector->getParameters());
-                    }
+                        if (dl.live || dl.record)
+                            if (!is_started)
+                                start();
 
-                    if (obj.record)
-                    {
-                        logger->error("Recording is not supported in VFO mode yet!");
+                        if (dl.live)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                            std::string name = std::to_string(obj.norad);
+                            if (general_tle_registry.get_from_norad(obj.norad).has_value())
+                                name = general_tle_registry.get_from_norad(obj.norad)->name;
+                            name += " - " + format_notated(dl.frequency, "Hz");
+                            add_vfo(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                        }
+
+                        if (dl.record)
+                        {
+                            logger->error("Recording is not supported in VFO mode yet!");
+                        }
                     }
                 }
                 else
                 {
-                    if (obj.live)
+                    if (obj.downlinks[0].live)
                         stop_processing();
-                    if (obj.record)
+                    if (obj.downlinks[0].record)
                         stop_recording();
 
-                    if (obj.live || obj.record)
+                    if (obj.downlinks[0].live || obj.downlinks[0].record)
                     {
-                        frequency_hz = obj.frequency;
+                        frequency_hz = obj.downlinks[0].frequency;
                         if (is_started)
                             set_frequency(frequency_hz);
                         else
@@ -394,14 +397,14 @@ namespace satdump
                         }
                     }
 
-                    if (obj.live)
+                    if (obj.downlinks[0].live)
                     {
-                        pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
-                        pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
+                        pipeline_selector.select_pipeline(pipelines[obj.downlinks[0].pipeline_selector->pipeline_id].name);
+                        pipeline_selector.setParameters(obj.downlinks[0].pipeline_selector->getParameters());
                         start_processing();
                     }
 
-                    if (obj.record)
+                    if (obj.downlinks[0].record)
                     {
                         start_recording();
                     }
@@ -412,21 +415,24 @@ namespace satdump
             {
                 if (autotrack_cfg.vfo_mode)
                 {
-                    if (obj.live)
+                    for (auto &dl : obj.downlinks)
                     {
-                        std::string id = std::to_string(obj.norad) + "_" + std::to_string(obj.frequency);
-                        del_vfo(id);
-                    }
+                        if (dl.live)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                            del_vfo(id);
+                        }
 
-                    if (obj.live || obj.record)
-                        if (is_started && vfo_list.size() == 0)
-                            stop();
+                        if (dl.live || dl.record)
+                            if (is_started && vfo_list.size() == 0 && autotrack_cfg.stop_sdr_when_idle)
+                                stop();
+                    }
                 }
                 else
                 {
-                    if (obj.record)
+                    if (obj.downlinks[0].record)
                         stop_recording();
-                    if (obj.live)
+                    if (obj.downlinks[0].live)
                         stop_processing();
                     if (autotrack_cfg.stop_sdr_when_idle)
                         stop();

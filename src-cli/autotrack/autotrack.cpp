@@ -268,12 +268,12 @@ int main_autotrack(int argc, char *argv[])
     {
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
 
-        if (obj.live)
+        if (obj.downlinks[0].live)
             stop_processing();
-        if (obj.record)
+        if (obj.downlinks[0].record)
             logger->error("Recording Not Implemented Yet!"); // stop_recording();
 
-        if (obj.live || obj.record)
+        if (obj.downlinks[0].live || obj.downlinks[0].record)
         {
             if (!source_started)
             {
@@ -291,26 +291,26 @@ int main_autotrack(int argc, char *argv[])
                 }
             }
 
-            source_ptr->set_frequency(obj.frequency);
+            source_ptr->set_frequency(obj.downlinks[0].frequency);
         }
 
-        if (obj.live)
+        if (obj.downlinks[0].live)
         {
-            pipeline_params = obj.pipeline_selector->getParameters();
-            pipeline_id = obj.pipeline_selector->pipeline_id;
+            pipeline_params = obj.downlinks[0].pipeline_selector->getParameters();
+            pipeline_id = obj.downlinks[0].pipeline_selector->pipeline_id;
             start_processing();
         }
 
-        if (obj.record)
+        if (obj.downlinks[0].record)
         {
             logger->error("Recording Not Implemented Yet!"); // start_recording();
         }
     };
     auto_scheduler.los_callback = [&](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
-        if (obj.record)
+        if (obj.downlinks[0].record)
             logger->error("Recording Not Implemented Yet!"); // stop_recording();
-        if (obj.live)
+        if (obj.downlinks[0].live)
             stop_processing();
         if (source_started && autotrack_cfg.stop_sdr_when_idle)
         {

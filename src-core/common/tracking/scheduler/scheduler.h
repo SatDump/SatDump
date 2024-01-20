@@ -35,37 +35,63 @@ namespace satdump
         int norad = -1;
 
         // Config
-        uint64_t frequency = 100000000;
-        bool record = false;
-        bool live = false;
-        // std::string pipeline_name = "";
-
-        std::shared_ptr<PipelineUISelector> pipeline_selector = std::make_shared<PipelineUISelector>(true);
+        struct Downlink
+        {
+            uint64_t frequency = 100000000;
+            bool record = false;
+            bool live = false;
+            std::shared_ptr<PipelineUISelector> pipeline_selector = std::make_shared<PipelineUISelector>(true);
+        };
+        std::vector<Downlink> downlinks = std::vector<Downlink>(1);
     };
 
     inline void to_json(nlohmann::ordered_json &j, const TrackedObject &v)
     {
         j["norad"] = v.norad;
-        j["frequency"] = v.frequency;
-        j["record"] = v.record;
-        j["live"] = v.live;
-        j["pipeline_name"] = pipelines[v.pipeline_selector->pipeline_id].name;
-        j["pipeline_params"] = v.pipeline_selector->getParameters();
+        for (int i = 0; i < v.downlinks.size(); i++)
+        {
+            j["downlinks"][i]["frequency"] = v.downlinks[i].frequency;
+            j["downlinks"][i]["record"] = v.downlinks[i].record;
+            j["downlinks"][i]["live"] = v.downlinks[i].live;
+            j["downlinks"][i]["pipeline_name"] = pipelines[v.downlinks[i].pipeline_selector->pipeline_id].name;
+            j["downlinks"][i]["pipeline_params"] = v.downlinks[i].pipeline_selector->getParameters();
+        }
     }
 
     inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
     {
         v.norad = j["norad"];
         if (j.contains("frequency"))
-            v.frequency = j["frequency"];
-        if (j.contains("record"))
-            v.record = j["record"];
-        if (j.contains("live"))
-            v.live = j["live"];
-        if (j.contains("pipeline_name"))
-            v.pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
-        if (j.contains("pipeline_params"))
-            v.pipeline_selector->setParameters(j["pipeline_params"]);
+        {
+            v.downlinks[0].frequency = j["frequency"];
+            if (j.contains("record"))
+                v.downlinks[0].record = j["record"];
+            if (j.contains("live"))
+                v.downlinks[0].live = j["live"];
+            if (j.contains("pipeline_name"))
+                v.downlinks[0].pipeline_selector->select_pipeline(j["pipeline_name"].get<std::string>());
+            if (j.contains("pipeline_params"))
+                v.downlinks[0].pipeline_selector->setParameters(j["pipeline_params"]);
+        }
+        else if (j.contains("downlinks"))
+        {
+            v.downlinks.resize(j["downlinks"].size());
+            for (int i = 0; i < j["downlinks"].size(); i++)
+            {
+                if (j["downlinks"][i].contains("frequency"))
+                {
+                    v.downlinks[i].frequency = j["downlinks"][i]["frequency"];
+                    if (j["downlinks"][i].contains("record"))
+                        v.downlinks[i].record = j["downlinks"][i]["record"];
+                    if (j["downlinks"][i].contains("live"))
+                        v.downlinks[i].live = j["downlinks"][i]["live"];
+                    if (j["downlinks"][i].contains("pipeline_name"))
+                        v.downlinks[i].pipeline_selector->select_pipeline(j["downlinks"][i]["pipeline_name"].get<std::string>());
+                    if (j["downlinks"][i].contains("pipeline_params"))
+                        v.downlinks[i].pipeline_selector->setParameters(j["downlinks"][i]["pipeline_params"]);
+                }
+            }
+        }
     }
 
     class AutoTrackScheduler
