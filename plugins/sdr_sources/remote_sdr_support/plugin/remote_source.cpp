@@ -111,13 +111,13 @@ void RemoteSource::drawControlUI()
 
     if (is_started)
     {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Streaming %.3f MB/s", current_datarate);
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Samplerate %s", format_notated(current_samplerate, "sps").c_str());
+        ImGui::TextColored(IMCOLOR_GREEN, "Streaming %.3f MB/s", current_datarate);
+        ImGui::TextColored(IMCOLOR_GREEN, "Samplerate %s", format_notated(current_samplerate, "sps").c_str());
     }
     else
     {
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Streaming --.-- MB/s");
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Samplerate --.-- sps");
+        ImGui::TextColored(IMCOLOR_RED, "Streaming --.-- MB/s");
+        ImGui::TextColored(IMCOLOR_RED, "Samplerate --.-- sps");
     }
 
     RImGui::Separator();

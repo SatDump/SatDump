@@ -205,7 +205,7 @@ namespace elektro_arktika
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Channel %d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", frames);
+                    ImGui::TextColored(IMCOLOR_GREEN, "%d", frames);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(channels_statuses[i]);
                 }

@@ -21,6 +21,7 @@ SATDUMP_DLL ImColor IMCOLOR_YELLOW;
 SATDUMP_DLL ImColor IMCOLOR_ORANGE;
 SATDUMP_DLL ImColor IMCOLOR_CYAN;
 SATDUMP_DLL ImColor IMCOLOR_MAGENTA;
+SATDUMP_DLL ImColor IMCOLOR_LAVENDER;
 SATDUMP_DLL ImColor IMCOLOR_WINDOWBG;
 SATDUMP_DLL ImColor IMCOLOR_OVERLAYBG;
 
@@ -53,6 +54,7 @@ namespace style
         IMCOLOR_ORANGE = ImColor(0.75f, 0.50f, 0.05f, 1.00f);
         IMCOLOR_CYAN = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
         IMCOLOR_MAGENTA = ImColor(0.50f, 0.00f, 0.50f, 1.00f);
+        IMCOLOR_LAVENDER = ImColor(0.31f, 0.31f, 0.50f, 1.00f);
         IMCOLOR_WINDOWBG = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
         IMCOLOR_OVERLAYBG = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
 
@@ -123,6 +125,7 @@ namespace style
         IMCOLOR_ORANGE = ImColor(1.00f, 0.67f, 0.00f, 0.07f);
         IMCOLOR_CYAN = ImColor(0.00f, 1.00f, 1.00f, 1.00f);
         IMCOLOR_MAGENTA = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
+        IMCOLOR_LAVENDER = ImColor(0.63f, 0.63f, 1.00f, 1.00f);
         IMCOLOR_WINDOWBG = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         IMCOLOR_OVERLAYBG = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
 

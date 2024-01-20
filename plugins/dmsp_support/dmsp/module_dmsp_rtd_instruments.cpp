@@ -126,7 +126,7 @@ namespace dmsp
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("OLS");
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextColored(ImColor(0, 255, 0), "%d", ols_reader.lines);
+            ImGui::TextColored(IMCOLOR_GREEN, "%d", ols_reader.lines);
             ImGui::TableSetColumnIndex(2);
             drawStatus(ols_status);
 

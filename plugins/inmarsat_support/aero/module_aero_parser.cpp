@@ -345,7 +345,7 @@ namespace inmarsat
 
             ImGui::Text("Decoded packets can be seen in a floating window.");
             ImGui::Spacing();
-            ImGui::TextColored(ImColor(255, 0, 0), "Note : Still WIP!");
+            ImGui::TextColored(IMCOLOR_RED, "Note : Still WIP!");
 
             ImGui::Text("Do remember you should not keep nor share data that is\nnot intended for you.");
 
@@ -401,11 +401,11 @@ namespace inmarsat
                         {
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["plane_reg"].get<std::string>().c_str());
+                            ImGui::TextColored(IMCOLOR_LAVENDER, "%s", msg["plane_reg"].get<std::string>().c_str());
                             ImGui::TableSetColumnIndex(1);
-                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TextColored(IMCOLOR_YELLOW, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::TextColored(IMCOLOR_GREEN, "%s", msg["message"].get<std::string>().c_str());
                         }
                         catch (std::exception&)
                         {

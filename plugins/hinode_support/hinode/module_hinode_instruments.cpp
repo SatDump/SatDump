@@ -161,7 +161,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("FLT OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_flt_obs1.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_flt_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -169,7 +169,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("FLT OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_flt_obs2.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_flt_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -177,7 +177,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("SPP OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_spp_obs1.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_spp_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -185,7 +185,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("SPP OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_spp_obs2.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_spp_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -193,7 +193,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("XRT OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_xrt_obs1.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_xrt_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -201,7 +201,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("XRT OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_xrt_obs2.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_xrt_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -209,7 +209,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("EIS OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_eis_obs1.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_eis_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -217,7 +217,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("EIS OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_eis_obs2.img_cnt);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", depack_eis_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
