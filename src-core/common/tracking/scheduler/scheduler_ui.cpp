@@ -221,27 +221,37 @@ namespace satdump
             {
                 for (auto &downlink : cpass.downlinks)
                 {
+                    std::string idpart = std::to_string(cpass.norad) + "_" + std::to_string((size_t)&downlink);
+
                     auto color = ImColor::HSV(fmod(cpass.norad, 10) / 10.0, 1, 1);
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::SetNextItemWidth(100 * ui_scale);
-                    ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
+                    if (&downlink == &cpass.downlinks[0])
+                    {
+                        ImGui::SetNextItemWidth(100 * ui_scale);
+                        ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
+                        if (ImGui::Button(((std::string) "+##objcfgfreq1" + std::to_string(cpass.norad)).c_str()))
+                        {
+                            cpass.downlinks.push_back(satdump::TrackedObject::Downlink());
+                            goto skiptable;
+                        }
+                    }
                     ImGui::TableSetColumnIndex(1);
-                    widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + std::to_string(cpass.norad)).c_str(), &downlink.frequency, 0.75f);
+                    widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + idpart).c_str(), &downlink.frequency, 0.75f);
                     ImGui::TableSetColumnIndex(2);
                     ImGui::SetNextItemWidth(100 * ui_scale);
-                    ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + std::to_string(cpass.norad)).c_str(), &downlink.record);
+                    ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + idpart).c_str(), &downlink.record);
                     // ImGui::TableSetColumnIndex(3);
-                    ImGui::Checkbox(((std::string) "Live##objcfgfreq3" + std::to_string(cpass.norad)).c_str(), &downlink.live);
+                    ImGui::Checkbox(((std::string) "Live##objcfgfreq3" + idpart).c_str(), &downlink.live);
                     ImGui::TableSetColumnIndex(3);
                     ImGui::SetNextItemWidth(300 * ui_scale);
                     ImGui::PushID(cpass.norad);
-                    if (ImGui::BeginCombo("##pipelinesel", downlink.pipeline_selector->get_name(downlink.pipeline_selector->pipeline_id).c_str(), ImGuiComboFlags_HeightLarge))
+                    if (ImGui::BeginCombo(((std::string) "##pipelinesel" + idpart).c_str(), downlink.pipeline_selector->get_name(downlink.pipeline_selector->pipeline_id).c_str(), ImGuiComboFlags_HeightLarge))
                     {
                         downlink.pipeline_selector->renderSelectionBox(300 * ui_scale);
                         ImGui::EndCombo();
                     }
-                    if (ImGui::BeginCombo("##params", "Configure..."))
+                    if (ImGui::BeginCombo(((std::string) "##params" + idpart).c_str(), "Configure..."))
                     {
                         downlink.pipeline_selector->renderParamTable();
                         ImGui::EndCombo();
@@ -249,6 +259,7 @@ namespace satdump
                     ImGui::PopID();
                     // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
                 }
+            skiptable:
             }
             ImGui::EndTable();
         }
