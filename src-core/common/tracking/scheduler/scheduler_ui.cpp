@@ -219,6 +219,7 @@ namespace satdump
         {
             for (auto &cpass : enabled_satellites)
             {
+                int dl_pos = 0;
                 for (auto &downlink : cpass.downlinks)
                 {
                     std::string idpart = std::to_string(cpass.norad) + "_" + std::to_string((size_t)&downlink);
@@ -230,9 +231,17 @@ namespace satdump
                     {
                         ImGui::SetNextItemWidth(100 * ui_scale);
                         ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
-                        if (ImGui::Button(((std::string) "+##objcfgfreq1" + std::to_string(cpass.norad)).c_str()))
+                        if (ImGui::Button(((std::string) "+##objadddownlink" + std::to_string(cpass.norad)).c_str()))
                         {
                             cpass.downlinks.push_back(satdump::TrackedObject::Downlink());
+                            goto skiptable;
+                        }
+                    }
+                    else
+                    {
+                        if (ImGui::Button(((std::string) "-##objdeldownlink" + idpart).c_str()))
+                        {
+                            cpass.downlinks.erase(cpass.downlinks.begin() + dl_pos);
                             goto skiptable;
                         }
                     }
@@ -258,6 +267,7 @@ namespace satdump
                     }
                     ImGui::PopID();
                     // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
+                    dl_pos++;
                 }
             skiptable:
             }
