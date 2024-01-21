@@ -234,7 +234,7 @@ namespace satdump
                         if (ImGui::Button(((std::string) "+##objadddownlink" + std::to_string(cpass.norad)).c_str()))
                         {
                             cpass.downlinks.push_back(satdump::TrackedObject::Downlink());
-                            goto skiptable;
+                            break;
                         }
                     }
                     else
@@ -242,7 +242,7 @@ namespace satdump
                         if (ImGui::Button(((std::string) "-##objdeldownlink" + idpart).c_str()))
                         {
                             cpass.downlinks.erase(cpass.downlinks.begin() + dl_pos);
-                            goto skiptable;
+                            break;
                         }
                     }
                     ImGui::TableSetColumnIndex(1);
@@ -269,7 +269,6 @@ namespace satdump
                     // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
                     dl_pos++;
                 }
-            skiptable:
             }
             ImGui::EndTable();
         }

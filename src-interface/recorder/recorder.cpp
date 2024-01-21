@@ -547,7 +547,7 @@ namespace satdump
 
                     vfos_mtx.unlock();
 
-#if 1
+#if 0
                     if (ImGui::Button("Add Test"))
                     {
                         int idp = 0;
