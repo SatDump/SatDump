@@ -36,7 +36,6 @@ namespace style
     void setDarkStyle();
     void beginDisabled();
     void endDisabled();
-    void setFonts();
     void setFonts(float dpi_scaling);
 
     float macos_framebuffer_scale();

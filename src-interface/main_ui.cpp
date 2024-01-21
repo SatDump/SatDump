@@ -29,6 +29,7 @@ namespace satdump
     std::shared_ptr<RecorderApplication> recorder_app;
     std::shared_ptr<ViewerApplication> viewer_app;
 
+    bool update_ui = true;
     bool in_app = false; // true;
     bool open_recorder;
 
@@ -37,16 +38,13 @@ namespace satdump
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
-    void initMainUI(float device_scale)
+    void initMainUI()
     {
         ImPlot::CreateContext();
 
         audio::registerSinks();
         offline::setup();
         settings::setup();
-
-        // Setup DPI/Theme
-        updateUI(device_scale);
 
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));
@@ -74,19 +72,6 @@ namespace satdump
         logger->add_sink(notify_logger_sink);
     }
 
-    void updateUI(float device_scale)
-    {
-        float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
-        ui_scale = device_scale * manual_dpi_scaling;
-        ImGui::GetStyle() = ImGuiStyle();
-        ImGui::GetStyle().ScaleAllSizes(ui_scale);
-
-        if (config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>())
-            style::setLightStyle();
-        else
-            style::setDarkStyle();
-    }
-
     void exitMainUI()
     {
         recorder_app->save_settings();
@@ -98,6 +83,22 @@ namespace satdump
 
     void renderMainUI()
     {
+        if (update_ui)
+        {
+            float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+            ui_scale = backend::device_scale * manual_dpi_scaling;
+            ImGui::GetStyle() = ImGuiStyle();
+            ImGui::GetStyle().ScaleAllSizes(ui_scale);
+
+            if (config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>())
+                style::setLightStyle();
+            else
+                style::setDarkStyle();
+
+            style::setFonts(ui_scale);
+            update_ui = false;
+        }
+
         std::pair<int, int> dims = backend::beginFrame();
         // ImGui::ShowDemoWindow();
 

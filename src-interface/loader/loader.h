@@ -7,13 +7,12 @@ namespace satdump
     class LoadingScreenSink : public slog::LoggerSink
     {
     public:
-        LoadingScreenSink(float scale);
+        LoadingScreenSink();
         void push_frame(std::string str);
         ~LoadingScreenSink();
     protected:
         void receive(slog::LogMsg log);
     private:
-        float scale;
         intptr_t image_texture;
         bool loader_constant;
         std::string title;

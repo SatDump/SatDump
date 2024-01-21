@@ -205,6 +205,7 @@ namespace satdump
 
                 config::saveUserConfig();
                 saved_message.set_message(style::theme.green, "Settings saved");
+                satdump::update_ui = true;
             }
 
             saved_message.draw();

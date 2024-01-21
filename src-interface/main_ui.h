@@ -9,13 +9,13 @@
 
 namespace satdump
 {
+    extern bool update_ui;
     extern ctpl::thread_pool ui_thread_pool;
 
     extern std::shared_ptr<RecorderApplication> recorder_app;
     extern std::shared_ptr<ViewerApplication> viewer_app;
 
-    void initMainUI(float device_scale);
-    void updateUI(float device_scale);
+    void initMainUI();
     void exitMainUI();
     void renderMainUI();
 }

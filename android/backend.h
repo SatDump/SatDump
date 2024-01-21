@@ -7,7 +7,8 @@
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
 
-// Standard bound functions
+float funcDeviceScale();
+void funcRebuildFonts();
 void funcSetMousePos(int, int);
 std::pair<int, int> funcBeginFrame();
 void funcEndFrame();

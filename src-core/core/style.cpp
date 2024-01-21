@@ -5,7 +5,8 @@
 #include "imgui/imgui_internal.h"
 #include "logger.h"
 #include <filesystem>
-#include "core/module.h"
+#include "module.h"
+#include "backend.h"
 #include "resources.h"
 
 #ifdef __APPLE__
@@ -148,11 +149,6 @@ namespace style
         ImGui::PopStyleColor(3);
     }
 
-    void setFonts()
-    {
-        setFonts(ui_scale);
-    }
-
     void setFonts(float dpi_scaling)
     {
         ImGuiIO &io = ImGui::GetIO();
@@ -175,6 +171,8 @@ namespace style
         //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
         io.Fonts->Build();
         io.FontGlobalScale = 1 / macos_fbs;
+
+        backend::rebuildFonts();
     }
 
     float macos_framebuffer_scale()
