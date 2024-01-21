@@ -121,13 +121,13 @@ void registerModules()
 void drawStatus(instrument_status_t status)
 {
     if (status == DECODING)
-        ImGui::TextColored(ImColor(255, 255, 0), "Decoding...");
+        ImGui::TextColored(IMCOLOR_YELLOW, "Decoding...");
     else if (status == PROCESSING)
-        ImGui::TextColored(ImColor(200, 0, 255), "Processing...");
+        ImGui::TextColored(IMCOLOR_MAGENTIA, "Processing...");
     else if (status == SAVING)
-        ImGui::TextColored(ImColor(100, 255, 100), "Saving...");
+        ImGui::TextColored(IMCOLOR_LIGHTGREEN, "Saving...");
     else if (status == DONE)
-        ImGui::TextColored(ImColor(0, 255, 0), "Done");
+        ImGui::TextColored(IMCOLOR_GREEN, "Done");
     else
-        ImGui::TextColored(ImColor(255, 0, 0), "Invalid!");
+        ImGui::TextColored(IMCOLOR_RED, "Invalid!");
 };

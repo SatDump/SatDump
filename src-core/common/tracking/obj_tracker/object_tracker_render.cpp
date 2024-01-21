@@ -65,7 +65,7 @@ namespace satdump
 
                 draw_list->AddLine({point_x1, point_y1},
                                    {point_x2, point_y2},
-                                   ImColor(255, 165, 0, 255), 2.0);
+                                   IMCOLOR_ORANGE, 2.0);
             }
             upcoming_passes_mtx.unlock();
         }
@@ -92,7 +92,7 @@ namespace satdump
                 point_x += az_el_to_plot_x(d_pplot_size, radius, rot_current_pos.az, rot_current_pos.el);
                 point_y -= az_el_to_plot_y(d_pplot_size, radius, rot_current_pos.az, rot_current_pos.el);
 
-                draw_list->AddCircle({point_x, point_y}, 9 * ui_scale, ImColor(0, 237, 255, 255), 0, 2.0);
+                draw_list->AddCircle({point_x, point_y}, 9 * ui_scale, IMCOLOR_LIGHTCYAN, 0, 2.0);
             }
 #else // WIP, the idea is to draw the *actual* antenna beamwidth
             {
@@ -119,7 +119,7 @@ namespace satdump
                     point_x2 += az_el_to_plot_x(d_pplot_size, radius, az2, el2);
                     point_y2 -= az_el_to_plot_y(d_pplot_size, radius, az2, el2);
 
-                    draw_list->AddLine({point_x, point_y}, {point_x2, point_y2}, ImColor(0, 237, 255, 255), 2.0);
+                    draw_list->AddLine({point_x, point_y}, {point_x2, point_y2}, IMCOLOR_LIGHTCYAN, 2.0);
                 }
             }
 #endif
@@ -132,10 +132,10 @@ namespace satdump
                 point_x += az_el_to_plot_x(d_pplot_size, radius, rot_current_req_pos.az, rot_current_req_pos.el);
                 point_y -= az_el_to_plot_y(d_pplot_size, radius, rot_current_req_pos.az, rot_current_req_pos.el);
 
-                draw_list->AddLine({point_x - 5 * ui_scale, point_y}, {point_x - 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
-                draw_list->AddLine({point_x + 5 * ui_scale, point_y}, {point_x + 12 * ui_scale, point_y}, ImColor(0, 237, 255, 255), 2.0);
-                draw_list->AddLine({point_x, point_y - 5 * ui_scale}, {point_x, point_y - 12 * ui_scale}, ImColor(0, 237, 255, 255), 2.0);
-                draw_list->AddLine({point_x, point_y + 5 * ui_scale}, {point_x, point_y + 12 * ui_scale}, ImColor(0, 237, 255, 255), 2.0);
+                draw_list->AddLine({point_x - 5 * ui_scale, point_y}, {point_x - 12 * ui_scale, point_y}, IMCOLOR_LIGHTCYAN, 2.0);
+                draw_list->AddLine({point_x + 5 * ui_scale, point_y}, {point_x + 12 * ui_scale, point_y}, IMCOLOR_LIGHTCYAN, 2.0);
+                draw_list->AddLine({point_x, point_y - 5 * ui_scale}, {point_x, point_y - 12 * ui_scale}, IMCOLOR_LIGHTCYAN, 2.0);
+                draw_list->AddLine({point_x, point_y + 5 * ui_scale}, {point_x, point_y + 12 * ui_scale}, IMCOLOR_LIGHTCYAN, 2.0);
             }
         }
 #if 1

@@ -562,7 +562,7 @@ namespace satdump
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     {
                         ImGui::BeginTooltip();
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable projection!");
+                        ImGui::TextColored(IMCOLOR_RED, "Disable projection!");
                         ImGui::EndTooltip();
                     }
                 }

@@ -199,7 +199,7 @@ namespace satdump
                             if (cpass_xs > d_pplot_size)
                                 cpass_xs = d_pplot_size;
 
-                            auto color = ImColor(255, 255, 255, 255);
+                            auto color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
                             draw_list->AddRect(ImVec2(ImGui::GetCursorScreenPos().x + cpass_xs, ImGui::GetCursorScreenPos().y + thsat_ys),
                                                ImVec2(ImGui::GetCursorScreenPos().x + cpass_xe, ImGui::GetCursorScreenPos().y + thsat_ye),
                                                color, 3, 0, 2 * ui_scale);

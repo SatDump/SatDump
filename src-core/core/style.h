@@ -9,8 +9,12 @@ SATDUMP_DLL extern ImColor IMCOLOR_BLUE;
 SATDUMP_DLL extern ImColor IMCOLOR_YELLOW;
 SATDUMP_DLL extern ImColor IMCOLOR_ORANGE;
 SATDUMP_DLL extern ImColor IMCOLOR_CYAN;
-SATDUMP_DLL extern ImColor IMCOLOR_MAGENTA;
+SATDUMP_DLL extern ImColor IMCOLOR_FUCHSIA;
+SATDUMP_DLL extern ImColor IMCOLOR_MAGENTIA;
 SATDUMP_DLL extern ImColor IMCOLOR_LAVENDER;
+SATDUMP_DLL extern ImColor IMCOLOR_LIGHTGREEN;
+SATDUMP_DLL extern ImColor IMCOLOR_LIGHTCYAN;
+SATDUMP_DLL extern ImColor IMCOLOR_CONSTELLATION;
 SATDUMP_DLL extern ImColor IMCOLOR_WINDOWBG;
 SATDUMP_DLL extern ImColor IMCOLOR_OVERLAYBG;
 
@@ -20,8 +24,8 @@ namespace style
     SATDUMP_DLL extern ImFont *bigFont;
     //SATDUMP_DLL extern ImFont *hugeFont;
 
-    bool setLightStyle();
-    bool setDarkStyle();
+    void setLightStyle();
+    void setDarkStyle();
     void beginDisabled();
     void endDisabled();
     void setFonts();

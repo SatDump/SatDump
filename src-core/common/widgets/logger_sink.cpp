@@ -39,7 +39,7 @@ namespace widgets
             else if (ll.lvl == slog::LOG_ERROR)
                 ImGui::TextColored(IMCOLOR_RED, "%s", text.c_str());
             else if (ll.lvl == slog::LOG_CRIT)
-                ImGui::TextColored(IMCOLOR_MAGENTA, "%s", text.c_str());
+                ImGui::TextColored(IMCOLOR_FUCHSIA, "%s", text.c_str());
         }
         if (new_item)
         {

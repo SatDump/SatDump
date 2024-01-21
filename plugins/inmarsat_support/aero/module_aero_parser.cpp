@@ -429,11 +429,11 @@ namespace inmarsat
                         {
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["msg_name"].get<std::string>().c_str());
+                            ImGui::TextColored(IMCOLOR_LAVENDER, "%s", msg["msg_name"].get<std::string>().c_str());
                             ImGui::TableSetColumnIndex(1);
-                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TextColored(IMCOLOR_YELLOW, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg.dump().c_str());
+                            ImGui::TextColored(IMCOLOR_GREEN, "%s", msg.dump().c_str());
                         }
                         catch (std::exception&)
                         {

@@ -120,7 +120,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMR-2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amr2_reader.lines);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", amr2_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amr2_status);
 
@@ -128,7 +128,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Poseidon C");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", poseidon_c_reader.frames);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", poseidon_c_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(poseidon_c_status);
 
@@ -136,7 +136,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Poseidon Ku");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", poseidon_ku_reader.frames);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", poseidon_ku_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(poseidon_ku_status);
 
@@ -144,7 +144,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT ELS-A");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_els_a_reader.frames);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", lpt_els_a_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_els_a_status);
 
@@ -152,7 +152,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT ELS-B");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_els_b_reader.frames);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", lpt_els_b_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_els_b_status);
 
@@ -160,7 +160,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT APS-A");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_aps_a_reader.frames);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", lpt_aps_a_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_aps_a_status);
 
@@ -168,7 +168,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT APS-B");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_aps_b_reader.frames);
+                ImGui::TextColored(IMCOLOR_GREEN, "%d", lpt_aps_b_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_aps_b_status);
 

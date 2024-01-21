@@ -20,8 +20,12 @@ SATDUMP_DLL ImColor IMCOLOR_BLUE;
 SATDUMP_DLL ImColor IMCOLOR_YELLOW;
 SATDUMP_DLL ImColor IMCOLOR_ORANGE;
 SATDUMP_DLL ImColor IMCOLOR_CYAN;
-SATDUMP_DLL ImColor IMCOLOR_MAGENTA;
+SATDUMP_DLL ImColor IMCOLOR_FUCHSIA;
+SATDUMP_DLL ImColor IMCOLOR_MAGENTIA;
 SATDUMP_DLL ImColor IMCOLOR_LAVENDER;
+SATDUMP_DLL ImColor IMCOLOR_LIGHTGREEN;
+SATDUMP_DLL ImColor IMCOLOR_LIGHTCYAN;
+SATDUMP_DLL ImColor IMCOLOR_CONSTELLATION;
 SATDUMP_DLL ImColor IMCOLOR_WINDOWBG;
 SATDUMP_DLL ImColor IMCOLOR_OVERLAYBG;
 
@@ -31,7 +35,7 @@ namespace style
     SATDUMP_DLL ImFont *bigFont;
     //SATDUMP_DLL ImFont *hugeFont;
 
-    bool setLightStyle()
+    void setLightStyle()
     {
         auto& style = ImGui::GetStyle();
         float round = pow(2.0f, ui_scale);
@@ -53,15 +57,17 @@ namespace style
         IMCOLOR_YELLOW = ImColor(0.55f, 0.27f, 0.07f, 1.00f);
         IMCOLOR_ORANGE = ImColor(0.75f, 0.50f, 0.05f, 1.00f);
         IMCOLOR_CYAN = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
-        IMCOLOR_MAGENTA = ImColor(0.50f, 0.00f, 0.50f, 1.00f);
+        IMCOLOR_FUCHSIA = ImColor(0.50f, 0.00f, 0.50f, 1.00f);
+        IMCOLOR_MAGENTIA = ImColor(0.50f, 0.00f, 0.39f, 1.00f);
         IMCOLOR_LAVENDER = ImColor(0.31f, 0.31f, 0.50f, 1.00f);
+        IMCOLOR_LIGHTGREEN = ImColor(0.20f, 0.50f, 0.20f, 1.00f);
+        IMCOLOR_LIGHTCYAN = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
+        IMCOLOR_CONSTELLATION = ImColor(0.03f, 0.25f, 0.00f, 1.00f);
         IMCOLOR_WINDOWBG = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
         IMCOLOR_OVERLAYBG = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
-
-        return true;
     }
 
-    bool setDarkStyle()
+    void setDarkStyle()
     {
         auto& style = ImGui::GetStyle();
         float round = pow(2.0f, ui_scale);
@@ -124,12 +130,14 @@ namespace style
         IMCOLOR_YELLOW = ImColor(1.00f, 1.00f, 0.00f, 1.00f);
         IMCOLOR_ORANGE = ImColor(1.00f, 0.67f, 0.00f, 0.07f);
         IMCOLOR_CYAN = ImColor(0.00f, 1.00f, 1.00f, 1.00f);
-        IMCOLOR_MAGENTA = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
+        IMCOLOR_FUCHSIA = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
+        IMCOLOR_MAGENTIA = ImColor(1.00f, 0.00f, 0.78f, 1.00f);
         IMCOLOR_LAVENDER = ImColor(0.63f, 0.63f, 1.00f, 1.00f);
+        IMCOLOR_LIGHTGREEN = ImColor(0.39f, 1.00f, 0.39f, 1.00f);
+        IMCOLOR_LIGHTCYAN = ImColor(0.00f, 0.92f, 1.00f, 1.00f);
+        IMCOLOR_CONSTELLATION = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
         IMCOLOR_WINDOWBG = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         IMCOLOR_OVERLAYBG = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
-
-        return true;
     }
 
     void beginDisabled()
