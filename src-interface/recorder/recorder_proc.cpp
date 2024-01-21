@@ -93,7 +93,7 @@ namespace satdump
         }
         catch (std::runtime_error &e)
         {
-            sdr_error.set_message(IMCOLOR_RED, e.what());
+            sdr_error.set_message(style::theme.red, e.what());
             logger->error(e.what());
         }
     }
@@ -251,13 +251,13 @@ namespace satdump
             }
             catch (std::runtime_error &e)
             {
-                error.set_message(IMCOLOR_RED, e.what());
+                error.set_message(style::theme.red, e.what());
                 logger->error(e.what());
             }
         }
         else
         {
-            error.set_message(IMCOLOR_RED, "Please select a valid output directory!");
+            error.set_message(style::theme.red, "Please select a valid output directory!");
         }
     }
 

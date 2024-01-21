@@ -128,7 +128,7 @@ namespace xrit
             {
                 ImGui::Text("PID  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(pid_to_decode == current_pid ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(current_pid));
+                ImGui::TextColored(pid_to_decode == current_pid ? style::theme.green : style::theme.orange, UITO_C_STR(current_pid));
             }
         }
         ImGui::EndGroup();

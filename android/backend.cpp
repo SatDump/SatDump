@@ -30,7 +30,7 @@ void funcEndFrame()
     ImGui::Render();
     ImGuiIO& io = ImGui::GetIO();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(IMCOLOR_WINDOWBG.Value.x, IMCOLOR_WINDOWBG.Value.y, IMCOLOR_WINDOWBG.Value.z, 1.0f);
+    glClearColor(style::theme.frame_bg.Value.x, style::theme.frame_bg.Value.y, style::theme.frame_bg.Value.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

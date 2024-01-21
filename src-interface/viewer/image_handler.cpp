@@ -558,7 +558,7 @@ namespace satdump
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     {
                         ImGui::BeginTooltip();
-                        ImGui::TextColored(IMCOLOR_RED, "Disable projection!");
+                        ImGui::TextColored(style::theme.red, "Disable projection!");
                         ImGui::EndTooltip();
                     }
                 }
@@ -744,11 +744,11 @@ namespace satdump
                 {
                     ImGui::BeginTooltip();
                     if (current_timestamps.size() == 0)
-                        ImGui::TextColored(IMCOLOR_RED, "No timestamps!");
+                        ImGui::TextColored(style::theme.red, "No timestamps!");
                     else if (correct_image)
-                        ImGui::TextColored(IMCOLOR_RED, "Disable correction!");
+                        ImGui::TextColored(style::theme.red, "Disable correction!");
                     else
-                        ImGui::TextColored(IMCOLOR_YELLOW, "The old algorithm will\n"
+                        ImGui::TextColored(style::theme.yellow, "The old algorithm will\n"
                                                                                     "deal with very bad (noisy) data\n"
                                                                                     "better.\n"
                                                                                     "The new one is preferred if\n"

@@ -31,15 +31,15 @@ namespace widgets
             if (ll.lvl == slog::LOG_TRACE)
                 ImGui::TextUnformatted(text.c_str());
             else if (ll.lvl == slog::LOG_DEBUG)
-                ImGui::TextColored(IMCOLOR_CYAN, "%s", text.c_str());
+                ImGui::TextColored(style::theme.cyan, "%s", text.c_str());
             else if (ll.lvl == slog::LOG_INFO)
-                ImGui::TextColored(IMCOLOR_GREEN, "%s", text.c_str());
+                ImGui::TextColored(style::theme.green, "%s", text.c_str());
             else if (ll.lvl == slog::LOG_WARN)
-                ImGui::TextColored(IMCOLOR_YELLOW, "%s", text.c_str());
+                ImGui::TextColored(style::theme.yellow, "%s", text.c_str());
             else if (ll.lvl == slog::LOG_ERROR)
-                ImGui::TextColored(IMCOLOR_RED, "%s", text.c_str());
+                ImGui::TextColored(style::theme.red, "%s", text.c_str());
             else if (ll.lvl == slog::LOG_CRIT)
-                ImGui::TextColored(IMCOLOR_FUCHSIA, "%s", text.c_str());
+                ImGui::TextColored(style::theme.fuchsia, "%s", text.c_str());
         }
         if (new_item)
         {

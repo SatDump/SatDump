@@ -135,7 +135,7 @@ namespace goes
                         draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                           ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                    2 * ui_scale,
-                                                   IMCOLOR_CONSTELLATION);
+                                                   style::theme.constellation);
                     }
 
                     ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
@@ -151,7 +151,7 @@ namespace goes
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(locked ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(cor));
+                    ImGui::TextColored(locked ? style::theme.green : style::theme.orange, UITO_C_STR(cor));
 
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                     cor_history[200 - 1] = cor;

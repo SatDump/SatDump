@@ -224,11 +224,11 @@ namespace fy4
                             ImGui::BeginGroup();
                             ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                             if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(IMCOLOR_GREEN, "Writing image...");
+                                ImGui::TextColored(style::theme.green, "Writing image...");
                             else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(IMCOLOR_ORANGE, "Receiving...");
+                                ImGui::TextColored(style::theme.orange, "Receiving...");
                             else
-                                ImGui::TextColored(IMCOLOR_RED, "Idle (Image)...");
+                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
                             ImGui::EndGroup();
                             ImGui::EndTabItem();
                         }
@@ -243,7 +243,7 @@ namespace fy4
                         ImGui::SameLine();
                         ImGui::BeginGroup();
                         ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(IMCOLOR_RED, "Idle (Image)...");
+                        ImGui::TextColored(style::theme.red, "Idle (Image)...");
                         ImGui::EndGroup();
                         ImGui::EndTabItem();
                     }

@@ -278,7 +278,7 @@ namespace meteor
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MSU-MR");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", msumr_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", msumr_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(msumr_status);
 
@@ -286,7 +286,7 @@ namespace meteor
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MTVZA");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d",
+                ImGui::TextColored(style::theme.green, "%d",
                                    mtvza_reader2.lines > mtvza_reader.lines
                                        ? mtvza_reader2.lines
                                        : mtvza_reader.lines);

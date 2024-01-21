@@ -1263,7 +1263,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MERSI-1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mersi1_reader.segments);
+                    ImGui::TextColored(style::theme.green, "%d", mersi1_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersi1_status);
                 }
@@ -1274,7 +1274,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MERSI-2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mersi2_reader.segments);
+                    ImGui::TextColored(style::theme.green, "%d", mersi2_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersi2_status);
                 }
@@ -1285,7 +1285,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MERSI-LL");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mersill_reader.segments);
+                    ImGui::TextColored(style::theme.green, "%d", mersill_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersill_status);
                 }
@@ -1296,7 +1296,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MERSI-3");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mersi3_reader.segments);
+                    ImGui::TextColored(style::theme.green, "%d", mersi3_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersi3_status);
 
@@ -1304,7 +1304,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWRI-2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwri2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwri2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwri2_status);
                 }
@@ -1315,7 +1315,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MERSI-RM");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mersirm_reader.segments);
+                    ImGui::TextColored(style::theme.green, "%d", mersirm_reader.segments);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mersirm_status);
 
@@ -1323,7 +1323,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWRI-RM");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwrirm_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwrirm_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwrirm_status);
 
@@ -1331,7 +1331,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("PMR-1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", pmr1_reader->images_count);
+                    ImGui::TextColored(style::theme.green, "%d", pmr1_reader->images_count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(pmr1_status);
 
@@ -1339,7 +1339,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("PMR-2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", pmr2_reader->images_count);
+                    ImGui::TextColored(style::theme.green, "%d", pmr2_reader->images_count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(pmr2_status);
                 }
@@ -1350,7 +1350,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIRR");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", virr_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", virr_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(virr_status);
 
@@ -1358,7 +1358,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("ERM");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", erm_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", erm_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(erm_status);
                 }
@@ -1369,7 +1369,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWTS-1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwts1_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwts1_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwts1_status);
                 }
@@ -1380,7 +1380,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWHS-1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwhs1_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwhs1_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwhs1_status);
                 }
@@ -1391,7 +1391,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWTS-2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwts2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwts2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwts2_status);
                 }
@@ -1402,7 +1402,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWRI");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwri_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwri_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwri_status);
                 }
@@ -1413,7 +1413,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("WAI");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", wai_reader->images_count);
+                    ImGui::TextColored(style::theme.green, "%d", wai_reader->images_count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(wai_status);
                 }
@@ -1424,7 +1424,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("GAS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", gas_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", gas_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(gas_status);
                 }
@@ -1435,7 +1435,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWTS-3");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwts3_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwts3_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwts3_status);
                 }
@@ -1446,7 +1446,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MWHS-2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mwhs2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", mwhs2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mwhs2_status);
                 }
@@ -1457,7 +1457,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("XEUVI");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", xeuvi_reader->images_count);
+                    ImGui::TextColored(style::theme.green, "%d", xeuvi_reader->images_count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(xeuvi_status);
 
@@ -1465,7 +1465,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("WindRAD C-Band");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", windrad_reader1->imgCount);
+                    ImGui::TextColored(style::theme.green, "%d", windrad_reader1->imgCount);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(windrad_C_status);
 
@@ -1473,7 +1473,7 @@ namespace fengyun3
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("WindRAD Ku-Band");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", windrad_reader2->imgCount);
+                    ImGui::TextColored(style::theme.green, "%d", windrad_reader2->imgCount);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(windrad_Ku_status);
                 }

@@ -106,7 +106,7 @@ namespace noaa
 
                 ImGui::SameLine();
 
-                ImGui::TextColored(IMCOLOR_GREEN, UITO_C_STR(frame_count / 11090));
+                ImGui::TextColored(style::theme.green, UITO_C_STR(frame_count / 11090));
             }
         }
         ImGui::EndGroup();

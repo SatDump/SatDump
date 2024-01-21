@@ -194,7 +194,7 @@ namespace oceansat
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("OCM");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", ocm_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", ocm_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(ocm_status);
                 ImGui::EndTable();

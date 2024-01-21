@@ -204,11 +204,11 @@ namespace satdump
                     plugin_hdl.save();
 
                 config::saveUserConfig();
-                saved_message.set_message(IMCOLOR_GREEN, "Settings saved");
+                saved_message.set_message(style::theme.green, "Settings saved");
             }
 
             saved_message.draw();
-            ImGui::TextColored(IMCOLOR_YELLOW, "Note : Some settings will require SatDump to be restarted\nto take effect!");
+            ImGui::TextColored(style::theme.yellow, "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
     }
 }

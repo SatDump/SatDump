@@ -3,8 +3,6 @@
 #include "style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
-//#include <config.h>
-//#include <options.h>
 #include "logger.h"
 #include <filesystem>
 #include "core/module.h"
@@ -14,24 +12,9 @@
 #include <CoreGraphics/CGDirectDisplay.h>
 #endif
 
-SATDUMP_DLL ImColor IMCOLOR_RED;
-SATDUMP_DLL ImColor IMCOLOR_GREEN;
-SATDUMP_DLL ImColor IMCOLOR_BLUE;
-SATDUMP_DLL ImColor IMCOLOR_YELLOW;
-SATDUMP_DLL ImColor IMCOLOR_ORANGE;
-SATDUMP_DLL ImColor IMCOLOR_CYAN;
-SATDUMP_DLL ImColor IMCOLOR_FUCHSIA;
-SATDUMP_DLL ImColor IMCOLOR_MAGENTIA;
-SATDUMP_DLL ImColor IMCOLOR_LAVENDER;
-SATDUMP_DLL ImColor IMCOLOR_LIGHTGREEN;
-SATDUMP_DLL ImColor IMCOLOR_LIGHTCYAN;
-SATDUMP_DLL ImColor IMCOLOR_CONSTELLATION;
-SATDUMP_DLL ImColor IMCOLOR_WINDOWBG;
-SATDUMP_DLL ImColor IMCOLOR_OVERLAYBG;
-SATDUMP_DLL ImColor IMCOLOR_FREQHIGHLIGHT;
-
 namespace style
 {
+    SATDUMP_DLL Theme theme;
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
     //SATDUMP_DLL ImFont *hugeFont;
@@ -52,21 +35,22 @@ namespace style
         ImVec4 *colors = style.Colors;
         colors[ImGuiCol_TextDisabled] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 
-        IMCOLOR_RED = ImColor(0.75f, 0.00f, 0.00f, 1.00f);
-        IMCOLOR_GREEN = ImColor(0.06f, 0.50f, 0.00f, 1.00f);
-        IMCOLOR_BLUE = ImColor(0.00f, 0.00f, 0.50f, 1.00f);
-        IMCOLOR_YELLOW = ImColor(0.55f, 0.27f, 0.07f, 1.00f);
-        IMCOLOR_ORANGE = ImColor(0.75f, 0.50f, 0.05f, 1.00f);
-        IMCOLOR_CYAN = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
-        IMCOLOR_FUCHSIA = ImColor(0.50f, 0.00f, 0.50f, 1.00f);
-        IMCOLOR_MAGENTIA = ImColor(0.50f, 0.00f, 0.39f, 1.00f);
-        IMCOLOR_LAVENDER = ImColor(0.31f, 0.31f, 0.50f, 1.00f);
-        IMCOLOR_LIGHTGREEN = ImColor(0.20f, 0.50f, 0.20f, 1.00f);
-        IMCOLOR_LIGHTCYAN = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
-        IMCOLOR_CONSTELLATION = ImColor(0.03f, 0.25f, 0.00f, 1.00f);
-        IMCOLOR_WINDOWBG = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
-        IMCOLOR_OVERLAYBG = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
-        IMCOLOR_FREQHIGHLIGHT = ImColor(0.596f, 0.728f, 0.884f, 0.75f);
+        theme.light_mode = true;
+        theme.red = ImColor(0.75f, 0.00f, 0.00f, 1.00f);
+        theme.green = ImColor(0.06f, 0.50f, 0.00f, 1.00f);
+        theme.blue = ImColor(0.00f, 0.00f, 0.50f, 1.00f);
+        theme.yellow = ImColor(0.55f, 0.27f, 0.07f, 1.00f);
+        theme.orange = ImColor(0.75f, 0.50f, 0.05f, 1.00f);
+        theme.cyan = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
+        theme.fuchsia = ImColor(0.50f, 0.00f, 0.50f, 1.00f);
+        theme.magenta = ImColor(0.50f, 0.00f, 0.39f, 1.00f);
+        theme.lavender = ImColor(0.31f, 0.31f, 0.50f, 1.00f);
+        theme.light_green = ImColor(0.20f, 0.50f, 0.20f, 1.00f);
+        theme.light_cyan = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
+        theme.constellation = ImColor(0.03f, 0.25f, 0.00f, 1.00f);
+        theme.frame_bg = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
+        theme.overlay_bg = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
+        theme.freq_highlight = ImColor(0.596f, 0.728f, 0.884f, 0.75f);
     }
 
     void setDarkStyle()
@@ -126,21 +110,22 @@ namespace style
         colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 
-        IMCOLOR_RED = ImColor(1.00f, 0.00f, 0.00f, 1.00f);
-        IMCOLOR_GREEN = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
-        IMCOLOR_BLUE = ImColor(0.00f, 0.00f, 1.00f, 1.00f);
-        IMCOLOR_YELLOW = ImColor(1.00f, 1.00f, 0.00f, 1.00f);
-        IMCOLOR_ORANGE = ImColor(1.00f, 0.67f, 0.00f, 0.07f);
-        IMCOLOR_CYAN = ImColor(0.00f, 1.00f, 1.00f, 1.00f);
-        IMCOLOR_FUCHSIA = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
-        IMCOLOR_MAGENTIA = ImColor(1.00f, 0.00f, 0.78f, 1.00f);
-        IMCOLOR_LAVENDER = ImColor(0.63f, 0.63f, 1.00f, 1.00f);
-        IMCOLOR_LIGHTGREEN = ImColor(0.39f, 1.00f, 0.39f, 1.00f);
-        IMCOLOR_LIGHTCYAN = ImColor(0.00f, 0.92f, 1.00f, 1.00f);
-        IMCOLOR_CONSTELLATION = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
-        IMCOLOR_WINDOWBG = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
-        IMCOLOR_OVERLAYBG = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
-        IMCOLOR_FREQHIGHLIGHT = ImColor(0.596f, 0.728f, 0.884f, 0.5f);
+        theme.light_mode = false;
+        theme.red = ImColor(1.00f, 0.00f, 0.00f, 1.00f);
+        theme.green = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
+        theme.blue = ImColor(0.00f, 0.00f, 1.00f, 1.00f);
+        theme.yellow = ImColor(1.00f, 1.00f, 0.00f, 1.00f);
+        theme.orange = ImColor(1.00f, 0.67f, 0.00f, 0.07f);
+        theme.cyan = ImColor(0.00f, 1.00f, 1.00f, 1.00f);
+        theme.fuchsia = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
+        theme.magenta = ImColor(1.00f, 0.00f, 0.78f, 1.00f);
+        theme.lavender = ImColor(0.63f, 0.63f, 1.00f, 1.00f);
+        theme.light_green = ImColor(0.39f, 1.00f, 0.39f, 1.00f);
+        theme.light_cyan = ImColor(0.00f, 0.92f, 1.00f, 1.00f);
+        theme.constellation = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
+        theme.frame_bg = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
+        theme.overlay_bg = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
+        theme.freq_highlight = ImColor(0.596f, 0.728f, 0.884f, 0.5f);
     }
 
     void beginDisabled()
@@ -171,7 +156,6 @@ namespace style
     void setFonts(float dpi_scaling)
     {
         ImGuiIO &io = ImGui::GetIO();
-        (void)io;
         io.Fonts->Clear();
         const ImWchar def[] = {0x20, 0x2300, 0}; //default range
         const ImWchar list[6][3] = { {0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0},

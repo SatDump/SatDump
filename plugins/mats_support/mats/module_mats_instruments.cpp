@@ -123,7 +123,7 @@ namespace mats
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MATS %s", mats::channel_names[i].c_str());
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(IMCOLOR_GREEN, "%d", mats_reader.img_cnts[i]);
+                    ImGui::TextColored(style::theme.green, "%d", mats_reader.img_cnts[i]);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(mats_status);
                 }

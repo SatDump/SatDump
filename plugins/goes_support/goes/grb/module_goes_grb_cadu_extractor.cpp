@@ -144,7 +144,7 @@ namespace goes
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(cadu_sync ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(cadu_cor));
+                    ImGui::TextColored(cadu_sync ? style::theme.green : style::theme.orange, UITO_C_STR(cadu_cor));
 
                     std::memmove(&cor_history_ca[0], &cor_history_ca[1], (200 - 1) * sizeof(float));
                     cor_history_ca[200 - 1] = cadu_cor;

@@ -190,7 +190,7 @@ namespace stereo
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("CIPS %d", i + 1);
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", (int)cips_readers[i].images.size());
+                ImGui::TextColored(style::theme.green, "%d", (int)cips_readers[i].images.size());
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(cips_status[i]);
             }

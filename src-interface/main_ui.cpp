@@ -5,8 +5,6 @@
 #include "offline.h"
 #include "settings.h"
 #include "satdump_vars.h"
-#include "core/config.h"
-#include "core/style.h"
 #include "core/backend.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
@@ -31,7 +29,6 @@ namespace satdump
     std::shared_ptr<RecorderApplication> recorder_app;
     std::shared_ptr<ViewerApplication> viewer_app;
 
-    bool light_theme;
     bool in_app = false; // true;
     bool open_recorder;
 
@@ -79,13 +76,12 @@ namespace satdump
 
     void updateUI(float device_scale)
     {
-        light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
         float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
         ui_scale = device_scale * manual_dpi_scaling;
         ImGui::GetStyle() = ImGuiStyle();
         ImGui::GetStyle().ScaleAllSizes(ui_scale);
 
-        if (light_theme)
+        if (config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>())
             style::setLightStyle();
         else
             style::setDarkStyle();
@@ -268,8 +264,8 @@ namespace satdump
 
         // Render toasts on top of everything, at the end of your code!
         // You should push style vars here
-        float notification_bgcolor = (light_theme ? 212.f : 43.f) / 255.f;
-        float notification_transparency = (light_theme ? 200.f : 100.f) / 255.f;
+        float notification_bgcolor = (style::theme.light_mode ? 212.f : 43.f) / 255.f;
+        float notification_transparency = (style::theme.light_mode ? 200.f : 100.f) / 255.f;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
         notify_logger_sink->notify_mutex.lock();

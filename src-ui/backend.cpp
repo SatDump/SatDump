@@ -35,7 +35,7 @@ void funcEndFrame()
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
-    glClearColor(IMCOLOR_WINDOWBG.Value.x, IMCOLOR_WINDOWBG.Value.y, IMCOLOR_WINDOWBG.Value.z, 1.0f);
+    glClearColor(style::theme.frame_bg.Value.x, style::theme.frame_bg.Value.y, style::theme.frame_bg.Value.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
 #ifndef IMGUI_IMPL_OPENGL_ES2

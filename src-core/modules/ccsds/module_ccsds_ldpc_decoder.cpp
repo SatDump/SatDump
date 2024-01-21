@@ -285,7 +285,7 @@ namespace ccsds
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               IMCOLOR_CONSTELLATION);
+                                               style::theme.constellation);
                 }
 
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
@@ -302,7 +302,7 @@ namespace ccsds
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               IMCOLOR_CONSTELLATION);
+                                               style::theme.constellation);
                 }
 
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
@@ -318,7 +318,7 @@ namespace ccsds
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(correlator_locked ? IMCOLOR_GREEN : IMCOLOR_ORANGE, UITO_C_STR(correlator_cor));
+                ImGui::TextColored(correlator_locked ? style::theme.green : style::theme.orange, UITO_C_STR(correlator_cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = correlator_cor;
@@ -333,7 +333,7 @@ namespace ccsds
             {
                 ImGui::Text("Diff  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ldpc_corr > 10 ? IMCOLOR_ORANGE : IMCOLOR_GREEN, UITO_C_STR(ldpc_corr));
+                ImGui::TextColored(ldpc_corr > 10 ? style::theme.orange : style::theme.green, UITO_C_STR(ldpc_corr));
 
                 std::memmove(&ldpc_history[0], &ldpc_history[1], (200 - 1) * sizeof(float));
                 ldpc_history[200 - 1] = ldpc_corr;
@@ -352,11 +352,11 @@ namespace ccsds
                     ImGui::SameLine();
 
                     if (deframer->getState() == deframer->STATE_NOSYNC)
-                        ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
+                        ImGui::TextColored(style::theme.red, "NOSYNC");
                     else if (deframer->getState() == deframer->STATE_SYNCING)
-                        ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
+                        ImGui::TextColored(style::theme.orange, "SYNCING");
                     else
-                        ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
+                        ImGui::TextColored(style::theme.green, "SYNCED");
                 }
             }
         }

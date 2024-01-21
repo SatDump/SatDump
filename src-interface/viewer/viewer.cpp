@@ -171,7 +171,7 @@ namespace satdump
             ImGui::Text("  ");
             ImGui::SameLine();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
+            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
@@ -225,7 +225,7 @@ namespace satdump
                                 ImGui::Text("  ");
                                 ImGui::SameLine();
 
-                                ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
+                                ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
                                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                                 if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {

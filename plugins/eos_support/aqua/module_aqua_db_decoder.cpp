@@ -140,7 +140,7 @@ namespace aqua
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               IMCOLOR_CONSTELLATION);
+                                               style::theme.constellation);
                 }
 
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
@@ -159,11 +159,11 @@ namespace aqua
                 ImGui::SameLine();
 
                 if (deframer.getState() == deframer.STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (deframer.getState() == deframer.STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
 
             ImGui::Spacing();
@@ -176,11 +176,11 @@ namespace aqua
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_RED, "%i ", i);
+                        ImGui::TextColored(style::theme.red, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_ORANGE, "%i ", i);
+                        ImGui::TextColored(style::theme.orange, "%i ", i);
                     else
-                        ImGui::TextColored(IMCOLOR_GREEN, "%i ", i);
+                        ImGui::TextColored(style::theme.green, "%i ", i);
                 }
             }
         }

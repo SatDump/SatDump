@@ -128,7 +128,7 @@ namespace gcom1
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSR-2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", (int)amsr2_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", (int)amsr2_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsr2_status);
 

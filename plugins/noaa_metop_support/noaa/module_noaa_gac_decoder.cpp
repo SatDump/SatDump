@@ -175,17 +175,17 @@ namespace noaa
                 ImGui::SameLine();
 
                 if (deframer->getState() == deframer->STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (deframer->getState() == deframer->STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
 
                 ImGui::Text("Frames : ");
 
                 ImGui::SameLine();
 
-                ImGui::TextColored(IMCOLOR_GREEN, UITO_C_STR(frame_count));
+                ImGui::TextColored(style::theme.green, UITO_C_STR(frame_count));
             }
         }
         ImGui::EndGroup();

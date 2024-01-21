@@ -153,7 +153,7 @@ namespace spacex
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (buffer[i] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 6 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               IMCOLOR_CONSTELLATION);
+                                               style::theme.constellation);
                 }
 
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
@@ -172,11 +172,11 @@ namespace spacex
                 ImGui::SameLine();
 
                 if (deframer.getState() == 0)
-                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (deframer.getState() == 2 || deframer.getState() == 6)
-                    ImGui::TextColored(IMCOLOR_ORANGE, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
 
             ImGui::Spacing();
@@ -189,11 +189,11 @@ namespace spacex
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_RED, "%i ", i);
+                        ImGui::TextColored(style::theme.red, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_ORANGE, "%i ", i);
+                        ImGui::TextColored(style::theme.orange, "%i ", i);
                     else
-                        ImGui::TextColored(IMCOLOR_GREEN, "%i ", i);
+                        ImGui::TextColored(style::theme.green, "%i ", i);
                 }
             }
         }

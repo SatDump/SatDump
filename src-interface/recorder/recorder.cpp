@@ -288,7 +288,7 @@ namespace satdump
 
                     bool pushed_color_xconv = xconverter_frequency != 0;
                     if (pushed_color_xconv)
-                        ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_GREEN.Value);
+                        ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
                     if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
                         set_frequency(frequency_hz);
                     if (pushed_color_xconv)
@@ -480,9 +480,9 @@ namespace satdump
                     ImGui::Spacing();
 
                     if (!is_recording)
-                        ImGui::TextColored(IMCOLOR_RED, "IDLE");
+                        ImGui::TextColored(style::theme.red, "IDLE");
                     else
-                        ImGui::TextColored(IMCOLOR_GREEN, "RECORDING");
+                        ImGui::TextColored(style::theme.green, "RECORDING");
 
                     ImGui::Spacing();
 

@@ -552,7 +552,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AVHRR");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", avhrr_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", avhrr_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(avhrr_status);
 
@@ -560,7 +560,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("HIRS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", hirs_reader.line);
+                ImGui::TextColored(style::theme.green, "%d", hirs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(hirs_status);
 
@@ -568,7 +568,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MHS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", mhs_reader.line);
+                ImGui::TextColored(style::theme.green, "%d", mhs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mhs_status);
 
@@ -576,7 +576,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", amsu_reader.linesA1);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA1);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -584,7 +584,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(IMCOLOR_GREEN, "%d", amsu_reader.linesA2);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 

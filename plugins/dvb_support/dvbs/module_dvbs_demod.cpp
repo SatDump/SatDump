@@ -245,7 +245,7 @@ namespace dvb
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_ORANGE, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
@@ -275,13 +275,13 @@ namespace dvb
                     rate = "7/8";
 
                 if (viterbi.getState() == 0)
-                    ImGui::TextColored(IMCOLOR_RED, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else
-                    ImGui::TextColored(IMCOLOR_GREEN, "SYNCED %s", rate.c_str());
+                    ImGui::TextColored(style::theme.green, "SYNCED %s", rate.c_str());
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? IMCOLOR_RED : IMCOLOR_GREEN, UITO_C_STR(ber));
+                ImGui::TextColored(viterbi.getState() == 0 ? style::theme.red : style::theme.green, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
@@ -299,11 +299,11 @@ namespace dvb
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_RED, "%i ", i);
+                        ImGui::TextColored(style::theme.red, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_ORANGE, "%i ", i);
+                        ImGui::TextColored(style::theme.orange, "%i ", i);
                     else
-                        ImGui::TextColored(IMCOLOR_GREEN, "%i ", i);
+                        ImGui::TextColored(style::theme.green, "%i ", i);
                 }
             }
         }

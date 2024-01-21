@@ -183,7 +183,7 @@ namespace noaa_apt
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_ORANGE, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr); */
             if (!streamingInput)
@@ -195,13 +195,13 @@ namespace noaa_apt
                 ImVec4 color;
                 if (play_audio)
                 {
-                    color = IMCOLOR_GREEN.Value;
+                    color = style::theme.green.Value;
                     btn_icon = u8"\uF028##aptaudio";
                     label = "Audio Playing";
                 }
                 else
                 {
-                    color = IMCOLOR_RED.Value;
+                    color = style::theme.red.Value;
                     btn_icon = u8"\uF026##aptaudio";
                     label = "Audio Muted";
                 }

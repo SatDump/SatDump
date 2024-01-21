@@ -152,7 +152,7 @@ namespace spino
         {
             ImGui::Text("Frames : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_GREEN, UITO_C_STR(frm_cnt));
+            ImGui::TextColored(style::theme.green, UITO_C_STR(frm_cnt));
         }
 
         if (!streamingInput)

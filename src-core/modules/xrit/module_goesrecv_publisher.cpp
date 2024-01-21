@@ -87,11 +87,11 @@ namespace xrit
 
         ImGui::Text("Address  : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_GREEN, "%s", address.c_str());
+        ImGui::TextColored(style::theme.green, "%s", address.c_str());
 
         ImGui::Text("Port    : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_GREEN, UITO_C_STR(port));
+        ImGui::TextColored(style::theme.green, UITO_C_STR(port));
 
         if (!streamingInput)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
