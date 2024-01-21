@@ -90,7 +90,9 @@ namespace widgets
                 float y_level = inner_bb.Max.y - 8 * ui_scale;
                 float x_line = inner_bb.Min.x + (((bandwidth / 2) + vfreq) / bandwidth) * res_w;
 
-                window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 15 * ui_scale}, col_base_vfo, 3);
+                window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base_vfo, 3);
+                window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line - 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+                window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line + 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
 
                 if (sqrtf(powf(ImGui::GetMousePos().x - x_line, 2) + powf(ImGui::GetMousePos().y - y_level, 2)) < 40 * ui_scale)
                     window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 45 * ui_scale},
