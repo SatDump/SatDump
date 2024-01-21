@@ -28,6 +28,7 @@ SATDUMP_DLL ImColor IMCOLOR_LIGHTCYAN;
 SATDUMP_DLL ImColor IMCOLOR_CONSTELLATION;
 SATDUMP_DLL ImColor IMCOLOR_WINDOWBG;
 SATDUMP_DLL ImColor IMCOLOR_OVERLAYBG;
+SATDUMP_DLL ImColor IMCOLOR_FREQHIGHLIGHT;
 
 namespace style
 {
@@ -65,6 +66,7 @@ namespace style
         IMCOLOR_CONSTELLATION = ImColor(0.03f, 0.25f, 0.00f, 1.00f);
         IMCOLOR_WINDOWBG = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
         IMCOLOR_OVERLAYBG = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
+        IMCOLOR_FREQHIGHLIGHT = ImColor(0.596f, 0.728f, 0.884f, 0.75f);
     }
 
     void setDarkStyle()
@@ -138,6 +140,7 @@ namespace style
         IMCOLOR_CONSTELLATION = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
         IMCOLOR_WINDOWBG = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         IMCOLOR_OVERLAYBG = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
+        IMCOLOR_FREQHIGHLIGHT = ImColor(0.596f, 0.728f, 0.884f, 0.5f);
     }
 
     void beginDisabled()

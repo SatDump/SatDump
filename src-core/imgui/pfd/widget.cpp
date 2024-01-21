@@ -43,7 +43,7 @@ bool FileSelectWidget::draw(std::string hint)
     if (disabled)
         style::beginDisabled();
     if (!file_valid)
-        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+        ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
     ImGui::InputTextWithHint(id.c_str(), hint.c_str(), &path);
     changed = ImGui::IsItemDeactivatedAfterEdit();
     if (!file_valid)

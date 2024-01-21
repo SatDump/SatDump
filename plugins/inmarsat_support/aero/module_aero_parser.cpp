@@ -353,16 +353,16 @@ namespace inmarsat
             {
                 ImGui::Spacing();
                 const char* btn_icon, * label;
-                ImU32 color;
+                ImVec4 color;
                 if (play_audio)
                 {
-                    color = IM_COL32(0, 255, 0, 255);
+                    color = IMCOLOR_GREEN.Value;
                     btn_icon = u8"\uF028##aeroaudio";
                     label = "Audio Playing";
                 }
                 else
                 {
-                    color = IM_COL32(255, 0, 0, 255);
+                    color = IMCOLOR_RED.Value;
                     btn_icon = u8"\uF026##aeroaudio";
                     label = "Audio Muted";
                 }

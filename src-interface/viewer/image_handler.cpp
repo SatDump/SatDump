@@ -386,16 +386,14 @@ namespace satdump
 
             if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
+                ImVec4* colors = ImGui::GetStyle().Colors;
+                int to_pop = 0;
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[ImGuiCol_TabHovered]);
+                    to_pop += 2;
                 }
                 if (!active_channel_calibrated)
                     ImGui::BeginDisabled();
@@ -403,16 +401,14 @@ namespace satdump
                     range_window = !range_window;
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Diaplay Range Control");
+                ImGui::PopStyleColor(to_pop);
+                to_pop = 0;
 
                 if (show_scale && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[ImGuiCol_TabHovered]);
+                    to_pop += 2;
                 }
                 if (!products->get_calibration_type(active_channel_id))
                     ImGui::BeginDisabled();
@@ -421,11 +417,11 @@ namespace satdump
                     show_scale = !show_scale;
                 if (!products->get_calibration_type(active_channel_id))
                     ImGui::EndDisabled();
+                ImGui::PopStyleColor(to_pop);
+                to_pop = 0;
 
                 if (!active_channel_calibrated)
                     ImGui::EndDisabled();
-
-                ImGui::PopStyleColor(4);
 
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Show Scale");

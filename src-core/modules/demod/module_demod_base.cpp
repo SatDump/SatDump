@@ -340,7 +340,7 @@ namespace demod
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + ImGui::GetWindowWidth() - 55 * ui_scale,
                                  ImGui::GetCursorPos().y - 25 * ui_scale});
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(255, 0, 0, 255));
+            ImGui::PushStyleColor(ImGuiCol_Button, IMCOLOR_RED.Value);
             if (ImGui::Button("Abort##demodstop"))
                 demod_should_stop = true;
             ImGui::PopStyleColor();

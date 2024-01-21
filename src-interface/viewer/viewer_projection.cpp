@@ -175,7 +175,7 @@ namespace satdump
                     {
                         ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
                         if (!urlgood)
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+                            ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
 
                         ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
 
@@ -309,7 +309,7 @@ namespace satdump
                         // Closing button
                         ImGui::SameLine();
                         ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
-                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+                        ImGui::PushStyleColor(ImGuiCol_Text, IMCOLOR_RED.Value);
                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                         if (ImGui::Button(std::string(u8"\uf00d##layerdelete" + layer.name + std::to_string(i)).c_str()))
                         {

@@ -67,7 +67,7 @@ namespace widgets
 			// Draw rect
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-				ImGui::ColorConvertFloat4ToU32(ImVec4(0.596, 0.728, 0.884, 0.5)), rounding);
+				IMCOLOR_FREQHIGHLIGHT, rounding);
 		}
 	}
 
