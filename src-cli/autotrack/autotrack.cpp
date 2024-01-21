@@ -228,17 +228,22 @@ void AutoTrackApp::setup_schedular_callbacks()
 
                 if (dl.live)
                 {
-                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
                     std::string name = std::to_string(obj.norad);
                     if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                         name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
-                    add_vfo(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                    add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
                 }
 
                 if (dl.record)
                 {
-                    logger->error("Recording is not supported in VFO mode yet!");
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
+                    std::string name = std::to_string(obj.norad);
+                    if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
+                        name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                    name += " - " + format_notated(dl.frequency, "Hz");
+                    add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
                 }
             }
         }
@@ -288,7 +293,13 @@ void AutoTrackApp::setup_schedular_callbacks()
             {
                 if (dl.live)
                 {
-                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
+                    del_vfo(id);
+                }
+
+                if (dl.record)
+                {
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
                     del_vfo(id);
                 }
 
