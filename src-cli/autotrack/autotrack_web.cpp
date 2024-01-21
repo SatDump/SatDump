@@ -38,6 +38,12 @@ void AutoTrackApp::setup_webserver()
             }
             vfos_mtx.unlock();
 
+            if (is_recording)
+            {
+                p["recording"]["written_size"] = file_sink->get_written();
+                p["recording"]["written_raw_size"] = file_sink->get_written_raw();
+            }
+
             return p.dump(4);
         };
 

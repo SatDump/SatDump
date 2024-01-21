@@ -115,6 +115,9 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     if (parameters.contains("fft_enable"))
         fft->start();
 
+    file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
+    file_sink->start();
+
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////// Tracking modules init
     ///////////////////////////////////////////////////////////////////////////////////
@@ -244,7 +247,7 @@ void AutoTrackApp::setup_schedular_callbacks()
             if (obj.downlinks[0].live)
                 stop_processing();
             if (obj.downlinks[0].record)
-                logger->error("Recording Not Implemented Yet!"); // stop_recording();
+                stop_recording();
 
             if (obj.downlinks[0].live || obj.downlinks[0].record)
             {
@@ -271,7 +274,8 @@ void AutoTrackApp::setup_schedular_callbacks()
 
             if (obj.downlinks[0].record)
             {
-                logger->error("Recording Not Implemented Yet!"); // start_recording();
+                file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
+                start_recording();
             }
         }
     };
@@ -296,7 +300,7 @@ void AutoTrackApp::setup_schedular_callbacks()
         else
         {
             if (obj.downlinks[0].record)
-                logger->error("Recording Not Implemented Yet!"); // stop_recording();
+                stop_recording();
             if (obj.downlinks[0].live)
                 stop_processing();
             if (autotrack_cfg.stop_sdr_when_idle)

@@ -193,3 +193,26 @@ std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, s
     logger->info("Generated folder name : " + output_dir);
     return output_dir;
 }
+
+std::string prepareBasebandFileName(double timeValue_precise, uint64_t samplerate, uint64_t frequency)
+{
+    const time_t timevalue = timeValue_precise;
+    std::tm *timeReadable = gmtime(&timevalue);
+    std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+    if (satdump::config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
+    {
+        std::ostringstream ss;
+
+        double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
+        ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0') << ms_val;
+        timestamp += ss.str();
+    }
+
+    return timestamp + "_" + std::to_string(samplerate) + "SPS_" + std::to_string(frequency) + "Hz";
+}

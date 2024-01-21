@@ -12,6 +12,7 @@
 #include "common/tracking/rotator/rotcl_handler.h"
 
 #include "core/live_pipeline.h"
+#include "common/dsp/io/file_sink.h"
 
 class AutoTrackApp
 {
@@ -73,8 +74,12 @@ private:
     void stop_processing();
 
 private:
-    // void start_recording();
-    // void stop_recording();
+    bool is_recording = false;
+
+    std::shared_ptr<dsp::FileSinkBlock> file_sink;
+
+    void start_recording();
+    void stop_recording();
 
 private: // VFO Stuff
     struct VFOInfo
