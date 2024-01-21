@@ -343,7 +343,7 @@ namespace satdump
 
             tracking_widget->aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (autotrack_cfg.vfo_mode)
+                if (autotrack_cfg.vfo_mode || obj.downlinks.size() > 1)
                 {
                     for (auto &dl : obj.downlinks)
                     {
@@ -406,7 +406,7 @@ namespace satdump
 
             tracking_widget->los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (autotrack_cfg.vfo_mode)
+                if (autotrack_cfg.vfo_mode || obj.downlinks.size() > 1)
                 {
                     for (auto &dl : obj.downlinks)
                     {
