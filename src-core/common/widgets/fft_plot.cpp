@@ -149,6 +149,7 @@ namespace widgets
         ImVec2 tp0 = ImVec2(t0, 1.0f - ImSaturate((v0 - scale_min) * inv_scale));
 
         uint8_t color_cyan[] = {0, 237, 255};
+        uint8_t color_red[] = {255, 0, 0};
         uint8_t color_scale[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
         uint8_t color_scale2[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
 
@@ -191,6 +192,32 @@ namespace widgets
             }
         }
 #endif
+
+        // Draw VFOs
+        if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
+        {
+            const ImU32 col_base_vfo = ImColor(255, 0, 0, 255);
+
+            for (auto vfo : vfo_freqs)
+            {
+                double vfreq = vfo.second - frequency;
+                float y_level = size_y - 8 * ui_scale;
+                float x_line = 0 + (((bandwidth / 2) + vfreq) / bandwidth) * res_w;
+
+                //   window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base_vfo, 3);
+                //   window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line - 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+                //   window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line + 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+
+                img.draw_line(x_line, y_level, x_line, y_level - 10, color_red);
+                img.draw_line(x_line, y_level - 10, x_line - 5, y_level - 20, color_red);
+                img.draw_line(x_line, y_level - 10, x_line + 5, y_level - 20, color_red);
+
+                // if (sqrtf(powf(ImGui::GetMousePos().x - x_line, 2) + powf(ImGui::GetMousePos().y - y_level, 2)) < 40 * ui_scale)
+                //     window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 45 * ui_scale},
+                //                               col_base_vfo,
+                //                               vfo.first.c_str());
+            }
+        }
 
         // Draw lines
         double fz = (double)values_size / (double)res_w;

@@ -186,6 +186,14 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
 AutoTrackApp::~AutoTrackApp()
 {
     stop_webserver();
+
+retry_vfo:
+    for (auto &vfo : vfo_list)
+    {
+        del_vfo(vfo.id);
+        goto retry_vfo;
+    }
+
     stop_processing();
     stop_device();
     source_ptr->close();
