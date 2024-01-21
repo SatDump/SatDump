@@ -65,6 +65,9 @@ namespace satdump
 
     void RecorderApplication::start()
     {
+        if (is_started)
+            return;
+
         set_frequency(frequency_hz);
 
         try
@@ -84,8 +87,7 @@ namespace satdump
 
             fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
             waterfall_plot->set_rate(fft_rate, waterfall_rate);
-            fft_plot->bandwidth = current_samplerate / current_decimation;
-            // fft_plot->frequency = frequency_mhz * 1e6;
+            fft_plot->bandwidth = get_samplerate();
 
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
@@ -100,6 +102,9 @@ namespace satdump
 
     void RecorderApplication::stop()
     {
+        if (!is_started)
+            return;
+
         splitter->stop_tmp();
         if (current_decimation > 1)
             decim_ptr->stop();
@@ -221,19 +226,7 @@ namespace satdump
 
             if (automated_live_output_dir)
             {
-                const time_t timevalue = time(0);
-                std::tm *timeReadable = gmtime(&timevalue);
-                std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                        (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                pipeline_output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
-                                      timestamp + "_" +
-                                      pipelines[pipeline_selector.pipeline_id].name + "_" +
-                                      format_notated(source_ptr->d_frequency, "Hz");
-                std::filesystem::create_directories(pipeline_output_dir);
-                logger->info("Generated folder name : " + pipeline_output_dir);
+                pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipelines[pipeline_selector.pipeline_id].name);
             }
             else
             {

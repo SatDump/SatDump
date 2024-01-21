@@ -48,7 +48,7 @@ namespace satdump
     inline void to_json(nlohmann::ordered_json &j, const TrackedObject &v)
     {
         j["norad"] = v.norad;
-        for (int i = 0; i < v.downlinks.size(); i++)
+        for (int i = 0; i < (int)v.downlinks.size(); i++)
         {
             j["downlinks"][i]["frequency"] = v.downlinks[i].frequency;
             j["downlinks"][i]["record"] = v.downlinks[i].record;
@@ -76,7 +76,7 @@ namespace satdump
         else if (j.contains("downlinks"))
         {
             v.downlinks.resize(j["downlinks"].size());
-            for (int i = 0; i < j["downlinks"].size(); i++)
+            for (int i = 0; i < (int)j["downlinks"].size(); i++)
             {
                 if (j["downlinks"][i].contains("frequency"))
                 {

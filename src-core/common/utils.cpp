@@ -5,6 +5,9 @@
 #include <locale>
 #include <codecvt>
 
+#include "core/config.h"
+#include "common/dsp_source_sink/format_notated.h"
+
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples)
 {
     for (int i = 0; i < nsamples; i++)
@@ -172,4 +175,21 @@ std::wstring s2ws(const std::string &str)
     using convert_typeX = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_typeX, wchar_t> converterX;
     return converterX.from_bytes(str);
+}
+
+std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, std::string pipeline_name, std::string folder)
+{
+    std::tm *timeReadable = gmtime(&timevalue);
+    std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+    std::string output_dir = (folder == "" ? satdump::config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() : folder) + "/" +
+                             timestamp + "_" +
+                             pipeline_name + "_" +
+                             format_notated(frequency, "Hz");
+    std::filesystem::create_directories(output_dir);
+    logger->info("Generated folder name : " + output_dir);
+    return output_dir;
 }

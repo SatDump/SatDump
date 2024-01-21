@@ -3,6 +3,7 @@
 #include "main_ui.h"
 #include "logger.h"
 #include "processing.h"
+#include "common/utils.h"
 
 namespace satdump
 {
@@ -25,22 +26,7 @@ namespace satdump
             vpipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             vpipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
-            std::string output_dir;
-            {
-                const time_t timevalue = time(0);
-                std::tm *timeReadable = gmtime(&timevalue);
-                std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                        (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
-                             timestamp + "_" +
-                             pipelines[vpipeline_id].name + "_" +
-                             format_notated(freq, "Hz");
-                std::filesystem::create_directories(output_dir);
-                logger->info("Generated folder name : " + output_dir);
-            }
+            std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, pipelines[vpipeline_id].name);
 
             wipInfo.output_dir = output_dir;
 
