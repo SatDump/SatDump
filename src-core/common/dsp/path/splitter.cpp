@@ -59,7 +59,7 @@ namespace dsp
         if (vfo_outputs.count(id) == 0)
             vfo_outputs.insert({id,
                                 {std::make_shared<dsp::stream<complex_t>>(),
-                                 false, freq, complex_t(cos(hz_to_rad(freq, samplerate)), sin(hz_to_rad(freq, samplerate)))}});
+                                 false, (float)freq, complex_t(cos(hz_to_rad(freq, samplerate)), sin(hz_to_rad(freq, samplerate)))}});
         state_mutex.unlock();
     }
 
