@@ -250,7 +250,7 @@ namespace satdump
                         }
                     }
                     ImGui::TableSetColumnIndex(1);
-                    widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + idpart).c_str(), &downlink.frequency, 0.75f);
+                    widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + idpart).c_str(), &downlink.frequency, 0.75f, false);
                     ImGui::TableSetColumnIndex(2);
                     ImGui::SetNextItemWidth(100 * ui_scale);
                     ImGui::Checkbox(((std::string) "Record##objcfgfreq2" + idpart).c_str(), &downlink.record);
