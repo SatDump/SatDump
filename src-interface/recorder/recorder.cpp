@@ -535,9 +535,9 @@ namespace satdump
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
                             ImGui::SeparatorText(vfo.name.c_str());
                             ImGui::PopStyleColor();
-                            ImGui::BulletText("Name: %s", vfo.name.c_str());
-                            ImGui::BulletText("Freq: %s", format_notated(vfo.freq, "Hz").c_str());
+                            ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
                             ImGui::BulletText("Pipeline: %s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                            ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
                             ImGui::Spacing();
                             if (ImGui::Button(std::string("Stop##" + vfo.id).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                                 to_delete = vfo.id;
