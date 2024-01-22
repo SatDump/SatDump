@@ -520,7 +520,31 @@ namespace satdump
                 if (ImGui::CollapsingHeader("VFOs"))
                 {
                     vfos_mtx.lock();
+                    std::string to_delete = "";
+#if 1
+                    if (vfo_list.size() == 0)
+                    {
+                        const char *no_vfo_text = "No Active VFOs";
+                        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x / 2 - ImGui::CalcTextSize(no_vfo_text).x / 2);
+                        ImGui::TextDisabled("%s", no_vfo_text);
+                    }
+                    else
+                    {
+                        for (auto& vfo : vfo_list)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+                            ImGui::SeparatorText(vfo.name.c_str());
+                            ImGui::PopStyleColor();
+                            ImGui::BulletText("Name: %s", vfo.name.c_str());
+                            ImGui::BulletText("Freq: %s", format_notated(vfo.freq, "Hz").c_str());
+                            ImGui::BulletText("Pipeline: %s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                            ImGui::Spacing();
+                            if (ImGui::Button(std::string("Stop##" + vfo.id).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+                                to_delete = vfo.id;
 
+                        }
+                    }
+#else
                     if (ImGui::BeginTable("##eosinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                     {
                         ImGui::TableNextRow();
@@ -544,9 +568,10 @@ namespace satdump
 
                         ImGui::EndTable();
                     }
-
+#endif
                     vfos_mtx.unlock();
-
+                    if (to_delete != "")
+                        del_vfo(to_delete);
 #if 0
                     if (ImGui::Button("Add Test"))
                     {
