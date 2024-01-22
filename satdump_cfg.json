@@ -1148,7 +1148,7 @@
                         }
                     },
                     "124": {
-                        "equation": "ch1, ch2, ch4",
+                        "equation": "ch1, ch2, 1-ch4",
                         "description": "descriptions/124.md",
                         "geo_correct": true,
                         "white_balance": true,
@@ -1219,6 +1219,7 @@
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
+                        "equalize": true,
                         "lua_vars": {
                             "minoffset": 0.45,
                             "scalar": 2.6,
