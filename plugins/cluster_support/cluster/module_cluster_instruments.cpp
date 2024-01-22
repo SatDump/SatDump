@@ -12,6 +12,8 @@
 #include "instruments/wbd_decoder.h"
 #include "common/audio/audio_sink.h"
 #include "common/dsp/io/wav_writer.h"
+#include "core/config.h"
+
 
 namespace cluster
 {
@@ -31,6 +33,8 @@ namespace cluster
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
             logger->info("Using input frames " + d_input_file);
+
+            play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
 
             time_t lastTime = 0;
             uint8_t cadu[1279];
@@ -105,7 +109,7 @@ namespace cluster
                                 for (int i = 0; i < 4352; i++)
                                     audio_buffer[i] = (int(majorframe.payload[i]) - 127) * 255;
 
-                                if (enable_audio)
+                                if (enable_audio && play_audio)
                                     audio_sink->push_samples(audio_buffer, 4352);
 
                                 if (majorframe.VCXO == 0)
@@ -152,6 +156,9 @@ namespace cluster
                 }
             }
 
+            if (enable_audio)
+                audio_sink->stop();
+                
             wave_writer_Ez.finish_header(final_data_size_ant_Ez);
             wave_writer_Bx.finish_header(final_data_size_ant_Bx);
             wave_writer_By.finish_header(final_data_size_ant_By);
@@ -206,6 +213,32 @@ namespace cluster
             ImGui::Text("CMD : ");
             ImGui::SameLine();
             ImGui::Text("%d", param_commands);
+
+            if (enable_audio) //Does this work?!
+            {
+                ImGui::Spacing();
+                const char* btn_icon, * label;
+                ImU32 color;
+                if (play_audio)
+                {
+                    color = IM_COL32(0, 255, 0, 255);
+                    btn_icon = u8"\uF028##wbdaudio";
+                    label = "Audio Playing";
+                }
+                else
+                {
+                    color = IM_COL32(255, 0, 0, 255);
+                    btn_icon = u8"\uF026##wbdaudio";
+                    label = "Audio Muted";
+                }
+
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                if (ImGui::Button(btn_icon))
+                    play_audio = !play_audio;
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+                ImGui::TextUnformatted(label);
+            }
 
             if (input_data_type == DATA_FILE)
                 ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
