@@ -22,6 +22,7 @@ namespace cluster
         CLUSTERInstrumentsDecoderModule::CLUSTERInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
         }
 
         void CLUSTERInstrumentsDecoderModule::process()
@@ -33,8 +34,6 @@ namespace cluster
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
             logger->info("Using input frames " + d_input_file);
-
-            play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
 
             time_t lastTime = 0;
             uint8_t cadu[1279];
@@ -50,7 +49,6 @@ namespace cluster
 
             // Audio stuff
             int16_t audio_buffer[4352];
-            bool enable_audio = false;
             std::shared_ptr<audio::AudioSink> audio_sink;
             if (input_data_type != DATA_FILE && audio::has_sink())
             {
@@ -214,7 +212,7 @@ namespace cluster
             ImGui::SameLine();
             ImGui::Text("%d", param_commands);
 
-            if (enable_audio) //Does this work?!
+            if (enable_audio)
             {
                 ImGui::Spacing();
                 const char* btn_icon, * label;
