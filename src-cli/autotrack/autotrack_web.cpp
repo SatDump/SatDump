@@ -32,8 +32,16 @@ void AutoTrackApp::setup_webserver()
                 {
                     auto &pos = p["vfos"][vfo.id];
                     pos["frequency"] = vfo.freq;
-                    vfo.live_pipeline->updateModuleStats();
-                    pos["live_pipeline"] = vfo.live_pipeline->stats;
+                    if (vfo.pipeline_id != -1)
+                    {
+                        vfo.live_pipeline->updateModuleStats();
+                        pos["live_pipeline"] = vfo.live_pipeline->stats;
+                    }
+                    if (vfo.file_sink)
+                    {
+                        pos["recording"]["written_size"] = file_sink->get_written();
+                        pos["recording"]["written_raw_size"] = file_sink->get_written_raw();
+                    }
                 }
             }
             vfos_mtx.unlock();
