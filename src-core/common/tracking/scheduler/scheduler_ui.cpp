@@ -269,6 +269,11 @@ namespace satdump
                         downlink.pipeline_selector->renderParamTable();
                         ImGui::EndCombo();
                     }
+                    if (downlink.record)
+                    {
+                        ImGui::SameLine();
+                        ImGui::InputInt(((std::string) "##recorddecim" + idpart).c_str(), &downlink.baseband_decimation);
+                    }
                     ImGui::PopID();
                     // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
                     dl_pos++;

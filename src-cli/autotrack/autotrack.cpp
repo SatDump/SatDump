@@ -115,6 +115,9 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     if (parameters.contains("fft_enable"))
         fft->start();
 
+    file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
+    file_sink->start();
+
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////// Tracking modules init
     ///////////////////////////////////////////////////////////////////////////////////
@@ -225,17 +228,22 @@ void AutoTrackApp::setup_schedular_callbacks()
 
                 if (dl.live)
                 {
-                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
                     std::string name = std::to_string(obj.norad);
                     if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                         name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
-                    add_vfo(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                    add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
                 }
 
                 if (dl.record)
                 {
-                    logger->error("Recording is not supported in VFO mode yet!");
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
+                    std::string name = std::to_string(obj.norad);
+                    if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
+                        name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                    name += " - " + format_notated(dl.frequency, "Hz");
+                    add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
                 }
             }
         }
@@ -244,7 +252,7 @@ void AutoTrackApp::setup_schedular_callbacks()
             if (obj.downlinks[0].live)
                 stop_processing();
             if (obj.downlinks[0].record)
-                logger->error("Recording Not Implemented Yet!"); // stop_recording();
+                stop_recording();
 
             if (obj.downlinks[0].live || obj.downlinks[0].record)
             {
@@ -271,7 +279,8 @@ void AutoTrackApp::setup_schedular_callbacks()
 
             if (obj.downlinks[0].record)
             {
-                logger->error("Recording Not Implemented Yet!"); // start_recording();
+                file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
+                start_recording();
             }
         }
     };
@@ -284,7 +293,13 @@ void AutoTrackApp::setup_schedular_callbacks()
             {
                 if (dl.live)
                 {
-                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
+                    del_vfo(id);
+                }
+
+                if (dl.record)
+                {
+                    std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
                     del_vfo(id);
                 }
 
@@ -296,7 +311,7 @@ void AutoTrackApp::setup_schedular_callbacks()
         else
         {
             if (obj.downlinks[0].record)
-                logger->error("Recording Not Implemented Yet!"); // stop_recording();
+                stop_recording();
             if (obj.downlinks[0].live)
                 stop_processing();
             if (autotrack_cfg.stop_sdr_when_idle)

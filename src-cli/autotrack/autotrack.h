@@ -6,12 +6,14 @@
 #include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/widgets/fft_plot.h"
+#include "common/dsp/resamp/smart_resampler.h"
 
 #include "common/tracking/obj_tracker/object_tracker.h"
 #include "common/tracking/scheduler/scheduler.h"
 #include "common/tracking/rotator/rotcl_handler.h"
 
 #include "core/live_pipeline.h"
+#include "common/dsp/io/file_sink.h"
 
 class AutoTrackApp
 {
@@ -73,8 +75,12 @@ private:
     void stop_processing();
 
 private:
-    // void start_recording();
-    // void stop_recording();
+    bool is_recording = false;
+
+    std::shared_ptr<dsp::FileSinkBlock> file_sink;
+
+    void start_recording();
+    void stop_recording();
 
 private: // VFO Stuff
     struct VFOInfo
@@ -84,18 +90,23 @@ private: // VFO Stuff
         std::string name;
         double freq;
 
-        ////
-        int pipeline_id;
+        //// Live
+        int pipeline_id = -1;
         nlohmann::json pipeline_params;
         std::string output_dir;
         std::shared_ptr<ctpl::thread_pool> lpool;
         std::shared_ptr<satdump::LivePipeline> live_pipeline;
+
+        //// Recording
+        std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
+        std::shared_ptr<dsp::FileSinkBlock> file_sink;
     };
 
     std::mutex vfos_mtx;
     std::vector<VFOInfo> vfo_list;
 
-    void add_vfo(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params);
+    void add_vfo_live(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params);
+    void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
     void del_vfo(std::string id);
 
 private:

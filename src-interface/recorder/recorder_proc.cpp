@@ -281,32 +281,6 @@ namespace satdump
     {
         splitter->set_enabled("record", true);
 
-        double timeValue_precise = 0;
-        {
-            auto time = std::chrono::system_clock::now();
-            auto since_epoch = time.time_since_epoch();
-            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
-            timeValue_precise = millis.count() / 1e3;
-        }
-
-        const time_t timevalue = timeValue_precise;
-        std::tm *timeReadable = gmtime(&timevalue);
-        std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
-                                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-
-        if (config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
-        {
-            std::ostringstream ss;
-
-            double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
-            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0') << ms_val;
-            timestamp += ss.str();
-        }
-
         std::string recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
 #if defined(_MSC_VER)
         recording_path += "\\";
@@ -318,7 +292,7 @@ namespace satdump
         recording_path += "/";
 #endif
 
-        std::string filename = recording_path + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" + std::to_string(frequency_hz) + "Hz";
+        std::string filename = recording_path + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
         recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
         logger->info("Recording to " + recorder_filename);
         is_recording = true;
@@ -353,17 +327,22 @@ namespace satdump
 
                         if (dl.live)
                         {
-                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
                             std::string name = std::to_string(obj.norad);
-                            if (general_tle_registry.get_from_norad(obj.norad).has_value())
-                                name = general_tle_registry.get_from_norad(obj.norad)->name;
+                            if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
+                                name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
-                            add_vfo(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                            add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
                         }
 
                         if (dl.record)
                         {
-                            logger->error("Recording is not supported in VFO mode yet!");
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
+                            std::string name = std::to_string(obj.norad);
+                            if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
+                                name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                            name += " - " + format_notated(dl.frequency, "Hz");
+                            add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
                         }
                     }
                 }
@@ -399,6 +378,7 @@ namespace satdump
 
                     if (obj.downlinks[0].record)
                     {
+                        // file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
                         start_recording();
                     }
                 }
@@ -412,7 +392,13 @@ namespace satdump
                     {
                         if (dl.live)
                         {
-                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency);
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
+                            del_vfo(id);
+                        }
+
+                        if (dl.record)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
                             del_vfo(id);
                         }
 

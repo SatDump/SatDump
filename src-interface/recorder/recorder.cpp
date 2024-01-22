@@ -563,7 +563,10 @@ namespace satdump
                             ImGui::TableSetColumnIndex(1);
                             ImGui::Text("%s", format_notated(vfo.freq, "Hz").c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::Text("%s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                            if (vfo.pipeline_id != -1)
+                                ImGui::Text("%s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                            else
+                                ImGui::Text("Recording...");
                         }
 
                         ImGui::EndTable();
@@ -682,24 +685,27 @@ namespace satdump
                 {
                     if (ImGui::BeginTabItem(vfo.name.c_str()))
                     {
-                        float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
-                        float live_width = recorder_size.x + 16 * ui_scale;
-                        float live_height = 250 * ui_scale;
-                        float winwidth = vfo.live_pipeline->modules.size() > 0 ? live_width / vfo.live_pipeline->modules.size() : live_width;
-                        float currentPos = 0;
-                        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
-                        for (std::shared_ptr<ProcessingModule> &module : vfo.live_pipeline->modules)
+                        if (vfo.pipeline_id != -1)
                         {
-                            ImGui::SetNextWindowPos({currentPos, y_pos});
-                            ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
-                            module->drawUI(false);
-                            currentPos += winwidth;
+                            float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
+                            float live_width = recorder_size.x + 16 * ui_scale;
+                            float live_height = 250 * ui_scale;
+                            float winwidth = vfo.live_pipeline->modules.size() > 0 ? live_width / vfo.live_pipeline->modules.size() : live_width;
+                            float currentPos = 0;
+                            ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
+                            for (std::shared_ptr<ProcessingModule> &module : vfo.live_pipeline->modules)
+                            {
+                                ImGui::SetNextWindowPos({currentPos, y_pos});
+                                ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
+                                module->drawUI(false);
+                                currentPos += winwidth;
 
-                            // if (ImGui::GetCurrentContext()->last_window != NULL)
-                            //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
-                            //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
+                                // if (ImGui::GetCurrentContext()->last_window != NULL)
+                                //     currentPos += ImGui::GetCurrentContext()->last_window->Size.x;
+                                //  logger->info(ImGui::GetCurrentContext()->last_window->Name);
+                            }
+                            ImGui::PopStyleColor();
                         }
-                        ImGui::PopStyleColor();
                         ImGui::EndTabItem();
                     }
                 }
