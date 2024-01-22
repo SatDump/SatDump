@@ -6,11 +6,11 @@
 #include <android/asset_manager.h>
 #include "logger.h"
 
-struct android_app *android_app_ptr;
+struct android_app *g_App = nullptr;
 
 void show_select_file_dialog()
 {
-    JavaVM *java_vm = android_app_ptr->activity->vm;
+    JavaVM *java_vm = g_App->activity->vm;
     JNIEnv *java_env = NULL;
 
     jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
@@ -21,7 +21,7 @@ void show_select_file_dialog()
     if (jni_return != JNI_OK)
         throw std::runtime_error("Could not attach to thread");
 
-    jclass native_activity_clazz = java_env->GetObjectClass(android_app_ptr->activity->clazz);
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
     if (native_activity_clazz == NULL)
         throw std::runtime_error("Could not get MainActivity class");
 
@@ -29,7 +29,7 @@ void show_select_file_dialog()
     if (method_id == NULL)
         throw std::runtime_error("Could not get methode ID");
 
-    java_env->CallVoidMethod(android_app_ptr->activity->clazz, method_id);
+    java_env->CallVoidMethod(g_App->activity->clazz, method_id);
 
     jni_return = java_vm->DetachCurrentThread();
     if (jni_return != JNI_OK)
@@ -38,7 +38,7 @@ void show_select_file_dialog()
 
 std::string get_select_file_dialog_result()
 {
-    JavaVM *java_vm = android_app_ptr->activity->vm;
+    JavaVM *java_vm = g_App->activity->vm;
     JNIEnv *java_env = NULL;
 
     jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
@@ -49,7 +49,7 @@ std::string get_select_file_dialog_result()
     if (jni_return != JNI_OK)
         throw std::runtime_error("Could not attach to thread");
 
-    jclass native_activity_clazz = java_env->GetObjectClass(android_app_ptr->activity->clazz);
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
     if (native_activity_clazz == NULL)
         throw std::runtime_error("Could not get MainActivity class");
 
@@ -57,7 +57,7 @@ std::string get_select_file_dialog_result()
     if (method_id == NULL)
         throw std::runtime_error("Could not get methode ID");
 
-    jstring jstr = (jstring)java_env->CallObjectMethod(android_app_ptr->activity->clazz, method_id);
+    jstring jstr = (jstring)java_env->CallObjectMethod(g_App->activity->clazz, method_id);
 
     const char *_str = java_env->GetStringUTFChars(jstr, NULL);
     std::string str(_str);
@@ -72,7 +72,7 @@ std::string get_select_file_dialog_result()
 
 void show_select_directory_dialog()
 {
-    JavaVM *java_vm = android_app_ptr->activity->vm;
+    JavaVM *java_vm = g_App->activity->vm;
     JNIEnv *java_env = NULL;
 
     jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
@@ -83,7 +83,7 @@ void show_select_directory_dialog()
     if (jni_return != JNI_OK)
         throw std::runtime_error("Could not attach to thread");
 
-    jclass native_activity_clazz = java_env->GetObjectClass(android_app_ptr->activity->clazz);
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
     if (native_activity_clazz == NULL)
         throw std::runtime_error("Could not get MainActivity class");
 
@@ -91,7 +91,7 @@ void show_select_directory_dialog()
     if (method_id == NULL)
         throw std::runtime_error("Could not get methode ID");
 
-    java_env->CallVoidMethod(android_app_ptr->activity->clazz, method_id);
+    java_env->CallVoidMethod(g_App->activity->clazz, method_id);
 
     jni_return = java_vm->DetachCurrentThread();
     if (jni_return != JNI_OK)
@@ -100,7 +100,7 @@ void show_select_directory_dialog()
 
 std::string get_select_directory_dialog_result()
 {
-    JavaVM *java_vm = android_app_ptr->activity->vm;
+    JavaVM *java_vm = g_App->activity->vm;
     JNIEnv *java_env = NULL;
 
     jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
@@ -111,7 +111,7 @@ std::string get_select_directory_dialog_result()
     if (jni_return != JNI_OK)
         throw std::runtime_error("Could not attach to thread");
 
-    jclass native_activity_clazz = java_env->GetObjectClass(android_app_ptr->activity->clazz);
+    jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
     if (native_activity_clazz == NULL)
         throw std::runtime_error("Could not get MainActivity class");
 
@@ -119,7 +119,7 @@ std::string get_select_directory_dialog_result()
     if (method_id == NULL)
         throw std::runtime_error("Could not get methode ID");
 
-    jstring jstr = (jstring)java_env->CallObjectMethod(android_app_ptr->activity->clazz, method_id);
+    jstring jstr = (jstring)java_env->CallObjectMethod(g_App->activity->clazz, method_id);
 
     const char *_str = java_env->GetStringUTFChars(jstr, NULL);
     std::string str(_str);

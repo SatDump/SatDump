@@ -10,7 +10,7 @@
 #include <windows.h>
 #elif defined(__ANDROID__)
 #include <android_native_app_glue.h>
-extern struct android_app *android_app_ptr;
+extern struct android_app *g_App;
 #endif
 
 namespace widgets
@@ -27,7 +27,7 @@ namespace widgets
 #elif defined(__APPLE__)
             system(std::string("open " + url).c_str());
 #elif defined(__ANDROID__)
-            JavaVM *java_vm = android_app_ptr->activity->vm;
+            JavaVM *java_vm = g_App->activity->vm;
             JNIEnv *java_env = NULL;
 
             jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
@@ -38,7 +38,7 @@ namespace widgets
             if (jni_return != JNI_OK)
                 throw std::runtime_error("Could not attach to thread");
 
-            jclass native_activity_clazz = java_env->GetObjectClass(android_app_ptr->activity->clazz);
+            jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
             if (native_activity_clazz == NULL)
                 throw std::runtime_error("Could not get MainActivity class");
 
@@ -47,7 +47,7 @@ namespace widgets
                 throw std::runtime_error("Could not get methode ID");
 
             jstring jurl = java_env->NewStringUTF(url.c_str());
-            java_env->CallVoidMethod(android_app_ptr->activity->clazz, method_id, jurl);
+            java_env->CallVoidMethod(g_App->activity->clazz, method_id, jurl);
 
             jni_return = java_vm->DetachCurrentThread();
             if (jni_return != JNI_OK)

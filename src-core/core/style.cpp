@@ -116,7 +116,7 @@ namespace style
         theme.green = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
         theme.blue = ImColor(0.00f, 0.00f, 1.00f, 1.00f);
         theme.yellow = ImColor(1.00f, 1.00f, 0.00f, 1.00f);
-        theme.orange = ImColor(1.00f, 0.67f, 0.00f, 0.07f);
+        theme.orange = ImColor(1.00f, 0.67f, 0.07f, 1.00f);
         theme.cyan = ImColor(0.00f, 1.00f, 1.00f, 1.00f);
         theme.fuchsia = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
         theme.magenta = ImColor(1.00f, 0.00f, 0.78f, 1.00f);

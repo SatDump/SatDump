@@ -1,29 +1,28 @@
+#include <unistd.h>
 #include <android/log.h>
 #include <android/asset_manager.h>
-#include <android_native_app_glue.h>
 #include "backend.h"
 #include "main_ui.h"
+#include "logger.h"
+#include "init.h"
+#include "loader/loader.h"
 
 // Data
 EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;
 EGLSurface g_EglSurface = EGL_NO_SURFACE;
 static EGLContext g_EglContext = EGL_NO_CONTEXT;
-static struct android_app *g_App = NULL;
 static bool g_Initialized = false;
 static char g_LogTag[] = "SatDump";
+extern struct android_app *g_App;
+extern std::string android_plugins_dir;
+bool was_init = false;
 
 // Forward declarations of helper functions
 static int ShowSoftKeyboardInput();
 static int HideSoftKeyboardInput();
 static int PollUnicodeChars();
 static int GetAssetData(const char *filename, void **out_data);
-
-#include "logger.h"
-#include "init.h"
-#include "loader/loader.h"
-#include "core/style.h"
-
-bool was_init = false;
+void bindImageTextureFunctions();
 
 void init(struct android_app *app)
 {
@@ -264,28 +263,15 @@ std::string getPluginsDir(struct android_app *app)
     return str;
 }
 
-#include <unistd.h>
-
-void bindImageTextureFunctions();
-
-struct android_app *a_app;
-extern struct android_app *android_app_ptr;
-
-extern std::string android_plugins_dir;
-
 void android_main(struct android_app *app)
 {
-    android_app_ptr = a_app = app;
+    g_App = app;
+    bindImageTextureFunctions();
+    bindBackendFunctions();
 
-    {
-        bindImageTextureFunctions();
-        bindBackendFunctions();
-
-        std::string path = getAppFilesDir(app);
-        android_plugins_dir = getPluginsDir(app);
-
-        chdir(path.c_str());
-    }
+    std::string path = getAppFilesDir(app);
+    android_plugins_dir = getPluginsDir(app);
+    chdir(path.c_str());
 
     app->onAppCmd = handleAppCmd;
     app->onInputEvent = handleInputEvent;

@@ -1,7 +1,6 @@
-#include "core/style.h"
-#include "core/backend.h"
 #include "backend.h"
 
+extern struct android_app *g_App;
 extern EGLDisplay g_EglDisplay;
 extern EGLSurface g_EglSurface;
 
