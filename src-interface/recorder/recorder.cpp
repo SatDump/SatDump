@@ -530,18 +530,27 @@ namespace satdump
                     }
                     else
                     {
-                        for (auto& vfo : vfo_list)
+                        for (auto &vfo : vfo_list)
                         {
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
                             ImGui::SeparatorText(vfo.name.c_str());
                             ImGui::PopStyleColor();
                             ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
-                            ImGui::BulletText("Pipeline: %s", pipelines[vfo.pipeline_id].readable_name.c_str());
-                            ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
+                            if (vfo.pipeline_id != -1)
+                            {
+                                ImGui::BulletText("Pipeline: %s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                                ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
+                            }
+                            else if (vfo.file_sink)
+                            {
+                                if (vfo.file_sink->get_written() < 1e9)
+                                    ImGui::BulletText("IQ Size: %.2f MB", vfo.file_sink->get_written() / 1e6);
+                                else
+                                    ImGui::BulletText("IQ Size: %.2f GB", vfo.file_sink->get_written() / 1e9);
+                            }
                             ImGui::Spacing();
                             if (ImGui::Button(std::string("Stop##" + vfo.id).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                                 to_delete = vfo.id;
-
                         }
                     }
 #else
