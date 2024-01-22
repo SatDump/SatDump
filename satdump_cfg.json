@@ -584,6 +584,7 @@
                         "channels": "cch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
+                        "equalize": true,
                         "lua_vars": {
                             "minoffset": 0.05,
                             "scalar": 1.1,
