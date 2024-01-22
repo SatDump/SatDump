@@ -43,7 +43,7 @@ namespace satdump
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
 
         // Init scheduler
-        auto_scheduler.eng_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
+        auto_scheduler.eng_callback = [this](AutoTrackCfg, SatellitePass, TrackedObject obj)
         {
             object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
             saveConfig();

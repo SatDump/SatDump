@@ -165,7 +165,7 @@ namespace satdump
         if (overlay_handler.enabled())
         {
             // Ensure this is RGB!!
-            if(current_image.channels() < 3)
+            if (current_image.channels() < 3)
                 current_image.to_rgb();
             nlohmann::json proj_cfg = products->get_proj_cfg();
             proj_cfg["metadata"] = current_proj_metadata;
@@ -180,9 +180,9 @@ namespace satdump
             {
                 overlay_handler.clear_cache();
                 proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                    pre_corrected_height,
-                    proj_cfg,
-                    !do_correction && rotate_image);
+                                                                           pre_corrected_height,
+                                                                           proj_cfg,
+                                                                           !do_correction && rotate_image);
 
                 if (do_correction)
                 {
@@ -193,21 +193,21 @@ namespace satdump
 
                     std::function<std::pair<int, int>(float, float, int, int)> newfun =
                         [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                    {
+                        std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                        if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
                         {
-                            std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                            if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                            ret.first = corrected_stuff[ret.first];
+                            if (rotate)
                             {
-                                ret.first = corrected_stuff[ret.first];
-                                if (rotate)
-                                {
-                                    ret.first = (fwidth - 1) - ret.first;
-                                    ret.second = (fheight - 1) - ret.second;
-                                }
+                                ret.first = (fwidth - 1) - ret.first;
+                                ret.second = (fheight - 1) - ret.second;
                             }
-                            else
-                                ret.second = ret.first = -1;
-                            return ret;
-                        };
+                        }
+                        else
+                            ret.second = ret.first = -1;
+                        return ret;
+                    };
                     proj_func = newfun;
                 }
 
@@ -636,7 +636,7 @@ namespace satdump
                     if (preset_search_str.size() != 0)
                         show = isStringPresent(rgb_presets[i].first, preset_search_str);
 
-                    if (show && ImGui::Selectable(rgb_presets[i].first.c_str(), i == select_rgb_presets))
+                    if (show && ImGui::Selectable(rgb_presets[i].first.c_str(), (int)i == select_rgb_presets))
                     {
                         select_rgb_presets = i;
                         rgb_compo_cfg = rgb_presets[select_rgb_presets].second;

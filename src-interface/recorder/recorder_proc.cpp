@@ -43,7 +43,7 @@ namespace satdump
         if (in.contains("fft_size"))
         {
             fft_size = in["fft_size"].get<int>();
-            for (int i = 0; i < fft_sizes_lut.size(); i++)
+            for (int i = 0; i < (int)fft_sizes_lut.size(); i++)
                 if (fft_sizes_lut[i] == fft_size)
                     selected_fft_size = i;
         }
@@ -317,7 +317,7 @@ namespace satdump
 
             tracking_widget->aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (autotrack_cfg.vfo_mode || obj.downlinks.size() > 1)
+                if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
                 {
                     for (auto &dl : obj.downlinks)
                     {
@@ -386,7 +386,7 @@ namespace satdump
 
             tracking_widget->los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (autotrack_cfg.vfo_mode || obj.downlinks.size() > 1)
+                if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
                 {
                     for (auto &dl : obj.downlinks)
                     {

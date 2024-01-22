@@ -10,14 +10,14 @@ namespace satdump
     {
         float autotrack_min_elevation = 0;
         bool stop_sdr_when_idle = false;
-        bool vfo_mode = false;
+        bool multi_mode = false;
     };
 
     inline void to_json(nlohmann::ordered_json &j, const AutoTrackCfg &v)
     {
         j["autotrack_min_elevation"] = v.autotrack_min_elevation;
         j["stop_sdr_when_idle"] = v.stop_sdr_when_idle;
-        j["vfo_mode"] = v.vfo_mode;
+        j["multi_mode"] = v.multi_mode;
     }
 
     inline void from_json(const nlohmann::ordered_json &j, AutoTrackCfg &v)
@@ -26,8 +26,8 @@ namespace satdump
             v.autotrack_min_elevation = j["autotrack_min_elevation"];
         if (j.contains("stop_sdr_when_idle"))
             v.stop_sdr_when_idle = j["stop_sdr_when_idle"];
-        if (j.contains("vfo_mode"))
-            v.vfo_mode = j["vfo_mode"];
+        if (j.contains("multi_mode"))
+            v.multi_mode = j["multi_mode"];
     }
 
     struct TrackedObject

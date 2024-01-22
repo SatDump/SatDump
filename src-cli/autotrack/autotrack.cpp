@@ -218,7 +218,7 @@ void AutoTrackApp::setup_schedular_callbacks()
     {
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
 
-        if (autotrack_cfg.vfo_mode || obj.downlinks.size() > 1)
+        if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
         {
             for (auto &dl : obj.downlinks)
             {
@@ -287,7 +287,7 @@ void AutoTrackApp::setup_schedular_callbacks()
 
     auto_scheduler.los_callback = [this](satdump::AutoTrackCfg autotrack_cfg, satdump::SatellitePass, satdump::TrackedObject obj)
     {
-        if (autotrack_cfg.vfo_mode || obj.downlinks.size() > 1)
+        if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
         {
             for (auto &dl : obj.downlinks)
             {

@@ -44,7 +44,7 @@ namespace satdump
         {
             upcoming_satellite_passes_mtx.lock();
 
-            if (autotrack_cfg.vfo_mode)
+            if (autotrack_cfg.multi_mode)
             {
                 for (int i = 0; i < upcoming_satellite_passes_sel.size(); i++)
                 {
@@ -177,7 +177,7 @@ namespace satdump
 
         upcoming_satellite_passes_sel.clear();
 
-        if (autotrack_cfg.vfo_mode)
+        if (autotrack_cfg.multi_mode)
             upcoming_satellite_passes_sel = upcoming_satellite_passes_all;
         else
             upcoming_satellite_passes_sel = selectPassesForAutotrack(upcoming_satellite_passes_all);
