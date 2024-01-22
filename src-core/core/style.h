@@ -22,6 +22,7 @@ namespace style
         ImColor light_cyan;
 
         ImColor constellation;
+        ImColor widget_bg;
         ImColor frame_bg;
         ImColor overlay_bg;
         ImColor freq_highlight;

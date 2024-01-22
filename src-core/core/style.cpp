@@ -49,6 +49,7 @@ namespace style
         theme.light_green = ImColor(0.20f, 0.50f, 0.20f, 1.00f);
         theme.light_cyan = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
         theme.constellation = ImColor(0.03f, 0.25f, 0.00f, 1.00f);
+        theme.widget_bg = ImColor(1.00f, 1.00f, 1.00f, 1.00f);
         theme.frame_bg = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
         theme.overlay_bg = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
         theme.freq_highlight = ImColor(0.596f, 0.728f, 0.884f, 0.75f);
@@ -124,6 +125,7 @@ namespace style
         theme.light_green = ImColor(0.39f, 1.00f, 0.39f, 1.00f);
         theme.light_cyan = ImColor(0.00f, 0.92f, 1.00f, 1.00f);
         theme.constellation = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
+        theme.widget_bg = ImColor(0.00f, 0.00f, 0.00f, 1.00f);
         theme.frame_bg = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
         theme.overlay_bg = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
         theme.freq_highlight = ImColor(0.596f, 0.728f, 0.884f, 0.5f);

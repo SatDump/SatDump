@@ -53,7 +53,7 @@ namespace widgets
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
         draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                  ImVec2(ImGui::GetCursorScreenPos().x + d_constellation_size * ui_scale, ImGui::GetCursorScreenPos().y + d_constellation_size * ui_scale),
-                                 ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_PopupBg]));
+                                 style::theme.widget_bg);
 
         // Draw PLHeader
         for (int i = 0; i < CONST_SIZE / 4; i++)

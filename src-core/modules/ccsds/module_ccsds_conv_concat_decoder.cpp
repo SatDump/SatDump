@@ -277,7 +277,7 @@ namespace ccsds
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                          ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_PopupBg]));
+                                         style::theme.widget_bg);
 
                 for (int i = 0; i < 2048; i++)
                 {
@@ -294,7 +294,7 @@ namespace ccsds
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                          ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_PopupBg]));
+                                         style::theme.widget_bg);
 
                 for (int i = 0; i < 2048; i++)
                 {
