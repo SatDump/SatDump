@@ -1,6 +1,7 @@
 #include "autotrack.h"
 #include "logger.h"
 #include "common/utils.h"
+#include "common/thread_priority.h"
 
 void AutoTrackApp::start_processing()
 {
@@ -51,6 +52,7 @@ void AutoTrackApp::stop_processing()
             nlohmann::json pipeline_params_ = pipeline_params;
             auto fun = [pipeline_id_, pipeline_output_dir_, input_file, pipeline_params_](int)
             {
+                setLowestThreadPriority();
                 satdump::Pipeline pipeline = satdump::pipelines[pipeline_id_];
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                 std::string input_level = pipeline.steps[start_level].level_name;
