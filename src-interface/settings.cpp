@@ -77,9 +77,8 @@ namespace satdump
                     continue;
                 std::string this_name = entry.path().filename().stem().string();
                 themes.push_back(this_name);
-                if (themes_str != "")
-                    themes_str.push_back('\0');
                 themes_str += this_name;
+                themes_str.push_back('\0');
                 if (this_name == current_theme)
                     selected_theme = theme_id;
                 theme_id++;

@@ -27,7 +27,10 @@ namespace style
         color_hex.erase(std::remove_if(color_hex.begin(), color_hex.end(),
             [&](const char c) { return !std::isxdigit(c); }), color_hex.end());
         if (color_hex.size() != 8)
+        {
+            logger->debug("Invalid color code %s", color_hex.c_str());
             return;
+        }
 
         this_color->x = (float)std::stoi(color_hex.substr(0, 2), 0, 16) / 255.0f;
         this_color->y = (float)std::stoi(color_hex.substr(2, 2), 0, 16) / 255.0f;
