@@ -33,8 +33,7 @@ namespace style
     SATDUMP_DLL extern ImFont *bigFont;
     //SATDUMP_DLL extern ImFont *hugeFont;
 
-    void setLightStyle();
-    void setDarkStyle();
+    void setStyle();
     void beginDisabled();
     void endDisabled();
     void setFonts(float dpi_scaling);

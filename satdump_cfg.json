@@ -47,11 +47,8 @@
         //
         //
         // Other settings. We utilize the same parameter system, easier that way :-)
-        "light_theme": {
-            "type": "bool",
-            "value": false,
-            "name": "Light UI Theme",
-            "description": "This enables a more classic white-based UI theme, making the UI more usable in the sun on a dimmer display or simply easier to read if you don't prefer the Dark theme"
+        "theme": {
+            "value": "Dark"
         },
         "manual_dpi_scaling": {
             "type": "float",

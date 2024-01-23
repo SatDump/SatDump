@@ -1,10 +1,12 @@
 #define SATDUMP_DLL_EXPORT 1
 
+#include <filesystem>
 #include "style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include "nlohmann/json_utils.h"
 #include "logger.h"
-#include <filesystem>
+#include "config.h"
 #include "module.h"
 #include "backend.h"
 #include "resources.h"
@@ -20,115 +22,195 @@ namespace style
     SATDUMP_DLL ImFont *bigFont;
     //SATDUMP_DLL ImFont *hugeFont;
 
-    void setLightStyle()
+    void hexToImVec4(std::string color_hex, ImVec4 *this_color)
     {
-        auto& style = ImGui::GetStyle();
-        float round = pow(2.0f, ui_scale);
-        style.WindowRounding = round;
-        style.ChildRounding = round;
-        style.FrameRounding = round;
-        style.GrabRounding = round;
-        style.PopupRounding = round;
-        style.ScrollbarRounding = round;
+        color_hex.erase(std::remove_if(color_hex.begin(), color_hex.end(),
+            [&](const char c) { return !std::isxdigit(c); }), color_hex.end());
+        if (color_hex.size() != 8)
+            return;
 
-        ImGui::StyleColorsLight();
-
-        ImVec4 *colors = style.Colors;
-        colors[ImGuiCol_TextDisabled] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-
-        theme.light_mode = true;
-        theme.red = ImColor(0.75f, 0.00f, 0.00f, 1.00f);
-        theme.green = ImColor(0.06f, 0.50f, 0.00f, 1.00f);
-        theme.blue = ImColor(0.00f, 0.00f, 0.50f, 1.00f);
-        theme.yellow = ImColor(0.55f, 0.27f, 0.07f, 1.00f);
-        theme.orange = ImColor(0.75f, 0.50f, 0.05f, 1.00f);
-        theme.cyan = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
-        theme.fuchsia = ImColor(0.50f, 0.00f, 0.50f, 1.00f);
-        theme.magenta = ImColor(0.50f, 0.00f, 0.39f, 1.00f);
-        theme.lavender = ImColor(0.31f, 0.31f, 0.50f, 1.00f);
-        theme.light_green = ImColor(0.20f, 0.50f, 0.20f, 1.00f);
-        theme.light_cyan = ImColor(0.00f, 0.50f, 0.50f, 1.00f);
-        theme.constellation = ImColor(0.03f, 0.25f, 0.00f, 1.00f);
-        theme.widget_bg = ImColor(1.00f, 1.00f, 1.00f, 1.00f);
-        theme.frame_bg = ImColor(0.90f, 0.90f, 0.90f, 1.0f);
-        theme.overlay_bg = ImColor(1.00f, 1.00f, 1.00f, 0.71f);
-        theme.freq_highlight = ImColor(0.596f, 0.728f, 0.884f, 0.75f);
+        this_color->x = (float)std::stoi(color_hex.substr(0, 2), 0, 16) / 255.0f;
+        this_color->y = (float)std::stoi(color_hex.substr(2, 2), 0, 16) / 255.0f;
+        this_color->z = (float)std::stoi(color_hex.substr(4, 2), 0, 16) / 255.0f;
+        this_color->w = (float)std::stoi(color_hex.substr(6, 2), 0, 16) / 255.0f;
     }
 
-    void setDarkStyle()
+    void setStyle()
     {
-        auto& style = ImGui::GetStyle();
-        float round = pow(2.0f, ui_scale);
-        style.WindowRounding = round;
-        style.ChildRounding = round;
-        style.FrameRounding = round;
-        style.GrabRounding = round;
-        style.PopupRounding = round;
-        style.ScrollbarRounding = round;
+        // Set standard theme info
+        ui_scale = backend::device_scale * satdump::config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+        ImGuiStyle &style = ImGui::GetStyle();
+        style = ImGuiStyle();
+        theme = Theme();
 
-        ImGui::StyleColorsDark();
+        // Load Theme File
+        nlohmann::json data;
+        try
+        {
+            std::string selected_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"];
+            std::ifstream file(resources::getResourcePath("themes/" + selected_theme + ".json"));
+            file >> data;
+            file.close();
+        }
+        catch (std::exception&)
+        {
+            logger->error("Failed to load theme! There will be visual issues.");
+            return;
+        }
 
-        ImVec4 *colors = style.Colors;
-        colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-        colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-        colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.94f);
-        colors[ImGuiCol_ChildBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
-        colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-        colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
-        colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-        colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.21f, 0.22f, 0.54f);
-        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.21f, 0.22f, 0.54f);
-        colors[ImGuiCol_FrameBgActive] = ImVec4(0.20f, 0.21f, 0.22f, 0.54f);
-        colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-        colors[ImGuiCol_TitleBgActive] = ImVec4(0.29f, 0.29f, 0.29f, 1.00f);
-        colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-        colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-        colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-        colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-        colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
-        colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
-        colors[ImGuiCol_CheckMark] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
-        colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
-        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-        colors[ImGuiCol_Button] = ImVec4(0.44f, 0.44f, 0.44f, 0.40f);
-        colors[ImGuiCol_ButtonHovered] = ImVec4(0.44f, 0.44f, 0.44f, 0.45f);
-        colors[ImGuiCol_ButtonActive] = ImVec4(0.44f, 0.44f, 0.44f, 0.40f);
-        colors[ImGuiCol_Header] = ImVec4(0.63f, 0.63f, 0.70f, 0.31f);
-        colors[ImGuiCol_HeaderHovered] = ImVec4(0.63f, 0.63f, 0.70f, 0.40f);
-        colors[ImGuiCol_HeaderActive] = ImVec4(0.63f, 0.63f, 0.70f, 0.31f);
-        colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
-        colors[ImGuiCol_SeparatorHovered] = ImVec4(0.72f, 0.72f, 0.72f, 0.78f);
-        colors[ImGuiCol_SeparatorActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
-        colors[ImGuiCol_ResizeGrip] = ImVec4(0.91f, 0.91f, 0.91f, 0.25f);
-        colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.81f, 0.81f, 0.81f, 0.67f);
-        colors[ImGuiCol_ResizeGripActive] = ImVec4(0.46f, 0.46f, 0.46f, 0.95f);
-        colors[ImGuiCol_PlotLines] = ImVec4(0.4f, 0.9f, 1.0f, 1.00f);
-        colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-        colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.60f, 0.15f, 1.00f);
-        colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-        colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-        colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-        colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-        colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-        colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+        // Set base theme
+        bool light_mode = getValueOrDefault(data["light"], false);
+        if (light_mode)
+            ImGui::StyleColorsLight();
+        else
+            ImGui::StyleColorsDark();
 
-        theme.light_mode = false;
-        theme.red = ImColor(1.00f, 0.00f, 0.00f, 1.00f);
-        theme.green = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
-        theme.blue = ImColor(0.00f, 0.00f, 1.00f, 1.00f);
-        theme.yellow = ImColor(1.00f, 1.00f, 0.00f, 1.00f);
-        theme.orange = ImColor(1.00f, 0.67f, 0.07f, 1.00f);
-        theme.cyan = ImColor(0.00f, 1.00f, 1.00f, 1.00f);
-        theme.fuchsia = ImColor(1.00f, 0.00f, 1.00f, 1.00f);
-        theme.magenta = ImColor(1.00f, 0.00f, 0.78f, 1.00f);
-        theme.lavender = ImColor(0.63f, 0.63f, 1.00f, 1.00f);
-        theme.light_green = ImColor(0.39f, 1.00f, 0.39f, 1.00f);
-        theme.light_cyan = ImColor(0.00f, 0.92f, 1.00f, 1.00f);
-        theme.constellation = ImColor(0.12f, 1.00f, 0.00f, 1.00f);
-        theme.widget_bg = ImColor(0.00f, 0.00f, 0.00f, 1.00f);
-        theme.frame_bg = ImColor(0.0666f, 0.0666f, 0.0666f, 1.0f);
-        theme.overlay_bg = ImColor(0.00f, 0.00f, 0.00f, 0.71f);
-        theme.freq_highlight = ImColor(0.596f, 0.728f, 0.884f, 0.5f);
+        // ImGui sizes
+        if (data.contains("ImGuiStyle") && data["ImGuiStyle"].is_object())
+        {
+            const std::map<std::string, float ImGuiStyle::*> style_map = {
+                {"Alpha", &ImGuiStyle::Alpha},
+                {"DisabledAlpha", &ImGuiStyle::DisabledAlpha},
+                {"WindowRounding", &ImGuiStyle::WindowRounding},
+                {"WindowBorderSize", &ImGuiStyle::WindowBorderSize},
+                {"ChildRounding", &ImGuiStyle::ChildRounding},
+                {"ChildBorderSize", &ImGuiStyle::ChildBorderSize},
+                {"PopupRounding", &ImGuiStyle::PopupRounding},
+                {"PopupBorderSize", &ImGuiStyle::PopupBorderSize},
+                {"FrameRounding", &ImGuiStyle::FrameRounding},
+                {"FrameBorderSize", &ImGuiStyle::FrameBorderSize},
+                {"IndentSpacing", &ImGuiStyle::IndentSpacing},
+                {"ScrollbarSize", &ImGuiStyle::ScrollbarSize},
+                {"ScrollbarRounding", &ImGuiStyle::ScrollbarRounding},
+                {"GrabMinSize", &ImGuiStyle::GrabMinSize},
+                {"GrabRounding", &ImGuiStyle::GrabRounding},
+                {"TabRounding", &ImGuiStyle::TabRounding}
+            };
+
+            for (auto& style_item : data["ImGuiStyle"].items())
+            {
+                if (!style_item.value().is_number_float())
+                {
+                    logger->debug("Invalid theme value for %s", style_item.key().c_str());
+                    continue;
+                }
+
+                std::map<std::string, float ImGuiStyle::*>::const_iterator style_pos = style_map.find(style_item.key());
+                if (style_pos != style_map.end())
+                    style.*(style_pos->second) = style_item.value();
+                else
+                    logger->debug("Invalid theme attribute: %s", style_item.key().c_str());
+            }
+        }
+        style.ScaleAllSizes(ui_scale);
+
+        // Built-in ImGui colors
+        if (data.contains("ImGuiColors") && data["ImGuiColors"].is_object())
+        {
+            const std::map<std::string, ImGuiCol> color_map = {
+                {"Text", ImGuiCol_Text},
+                {"TextDisabled", ImGuiCol_TextDisabled},
+                {"WindowBg", ImGuiCol_WindowBg},
+                {"ChildBg", ImGuiCol_ChildBg},
+                {"PopupBg", ImGuiCol_PopupBg},
+                {"Border", ImGuiCol_Border},
+                {"BorderShadow", ImGuiCol_BorderShadow},
+                {"FrameBg", ImGuiCol_FrameBg},
+                {"FrameBgHovered", ImGuiCol_FrameBgHovered},
+                {"FrameBgActive", ImGuiCol_FrameBgActive},
+                {"TitleBg", ImGuiCol_TitleBg},
+                {"TitleBgActive", ImGuiCol_TitleBgActive},
+                {"TitleBgCollapsed", ImGuiCol_TitleBgCollapsed},
+                {"MenuBarBg", ImGuiCol_MenuBarBg},
+                {"ScrollbarBg", ImGuiCol_ScrollbarBg},
+                {"ScrollbarGrab", ImGuiCol_ScrollbarGrab},
+                {"ScrollbarGrabHovered", ImGuiCol_ScrollbarGrabHovered},
+                {"ScrollbarGrabActive", ImGuiCol_ScrollbarGrabActive},
+                {"CheckMark", ImGuiCol_CheckMark},
+                {"SliderGrab", ImGuiCol_SliderGrab},
+                {"SliderGrabActive", ImGuiCol_SliderGrabActive},
+                {"Button", ImGuiCol_Button},
+                {"ButtonHovered", ImGuiCol_ButtonHovered},
+                {"ButtonActive", ImGuiCol_ButtonActive},
+                {"Header", ImGuiCol_Header},
+                {"HeaderHovered", ImGuiCol_HeaderHovered},
+                {"HeaderActive", ImGuiCol_HeaderActive},
+                {"Separator", ImGuiCol_Separator},
+                {"SeparatorHovered", ImGuiCol_SeparatorHovered},
+                {"SeparatorActive", ImGuiCol_SeparatorActive},
+                {"ResizeGrip", ImGuiCol_ResizeGrip},
+                {"ResizeGripHovered", ImGuiCol_ResizeGripHovered},
+                {"ResizeGripActive", ImGuiCol_ResizeGripActive},
+                {"Tab", ImGuiCol_Tab},
+                {"TabHovered", ImGuiCol_TabHovered},
+                {"TabActive", ImGuiCol_TabActive},
+                {"TabUnfocused", ImGuiCol_TabUnfocused},
+                {"TabUnfocusedActive", ImGuiCol_TabUnfocusedActive},
+                {"PlotLines", ImGuiCol_PlotLines},
+                {"PlotLinesHovered", ImGuiCol_PlotLinesHovered},
+                {"PlotHistogram", ImGuiCol_PlotHistogram},
+                {"PlotHistogramHovered", ImGuiCol_PlotHistogramHovered},
+                {"TextSelectedBg", ImGuiCol_TextSelectedBg},
+                {"DragDropTarget", ImGuiCol_DragDropTarget},
+                {"NavHighlight", ImGuiCol_NavHighlight},
+                {"NavWindowingHighlight", ImGuiCol_NavWindowingHighlight},
+                {"NavWindowingDimBg", ImGuiCol_NavWindowingDimBg},
+                {"ModalWindowDimBg", ImGuiCol_ModalWindowDimBg}
+            };
+
+            for (auto& color : data["ImGuiColors"].items())
+            {
+                if (!color.value().is_string())
+                {
+                    logger->debug("Invalid theme color for %s", color.key().c_str());
+                    continue;
+                }
+
+                std::map<std::string, ImGuiCol>::const_iterator color_pos = color_map.find(color.key());
+                if (color_pos != color_map.end())
+                    hexToImVec4(color.value(), &style.Colors[color_pos->second]);
+                else
+                    logger->debug("Invalid theme color: %s", color.key().c_str());
+            }
+        }
+
+        // Custom SatDump Colors
+        if (data.contains("SatDumpColors") && data["SatDumpColors"].is_object())
+        {
+            const std::map<std::string, ImColor Theme::*> custom_color_map = {
+                {"red", &Theme::red},
+                {"green", &Theme::green},
+                {"blue", &Theme::blue},
+                {"yellow", &Theme::yellow},
+                {"orange", &Theme::orange},
+                {"cyan", &Theme::cyan},
+                {"fuchsia", &Theme::fuchsia},
+                {"magenta", &Theme::magenta},
+                {"lavender", &Theme::lavender},
+                {"light_green", &Theme::light_green},
+                {"light_cyan", &Theme::light_cyan},
+                {"constellation", &Theme::constellation},
+                {"widget_bg", &Theme::widget_bg},
+                {"frame_bg", &Theme::frame_bg},
+                {"overlay_bg", &Theme::overlay_bg},
+                {"freq_highlight", &Theme::freq_highlight}
+            };
+
+            for (auto& color : data["SatDumpColors"].items())
+            {
+                if (!color.value().is_string())
+                {
+                    logger->debug("Invalid theme color for %s", color.key().c_str());
+                    continue;
+                }
+
+                std::map<std::string, ImColor Theme::*>::const_iterator color_pos = custom_color_map.find(color.key());
+                if (color_pos != custom_color_map.end())
+                    hexToImVec4(color.value(), &(theme.*(color_pos->second)).Value);
+                else
+                    logger->debug("Invalid theme color: %s", color.key().c_str());
+            }
+        }
     }
 
     void beginDisabled()

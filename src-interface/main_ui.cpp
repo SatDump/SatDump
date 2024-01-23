@@ -85,16 +85,7 @@ namespace satdump
     {
         if (update_ui)
         {
-            float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
-            ui_scale = backend::device_scale * manual_dpi_scaling;
-            ImGui::GetStyle() = ImGuiStyle();
-            ImGui::GetStyle().ScaleAllSizes(ui_scale);
-
-            if (config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>())
-                style::setLightStyle();
-            else
-                style::setDarkStyle();
-
+            style::setStyle();
             style::setFonts(ui_scale);
             update_ui = false;
         }
