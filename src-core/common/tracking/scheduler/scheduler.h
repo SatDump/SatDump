@@ -3,6 +3,7 @@
 #include "common/widgets/pipeline_selector.h"
 #include "passes.h"
 #include <functional>
+#include "common/image/image.h"
 
 namespace satdump
 {
@@ -160,5 +161,7 @@ namespace satdump
         void setAutoTrackCfg(AutoTrackCfg v);
 
         void renderAutotrackConfig(double curr_time);
+
+        image::Image<uint8_t> getScheduleImage(int width, double curr_time);
     };
 }

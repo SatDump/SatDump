@@ -5,6 +5,7 @@
 #include "core/style.h"
 #include "common/utils.h"
 #include "common/widgets/frequency_input.h"
+#include "resources.h"
 
 namespace satdump
 {
@@ -303,5 +304,105 @@ namespace satdump
         upcoming_satellite_passes_mtx.unlock();
         if (set_engaged)
             setEngaged(autotrack_engaged, curr_time);
+    }
+
+    image::Image<uint8_t> AutoTrackScheduler::getScheduleImage(int width, double curr_time)
+    {
+        image::Image<uint8_t> img;
+
+        float ui_scale = 1;
+
+        {
+            int d_pplot_height = (enabled_satellites.size() * 20) * ui_scale;
+            int d_pplot_size = width;
+
+            img.init(width, d_pplot_height, 3);
+            img.fill(0);
+            img.init_font(resources::getResourcePath("fonts/font.ttf"));
+
+            uint8_t color_gray[] = {100, 100, 100};
+            uint8_t color_white[] = {255, 255, 255};
+
+            time_t tttime = curr_time;
+            std::tm *timeReadable = gmtime(&tttime);
+            int curr_hour = timeReadable->tm_hour;
+            int offset = d_pplot_size / 12 * (timeReadable->tm_min / 60.0);
+            //              ImGui::Dummy(ImVec2(0, 0));
+            for (int i = (timeReadable->tm_min < 30 ? 1 : 0); i < (timeReadable->tm_min < 30 ? 12 : 13); i++)
+            {
+                img.draw_text(i * d_pplot_size / 12 - offset, 0, color_gray, 10, svformat("%s%s%s", (curr_hour + i) % 24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00"));
+            }
+            float sat_blk_height = ((float)d_pplot_height / (float)enabled_satellites.size());
+            for (int i = 0; i < (int)enabled_satellites.size(); i++)
+            {
+                auto &norad = enabled_satellites[i].norad;
+                int thsat_ys = sat_blk_height * i;
+                int thsat_ye = sat_blk_height * i + sat_blk_height;
+
+                bool first_pass = true;
+
+                for (auto &cpass : upcoming_satellite_passes_all)
+                {
+                    if (cpass.norad == norad)
+                    {
+                        double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
+                        double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
+
+                        std::string name = general_tle_registry.get_from_norad(norad)->name;
+
+                        if (cpass_xs < 0)
+                            cpass_xs = 0;
+                        if (cpass_xe > d_pplot_size)
+                            cpass_xe = d_pplot_size;
+                        if (cpass_xs > d_pplot_size)
+                            cpass_xs = d_pplot_size;
+
+                        uint8_t color[3];
+                        hsv_to_rgb(fmod(norad, 10) / 10.0, 1, 1, color);
+                        img.draw_rectangle(cpass_xs, thsat_ys,
+                                           cpass_xe, thsat_ye,
+                                           color, true);
+
+                        if (first_pass)
+                        {
+                            img.draw_text(cpass_xe + 5 * ui_scale, thsat_ys + (sat_blk_height / 2) - 6 * ui_scale, color, 10, name);
+                            first_pass = false;
+                        }
+                    }
+                }
+
+                img.draw_line(0, thsat_ys,
+                              d_pplot_size - 1, thsat_ys,
+                              color_gray);
+                img.draw_line(0, thsat_ye,
+                              d_pplot_size - 1, thsat_ye,
+                              color_gray);
+
+                if (autotrack_engaged)
+                {
+                    for (auto &cpass : upcoming_satellite_passes_sel)
+                    {
+                        if (cpass.norad == norad)
+                        {
+                            double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
+                            double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
+
+                            if (cpass_xs < 0)
+                                cpass_xs = 0;
+                            if (cpass_xe > d_pplot_size)
+                                cpass_xe = d_pplot_size;
+                            if (cpass_xs > d_pplot_size)
+                                cpass_xs = d_pplot_size;
+
+                            img.draw_rectangle(cpass_xs, thsat_ys,
+                                               cpass_xe, thsat_ye - 1,
+                                               color_white, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        return img;
     }
 }

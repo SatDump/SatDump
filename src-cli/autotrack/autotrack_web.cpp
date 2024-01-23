@@ -77,6 +77,12 @@ void AutoTrackApp::setup_webserver()
                 return vec;
             };
 
+        webserver::handle_callback_schedule = [this]() -> std::vector<uint8_t>
+        {
+            std::vector<uint8_t> vec = auto_scheduler.getScheduleImage(512, getTime()).save_jpeg_mem();
+            return vec;
+        };
+
         webserver::handle_callback_html = [this](std::string uri) -> std::string
         {
             if (uri == "/status")

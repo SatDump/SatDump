@@ -11,6 +11,7 @@ namespace webserver
     nng_http_handler *handler_html;
     nng_http_handler *handler_polarplot;
     nng_http_handler *handler_fft;
+    nng_http_handler *handler_schedule;
 
     bool is_active = false;
 
@@ -26,6 +27,9 @@ namespace webserver
     { return {}; };
 
     std::function<std::vector<uint8_t>()> handle_callback_fft = []() -> std::vector<uint8_t>
+    { return {}; };
+
+    std::function<std::vector<uint8_t>()> handle_callback_schedule = []() -> std::vector<uint8_t>
     { return {}; };
 
     // HTTP Handler for stats
@@ -96,6 +100,22 @@ namespace webserver
         request_mutex.unlock();
     }
 
+    // HTTP Handler for Schedule
+    void http_handle_schedule(nng_aio *aio)
+    {
+        request_mutex.lock();
+
+        std::vector<uint8_t> img = handle_callback_schedule();
+
+        nng_http_res *res;
+        nng_http_res_alloc(&res);
+        nng_http_res_copy_data(res, img.data(), img.size());
+        nng_http_res_set_header(res, "Content-Type", "image/jpeg");
+        nng_aio_set_output(aio, 0, res);
+        nng_aio_finish(aio, 0);
+        request_mutex.unlock();
+    }
+
     void start(std::string http_server_url)
     {
         http_server_url = "http://" + http_server_url;
@@ -120,6 +140,10 @@ namespace webserver
             nng_http_handler_alloc(&handler_fft, "/fft.jpeg", http_handle_fft);
             nng_http_handler_set_method(handler_fft, "GET");
             nng_http_server_add_handler(http_server, handler_fft);
+
+            nng_http_handler_alloc(&handler_schedule, "/schedule.jpeg", http_handle_schedule);
+            nng_http_handler_set_method(handler_schedule, "GET");
+            nng_http_server_add_handler(http_server, handler_schedule);
         }
 
         nng_http_server_start(http_server);
