@@ -1,5 +1,7 @@
 {
   "light": false,
+  "font": "Perfect-DOS-VGA-437-Win",
+  "font_size": 14,
   "ImGuiStyle": {
     "ScrollbarRounding": 0.0,
     "TabRounding": 0.0,

@@ -145,7 +145,7 @@ namespace image
     // Others
 
     // Font creation
-    std::vector<Image<uint8_t>> make_font(int size, bool text_mode = true); // Generate a font to be used by draw_text. Uses the bundled GNU FreeMono
+    std::vector<Image<uint8_t>> make_font(int size, bool text_mode = true); // Generate a font to be used by draw_text. Uses the bundled Roboto font
 
     template <typename T>
     Image<T> generate_text_image(std::string text, T color[], int size, int padX, int padY); // return text on a transparent background

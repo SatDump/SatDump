@@ -51,13 +51,23 @@ namespace style
         try
         {
             std::string selected_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"];
+            std::string theme_path;
+            if(resources::resourceExists("themes/" + selected_theme + ".json"))
+                theme_path = "themes/" + selected_theme + ".json";
+            else
+            {
+                logger->warn("Failed to load theme \"%s\". Will fall back to Dark", selected_theme.c_str());
+                satdump::config::main_cfg["user_interface"]["theme"]["value"] = selected_theme = "Dark";
+                satdump::config::saveUserConfig();
+            }
+
             std::ifstream file(resources::getResourcePath("themes/" + selected_theme + ".json"));
             file >> data;
             file.close();
         }
         catch (std::exception&)
         {
-            logger->error("Failed to load theme! There will be visual issues.");
+            logger->error("Failed to load any theme! Your SatDump installation may be missing critical files.");
             return;
         }
 
@@ -67,6 +77,20 @@ namespace style
             ImGui::StyleColorsLight();
         else
             ImGui::StyleColorsDark();
+
+        // Set font
+        if (data.contains("font") && data["font"].is_string())
+        {
+            std::string font = data["font"];
+            if (resources::resourceExists("fonts/" + font + ".ttf"))
+                theme.font = font;
+            else
+                logger->debug("Specified font \"%s\" not found. Falling back to default", font.c_str());
+        }
+
+        // Set font size
+        if (data.contains("font_size") && data["font_size"].is_number() && data["font_size"].get<float>() > 0)
+            theme.font_size = data["font_size"];
 
         // ImGui sizes
         if (data.contains("ImGuiStyle") && data["ImGuiStyle"].is_object())
@@ -83,13 +107,16 @@ namespace style
                 {"FrameRounding", &ImGuiStyle::FrameRounding},
                 {"FrameBorderSize", &ImGuiStyle::FrameBorderSize},
                 {"IndentSpacing", &ImGuiStyle::IndentSpacing},
+                {"LogSliderDeadzone", &ImGuiStyle::LogSliderDeadzone},
+                {"ColumnsMinSpacing", &ImGuiStyle::ColumnsMinSpacing},
                 {"ScrollbarSize", &ImGuiStyle::ScrollbarSize},
                 {"ScrollbarRounding", &ImGuiStyle::ScrollbarRounding},
                 {"GrabMinSize", &ImGuiStyle::GrabMinSize},
                 {"GrabRounding", &ImGuiStyle::GrabRounding},
                 {"TabRounding", &ImGuiStyle::TabRounding},
                 {"TabBorderSize", &ImGuiStyle::TabBorderSize},
-                {"TabBarBorderSize", &ImGuiStyle::TabBarBorderSize}
+                {"TabBarBorderSize", &ImGuiStyle::TabBarBorderSize},
+                {"SeparatorTextBorderSize", &ImGuiStyle::SeparatorTextBorderSize}
             };
 
             for (auto& style_item : data["ImGuiStyle"].items())
@@ -254,15 +281,15 @@ namespace style
         float macos_fbs = macos_framebuffer_scale();
         float font_scaling = dpi_scaling * macos_fbs;
 
-        baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 16.0f * font_scaling, &config, def);
+        baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
         config.MergeMode = true;
 
         for (int i = 0; i < 6; i++)
-            baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), 16.0f * font_scaling, &config, list[i]);
+            baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), theme.font_size * font_scaling, &config, list[i]);
         config.MergeMode = false;
 
-        bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 45.0f * font_scaling);   //, &config, ranges);
-        //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/Roboto-Medium.ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
+        bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), 45.0f * font_scaling);   //, &config, ranges);
+        //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
         io.Fonts->Build();
         io.FontGlobalScale = 1 / macos_fbs;
 
