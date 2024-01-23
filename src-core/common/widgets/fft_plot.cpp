@@ -67,13 +67,13 @@ namespace widgets
 
                 auto cstr = format_notated(freq_here);
                 window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 30 * ui_scale},
-                                          i == 5 ? 0xFF00FF00 : col_base,
+                                          i == 5 ? style::theme.green : col_base,
                                           cstr.c_str());
                 if (i == 5 && actual_sdr_freq != -1)
                 {
                     auto cstr = "(" + format_notated(actual_sdr_freq) + ")";
                     window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 16 * ui_scale},
-                                              i == 5 ? 0xFF0000FF : col_base,
+                                              i == 5 ? style::theme.red : col_base,
                                               cstr.c_str());
                 }
             }
