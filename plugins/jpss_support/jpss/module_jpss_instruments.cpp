@@ -430,7 +430,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("ATMS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", atms_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", atms_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(atms_status);
 
@@ -438,7 +438,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("OMPS Nadir");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", omps_nadir_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", omps_nadir_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(omps_nadir_status);
 
@@ -446,7 +446,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("OMPS Limb");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", omps_limb_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", omps_limb_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(omps_limb_status);
 
@@ -456,7 +456,7 @@ namespace jpss
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIIRS M%d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_moderate[i].segments.size());
+                    ImGui::TextColored(style::theme.green, "%d", (int)viirs_reader_moderate[i].segments.size());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(viirs_moderate_status[i]);
                 }
@@ -467,7 +467,7 @@ namespace jpss
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIIRS I%d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_imaging[i].segments.size());
+                    ImGui::TextColored(style::theme.green, "%d", (int)viirs_reader_imaging[i].segments.size());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(viirs_imaging_status[i]);
                 }
@@ -476,7 +476,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("VIIRS DNB");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_dnb[0].segments.size());
+                ImGui::TextColored(style::theme.green, "%d", (int)viirs_reader_dnb[0].segments.size());
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(viirs_dnb_status);
 

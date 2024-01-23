@@ -213,7 +213,7 @@ namespace lucky7
             {
                 ImGui::Text("Frames : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), UITO_C_STR(frm_cnt));
+                ImGui::TextColored(style::theme.green, UITO_C_STR(frm_cnt));
             }
 
             if (!streamingInput)

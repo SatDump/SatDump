@@ -159,6 +159,6 @@ namespace satdump
         AutoTrackCfg getAutoTrackCfg();
         void setAutoTrackCfg(AutoTrackCfg v);
 
-        void renderAutotrackConfig(bool light_theme, double curr_time);
+        void renderAutotrackConfig(double curr_time);
     };
 }

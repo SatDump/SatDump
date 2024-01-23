@@ -282,7 +282,7 @@ namespace ccsds
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
+                ImGui::TextColored(locked ? style::theme.green : style::theme.orange, UITO_C_STR(cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
@@ -294,7 +294,7 @@ namespace ccsds
             {
                 ImGui::Text("Check  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(crc_lock ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, crc_lock ? "PASS" : "FAIL");
+                ImGui::TextColored(crc_lock ? style::theme.green : style::theme.orange, crc_lock ? "PASS" : "FAIL");
             }
         }
         ImGui::EndGroup();

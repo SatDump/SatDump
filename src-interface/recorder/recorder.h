@@ -53,8 +53,8 @@ namespace satdump
         std::string recorder_filename;
         int select_sample_format = 0;
 
-        widgets::TimedMessage sdr_error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
-        widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
+        widgets::TimedMessage sdr_error;
+        widgets::TimedMessage error;
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
         std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;

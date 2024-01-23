@@ -345,7 +345,7 @@ namespace inmarsat
 
             ImGui::Text("Decoded packets can be seen in a floating window.");
             ImGui::Spacing();
-            ImGui::TextColored(ImColor(255, 0, 0), "Note : Still WIP!");
+            ImGui::TextColored(style::theme.red, "Note : Still WIP!");
 
             ImGui::Text("Do remember you should not keep nor share data that is\nnot intended for you.");
 
@@ -353,16 +353,16 @@ namespace inmarsat
             {
                 ImGui::Spacing();
                 const char* btn_icon, * label;
-                ImU32 color;
+                ImVec4 color;
                 if (play_audio)
                 {
-                    color = IM_COL32(0, 255, 0, 255);
+                    color = style::theme.green.Value;
                     btn_icon = u8"\uF028##aeroaudio";
                     label = "Audio Playing";
                 }
                 else
                 {
-                    color = IM_COL32(255, 0, 0, 255);
+                    color = style::theme.red.Value;
                     btn_icon = u8"\uF026##aeroaudio";
                     label = "Audio Muted";
                 }
@@ -401,11 +401,11 @@ namespace inmarsat
                         {
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["plane_reg"].get<std::string>().c_str());
+                            ImGui::TextColored(style::theme.lavender, "%s", msg["plane_reg"].get<std::string>().c_str());
                             ImGui::TableSetColumnIndex(1);
-                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                         }
                         catch (std::exception&)
                         {
@@ -429,11 +429,11 @@ namespace inmarsat
                         {
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", msg["msg_name"].get<std::string>().c_str());
+                            ImGui::TextColored(style::theme.lavender, "%s", msg["msg_name"].get<std::string>().c_str());
                             ImGui::TableSetColumnIndex(1);
-                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg.dump().c_str());
+                            ImGui::TextColored(style::theme.green, "%s", msg.dump().c_str());
                         }
                         catch (std::exception&)
                         {

@@ -125,7 +125,7 @@ namespace demod
                 qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
                 qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
             }
 
@@ -273,7 +273,7 @@ namespace demod
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
@@ -340,7 +340,7 @@ namespace demod
         {
             ImGui::SetCursorPos({ImGui::GetCursorPos().x + ImGui::GetWindowWidth() - 55 * ui_scale,
                                  ImGui::GetCursorPos().y - 25 * ui_scale});
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(255, 0, 0, 255));
+            ImGui::PushStyleColor(ImGuiCol_Button, style::theme.red.Value);
             if (ImGui::Button("Abort##demodstop"))
                 demod_should_stop = true;
             ImGui::PopStyleColor();

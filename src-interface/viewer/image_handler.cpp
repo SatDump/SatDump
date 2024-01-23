@@ -386,16 +386,14 @@ namespace satdump
 
             if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
+                ImVec4* colors = ImGui::GetStyle().Colors;
+                int to_pop = 0;
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[ImGuiCol_TabHovered]);
+                    to_pop += 2;
                 }
                 if (!active_channel_calibrated)
                     ImGui::BeginDisabled();
@@ -403,16 +401,14 @@ namespace satdump
                     range_window = !range_window;
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Diaplay Range Control");
+                ImGui::PopStyleColor(to_pop);
+                to_pop = 0;
 
                 if (show_scale && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[ImGuiCol_TabHovered]);
+                    to_pop += 2;
                 }
                 if (!products->get_calibration_type(active_channel_id))
                     ImGui::BeginDisabled();
@@ -421,11 +417,11 @@ namespace satdump
                     show_scale = !show_scale;
                 if (!products->get_calibration_type(active_channel_id))
                     ImGui::EndDisabled();
+                ImGui::PopStyleColor(to_pop);
+                to_pop = 0;
 
                 if (!active_channel_calibrated)
                     ImGui::EndDisabled();
-
-                ImGui::PopStyleColor(4);
 
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Show Scale");
@@ -562,7 +558,7 @@ namespace satdump
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     {
                         ImGui::BeginTooltip();
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable projection!");
+                        ImGui::TextColored(style::theme.red, "Disable projection!");
                         ImGui::EndTooltip();
                     }
                 }
@@ -748,19 +744,19 @@ namespace satdump
                 {
                     ImGui::BeginTooltip();
                     if (current_timestamps.size() == 0)
-                        ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
+                        ImGui::TextColored(style::theme.red, "No timestamps!");
                     else if (correct_image)
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
+                        ImGui::TextColored(style::theme.red, "Disable correction!");
                     else
-                        ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
-                                                                 "deal with very bad (noisy) data\n"
-                                                                 "better.\n"
-                                                                 "The new one is preferred if\n"
-                                                                 "possible though, as results\n"
-                                                                 "are a lot nicer! :-)\n"
-                                                                 "If you had to use this\n"
-                                                                 "and the data was not that bad\n"
-                                                                 "please report as a bug!");
+                        ImGui::TextColored(style::theme.yellow, "The old algorithm will\n"
+                                                                "deal with very bad (noisy) data\n"
+                                                                "better.\n"
+                                                                "The new one is preferred if\n"
+                                                                "possible though, as results\n"
+                                                                "are a lot nicer! :-)\n"
+                                                                "If you had to use this\n"
+                                                                "and the data was not that bad\n"
+                                                                "please report as a bug!");
 
                     ImGui::EndTooltip();
                 }

@@ -228,7 +228,7 @@ void FileSource::drawControlUI()
         style::endDisabled();
 #ifdef BUILD_ZIQ
     if (select_sample_format == 4)
-        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking may be slow!");
+        ImGui::TextColored(style::theme.red, "ZIQ seeking may be slow!");
 #endif
 }
 

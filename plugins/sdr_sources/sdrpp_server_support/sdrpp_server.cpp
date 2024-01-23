@@ -95,7 +95,7 @@ void SDRPPServerSource::drawControlUI()
             catch (std::exception &e)
             {
                 logger->error("Error connecting to SDR++ Server %s", e.what());
-                error.set_message(e.what());
+                error.set_message(style::theme.red, e.what());
             }
         }
     }

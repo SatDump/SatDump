@@ -258,7 +258,7 @@ namespace inmarsat
             ImGui::Spacing();
             ImGui::Text("Last packet count : ");
             ImGui::SameLine();
-            ImGui::TextColored(ImColor(0, 255, 0), "%d", last_pkt_count);
+            ImGui::TextColored(style::theme.green, "%d", last_pkt_count);
 
             if (input_data_type == DATA_FILE)
                 ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
@@ -287,11 +287,11 @@ namespace inmarsat
                             int id = get_packet_frm_id(msg);
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
+                            ImGui::TextColored(style::theme.lavender, "%s", get_id_name(id).c_str());
                             ImGui::TableSetColumnIndex(1);
-                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                         }
                         catch (std::exception&)
                         {
@@ -316,11 +316,11 @@ namespace inmarsat
                             int id = get_packet_frm_id(msg);
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
-                            ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
+                            ImGui::TextColored(style::theme.lavender, "%s", get_id_name(id).c_str());
                             ImGui::TableSetColumnIndex(1);
-                            ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                            ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
-                            ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                         }
                         catch (std::exception&)
                         {
@@ -347,31 +347,31 @@ namespace inmarsat
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
+                                ImGui::TextColored(style::theme.lavender, "%s", get_id_name(id).c_str());
                                 ImGui::TableSetColumnIndex(1);
-                                ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                                ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
-                                ImGui::TextColored(ImColor(0, 255, 0), "%s", msg["message"].get<std::string>().c_str());
+                                ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                             }
                             else if (id == pkts::PacketEGCDoubleHeader1::FRM_ID || id == pkts::PacketEGCDoubleHeader2::FRM_ID)
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
+                                ImGui::TextColored(style::theme.lavender, "%s", get_id_name(id).c_str());
                                 ImGui::TableSetColumnIndex(1);
-                                ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                                ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
-                                ImGui::TextColored(ImColor(255, 0, 0), "%s", msg["message"].get<std::string>().c_str());
+                                ImGui::TextColored(style::theme.red, "%s", msg["message"].get<std::string>().c_str());
                             }
                             else
                             {
                                 ImGui::TableNextRow();
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TextColored(ImColor(160, 160, 255), "%s", get_id_name(id).c_str());
+                                ImGui::TextColored(style::theme.lavender, "%s", get_id_name(id).c_str());
                                 ImGui::TableSetColumnIndex(1);
-                                ImGui::TextColored(ImColor(255, 255, 0), "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
+                                ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
-                                ImGui::TextColored(ImColor(255, 255, 255), "%s", msg.dump().c_str());
+                                ImGui::TextUnformatted(msg.dump().c_str());
                             }
                         }
                         catch (std::exception&)

@@ -138,7 +138,7 @@ namespace inmarsat
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(gotFrame ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
+                    ImGui::TextColored(gotFrame ? style::theme.green : style::theme.orange, UITO_C_STR(cor));
 
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                     cor_history[200 - 1] = cor;
@@ -152,7 +152,7 @@ namespace inmarsat
                 {
                     ImGui::Text("BER   : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(ber < 0.22 ? IMCOLOR_SYNCED : IMCOLOR_NOSYNC, UITO_C_STR(ber));
+                    ImGui::TextColored(ber < 0.22 ? style::theme.green : style::theme.red, UITO_C_STR(ber));
 
                     std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                     ber_history[200 - 1] = ber;

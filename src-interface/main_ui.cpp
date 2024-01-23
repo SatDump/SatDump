@@ -5,8 +5,6 @@
 #include "offline.h"
 #include "settings.h"
 #include "satdump_vars.h"
-#include "core/config.h"
-#include "core/style.h"
 #include "core/backend.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
@@ -31,6 +29,7 @@ namespace satdump
     std::shared_ptr<RecorderApplication> recorder_app;
     std::shared_ptr<ViewerApplication> viewer_app;
 
+    bool update_ui = true;
     bool in_app = false; // true;
     bool open_recorder;
 
@@ -39,16 +38,13 @@ namespace satdump
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
-    void initMainUI(float device_scale)
+    void initMainUI()
     {
         ImPlot::CreateContext();
 
         audio::registerSinks();
         offline::setup();
         settings::setup();
-
-        // Setup DPI/Theme
-        updateUI(device_scale);
 
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));
@@ -76,20 +72,6 @@ namespace satdump
         logger->add_sink(notify_logger_sink);
     }
 
-    void updateUI(float device_scale)
-    {
-        light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
-        float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
-        ui_scale = device_scale * manual_dpi_scaling;
-        ImGui::GetStyle() = ImGuiStyle();
-        ImGui::GetStyle().ScaleAllSizes(ui_scale);
-
-        if (light_theme)
-            style::setLightStyle();
-        else
-            style::setDarkStyle();
-    }
-
     void exitMainUI()
     {
         recorder_app->save_settings();
@@ -101,6 +83,13 @@ namespace satdump
 
     void renderMainUI()
     {
+        if (update_ui)
+        {
+            style::setStyle();
+            style::setFonts(ui_scale);
+            update_ui = false;
+        }
+
         std::pair<int, int> dims = backend::beginFrame();
         // ImGui::ShowDemoWindow();
 
@@ -267,8 +256,8 @@ namespace satdump
 
         // Render toasts on top of everything, at the end of your code!
         // You should push style vars here
-        float notification_bgcolor = (light_theme ? 212.f : 43.f) / 255.f;
-        float notification_transparency = (light_theme ? 200.f : 100.f) / 255.f;
+        float notification_bgcolor = (style::theme.light_mode ? 212.f : 43.f) / 255.f;
+        float notification_transparency = (style::theme.light_mode ? 200.f : 100.f) / 255.f;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
         notify_logger_sink->notify_mutex.lock();
@@ -279,8 +268,6 @@ namespace satdump
 
         backend::endFrame();
     }
-
-    bool light_theme;
 
     ctpl::thread_pool ui_thread_pool(8);
 }

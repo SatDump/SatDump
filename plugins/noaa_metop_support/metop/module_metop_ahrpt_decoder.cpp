@@ -144,14 +144,14 @@ namespace metop
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
                                          ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         ImColor::HSV(0, 0, 0));
+                                         style::theme.widget_bg);
 
                 for (int i = 0; i < 2048; i++)
                 {
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                                               style::theme.constellation);
                 }
 
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
@@ -170,13 +170,13 @@ namespace metop
                 ImGui::SameLine();
 
                 if (viterbi.getState() == 0)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
+                ImGui::TextColored(viterbi.getState() == 0 ? style::theme.red : style::theme.green, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
@@ -193,11 +193,11 @@ namespace metop
                 ImGui::SameLine();
 
                 if (deframer.getState() == deframer.STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (deframer.getState() == deframer.STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
 
             ImGui::Spacing();
@@ -210,11 +210,11 @@ namespace metop
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
+                        ImGui::TextColored(style::theme.red, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
+                        ImGui::TextColored(style::theme.orange, "%i ", i);
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
+                        ImGui::TextColored(style::theme.green, "%i ", i);
                 }
             }
         }

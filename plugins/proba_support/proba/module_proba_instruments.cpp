@@ -342,7 +342,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CHRIS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", chris_reader->cnt());
+                    ImGui::TextColored(style::theme.green, "%d", chris_reader->cnt());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(chris_status);
 
@@ -350,7 +350,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("HRC");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", hrc_reader->getCount());
+                    ImGui::TextColored(style::theme.green, "%d", hrc_reader->getCount());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(hrc_status);
                 }
@@ -361,7 +361,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("SWAP");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", swap_reader->count);
+                    ImGui::TextColored(style::theme.green, "%d", swap_reader->count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(swap_status);
                 }
@@ -374,7 +374,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch1", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][0]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][0]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][0]);
 
@@ -382,7 +382,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch2", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][1]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][1]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][1]);
 
@@ -390,7 +390,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch2", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][2]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][2]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][2]);
 
@@ -398,7 +398,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch4", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][3]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][3]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][3]);
 
@@ -406,7 +406,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch5", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][4]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][4]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][4]);
 
@@ -414,7 +414,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch6", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][5]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][5]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][5]);
                     }

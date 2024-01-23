@@ -29,12 +29,16 @@ namespace satdump
         std::vector<opencl::OCLDevice> opencl_devices_enum;
 #endif
 
+        int selected_theme = 0;
+        std::vector<std::string> themes;
+        std::string themes_str = "";
+
         bool tles_are_update = false;
         char tle_last_update[80];
 
         bool show_imgui_demo = false;
 
-        widgets::TimedMessage saved_message(ImColor(0, 255, 0), 4);
+        widgets::TimedMessage saved_message;
 
         void setup()
         {
@@ -65,6 +69,21 @@ namespace satdump
                     settings_output_directories.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
 
+            int theme_id = 0;
+            std::string current_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"].get<std::string>();
+            for (const auto& entry : std::filesystem::directory_iterator(resources::getResourcePath("themes")))
+            {
+                if (entry.path().filename().extension() != ".json")
+                    continue;
+                std::string this_name = entry.path().filename().stem().string();
+                themes.push_back(this_name);
+                themes_str += this_name;
+                themes_str.push_back('\0');
+                if (this_name == current_theme)
+                    selected_theme = theme_id;
+                theme_id++;
+            }
+
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
             int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
@@ -90,9 +109,20 @@ namespace satdump
             {
                 if (ImGui::BeginTable("##satdumpuisettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                 {
+                    // Theme Selection
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Theme");
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("Set the style and color of SatDump");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Combo("##themeselection", &selected_theme, themes_str.c_str());
+
+                    // Standard user interface settings
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
                         p.second.draw();
 
+                    // ImGui Demo
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Show ImGui Demo");
@@ -200,15 +230,18 @@ namespace satdump
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
                     satdump::config::main_cfg["satdump_directories"][p.first]["value"] = p.second.getValue();
 
+                satdump::config::main_cfg["user_interface"]["theme"]["value"] = themes[selected_theme];
+
                 for (auto &plugin_hdl : config::plugin_config_handlers)
                     plugin_hdl.save();
 
                 config::saveUserConfig();
-                saved_message.set_message("Settings saved");
+                saved_message.set_message(style::theme.green, "Settings saved");
+                satdump::update_ui = true;
             }
 
             saved_message.draw();
-            ImGui::TextColored(ImColor(255, 255, 0), "Note : Some settings will require SatDump to be restarted\nto take effect!");
+            ImGui::TextColored(style::theme.yellow, "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
     }
 }

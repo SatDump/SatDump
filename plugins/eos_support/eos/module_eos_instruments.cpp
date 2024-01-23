@@ -435,7 +435,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MODIS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", modis_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", modis_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(modis_status);
                 }
@@ -446,7 +446,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("AIRS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", airs_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", airs_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(airs_status);
 
@@ -454,7 +454,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("AMSU A1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a1_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", amsu_a1_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(amsu_status);
 
@@ -462,7 +462,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("AMSU A2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", amsu_a2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(amsu_status);
 
@@ -470,7 +470,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CERES FM-3");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", ceres_fm3_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", ceres_fm3_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(ceres_fm3_status);
 
@@ -478,7 +478,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CERES FM-4");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", ceres_fm4_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", ceres_fm4_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(ceres_fm4_status);
                 }
@@ -489,7 +489,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("OMI 1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", omi_1_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", omi_1_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(omi_status);
 
@@ -497,7 +497,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("OMI 2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", omi_2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", omi_2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(omi_status);
                 }

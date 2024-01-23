@@ -85,7 +85,7 @@ namespace satdump
 
     void TrackingWidget::render()
     {
-        object_tracker.renderPolarPlot(light_theme);
+        object_tracker.renderPolarPlot();
 
         ImGui::Separator();
 
@@ -147,7 +147,7 @@ namespace satdump
                 if (ImGui::BeginTabItem("Scheduling"))
                 {
                     ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
-                    auto_scheduler.renderAutotrackConfig(light_theme, getTime());
+                    auto_scheduler.renderAutotrackConfig(getTime());
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }

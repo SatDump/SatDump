@@ -175,11 +175,11 @@ namespace orbcomm
                 ImGui::SameLine();
 
                 if (stx_deframer.getState() == stx_deframer.STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (stx_deframer.getState() == stx_deframer.STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
         }
         ImGui::EndGroup();

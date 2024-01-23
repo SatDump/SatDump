@@ -171,7 +171,7 @@ namespace ldcm
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("TIRS 1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", tirs_reader1.lines);
+                ImGui::TextColored(style::theme.green, "%d", tirs_reader1.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(tirs_status);
 
@@ -179,7 +179,7 @@ namespace ldcm
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("TIRS 2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", tirs_reader2.lines);
+                ImGui::TextColored(style::theme.green, "%d", tirs_reader2.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(tirs_status);
 
@@ -187,7 +187,7 @@ namespace ldcm
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("TIRS 3");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", tirs_reader3.lines);
+                ImGui::TextColored(style::theme.green, "%d", tirs_reader3.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(tirs_status);
 

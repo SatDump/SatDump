@@ -526,7 +526,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AVHRR");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", avhrr_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", avhrr_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(avhrr_status);
 
@@ -534,7 +534,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("IASI");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", iasi_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", iasi_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(iasi_status);
 
@@ -542,7 +542,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("IASI Imaging");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", iasi_reader_img.lines * 64);
+                ImGui::TextColored(style::theme.green, "%d", iasi_reader_img.lines * 64);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(iasi_img_status);
 
@@ -550,7 +550,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MHS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", mhs_reader.line);
+                ImGui::TextColored(style::theme.green, "%d", mhs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mhs_status);
 
@@ -558,7 +558,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA1);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA1);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -566,7 +566,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA2);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -574,7 +574,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("GOME");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", gome_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", gome_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(gome_status);
 
@@ -582,7 +582,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("ASCAT");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", ascat_reader.lines[0]);
+                ImGui::TextColored(style::theme.green, "%d", ascat_reader.lines[0]);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(gome_status);
 
@@ -590,7 +590,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("SEM");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", sem_reader.samples);
+                ImGui::TextColored(style::theme.green, "%d", sem_reader.samples);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(sem_status);
 
@@ -598,7 +598,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Admin Messages");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", admin_msg_reader.count);
+                ImGui::TextColored(style::theme.green, "%d", admin_msg_reader.count);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(admin_msg_status);
 

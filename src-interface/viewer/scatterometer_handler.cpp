@@ -191,7 +191,7 @@ namespace satdump
             {
                 ImGui::BeginTooltip();
                 if (selected_visualization_id != 1)
-                    ImGui::TextColored(ImColor(255, 0, 0), "Select projection view first!");
+                    ImGui::TextColored(style::theme.red, "Select projection view first!");
                 ImGui::EndTooltip();
             }
         }

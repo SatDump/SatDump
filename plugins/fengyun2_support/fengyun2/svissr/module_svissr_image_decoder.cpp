@@ -344,11 +344,11 @@ namespace fengyun_svissr
             ImGui::Text("State : ");
             ImGui::SameLine();
             if (writingImage)
-                ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
+                ImGui::TextColored(style::theme.green, "Writing images...");
             else if (backwardScan)
-                ImGui::TextColored(IMCOLOR_NOSYNC, "Imager rollback...");
+                ImGui::TextColored(style::theme.red, "Imager rollback...");
             else
-                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                ImGui::TextColored(style::theme.orange, "Receiving...");
         }
         ImGui::EndGroup();
 

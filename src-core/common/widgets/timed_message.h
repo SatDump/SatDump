@@ -9,13 +9,12 @@ namespace widgets
 	{
 	private:
 		ImColor color;
-		int time;
 		std::chrono::time_point<std::chrono::steady_clock> *start_time;
 		std::string message;
 	public:
-		TimedMessage(ImColor color, int time);
+		TimedMessage();
 		~TimedMessage();
-		void set_message(std::string message);
+		void set_message(ImColor color, std::string message);
 		void draw();
 	};
 }

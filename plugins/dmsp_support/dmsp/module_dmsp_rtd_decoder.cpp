@@ -108,17 +108,17 @@ namespace dmsp
                 ImGui::SameLine();
 
                 if (def->getState() == def->STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (def->getState() == def->STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
 
                 // ImGui::Text("Frames : ");
 
                 // ImGui::SameLine();
 
-                // ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), UITO_C_STR(frame_count));
+                // ImGui::TextColored(style::theme.green, UITO_C_STR(frame_count));
             }
         }
         ImGui::EndGroup();

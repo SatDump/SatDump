@@ -8,6 +8,7 @@
 #include <atomic>
 #include "imgui/imgui_flags.h"
 #include "dll_export.h"
+#include "core/style.h"
 #include "common/dsp/complex.h"
 #include "common/dsp/buffer.h"
 #include "nlohmann/json.hpp"
@@ -22,11 +23,6 @@
     d_output_files.push_back(newPath);            \
 }
 #define UITO_C_STR(input) "%s", std::to_string(input).c_str()
-
-// Colors
-#define IMCOLOR_NOSYNC ImColor::HSV(0 / 360.0, 1, 1, 1.0)
-#define IMCOLOR_SYNCING ImColor::HSV(39.0 / 360.0, 0.93, 1, 1.0)
-#define IMCOLOR_SYNCED ImColor::HSV(113.0 / 360.0, 1, 1, 1.0)
 
 #define REGISTER_MODULE(module) modules_registry.emplace(module::getID(), module::getInstance)
 #define REGISTER_MODULE_EXTERNAL(registry, module) registry.emplace(module::getID(), module::getInstance)

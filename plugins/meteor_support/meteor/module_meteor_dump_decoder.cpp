@@ -149,11 +149,11 @@ namespace meteor
                 ImGui::SameLine();
 
                 if (def->getState() == 0)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (def->getState() == 2 || def->getState() == 6)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
 #endif
         }
