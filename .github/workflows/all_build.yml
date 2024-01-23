@@ -192,57 +192,57 @@ jobs:
           name: SatDump-Ubuntu-Latest
           path: ${{runner.workspace}}/build/*.deb
 
-#  build_linux_arm64:
+  build_linux_arm64:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-#    runs-on: ARM64
+    runs-on: ARM64
 
-#    steps:
-#      - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-#      - name: Update repositories
-#        run: sudo apt update
+      - name: Update repositories
+        run: sudo apt update
 
-#      - name: Install dependencies
-#        run: sudo apt install -y libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev
+      - name: Install dependencies
+        run: sudo apt install -y libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev
 
-#      - name: Delete build dir
-#        run: rm -rf ${{runner.workspace}}/build
+      - name: Delete build dir
+        run: rm -rf ${{runner.workspace}}/build
 
-#      - name: Create Build Environment
+      - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
         # We'll use this as our working directory for all subsequent commands
-#        run: cmake -E make_directory ${{runner.workspace}}/build
+        run: cmake -E make_directory ${{runner.workspace}}/build
 
-#      - name: Configure CMake
+      - name: Configure CMake
         # Use a bash shell so we can use the same syntax for environment variable
         # access regardless of the host operating system
-#        shell: bash
-#        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        working-directory: ${{runner.workspace}}/build
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-#        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIVE=ON
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIVE=ON
 
-#      - name: Build
-#        working-directory: ${{runner.workspace}}/build
-#        shell: bash
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-#        run: make -j4
+        run: make -j4
 
- #     - name: Package
- #       working-directory: ${{runner.workspace}}/build
- #       shell: bash
+      - name: Package
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
- #       run: make package
+        run: make package
 
- #     - name: Upload ZIP
- #       uses: actions/upload-artifact@v3
- #       with:
- #         name: SatDump-Pi64-Latest
- #         path: ${{runner.workspace}}/build/*.deb
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v3
+        with:
+          name: SatDump-Pi64-Latest
+          path: ${{runner.workspace}}/build/*.deb
 
   build_macos:
     runs-on: macos-latest
@@ -300,7 +300,7 @@ jobs:
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_linux", "build_macos"] #, "build_linux_arm64", "build_android"]
+    needs: ["build_windows", "build_linux", "build_macos", "build_linux_arm64"] #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -312,7 +312,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe # && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber

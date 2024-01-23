@@ -14,6 +14,9 @@ namespace cluster
             std::atomic<uint64_t> filesize;
             std::atomic<uint64_t> progress;
 
+            bool enable_audio = false;
+            bool play_audio;
+
             // Readers
             // cips::CIPSReader cips_readers[4];
             // totally not stolen AIM decoder.....

@@ -12,6 +12,8 @@
 #include "instruments/wbd_decoder.h"
 #include "common/audio/audio_sink.h"
 #include "common/dsp/io/wav_writer.h"
+#include "core/config.h"
+
 
 namespace cluster
 {
@@ -20,6 +22,7 @@ namespace cluster
         CLUSTERInstrumentsDecoderModule::CLUSTERInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : ProcessingModule(input_file, output_file_hint, parameters)
         {
+            play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
         }
 
         void CLUSTERInstrumentsDecoderModule::process()
@@ -46,7 +49,6 @@ namespace cluster
 
             // Audio stuff
             int16_t audio_buffer[4352];
-            bool enable_audio = false;
             std::shared_ptr<audio::AudioSink> audio_sink;
             if (input_data_type != DATA_FILE && audio::has_sink())
             {
@@ -105,7 +107,7 @@ namespace cluster
                                 for (int i = 0; i < 4352; i++)
                                     audio_buffer[i] = (int(majorframe.payload[i]) - 127) * 255;
 
-                                if (enable_audio)
+                                if (enable_audio && play_audio)
                                     audio_sink->push_samples(audio_buffer, 4352);
 
                                 if (majorframe.VCXO == 0)
@@ -152,6 +154,9 @@ namespace cluster
                 }
             }
 
+            if (enable_audio)
+                audio_sink->stop();
+                
             wave_writer_Ez.finish_header(final_data_size_ant_Ez);
             wave_writer_Bx.finish_header(final_data_size_ant_Bx);
             wave_writer_By.finish_header(final_data_size_ant_By);
@@ -206,6 +211,32 @@ namespace cluster
             ImGui::Text("CMD : ");
             ImGui::SameLine();
             ImGui::Text("%d", param_commands);
+
+            if (enable_audio)
+            {
+                ImGui::Spacing();
+                const char* btn_icon, * label;
+                ImU32 color;
+                if (play_audio)
+                {
+                    color = IM_COL32(0, 255, 0, 255);
+                    btn_icon = u8"\uF028##wbdaudio";
+                    label = "Audio Playing";
+                }
+                else
+                {
+                    color = IM_COL32(255, 0, 0, 255);
+                    btn_icon = u8"\uF026##wbdaudio";
+                    label = "Audio Muted";
+                }
+
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                if (ImGui::Button(btn_icon))
+                    play_audio = !play_audio;
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+                ImGui::TextUnformatted(label);
+            }
 
             if (input_data_type == DATA_FILE)
                 ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
