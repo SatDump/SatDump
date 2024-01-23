@@ -87,7 +87,9 @@ namespace style
                 {"ScrollbarRounding", &ImGuiStyle::ScrollbarRounding},
                 {"GrabMinSize", &ImGuiStyle::GrabMinSize},
                 {"GrabRounding", &ImGuiStyle::GrabRounding},
-                {"TabRounding", &ImGuiStyle::TabRounding}
+                {"TabRounding", &ImGuiStyle::TabRounding},
+                {"TabBorderSize", &ImGuiStyle::TabBorderSize},
+                {"TabBarBorderSize", &ImGuiStyle::TabBarBorderSize}
             };
 
             for (auto& style_item : data["ImGuiStyle"].items())
@@ -158,7 +160,12 @@ namespace style
                 {"NavHighlight", ImGuiCol_NavHighlight},
                 {"NavWindowingHighlight", ImGuiCol_NavWindowingHighlight},
                 {"NavWindowingDimBg", ImGuiCol_NavWindowingDimBg},
-                {"ModalWindowDimBg", ImGuiCol_ModalWindowDimBg}
+                {"ModalWindowDimBg", ImGuiCol_ModalWindowDimBg},
+                {"TableHeaderBg", ImGuiCol_TableHeaderBg},
+                {"TableBorderStrong", ImGuiCol_TableBorderStrong},
+                {"TableBorderLight", ImGuiCol_TableBorderLight},
+                {"TableRowBg", ImGuiCol_TableRowBg},
+                {"TableRowBgAlt", ImGuiCol_TableRowBgAlt},
             };
 
             for (auto& color : data["ImGuiColors"].items())
@@ -221,8 +228,8 @@ namespace style
         ImVec4 *colors = ImGui::GetStyle().Colors;
         ImVec4 frame_bg = colors[ImGuiCol_FrameBg];
         ImVec4 button = colors[ImGuiCol_Button];
-        frame_bg.w = 0.30f;
-        button.w = 0.15f;
+        frame_bg.w *= 0.33f;
+        button.w *= 0.33f;
 
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleColor(ImGuiCol_Button, button);
