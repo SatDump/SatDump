@@ -99,8 +99,14 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     // Optional FFT
     if (parameters.contains("fft_enable"))
     {
-        fft_size = parameters.contains("fft_size") ? parameters["fft_size"].get<int>() : 512;
-        fft_rate = parameters.contains("fft_rate") ? parameters["fft_rate"].get<int>() : 30;
+        if (parameters.contains("fft_size"))
+            fft_size = parameters["fft_size"].get<int>();
+        if (parameters.contains("fft_rate"))
+            fft_rate = parameters["fft_rate"].get<int>();
+        if (parameters.contains("fft_min"))
+            fft_min = parameters["fft_min"].get<int>();
+        if (parameters.contains("fft_max"))
+            fft_max = parameters["fft_max"].get<int>();
 
         splitter->add_output("fft");
         fft = std::make_unique<dsp::FFTPanBlock>(splitter->get_output("fft"));
@@ -108,7 +114,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
         if (parameters.contains("fft_avgn"))
             fft->avg_num = parameters["fft_avgn"].get<float>();
 
-        fft_plot = std::make_unique<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, -150, 150, 40);
+        fft_plot = std::make_unique<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, fft_min, fft_max, 40);
         logger->critical("FFT GOOD!");
     }
 

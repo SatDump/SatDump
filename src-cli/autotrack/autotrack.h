@@ -59,6 +59,7 @@ private: // Device and start-of-chain management
     void stop_device();
 
 private:
+    float fft_min = -150, fft_max = 150;
     int fft_size = 8192, fft_rate = 30;
     std::unique_ptr<dsp::FFTPanBlock> fft;
     std::unique_ptr<widgets::FFTPlot> fft_plot;
