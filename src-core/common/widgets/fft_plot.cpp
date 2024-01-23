@@ -82,7 +82,7 @@ namespace widgets
         // Draw VFOs
         if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
         {
-            const ImU32 col_base_vfo = ImColor(255, 0, 0, 255);
+            const ImU32 col_base_vfo = style::theme.red;
 
             for (auto vfo : vfo_freqs)
             {
@@ -196,7 +196,7 @@ namespace widgets
         // Draw VFOs
         if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
         {
-            const ImU32 col_base_vfo = ImColor(255, 0, 0, 255);
+            const ImU32 col_base_vfo = style::theme.red;
 
             for (auto vfo : vfo_freqs)
             {
