@@ -219,13 +219,13 @@ namespace cluster
                 ImU32 color;
                 if (play_audio)
                 {
-                    color = IM_COL32(0, 255, 0, 255);
+                    color = style::theme.green;
                     btn_icon = u8"\uF028##wbdaudio";
                     label = "Audio Playing";
                 }
                 else
                 {
-                    color = IM_COL32(255, 0, 0, 255);
+                    color = style::theme.red;
                     btn_icon = u8"\uF026##wbdaudio";
                     label = "Audio Muted";
                 }
