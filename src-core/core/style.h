@@ -8,6 +8,8 @@ namespace style
     struct Theme
     {
         bool light_mode = false;
+        std::string font = "Roboto-Medium";
+        float font_size = 16.0f;
 
         ImColor red;
         ImColor green;

@@ -74,8 +74,9 @@ First time here? See the reference documents below to get started using SatDump.
 
 ### Fonts
 - [Roboto](https://fonts.google.com/specimen/Roboto), for text
-- [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols  
-*Both fonts were merged into a single font.ttf*
+- [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
+- [Perfect DOS VGA 437](https://www.dafont.com/perfect-dos-vga-437.font), for Phosphor theme
+*3270 Nerd Font and Roboto have been merged into a single font.ttf*
 
 # Developers
 **Lead Developer:** Aang23 (F4LAU)
