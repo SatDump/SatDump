@@ -238,7 +238,7 @@
             },
             "sdrpp_noise_reduction": {
                 "type": "bool",
-                "value": false,
+                "value": true,
                 "name": "SDR++ Noise Reduction",
                 "description": "APT Noise Reduction originally from Ryzerth in SDR++. Performs quite well on APT!"
             }
