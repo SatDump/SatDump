@@ -125,7 +125,7 @@ void AutoTrackApp::setup_webserver()
                 if (d_parameters.contains("fft_enable"))
                     fft = (std::string) "<h2>FFT</h2><img src=\"fft.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
 
-                std::string schedule = (std::string) "<h2>Schedule</h2><img src=\"schedule.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
+                std::string schedule = (std::string) "<h2>Schedule</h2><img src=\"schedule.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"80\" width=\"600\" />";
 
                 std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
                                    selected_src.name + "</span></p>" +
