@@ -67,7 +67,6 @@ namespace satdump
                     }
                 }
 
-            re_check:
                 for (int i = 0; i < (int)vfo_mode_norads_vis.size(); i++)
                 {
                     if (curr_time > vfo_mode_norads_vis[i].los_time)
@@ -81,7 +80,7 @@ namespace satdump
 
                         vfo_mode_norads_vis.erase(i);
                         update = true;
-                        goto re_check;
+                        break;
                     }
                 }
 
