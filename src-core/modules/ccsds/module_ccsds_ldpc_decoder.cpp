@@ -1,6 +1,6 @@
 #include "module_ccsds_ldpc_decoder.h"
 #include "logger.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
@@ -324,9 +324,11 @@ namespace ccsds
                 cor_history[200 - 1] = correlator_cor;
 
                 if (d_ldpc_asm_size == 32)
-                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 15.0f, 35.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 15.0f, 35.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
                 else
-                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 70.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 70.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Button("LDPC", {200 * ui_scale, 20 * ui_scale});
@@ -338,7 +340,8 @@ namespace ccsds
                 std::memmove(&ldpc_history[0], &ldpc_history[1], (200 - 1) * sizeof(float));
                 ldpc_history[200 - 1] = ldpc_corr;
 
-                ImGui::PlotLines("", ldpc_history, IM_ARRAYSIZE(ldpc_history), 0, "", 0.0f, d_ldpc_codeword_size / 20, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ldpc_history, IM_ARRAYSIZE(ldpc_history), 0, "", 0.0f, d_ldpc_codeword_size / 20,
+                    ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             if (d_internal_stream)

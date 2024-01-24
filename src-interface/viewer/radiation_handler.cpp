@@ -4,6 +4,7 @@
 #include "core/module.h"
 #include "core/style.h"
 #include "common/projection/reprojector.h"
+#include "common/widgets/themed_widgets.h"
 #include "main_ui.h"
 
 namespace satdump
@@ -128,7 +129,8 @@ namespace satdump
             for (int i = 0; i < (int)products->channel_counts.size(); i++)
             {
                 ImGui::BeginChild(("RadiationPlotChild##" + std::to_string(i)).c_str(), ImVec2(ImGui::GetWindowWidth(), 50 * ui_scale));
-                ImGui::PlotLines(products->get_channel_name(i).c_str(), graph_values[i].data(), graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth() - 100 * ui_scale, 30 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, products->get_channel_name(i).c_str(), graph_values[i].data(),
+                    graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth() - 100 * ui_scale, 30 * ui_scale));
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();

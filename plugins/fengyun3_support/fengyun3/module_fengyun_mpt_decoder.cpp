@@ -4,7 +4,7 @@
 #include "common/codings/rotation.h"
 #include "diff.h"
 #include "common/codings/randomization.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 
 #define BUFFER_SIZE 8192
 
@@ -249,7 +249,8 @@ namespace fengyun3
                 std::memmove(&ber_history1[0], &ber_history1[1], (200 - 1) * sizeof(float));
                 ber_history1[200 - 1] = ber1;
 
-                ImGui::PlotLines("", ber_history1, IM_ARRAYSIZE(ber_history1), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history1, IM_ARRAYSIZE(ber_history1), 0, "", 0.0f, 1.0f,
+                    ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Button("Viterbi 2", {200 * ui_scale, 20 * ui_scale});
@@ -270,7 +271,8 @@ namespace fengyun3
                 std::memmove(&ber_history2[0], &ber_history2[1], (200 - 1) * sizeof(float));
                 ber_history2[200 - 1] = ber2;
 
-                ImGui::PlotLines("", ber_history2, IM_ARRAYSIZE(ber_history2), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history2, IM_ARRAYSIZE(ber_history2), 0, "", 0.0f, 1.0f,
+                    ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();

@@ -36,7 +36,7 @@ namespace widgets
         const ImU32 col_base = ImGui::GetColorU32(ImGuiCol_PlotLines);
 
         // Background
-        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, style::theme.plot_bg, true, style.FrameRounding);
 
         // Draw lines
         float vscale = ((scale_max - scale_min) / scale_resolution);
