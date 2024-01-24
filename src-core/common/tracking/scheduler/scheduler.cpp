@@ -67,20 +67,21 @@ namespace satdump
                     }
                 }
 
-                for (int i = 0; i < (int)vfo_mode_norads_vis.size(); i++)
+            recheck:
+                for (auto &p : vfo_mode_norads_vis)
                 {
-                    if (curr_time > vfo_mode_norads_vis[i].los_time)
+                    if (curr_time >p.second. los_time)
                     {
-                        logger->critical("LOS!!!!!!!!!!!!!! %d (%d, %d)", vfo_mode_norads_vis[i].norad, vfo_mode_norads_vis.size(), i);
+                        logger->critical("LOS!!!!!!!!!!!!!! %d ", p.first);
                         TrackedObject obj;
                         for (auto &v : enabled_satellites)
-                            if (v.norad == vfo_mode_norads_vis[i].norad)
+                            if (v.norad == p.first)
                                 obj = v;
-                        los_callback(autotrack_cfg, vfo_mode_norads_vis[i], obj);
+                        los_callback(autotrack_cfg, p.second, obj);
 
-                        vfo_mode_norads_vis.erase(i);
+                        vfo_mode_norads_vis.erase(p.first);
                         update = true;
-                        break;
+                        goto recheck;
                     }
                 }
 
