@@ -72,7 +72,7 @@ namespace satdump
                 {
                     if (curr_time > vfo_mode_norads_vis[i].los_time)
                     {
-                        logger->critical("LOS!!!!!!!!!!!!!! %d (%d)", vfo_mode_norads_vis[i].norad, vfo_mode_norads_vis.size());
+                        logger->critical("LOS!!!!!!!!!!!!!! %d (%d, %d)", vfo_mode_norads_vis[i].norad, vfo_mode_norads_vis.size(), i);
                         TrackedObject obj;
                         for (auto &v : enabled_satellites)
                             if (v.norad == vfo_mode_norads_vis[i].norad)
