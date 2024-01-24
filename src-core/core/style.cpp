@@ -228,6 +228,7 @@ namespace style
                 {"light_cyan", &Theme::light_cyan},
                 {"constellation", &Theme::constellation},
                 {"plot_bg", &Theme::plot_bg},
+                {"fft_graduations", &Theme::fft_graduations},
                 {"widget_bg", &Theme::widget_bg},
                 {"frame_bg", &Theme::frame_bg},
                 {"overlay_bg", &Theme::overlay_bg},
