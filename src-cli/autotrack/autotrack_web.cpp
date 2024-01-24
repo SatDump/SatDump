@@ -39,8 +39,8 @@ void AutoTrackApp::setup_webserver()
                     }
                     if (vfo.file_sink)
                     {
-                        pos["recording"]["written_size"] = file_sink->get_written();
-                        pos["recording"]["written_raw_size"] = file_sink->get_written_raw();
+                        pos["recording"]["written_size"] = vfo.file_sink->get_written();
+                        pos["recording"]["written_raw_size"] = vfo.file_sink->get_written_raw();
                     }
                 }
             }
