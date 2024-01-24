@@ -276,8 +276,9 @@ namespace satdump
         pipeline_mtx.lock();
         if (ImGui::BeginTable("##pipelinesmainoptions", 2))
         {
-            ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, 100 * ui_scale);
-            ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, 100 * ui_scale);
+            int label_width = ImGui::CalcTextSize("Output Directory").x;
+            ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthFixed, label_width);
+            ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, label_width);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
