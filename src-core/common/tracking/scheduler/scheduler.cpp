@@ -46,16 +46,16 @@ namespace satdump
 
             if (autotrack_cfg.multi_mode)
             {
-                for (int i = 0; i < upcoming_satellite_passes_sel.size(); i++)
+                bool update = false;
+
+                for (int i = 0; i < (int)upcoming_satellite_passes_sel.size(); i++)
                 {
                     auto &pass = upcoming_satellite_passes_sel[i];
                     if (curr_time > pass.aos_time)
                     {
-                        auto it2 = std::find_if(vfo_mode_norads_vis.begin(), vfo_mode_norads_vis.end(), [&pass](auto &c)
-                                                { return c == pass.norad; });
-                        if (it2 == vfo_mode_norads_vis.end())
+                        if (vfo_mode_norads_vis.count(pass.norad) == 0)
                         {
-                            vfo_mode_norads_vis.push_back(pass.norad);
+                            vfo_mode_norads_vis.insert({pass.norad, pass});
 
                             logger->critical("AOS!!!!!!!!!!!!!! %d", pass.norad);
                             TrackedObject obj;
@@ -65,29 +65,28 @@ namespace satdump
                             aos_callback(autotrack_cfg, pass, obj);
                         }
                     }
+                }
 
-                    if (curr_time > pass.los_time)
+            re_check:
+                for (int i = 0; i < (int)vfo_mode_norads_vis.size(); i++)
+                {
+                    if (curr_time > vfo_mode_norads_vis[i].los_time)
                     {
-                        auto it2 = std::find_if(vfo_mode_norads_vis.begin(), vfo_mode_norads_vis.end(), [&pass](auto &c)
-                                                { return c == pass.norad; });
-                        if (it2 != vfo_mode_norads_vis.end())
-                        {
-                            vfo_mode_norads_vis.erase(it2);
+                        logger->critical("LOS!!!!!!!!!!!!!! %d", vfo_mode_norads_vis[i].norad);
+                        TrackedObject obj;
+                        for (auto &v : enabled_satellites)
+                            if (v.norad == vfo_mode_norads_vis[i].norad)
+                                obj = v;
+                        los_callback(autotrack_cfg, vfo_mode_norads_vis[i], obj);
 
-                            logger->critical("LOS!!!!!!!!!!!!!! %d", pass.norad);
-                            TrackedObject obj;
-                            for (auto &v : enabled_satellites)
-                                if (v.norad == pass.norad)
-                                    obj = v;
-                            los_callback(autotrack_cfg, pass, obj);
-
-                            upcoming_satellite_passes_sel.erase(upcoming_satellite_passes_sel.begin() + i);
-                            updateAutotrackPasses(curr_time);
-                            upcoming_satellite_passes_mtx.unlock();
-                            return;
-                        }
+                        vfo_mode_norads_vis.erase(i);
+                        update = true;
+                        goto re_check;
                     }
                 }
+
+                if (update)
+                    updateAutotrackPasses(curr_time);
             }
             else
             {
@@ -130,10 +129,6 @@ namespace satdump
             }
 
             upcoming_satellite_passes_mtx.unlock();
-        }
-        else
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 

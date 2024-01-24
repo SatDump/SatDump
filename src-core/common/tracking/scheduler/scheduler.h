@@ -124,7 +124,7 @@ namespace satdump
 
         std::string availablesatssearch, selectedsatssearch;
 
-        std::vector<int> vfo_mode_norads_vis;
+        std::map<int, SatellitePass> vfo_mode_norads_vis;
 
     public: // Handlers
         std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> eng_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
