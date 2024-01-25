@@ -172,14 +172,15 @@ namespace satdump
             ImGui::SameLine();
 
             ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
             if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
                 logger->info("Closing products " + label);
                 ph.marked_for_close = true;
             }
-            ImGui::PopStyleColor();
-            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor(2);
         }
 
         ImRect rect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
@@ -226,7 +227,8 @@ namespace satdump
                                 ImGui::SameLine();
 
                                 ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
-                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
+                                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
                                 if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {
                                     logger->info("Closing datset " + dataset_name);
@@ -240,8 +242,8 @@ namespace satdump
                                                 products_and_handlers[i]->marked_for_close = true;
                                         }
                                 }
-                                ImGui::PopStyleColor();
-                                ImGui::PopStyleColor();
+                                ImGui::PopStyleVar();
+                                ImGui::PopStyleColor(2);
                             }
 
                             const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
