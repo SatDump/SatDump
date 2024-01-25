@@ -2,7 +2,7 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
 
@@ -278,7 +278,8 @@ namespace inmarsat
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                     cor_history[200 - 1] = correlator_cor;
 
-                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 64.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
 
                 ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
@@ -290,7 +291,8 @@ namespace inmarsat
                     std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                     ber_history[200 - 1] = ber;
 
-                    ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
             }
             ImGui::EndGroup();

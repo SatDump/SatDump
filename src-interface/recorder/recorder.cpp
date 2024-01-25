@@ -532,7 +532,7 @@ namespace satdump
                     {
                         for (auto &vfo : vfo_list)
                         {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+                            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
                             ImGui::SeparatorText(vfo.name.c_str());
                             ImGui::PopStyleColor();
                             ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());

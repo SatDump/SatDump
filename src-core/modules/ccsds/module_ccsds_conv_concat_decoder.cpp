@@ -1,7 +1,7 @@
 #include "module_ccsds_conv_concat_decoder.h"
 #include "logger.h"
 #include "common/codings/differential/nrzm.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
 
 // Return filesize
@@ -331,7 +331,8 @@ namespace ccsds
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
-                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
+                    ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();

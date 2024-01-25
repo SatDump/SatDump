@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 
 #define BBFRAME_SIZE (58192 / 8) // BBFrame size
 #define CADU_SIZE 2048           // CADU Size
@@ -149,7 +149,8 @@ namespace goes
                     std::memmove(&cor_history_ca[0], &cor_history_ca[1], (200 - 1) * sizeof(float));
                     cor_history_ca[200 - 1] = cadu_cor;
 
-                    ImGui::PlotLines("##caducor", cor_history_ca, IM_ARRAYSIZE(cor_history_ca), 0, "", 40.0f, 4.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##caducor", cor_history_ca, IM_ARRAYSIZE(cor_history_ca), 0, "", 40.0f, 4.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
             }
             ImGui::EndGroup();

@@ -24,6 +24,8 @@ namespace style
         ImColor light_cyan;
 
         ImColor constellation;
+        ImColor plot_bg;
+        ImColor fft_graduations;
         ImColor widget_bg;
         ImColor frame_bg;
         ImColor overlay_bg;

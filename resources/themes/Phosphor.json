@@ -53,6 +53,8 @@
     "light_cyan": "#00EDFFFF",
     "constellation": "#1EFF00FF",
     "widget_bg": "#000000FF",
+    "plot_bg": "#130F00FF",
+    "fft_graduations": "#FFCC0066",
     "frame_bg": "#111111FF",
     "overlay_bg": "#000000B5",
     "freq_highlight": "#FFCC004C"

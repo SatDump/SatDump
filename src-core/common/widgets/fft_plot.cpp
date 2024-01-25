@@ -36,20 +36,19 @@ namespace widgets
         const ImU32 col_base = ImGui::GetColorU32(ImGuiCol_PlotLines);
 
         // Background
-        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, style::theme.plot_bg, true, style.FrameRounding);
 
         // Draw lines
         float vscale = ((scale_max - scale_min) / scale_resolution);
         float step = (frame_bb.Max.y - frame_bb.Min.y) / scale_resolution;
         float value = scale_min;
-        const ImU32 color_scale = ImGui::GetColorU32(ImGuiCol_Text, 0.4);
         for (float i = frame_bb.Max.y - step; i >= frame_bb.Min.y; i -= step)
         {
             ImVec2 pos0 = {frame_bb.Min.x, i};
             ImVec2 pos1 = {frame_bb.Max.x, i};
-            window->DrawList->AddLine(pos0, pos1, color_scale);
+            window->DrawList->AddLine(pos0, pos1, style::theme.fft_graduations);
             value += vscale;
-            window->DrawList->AddText({pos0.x, pos0.y + 2}, color_scale, std::string(std::to_string(int(value)) + " dB").c_str());
+            window->DrawList->AddText({pos0.x, pos0.y + 2}, style::theme.fft_graduations, std::string(std::to_string(int(value)) + " dB").c_str());
         }
 
         // Draw Freq Scale

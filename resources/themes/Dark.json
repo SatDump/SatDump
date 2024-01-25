@@ -65,6 +65,8 @@
     "light_green": "#64FF64FF",
     "light_cyan": "#00EDFFFF",
     "constellation": "#1EFF00FF",
+    "plot_bg": "#3336388A",
+    "fft_graduations": "#FFFFFF66",
     "widget_bg": "#000000FF",
     "frame_bg": "#111111FF",
     "overlay_bg": "#000000B5",
