@@ -210,6 +210,8 @@ retry_vfo:
     splitter->stop();
     if (fft)
         fft->stop();
+    if (file_sink)
+        file_sink->stop();
 }
 
 void AutoTrackApp::setup_schedular_callbacks()

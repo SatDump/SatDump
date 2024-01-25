@@ -224,6 +224,7 @@ namespace image
         }
 
         jpeg_finish_compress(&cinfo);
+        jpeg_destroy_compress(&cinfo);
 
         // Free memory
         fclose(fp);
@@ -329,6 +330,7 @@ namespace image
         }
 
         jpeg_finish_compress(&cinfo);
+        jpeg_destroy_compress(&cinfo);
 
         // Free memory
         delete[] jpeg_decomp;
