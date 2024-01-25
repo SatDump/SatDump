@@ -330,6 +330,7 @@ namespace image
         }
 
         jpeg_finish_compress(&cinfo);
+        free(cinfo.dest);
         jpeg_destroy_compress(&cinfo);
 
         // Free memory

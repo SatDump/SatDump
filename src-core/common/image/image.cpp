@@ -93,6 +93,8 @@ namespace image
 
         if (has_font)
         {
+            for (auto &v : font.chars)
+                free(v.bitmap);
             font.chars.clear();
             delete[] ttf_buffer;
         }
