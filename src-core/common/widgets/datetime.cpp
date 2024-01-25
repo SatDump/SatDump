@@ -68,15 +68,6 @@ namespace widgets
 
         if (!show_picker)
         {
-            ImGui::SameLine();
-            ImGuiStyle style = ImGui::GetStyle();
-            ImU32 input_background = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0, 0.0, 0.0, 0.0));
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, style.FramePadding.y));
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3 * ui_scale, style.ItemSpacing.y));
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(3 * ui_scale, style.ItemInnerSpacing.y));
-
             //Calculate Draw Size
             ImVec2 slash_size = ImGui::CalcTextSize("/");
             ImVec2 dot_size = ImGui::CalcTextSize(".");
@@ -84,13 +75,32 @@ namespace widgets
             int date_width = (slash_size.x * 2) + (digit_size.x * 8) + (18 * ui_scale);
             int time_width = (dot_size.x * 3) + (digit_size.x * 10) + (24 * ui_scale);
 
+            //Setup style
+            ImGuiStyle style = ImGui::GetStyle();
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4());
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, style.FramePadding.y));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3 * ui_scale, style.ItemSpacing.y));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(3 * ui_scale, style.ItemInnerSpacing.y));
+
             //Draw backgrounds
+            ImGui::SameLine();
             ImVec2 start_position = ImGui::GetCursorScreenPos();
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            ImU32 input_background = ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_FrameBg]);
+            ImU32 input_border = ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_Border]);
+
             draw_list->AddRectFilled(ImVec2(start_position.x, start_position.y),
                 ImVec2(start_position.x + date_width, start_position.y + slash_size.y + (6 * ui_scale)), input_background, style.ChildRounding);
             draw_list->AddRectFilled(ImVec2(start_position.x + date_width + (10 * ui_scale), start_position.y),
                 ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_background, style.ChildRounding);
+            if (style.FrameBorderSize != 0.0f)
+            {
+                draw_list->AddRect(ImVec2(start_position.x, start_position.y),
+                    ImVec2(start_position.x + date_width, start_position.y + slash_size.y + (6 * ui_scale)), input_border, style.ChildRounding);
+                draw_list->AddRect(ImVec2(start_position.x + date_width + (10 * ui_scale), start_position.y),
+                    ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_border, style.ChildRounding);
+            }
 
             //Date
             bool auto_advance = false;
@@ -236,7 +246,7 @@ namespace widgets
             ImGui::InputInt(std::string(d_id + "dsec").c_str(), &seconds_decimal, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll);
             ImGui::PopItemWidth();
             ImGui::SameLine();
-            ImGui::PopStyleVar(3);
+            ImGui::PopStyleVar(4);
             ImGui::PopStyleColor();
             ImGui::TextUnformatted(" UTC");
         }
