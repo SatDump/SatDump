@@ -194,7 +194,7 @@ namespace ldcm
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

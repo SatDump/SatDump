@@ -283,7 +283,7 @@ namespace demod
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
 
@@ -338,10 +338,13 @@ namespace demod
 
         if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
         {
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + ImGui::GetWindowWidth() - 55 * ui_scale,
-                                 ImGui::GetCursorPos().y - 25 * ui_scale});
+            ImGuiStyle &style = ImGui::GetStyle();
+            ImVec2 cur_pos = ImGui::GetCursorPos();
+            cur_pos.x = ImGui::GetWindowSize().x - ImGui::CalcTextSize("Abort").x - style.FramePadding.x * 2.0f - style.WindowPadding.x;
+            cur_pos.y -= 20.0f * ui_scale + style.ItemSpacing.y;
+            ImGui::SetCursorPos(cur_pos);
             ImGui::PushStyleColor(ImGuiCol_Button, style::theme.red.Value);
-            if (ImGui::Button("Abort##demodstop"))
+            if (ImGui::Button("Abort##demodstop", ImVec2(0, 20)))
                 demod_should_stop = true;
             ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())
