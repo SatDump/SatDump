@@ -51,6 +51,7 @@ int main(int argc, char *argv[])
 
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_OFF);
+    satdump::tle_do_update_on_init = false;
     satdump::initSatdump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);

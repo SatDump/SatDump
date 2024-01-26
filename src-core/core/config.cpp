@@ -133,8 +133,17 @@ namespace satdump
         {
             nlohmann::ordered_json diff_json = perform_json_diff(master_cfg, main_cfg); // Get diff between user settings and the master CFG
 
-            if (!std::filesystem::exists(std::filesystem::path(user_cfg_path).parent_path()) && std::filesystem::path(user_cfg_path).has_parent_path())
-                std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
+            try
+            {
+                if (!std::filesystem::exists(std::filesystem::path(user_cfg_path).parent_path()) &&
+                    std::filesystem::path(user_cfg_path).has_parent_path())
+                    std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Cannot create directory for user config: %s", e.what());
+                return;
+            }
 
             logger->info("Saving user config at " + user_cfg_path);
             saveJsonFile(user_cfg_path, diff_json);
