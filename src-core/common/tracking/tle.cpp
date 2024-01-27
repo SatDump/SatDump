@@ -87,8 +87,16 @@ namespace satdump
         std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
         std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
 
-        if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
-            std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+        try
+        {
+            if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
+                std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Cannot create directory for TLE file: %s", e.what());
+            return;
+        }
 
         bool success = true;
         TLERegistry new_registry;

@@ -202,8 +202,14 @@ namespace satdump
     void RecorderApplication::drawUI()
     {
         ImVec2 recorder_size = ImGui::GetContentRegionAvail();
+        float wf_size_offset = 0;
+        if (is_processing && !processing_modules_floating_windows)
+            wf_size_offset = 250 * ui_scale;
+        if (vfo_list.size() > 0)
+            wf_size_offset = 270 * ui_scale;
+        float wf_size = recorder_size.y - wf_size_offset; // + 13 * ui_scale;
 
-        if (ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
+        if (wf_size > 0 && ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
         {
             ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, recorder_size.x * panel_ratio);
             ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, recorder_size.x * (1.0f - panel_ratio));
@@ -216,13 +222,6 @@ namespace satdump
             last_width = left_width;
 
             ImGui::BeginGroup();
-            float wf_size_offset = 0;
-            if (is_processing && !processing_modules_floating_windows)
-                wf_size_offset = 250 * ui_scale;
-            if (vfo_list.size() > 0)
-                wf_size_offset = 270 * ui_scale;
-            float wf_size = recorder_size.y - wf_size_offset; // + 13 * ui_scale;
-
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
                 if (ImGui::CollapsingHeader("Device", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
@@ -521,7 +520,6 @@ namespace satdump
                 {
                     vfos_mtx.lock();
                     std::string to_delete = "";
-#if 1
                     if (vfo_list.size() == 0)
                     {
                         const char *no_vfo_text = "No Active VFOs";
@@ -553,34 +551,6 @@ namespace satdump
                                 to_delete = vfo.id;
                         }
                     }
-#else
-                    if (ImGui::BeginTable("##eosinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-                    {
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Name");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("Frequency");
-                        ImGui::TableSetColumnIndex(2);
-                        ImGui::Text("Pipeline");
-
-                        for (auto &vfo : vfo_list)
-                        {
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("%s", vfo.name.c_str());
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%s", format_notated(vfo.freq, "Hz").c_str());
-                            ImGui::TableSetColumnIndex(2);
-                            if (vfo.pipeline_id != -1)
-                                ImGui::Text("%s", pipelines[vfo.pipeline_id].readable_name.c_str());
-                            else
-                                ImGui::Text("Recording...");
-                        }
-
-                        ImGui::EndTable();
-                    }
-#endif
                     vfos_mtx.unlock();
                     if (to_delete != "")
                         del_vfo(to_delete);
@@ -646,8 +616,8 @@ namespace satdump
                                                  format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz"))
                                                     .c_str());
                     }
-                    ImGui::EndChild();
                 }
+                ImGui::EndChild();
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
@@ -665,7 +635,7 @@ namespace satdump
             {
                 if (is_processing)
                 {
-                    if (ImGui::BeginTabItem("Offline processing"))
+                    if (ImGui::BeginTabItem("Live Processing"))
                     {
                         float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                         float live_width = recorder_size.x + 16 * ui_scale;

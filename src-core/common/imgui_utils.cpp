@@ -18,8 +18,8 @@ bool ImGuiUtils_OfflineProcessingSelected()
 {
     for (int i = 0; i < GImGui->TabBars.GetMapSize(); i++)
         if (ImGuiTabBar* tab_bar = GImGui->TabBars.TryGetMapData(i))
-            if (tab_bar->NextSelectedTabId != 0 &&
-                strcmp(ImGui::TabBarGetTabName(tab_bar, ImGui::TabBarFindTabByID(tab_bar, tab_bar->NextSelectedTabId)), "Offline processing") == 0)
+            if (tab_bar->SelectedTabId != 0 &&
+                strcmp(ImGui::TabBarGetTabName(tab_bar, ImGui::TabBarFindTabByID(tab_bar, tab_bar->SelectedTabId)), "Offline processing") == 0)
                     return true;
     return false;
 }

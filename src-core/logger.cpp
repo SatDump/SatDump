@@ -330,8 +330,8 @@ void initFileSink()
     }
     catch (std::exception &e)
     {
-        std::cout << e.what() << std::endl;
-        exit(1);
+        logger->error("Error initializing log file: %s", e.what());
+        return;
     }
 }
 

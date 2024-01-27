@@ -1,6 +1,8 @@
 #include "status_logger_sink.h"
 #include "imgui/imgui_internal.h"
+#include "processing.h"
 #include "core/config.h"
+#include "common/imgui_utils.h"
 
 SATDUMP_DLL extern float ui_scale;
 
@@ -43,10 +45,22 @@ namespace satdump
 
     int StatusLoggerSink::draw()
     {
+        // Check if status bar should be drawn
+        if (!show_bar)
+            return 0;
+
+        if (processing::is_processing && ImGuiUtils_OfflineProcessingSelected())
+            for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
+                if (module->getIDM() == "products_processor")
+                    return 0;
+
+        // Draw status bar
         int height = 0;
         if (ImGui::BeginViewportSideBar("##MainStatusBar", ImGui::GetMainViewport(), ImGuiDir_Down, ImGui::GetFrameHeight(),
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNavFocus)) {
-            if (ImGui::BeginMenuBar()) {
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNavFocus))
+        {
+            if (ImGui::BeginMenuBar())
+            {
                 ImGui::TextUnformatted(lvl.c_str());
                 ImGui::SameLine(75 * ui_scale);
                 ImGui::Separator();
