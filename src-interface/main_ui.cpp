@@ -91,6 +91,7 @@ namespace satdump
         }
 
         std::pair<int, int> dims = backend::beginFrame();
+        dims.second -= status_logger_sink->draw();
         // ImGui::ShowDemoWindow();
 
         /*if (in_app)
@@ -117,25 +118,8 @@ namespace satdump
         }*/
         // else
         {
-            bool main_ui_is_processing_selected = ImGuiUtils_OfflineProcessingSelected();
-            bool status_bar = status_logger_sink->is_shown();
-            if (status_bar && processing::is_processing && main_ui_is_processing_selected)
-            {
-                for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
-                {
-                    std::string module_id = module->getIDM();
-                    if (module_id == "products_processor")
-                    {
-                        status_bar = false;
-                        break;
-                    }
-                }
-            }
-            if (status_bar)
-                dims.second -= status_logger_sink->draw();
-
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)dims.first, (processing::is_processing && main_ui_is_processing_selected) ? -1.0f : (float)dims.second});
+            ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
             ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {

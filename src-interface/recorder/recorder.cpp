@@ -521,7 +521,6 @@ namespace satdump
                 {
                     vfos_mtx.lock();
                     std::string to_delete = "";
-#if 1
                     if (vfo_list.size() == 0)
                     {
                         const char *no_vfo_text = "No Active VFOs";
@@ -553,34 +552,6 @@ namespace satdump
                                 to_delete = vfo.id;
                         }
                     }
-#else
-                    if (ImGui::BeginTable("##eosinstrumentstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-                    {
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Name");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("Frequency");
-                        ImGui::TableSetColumnIndex(2);
-                        ImGui::Text("Pipeline");
-
-                        for (auto &vfo : vfo_list)
-                        {
-                            ImGui::TableNextRow();
-                            ImGui::TableSetColumnIndex(0);
-                            ImGui::Text("%s", vfo.name.c_str());
-                            ImGui::TableSetColumnIndex(1);
-                            ImGui::Text("%s", format_notated(vfo.freq, "Hz").c_str());
-                            ImGui::TableSetColumnIndex(2);
-                            if (vfo.pipeline_id != -1)
-                                ImGui::Text("%s", pipelines[vfo.pipeline_id].readable_name.c_str());
-                            else
-                                ImGui::Text("Recording...");
-                        }
-
-                        ImGui::EndTable();
-                    }
-#endif
                     vfos_mtx.unlock();
                     if (to_delete != "")
                         del_vfo(to_delete);
@@ -648,7 +619,7 @@ namespace satdump
                     }
                     ImGui::EndChild();
                 }
-                if (show_waterfall)
+                if (show_waterfall && wf_height > 0)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
                     waterfall_plot->draw({wfft_widht, wf_height}, is_started);
@@ -665,7 +636,7 @@ namespace satdump
             {
                 if (is_processing)
                 {
-                    if (ImGui::BeginTabItem("Offline processing"))
+                    if (ImGui::BeginTabItem("Live Processing"))
                     {
                         float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                         float live_width = recorder_size.x + 16 * ui_scale;
