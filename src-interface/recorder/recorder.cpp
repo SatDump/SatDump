@@ -616,8 +616,8 @@ namespace satdump
                                                  format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz"))
                                                     .c_str());
                     }
-                    ImGui::EndChild();
                 }
+                ImGui::EndChild();
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
