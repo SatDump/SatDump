@@ -57,6 +57,7 @@ void AutoTrackApp::stop_processing()
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                 std::string input_level = pipeline.steps[start_level].level_name;
                 pipeline.run(input_file, pipeline_output_dir_, pipeline_params_, input_level);
+                logger->info("Pipeline Processing Done!");
             };
             main_thread_pool.push(fun);
         }
