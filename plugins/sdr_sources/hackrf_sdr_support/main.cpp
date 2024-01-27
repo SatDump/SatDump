@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "hackrf_sdr_source.h"
 #include "hackrf_sdr_sink.h"
+#include <cstdlib>
 
 class HackRFSDRSupport : public satdump::Plugin
 {
@@ -11,11 +12,17 @@ public:
         return "hackrf_sdr_support";
     }
 
+    static void de_init()
+    {
+        hackrf_exit();
+    }
+
     void init()
     {
         satdump::eventBus->register_handler<dsp::RegisterDSPSampleSourcesEvent>(registerSources);
         satdump::eventBus->register_handler<dsp::RegisterDSPSampleSinksEvent>(registerSinks);
         hackrf_init();
+        std::atexit(&HackRFSDRSupport::de_init);
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
