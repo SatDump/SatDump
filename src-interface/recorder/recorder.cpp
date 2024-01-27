@@ -202,8 +202,14 @@ namespace satdump
     void RecorderApplication::drawUI()
     {
         ImVec2 recorder_size = ImGui::GetContentRegionAvail();
+        float wf_size_offset = 0;
+        if (is_processing && !processing_modules_floating_windows)
+            wf_size_offset = 250 * ui_scale;
+        if (vfo_list.size() > 0)
+            wf_size_offset = 270 * ui_scale;
+        float wf_size = recorder_size.y - wf_size_offset; // + 13 * ui_scale;
 
-        if (ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
+        if (wf_size > 0 && ImGui::BeginTable("##recorder_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
         {
             ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, recorder_size.x * panel_ratio);
             ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, recorder_size.x * (1.0f - panel_ratio));
@@ -216,13 +222,6 @@ namespace satdump
             last_width = left_width;
 
             ImGui::BeginGroup();
-            float wf_size_offset = 0;
-            if (is_processing && !processing_modules_floating_windows)
-                wf_size_offset = 250 * ui_scale;
-            if (vfo_list.size() > 0)
-                wf_size_offset = 270 * ui_scale;
-            float wf_size = recorder_size.y - wf_size_offset; // + 13 * ui_scale;
-
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
                 if (ImGui::CollapsingHeader("Device", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
@@ -619,7 +618,7 @@ namespace satdump
                     }
                     ImGui::EndChild();
                 }
-                if (show_waterfall && wf_height > 0)
+                if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
                     waterfall_plot->draw({wfft_widht, wf_height}, is_started);
