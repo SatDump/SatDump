@@ -100,9 +100,9 @@ namespace satdump
                     uiCallListMutex->unlock();
                 }
 
-                std::thread module1_thread([m1]()
+                std::thread module1_thread([&m1]()
                                            { m1->process(); });
-                std::thread module2_thread([m2]()
+                std::thread module2_thread([&m2]()
                                            { m2->process(); });
 
                 if (module1_thread.joinable())
@@ -419,13 +419,12 @@ namespace satdump
             loadPipeline(pipeline.first);
 
         std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
-                                                      {
+                  {
                                                           std::string lname = l.readable_name;
                                                           std::string rname = r.readable_name;
                                                           std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
                                                           std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
-                                                          return lname < rname;
-                                                      });
+                                                          return lname < rname; });
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)

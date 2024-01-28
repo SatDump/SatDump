@@ -72,7 +72,7 @@ namespace image
     {
         for (int c = 0; c < (per_channel ? channels() : 1); c++)
         {
-            if (c == 3) //Do not individual equalize alpha channel
+            if (c == 3) // Do not individual equalize alpha channel
                 break;
 
             T *data_ptr = channel(c);
@@ -299,9 +299,9 @@ namespace image
     int percentile(T *array, int size, float percentile)
     {
         float number_percent = (size + 1) * percentile / 100.0f;
-        if (number_percent == 1)
+        if (number_percent <= 1) // ==
             return array[0];
-        else if (number_percent == size)
+        else if (number_percent >= size) // ==
             return array[size - 1];
         else
             return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
@@ -454,8 +454,8 @@ namespace image
             {
                 for (size_t x = 0; x < d_width; x++)
                 {
-                    float average[4] = { 0 };
-                    float variance[4] = { 0 };
+                    float average[4] = {0};
+                    float variance[4] = {0};
 
                     // Calculate values for the four regions
                     for (int j = -radius; j <= 0; ++j)
@@ -511,7 +511,7 @@ namespace image
     }
 
     template <typename T>
-    T Image<T>::wraparound_read(T* c, int x, int y)
+    T Image<T>::wraparound_read(T *c, int x, int y)
     {
         if (x < 0)
             x += d_width;

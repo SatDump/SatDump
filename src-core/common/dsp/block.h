@@ -18,7 +18,7 @@ namespace dsp
     {
     protected:
         std::thread d_thread;
-        bool should_run;
+        bool should_run = false;
         virtual void work() = 0;
         bool d_got_input;
         void run()
@@ -55,8 +55,10 @@ namespace dsp
             should_run = false;
 
             if (d_got_input)
-                input_stream->stopReader();
-            output_stream->stopWriter();
+                if (input_stream)
+                    input_stream->stopReader();
+            if (output_stream)
+                output_stream->stopWriter();
 
             if (d_thread.joinable())
                 d_thread.join();
