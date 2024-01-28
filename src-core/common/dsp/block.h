@@ -38,6 +38,11 @@ namespace dsp
         }
         ~Block()
         {
+            if (should_run)
+            {
+                printf("CRITICAL! BLOCK SHOULD BE STOPPED BEFORE CALLING DESTRUCTOR!\n");
+                stop();
+            }
         }
         virtual void start()
         {

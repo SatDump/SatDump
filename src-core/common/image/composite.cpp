@@ -57,6 +57,8 @@ namespace image
         int img_width = maxWidth;
         int img_height = maxHeight;
 
+        delete[] channelValues;
+
         return {hasOffsets,
                 offsets,
                 maxWidth,
