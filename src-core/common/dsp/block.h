@@ -4,6 +4,7 @@
 #include <thread>
 #include <memory>
 #include "complex.h"
+#include "logger.h"
 
 #define BRANCHLESS_CLIP(x, clip) (0.5 * (std::abs(x + clip) - std::abs(x - clip)))
 #ifndef M_PI
@@ -40,7 +41,7 @@ namespace dsp
         {
             if (should_run)
             {
-                printf("CRITICAL! BLOCK SHOULD BE STOPPED BEFORE CALLING DESTRUCTOR!\n");
+                logger->critical("CRITICAL! BLOCK SHOULD BE STOPPED BEFORE CALLING DESTRUCTOR!");
                 stop();
             }
         }
