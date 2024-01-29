@@ -175,12 +175,19 @@ namespace aqua
                 {
                     ImGui::SameLine();
 
-                    if (errors[i] == -1)
-                        ImGui::TextColored(style::theme.red, "%i ", i);
-                    else if (errors[i] > 0)
-                        ImGui::TextColored(style::theme.orange, "%i ", i);
+                    if (deframer.getState() == deframer.STATE_NOSYNC)
+                    {
+                        ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "%i ", i);
+                    }
                     else
-                        ImGui::TextColored(style::theme.green, "%i ", i);
+                    {
+                        if (errors[i] == -1)
+                            ImGui::TextColored(style::theme.red, "%i ", i);
+                        else if (errors[i] > 0)
+                            ImGui::TextColored(style::theme.orange, "%i ", i);
+                        else
+                            ImGui::TextColored(style::theme.green, "%i ", i);
+                    }
                 }
             }
         }

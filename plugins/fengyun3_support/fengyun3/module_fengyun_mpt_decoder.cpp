@@ -215,12 +215,19 @@ namespace fengyun3
                 {
                     ImGui::SameLine();
 
-                    if (errors[i] == -1)
-                        ImGui::TextColored(style::theme.red, "%i ", i);
-                    else if (errors[i] > 0)
-                        ImGui::TextColored(style::theme.orange, "%i ", i);
+                    if (viterbi1.getState() == 0 || viterbi2.getState() == 0 || deframer.getState() == deframer.STATE_NOSYNC)
+                    {
+                        ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "%i ", i);
+                    }
                     else
-                        ImGui::TextColored(style::theme.green, "%i ", i);
+                    {
+                        if (errors[i] == -1)
+                            ImGui::TextColored(style::theme.red, "%i ", i);
+                        else if (errors[i] > 0)
+                            ImGui::TextColored(style::theme.orange, "%i ", i);
+                        else
+                            ImGui::TextColored(style::theme.green, "%i ", i);
+                    }
                 }
             }
         }
@@ -250,7 +257,7 @@ namespace fengyun3
                 ber_history1[200 - 1] = ber1;
 
                 widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history1, IM_ARRAYSIZE(ber_history1), 0, "", 0.0f, 1.0f,
-                    ImVec2(200 * ui_scale, 50 * ui_scale));
+                                         ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Button("Viterbi 2", {200 * ui_scale, 20 * ui_scale});
@@ -272,7 +279,7 @@ namespace fengyun3
                 ber_history2[200 - 1] = ber2;
 
                 widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history2, IM_ARRAYSIZE(ber_history2), 0, "", 0.0f, 1.0f,
-                    ImVec2(200 * ui_scale, 50 * ui_scale));
+                                         ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
@@ -283,12 +290,19 @@ namespace fengyun3
 
                 ImGui::SameLine();
 
-                if (deframer.getState() == deframer.STATE_NOSYNC)
-                    ImGui::TextColored(style::theme.red, "NOSYNC");
-                else if (deframer.getState() == deframer.STATE_SYNCING)
-                    ImGui::TextColored(style::theme.orange, "SYNCING");
+                if (viterbi1.getState() == 0 || viterbi2.getState() == 0)
+                {
+                    ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "NOSYNC");
+                }
                 else
-                    ImGui::TextColored(style::theme.green, "SYNCED");
+                {
+                    if (deframer.getState() == deframer.STATE_NOSYNC)
+                        ImGui::TextColored(style::theme.red, "NOSYNC");
+                    else if (deframer.getState() == deframer.STATE_SYNCING)
+                        ImGui::TextColored(style::theme.orange, "SYNCING");
+                    else
+                        ImGui::TextColored(style::theme.green, "SYNCED");
+                }
             }
         }
         ImGui::EndGroup();

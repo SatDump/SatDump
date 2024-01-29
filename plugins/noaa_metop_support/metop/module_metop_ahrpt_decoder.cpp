@@ -182,7 +182,7 @@ namespace metop
                 ber_history[200 - 1] = ber;
 
                 widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
-                    ImVec2(200 * ui_scale, 50 * ui_scale));
+                                         ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
@@ -193,12 +193,19 @@ namespace metop
 
                 ImGui::SameLine();
 
-                if (deframer.getState() == deframer.STATE_NOSYNC)
-                    ImGui::TextColored(style::theme.red, "NOSYNC");
-                else if (deframer.getState() == deframer.STATE_SYNCING)
-                    ImGui::TextColored(style::theme.orange, "SYNCING");
+                if (viterbi.getState() == 0)
+                {
+                    ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "NOSYNC");
+                }
                 else
-                    ImGui::TextColored(style::theme.green, "SYNCED");
+                {
+                    if (deframer.getState() == deframer.STATE_NOSYNC)
+                        ImGui::TextColored(style::theme.red, "NOSYNC");
+                    else if (deframer.getState() == deframer.STATE_SYNCING)
+                        ImGui::TextColored(style::theme.orange, "SYNCING");
+                    else
+                        ImGui::TextColored(style::theme.green, "SYNCED");
+                }
             }
 
             ImGui::Spacing();
@@ -210,12 +217,19 @@ namespace metop
                 {
                     ImGui::SameLine();
 
-                    if (errors[i] == -1)
-                        ImGui::TextColored(style::theme.red, "%i ", i);
-                    else if (errors[i] > 0)
-                        ImGui::TextColored(style::theme.orange, "%i ", i);
+                    if (viterbi.getState() == 0 || deframer.getState() == deframer.STATE_NOSYNC)
+                    {
+                        ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "%i ", i);
+                    }
                     else
-                        ImGui::TextColored(style::theme.green, "%i ", i);
+                    {
+                        if (errors[i] == -1)
+                            ImGui::TextColored(style::theme.red, "%i ", i);
+                        else if (errors[i] > 0)
+                            ImGui::TextColored(style::theme.orange, "%i ", i);
+                        else
+                            ImGui::TextColored(style::theme.green, "%i ", i);
+                    }
                 }
             }
         }
