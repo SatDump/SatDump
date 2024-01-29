@@ -110,8 +110,7 @@ void HackRFSource::open()
         15000000,
         20000000,
         24000000,
-        28000000
-    };
+        28000000};
     bandwidth_widget.set_list(available_bandwidths, false, "Hz");
 }
 
@@ -178,7 +177,7 @@ void HackRFSource::set_frequency(uint64_t frequency)
 
 void HackRFSource::drawControlUI()
 {
-    //Samplerate
+    // Samplerate
     if (is_started)
         RImGui::beginDisabled();
 
@@ -199,7 +198,7 @@ void HackRFSource::drawControlUI()
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 
-    //Bandwidth Filter
+    // Bandwidth Filter
     bool bw_update = RImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
     if (manual_bandwidth)
         bw_update = bw_update || bandwidth_widget.render();
@@ -240,6 +239,8 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
             results.push_back({"hackrf", "HackRF One " + ss.str().substr(16, 16), id});
         }
     }
+
+    hackrf_device_list_free(devlist);
 #else
     int vid, pid;
     std::string path;

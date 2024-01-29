@@ -37,8 +37,6 @@ namespace satdump
 
     ObjectTracker::~ObjectTracker()
     {
-        predict_destroy_observer(satellite_observer_station);
-
         backend_should_run = false;
         if (backend_thread.joinable())
             backend_thread.join();
@@ -46,6 +44,11 @@ namespace satdump
         rotatorth_should_run = false;
         if (rotatorth_thread.joinable())
             rotatorth_thread.join();
+
+        predict_destroy_observer(satellite_observer_station);
+
+        if (satellite_object != nullptr)
+            predict_destroy_orbital_elements(satellite_object);
     }
 
     void ObjectTracker::setQTH(double qth_lon, double qth_lat, double qth_alt)
