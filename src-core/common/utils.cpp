@@ -120,6 +120,7 @@ int perform_http_request(std::string url_str, std::string &result)
     result = std::string(data_ptr, &data_ptr[data_sz]);
 
     // Free everything
+    nng_url_free(url);
     nng_http_client_free(client);
     nng_aio_free(aio);
     nng_http_res_free(res);
