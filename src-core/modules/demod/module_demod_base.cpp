@@ -53,9 +53,9 @@ namespace demod
 
     void BaseDemodModule::initb(bool resample_here)
     {
-        if (d_parameters["min_sps"])
+        if (d_parameters.contains("min_sps"))
             MIN_SPS = d_parameters["min_sps"].get<float>();
-        if (d_parameters["max_sps"])
+        if (d_parameters.contains("max_sps"))
             MAX_SPS = d_parameters["max_sps"].get<float>();
 
         float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
