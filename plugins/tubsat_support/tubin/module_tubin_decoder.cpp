@@ -116,6 +116,7 @@ namespace tubin
                 continue; // Discard small files
 
             std::vector<uint8_t> out;
+            bool try_raw16 = false;
 
             // TUBIN's format is *so* robust to noise PNGs,
             // they are often at least a bit corrupted...
@@ -124,12 +125,21 @@ namespace tubin
             // decoding as much imagery that can actually be.
             if (png_fix::repair_png(f.second, out))
             {
-                logger->error("Could not repair PNG, discarding...");
-                continue;
+                logger->error("Could not repair PNG, trying as raw...");
+
+                //  std::string product_name = "UKN_" + std::to_string(f.first) + ".bin";
+                //  std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+                //  std::ofstream(directory + "/" + product_name, std::ios::binary).write((char *)f.second.data(), f.second.size());
+
+                f.second.resize((127 + 3664 * 2748) * sizeof(uint16_t));
+                try_raw16 = true; // continue;
             }
 
             image::Image<uint16_t> image;
-            image.load_png(out.data(), out.size());
+            if (try_raw16)
+                image = image::Image<uint16_t>((uint16_t *)f.second.data() + 127, 3664, 2748, 1); // RAW
+            else
+                image.load_png(out.data(), out.size()); // PNG
 
             logger->info("New image is %dx%d", image.width(), image.height());
 
