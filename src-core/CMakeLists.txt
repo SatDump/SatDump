@@ -61,6 +61,8 @@ if(BUILD_ZIQ2)
 endif()
 
 if(MSVC)
+    # Jemalloc
+    # TODO
     target_link_libraries(satdump_core PUBLIC shlwapi)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
@@ -75,6 +77,9 @@ if(MSVC)
     target_include_directories(satdump_core PUBLIC libs/lua)
     target_link_libraries(satdump_core PUBLIC ws2_32)
 elseif(ANDROID)
+    # Jemalloc
+    # TODO
+
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
     target_include_directories(satdump_core PUBLIC ../volk_includes)
@@ -94,6 +99,12 @@ elseif(ANDROID)
 
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
+    # Jemalloc
+    pkg_check_modules(JEMALLOC jemalloc)
+    pkg_search_module(JEMALLOC REQUIRED jemalloc)
+    include_directories(${JEMALLOC_INCLUDE_DIRS})
+    target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARIES})
+
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
     check_cxx_source_compiles("#include <volk/volk_alloc.hh>\n int main() { return 0; }" VOLK_HAS_ALLOC)
