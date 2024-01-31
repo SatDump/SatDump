@@ -95,13 +95,13 @@ jobs:
         run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_x64_Portable
           path: ${{runner.workspace}}/build/Release/*
 
       - name: Upload Installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
@@ -138,7 +138,7 @@ jobs:
         run: unset ANDROID_SDK_ROOT && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SatDump-debug.apk
           path: ${{runner.workspace}}/SatDump/android/app/build/outputs/apk/debug/app-debug.apk
@@ -187,7 +187,7 @@ jobs:
         run: make package
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SatDump-Ubuntu-Latest
           path: ${{runner.workspace}}/build/*.deb
@@ -239,7 +239,7 @@ jobs:
         run: make package
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SatDump-Pi64-Latest
           path: ${{runner.workspace}}/build/*.deb
@@ -293,7 +293,7 @@ jobs:
         run: $GITHUB_WORKSPACE/macOS/bundle.sh
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SatDump-macOS
           path: ${{runner.workspace}}/build/*.dmg
