@@ -107,7 +107,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 294000,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.02,
+                    "max_sps": 3
                 }
             },
             "cadu": {
@@ -177,7 +178,8 @@
                     "constellation": "oqpsk",
                     "symbolrate": 1.15e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.001
+                    "pll_bw": 0.001,
+                    "max_sps": 3
                 }
             },
             "cadu": {

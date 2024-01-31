@@ -53,6 +53,11 @@ namespace demod
 
     void BaseDemodModule::initb(bool resample_here)
     {
+        if (d_parameters["min_sps"])
+            MIN_SPS = d_parameters["min_sps"].get<float>();
+        if (d_parameters["max_sps"])
+            MAX_SPS = d_parameters["max_sps"].get<float>();
+
         float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
         resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample
 

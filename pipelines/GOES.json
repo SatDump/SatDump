@@ -49,7 +49,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 2.11e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.002
+                    "pll_bw": 0.002,
+                    "max_sps": 3
                 }
             },
             "gvar": {
@@ -126,7 +127,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 927e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.02,
+                    "max_sps": 3
                 }
             },
             "cadu": {
@@ -183,7 +185,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 927e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.02,
+                    "max_sps": 3
                 }
             },
             "cadu": {
@@ -288,7 +291,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 40e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.02,
+                    "max_sps": 3
                 }
             },
             "cadu": {
@@ -324,7 +328,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 200e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.005
+                    "pll_bw": 0.005,
+                    "max_sps": 3
                 }
             },
             "frm": {
@@ -383,7 +388,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 293e3,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.02,
+                    "max_sps": 3
                 }
             },
             "cadu": {
