@@ -50,7 +50,10 @@ protected:
 
     void mainThread()
     {
-        int buffer_size = std::min<int>(roundf(samplerate_widget.get_value() / (250 * 512)) * 512, dsp::STREAM_BUFFER_SIZE);
+        int buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value());
+        // int buffer_size = std::min<int>(roundf(samplerate_widget.get_value() / (250 * 512)) * 512, dsp::STREAM_BUFFER_SIZE);
+        logger->trace("SoapySDR Buffer size %d", buffer_size);
+
         int flags = 0;
         long long time_ms = 0;
 

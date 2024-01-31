@@ -30,6 +30,12 @@ namespace dsp
         uint64_t d_frequency;
         uint64_t d_sdr_id;
 
+    protected:
+        inline int calculate_buffer_size_from_samplerate(int samplerate, int buffer_per_sec = 60, int blocksize = 512)
+        {
+            return std::min<int>(ceil((double)samplerate / double(buffer_per_sec * blocksize)) * blocksize, dsp::STREAM_BUFFER_SIZE);
+        }
+
     public:
         virtual void open() = 0;                                                              // Open the device, source, etc, but don't start the stream yet
         virtual void start() { output_stream = std::make_shared<dsp::stream<complex_t>>(); }; // Start streaming samples
