@@ -63,7 +63,7 @@ namespace demod
 
         // Min/Max sample per symbol the demodulator will accept before resampling the input
         float MIN_SPS = 1.1;
-        float MAX_SPS = 4.0;
+        float MAX_SPS = 3.0;
         bool resample = false;
 
         std::ofstream data_out;
