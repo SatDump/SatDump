@@ -211,6 +211,8 @@ namespace noaa_apt
                 has_to_update = true;
                 last_line_cnt = line_cnt;
             }
+
+            module_stats["unsynced_lines"] = line_cnt;
         }
 
         // Stop everything
