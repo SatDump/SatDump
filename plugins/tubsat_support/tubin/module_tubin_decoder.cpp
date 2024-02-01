@@ -54,16 +54,18 @@ namespace tubin
                                              cadu[23] << 8 |
                                              cadu[24];
                     // File ID
-                    uint64_t file_id = (uint64_t)cadu[26] << 56 |
+                    uint64_t file_id = /*(uint64_t)cadu[26] << 56 |
                                        (uint64_t)cadu[27] << 48 |
                                        (uint64_t)cadu[28] << 40 |
                                        (uint64_t)cadu[29] << 32 |
                                        (uint64_t)cadu[31] << 24 |
                                        (uint64_t)cadu[32] << 16 |
                                        (uint64_t)cadu[33] << 8 |
-                                       (uint64_t)cadu[34];
+                                       (uint64_t)cadu[34];*/
+                        (uint64_t)cadu[18] << 8 |
+                        (uint64_t)cadu[19];
 
-                    // logger->info("%d %d", chunk_counter, file_id);
+                    logger->info("%d %llu", chunk_counter, file_id);
 
                     if (all_files_vis.count(file_id) == 0)
                         all_files_vis.insert({file_id, std::vector<uint8_t>()});
@@ -131,13 +133,23 @@ namespace tubin
                 //  std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
                 //  std::ofstream(directory + "/" + product_name, std::ios::binary).write((char *)f.second.data(), f.second.size());
 
-                f.second.resize((127 + 3664 * 2748) * sizeof(uint16_t));
                 try_raw16 = true; // continue;
             }
 
             image::Image<uint16_t> image;
             if (try_raw16)
-                image = image::Image<uint16_t>((uint16_t *)f.second.data() + 127, 3664, 2748, 1); // RAW
+            {
+                if (f.second.size() > int(912 * 688 * sizeof(uint16_t) * 1.3))
+                {
+                    f.second.resize((127 + 3664 * 2748) * sizeof(uint16_t));
+                    image = image::Image<uint16_t>((uint16_t *)f.second.data() + 127, 3664, 2748, 1); // RAW
+                }
+                else
+                {
+                    f.second.resize((127 + 912 * 688) * sizeof(uint16_t));
+                    image = image::Image<uint16_t>((uint16_t *)f.second.data() + 127, 912, 688, 1); // RAW
+                }
+            }
             else
                 image.load_png(out.data(), out.size()); // PNG
 
