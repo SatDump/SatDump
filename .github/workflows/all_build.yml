@@ -139,7 +139,7 @@ jobs:
       - name: Build dependencies
         if: steps.android-deps.outputs.cache-hit != 'true'
         shell: bash
-        run: git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && sh build.sh
+        run: git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && sh build.sh && rm .git
 
       - name: Build
         shell: bash
