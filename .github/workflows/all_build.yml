@@ -131,7 +131,7 @@ jobs:
 
       - name: Get dependency version
         id: android-deps-ver
-        run: commit=$(git -C ~/Programs/SatDump submodule status | grep android) && echo deps_version=${commit:1:6} >> $GITHUB_OUTPUT
+        run: commit=$(git -C $GITHUB_WORKSPACE submodule status | grep android) && echo deps_version=${commit:1:6} >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
         uses: actions/cache@v4
