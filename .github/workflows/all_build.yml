@@ -129,12 +129,16 @@ jobs:
       - name: Install Android NDK
         run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.2.9519653" --channel=3
 
-      - name: Restore cached dependencies
+      - name: Get dependency version
+        id: android-deps-ver
+        run: commit=$(git -C ~/Programs/SatDump submodule status | grep android) && echo deps_version=${commit:1:6} >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
         uses: actions/cache@v4
         id: android-deps
         with:
           path: android/deps
-          key: android-deps
+          key: android-deps-${{steps.android-deps-ver.outputs.deps_version}}
 
       - name: Build dependencies
         if: steps.android-deps.outputs.cache-hit != 'true'
