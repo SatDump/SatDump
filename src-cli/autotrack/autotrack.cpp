@@ -97,7 +97,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     splitter->add_output("live");
 
     // Optional FFT
-    if (parameters.contains("fft_enable"))
+    if (parameters.contains("fft_enable") && parameters["fft_enable"])
     {
         if (parameters.contains("fft_size"))
             fft_size = parameters["fft_size"].get<int>();
@@ -116,10 +116,8 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
 
         fft_plot = std::make_unique<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, fft_min, fft_max, 40);
         logger->critical("FFT GOOD!");
-    }
-
-    if (parameters.contains("fft_enable"))
         fft->start();
+    }
 
     file_sink = std::make_shared<dsp::FileSinkBlock>(splitter->get_output("record"));
     file_sink->start();

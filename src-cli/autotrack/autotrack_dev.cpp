@@ -23,9 +23,12 @@ void AutoTrackApp::start_device()
         //     logger->info("Setting up resampler...");
         //}
 
-        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
-        // waterfall_plot->set_rate(fft_rate, waterfall_rate);
-        fft_plot->bandwidth = get_samplerate();
+        if (d_parameters.contains("fft_enable") && d_parameters["fft_enable"])
+        {
+            fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+            // waterfall_plot->set_rate(fft_rate, waterfall_rate);
+            fft_plot->bandwidth = get_samplerate();
+        }
 
         splitter->input_stream = /*current_decimation > 1 ? decim_ptr->output_stream :*/ source_ptr->output_stream;
         splitter->start();

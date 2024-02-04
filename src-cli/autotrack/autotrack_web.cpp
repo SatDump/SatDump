@@ -63,7 +63,7 @@ void AutoTrackApp::setup_webserver()
             return vec;
         };
 
-        if (d_parameters.contains("fft_enable"))
+        if (d_parameters.contains("fft_enable") && d_parameters["fft_enable"])
             webserver::handle_callback_fft = [this]() -> std::vector<uint8_t>
             {
                 if (!web_fft_is_enabled)
@@ -122,7 +122,7 @@ void AutoTrackApp::setup_webserver()
                     aos_in = "";
                 }
 
-                if (d_parameters.contains("fft_enable"))
+                if (d_parameters.contains("fft_enable") && d_parameters["fft_enable"])
                     fft = (std::string) "<h2>FFT</h2><img src=\"fft.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"600\" width=\"600\" />";
 
                 std::string schedule = (std::string) "<h2>Schedule</h2><img src=\"schedule.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"80\" width=\"600\" />";
