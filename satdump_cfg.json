@@ -1008,10 +1008,23 @@
                             0
                         ]
                     },
-                    "HVC": {
-                        "lut": "lut/WXtoImg-HVC.png",
+                    "HVC (channel 1)": {
+                        "lut": "lut/WXtoImg-HVC-1.png",
                         "description": "descriptions/HVC.md",
-                        "channels": "cha, chb",
+                        "channels": "ch1, ch4",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
+                    "HVC (channel 2)": {
+                        "lut": "lut/WXtoImg-HVC-2.png",
+                        "description": "descriptions/HVC.md",
+                        "channels": "ch2, ch4",
                         "autogen": false,
                         "geo_correct": true,
                         "draw_map_overlay": true,
