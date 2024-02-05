@@ -295,12 +295,14 @@ namespace himawari
 
                                                 logger->debug("Channel %s segment %d id %d", channel_name.c_str(), segment, id);
 
-                                                if (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete())
+                                                if (segmented_decoders.count(channel_name) != 0 && (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete()))
                                                 {
                                                     segmented_decoders[channel_name].image.normalize();
                                                     if (!std::filesystem::exists(directory + "/" + channel_name))
                                                         std::filesystem::create_directory(directory + "/" + channel_name);
-                                                    segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
+                                                    std::string save_name = directory + "/" + channel_name + "/" +
+                                                        segmented_decoders_filenames[channel_name].substr(0, segmented_decoders_filenames[channel_name].size() - 4);
+                                                    segmented_decoders[channel_name].image.save_img(save_name);
                                                     segmented_decoders[channel_name].image.clear();
                                                     segmented_decoders.erase(channel_name);
                                                     segmented_decoders_filenames.erase(channel_name);
