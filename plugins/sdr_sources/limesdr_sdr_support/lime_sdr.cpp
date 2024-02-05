@@ -203,6 +203,8 @@ void LimeSDRSource::start()
 
     thread_should_run = true;
     work_thread = std::thread(&LimeSDRSource::mainThread, this);
+
+    set_others(); // LimeSDR Mini 2.0 Fix
 }
 
 void LimeSDRSource::stop()
