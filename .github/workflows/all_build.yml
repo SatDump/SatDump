@@ -324,7 +324,7 @@ jobs:
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-macOS
+          name: SatDump-macOS-x64
           path: ${{runner.workspace}}/build/*.dmg
 
   build_macos_silicon:
@@ -378,7 +378,7 @@ jobs:
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-macOS
+          name: SatDump-macOS-arm
           path: ${{runner.workspace}}/build/*.dmg
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
