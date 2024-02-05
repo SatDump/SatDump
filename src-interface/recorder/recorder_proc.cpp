@@ -319,6 +319,15 @@ namespace satdump
             {
                 if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
                 {
+                    if (!autotrack_cfg.multi_mode)
+                    {
+                        double center_freq = 0;
+                        for (auto &dl : obj.downlinks)
+                            center_freq += dl.frequency;
+                        center_freq /= obj.downlinks.size();
+                        set_frequency(center_freq);
+                    }
+
                     for (auto &dl : obj.downlinks)
                     {
                         if (dl.live || dl.record)
