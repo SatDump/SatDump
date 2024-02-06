@@ -99,11 +99,13 @@ elseif(ANDROID)
 
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
-    # Jemalloc
-    pkg_check_modules(JEMALLOC jemalloc)
-    pkg_search_module(JEMALLOC REQUIRED jemalloc)
-    include_directories(${JEMALLOC_INCLUDE_DIRS})
-    target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARIES})
+    if(NOT APPLE)
+        # Jemalloc
+        pkg_check_modules(JEMALLOC jemalloc)
+        pkg_search_module(JEMALLOC REQUIRED jemalloc)
+        include_directories(${JEMALLOC_INCLUDE_DIRS})
+        target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARIES})
+    endif()
 
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)

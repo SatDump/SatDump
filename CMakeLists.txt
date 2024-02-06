@@ -52,6 +52,13 @@ if(APPLE)
         link_directories(/opt/homebrew/lib/)
     endif()
 
+    # Jemalloc
+    find_package(PkgConfig)
+    pkg_check_modules(JEMALLOC jemalloc)
+    pkg_search_module(JEMALLOC REQUIRED jemalloc)
+    include_directories(${JEMALLOC_INCLUDE_DIRS})
+    link_libraries(${JEMALLOC_LIBRARIES})
+
 endif()
 
 
