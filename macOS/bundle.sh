@@ -18,7 +18,7 @@ then
 fi
 
 rm -rf MacApp
-rm -rf SatDump-macOS.dmg
+rm -rf SatDump-macOS-$1.dmg
 
 echo "Making app shell..." 
 mkdir -p MacApp/SatDump.app/Contents/MacOS
@@ -81,17 +81,17 @@ then
 fi
 
 echo "Creating SatDump.dmg..."
-hdiutil create -srcfolder MacApp/ -volname SatDump SatDump-macOS-x64.dmg
+hdiutil create -srcfolder MacApp/ -volname SatDump SatDump-macOS-$1.dmg
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
-    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" SatDump-macOS-x64.dmg
+    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" SatDump-macOS-$1.dmg
 
     if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PWD" && -n "$MACOS_TEAM" ]]
     then
         echo "Notarizing DMG..."
-        xcrun notarytool submit SatDump-macOS-x64.dmg --apple-id $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD --team-id $MACOS_TEAM --wait
-        xcrun stapler staple SatDump-macOS-x64.dmg
+        xcrun notarytool submit SatDump-macOS-$1.dmg --apple-id $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD --team-id $MACOS_TEAM --wait
+        xcrun stapler staple SatDump-macOS-$1.dmg
     fi
 fi
 

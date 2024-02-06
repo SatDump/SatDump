@@ -273,7 +273,7 @@ jobs:
           name: SatDump-Pi64-Latest
           path: ${{runner.workspace}}/build/*.deb
 
-  build_macos:
+  build_macos_intel:
     runs-on: macos-latest
 
     steps:
@@ -319,12 +319,12 @@ jobs:
           MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
           MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
           MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle-x64.sh
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh Intel
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-macOS-x64
+          name: SatDump-macOS-Intel
           path: ${{runner.workspace}}/build/*.dmg
 
   build_macos_silicon:
@@ -373,17 +373,17 @@ jobs:
           MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
           MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
           MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle-arm.sh
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh Silicon
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-macOS-arm
+          name: SatDump-macOS-Silicon
           path: ${{runner.workspace}}/build/*.dmg
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_linux", "build_macos", "build_linux_arm64"] #, "build_android"]
+    needs: ["build_windows", "build_linux", "build_macos_intel", "build_macos_silicon", "build_linux_arm64"] #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -395,7 +395,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
