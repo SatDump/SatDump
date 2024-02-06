@@ -273,7 +273,7 @@ jobs:
           name: SatDump-Pi64-Latest
           path: ${{runner.workspace}}/build/*.deb
 
-  build_macos:
+  build_macos_intel:
     runs-on: macos-latest
 
     steps:
@@ -319,17 +319,71 @@ jobs:
           MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
           MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
           MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle.sh
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh Intel
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-macOS
+          name: SatDump-macOS-Intel
+          path: ${{runner.workspace}}/build/*.dmg
+
+  build_macos_silicon:
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio jemalloc
+
+      - name: Build airspyhf
+        run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
+
+      - name: Build nng
+        run: git clone -b v1.6.0 https://github.com/nanomsg/nng && cd nng && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON -DNNG_TOOLS=OFF -DNNG_TESTS=OFF -DNNG_ENABLE_NNGCAT=OFF .. && make -j`nproc` && sudo make install
+
+      - name: Build FFTW3
+        run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false .. && make -j8 && sudo make install
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_LIVE=ON
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: make -j6
+
+      - name: Bundle
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        env:
+          MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
+          MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
+          MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh Silicon
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-macOS-Silicon
           path: ${{runner.workspace}}/build/*.dmg
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
-    needs: ["build_windows", "build_linux", "build_macos", "build_linux_arm64"] #, "build_android"]
+    needs: ["build_windows", "build_linux", "build_macos_intel", "build_macos_silicon", "build_linux_arm64"] #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -341,7 +395,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS/SatDump-macOS.dmg satdump_out/SatDump-macOS.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber

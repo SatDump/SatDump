@@ -89,18 +89,13 @@ Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C
 For compilation information, see the dedicated documentation [here](/docs/Building-Windows.md). *Note : Mingw builds are NOT supported, VOLK will not work.*
 
 ### macOS
-Dependency-free Intel (x64) macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
-
-While those will work for Apple Silicon (M1/M2) Macs, it is NOT recommended as performance will suffer greatly compared to natively-compiled builds. Pre-compiled ARM/Universal builds are planned.
+Dependency-free macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
 
 General build instructions (Brew and XCode command line tools required)
 
 ```bash
 # Install dependencies
 brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio jemalloc
-
-# On Apple Silicon also run
-brew link --force libomp
 
 # Build and install libfftw3 to work around issue with brew version
 wget http://www.fftw.org/fftw-3.3.9.tar.gz
