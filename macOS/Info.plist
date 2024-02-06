@@ -24,5 +24,10 @@
   <integer>0</integer>
   <key>IFMinorVersion</key>
   <integer>1</integer>
+  <key>LSEnvironment</key>
+  <dict>
+    <key>MallocNanoZone</key>
+    <string>0</string>
+  </dict>
 </dict>
 </plist>
