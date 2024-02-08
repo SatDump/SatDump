@@ -45,10 +45,9 @@ namespace widgets
 
     void WaterfallPlot::draw(ImVec2 size, bool active)
     {
+        work_mtx.lock();
         curr_width = size.x > fft_size ? fft_size : size.x;
         curr_height = size.y > fft_lines ? fft_lines : size.y;
-
-        work_mtx.lock();
         if (texture_id == 0)
         {
             texture_id = makeImageTexture();
