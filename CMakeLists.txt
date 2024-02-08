@@ -53,11 +53,9 @@ if(APPLE)
     endif()
 
     # Jemalloc
-    find_package(PkgConfig)
-    pkg_check_modules(JEMALLOC jemalloc)
-    pkg_search_module(JEMALLOC REQUIRED jemalloc)
-    include_directories(${JEMALLOC_INCLUDE_DIRS})
-    link_libraries(${JEMALLOC_LIBRARIES})
+    find_package(Jemalloc REQUIRED)
+    include_directories(${JEMALLOC_INCLUDE_DIR})
+    link_libraries(${JEMALLOC_LIBRARY})
 
 endif()
 

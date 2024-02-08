@@ -101,10 +101,9 @@ elseif(ANDROID)
 else()
     if(NOT APPLE)
         # Jemalloc
-        pkg_check_modules(JEMALLOC jemalloc)
-        pkg_search_module(JEMALLOC REQUIRED jemalloc)
-        include_directories(${JEMALLOC_INCLUDE_DIRS})
-        target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARIES})
+        find_package(Jemalloc REQUIRED)
+        target_include_directories(satdump_core PUBLIC ${JEMALLOC_INCLUDE_DIR})
+        target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARY})
     endif()
 
     # VOLK
