@@ -354,8 +354,8 @@ namespace goes
                                                                 infraredImageReader2.getImage1(),
                                                                 infraredImageReader2.getImage2(),
                                                                 visibleImageReader.getImage(),
-                                                                most_common(scid_stats.begin(), scid_stats.end()),
-                                                                most_common(vis_width_stats.begin(), vis_width_stats.end())});
+                                                                most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                                                most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)});
                                         imageVectorMutex.unlock();
                                         isSavingInProgress = false;
                                     }
@@ -369,8 +369,8 @@ namespace goes
                                                              infraredImageReader2.getImage1(),
                                                              infraredImageReader2.getImage2(),
                                                              visibleImageReader.getImage(),
-                                                             most_common(scid_stats.begin(), scid_stats.end()),
-                                                             most_common(vis_width_stats.begin(), vis_width_stats.end())};
+                                                             most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                                             most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
                                         writeImages(images, directory);
                                         isSavingInProgress = false;
                                     }
@@ -409,7 +409,7 @@ namespace goes
                         ir_width_stats.push_back(line_header.word_count);
 
                         // Get current stats
-                        int current_words = most_common(ir_width_stats.begin(), ir_width_stats.end());
+                        int current_words = most_common(ir_width_stats.begin(), ir_width_stats.end(), 0);
 
                         // Safeguard
                         if (current_words > 6565)
@@ -461,8 +461,8 @@ namespace goes
                                      infraredImageReader2.getImage1(),
                                      infraredImageReader2.getImage2(),
                                      visibleImageReader.getImage(),
-                                     most_common(scid_stats.begin(), scid_stats.end()),
-                                     most_common(vis_width_stats.begin(), vis_width_stats.end())};
+                                     most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                     most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
                 // Write those
                 writeImages(images, directory);
             }

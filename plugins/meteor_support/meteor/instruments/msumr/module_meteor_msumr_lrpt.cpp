@@ -91,14 +91,8 @@ namespace meteor
             logger->info("Writing images.... (Can take a while)");
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number;
-            if (msumr_ids.empty())
-                msumr_serial_number = -1;
-            else
-            {
-                msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
-                msumr_ids.clear();
-            }
+            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
+            msumr_ids.clear();
 
             logger->trace("MSU-MR ID %d", msumr_serial_number);
 

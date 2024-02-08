@@ -431,7 +431,7 @@ namespace fengyun3
             if (d_dump_mersi)
                 mersi_bin.close();
 
-            int scid = most_common(fy_scids.begin(), fy_scids.end());
+            int scid = most_common(fy_scids.begin(), fy_scids.end(), 0);
             fy_scids.clear();
 
             std::string sat_name = "Unknown FengYun-3";

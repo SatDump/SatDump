@@ -90,7 +90,7 @@ namespace proba
 
             if ((count_marker > 50 && count_marker < 70) || (count_marker > 500 && count_marker < 520) || (count_marker > 700 && count_marker < 720))
             {
-                mode = most_common(modeMarkers.begin(), modeMarkers.end());
+                mode = most_common(modeMarkers.begin(), modeMarkers.end(), 0);
 
                 if (mode == WATER_MODE || mode == CHLOROPHYL_MODE || mode == LAND_MODE)
                 {

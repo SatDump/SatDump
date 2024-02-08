@@ -200,7 +200,7 @@ namespace fengyun_svissr
                 // std::cout << counter << std::endl;
 
                 // Try to detect a new scan
-                uint8_t is_back = most_common(&last_status[0], &last_status[20]);
+                uint8_t is_back = most_common(&last_status[0], &last_status[20], 0);
 
                 if (is_back && valid_lines > 40)
                 {
@@ -215,7 +215,7 @@ namespace fengyun_svissr
                     buffer->image4 = vissrImageReader.getImageIR4();
                     buffer->image5 = vissrImageReader.getImageVIS();
 
-                    buffer->scid = most_common(scid_stats.begin(), scid_stats.end());
+                    buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
                     scid_stats.clear();
 
                     buffer->timestamp = time(0);
@@ -278,7 +278,7 @@ namespace fengyun_svissr
             buffer->image4 = vissrImageReader.getImageIR4();
             buffer->image5 = vissrImageReader.getImageVIS();
 
-            buffer->scid = most_common(scid_stats.begin(), scid_stats.end());
+            buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
             buffer->timestamp = time(0);
@@ -305,7 +305,7 @@ namespace fengyun_svissr
             buffer->image4 = vissrImageReader.getImageIR4();
             buffer->image5 = vissrImageReader.getImageVIS();
 
-            buffer->scid = most_common(scid_stats.begin(), scid_stats.end());
+            buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
             buffer->timestamp = time(0);

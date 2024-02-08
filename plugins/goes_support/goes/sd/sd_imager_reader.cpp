@@ -22,7 +22,7 @@ namespace goes
             memmove(last_status, &last_status[1], (FULL_BUF_SZ - 1) * sizeof(int));
             last_status[FULL_BUF_SZ - 1] = type;
 
-            int last_types = most_common(&last_status[0], &last_status[FULL_BUF_SZ]);
+            int last_types = most_common(&last_status[0], &last_status[FULL_BUF_SZ], 0);
 
             if (last_types == 16 && images_lines > 10)
             {

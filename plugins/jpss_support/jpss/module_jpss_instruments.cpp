@@ -136,7 +136,7 @@ namespace jpss
 
             data_in.close();
 
-            int scid = most_common(jpss_scids.begin(), jpss_scids.end());
+            int scid = most_common(jpss_scids.begin(), jpss_scids.end(), 0);
             jpss_scids.clear();
 
             std::string sat_name = "Unknown JPSS";

@@ -118,7 +118,7 @@ namespace noaa
                 } // done with the frames
                 data_in.close();
 
-                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
+                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end(), 0);
                 spacecraft_ids.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -427,7 +427,7 @@ namespace noaa
                 }
 
                 // ID
-                uint8_t scid = most_common(scid_list.begin(), scid_list.end());
+                uint8_t scid = most_common(scid_list.begin(), scid_list.end(), 0);
                 scid_list.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";

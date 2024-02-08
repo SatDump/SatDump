@@ -15,8 +15,11 @@ void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
 
 template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
-T most_common(InputIt begin, InputIt end)
+T most_common(InputIt begin, InputIt end, T def)
 {
+    if (begin == end)
+        return def;
+
     std::map<T, int> counts;
     for (InputIt it = begin; it != end; ++it)
     {

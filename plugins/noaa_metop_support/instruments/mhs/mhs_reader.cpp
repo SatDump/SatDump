@@ -125,7 +125,7 @@ namespace noaa_metop
             //calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
             calib_out["calibrator"] = "noaa_mhs";
 
-            uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end());
+            uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end(),0);
             PIE_buff.clear();
 
             double a, b;
