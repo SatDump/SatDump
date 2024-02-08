@@ -189,7 +189,15 @@ namespace satdump
                 calibrator_ptr = std::make_shared<DummyCalibrator>(contents["calibration"], this);
             }
 
-            calibrator_ptr->init();
+            try
+            {
+                calibrator_ptr->init();
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not initialize calibrator: %s", e.what());
+                calibrator_ptr = std::make_shared<DummyCalibrator>(contents["calibration"], this);
+            }
         }
         calib_mutex.unlock();
     }

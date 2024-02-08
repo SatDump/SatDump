@@ -23,6 +23,8 @@ public:
 
     void init()
     {
+        if (!d_calib.contains("vars") || !d_calib.contains("perLine_perChannel"))
+            throw std::runtime_error("Calibration data missing!");
         perLine_perChannel = d_calib["vars"]["perLine_perChannel"];
     }
 
