@@ -156,7 +156,7 @@ namespace inmarsat
                 {
                     pkt_history_mtx.lock();
                     pkt_history.push_back(msg);
-                    if (pkt_history.size() > 500)
+                    if (pkt_history.size() > 100)
                     {
                         pkt_history.erase(pkt_history.begin());
                         pkt_history.shrink_to_fit();
@@ -253,7 +253,7 @@ namespace inmarsat
             ImGui::Begin("Inmarsat STD-C Parser", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             ImGui::Text("Decoded packets can be seen in a floating window.");
-            ImGui::Text("Do remember you should nor read nor keep messages that are\nnot intended for you.");
+            ImGui::Text("Do remember you should not read nor keep messages that\nare not intended for you.");
 
             ImGui::Spacing();
             ImGui::Text("Last packet count : ");
@@ -273,6 +273,7 @@ namespace inmarsat
                 ImGui::BeginTabBar("##sdtmessagestabbar");
                 if (ImGui::BeginTabItem("Messages"))
                 {
+                    float wrap_pos = ImGui::GetContentRegionMax().x;
                     ImGui::BeginTable("##stdmessagetable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
                     ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
                     ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
@@ -291,7 +292,9 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(1);
                             ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
+                            ImGui::PushTextWrapPos(wrap_pos);
                             ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::PopTextWrapPos();
                         }
                         catch (std::exception&)
                         {
@@ -302,6 +305,7 @@ namespace inmarsat
                 }
                 if (ImGui::BeginTabItem("EGC Messages"))
                 {
+                    float wrap_pos = ImGui::GetContentRegionMax().x;
                     ImGui::BeginTable("##stdmessagetable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
                     ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
                     ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
@@ -320,7 +324,9 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(1);
                             ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
+                            ImGui::PushTextWrapPos(wrap_pos);
                             ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::PopTextWrapPos();
                         }
                         catch (std::exception&)
                         {
@@ -331,6 +337,7 @@ namespace inmarsat
                 }
                 if (ImGui::BeginTabItem("Packets"))
                 {
+                    float wrap_pos = ImGui::GetContentRegionMax().x;
                     ImGui::BeginTable("##stdmessagetable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
                     ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
                     ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
@@ -351,7 +358,9 @@ namespace inmarsat
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
+                                ImGui::PushTextWrapPos(wrap_pos);
                                 ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
+                                ImGui::PopTextWrapPos();
                             }
                             else if (id == pkts::PacketEGCDoubleHeader1::FRM_ID || id == pkts::PacketEGCDoubleHeader2::FRM_ID)
                             {
@@ -361,7 +370,9 @@ namespace inmarsat
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
+                                ImGui::PushTextWrapPos(wrap_pos);
                                 ImGui::TextColored(style::theme.red, "%s", msg["message"].get<std::string>().c_str());
+                                ImGui::PopTextWrapPos();
                             }
                             else
                             {
@@ -371,7 +382,9 @@ namespace inmarsat
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                                 ImGui::TableSetColumnIndex(2);
+                                ImGui::PushTextWrapPos(wrap_pos);
                                 ImGui::TextUnformatted(msg.dump().c_str());
+                                ImGui::PopTextWrapPos();
                             }
                         }
                         catch (std::exception&)

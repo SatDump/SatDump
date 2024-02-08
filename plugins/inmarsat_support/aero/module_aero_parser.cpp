@@ -388,6 +388,7 @@ namespace inmarsat
                 ImGui::BeginTabBar("##aeromessagestabbar");
                 if (ImGui::BeginTabItem("ACARS"))
                 {
+                    float wrap_pos = ImGui::GetContentRegionMax().x;
                     ImGui::BeginTable("##aeroacardstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
                     ImGui::TableSetupColumn("Plane", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
                     ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
@@ -405,7 +406,9 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(1);
                             ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
+                            ImGui::PushTextWrapPos(wrap_pos);
                             ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
+                            ImGui::PopTextWrapPos();
                         }
                         catch (std::exception&)
                         {
@@ -416,6 +419,7 @@ namespace inmarsat
                 }
                 if (ImGui::BeginTabItem("Packets"))
                 {
+                    float wrap_pos = ImGui::GetContentRegionMax().x;
                     ImGui::BeginTable("##aeromessagetable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
                     ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize, 150 * ui_scale);
                     ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
@@ -433,7 +437,9 @@ namespace inmarsat
                             ImGui::TableSetColumnIndex(1);
                             ImGui::TextColored(style::theme.yellow, "%s", timestampToTod(msg["timestamp"].get<double>()).c_str());
                             ImGui::TableSetColumnIndex(2);
+                            ImGui::PushTextWrapPos(wrap_pos);
                             ImGui::TextColored(style::theme.green, "%s", msg.dump().c_str());
+                            ImGui::PopTextWrapPos();
                         }
                         catch (std::exception&)
                         {
