@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(soapy_sdr_support)
 
 find_library(SOAPYSDR_LIBRARY SoapySDR)

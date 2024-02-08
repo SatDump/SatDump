@@ -67,7 +67,7 @@ jobs:
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake -G "Visual Studio 16 2019" -DBUILD_MSVC=ON -DBUILD_LIVE=ON -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake "$Env:GITHUB_WORKSPACE" -DPLUGIN_AARONIA_SDR_SUPPORT=ON
+        run: cmake -G "Visual Studio 16 2019" -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake "$Env:GITHUB_WORKSPACE" -DPLUGIN_AARONIA_SDR_SUPPORT=ON
 
       - name: Build
         working-directory: ${{runner.workspace}}/build

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(dvb_support)
 
 file(GLOB_RECURSE dvb_support_CPPS *.cpp)

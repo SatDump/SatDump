@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(landsat_support)
 
 file(GLOB_RECURSE landsat_support_CPPS *.cpp)

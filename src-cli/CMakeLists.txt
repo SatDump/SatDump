@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 
 file(GLOB_RECURSE SatDump_cli_CPPS *.cpp)
 
