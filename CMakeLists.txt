@@ -25,8 +25,8 @@ option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 
 if(ANDROID)
     # Build settings
-    set(BUILD_OPENCL OFF)
     set(BUILD_OPENMP OFF)
+    set(OPENCL_FOUND 1)
 endif()
 
 # Set default install prefix to /usr
@@ -154,7 +154,7 @@ if(MSVC)
     set(OPENCL_FOUND 1)
     set(OpenCL_LIBRARY OpenCL.dll)
     set(OpenCL_LIBRARIES OpenCL.dll)
-else()
+elseif(NOT ANDROID)
     find_package(OpenCL)
 endif()
 
