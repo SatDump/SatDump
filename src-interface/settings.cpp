@@ -86,20 +86,19 @@ namespace satdump
 
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
+            opencl_devices_enum.push_back({ -1, -1, "None (Use CPU)" });
             int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
             int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
             int dev_id = 0;
             opencl_devices_str = "";
             for (opencl::OCLDevice &dev : opencl_devices_enum)
             {
-                if (dev_id == (int)opencl_devices_enum.size() - 1)
-                    opencl_devices_str += dev.name;
-                else
-                    opencl_devices_str += dev.name + " \0";
+                opencl_devices_str += dev.name;
                 if (dev.platform_id == p && dev.device_id == d)
                     opencl_devices_id = dev_id;
                 dev_id++;
             }
+            opencl_devices_str.push_back('\0');
 #endif
         }
 
