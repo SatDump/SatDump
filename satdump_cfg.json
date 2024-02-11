@@ -183,7 +183,7 @@
         "default_qth_label": {
             "type": "string",
             "value": "QTH",
-            "name":  "Default QTH Label",
+            "name": "Default QTH Label",
             "description": "Default map label for QTH marker"
         },
         "default_borders_color": {
@@ -1747,6 +1747,11 @@
                         "equation": "((0.1*max(ch6,min(ch2,ch1)) + 0.5*ch2)+0.3*ch3)*0.5, ch2, ch1",
                         "individual_equalize": true,
                         "white_balance": true,
+                        "geo_correct": true
+                    },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "1-ch8, 1-ch7, 1-ch6",
+                        "individual_equalize": true,
                         "geo_correct": true
                     }
                 }
