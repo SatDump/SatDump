@@ -1287,6 +1287,11 @@
                     "CIR (Color Infrared)": {
                         "equation": "chi3, chm5, chm4",
                         "individual_equalize": true
+                    },
+                    "Ice shortwave IR (ABI channel 6 like)": {
+                        "equation": "chi10",
+                        "white_balance": true,
+                        "apply_lut": true
                     }
                 }
             },
@@ -1294,6 +1299,10 @@
                 "handler": "image_handler",
                 "name": "VIIRS DNB",
                 "rgb_composites": {
+                    "Panchromatic day": {
+                        "equation": "chdnb",
+                        "equalize": true
+                    },
                     "DNB Night": {
                         "equation": "chdnb * 50 - 0.5"
                     }
