@@ -1035,7 +1035,7 @@ namespace noaa_apt
 
     void NOAAAPTDecoderModule::drawUI(bool window)
     {
-        ImGui::Begin("NOAA APT Decoder (WIP!)", NULL, window ? 0 : NOWINDOW_FLAGS);
+        ImGui::Begin("NOAA APT Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         ImGui::BeginGroup();
         {
