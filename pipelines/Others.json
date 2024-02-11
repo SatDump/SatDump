@@ -1,4 +1,15 @@
 {
+    "nat2pro": {
+        "name": "Data Stores / Archives Formats (NOAA/EUMETSAT/CMA/NASA), Experimental",
+        "live": false,
+        "work": {
+            "file": {},
+            "products": {
+                "nat2pro": {}
+            }
+        }
+    },
+    ///////////////////////////////////////////////////////////////
     "saral_l_band": {
         "name": "Saral L-Band",
         "live": true,

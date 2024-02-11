@@ -16,6 +16,8 @@
 
 #include "orb/module_orb_decoder.h"
 
+#include "nat2pro/module_nat2pro.h"
+
 class OthersSupport : public satdump::Plugin
 {
 public:
@@ -42,8 +44,10 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, cloudsat::cpr::CloudSatCPRDecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, scisat1::instruments::SciSat1InstrumentsDecoderModule);
- 
+
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, orb::ORBDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, nat2pro::Nat2ProModule);
     }
 };
 

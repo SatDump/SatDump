@@ -1,6 +1,5 @@
 add_subdirectory(proj_test)
 add_subdirectory(dvbs2_mod)
-add_subdirectory(nat2pro)
 add_subdirectory(msugs_correct)
 add_subdirectory(sdr_probe)
 add_subdirectory(apply_mapoverlay)
