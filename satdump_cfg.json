@@ -1298,7 +1298,7 @@
             "viirs_dnb": {
                 "handler": "image_handler",
                 "name": "VIIRS DNB",
-                "rgb_composites": {,
+                "rgb_composites": {
                     "Panchromatic day": {
                         "equation": "chdnb",
                         "equalize": true
