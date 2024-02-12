@@ -6,6 +6,8 @@
 #include "noaa_apt/module_noaa_apt_decoder.h"
 #include "noaa_apt/noaa_apt_proj.h"
 
+#include "generic/module_generic_analog_demod.h"
+
 class AnalogSupport : public satdump::Plugin
 {
 public:
@@ -24,6 +26,8 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa_apt::NOAAAPTDemodModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa_apt::NOAAAPTDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, generic_analog::GenericAnalogDemodModule);
     }
 
     static void provideSatProjHandler(const satdump::RequestSatProjEvent &evt)

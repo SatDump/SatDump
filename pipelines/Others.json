@@ -9,6 +9,24 @@
             }
         }
     },
+    "generic_analog_demod": {
+        "name": "Generic Analog Demodulator",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "audio_wav": {
+                "generic_analog_demod": {
+                    "symbolrate": 200e3
+                }
+            }
+        }
+    },
     ///////////////////////////////////////////////////////////////
     "saral_l_band": {
         "name": "Saral L-Band",

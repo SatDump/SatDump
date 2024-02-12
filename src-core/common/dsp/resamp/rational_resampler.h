@@ -30,5 +30,7 @@ namespace dsp
         ~RationalResamplerBlock();
 
         int process(T *input, int nsamples, T *output);
+
+        void set_ratio(unsigned interpolation, unsigned decimation, std::vector<float> custom_taps = std::vector<float>());
     };
 }

@@ -5,6 +5,13 @@ namespace dsp
 {
     void PolyphaseBank::init(std::vector<float> rtaps, int nfilt2)
     {
+        if (is_init)
+        {
+            for (int i = 0; i < this->nfilt; i++)
+                volk_free(taps[i]);
+            volk_free(taps);
+        }
+
         this->nfilt = nfilt2;
         this->ntaps = (rtaps.size() + nfilt - 1) / nfilt;
 
