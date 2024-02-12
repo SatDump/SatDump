@@ -18,7 +18,7 @@ namespace nat2pro
         // We will in the future want to decode from memory, so load it all up in RAM
         std::vector<uint8_t> nat_file;
         {
-            std::ifstream input_file(native_file);
+            std::ifstream input_file(native_file, std::ios::binary);
             uint8_t byte;
             while (!input_file.eof())
             {
