@@ -237,6 +237,8 @@ namespace generic_analog
             ImGui::SameLine();
             ImGui::RadioButton("LSB##analogoption", false);
             // ImGui::SameLine();
+            ImGui::RadioButton("AM##analogoption", false);
+            ImGui::SameLine();
             ImGui::RadioButton("CW##analogoption", false);
             style::endDisabled();
 
