@@ -47,7 +47,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
 # OpenCL if we found it
-if(BUILD_OPENCL)
+if(BUILD_OPENCL AND NOT ANDROID)
     target_link_libraries(satdump_core PUBLIC ${OpenCL_LIBRARIES})
 endif()
 

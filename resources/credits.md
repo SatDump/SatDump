@@ -16,6 +16,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [libaec](https://gitlab.dkrz.de/k202009/libaec), with OpenSatelliteProject's path
 - [libcorrect](https://github.com/quiet/libcorrect), for Reed-Solomon decoding
 - [libjpeg](https://ijg.org/), from the Independent JPEG Group
+- [libOpenCL-loader](https://github.com/robertwgh/libOpenCL-loader), for OpenCL on Android
 - [libpredict](https://github.com/la1k/libpredict), used for orbit prediction
 - [Lua](https://www.lua.org/), used for complex image composites
 - [miniz](https://github.com/richgel999/miniz), used to decompress ZIP files in some decoders
@@ -48,6 +49,7 @@ First time here? See the reference documents below to get started using SatDump.
 
 ### Libraries linked against
 - [fftw3](http://fftw.org/), used for all FFT operations
+- [jemalloc](https://jemalloc.net/), for memory allocation optimization on Linux and macOS
 - [libpng](https://github.com/glennrp/libpng), for PNG image loading/saving
 - [nng](https://github.com/nanomsg/nng), for network stuff
 - [PortAudio](https://www.portaudio.com/), used for audio output for NOAA APT

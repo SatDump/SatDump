@@ -4,6 +4,9 @@
 #define CL_TARGET_OPENCL_VERSION 110
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
+#elif defined(__ANDROID__)
+#include "libs/libopencl_loader/opencl_loader.h"
+#include "libs/libopencl_loader/CL/cl.hpp"
 #else
 #include <CL/cl.h>
 #endif
