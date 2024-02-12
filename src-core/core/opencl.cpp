@@ -36,6 +36,13 @@ namespace satdump
 
         void initOpenCL()
         {
+#ifdef __ANDROID__
+            if(OpenCLHelper::Loader::Init())
+            {
+                logger->debug("Failed to init OpenCL!");
+                return;
+            }
+#endif
             std::vector<OCLDevice> devices = getAllDevices();
             logger->info("Found OpenCL Devices (%d) :", devices.size());
             for (OCLDevice &d : devices)

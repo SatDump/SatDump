@@ -22,6 +22,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [MuParser](https://github.com/beltoforion/muparser), for expression parsing (such as in composites)
 - [Nlhohmann's JSON](https://github.com/nlohmann/json), for JSON and CBOR encoding/parsing
 - [OpenCL C++ Headers](https://github.com/KhronosGroup/OpenCL-CLHPP), for OpenCL support
+- [libOpenCL-loader](https://github.com/robertwgh/libOpenCL-loader), for OpenCL on Android
 - [OpenJP2](https://github.com/uclouvain/openjpeg), for JPEG-2000 support on GOES GRB, FY4, and more
 - [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs), for native files dialogs
 - [RapidXML](http://rapidxml.sourceforge.net/), for XML Parsing
