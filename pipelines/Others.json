@@ -340,5 +340,57 @@
             },
             "products": {}
         }
+    },
+    "pretty_s_dump": {
+        "name": "PRETTY S-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            /*[
+                "Main",
+                2232e6
+            ]*/
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 0.5e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.005
+                }
+            },
+            "cadu": {
+                /*"ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "nrzm": true,
+                    "rs_i": 0
+                    //,"rs_type": "rs223"
+                }*/
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "iq_invert": true,
+                    "cadu_size": 16352,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 8,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
     }
 }
