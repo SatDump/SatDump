@@ -183,25 +183,28 @@ namespace satdump
                                     float *progress)
         {
 #ifdef USE_OPENCL
-            try
+            if (satdump::opencl::useCL())
             {
-                logger->info("Tpers projection on GPU...");
-                satdump::opencl::setupOCLContext();
-                reproject_equ_to_tpers_GPU(source_img,
-                                           equ_tl_lon, equ_tl_lat,
-                                           equ_br_lon, equ_br_lat,
-                                           target_img,
-                                           tpe_altitude,
-                                           tpe_longitude,
-                                           tpe_latitude,
-                                           tpe_tilt,
-                                           tpe_azi,
-                                           progress);
-                return;
-            }
-            catch (std::runtime_error &e)
-            {
-                logger->error("Error stereo reproj on GPU : %s", e.what());
+                try
+                {
+                    logger->info("Tpers projection on GPU...");
+                    satdump::opencl::setupOCLContext();
+                    reproject_equ_to_tpers_GPU(source_img,
+                                               equ_tl_lon, equ_tl_lat,
+                                               equ_br_lon, equ_br_lat,
+                                               target_img,
+                                               tpe_altitude,
+                                               tpe_longitude,
+                                               tpe_latitude,
+                                               tpe_tilt,
+                                               tpe_azi,
+                                               progress);
+                    return;
+                }
+                catch (std::runtime_error &e)
+                {
+                    logger->error("Error stereo reproj on GPU : %s", e.what());
+                }
             }
 #endif
 

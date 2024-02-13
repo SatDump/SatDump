@@ -187,27 +187,30 @@ namespace satdump
                                    float *progress)
         {
 #ifdef USE_OPENCL
-            try
+            if (satdump::opencl::useCL())
             {
-                logger->info("GEOS to Equ projection on GPU...");
-                satdump::opencl::setupOCLContext();
-                reproject_geos_to_equ_GPU(source_img,
-                                          geos_lon,
-                                          geos_height,
-                                          geos_hscale,
-                                          geos_vscale,
-                                          geos_xoff,
-                                          geos_yoff,
-                                          geos_sweepx,
-                                          target_img,
-                                          equ_tl_lon, equ_tl_lat,
-                                          equ_br_lon, equ_br_lat,
-                                          progress);
-                return;
-            }
-            catch (std::runtime_error &e)
-            {
-                logger->error("Error stereo reproj on GPU : %s", e.what());
+                try
+                {
+                    logger->info("GEOS to Equ projection on GPU...");
+                    satdump::opencl::setupOCLContext();
+                    reproject_geos_to_equ_GPU(source_img,
+                                              geos_lon,
+                                              geos_height,
+                                              geos_hscale,
+                                              geos_vscale,
+                                              geos_xoff,
+                                              geos_yoff,
+                                              geos_sweepx,
+                                              target_img,
+                                              equ_tl_lon, equ_tl_lat,
+                                              equ_br_lon, equ_br_lat,
+                                              progress);
+                    return;
+                }
+                catch (std::runtime_error &e)
+                {
+                    logger->error("Error stereo reproj on GPU : %s", e.what());
+                }
             }
 #endif
 

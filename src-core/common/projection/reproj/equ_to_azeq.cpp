@@ -168,22 +168,25 @@ namespace satdump
                                    float *progress)
         {
 #ifdef USE_OPENCL
-            try
+            if (satdump::opencl::useCL())
             {
-                logger->info("Azimuthal equidistant projection on GPU...");
-                satdump::opencl::setupOCLContext();
-                reproject_equ_to_azeq_GPU(source_img,
-                                          equ_tl_lon, equ_tl_lat,
-                                          equ_br_lon, equ_br_lat,
-                                          target_img,
-                                          azeq_longitude,
-                                          azeq_latitude,
-                                          progress);
-                return;
-            }
-            catch (std::runtime_error &e)
-            {
-                logger->error("Error azeq reproj on GPU : %s", e.what());
+                try
+                {
+                    logger->info("Azimuthal equidistant projection on GPU...");
+                    satdump::opencl::setupOCLContext();
+                    reproject_equ_to_azeq_GPU(source_img,
+                                              equ_tl_lon, equ_tl_lat,
+                                              equ_br_lon, equ_br_lat,
+                                              target_img,
+                                              azeq_longitude,
+                                              azeq_latitude,
+                                              progress);
+                    return;
+                }
+                catch (std::runtime_error &e)
+                {
+                    logger->error("Error azeq reproj on GPU : %s", e.what());
+                }
             }
 #endif
 

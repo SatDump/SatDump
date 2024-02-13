@@ -456,19 +456,22 @@ namespace satdump
             result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_min}; // 1,1
 
 #ifdef USE_OPENCL
-            try
+            if (satdump::opencl::useCL())
             {
-                logger->debug("Using GPU! Double precision requested %d", (int)force_double);
-                satdump::opencl::setupOCLContext();
-                if (force_double)
-                    warpOnGPU_fp64(result);
-                else
-                    warpOnGPU_fp32(result);
-                return result;
-            }
-            catch (std::runtime_error &e)
-            {
-                logger->error("Error warping on GPU : %s", e.what());
+                try
+                {
+                    logger->debug("Using GPU! Double precision requested %d", (int)force_double);
+                    satdump::opencl::setupOCLContext();
+                    if (force_double)
+                        warpOnGPU_fp64(result);
+                    else
+                        warpOnGPU_fp32(result);
+                    return result;
+                }
+                catch (std::runtime_error &e)
+                {
+                    logger->error("Error warping on GPU : %s", e.what());
+                }
             }
 #endif
 

@@ -64,6 +64,9 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
     }
 
 #ifdef USE_OPENCL1
+    if (!satdump::opencl::useCL())
+        return;
+
     try
     {
         corro = new float[max_frm_size];

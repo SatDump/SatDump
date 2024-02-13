@@ -63,10 +63,6 @@ namespace satdump
         catch (std::exception &)
         {
         }
-
-#ifdef USE_OPENCL
-        opencl::initOpenCL();
-#endif
     }
 
     ImageViewerHandler::~ImageViewerHandler()

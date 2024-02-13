@@ -215,11 +215,9 @@ namespace satdump
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
-                if (opencl_devices_enum.size() > 0)
-                {
-                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
-                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
-                }
+                satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
+                satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
+                opencl::resetOCLContext();
 #endif
 
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)

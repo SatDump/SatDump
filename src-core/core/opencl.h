@@ -31,8 +31,9 @@ namespace satdump
         extern cl_context ocl_context;
         extern cl_device_id ocl_device;
 
+        bool useCL();
         void setupOCLContext();
-
+        std::vector<OCLDevice> resetOCLContext();
         // If the cache is enabled, you should NOT free the kernel
         cl_program buildCLKernel(std::string path, bool use_cache = true);
     }

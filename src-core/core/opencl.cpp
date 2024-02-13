@@ -8,6 +8,13 @@ namespace satdump
 {
     namespace opencl
     {
+        cl_context ocl_context;
+        cl_device_id ocl_device;
+
+        bool context_is_init = false;
+        int platform_id, device_id;
+        std::map<std::string, cl_program> cached_kernels;
+
         std::vector<OCLDevice> getAllDevices()
         {
             std::vector<OCLDevice> devs;
@@ -40,18 +47,15 @@ namespace satdump
             if(OpenCLHelper::Loader::Init())
             {
                 logger->debug("Failed to init OpenCL!");
+                platform_id = device_id = -1;
                 return;
             }
 #endif
-            std::vector<OCLDevice> devices = getAllDevices();
+            std::vector<OCLDevice> devices = resetOCLContext();
             logger->info("Found OpenCL Devices (%d) :", devices.size());
             for (OCLDevice &d : devices)
                 logger->debug(" - " + d.name.substr(0, d.name.size() - 1));
         }
-
-        bool context_is_init = false;
-        cl_context ocl_context;
-        cl_device_id ocl_device;
 
         void setupOCLContext()
         {
@@ -60,9 +64,6 @@ namespace satdump
                 logger->trace("OpenCL context already initilized.");
                 return;
             }
-
-            int platform_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
-            int device_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
 
             if(platform_id == -1)
                 throw std::runtime_error("User specified CPU processing");
@@ -106,7 +107,38 @@ namespace satdump
             context_is_init = true;
         }
 
-        std::map<std::string, cl_program> cached_kernels;
+        std::vector<OCLDevice> resetOCLContext()
+        {
+            if (context_is_init)
+            {
+                context_is_init = false;
+                for (auto& kernel : cached_kernels)
+                {
+                    int ret = clReleaseProgram(kernel.second);
+                    if(ret != CL_SUCCESS)
+                        logger->error("Could not release CL program! Code %d", ret);
+                }
+
+                cached_kernels.clear();
+                int ret = clReleaseContext(ocl_context);
+                if (ret != CL_SUCCESS)
+                    logger->error("Could not release old context! Code %d", ret);
+            }
+
+            platform_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
+            device_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
+
+            std::vector<OCLDevice> devices = getAllDevices();
+            if (devices.empty())
+                platform_id = device_id = -1;
+
+            return devices;
+        }
+
+        bool useCL()
+        {
+            return platform_id >= 0;
+        }
 
         cl_program buildCLKernel(std::string path, bool use_cache)
         {
