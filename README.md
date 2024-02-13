@@ -171,7 +171,7 @@ sudo apt install ocl-icd-opencl-dev                                             
 sudo apt install intel-opencl-icd                                                                # Optional, enables OpenCL for Intel Integrated Graphics
 
 # Install dependencies on Red-Hat-based systems:
-sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel
 sudo dnf install nng-devel
 sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
 sudo dnf install glfw-devel
