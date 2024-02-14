@@ -1288,8 +1288,8 @@
                         "equation": "chi3, chm5, chm4",
                         "individual_equalize": true
                     },
-                    "Ice shortwave IR (ABI channel 6 like)": {
-                        "equation": "chm10",
+                    "Cirrus IR (ABI band 4 like)": {
+                        "equation": "chm9",
                         "white_balance": true,
                         "apply_lut": true
                     }
