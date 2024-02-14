@@ -1272,12 +1272,12 @@
                         "equalize": true
                     },
                     "Night Microphysics": {
-                        "equation": "(1-chi5)-(1-chi4),(1-chi4)-(1-chi3),(1-chi4)",
+                        "equation": "chi5-chi4,chi4-chi3),chi4",
                         "individual_equalize": true,
                         "white_balance": true
                     },
                     "Day Microphysics": {
-                        "equation": "chi1, (1-chi3)^2.5,(1-chi4)",
+                        "equation": "chi1, chi3^2.5,chi4",
                         "individual_equalize": true
                     },
                     "Thermal Channel": {
@@ -1289,7 +1289,7 @@
                         "individual_equalize": true
                     },
                     "Ice shortwave IR (ABI channel 6 like)": {
-                        "equation": "chi10",
+                        "equation": "chm10",
                         "white_balance": true,
                         "apply_lut": true
                     }
