@@ -17,13 +17,13 @@ namespace goes
         private:
             int seg_count = 0;
             std::shared_ptr<bool> segments_done;
-            int seg_height = 0, seg_width = 0;
+            int seg_size = 0;
 
         public:
-            SegmentedLRITImageDecoder(int max_seg, int segment_width, int segment_height, uint16_t id);
+            SegmentedLRITImageDecoder(int max_seg, int max_width, int max_height, uint16_t id);
             SegmentedLRITImageDecoder();
             ~SegmentedLRITImageDecoder();
-            void pushSegment(uint8_t *data, int segc);
+            void pushSegment(uint8_t* data, size_t this_size, int segc);
             bool isComplete();
             image::Image<uint8_t> image;
             int image_id = -1;

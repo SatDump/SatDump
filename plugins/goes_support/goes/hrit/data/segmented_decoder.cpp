@@ -8,21 +8,17 @@ namespace goes
         SegmentedLRITImageDecoder::SegmentedLRITImageDecoder()
         {
             seg_count = 0;
-            seg_height = 0;
-            seg_width = 0;
+            seg_size = 0;
             image_id = -1;
         }
 
-        SegmentedLRITImageDecoder::SegmentedLRITImageDecoder(int max_seg, int segment_width, int segment_height, uint16_t id) : seg_count(max_seg), image_id(id)
+        SegmentedLRITImageDecoder::SegmentedLRITImageDecoder(int max_seg, int max_width, int max_height, uint16_t id) : seg_count(max_seg), image_id(id)
         {
             segments_done = std::shared_ptr<bool>(new bool[seg_count], [](bool *p)
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
-
-            image = image::Image<uint8_t>(segment_width, segment_height * max_seg, 1);
-            seg_height = segment_height;
-            seg_width = segment_width;
-
+            image = image::Image<uint8_t>(max_width, max_height, 1);
+            seg_size = int(max_height / max_seg) * max_width;
             image.fill(0);
         }
 
@@ -30,11 +26,11 @@ namespace goes
         {
         }
 
-        void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, int segc)
+        void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, size_t this_size, int segc)
         {
             if (segc >= seg_count)
                 return;
-            std::memcpy(&image[(seg_height * seg_width) * segc], data, seg_height * seg_width);
+            std::memcpy(&image[seg_size * segc], data, this_size);
             segments_done.get()[segc] = true;
         }
 

@@ -282,16 +282,18 @@ namespace goes
                         }
 
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
-                                                                     image_structure_record.columns_count,
-                                                                     image_structure_record.lines_count,
+                                                                     segment_id_header.max_column,
+                                                                     segment_id_header.max_row,
                                                                      segment_id_header.image_identifier);
                         segmentedDecoder.filename = current_filename;
                     }
 
                     if (noaa_header.product_id == ID_HIMAWARI)
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number - 1);
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length],
+                            file.lrit_data.size() - primary_header.total_header_length, segment_id_header.segment_sequence_number - 1);
                     else
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], segment_id_header.segment_sequence_number);
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length],
+                            file.lrit_data.size() - primary_header.total_header_length, segment_id_header.segment_sequence_number);
 
                     // Check if this is GOES-R, if yes, this is Full Disk
                     if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
