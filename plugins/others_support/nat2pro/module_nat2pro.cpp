@@ -49,6 +49,13 @@ namespace nat2pro
                  identifier[555] == 'R')
             decodeAVHRRNat(nat_file, pro_output_file);
 
+        // MetOp MHS Nat
+        else if (identifier[552] == 'M' &&
+                 identifier[553] == 'H' &&
+                 identifier[554] == 'S' &&
+                 identifier[555] == 'x')
+            decodeMHSNat(nat_file, pro_output_file);
+
         else
             logger->error("Uknown File Type!");
 
