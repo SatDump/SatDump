@@ -212,12 +212,9 @@ namespace goes
                     segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename).c_str());
             }
 
-            if (goes_r_fc_composer_full_disk->hasData)
-                goes_r_fc_composer_full_disk->save();
-            if (goes_r_fc_composer_meso1->hasData)
-                goes_r_fc_composer_meso1->save();
-            if (goes_r_fc_composer_meso2->hasData)
-                goes_r_fc_composer_meso2->save();
+            goes_r_fc_composer_full_disk->save();
+            goes_r_fc_composer_meso1->save();
+            goes_r_fc_composer_meso2->save();
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)

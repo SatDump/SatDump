@@ -369,7 +369,7 @@ namespace goes
                             {
                                 if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
                                 {
-                                    if (goes_r_fc_composer_full_disk->hasData && channel == 2)
+                                    if (channel == 2)
                                         goes_r_fc_composer_full_disk->save();
                                 }
                             }
@@ -416,10 +416,8 @@ namespace goes
                                                                    noaa_header.product_id == 18 ||
                                                                    noaa_header.product_id == 19))
                         {
-                            if (goes_r_fc_composer_meso1->hasData)
-                                goes_r_fc_composer_meso1->save();
-                            if (goes_r_fc_composer_meso2->hasData)
-                                goes_r_fc_composer_meso2->save();
+                            goes_r_fc_composer_meso1->save();
+                            goes_r_fc_composer_meso2->save();
                         }
                     }
                 }
