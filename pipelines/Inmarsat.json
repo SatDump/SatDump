@@ -33,7 +33,8 @@
             },
             "msg": {
                 "inmarsat_stdc_parser": {
-                    "save_files": true
+                    "save_files": true,
+                    "station_id": ""
                     //,"udp_sinks": {
                     //"test": {
                     //    "address": "0.0.0.0",
@@ -80,7 +81,8 @@
             },
             "msg": {
                 "inmarsat_aero_parser": {
-                    "save_files": true
+                    "save_files": true,
+                    "station_id": ""
                     //,"udp_sinks": {
                     //"test": {
                     //    "address": "0.0.0.0",
@@ -126,7 +128,8 @@
             },
             "msg": {
                 "inmarsat_aero_parser": {
-                    "save_files": true
+                    "save_files": true,
+                    "station_id": ""
                     //,"udp_sinks": {
                     //"test": {
                     //    "address": "0.0.0.0",
@@ -175,7 +178,8 @@
             },
             "msg": {
                 "inmarsat_aero_parser": {
-                    "save_files": true
+                    "save_files": true,
+                    "station_id": ""
                     //,"udp_sinks": {
                     //"test": {
                     //    "address": "0.0.0.0",
@@ -228,7 +232,8 @@
             "msg": {
                 "inmarsat_aero_parser": {
                     "is_c": true,
-                    "save_files": true
+                    "save_files": true,
+                    "station_id": ""
                     //,"udp_sinks": {
                     //"test": {
                     //    "address": "0.0.0.0",
