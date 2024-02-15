@@ -103,9 +103,9 @@ namespace goes
 
             imageStatus = SAVING;
             logger->info("This false color LUT was made by Harry Dove-Robinson, see resources/goes/abi/wxstar/README.md for more infos.");
-            falsecolor.save_img(std::string(directory + "/IMAGES/" + filename).c_str());
             ch2.clear();
             ch13.clear();
+            falsecolor.save_img(std::string(directory + "/IMAGES/" + filename).c_str());
             falsecolor.clear();
             hasData = false;
             time2 = time13 = 0;
