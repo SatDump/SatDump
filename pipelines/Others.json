@@ -22,7 +22,7 @@
             "baseband": {},
             "audio_wav": {
                 "generic_analog_demod": {
-                    "symbolrate": 200e3
+                    "symbolrate": 20e3
                 }
             }
         }
