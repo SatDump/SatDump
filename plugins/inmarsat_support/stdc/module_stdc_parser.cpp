@@ -31,6 +31,9 @@ namespace inmarsat
                 do_save_files = parameters["save_files"].get<bool>();
             else
                 do_save_files = true;
+
+            if (parameters.contains("station_id"))
+                d_station_id = parameters["station_id"].get<std::string>();
         }
 
         std::vector<ModuleDataType> STDCParserModule::getInputTypes()
@@ -64,7 +67,10 @@ namespace inmarsat
                 {
                     try
                     {
-                        std::string m = msg.dump();
+                        nlohmann::json msg2 = msg;
+                        if (d_station_id != "")
+                            msg2["station_id"] = d_station_id;
+                        std::string m = msg2.dump();
                         c->send((uint8_t *)m.data(), m.size());
                     }
                     catch (std::exception &e)
@@ -296,7 +302,7 @@ namespace inmarsat
                             ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                             ImGui::PopTextWrapPos();
                         }
-                        catch (std::exception&)
+                        catch (std::exception &)
                         {
                         }
                     }
@@ -328,7 +334,7 @@ namespace inmarsat
                             ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                             ImGui::PopTextWrapPos();
                         }
-                        catch (std::exception&)
+                        catch (std::exception &)
                         {
                         }
                     }
@@ -387,7 +393,7 @@ namespace inmarsat
                                 ImGui::PopTextWrapPos();
                             }
                         }
-                        catch (std::exception&)
+                        catch (std::exception &)
                         {
                         }
                     }

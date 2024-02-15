@@ -30,6 +30,7 @@ namespace inmarsat
 
             bool do_save_files;
             std::vector<std::shared_ptr<net::UDPClient>> udp_clients;
+            std::string d_station_id = "";
 
             bool is_gui = false;
 

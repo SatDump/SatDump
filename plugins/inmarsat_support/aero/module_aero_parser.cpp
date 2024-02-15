@@ -37,6 +37,9 @@ namespace inmarsat
             else
                 do_save_files = true;
 
+            if (parameters.contains("station_id"))
+                d_station_id = parameters["station_id"].get<std::string>();
+
             play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
         }
 
@@ -80,7 +83,10 @@ namespace inmarsat
                 {
                     try
                     {
-                        std::string m = msg.dump();
+                        nlohmann::json msg2 = msg;
+                        if (d_station_id != "")
+                            msg2["station_id"] = d_station_id;
+                        std::string m = msg2.dump();
                         c->send((uint8_t *)m.data(), m.size());
                     }
                     catch (std::exception &e)
@@ -352,7 +358,7 @@ namespace inmarsat
             if (enable_audio)
             {
                 ImGui::Spacing();
-                const char* btn_icon, * label;
+                const char *btn_icon, *label;
                 ImVec4 color;
                 if (play_audio)
                 {
@@ -410,7 +416,7 @@ namespace inmarsat
                             ImGui::TextColored(style::theme.green, "%s", msg["message"].get<std::string>().c_str());
                             ImGui::PopTextWrapPos();
                         }
-                        catch (std::exception&)
+                        catch (std::exception &)
                         {
                         }
                     }
@@ -441,7 +447,7 @@ namespace inmarsat
                             ImGui::TextColored(style::theme.green, "%s", msg.dump().c_str());
                             ImGui::PopTextWrapPos();
                         }
-                        catch (std::exception&)
+                        catch (std::exception &)
                         {
                         }
                     }
