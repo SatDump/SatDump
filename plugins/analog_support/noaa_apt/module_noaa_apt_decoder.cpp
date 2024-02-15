@@ -60,6 +60,8 @@ namespace noaa_apt
         else
             filesize = 0;
 
+        std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+
         bool is_stereo = false;
 
         int autodetected_sat = -1;
@@ -522,6 +524,9 @@ namespace noaa_apt
         int first_valid_line = 0;
         int last_valid_line = wip_apt_image_sync.height();
 
+        // Save RAW before we crop
+        wip_apt_image_sync.save_img(main_dir + "/raw");
+
         if (d_autocrop_wedges)
         {
             logger->info("Autocropping using wedges...");
@@ -569,10 +574,7 @@ namespace noaa_apt
         }
 
         // Save
-        std::string main_dir = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
-
         apt_status = SAVING;
-        wip_apt_image_sync.save_img(main_dir + "/raw");
 
         // Products ARE not yet being processed properly. Need to parse the wedges!
         int norad = 0;
