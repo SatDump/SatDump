@@ -70,8 +70,15 @@ namespace goes
             ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
             NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
 
+            // Handle LRIT files with no data
+            if (primary_header.total_header_length == file.lrit_data.size())
+            {
+                logger->warn("Received LRIT header with no body! Saving as .lrit");
+                saveLRITFile(file, directory + "/LRIT");
+            }
+
             // Check if this is image data, and if so also write it as an image
-            if (write_images && primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+            else if (write_images && primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
             {
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
