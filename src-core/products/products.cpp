@@ -69,7 +69,7 @@ namespace satdump
         Products raw_products;
 
         if (std::filesystem::is_directory(path) ||
-            (path.find("http") == 0 && path.find_last_of("cbor") != path.size() - 5))
+            (path.find("http") == 0 && path.find(".cbor") == std::string::npos))
             path = path + "/product.cbor";
 
         raw_products.load(path);
