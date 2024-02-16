@@ -14,6 +14,7 @@
 #include "products/dataset.h"
 #include "resources.h"
 #include "common/utils.h"
+#include "nlohmann/json_utils.h"
 
 #define BUFFER_SIZE 8192
 

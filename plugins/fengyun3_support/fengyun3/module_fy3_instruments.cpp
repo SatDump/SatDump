@@ -14,6 +14,7 @@
 #include "resources.h"
 #include "instruments/mersi_histmatch.h"
 #include "instruments/mersi_offset_interleaved.h"
+#include "nlohmann/json_utils.h"
 
 namespace fengyun3
 {

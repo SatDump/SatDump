@@ -11,6 +11,7 @@
 #include "products/dataset.h"
 #include "resources.h"
 #include "instruments/modis/modis_histmatch.h"
+#include "nlohmann/json_utils.h"
 
 #include "common/calibration.h"
 #include "instruments/modis/calibrator/modis_calibrator.h"

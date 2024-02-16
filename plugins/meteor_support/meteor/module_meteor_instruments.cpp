@@ -10,6 +10,7 @@
 #include "common/tracking/tle.h"
 #include "products/dataset.h"
 #include "resources.h"
+#include "nlohmann/json_utils.h"
 
 namespace meteor
 {

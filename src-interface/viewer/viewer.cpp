@@ -110,7 +110,7 @@ namespace satdump
 
     void ViewerApplication::loadProductsInViewer(std::string path, std::string dataset_name)
     {
-        if (std::filesystem::exists(path))
+        if (std::filesystem::exists(path) || path.find("http") == 0)
         {
             std::shared_ptr<Products> products = loadProducts(path);
 
@@ -301,7 +301,10 @@ namespace satdump
 
                     ImGui::Separator();
                     ImGui::Text("Load Dataset :");
-                    if (select_dataset_dialog.draw())
+                    bool vd = select_dataset_dialog.draw();
+                    ImGui::SameLine();
+                    vd |= ImGui::Button("Load##datasetdialog");
+                    if (vd)
                     {
                         ui_thread_pool.push([this](int)
                                             {
@@ -315,7 +318,10 @@ namespace satdump
                             } });
                     }
                     ImGui::Text("Load Products :");
-                    if (select_products_dialog.draw())
+                    bool vp = select_products_dialog.draw();
+                    ImGui::SameLine();
+                    vp |= ImGui::Button("Load##productdialog");
+                    if (vp)
                     {
                         ui_thread_pool.push([this](int)
                                             {

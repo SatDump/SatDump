@@ -9,6 +9,7 @@
 #include "common/lua/lua_utils.h"
 #include "common/calibration.h"
 #include "core/plugin.h"
+#include "common/utils.h"
 
 namespace satdump
 {
@@ -98,11 +99,26 @@ namespace satdump
         if (contents.contains("save_as_matrix"))
             save_as_matrix = contents["save_as_matrix"].get<bool>();
 
+        std::string tmp_path = std::filesystem::temp_directory_path().string();
+
         image::Image<uint16_t> img_matrix;
         if (save_as_matrix)
         {
-            if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
-                img_matrix.load_img(directory + "/" + contents["images"][0]["file"].get<std::string>());
+            if (file.find("http") == 0)
+            {
+                std::string res;
+                if (perform_http_request(directory + "/" + contents["images"][0]["file"].get<std::string>(), res))
+                    throw std::runtime_error("Could not download from : " + directory + "/" + contents["images"][0]["file"].get<std::string>());
+                std::ofstream(tmp_path + "/satdumpdltmp.tmp", std::ios::binary).write((char *)res.data(), res.size());
+                img_matrix.load_img(tmp_path + "/satdumpdltmp.tmp");
+                if (std::filesystem::exists(tmp_path + "/satdumpdltmp.tmp"))
+                    std::filesystem::remove(tmp_path + "/satdumpdltmp.tmp");
+            }
+            else
+            {
+                if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
+                    img_matrix.load_img(directory + "/" + contents["images"][0]["file"].get<std::string>());
+            }
         }
 
         for (size_t c = 0; c < contents["images"].size(); c++)
@@ -116,8 +132,21 @@ namespace satdump
 
             if (!save_as_matrix)
             {
-                if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
-                    img_holder.image.load_img(directory + "/" + contents["images"][c]["file"].get<std::string>());
+                if (file.find("http") == 0)
+                {
+                    std::string res;
+                    if (perform_http_request(directory + "/" + contents["images"][c]["file"].get<std::string>(), res))
+                        throw std::runtime_error("Could not download from : " + directory + "/" + contents["images"][c]["file"].get<std::string>());
+                    std::ofstream(tmp_path + "/satdumpdltmp.tmp", std::ios::binary).write((char *)res.data(), res.size());
+                    img_holder.image.load_img(tmp_path + "/satdumpdltmp.tmp");
+                    if (std::filesystem::exists(tmp_path + "/satdumpdltmp.tmp"))
+                        std::filesystem::remove(tmp_path + "/satdumpdltmp.tmp");
+                }
+                else
+                {
+                    if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
+                        img_holder.image.load_img(directory + "/" + contents["images"][c]["file"].get<std::string>());
+                }
             }
             else
             {

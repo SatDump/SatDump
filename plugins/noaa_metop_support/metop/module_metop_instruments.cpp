@@ -14,6 +14,7 @@
 #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
+#include "nlohmann/json_utils.h"
 
 namespace metop
 {

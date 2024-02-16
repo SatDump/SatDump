@@ -8,6 +8,7 @@
 #include "common/ccsds/ccsds_weather/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "nlohmann/json_utils.h"
 
 #include "common/codings/reedsolomon/reedsolomon.h"
 

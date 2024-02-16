@@ -13,6 +13,7 @@
 #include "products/dataset.h"
 #include "resources.h"
 #include "common/calibration.h"
+#include "nlohmann/json_utils.h"
 
 namespace jpss
 {

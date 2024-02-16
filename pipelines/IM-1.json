@@ -34,7 +34,8 @@
                     "rs_type": "rs239",
                     "rs_usecheck": true
                 }*/
-                /* "ccsds_conv_concat_decoder": {
+                /*"ccsds_conv_concat_decoder": {
+                    "conv_rate": "7/8",
                     "constellation": "bpsk_90",
                     "cadu_size": 2048,
                     "viterbi_ber_thresold": 0.3,
