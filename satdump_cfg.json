@@ -1610,6 +1610,11 @@
                         "equation": "ch4, ch4, ch1",
                         "geo_correct": true
                     },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch6, ch2, ch1",
+                        "geo_correct": true,
+                        "individual_equalize": true
+                    },
                     "Thermal Channel": {
                         "equation": "1.0 - ch5",
                         "individual_equalize": true,
