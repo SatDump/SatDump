@@ -55,8 +55,8 @@ protected:
         lms_stream_meta_t md;
 #endif
 
-        int buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value());
-        //  int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
+        // int buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value());
+        int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
         logger->trace("LimeSDR Buffer size %d", buffer_size);
 
         while (thread_should_run)
