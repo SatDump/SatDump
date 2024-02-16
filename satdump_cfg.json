@@ -1665,8 +1665,14 @@
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "441": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch4, ch4, ch1",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch8, ch4, ch3",
+                        "individual_equalize": true,
                         "geo_correct": true
                     },
                     "Thermal Channel": {
@@ -1686,6 +1692,11 @@
                     },
                     "Geology": {
                         "equation": "ch9,ch8,ch1",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Day Microphysics": {
+                        "equation": "ch3, ch8^2.5, ch5",
                         "individual_equalize": true,
                         "geo_correct": true
                     }
