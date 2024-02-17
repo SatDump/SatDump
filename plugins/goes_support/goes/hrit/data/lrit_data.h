@@ -25,7 +25,7 @@ namespace goes
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t* data, size_t this_size, int segc);
             bool isComplete();
-            image::Image<uint8_t> image;
+            std::shared_ptr<image::Image<uint8_t>> image;
             int image_id = -1;
             std::string filename;
         };
@@ -40,8 +40,8 @@ namespace goes
         class GOESRFalseColorComposer
         {
         private:
-            image::Image<uint8_t> ch2_curve, fc_lut;
-            image::Image<uint8_t> ch2, ch13, falsecolor;
+            image::Image<uint8_t> ch2_curve, fc_lut, falsecolor;
+            std::shared_ptr<image::Image<uint8_t>> ch2, ch13;
             time_t time2, time13;
 
             void generateCompo();
@@ -55,8 +55,8 @@ namespace goes
             std::string filename, directory;
 
             void save();
-            void push2(image::Image<uint8_t> &img, time_t time);
-            void push13(image::Image<uint8_t> &img, time_t time);
+            void push2(std::shared_ptr<image::Image<uint8_t>> const &img, time_t time);
+            void push13(std::shared_ptr<image::Image<uint8_t>> const &img, time_t time);
 
         public:
             // UI Stuff
