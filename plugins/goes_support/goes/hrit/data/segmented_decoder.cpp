@@ -17,9 +17,8 @@ namespace goes
             segments_done = std::shared_ptr<bool>(new bool[seg_count], [](bool *p)
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
-            image = image::Image<uint8_t>(max_width, max_height, 1);
+            image = std::make_shared<image::Image<uint8_t>>(max_width, max_height, 1);
             seg_size = int(max_height / max_seg) * max_width;
-            image.fill(0);
         }
 
         SegmentedLRITImageDecoder::~SegmentedLRITImageDecoder()
@@ -30,7 +29,7 @@ namespace goes
         {
             if (segc >= seg_count)
                 return;
-            std::memcpy(&image[seg_size * segc], data, this_size);
+            std::memcpy(&(*image)[seg_size * segc], data, this_size);
             segments_done.get()[segc] = true;
         }
 

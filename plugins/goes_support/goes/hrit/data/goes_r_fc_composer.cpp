@@ -24,31 +24,32 @@ namespace goes
 
         void GOESRFalseColorComposer::generateCompo()
         {
+            if (time2 != time13)
+                return;
+
+            size_t width = ch2->width();
+            size_t height = ch2->height();
+            size_t lut_width = fc_lut.width();
+            size_t total_size = width * height;
+            size_t total_lut_size = lut_width * fc_lut.height();
+
             imageStatus = RECEIVING;
-
-            // Not really necessary, but good to be safe
-            if (ch2.height() > 0)
+            if(ch13->height() != height)
             {
-                if(ch13.height() != ch2.height())
-                {
-                    ch13.resize(ch2.width(), ch2.height());
-                }
-            }
-            else
-            {
-                ch2.resize(ch13.width(), ch13.height());
+                std::shared_ptr<image::Image<uint8_t>> full_ch13 = ch13;
+                ch13 = std::make_shared<image::Image<uint8_t>>(*full_ch13);
+                ch13->resize(width, height);
             }
 
+            if(!hasData)
+                 falsecolor.init(width, height, 3);
 
-            falsecolor.init(ch2.width(), ch2.height(), 3); // Init image
+            uint8_t *ch2_ptr = ch2->data();
+            uint8_t *ch13_ptr = ch13->data();
 
-            for (size_t i = 0; i < ch2.width() * ch2.height(); i++)
-            {
-                uint8_t x = ch2_curve[ch2[i]];
-                uint8_t y = (ch13[i]);
+            for (size_t i = 0; i < total_size; i++)
                 for (int c = 0; c < 3; c++)
-                    falsecolor[c * falsecolor.width() * falsecolor.height() + i] = fc_lut[c * fc_lut.width() * fc_lut.height() + x * fc_lut.width() + y];
-            }
+                    falsecolor[c * total_size + i] = fc_lut[c * total_lut_size + ch2_curve[ch2_ptr[i]] * lut_width + ch13_ptr[i]];
 
             hasData = true;
 
@@ -62,7 +63,7 @@ namespace goes
             }
         }
 
-        void GOESRFalseColorComposer::push2(image::Image<uint8_t> &img, time_t time)
+        void GOESRFalseColorComposer::push2(std::shared_ptr<image::Image<uint8_t>> const &img, time_t time)
         {
             if (time2 != 0 && time2 != time)
                 save();
@@ -74,12 +75,10 @@ namespace goes
 
             ch2 = img;
             time2 = time;
-
-            if (time2 == time13)
-                generateCompo();
+            generateCompo();
         }
 
-        void GOESRFalseColorComposer::push13(image::Image<uint8_t> &img, time_t time)
+        void GOESRFalseColorComposer::push13(std::shared_ptr<image::Image<uint8_t>> const &img, time_t time)
         {
             if (time13 != 0 && time13 != time)
                 save();
@@ -91,9 +90,7 @@ namespace goes
 
             ch13 = img;
             time13 = time;
-
-            if (time2 == time13)
-                generateCompo();
+            generateCompo();
         }
 
         void GOESRFalseColorComposer::save()
@@ -103,8 +100,8 @@ namespace goes
 
             imageStatus = SAVING;
             logger->info("This false color LUT was made by Harry Dove-Robinson, see resources/goes/abi/wxstar/README.md for more infos.");
-            ch2.clear();
-            ch13.clear();
+            ch2.reset();
+            ch13.reset();
             falsecolor.save_img(std::string(directory + "/IMAGES/" + filename).c_str());
             falsecolor.clear();
             hasData = false;

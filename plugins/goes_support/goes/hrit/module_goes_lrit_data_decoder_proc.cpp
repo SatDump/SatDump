@@ -152,16 +152,16 @@ namespace goes
                                 //Configure mesoscale color compoer - FD is defined further down
                                 if ((region == "Mesoscale 1" || region == "Mesoscale 2"))
                                 {
-                                    std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer;
+                                    GOESRFalseColorComposer *goes_r_fc_composer;
 
                                     if (region == "Mesoscale 1")
-                                        goes_r_fc_composer = goes_r_fc_composer_meso1;
+                                        goes_r_fc_composer = &goes_r_fc_composer_meso1;
                                     else if (region == "Mesoscale 2")
-                                        goes_r_fc_composer = goes_r_fc_composer_meso2;
+                                        goes_r_fc_composer = &goes_r_fc_composer_meso2;
 
-                                    image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length],
-                                                                image_structure_record.columns_count,
-                                                                image_structure_record.lines_count, 1);
+                                    std::shared_ptr<image::Image<uint8_t>> image = std::make_shared<image::Image<uint8_t>> (&file.lrit_data[primary_header.total_header_length],
+                                                                                                                            image_structure_record.columns_count,
+                                                                                                                            image_structure_record.lines_count, 1);
 
                                     if (channel == 2)
                                     {
@@ -283,8 +283,8 @@ namespace goes
                         {
                             wip_img->imageStatus = SAVING;
                             if (is_goesn)
-                                segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.filename).c_str());
+                                segmentedDecoder.image->resize(segmentedDecoder.image->width(), segmentedDecoder.image->height() * 1.75);
+                            segmentedDecoder.image->save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.filename).c_str());
                             wip_img->imageStatus = RECEIVING;
                         }
 
@@ -327,16 +327,16 @@ namespace goes
 
                                 if (channel == 2)
                                 {
-                                    goes_r_fc_composer_full_disk->push2(segmentedDecoder.image, timegm(&scanTimestamp));
+                                    goes_r_fc_composer_full_disk.push2(segmentedDecoder.image, timegm(&scanTimestamp));
                                     std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
-                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                    goes_r_fc_composer_full_disk.filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
 
                                 else if (channel == 13 && file.vcid == 13) //Redundant check keeps relayed channel 13 from entering the color composer
                                 {
-                                    goes_r_fc_composer_full_disk->push13(segmentedDecoder.image, timegm(&scanTimestamp));
+                                    goes_r_fc_composer_full_disk.push13(segmentedDecoder.image, timegm(&scanTimestamp));
                                     std::string subdir = "GOES-" + std::to_string(noaa_header.product_id) + "/Full Disk";
-                                    goes_r_fc_composer_full_disk->filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
+                                    goes_r_fc_composer_full_disk.filename = subdir + "/" + getHRITImageFilename(&scanTimestamp, "G" + std::to_string(noaa_header.product_id), "FC");
                                 }
 
 
@@ -350,7 +350,7 @@ namespace goes
                         // Downscale image
                         wip_img->img_height = 1000;
                         wip_img->img_width = 1000;
-                        image::Image<uint8_t> imageScaled = segmentedDecoder.image;
+                        image::Image<uint8_t> imageScaled = *(segmentedDecoder.image);
                         imageScaled.resize(wip_img->img_width, wip_img->img_height);
                         uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
                         wip_img->hasToUpdate = true;
@@ -360,8 +360,8 @@ namespace goes
                     {
                         wip_img->imageStatus = SAVING;
                         if (is_goesn)
-                            segmentedDecoder.image.resize(segmentedDecoder.image.width(), segmentedDecoder.image.height() * 1.75);
-                        segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                            segmentedDecoder.image->resize(segmentedDecoder.image->width(), segmentedDecoder.image->height() * 1.75);
+                        segmentedDecoder.image->save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         wip_img->imageStatus = IDLE;
 
@@ -379,7 +379,7 @@ namespace goes
                                 if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel) == 2)
                                 {
                                     if (channel == 2)
-                                        goes_r_fc_composer_full_disk->save();
+                                        goes_r_fc_composer_full_disk.save();
                                 }
                             }
                         }
@@ -425,8 +425,8 @@ namespace goes
                                                                    noaa_header.product_id == 18 ||
                                                                    noaa_header.product_id == 19))
                         {
-                            goes_r_fc_composer_meso1->save();
-                            goes_r_fc_composer_meso2->save();
+                            goes_r_fc_composer_meso1.save();
+                            goes_r_fc_composer_meso2.save();
                         }
                     }
                 }

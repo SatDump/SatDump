@@ -26,9 +26,7 @@ namespace goes
             bool write_unknown;
             bool write_lrit;
 
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
+            GOESRFalseColorComposer goes_r_fc_composer_full_disk, goes_r_fc_composer_meso1, goes_r_fc_composer_meso2;
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;
