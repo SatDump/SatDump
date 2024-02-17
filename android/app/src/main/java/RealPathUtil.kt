@@ -65,8 +65,11 @@ object RealPathUtil {
                 if ("primary".equals(type, ignoreCase = true)) {
                     return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                 }
-                if ("home".equals(type, ignoreCase = true)) {
+                else if ("home".equals(type, ignoreCase = true)) {
                     return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString() + "/" + split[1]
+                }
+                else {
+                    return "/storage/" + type + "/" + split[1]
                 }
             } else if (isDownloadsDocument(uri)) {
                 var cursor: Cursor? = null
