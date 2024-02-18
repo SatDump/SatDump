@@ -14,8 +14,8 @@ namespace noaa_apt
         // Parse params
         if (parameters.count("sdrpp_noise_reduction") > 0)
             sdrpp_noise_reduction = parameters["sdrpp_noise_reduction"].get<bool>();
-        else
-            sdrpp_noise_reduction = true;
+        if (parameters.count("save_wav") > 0)
+            save_wav = parameters["save_wav"].get<bool>();
 
         name = "NOAA APT Demodulator (FM)";
         show_freq = false;
@@ -54,7 +54,7 @@ namespace noaa_apt
         else
             filesize = 0;
 
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
             d_output_files.push_back(d_output_file_hint + ".wav");
@@ -77,7 +77,7 @@ namespace noaa_apt
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
         int final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
             wave_writer.write_header(d_symbolrate, 1);
 
         std::shared_ptr<audio::AudioSink> audio_sink;
@@ -116,12 +116,12 @@ namespace noaa_apt
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);
 
-            if (output_data_type == DATA_FILE)
+            if (save_wav || output_data_type == DATA_FILE)
             {
                 data_out.write((char *)output_wav_buffer, dat_size * sizeof(int16_t));
                 final_data_size += dat_size * sizeof(int16_t);
             }
-            else
+            if(output_data_type != DATA_FILE)
             {
                 output_fifo->write((uint8_t *)output_wav_buffer, dat_size * sizeof(int16_t));
             }
@@ -142,7 +142,7 @@ namespace noaa_apt
             audio_sink->stop();
 
         // Finish up WAV
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
             wave_writer.finish_header(final_data_size);
         delete[] output_wav_buffer;
 
@@ -162,7 +162,7 @@ namespace noaa_apt
         qua->stop();
         qua->output_stream->stopReader();
 
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
             data_out.close();
     }
 

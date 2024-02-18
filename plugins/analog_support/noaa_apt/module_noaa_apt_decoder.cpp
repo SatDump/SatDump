@@ -29,6 +29,8 @@ namespace noaa_apt
 
         if (parameters.count("autocrop_wedges") > 0)
             d_autocrop_wedges = parameters["autocrop_wedges"].get<bool>();
+        if (parameters.count("save_unsynced") > 0)
+            save_unsynced = parameters["save_unsynced"].get<bool>();
     }
 
     NOAAAPTDecoderModule::~NOAAAPTDecoderModule()
@@ -249,6 +251,17 @@ namespace noaa_apt
         // WB
         logger->info("White balance...");
         wip_apt_image.white_balance();
+
+        // Save unsynced
+        if (save_unsynced)
+        {
+            image::Image<uint16_t> wip_apt_image_sized(APT_IMG_WIDTH, line_cnt, 1);
+#pragma omp parallel for
+            for (int line = 0; line < line_cnt - 1; line++)
+                for (int i = 0; i < APT_IMG_WIDTH; i++)
+                    wip_apt_image_sized[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + i * APT_IMG_OVERS];
+            wip_apt_image_sized.save_img(main_dir + "/unsynchronized");
+        }
 
         // Synchronize
         logger->info("Synchronize...");

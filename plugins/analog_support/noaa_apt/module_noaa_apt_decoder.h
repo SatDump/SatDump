@@ -52,6 +52,7 @@ namespace noaa_apt
 
         long d_audio_samplerate;
         bool d_autocrop_wedges = false;
+        bool save_unsynced = true;
 
         std::shared_ptr<dsp::RealToComplexBlock> rtc;
         std::shared_ptr<dsp::FreqShiftBlock> frs;

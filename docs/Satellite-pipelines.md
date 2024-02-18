@@ -12,6 +12,9 @@ The aim of this is to list all possible satellite processing pipelines as well a
   - `satellite_number`: For apt it is required to know what satellite is being received for projections and overlays. Options are `15, 18, 19`
   - `start_timestamp`: Required for projections and overlays. If your .wav file is a supported format it will be read automatically. Unix timestamp of the start of the file. Must be UTC Unix timestamp in seconds.
   - `autocrop_wedges`: This will automatically crop the image to only include telemetry wedges considered valid. May discard a lot on bad images!
+  - `sdrpp_noise_reduction`: Uses the APT noise reduction originally implemented in SDR++. Defaults to true
+  - `save_wav`: Saves the wav file. Defaults to false
+  - `save_unsynced`: Saves the image before it's syncronized. Useful for weak signals. Defaults to true
  
 ## Meteor M
 

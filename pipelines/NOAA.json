@@ -247,12 +247,14 @@
             "baseband": {},
             "audio_wav": {
                 "noaa_apt_demod": {
-                    "symbolrate": 50e3
+                    "symbolrate": 50e3,
+                    "save_wav": false
                 }
             },
             "products": {
                 "noaa_apt_decoder": {
-                    "audio_samplerate": 50e3
+                    "audio_samplerate": 50e3,
+                    "save_unsynced": true
                 }
             }
         }
