@@ -260,7 +260,7 @@ namespace noaa_apt
             for (int line = 0; line < line_cnt - 1; line++)
                 for (int i = 0; i < APT_IMG_WIDTH; i++)
                     wip_apt_image_sized[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + i * APT_IMG_OVERS];
-            wip_apt_image_sized.save_img(main_dir + "/unsynchronized");
+            wip_apt_image_sized.save_img(main_dir + "/raw_unsync");
         }
 
         // Synchronize
@@ -539,7 +539,7 @@ namespace noaa_apt
         int last_valid_line = wip_apt_image_sync.height();
 
         // Save RAW before we crop
-        wip_apt_image_sync.save_img(main_dir + "/raw");
+        wip_apt_image_sync.save_img(main_dir + "/raw_sync");
 
         if (d_autocrop_wedges)
         {
