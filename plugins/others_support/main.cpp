@@ -17,6 +17,7 @@
 #include "orb/module_orb_decoder.h"
 
 #include "nat2pro/module_nat2pro.h"
+#include "nat2pro/mhs_nat_calibrator.h"
 
 class OthersSupport : public satdump::Plugin
 {
@@ -29,6 +30,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -48,6 +50,12 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, orb::ORBDecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, nat2pro::Nat2ProModule);
+    }
+
+    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    {
+        if (evt.id == "metop_mhs_nat")
+            evt.calibrators.push_back(std::make_shared<nat2pro::MHSNatCalibrator>(evt.calib, evt.products));
     }
 };
 

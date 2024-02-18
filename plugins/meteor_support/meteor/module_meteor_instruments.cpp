@@ -81,6 +81,37 @@ namespace meteor
                     msumr_timestamps.push_back(timestamp);
                     mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     msumr_ids.push_back(msumr_frame[12] >> 4);
+#if 0
+                    if (msumr_frame[13] == 0b00001111) // Analog TLM
+                    {
+                        const char *names[16 + 5] = {
+                            "AF temperature of the 5th channel",
+                            "AF temperature of the 6th channel",
+                            "Temperature ABT-X1",
+                            "Temperature ABT-X2",
+                            "Temperature AChT-X3",
+                            "Temperature AChT-G1",
+                            "Temperature AChT-G2",
+                            "Temperature AChT-G3",
+                            "Lamp current of calibration unit VK1",
+                            "Lamp current of calibration unit VK2",
+                            "Lamp current of calibration unit VK3",
+                            "Temperature of IR lenses of channels 4, 5, 6",
+                            "High voltage control on FP VK1",
+                            "High voltage control on FP VK2",
+                            "FP temperature VK3",
+                            "Temperature of control point No. 1",
+                            "UKN1",
+                            "UKN2",
+                            "UKN3",
+                            "UKN4",
+                            "UKN5",
+                        };
+                        logger->trace("MSU-MR Analog TLM : ");
+                        for (int i = 0; i < 16 /*+ 5*/; i++)
+                            logger->trace(" - %s : %d", names[i], ((uint8_t *)msumr_frame.data())[14 + i] + 100);
+                    }
+#endif
                 }
 
                 // MTVZA Deframing
