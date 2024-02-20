@@ -30,7 +30,7 @@ namespace image
     template <typename T>
     class Image
     {
-    private:
+    protected:
         // Image buffer
         bool has_data = false;
         size_t data_size = 0;
@@ -42,6 +42,13 @@ namespace image
         size_t d_height = 0;
         int d_channels = 0;
 
+    public:
+        // Metadata stuff
+        void *metadata_obj = nullptr; // DO NOT USE DIRECTLY!
+    protected:
+        void copy_meta(const Image<T> &img);
+
+    protected:
         // font rendering stuff
         font_info font;
         bool has_font = false;

@@ -58,6 +58,7 @@ namespace image
         // Copy contents of the image over
         init(img.d_width, img.d_height, img.d_channels);
         memcpy(d_data, img.d_data, img.data_size * sizeof(T));
+        copy_meta(img);
     }
 
     template <typename T>
@@ -74,6 +75,7 @@ namespace image
         // Copy contents of the image over
         init(img.d_width, img.d_height, img.d_channels);
         memcpy(d_data, img.d_data, img.data_size * sizeof(T));
+        copy_meta(img);
         return *this;
     }
 
@@ -98,6 +100,9 @@ namespace image
             font.chars.clear();
             delete[] ttf_buffer;
         }
+
+        if (metadata_obj != nullptr)
+            delete metadata_obj;
     }
 
     template <typename T>
