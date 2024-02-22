@@ -993,9 +993,9 @@
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "description": "descriptions/MCIR_precip.md",
                         "lua_vars": {
-                            "minoffset": 0.25,
-                            "scalar": 1.5,
-                            "thresold": 0,
+                            "minoffset": 0.21,
+                            "scalar": 1,
+                            "thresold": 0.8,
                             "lut": "lut/WXtoImg-NO_mod_APT.png"
                         },
                         "draw_map_overlay": true,
@@ -1244,7 +1244,7 @@
                     "MSA": {
                         "channels": "ch1",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
-                        "description": "descriptions/MCIR.md",
+                        "description": "descriptions/MSA.md",
                         "lua_vars": {
                             "minoffset": 0,
                             "scalar": 1,

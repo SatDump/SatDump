@@ -26,25 +26,35 @@ function init()
 end
 
 function process()
-    pos = geodetic_coords_t.new()
+    width = rgb_output:width()
+    height = rgb_output:height()
+    lut_width = img_rainnolut:width()
+    lut_height = img_rainnolut:height()
+    background_width = img_background:width()
+    background_height = img_background:height()
 
-    for x = 0, rgb_output:width() - 1, 1 do
-        for y = 0, rgb_output:height() - 1, 1 do
-            get_channel_values(x, y)
+    ch0_equal = get_channel_image(0)
+    ch1_equal = get_channel_image(1)
+    ch0_equal:equalize()
+    ch1_equal:equalize()
+
+    pos = geodetic_coords_t.new()
+    for x = 0, width - 1, 1 do
+        for y = 0, height - 1, 1 do
 
             if not sat_proj:get_position(x, y, pos) then
                 x2, y2 = equ_proj:forward(pos.lon, pos.lat)
 
+                ch1_val = ch1_equal:get((y * width) + x) / 65535.0
+                lut_y = (ch1_val - cfg_offset) * cfg_scalar * lut_height
+                lut_x = ((ch0_equal:get((y * width) + x) / 65535.0) - cfg_offset) * cfg_scalar * lut_width
 
-                lut_y = get_channel_value(1) * img_rainnolut:height()
-                lut_x = get_channel_value(0) * img_rainnolut:width()
-
-                if lut_y >= img_rainnolut:height() then
-                    lut_y = img_rainnolut:height() - 1
+                if lut_y >= lut_height then
+                    lut_y = lut_height - 1
                 end
 
-                if lut_x >= img_rainnolut:width() then
-                    lut_x = img_rainnolut:width() - 1
+                if lut_x >= lut_width then
+                    lut_x = lut_width - 1
                 end
 
                 if lut_y < 0 then
@@ -58,24 +68,24 @@ function process()
                 val_lut = {}
                 val = {}
 
-                val_lut[0] = img_rainnolut:get(math.floor(0 * img_rainnolut:height() * img_rainnolut:width() +
-                    lut_y * img_rainnolut:width() + lut_x)) / 255.0
-                val_lut[1] = img_rainnolut:get(math.floor(1 * img_rainnolut:height() * img_rainnolut:width() +
-                    lut_y * img_rainnolut:width() + lut_x)) / 255.0
-                val_lut[2] = img_rainnolut:get(math.floor(2 * img_rainnolut:height() * img_rainnolut:width() +
-                    lut_y * img_rainnolut:width() + lut_x)) / 255.0
+                val_lut[0] = img_rainnolut:get(math.floor(0 * lut_height * lut_width +
+                    lut_y * lut_width + lut_x)) / 255.0
+                val_lut[1] = img_rainnolut:get(math.floor(1 * lut_height * lut_width +
+                    lut_y * lut_width + lut_x)) / 255.0
+                val_lut[2] = img_rainnolut:get(math.floor(2 * lut_height * lut_width +
+                    lut_y * lut_width + lut_x)) / 255.0
 
-                val[0] = (val_lut[0] - cfg_offset) * cfg_scalar
-                val[1] = (val_lut[1] - cfg_offset) * cfg_scalar
-                val[2] = (val_lut[2] - cfg_offset) * cfg_scalar
-
-                mappos = y2 * img_background:width() + x2
-
-                max_val = math.max(val[0], val[1], val[2])
-
+                mappos = y2 * background_width + x2
                 for c = 0, 2, 1 do
-                    mval = img_background:get(img_background:width() * img_background:height() * c + mappos) / 255.0
-                    fval = mval * (1.0 - get_channel_value(1)) + val[c] * max_val;
+                    if ch1_val > cfg_thresold then
+                        mval = 0
+                        this_val = val_lut[c]
+                    else
+                        mval = img_background:get(background_width * background_height * c + mappos) / 255.0
+                        this_val = ch1_val
+                    end
+
+                    fval = mval * (1.0 - this_val) + this_val * this_val
                     set_img_out(c, x, y, fval)
                 end
             end
