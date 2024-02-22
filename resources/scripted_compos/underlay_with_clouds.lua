@@ -26,14 +26,7 @@ function process()
     height = rgb_output:height()
     background_size = img_background:width() * img_background:height()
 
-    ch_equal = image16.new(width, height, 1)
-    for x = 0, width - 1, 1 do
-        for y = 0, height - 1, 1 do
-            get_channel_values(x, y)
-            ch_equal:set((y * width) + x, get_channel_value(0) * 65535.0)
-        end
-        set_progress(x, width)
-    end
+    ch_equal = get_channel_image(0)
     ch_equal:equalize()
 
     pos = geodetic_coords_t.new()
