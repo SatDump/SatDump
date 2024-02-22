@@ -136,13 +136,23 @@ public:
             {
                 int lpkt_size = sread(buffer, 4);
                 if (lpkt_size == -1)
+                    continue;
+                if (lpkt_size < 4)
                 {
-                    clientsockfd = -1;
+                    logger->error("Client sent a packet that was too small. Closing connection!");
+                    closeconn();
                     continue;
                 }
 
                 int current_pkt_size = lpkt_size;
                 int expected_pkt_size = uint32_t(buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3]) + 4;
+                if (expected_pkt_size > 3000000)
+                {
+                    logger->error("Reported packet size too large. Closing connection!");
+                    closeconn();
+                    continue;
+                }
+
                 while (current_pkt_size < expected_pkt_size)
                 {
                     int ret = sread(buffer + current_pkt_size, expected_pkt_size - current_pkt_size);
@@ -169,14 +179,8 @@ private:
         if (ret <= 0)
         {
             logger->trace("Server lost client");
-#if defined(_WIN32)
-            closesocket(clientsockfd);
-#else
-            close(clientsockfd);
-#endif
-            clientsockfd = -1;
+            closeconn();
             ret = -1;
-            callback_func_on_lost_client();
         }
         return ret;
     }
@@ -199,6 +203,18 @@ public:
                 clientsockfd = -1;
         }
         write_mtx.unlock();
+    }
+
+private:
+    void closeconn()
+    {
+#if defined(_WIN32)
+        closesocket(clientsockfd);
+#else
+        close(clientsockfd);
+#endif
+        clientsockfd = -1;
+        callback_func_on_lost_client();
     }
 };
 
