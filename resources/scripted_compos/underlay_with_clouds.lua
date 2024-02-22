@@ -22,25 +22,37 @@ function init()
 end
 
 function process()
-    pos = geodetic_coords_t.new()
+    width = rgb_output:width()
+    height = rgb_output:height()
+    background_size = img_background:width() * img_background:height()
 
-    for x = 0, rgb_output:width() - 1, 1 do
-        for y = 0, rgb_output:height() - 1, 1 do
+    ch_equal = image16.new(width, height, 1)
+    for x = 0, width - 1, 1 do
+        for y = 0, height - 1, 1 do
             get_channel_values(x, y)
+            ch_equal:set((y * width) + x, get_channel_value(0) * 65535.0)
+        end
+        set_progress(x, width)
+    end
+    ch_equal:equalize()
+
+    pos = geodetic_coords_t.new()
+    for x = 0, width - 1, 1 do
+        for y = 0, height - 1, 1 do
 
             if not sat_proj:get_position(x, y, pos) then
                 x2, y2 = equ_proj:forward(pos.lon, pos.lat)
 
                 if cfg_invert == 1 then
-                    val = ((1.0 - get_channel_value(0)) - cfg_offset) * cfg_scalar
+                    val = 1.0 - ((ch_equal:get((y * width) + x) / 65535.0) - cfg_offset) * cfg_scalar
                 else
-                    val = (get_channel_value(0) - cfg_offset) * cfg_scalar
+                    val = ((ch_equal:get((y * width) + x) / 65535.0) - cfg_offset) * cfg_scalar
                 end
 
                 mappos = y2 * img_background:width() + x2
 
-                if mappos >= (img_background:height() * img_background:width()) then
-                    mappos = (img_background:height() * img_background:width()) - 1
+                if mappos >= background_size then
+                    mappos = background_size - 1
                 end
 
                 if mappos < 0 then
@@ -49,14 +61,14 @@ function process()
 
                 if cfg_blend == 1 then
                     for c = 0, 2, 1 do
-                        mval = img_background:get(img_background:width() * img_background:height() * c + mappos) / 255.0
+                        mval = img_background:get(background_size * c + mappos) / 255.0
                         fval = mval * (1.0 - val) + val * val;
                         set_img_out(c, x, y, fval)
                     end
                 else
                     if cfg_thresold == 0 then
                         for c = 0, 2, 1 do
-                            mval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
+                            mval = img_background:get(background_size * c + mappos) /
                                 255.0
                             fval = mval * 0.4 + val * 0.6;
                             set_img_out(c, x, y, fval)
@@ -64,13 +76,13 @@ function process()
                     else
                         if val < cfg_thresold then
                             for c = 0, 2, 1 do
-                                fval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
+                                fval = img_background:get(background_size * c + mappos) /
                                     255.0
                                 set_img_out(c, x, y, fval)
                             end
                         else
                             for c = 0, 2, 1 do
-                                mval = img_background:get(img_background:width() * img_background:height() * c + mappos) /
+                                mval = img_background:get(background_size * c + mappos) /
                                     255.0
                                 fval = mval * 0.4 + val * 0.6;
                                 set_img_out(c, x, y, fval)
@@ -81,6 +93,6 @@ function process()
             end
         end
 
-        set_progress(x, rgb_output:width())
+        set_progress(x, width)
     end
 end
