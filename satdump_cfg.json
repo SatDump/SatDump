@@ -1241,6 +1241,24 @@
                             0
                         ]
                     },
+                    "MSA": {
+                        "channels": "ch1",
+                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "description": "descriptions/MCIR.md",
+                        "lua_vars": {
+                            "minoffset": 0,
+                            "scalar": 1,
+                            "thresold": 0,
+                            "blend": 1,
+                            "invert": 0
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
+                        ]
+                    },
                     "Channel 4 Equalized": {
                         "equation": "1 - ch4",
                         "individual_equalize": true,
