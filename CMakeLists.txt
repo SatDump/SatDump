@@ -136,11 +136,11 @@ execute_process(
 )
 
 # Set version
-if(GIT_HAS_TAG STREQUAL "undefined")
-    message("-- Commit has no tag (${GIT_HAS_TAG}). Assume dev build")
+if(GIT_HAS_TAG STREQUAL "undefined" OR GIT_HAS_TAG STREQUAL "nightly")
+    message("-- Commit has no tag/nightly tag (${GIT_HAS_TAG}). Assume dev build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
 else()
-    message("-- Commit has no tag (${GIT_HAS_TAG}). Assume release build")
+    message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}")
 endif()
 add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
