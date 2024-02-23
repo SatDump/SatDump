@@ -58,7 +58,17 @@ namespace proj
         double rone_es;
     };
 
+    /*
+    Setup a projection. This expects the struct to already
+    be pre-configured by the user and takes care of
+    allocations and setting the ellispoid.
+    */
     bool projection_setup(projection_t *proj);
+
+    /*
+    Free allocated memory, by projection_setup.
+    */
+    void projection_free(projection_t *proj);
 
     /*
     Perform a forward projection.

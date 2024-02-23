@@ -4,6 +4,7 @@ namespace geotiff
 {
 #define GEOTIFFTAG_ModelTiepointTag 33922
 #define GEOTIFFTAG_GeoKeyDirectoryTag 34735
+#define GEOTIFFTAG_ModelPixelScaleTag 33550
 
     enum
     {

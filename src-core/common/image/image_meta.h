@@ -6,7 +6,7 @@
 namespace image
 {
     template <typename T>
-    void has_metadata(Image<T> &img, nlohmann::json metadata)
+    bool has_metadata(Image<T> &img)
     {
         return img.metadata_obj != nullptr;
     }

@@ -22,6 +22,9 @@ namespace proj
         projection_geos_t *ptr = (projection_geos_t *)malloc(sizeof(projection_geos_t));
         proj->proj_dat = ptr;
 
+        if (altitude <= 0)
+            return true;
+
         ptr->h = altitude;
         ptr->flip_axis = sweep_x;
 

@@ -5,14 +5,14 @@
 
 namespace proj
 {
-    void to_json(nlohmann::json &j, const projection_t &p)
+    inline void to_json(nlohmann::json &j, const projection_t &p)
     {
         if (p.type == ProjType_Equirectangular)
-            j["type"] = "equirectangular";
+            j["type"] = "equirec";
         else if (p.type == ProjType_Stereographic)
-            j["type"] = "stereographic";
+            j["type"] = "stereo";
         else if (p.type == ProjType_UniversalTransverseMercator)
-            j["type"] = "universal_transverse_mercator";
+            j["type"] = "utm";
 
         if (p.type == ProjType_UniversalTransverseMercator)
         {
@@ -35,13 +35,13 @@ namespace proj
             j["lat0"] = p.phi0 * RAD2DEG;
     }
 
-    void from_json(const nlohmann::json &j, projection_t &p)
+    inline void from_json(const nlohmann::json &j, projection_t &p)
     {
-        if (j["type"].get<std::string>() == "equirectangular")
+        if (j["type"].get<std::string>() == "equirec")
             p.type = ProjType_Equirectangular;
-        else if (j["type"].get<std::string>() == "stereographic")
+        else if (j["type"].get<std::string>() == "stereo")
             p.type = ProjType_Stereographic;
-        else if (j["type"].get<std::string>() == "universal_transverse_mercator")
+        else if (j["type"].get<std::string>() == "utm")
             p.type = ProjType_UniversalTransverseMercator;
 
         if (p.type == ProjType_UniversalTransverseMercator)

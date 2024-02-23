@@ -28,7 +28,7 @@ namespace proj
         else if (proj->type == ProjType_UniversalTransverseMercator)
             proj_ret = projection_tmerc_setup(proj, proj->params.zone, proj->params.south);
         else if (proj->type == ProjType_Geos)
-            proj_ret = projection_geos_setup(proj, proj->params.sweep_x, proj->params.altitude);
+            proj_ret = projection_geos_setup(proj, proj->params.altitude, proj->params.sweep_x);
         else
             return true;
 
@@ -36,6 +36,12 @@ namespace proj
             return true;
 
         return false;
+    }
+
+    void projection_free(projection_t *proj)
+    {
+        if (proj->proj_dat != nullptr)
+            free(proj->proj_dat);
     }
 
     bool projection_perform_fwd(projection_t *proj, double lon, double lat, double *x, double *y)
