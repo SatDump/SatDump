@@ -257,6 +257,8 @@ namespace image
             load_j2k(file);
         else if (signature[0] == 'P' && (signature[1] == '5' || signature[1] == '6'))
             load_pbm(file);
+        else if (signature[0] == 'I' && signature[1] == 'I' && signature[2] == '*')
+            load_tiff(file);
     }
 
     template <typename T>

@@ -15,5 +15,7 @@ namespace geodetic
         const double e2 = sqrt((pow(a, 2) - pow(b, 2)) / pow(b, 2)); // Second eccentricity
         const double es = pow(e, 2);                                 // First eccentricity^2
         const double one_es = 1.0 - es;                              // First 1 - eccentricity^2
+        const double alpha = asin(e);                                // Angular eccentricity
+        const double n = pow(tan(alpha / 2), 2);                     // Third flattening
     };
 };

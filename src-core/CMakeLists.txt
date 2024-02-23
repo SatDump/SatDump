@@ -166,7 +166,7 @@ else()
     endif()
 
     # Dynamic linking
-    target_link_libraries(satdump_core PUBLIC dl)
+    target_link_libraries(satdump_core PUBLIC dl tiff)
 
     include(CheckCXXSourceCompiles)
 

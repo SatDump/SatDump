@@ -142,6 +142,10 @@ namespace image
         void save_pbm(std::string file); // Save to a PBM file
         void load_pbm(std::string file); // Load a PBM file
 
+        // TIFF Interface
+        void save_tiff(std::string file); // Save to a TIFF file
+        void load_tiff(std::string file); // Load a TIFF file
+
         // Generic loading/saving interface
         void load_img(std::string file);                   // Load a file, auto-detecting type
         void load_img(uint8_t *buffer, int size);          // Load from memory, auto-detecting type
