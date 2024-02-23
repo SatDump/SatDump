@@ -21,33 +21,21 @@ int main(int /*argc*/, char *argv[])
     completeLoggerInit();
 
     std::ifstream data_in(argv[1], std::ios::binary);
+    std::ifstream data_in2(argv[2], std::ios::binary);
+    std::ofstream data_out(argv[3], std::ios::binary);
 
-    std::vector<uint8_t> img_vector;
+    uint8_t derand[314];
+
+    data_in2.read((char *)derand, 314);
 
     while (!data_in.eof())
     {
-        uint8_t frm[70];
-        data_in.read((char *)frm, 70);
+        uint8_t frm[314];
+        data_in.read((char *)frm, 314);
 
-        if (frm[4] == 0x02)
-        {
+        for (int i = 0; i < 314; i++)
+            frm[i] ^= derand[i];
 
-            uint16_t hdr = frm[4 + 1] << 8 | frm[4 + 0];
-            uint8_t data_size = frm[4 + 2];
-            uint16_t msg_type = frm[4 + 4] << 8 | frm[4 + 3];
-            uint16_t pkt_offset = frm[4 + 6] << 8 | frm[4 + 5];
-
-            logger->trace(pkt_offset);
-
-            int new_size = pkt_offset + 56;
-            if (img_vector.size() < new_size)
-                img_vector.resize(new_size);
-
-            memcpy(&img_vector[pkt_offset], &frm[4 + 8], 56);
-        }
+        data_out.write((char *)frm, 314);
     }
-
-    image::Image<uint8_t> img_final;
-    img_final.load_jpeg(img_vector.data(), img_vector.size());
-    img_final.save_png("strato.png");
 }

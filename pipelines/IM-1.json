@@ -1,12 +1,12 @@
 {
     "im1_s_tlm": {
-        "name": "IM-1 S-Band 5k TLM",
+        "name": "IM-1 S-Band 2.5k TLM",
         "live": true,
         "live_cfg": [
             [
                 1,
                 0
-            ]/*,
+            ] /*,
             [
                 2,
                 0
@@ -18,7 +18,7 @@
             "soft": {
                 "pm_demod": {
                     "resample_after_pll": true,
-                    "symbolrate": 5e3,
+                    "symbolrate": 2.5e3,
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.5,
                     "rrc_taps": 31,
@@ -27,13 +27,79 @@
                 }
             },
             "cadu": {
-                /*"ccsds_simple_psk_decoder": {
+                "ccsds_simple_psk_decoder": {
+                    "ccsds": false,
                     "constellation": "bpsk",
-                    "cadu_size": 8192,
+                    "cadu_size": 2512,
+                    "derandomize": false,
                     "rs_i": 0,
-                    "rs_type": "rs239",
-                    "rs_usecheck": true
+                    "nrzm": false,
+                    "asm": "0x7e368e55"
+                }
+                // "soft2hard": {}
+                /*"ccsds_conv_concat_decoder": {
+                    "conv_rate": "7/8",
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2048,
+                    "viterbi_ber_thresold": 0.3,
+                    "viterbi_outsync_after": 100,
+                    "derandomize": true,
+                    "rs_i": 1,
+                    "rs_type": "rs223"
                 }*/
+                /*"ccsds_ldpc_decoder": {
+                    "constellation": "bpsk",
+                    "ldpc_rate": "1/2",
+                    "ldpc_iterations": 10,
+                    "ldpc_block_size": 1024
+                    //"internal_stream": false,
+                    //"internal_cadu_size": 8272,
+                    //"internal_asm": "0x352EF853"
+                }*/
+                /*"ccsds_turbo_decoder": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 223,
+                    "turbo_iters": 10
+                }*/
+            },
+            "products": {}
+        }
+    },
+    "im1_s_tlm2": {
+        "name": "IM-1 S-Band 2.5k TLM (No Carrier)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ] /*,
+            [
+                2,
+                0
+            ]*/
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2.5e3,
+                    "rrc_alpha": 0.9,
+                    "pll_bw": 0.1
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "ccsds": false,
+                    "constellation": "bpsk",
+                    "cadu_size": 2512,
+                    "derandomize": false,
+                    "rs_i": 0,
+                    "nrzm": false,
+                    "asm": "0x7e368e55"
+                }
+                //"soft2hard":{}
                 /*"ccsds_conv_concat_decoder": {
                     "conv_rate": "7/8",
                     "constellation": "bpsk_90",
