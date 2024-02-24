@@ -284,6 +284,8 @@ namespace image
             save_j2k(file);
         else if ((file.find(".ppm") != std::string::npos) || (file.find(".pgm") != std::string::npos) || (file.find(".pbm") != std::string::npos))
             save_pbm(file);
+        else if ((file.find(".tif") != std::string::npos) || (file.find(".gtif") != std::string::npos) || (file.find(".tiff") != std::string::npos))
+            save_tiff(file);
     }
 
     // Append selected file extension
@@ -297,7 +299,10 @@ namespace image
             file->find(".j2k") != std::string::npos ||
             file->find(".pgm") != std::string::npos ||
             file->find(".pbm") != std::string::npos ||
-            file->find(".ppm") != std::string::npos)
+            file->find(".ppm") != std::string::npos ||
+            file->find(".tif") != std::string::npos ||
+            file->find(".tiff") != std::string::npos ||
+            file->find(".gtif") != std::string::npos)
             return true;
 
         // Otherwise, load the user setting

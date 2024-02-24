@@ -51,7 +51,7 @@ bool OverlayHandler::drawUI()
     return update;
 }
 
-void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<int, int>(float, float, int, int)> &proj_func, float *step_cnt)
+void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<int, int>(double, double, int, int)> proj_func, float *step_cnt)
 {
     const size_t width = img.width();
     const size_t height = img.height();
@@ -65,7 +65,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             map_cache.width = width;
             map_cache.height = height;
             image::Image<uint8_t> bitmask(width, height, 1);
-            uint8_t color[1] = { 255 };
+            uint8_t color[1] = {255};
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            bitmask,
                                            color,
@@ -77,8 +77,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         else
             logger->info("Applying cached map overlay...");
 
-        uint16_t color[4] = { (uint16_t)(color_borders.x * 65535.0f), (uint16_t)(color_borders.y * 65535.0f), (uint16_t)(color_borders.z * 65535.0f), 65535 };
-        for (size_t& location : map_cache.map)
+        uint16_t color[4] = {(uint16_t)(color_borders.x * 65535.0f), (uint16_t)(color_borders.y * 65535.0f), (uint16_t)(color_borders.z * 65535.0f), 65535};
+        for (size_t &location : map_cache.map)
             for (int i = 0; i < img.channels(); i++)
                 img.channel(i)[location] = color[i];
 
@@ -96,7 +96,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             shores_cache.width = width;
             shores_cache.height = height;
             image::Image<uint8_t> bitmask(width, height, 1);
-            uint8_t color[1] = { 255 };
+            uint8_t color[1] = {255};
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                            bitmask,
                                            color,
@@ -108,8 +108,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         else
             logger->info("Applying cached shores overlay...");
 
-        uint16_t color[4] = { (uint16_t)(color_shores.x * 65535.0f), (uint16_t)(color_shores.y * 65535.0f), (uint16_t)(color_shores.z * 65535.0f), 65535 };
-        for (size_t& location : shores_cache.map)
+        uint16_t color[4] = {(uint16_t)(color_shores.x * 65535.0f), (uint16_t)(color_shores.y * 65535.0f), (uint16_t)(color_shores.z * 65535.0f), 65535};
+        for (size_t &location : shores_cache.map)
             for (int i = 0; i < img.channels(); i++)
                 img.channel(i)[location] = color[i];
 
@@ -129,7 +129,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             cities_cache.height = height;
             image::Image<uint8_t> bitmask(width, height, 1);
             bitmask.init_font(resources::getResourcePath("fonts/font.ttf"));
-            uint8_t color[1] = { 255 };
+            uint8_t color[1] = {255};
             map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                             bitmask,
                                             color,
@@ -139,12 +139,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
                                             cities_scale_rank);
             for (size_t i = 0; i < bitmask.size(); i++)
                 if (bitmask.data()[i] > 0)
-                    cities_cache.map.insert({ i, (float)bitmask.data()[i] / 255.0f });
+                    cities_cache.map.insert({i, (float)bitmask.data()[i] / 255.0f});
         }
         else
             logger->info("Applying cached cities overlay...");
 
-        uint16_t color[4] = { (uint16_t)(color_cities.x * 65535.0f), (uint16_t)(color_cities.y * 65535.0f), (uint16_t)(color_cities.z * 65535.0f), 65535 };
+        uint16_t color[4] = {(uint16_t)(color_cities.x * 65535.0f), (uint16_t)(color_cities.y * 65535.0f), (uint16_t)(color_cities.z * 65535.0f), 65535};
         for (auto &location : cities_cache.map)
         {
             for (int i = 0; i < img.channels(); i++)
@@ -173,7 +173,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             last_qth_label = qth_label;
             image::Image<uint8_t> bitmask(width, height, 1);
             bitmask.init_font(resources::getResourcePath("fonts/font.ttf"));
-            uint8_t color[1] = { 255 };
+            uint8_t color[1] = {255};
             double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
             double qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
             std::pair<float, float> cc = proj_func(qth_lat, qth_lon, height, width);
@@ -188,12 +188,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
 
             for (size_t i = 0; i < bitmask.size(); i++)
                 if (bitmask.data()[i] > 0)
-                    qth_cache.map.insert({ i, (float)bitmask.data()[i] / 255.0f });
+                    qth_cache.map.insert({i, (float)bitmask.data()[i] / 255.0f});
         }
         else
             logger->info("Applying cached QTH overlay...");
 
-        uint16_t color[4] = { (uint16_t)(color_qth.x * 65535.0f), (uint16_t)(color_qth.y * 65535.0f), (uint16_t)(color_qth.z * 65535.0f), 65535 };
+        uint16_t color[4] = {(uint16_t)(color_qth.x * 65535.0f), (uint16_t)(color_qth.y * 65535.0f), (uint16_t)(color_qth.z * 65535.0f), 65535};
         for (auto &location : qth_cache.map)
         {
             for (int i = 0; i < img.channels(); i++)
@@ -219,7 +219,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             latlon_cache.width = width;
             latlon_cache.height = height;
             image::Image<uint8_t> bitmask(width, height, 1);
-            uint8_t color[1] = { 255 };
+            uint8_t color[1] = {255};
             map::drawProjectedMapLatLonGrid(bitmask, color, proj_func);
 
             for (size_t i = 0; i < bitmask.size(); i++)
@@ -229,8 +229,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         else
             logger->info("Applying cached lat/lon overlay...");
 
-        uint16_t color[4] = { (uint16_t)(color_latlon.x * 65535.0f), (uint16_t)(color_latlon.y * 65535.0f), (uint16_t)(color_latlon.z * 65535.0f), 65535 };
-        for (size_t& location : latlon_cache.map)
+        uint16_t color[4] = {(uint16_t)(color_latlon.x * 65535.0f), (uint16_t)(color_latlon.y * 65535.0f), (uint16_t)(color_latlon.z * 65535.0f), 65535};
+        for (size_t &location : latlon_cache.map)
             for (int i = 0; i < img.channels(); i++)
                 img.channel(i)[location] = color[i];
 

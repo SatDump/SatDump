@@ -15,6 +15,9 @@
 #include "projs/tps_transform.h"
 #include "reproj/reproj.h"
 
+#include "common/projection/projs2/proj_json.h"
+#include "common/image/image_meta.h"
+
 namespace satdump
 {
     namespace reprojection
@@ -223,7 +226,68 @@ namespace satdump
             logger->info("Reprojecting to target...");
 
             // Reproject to target
-            if (op.target_prj_info["type"] == "equirectangular")
+            proj::projection_t proj;
+            bool proj_err = false;
+            try
+            {
+                proj = op.target_prj_info;
+            }
+            catch (std::exception &e)
+            {
+                proj_err = true;
+            }
+
+            if (!proj::projection_setup(&proj) && !proj_err)
+            {
+                printf("------------------- Using New Proj\n");
+                geodetic::projection::EquirectangularProjection equi_proj_src;
+                equi_proj_src.init(warped_image.width(), warped_image.height(), tl_lon, tl_lat, br_lon, br_lat);
+
+
+                double lon, lat;
+                int x2, y2;
+                // #pragma omp parallel for
+                for (int x = 0; x < (int)projected_image.width(); x++)
+                {
+                    for (int y = 0; y < (int)projected_image.height(); y++)
+                    {
+                        if (proj::projection_perform_inv(&proj, x, y, &lon, &lat))
+                            continue;
+                        equi_proj_src.forward(lon, lat, x2, y2);
+                        if (x2 == -1 || y2 == -1)
+                            continue;
+
+                        if (warped_image.channels() == 4)
+                        {
+                            for (int c = 0; c < warped_image.channels(); c++)
+                                projected_image.channel(c)[y * projected_image.width() + x] = warped_image.channel(c)[y2 * warped_image.width() + x2];
+                        }
+                        else if (warped_image.channels() == 3)
+                        {
+                            for (int c = 0; c < warped_image.channels(); c++)
+                                projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(c)[y2 * warped_image.width() + x2];
+                            if (projected_image.channels() == 4)
+                                projected_image.channel(3)[y * projected_image.width() + x] = 65535;
+                        }
+                        else
+                        {
+                            for (int c = 0; c < warped_image.channels(); c++)
+                                projected_image.channel(c)[y * projected_image.width() + x] = c == 3 ? 65535 : warped_image.channel(0)[y2 * warped_image.width() + x2];
+                            if (projected_image.channels() == 4)
+                                projected_image.channel(3)[y * projected_image.width() + x] = 65535;
+                        }
+                    }
+
+                    if (progress != nullptr)
+                        *progress = float(x) / float(projected_image.width());
+                }
+
+                proj::projection_free(&proj);
+                nlohmann::json meta;
+                meta["proj_cfg"] = proj; // op.target_prj_info;
+                image::set_metadata(projected_image, meta);
+            }
+            else if (op.target_prj_info["type"] == "equirectangular")
             {
                 geodetic::projection::EquirectangularProjection equi_proj;
                 equi_proj.init(projected_image.width(), projected_image.height(),
@@ -340,18 +404,42 @@ namespace satdump
             return result_prj;
         }
 
-        std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
-                                                                                           nlohmann::json params,
-                                                                                           bool rotate)
+        std::function<std::pair<int, int>(double, double, int, int)> setupProjectionFunction(int width, int height,
+                                                                                             nlohmann::json params,
+                                                                                             bool rotate)
         {
-            if (params["type"] == "equirectangular")
+            proj::projection_t *proj = new proj::projection_t();
+            bool proj_err = false;
+            try
+            {
+                *proj = params;
+            }
+            catch (std::exception &e)
+            {
+                proj_err = true;
+                printf("ERROR PARSING PROJ!!!!!!\n");
+            }
+
+            printf("INIT PROJ!!!!!!\n");
+
+            if (!proj::projection_setup(proj) && !proj_err)
+            {
+                printf("------------------- Using New Proj\n");
+                return [proj](double lat, double lon, int, int) mutable -> std::pair<int, int>
+                {
+                    double x, y;
+                    proj::projection_perform_fwd(proj, lon, lat, &x, &y);
+                    return {(int)x, (int)y};
+                };
+            }
+            else if (params["type"] == "equirectangular")
             {
                 geodetic::projection::EquirectangularProjection projector;
                 projector.init(width, height,
                                params["tl_lon"].get<float>(), params["tl_lat"].get<float>(),
                                params["br_lon"].get<float>(), params["br_lat"].get<float>());
 
-                return [projector, rotate](float lat, float lon, int, int) mutable -> std::pair<int, int>
+                return [projector, rotate](double lat, double lon, int, int) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     projector.forward(lon, lat, x, y);
@@ -366,7 +454,7 @@ namespace satdump
                                 params["br_lon"].get<float>(), params["br_lat"].get<float>()*/
                 );
 
-                return [projector, rotate](float lat, float lon, int, int) mutable -> std::pair<int, int>
+                return [projector, rotate](double lat, double lon, int, int) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     projector.forward(lon, lat, x, y);
@@ -379,7 +467,7 @@ namespace satdump
                 stereo_proj.init(params["center_lat"].get<float>(), params["center_lon"].get<float>());
                 float stereo_scale = params["scale"].get<float>();
 
-                return [stereo_proj, stereo_scale, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [stereo_proj, stereo_scale, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x = 0;
                     double y = 0;
@@ -398,7 +486,7 @@ namespace satdump
                                 params["ang"].get<float>(),
                                 params["azi"].get<float>());
 
-                return [tpers_proj, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [tpers_proj, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x, y;
                     tpers_proj.forward(lon, lat, x, y);
@@ -421,7 +509,7 @@ namespace satdump
                                                             params["scale_x"].get<float>(), params["scale_y"].get<float>(),
                                                             params["offset_x"].get<float>(), params["offset_y"].get<float>(),
                                                             params["sweep_x"].get<bool>());
-                return [geo_proj, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [geo_proj, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     int x;
                     int y;
@@ -445,7 +533,7 @@ namespace satdump
             {
                 geodetic::projection::AzimuthalEquidistantProjection eqaz_proj;
                 eqaz_proj.init(width, height, params["lon"].get<float>(), params["lat"].get<float>());
-                return [eqaz_proj, rotate](float lat, float lon, int /*map_height*/, int /*map_width*/) mutable -> std::pair<int, int>
+                return [eqaz_proj, rotate](double lat, double lon, int /*map_height*/, int /*map_width*/) mutable -> std::pair<int, int>
                 {
                     int x, y;
                     eqaz_proj.forward(lon, lat, x, y);
@@ -458,7 +546,7 @@ namespace satdump
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 if (transform->init(gcps, true, false))
                     std::runtime_error("Error generating TPS!");
-                return [transform, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [transform, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x, y;
                     transform->forward(lon, lat, x, y);

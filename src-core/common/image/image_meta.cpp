@@ -6,8 +6,10 @@ namespace image
     void Image<T>::copy_meta(const Image<T> &img)
     {
         if (img.metadata_obj != nullptr)
+        {
             set_metadata(*this, get_metadata(img));
-        printf("META SET!\n");
+            printf("META SET!\n");
+        }
     }
 
     // Generate Images for uint16_t and uint8_t

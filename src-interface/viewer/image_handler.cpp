@@ -187,8 +187,8 @@ namespace satdump
                     bool rotate = rotate_image;
                     auto &proj_func = this->proj_func;
 
-                    std::function<std::pair<int, int>(float, float, int, int)> newfun =
-                        [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                    std::function<std::pair<int, int>(double, double, int, int)> newfun =
+                        [proj_func, corrected_stuff, fwidth, fheight, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                     {
                         std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
                         if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
@@ -382,7 +382,7 @@ namespace satdump
 
             if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
-                ImVec4* colors = ImGui::GetStyle().Colors;
+                ImVec4 *colors = ImGui::GetStyle().Colors;
                 int to_pop = 0;
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)

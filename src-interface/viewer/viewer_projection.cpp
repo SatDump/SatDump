@@ -58,6 +58,13 @@ namespace satdump
             }
             else if (projections_current_selected_proj == 1)
             {
+                ImGui::Text("Top Left Coordinates :");
+                ImGui::InputFloat("Lat##tl", &projections_mercator_tl_lat);
+                ImGui::InputFloat("Lon##tl", &projections_mercator_tl_lon);
+                ImGui::Spacing();
+                ImGui::Text("Bottom Right Coordinates :");
+                ImGui::InputFloat("Lat##br", &projections_mercator_br_lat);
+                ImGui::InputFloat("Lon##br", &projections_mercator_br_lon);
             }
             else if (projections_current_selected_proj == 2)
             {
@@ -422,15 +429,26 @@ namespace satdump
 
         if (projections_current_selected_proj == 0)
         {
-            cfg["type"] = "equirectangular";
-            cfg["tl_lon"] = projections_equirectangular_tl_lon;
-            cfg["tl_lat"] = projections_equirectangular_tl_lat;
-            cfg["br_lon"] = projections_equirectangular_br_lon;
-            cfg["br_lat"] = projections_equirectangular_br_lat;
+            // cfg["type"] = "equirectangular";
+            // cfg["tl_lon"] = projections_equirectangular_tl_lon;
+            //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
+            //  cfg["br_lon"] = projections_equirectangular_br_lon;
+            //  cfg["br_lat"] = projections_equirectangular_br_lat;
+
+            cfg["type"] = "equirec";
+            cfg["offset_x"] = projections_equirectangular_tl_lon;
+            cfg["offset_y"] = projections_equirectangular_tl_lat;
+            cfg["scalar_x"] = projections_equirectangular_br_lon;
+            cfg["scalar_y"] = projections_equirectangular_br_lat;
         }
         else if (projections_current_selected_proj == 1)
         {
-            cfg["type"] = "mercator";
+            cfg["type"] = "utm";
+            cfg["offset_x"] = projections_mercator_tl_lon;
+            cfg["offset_y"] = projections_mercator_tl_lat;
+            cfg["scalar_x"] = projections_mercator_br_lon;
+            cfg["scalar_y"] = projections_mercator_br_lat;
+            // cfg["zone"] = 33;
             //  cfg["tl_lon"] = projections_equirectangular_tl_lon;
             //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
             //  cfg["br_lon"] = projections_equirectangular_br_lon;
@@ -439,9 +457,12 @@ namespace satdump
         else if (projections_current_selected_proj == 2)
         {
             cfg["type"] = "stereo";
-            cfg["center_lon"] = projections_stereo_center_lon;
-            cfg["center_lat"] = projections_stereo_center_lat;
-            cfg["scale"] = projections_stereo_scale;
+            cfg["lon0"] = projections_stereo_center_lon;
+            cfg["lat0"] = projections_stereo_center_lat;
+            cfg["scalar_x"] = projections_stereo_scale;
+            cfg["scalar_y"] = projections_stereo_scale;
+            cfg["offset_x"] = -projections_image_width * 0.5 * projections_stereo_scale;
+            cfg["offset_y"] = projections_image_height * 0.5 * projections_stereo_scale;
         }
         else if (projections_current_selected_proj == 3)
         {
@@ -523,6 +544,8 @@ namespace satdump
 
         // Free up memory
         layers_images.clear();
+
+        logger->info("Applying overlays...");
 
         // Setup projection to draw stuff on top
         auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, cfg, {});

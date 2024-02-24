@@ -64,8 +64,8 @@ namespace satdump
         // Overlay stuff
         OverlayHandler overlay_handler;
         OverlayHandler corrected_overlay_handler;
-        std::function<std::pair<int, int>(float, float, int, int)> proj_func;
-        std::function<std::pair<int, int>(float, float, int, int)> corr_proj_func;
+        std::function<std::pair<int, int>(double, double, int, int)> proj_func;
+        std::function<std::pair<int, int>(double, double, int, int)> corr_proj_func;
         size_t last_width = 0, last_height = 0, last_corr_width = 0, last_corr_height = 0;
         nlohmann::json last_proj_cfg;
 
@@ -156,7 +156,7 @@ namespace satdump
                         {
                             corrected_overlay_handler.clear_cache();
                             corr_proj_func =
-                                [&proj_func, corrected_stuff](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                                [&proj_func, corrected_stuff](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                             {
                                 std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
                                 if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)

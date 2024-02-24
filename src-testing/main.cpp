@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         map::drawProjectedMapShapefile({"resources/maps/ne_10m_admin_0_countries.shp"},
                                        image_test,
                                        color,
-                                       [&p](float lat, float lon, int, int) -> std::pair<int, int>
+                                       [&p](double lat, double lon, int, int) -> std::pair<int, int>
                                        {
                                            double x, y;
                                            proj::projection_perform_fwd(&p, lon, lat, &x, &y);

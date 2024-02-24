@@ -168,6 +168,11 @@ namespace satdump
         float projections_equirectangular_tl_lat = 90;
         float projections_equirectangular_br_lon = 180;
         float projections_equirectangular_br_lat = -90;
+         /////////////
+        float projections_mercator_tl_lon = -180;
+        float projections_mercator_tl_lat = 90;
+        float projections_mercator_br_lon = 180;
+        float projections_mercator_br_lat = -90;
         /////////////
         float projections_stereo_center_lon = 0;
         float projections_stereo_center_lat = 0;

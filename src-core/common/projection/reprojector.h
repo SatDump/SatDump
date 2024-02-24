@@ -27,8 +27,8 @@ namespace satdump
 
         ProjectionResult reproject(ReprojectionOperation &op, float *progress = nullptr);
 
-        std::function<std::pair<int, int>(float, float, int, int)> setupProjectionFunction(int width, int height,
-                                                                                           nlohmann::json params,
-                                                                                           bool rotate = false);
+        std::function<std::pair<int, int>(double, double, int, int)> setupProjectionFunction(int width, int height,
+                                                                                             nlohmann::json params,
+                                                                                             bool rotate = false);
     }
 }

@@ -91,7 +91,7 @@ namespace proj
         *y += proj->y0;
 
         *x = (*x - proj->proj_offset_x) / proj->proj_scalar_x;
-        *y = (*y - proj->proj_offset_y) / proj->proj_scalar_y;
+        *y = (*y - proj->proj_offset_y) / -proj->proj_scalar_y; // Top corner, need to swap
 
         return false;
     }
@@ -100,7 +100,7 @@ namespace proj
     {
         /* Apply scalars & offsets */
         x = x * proj->proj_scalar_x + proj->proj_offset_x;
-        y = y * proj->proj_scalar_y + proj->proj_offset_y;
+        y = y * -proj->proj_scalar_y + proj->proj_offset_y; // Top corner, need to swap
 
         x -= proj->x0;
         y -= proj->y0;

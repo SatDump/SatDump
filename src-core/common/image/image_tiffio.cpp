@@ -32,8 +32,12 @@ namespace image
             TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
             TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
             TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, d_channels == 1 ? PHOTOMETRIC_MINISBLACK : PHOTOMETRIC_RGB);
-            // if (d_channels == 4)
-            //     TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, EXTRASAMPLE_ASSOCALPHA);
+            if (d_channels == 4)
+            {
+                uint16_t out[1];
+                out[0] = EXTRASAMPLE_ASSOCALPHA;
+                TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, 1, &out);
+            }
 
             tsize_t linebytes = d_channels * d_width * sizeof(uint8_t); // length in memory of one row of pixel in the image.
 
