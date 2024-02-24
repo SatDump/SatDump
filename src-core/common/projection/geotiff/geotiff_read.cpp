@@ -37,8 +37,6 @@ namespace geotiff
                         printf("%f, ", tiepoints[i]);
                     printf("\n");
                 }
-
-                _TIFFfree(tiepoints);
             }
 
             // Secondly, check if have a pixel scale
@@ -61,8 +59,6 @@ namespace geotiff
                         printf("%f, ", pixelscale[i]);
                     printf("\n");
                 }
-
-                _TIFFfree(pixelscale);
             }
 
             // Finally, we need to parse the GeoKeys
@@ -88,7 +84,7 @@ namespace geotiff
                     { // These are directly in Value_Offset
                         if (KeyID == GTModelTypeGeoKey)
                         { // Model Type
-                            if (Value_Offset == 2)
+                            if (Value_Offset == ModelTypeGeographic)
                                 proj->type = proj::ProjType_Equirectangular;
 
                             if (debug)
@@ -101,7 +97,7 @@ namespace geotiff
                         { // Units. Mainly to switch between degs/rads in equirectangular
                             if (proj->type == proj::ProjType_Equirectangular)
                             {
-                                if (Value_Offset == 9101) // Radians, all good
+                                if (Value_Offset == Angular_Radian) // Radians, all good
                                 {
                                     if (has_pixelscale && has_tiepoint)
                                     {
@@ -113,7 +109,7 @@ namespace geotiff
                                     if (debug)
                                         printf(" --- [GeogAngularUnitsGeoKey] : Radians\n");
                                 }
-                                else if (Value_Offset == 9102)
+                                else if (Value_Offset == Angular_Degree)
                                 {
                                     if (debug)
                                         printf(" --- [GeogAngularUnitsGeoKey] : Degrees\n");
@@ -183,8 +179,6 @@ namespace geotiff
 
                 has_geokeys = true;
             }
-
-            _TIFFfree(geokeys);
         }
         else
         { // GeoTIFF needs GeoKeyDirectoryTag

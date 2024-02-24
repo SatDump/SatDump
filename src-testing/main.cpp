@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
                                        });
     }
 
-    image_test.save_jpeg(argv[2]);
+    image_test.save_tiff(argv[2]);
 
     proj::projection_free(&p);
 #endif

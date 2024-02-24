@@ -7,6 +7,7 @@
 #include "stereo.h"
 #include "tmerc.h"
 #include "geos.h"
+// #include "lamcc.h"
 
 namespace proj
 {

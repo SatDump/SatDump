@@ -13,11 +13,21 @@ namespace proj
             j["type"] = "stereo";
         else if (p.type == ProjType_UniversalTransverseMercator)
             j["type"] = "utm";
+        else if (p.type == ProjType_Geos)
+            j["type"] = "geos";
+        // else if (p.type == ProjType_LambertConformalConic)
+        //     j["type"] = "lamcc";
 
         if (p.type == ProjType_UniversalTransverseMercator)
         {
             j["zone"] = p.params.zone;
             j["south"] = p.params.south;
+        }
+
+        if (p.type == ProjType_Geos)
+        {
+            j["altitude"] = p.params.altitude;
+            j["sweep_x"] = p.params.sweep_x;
         }
 
         if (p.proj_offset_x != 0)
@@ -43,6 +53,10 @@ namespace proj
             p.type = ProjType_Stereographic;
         else if (j["type"].get<std::string>() == "utm")
             p.type = ProjType_UniversalTransverseMercator;
+        else if (j["type"].get<std::string>() == "geos")
+            p.type = ProjType_Geos;
+        // else if (j["type"].get<std::string>() == "lamcc")
+        //     p.type = ProjType_LambertConformalConic;
 
         if (p.type == ProjType_UniversalTransverseMercator)
         {
@@ -50,6 +64,14 @@ namespace proj
                 p.params.zone = j["zone"];
             if (j.contains("south"))
                 p.params.south = j["south"];
+        }
+
+        if (p.type == ProjType_Geos)
+        {
+            if (j.contains("altitude"))
+                p.params.altitude = j["altitude"];
+            if (j.contains("sweep_x"))
+                p.params.sweep_x = j["sweep_x"];
         }
 
         if (j.contains("offset_x"))
