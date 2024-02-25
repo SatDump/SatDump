@@ -1322,6 +1322,10 @@
                     "Snow RGB": {
                         "equation": "chm7, chm10, chm12",
                         "individual_equalize": true
+                    },
+                    "Fire Temperature RGB": {
+                        "equation": "chm12, chm11, chm10",
+                        "white_balance": true
                     }
                 }
             },
