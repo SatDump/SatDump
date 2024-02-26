@@ -224,10 +224,11 @@ namespace satdump
             ImGui::BeginGroup();
             ImGui::BeginChild("RecorderChildPanel", {left_width, wf_size}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
             {
+                bool assume_started = is_started;
                 if (ImGui::CollapsingHeader("Device", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     ImGui::Spacing();
-                    if (is_started)
+                    if (assume_started)
                         style::beginDisabled();
                     if (ImGui::Combo("##Source", &sdr_select_id, sdr_select_string.c_str()))
                     {
@@ -305,7 +306,7 @@ namespace satdump
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
 
-                    if (is_started)
+                    if (assume_started)
                         style::endDisabled();
 
                     ImGui::Spacing();
@@ -318,7 +319,7 @@ namespace satdump
                     ImGui::Spacing();
                     source_ptr->drawControlUI();
 
-                    if (!is_started)
+                    if (!assume_started)
                     {
                         if (ImGui::Button("Start"))
                             start();
@@ -392,13 +393,14 @@ namespace satdump
                 if (ImGui::CollapsingHeader("Processing"))
                 {
                     // Settings & Selection menu
-                    if (is_processing)
+                    bool assume_processing = is_processing;
+                    if (assume_processing)
                         style::beginDisabled();
                     pipeline_selector.renderSelectionBox(ImGui::GetContentRegionAvail().x);
                     if (!automated_live_output_dir)
                         pipeline_selector.drawMainparamsLive();
                     pipeline_selector.renderParamTable();
-                    if (is_processing)
+                    if (assume_processing)
                         style::endDisabled();
 
                     // Preset Menu
@@ -428,10 +430,10 @@ namespace satdump
                         }
                     }
 
-                    if (!is_started)
+                    if (!assume_started)
                         style::beginDisabled();
 
-                    if (!is_processing)
+                    if (!assume_processing)
                     {
                         if (ImGui::Button("Start###startprocessing"))
                             start_processing();
@@ -444,13 +446,14 @@ namespace satdump
 
                     error.draw();
 
-                    if (!is_started)
+                    if (!assume_started)
                         style::endDisabled();
                 }
 
                 if (ImGui::CollapsingHeader("Recording"))
                 {
-                    if (is_recording)
+                    bool assume_recording = is_recording;
+                    if (assume_recording)
                         style::beginDisabled();
                     if (ImGui::Combo("Format", &select_sample_format, "f32\0"
                                                                       "s16\0"
@@ -468,7 +471,7 @@ namespace satdump
                                      ))
                         set_output_sample_format();
 
-                    if (is_recording)
+                    if (assume_recording)
                         style::endDisabled();
 
                     if (file_sink->get_written() < 1e9)
@@ -490,14 +493,14 @@ namespace satdump
 
                     ImGui::Spacing();
 
-                    if (!is_recording)
+                    if (!assume_recording)
                         ImGui::TextColored(style::theme.red, "IDLE");
                     else
                         ImGui::TextColored(style::theme.green, "RECORDING");
 
                     ImGui::Spacing();
 
-                    if (!is_recording)
+                    if (!assume_recording)
                     {
                         if (ImGui::Button("Start###startrecording"))
                             start_recording();

@@ -3,6 +3,8 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 
+#include "common/codings/differential/nrzm.h"
+
 namespace generic
 {
     Soft2HardModule::Soft2HardModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -47,6 +49,8 @@ namespace generic
         uint8_t byte_buffer[256];
         int bytes_in_buf = 0;
 
+        diff::NRZMDiff diff;
+
         time_t lastTime = 0;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
@@ -72,6 +76,7 @@ namespace generic
 
                     if (bytes_in_buf == 256)
                     {
+                        // diff.decode(byte_buffer, 256);
                         if (output_data_type == DATA_FILE)
                             data_out.write((char *)byte_buffer, 256);
                         else
