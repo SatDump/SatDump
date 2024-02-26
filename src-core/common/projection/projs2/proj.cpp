@@ -141,10 +141,10 @@ namespace proj
         /* Convert to degrees */
         *lon += proj->lam0; // Lon Shift
 
-        //    while (*lon < -(M_PI * 2))
-        //        *lon += M_PI * 2;
-        //    while (*lon > (M_PI * 2))
-        //        *lon -= M_PI * 2;
+        while (*lon < -M_PI)
+            *lon += M_PI * 2;
+        while (*lon > M_PI)
+            *lon -= M_PI * 2;
 
         *lon *= RAD2DEG;
         *lat *= RAD2DEG;

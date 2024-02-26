@@ -193,118 +193,176 @@ namespace satdump
                 style::endDisabled();
 
             {
-                /*                if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
+                if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                    ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
+                    style::beginDisabled();
+                    ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 1);
+                    style::endDisabled();
+                    ImGui::RadioButton("GeoTIFF", &selected_external_type, 2);
+                    ImGui::RadioButton("Other", &selected_external_type, 3);
+
+                    if (selected_external_type == 0 ||
+                        selected_external_type == 2 ||
+                        selected_external_type == 3)
+                    {
+                        ImGui::InputText("Name", &projection_new_layer_name);
+                        projection_new_layer_file.draw("Input Image");
+                        if (selected_external_type == 3)
+                            projection_new_layer_cfg.draw("Projection Config File");
+                    }
+
+                    if (ImGui::Button("Add layer"))
+                    {
+                        if ((selected_external_type == 0 || selected_external_type == 3) && projection_new_layer_file.isValid())
+                        {
+                            image::Image<uint16_t> equi_file;
+                            equi_file.load_img(projection_new_layer_file.getPath());
+                            if (equi_file.size() > 0)
+                            {
+                                double tl_lon = -180;
+                                double tl_lat = 90;
+                                double br_lon = 180;
+                                double br_lat = -90;
+                                nlohmann::json proj_cfg;
+                                if (selected_external_type == 0)
                                 {
-                                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-                                    ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-                                    ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
-                                    ImGui::RadioButton("Other", &selected_external_type, 1);
-
-                                    if (selected_external_type == 2)
-                                    {
-                                        ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
-                                        if (!urlgood)
-                                            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
-
-                                        ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
-
-                                        if (!urlgood)
-                                        {
-                                            if (ImGui::IsItemHovered())
-                                                ImGui::SetTooltip("Invalid URL! must be https://server/{z}/{x}/{y}.ext");
-                                            ImGui::PopStyleColor();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ImGui::InputText("Name", &projection_new_layer_name);
-                                        projection_new_layer_file.draw("Input Image");
-                                        if (selected_external_type == 1)
-                                            projection_new_layer_cfg.draw("Projection Config File");
-                                    }
-
-                                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.isValid() &&
-                                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.isValid()))))
-                                    {
-                                        if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
-                                        {
-                                            urlgood = true;
-                                            auto genfun = [this](int)
-                                            {
-                                                is_opening_layer = true;
-                                                if (progress_pointer == nullptr)
-                                                    progress_pointer = new float;
-                                                general_progress = 0;
-                                                general_sum = 1;
-
-                                                std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
-                                                if (selected_external_type == 2)
-                                                    new_layer_cfg->name = "Tile Map";
-                                                else
-                                                    new_layer_cfg->name = projection_new_layer_name;
-
-                                                if (selected_external_type == 1)
-                                                    new_layer_cfg->path = projection_new_layer_cfg.getPath();
-                                                else if (selected_external_type == 2)
-                                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
-                                                else
-                                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-
-                                                int i = -1;
-                                                bool contains = false;
-                                                do
-                                                {
-                                                    contains = false;
-                                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i + 1)));
-                                                    for (int i = 0; i < (int)projection_layers.size(); i++)
-                                                        if (projection_layers[i].name == curr_name)
-                                                            contains = true;
-                                                    i++;
-                                                } while (contains);
-                                                new_layer_cfg->name = (i == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i)));
-
-                                                if (selected_external_type == 2)
-                                                {
-                                                    std::stringstream test(mapurl);
-                                                    std::string segment;
-                                                    std::vector<std::string> seglist;
-
-                                                    while (std::getline(test, segment, '/'))
-                                                    {
-                                                        seglist.push_back(segment);
-                                                    }
-                                                    logger->info("Generating tile map");
-                                                    tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, progress_pointer).to16bits();
-                                                }
-                                                else
-                                                    new_layer_cfg->img.load_img(projection_new_layer_file.getPath());
-
-                                                projections_external_sources.push_back(new_layer_cfg);
-
-                                                if (selected_external_type == 2)
-                                                    selected_external_type = 0;
-
-                                                progress_pointer = nullptr;
-                                                projections_should_refresh = true;
-                                                is_opening_layer = false;
-                                            };
-                                            ui_thread_pool.push(genfun);
-                                            ImGui::CloseCurrentPopup();
-                                        }
-                                        else
-                                        {
-                                            urlgood = false;
-                                        }
-                                    }
-                                    ImGui::SameLine();
-
-                                    if (ImGui::Button("Cancel"))
-                                        ImGui::CloseCurrentPopup();
-
-                                    ImGui::EndPopup();
+                                    proj_cfg["type"] = "equirec";
+                                    proj_cfg["offset_x"] = tl_lon;
+                                    proj_cfg["offset_y"] = tl_lat;
+                                    proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(equi_file.width());
+                                    proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(equi_file.height());
                                 }
-                */
+                                else if (selected_external_type == 3)
+                                {
+                                    proj_cfg = loadJsonFile(projection_new_layer_cfg.getPath());
+                                }
+                                image::set_metadata_proj_cfg(equi_file, proj_cfg);
+                                projection_layers.push_back({projection_new_layer_name, equi_file});
+                            }
+                            else
+                                logger->error("Could not load image file!");
+                        }
+                        else if (selected_external_type == 2 && projection_new_layer_file.isValid())
+                        {
+                            image::Image<uint16_t> geotiff_file;
+                            geotiff_file.load_tiff(projection_new_layer_file.getPath());
+                            if (geotiff_file.size() > 0 && image::has_metadata_proj_cfg(geotiff_file))
+                                projection_layers.push_back({projection_new_layer_name, geotiff_file});
+                            else
+                                logger->error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
+                        }
+
+                        ImGui::CloseCurrentPopup();
+                    }
+
+#if 0
+                    if (selected_external_type == 2)
+                    {
+                        ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
+                        if (!urlgood)
+                            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+
+                        ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
+
+                        if (!urlgood)
+                        {
+                            if (ImGui::IsItemHovered())
+                                ImGui::SetTooltip("Invalid URL! must be https://server/{z}/{x}/{y}.ext");
+                            ImGui::PopStyleColor();
+                        }
+                    }
+                    else
+                    {
+                        ImGui::InputText("Name", &projection_new_layer_name);
+                        projection_new_layer_file.draw("Input Image");
+                        if (selected_external_type == 1)
+                            projection_new_layer_cfg.draw("Projection Config File");
+                    }
+
+                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.isValid() &&
+                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.isValid()))))
+                    {
+                        if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
+                        {
+                            urlgood = true;
+                            auto genfun = [this](int)
+                            {
+                                is_opening_layer = true;
+                                if (progress_pointer == nullptr)
+                                    progress_pointer = new float;
+                                general_progress = 0;
+                                general_sum = 1;
+
+                                std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
+                                if (selected_external_type == 2)
+                                    new_layer_cfg->name = "Tile Map";
+                                else
+                                    new_layer_cfg->name = projection_new_layer_name;
+
+                                if (selected_external_type == 1)
+                                    new_layer_cfg->path = projection_new_layer_cfg.getPath();
+                                else if (selected_external_type == 2)
+                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
+                                else
+                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+
+                                int i = -1;
+                                bool contains = false;
+                                do
+                                {
+                                    contains = false;
+                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i + 1)));
+                                    for (int i = 0; i < (int)projection_layers.size(); i++)
+                                        if (projection_layers[i].name == curr_name)
+                                            contains = true;
+                                    i++;
+                                } while (contains);
+                                new_layer_cfg->name = (i == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i)));
+
+                                if (selected_external_type == 2)
+                                {
+                                    std::stringstream test(mapurl);
+                                    std::string segment;
+                                    std::vector<std::string> seglist;
+
+                                    while (std::getline(test, segment, '/'))
+                                    {
+                                        seglist.push_back(segment);
+                                    }
+                                    logger->info("Generating tile map");
+                                    tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, progress_pointer).to16bits();
+                                }
+                                else
+                                    new_layer_cfg->img.load_img(projection_new_layer_file.getPath());
+
+                                projections_external_sources.push_back(new_layer_cfg);
+
+                                if (selected_external_type == 2)
+                                    selected_external_type = 0;
+
+                                progress_pointer = nullptr;
+                                projections_should_refresh = true;
+                                is_opening_layer = false;
+                            };
+                            ui_thread_pool.push(genfun);
+                            ImGui::CloseCurrentPopup();
+                        }
+                        else
+                        {
+                            urlgood = false;
+                        }
+                    }
+#endif
+                    ImGui::SameLine();
+
+                    if (ImGui::Button("Cancel"))
+                        ImGui::CloseCurrentPopup();
+
+                    ImGui::EndPopup();
+                }
             }
 
             if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
@@ -465,7 +523,7 @@ namespace satdump
             cfg["lon0"] = projections_stereo_center_lon;
             cfg["lat0"] = projections_stereo_center_lat;
             cfg["scalar_x"] = projections_stereo_scale;
-            cfg["scalar_y"] = projections_stereo_scale;
+            cfg["scalar_y"] = -projections_stereo_scale;
             cfg["offset_x"] = -projections_image_width * 0.5 * projections_stereo_scale;
             cfg["offset_y"] = projections_image_height * 0.5 * projections_stereo_scale;
         }
@@ -495,6 +553,8 @@ namespace satdump
             bounds.max_lat = -90;
             for (auto &layer : projection_layers)
             {
+                if (!layer.enabled)
+                    continue;
                 auto boundshere = reprojection::determineProjectionBounds(layer.img);
                 if (boundshere.valid)
                 {
