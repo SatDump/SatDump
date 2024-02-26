@@ -141,9 +141,6 @@ namespace satdump
                     src_proj.proj_scalar_x = (result.bottom_right.lon - result.top_left.lon) / double(result.output_image.width());
                     src_proj.proj_scalar_y = (result.bottom_right.lat - result.top_left.lat) / double(result.output_image.height());
 
-                    result.output_image.save_jpeg("intermediate.jpg");
-                    logger->debug("\n%d", nlohmann::json(src_proj).dump(4));
-
                     if (!proj::projection_setup(&src_proj) && !src_proj_err)
                     { // If the input is a standard projection
                         for (int x = 0; x < (int)result_img.width(); x++)
