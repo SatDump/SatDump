@@ -1306,6 +1306,26 @@
                         "equation": "chm9",
                         "white_balance": true,
                         "apply_lut": true
+                    },
+                    "Cloud Type RGB": {
+                        "equation": "chm9^1.5, chm5^0.75, chm10",
+                        "individual_equalize": true
+                    },
+                    "Cloud Phase RGB": {
+                        "equation": "chm10, chm11, chm5",
+                        "individual_equalize": true
+                    },
+                    "Dust/Ash RGB": {
+                        "equation": "chm16-chm15, chm15-chm14, chm15",
+                        "individual_equalize": true
+                    },
+                    "Snow RGB": {
+                        "equation": "chm7, chm10, chm12",
+                        "individual_equalize": true
+                    },
+                    "Fire Temperature RGB": {
+                        "equation": "chm12, chm11, chm10",
+                        "white_balance": true
                     }
                 }
             },
@@ -1760,6 +1780,11 @@
                             1,
                             0
                         ]
+                    },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "1-ch2, 1-ch1, 1-ch4",
+                        "geo_correct": true,
+                        "individual_equalize": true
                     }
                 }
             },
