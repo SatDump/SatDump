@@ -41,8 +41,7 @@ namespace image
 
             tsize_t linebytes = d_channels * d_width * sizeof(uint8_t); // length in memory of one row of pixel in the image.
 
-            unsigned char *buf = NULL; // buffer used to store the row of pixel information for writing to file
-            //    Allocating memory to store the pixels of current row
+            unsigned char *buf = NULL;
             if (TIFFScanlineSize(tif) == linebytes)
                 buf = (unsigned char *)_TIFFmalloc(linebytes);
             else
@@ -112,11 +111,14 @@ namespace image
         if (tif)
         {
             uint32_t w, h;
+            int16_t bit_depth, channels_number;
             size_t npixels;
             uint32_t *raster;
 
             TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+            TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels_number);
+            TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bit_depth);
 
             proj::projection_t pro;
             if (geotiff::try_read_geotiff(&pro, tif))
@@ -126,6 +128,61 @@ namespace image
                 set_metadata(*this, meta);
             }
 
+#if 1
+            if (bit_depth != 8 && bit_depth != 16)
+            {
+                logger->error("Unsupported TIFF bit depth %d", bit_depth);
+                return;
+            }
+
+            init(w, h, channels_number);
+
+            tsize_t linebytes = d_channels * d_width * (bit_depth == 16 ? sizeof(uint16_t) : sizeof(uint8_t));
+            unsigned char *buf = NULL;
+            if (TIFFScanlineSize(tif) == linebytes)
+                buf = (unsigned char *)_TIFFmalloc(linebytes);
+            else
+                buf = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
+
+            for (size_t y = 0; y < d_height; y++)
+            {
+                TIFFReadScanline(tif, buf, y, 0);
+
+                if (d_depth == 16)
+                {
+                    for (size_t x = 0; x < d_width; x++)
+                    {
+                        if (bit_depth == 8)
+                        {
+                            for (int i = 0; i < d_channels; i++)
+                                channel(i)[y * d_width + x] = ((uint8_t *)buf)[x * channels_number + i] << 8;
+                        }
+                        else if (bit_depth == 16)
+                        {
+                            for (int i = 0; i < d_channels; i++)
+                                channel(i)[y * d_width + x] = ((uint16_t *)buf)[x * channels_number + i];
+                        }
+                    }
+                }
+                else if (d_depth == 8)
+                {
+                    for (size_t x = 0; x < d_width; x++)
+                    {
+                        if (bit_depth == 8)
+                        {
+                            for (int i = 0; i < d_channels; i++)
+                                channel(i)[y * d_width + x] = ((uint8_t *)buf)[x * channels_number + i];
+                        }
+                        else if (bit_depth == 16)
+                        {
+                            for (int i = 0; i < d_channels; i++)
+                                channel(i)[y * d_width + x] = ((uint16_t *)buf)[x * channels_number + i] >> 8;
+                        }
+                    }
+                }
+            }
+
+#else
             npixels = w * h;
             raster = (uint32_t *)_TIFFmalloc(npixels * sizeof(uint32_t));
 
@@ -164,6 +221,7 @@ namespace image
                 }
                 _TIFFfree(raster);
             }
+#endif
 
             TIFFClose(tif);
         }

@@ -41,6 +41,13 @@ namespace satdump
                 if (out.channels() == 4)
                     out.channel(3)[oy * out.width() + ox] = 65535;
             }
+            else if (in.channels() == 1) //|| in.channels() == 2)
+            {
+                for (int c = 0; c < out.channels(); c++)
+                    out.channel(c)[oy * out.width() + ox] = in.channel(0)[iy * in.width() + ix];
+                if (out.channels() == 4)
+                    out.channel(3)[oy * out.width() + ox] = 65535;
+            }
             else
             {
                 for (int c = 0; c < in.channels(); c++)

@@ -211,6 +211,7 @@ namespace satdump
                         projection_new_layer_file.draw("Input Image");
                         if (selected_external_type == 3)
                             projection_new_layer_cfg.draw("Projection Config File");
+                        ImGui::Checkbox("Normalize###normalizeinput", &projection_normalize_image);
                     }
 
                     if (ImGui::Button("Add layer"))
@@ -238,6 +239,8 @@ namespace satdump
                                 {
                                     proj_cfg = loadJsonFile(projection_new_layer_cfg.getPath());
                                 }
+                                if (projection_normalize_image)
+                                    equi_file.normalize();
                                 image::set_metadata_proj_cfg(equi_file, proj_cfg);
                                 projection_layers.push_back({projection_new_layer_name, equi_file});
                             }
@@ -249,7 +252,11 @@ namespace satdump
                             image::Image<uint16_t> geotiff_file;
                             geotiff_file.load_tiff(projection_new_layer_file.getPath());
                             if (geotiff_file.size() > 0 && image::has_metadata_proj_cfg(geotiff_file))
+                            {
+                                if (projection_normalize_image)
+                                    geotiff_file.normalize();
                                 projection_layers.push_back({projection_new_layer_name, geotiff_file});
+                            }
                             else
                                 logger->error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
                         }

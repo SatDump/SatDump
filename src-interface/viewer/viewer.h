@@ -124,6 +124,7 @@ namespace satdump
 
         int selected_external_type = 0;
         std::string projection_new_layer_name = "Ext Layer";
+        bool projection_normalize_image = false;
         FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Layer Image");
         FileSelectWidget projection_new_layer_cfg = FileSelectWidget("Config (JSON)", "Select Projection Config");
 
