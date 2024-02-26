@@ -40,8 +40,8 @@ namespace meteor
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
             {
-                // if (packet.payload.size() - 1 != packet.header.packet_length)
-                //     return;
+                if (packet.payload.size() - 1 != packet.header.packet_length)
+                    return;
 
                 int currentChannel = -1;
 
@@ -164,9 +164,9 @@ namespace meteor
                 }
 
                 image::Image<uint8_t> ret = image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
-                if (max_correct > 0 && bad_px.size() > 0)
+                if (max_correct > 0)
                 {
-                    logger->info("Correcting errors in channel %d...", channel + 1);
+                    logger->info("Filling missing data in channel %d...", channel + 1);
 
                     // Interpolate image
                     size_t width = ret.width();
@@ -183,7 +183,7 @@ namespace meteor
                                 if (bad_px.find(y * width + x) == bad_px.end())
                                 {
                                     size_t range = y - last_good;
-                                    if (last_good != -1 && range < max_correct)
+                                    if (last_good != -1 && range <= max_correct)
                                     {
                                         uint8_t top_val = ret[last_good * width + x];
                                         uint8_t bottom_val = ret[y * width + x];
@@ -226,6 +226,11 @@ namespace meteor
                         else
                             last_good = i;
                     }
+
+                    // Round all timestamps to 3 decimal places to ensure made-up timestamps
+                    // Match with timestamps in other channels
+                    for (double &timestamp : timestamps)
+                        timestamp = floor(timestamp * 1000) / 1000;
                 }
 
                 return ret;

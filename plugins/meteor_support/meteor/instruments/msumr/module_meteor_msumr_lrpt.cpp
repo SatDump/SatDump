@@ -148,7 +148,7 @@ namespace meteor
             int max_fill_lines = 0;
             if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
             {
-                max_fill_lines = 40;
+                max_fill_lines = 50;
                 if (d_parameters.contains("max_fill_lines"))
                     max_fill_lines = d_parameters["max_fill_lines"];
             }
