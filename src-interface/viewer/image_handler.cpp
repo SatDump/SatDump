@@ -855,9 +855,7 @@ namespace satdump
                 if (products->has_timestamps)
                     proj_cfg["metadata"]["timestamps"] = current_timestamps;
 
-                nlohmann::json meta;
-                meta["proj_cfg"] = proj_cfg;
-                image::set_metadata(current_image, meta);
+                image::set_metadata_proj_cfg(current_image, proj_cfg);
                 viewer_app->projection_layers.push_back({products->instrument_name, current_image});
 
                 if (rotate_image)

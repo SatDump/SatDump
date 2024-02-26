@@ -2,6 +2,7 @@
 
 #include "image.h"
 #include "nlohmann/json.hpp"
+#include "common/projection/reprojector.h"
 
 namespace image
 {
@@ -38,6 +39,9 @@ namespace image
     {
         if (img.metadata_obj == nullptr)
             img.metadata_obj = (nlohmann::json *)new nlohmann::json();
+
+        satdump::reprojection::rescaleProjectionScalarsIfNeeded(proj_cfg, img.width(), img.height());
+
         (*((nlohmann::json *)img.metadata_obj))["proj_cfg"] = proj_cfg;
     }
 

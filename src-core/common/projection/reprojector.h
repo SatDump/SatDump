@@ -35,5 +35,7 @@ namespace satdump
 
         ProjBounds determineProjectionBounds(image::Image<uint16_t> &img);
         void tryAutoTuneProjection(ProjBounds bounds, nlohmann::json &params);
+
+        void rescaleProjectionScalarsIfNeeded(nlohmann::json &proj_cfg, int width, int height);
     }
 }

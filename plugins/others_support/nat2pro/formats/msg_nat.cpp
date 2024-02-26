@@ -3,6 +3,8 @@
 #include "common/repack.h"
 #include "logger.h"
 
+#include "common/projection/projs2/proj_json.h"
+
 namespace nat2pro
 {
     inline int get_i4(uint8_t *buff)
@@ -196,15 +198,25 @@ namespace nat2pro
         seviri_products.has_timestamps = false;
         seviri_products.bit_depth = 10;
 
-        nlohmann::json proj_cfg;
-        proj_cfg["type"] = "geos";
-        proj_cfg["lon"] = longitude;
-        proj_cfg["alt"] = 35792.74;
-        proj_cfg["scale_x"] = 1.145;
-        proj_cfg["scale_y"] = 1.145;
-        proj_cfg["offset_x"] = -0.0005;
-        proj_cfg["offset_y"] = 0.0005;
-        proj_cfg["sweep_x"] = false;
+        proj::projection_t proj;
+        proj.type = proj::ProjType_Geos;
+        proj.params.sweep_x = false;
+        proj.params.altitude = 35785831.00;
+        proj.proj_offset_x = -5568748.275756353; // 6378169;
+        proj.proj_offset_y = 5568748.275756353;  // 6356583.80;
+        proj.proj_scalar_x = 3000.403165817;
+        proj.proj_scalar_y = -3000.403165817;
+        nlohmann::json proj_cfg = proj;
+        proj_cfg["width"] = 3712;
+        proj_cfg["height"] = 3712;
+        //        proj_cfg["type"] = "geos";
+        //        proj_cfg["lon"] = longitude;
+        //        proj_cfg["alt"] = 35792.74;
+        //        proj_cfg["scale_x"] = 1.145;
+        //        proj_cfg["scale_y"] = 1.145;
+        //        proj_cfg["offset_x"] = -0.0005;
+        //        proj_cfg["offset_y"] = 0.0005;
+        //        proj_cfg["sweep_x"] = false;
         seviri_products.set_proj_cfg(proj_cfg);
 
         for (int channel = 0; channel < 12; channel++)

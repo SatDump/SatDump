@@ -173,8 +173,11 @@ namespace satdump
                                                                                              nlohmann::json params,
                                                                                              bool rotate)
         {
-            std::shared_ptr<proj::projection_t> proj(new proj::projection_t(), [](proj::projection_t *obj)
-                                                     { proj::projection_free(obj); delete obj; });
+            rescaleProjectionScalarsIfNeeded(params, width, height);
+
+            std::shared_ptr<proj::projection_t>
+                proj(new proj::projection_t(), [](proj::projection_t *obj)
+                     { proj::projection_free(obj); delete obj; });
 
             bool proj_err = false;
             try
@@ -347,6 +350,21 @@ namespace satdump
                     proj::projection_free(&proj);
                 }
             }*/
+        }
+
+        void rescaleProjectionScalarsIfNeeded(nlohmann::json &proj_cfg, int width, int height)
+        {
+            // Automatically rescale if needed
+            if (proj_cfg.contains("width") && proj_cfg.contains("scalar_x") && proj_cfg["width"].get<double>() != width)
+            {
+                proj_cfg["scalar_x"] = proj_cfg["scalar_x"].get<double>() * (proj_cfg["width"].get<double>() / double(width));
+                proj_cfg["width"] = width;
+            }
+            if (proj_cfg.contains("height") && proj_cfg.contains("scalar_y") && proj_cfg["height"].get<double>() != height)
+            {
+                proj_cfg["scalar_y"] = proj_cfg["scalar_y"].get<double>() * (proj_cfg["height"].get<double>() / double(height));
+                proj_cfg["height"] = height;
+            }
         }
     }
 }
