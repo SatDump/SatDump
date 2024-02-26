@@ -128,7 +128,6 @@ namespace image
                 set_metadata(*this, meta);
             }
 
-#if 1
             if (bit_depth != 8 && bit_depth != 16)
             {
                 logger->error("Unsupported TIFF bit depth %d", bit_depth);
@@ -182,46 +181,7 @@ namespace image
                 }
             }
 
-#else
-            npixels = w * h;
-            raster = (uint32_t *)_TIFFmalloc(npixels * sizeof(uint32_t));
-
-            printf("Loading TIFF\n");
-
-            if (raster != NULL)
-            {
-                init(w, h, 4);
-
-                if (TIFFReadRGBAImage(tif, w, h, raster, 0))
-                {
-                    // ... process raster data...
-
-                    for (size_t x = 0; x < w; x++)
-                    {
-                        for (size_t y = 0; y < h; y++)
-                        {
-                            size_t i = y * w + x;
-                            size_t i2 = ((h - 1) - y) * w + x;
-                            if (d_depth == 8)
-                            {
-                                channel(0)[i2] = (raster[i] >> 0) & 0xFF;
-                                channel(1)[i2] = (raster[i] >> 8) & 0xFF;
-                                channel(2)[i2] = (raster[i] >> 16) & 0xFF;
-                                channel(3)[i2] = (raster[i] >> 24) & 0xFF;
-                            }
-                            else if (d_depth == 16)
-                            {
-                                channel(0)[i2] = ((raster[i] >> 0) & 0xFF) << 8;
-                                channel(1)[i2] = ((raster[i] >> 8) & 0xFF) << 8;
-                                channel(2)[i2] = ((raster[i] >> 16) & 0xFF) << 8;
-                                channel(3)[i2] = ((raster[i] >> 24) & 0xFF) << 8;
-                            }
-                        }
-                    }
-                }
-                _TIFFfree(raster);
-            }
-#endif
+            _TIFFfree(buf);
 
             TIFFClose(tif);
         }
