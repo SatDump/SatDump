@@ -6,6 +6,7 @@
 #include "common/widgets/stepped_slider.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "main_ui.h"
+#include "common/image/image_meta.h"
 
 namespace satdump
 {
@@ -183,7 +184,8 @@ namespace satdump
             ImGui::BeginGroup();
             if (!canBeProjected())
                 style::beginDisabled();
-            ImGui::Checkbox("Project", &should_project);
+            if (ImGui::Button("Add to Projections"))
+                addCurrentToProjections();
             if (!canBeProjected())
                 style::endDisabled();
             ImGui::EndGroup();
@@ -219,41 +221,24 @@ namespace satdump
                selected_visualization_id == 1;
     }
 
-    bool ScatterometerViewerHandler::hasProjection()
-    {
-        return projection_ready && should_project;
-    }
-
-    bool ScatterometerViewerHandler::shouldProject()
-    {
-        return should_project;
-    }
-
-    void ScatterometerViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+    void ScatterometerViewerHandler::addCurrentToProjections()
     {
         if (canBeProjected())
         {
-            reprojection::ReprojectionOperation op;
-            op.source_prj_info = current_image_proj;
-            op.target_prj_info = settings;
-            op.img = current_img;
-            op.output_width = width;
-            op.output_height = height;
-            // op.use_draw_algorithm = use_draw_proj_algo;
-            // op.img_tle = products->get_tle();
-            // op.img_tim = current_timestamps;
-            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-            projected_img = res.img;
-            projection_ready = true;
+            try
+            {
+                nlohmann::json proj_cfg = current_image_proj;
+                image::set_metadata_proj_cfg(current_img, proj_cfg);
+                viewer_app->projection_layers.push_back({products->instrument_name, current_img});
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not project image! %s", e.what());
+            }
         }
         else
         {
             logger->error("Current image can't be projected!");
         }
-    }
-
-    image::Image<uint16_t> &ScatterometerViewerHandler::getProjection()
-    {
-        return projected_img;
     }
 }

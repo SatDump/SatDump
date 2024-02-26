@@ -214,12 +214,6 @@ namespace satdump
                         {
                             ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                             ImGui::TreePush(std::string("##HandlerTree" + dataset_name).c_str());
-                            for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                if (products_and_handlers[i]->dataset_name == dataset_name && products_and_handlers[i]->handler->shouldProject())
-                                {
-                                    SelectableColor(IM_COL32(186, 153, 38, 65));
-                                    break;
-                                }
 
                             { // Closing button
                                 ImGui::SameLine();
@@ -235,11 +229,7 @@ namespace satdump
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
                                         if (products_and_handlers[i]->dataset_name == dataset_name)
                                         {
-                                            if (products_and_handlers[i]->handler->shouldProject() && projections_are_generating)
-                                                logger->warn("%s is currently being projected and will not close",
-                                                             products_and_handlers[i]->products->instrument_name.c_str());
-                                            else
-                                                products_and_handlers[i]->marked_for_close = true;
+                                            products_and_handlers[i]->marked_for_close = true;
                                         }
                                 }
                                 ImGui::PopStyleVar();
@@ -263,8 +253,6 @@ namespace satdump
                                     const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
                                     drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
                                     verticalLineEnd.y = midpoint;
-                                    if (products_and_handlers[i]->handler->shouldProject())
-                                        SelectableColor(IM_COL32(186, 153, 38, 65));
                                 }
                             }
 
@@ -346,10 +334,7 @@ namespace satdump
             if (ImGui::BeginTabItem("Projections###projssviewertab"))
             {
                 if (current_selected_tab != 1)
-                {
                     current_selected_tab = 1;
-                    refreshProjectionLayers();
-                }
                 drawProjectionPanel();
                 ImGui::EndTabItem();
             }

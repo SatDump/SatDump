@@ -9,11 +9,13 @@
 #include "common/projection/projs/equirectangular.h"
 #include "common/map/map_drawer.h"
 #include "resources.h"
-#include "common/projection/reprojector.h"
 #include "core/opencl.h"
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "main_ui.h"
+
+#include "common/image/image_meta.h"
+#include "common/projection/reprojector.h"
 
 namespace satdump
 {
@@ -217,7 +219,7 @@ namespace satdump
             overlay_handler.apply(current_image, proj_func);
         }
 
-        projection_ready = false;
+        //        projection_ready = false;
 
         image_view.update(current_image);
         // current_image.clear();
@@ -544,20 +546,8 @@ namespace satdump
 
             if (products->can_geometrically_correct())
             {
-                if (shouldProject())
-                    style::beginDisabled();
                 if (ImGui::Checkbox("Correct", &correct_image))
                     asyncUpdate();
-                if (shouldProject())
-                {
-                    style::endDisabled();
-                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                    {
-                        ImGui::BeginTooltip();
-                        ImGui::TextColored(style::theme.red, "Disable projection!");
-                        ImGui::EndTooltip();
-                    }
-                }
             }
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
@@ -723,17 +713,12 @@ namespace satdump
                 ImGui::BeginGroup();
                 if (!canBeProjected())
                     style::beginDisabled();
-                ImGui::Checkbox("Project", &should_project);
+                if (ImGui::Button("Add to Projections"))
+                    addCurrentToProjections();
                 if (!canBeProjected())
                     style::endDisabled();
 
                 ImGui::SameLine();
-
-                if (!should_project)
-                    style::beginDisabled();
-                ImGui::Checkbox("Old algorithm", &project_old_algorithm);
-                if (!should_project)
-                    style::endDisabled();
 
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
@@ -856,39 +841,27 @@ namespace satdump
                !correct_image;
     }
 
-    bool ImageViewerHandler::hasProjection()
-    {
-        return projection_ready && should_project;
-    }
-
-    bool ImageViewerHandler::shouldProject()
-    {
-        return should_project;
-    }
-
-    void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+    void ImageViewerHandler::addCurrentToProjections()
     {
         if (canBeProjected())
         {
             try
             {
-                reprojection::ReprojectionOperation op;
-                op.source_prj_info = products->get_proj_cfg();
-                op.source_prj_info["metadata"] = current_proj_metadata;
-                op.target_prj_info = settings;
-                op.img = current_image;
-                op.use_old_algorithm = project_old_algorithm;
-                if (rotate_image)
-                    op.img.mirror(true, true);
-                op.output_width = width;
-                op.output_height = height;
+                nlohmann::json proj_cfg;
+                proj_cfg = products->get_proj_cfg();
+                proj_cfg["metadata"] = current_proj_metadata;
                 if (products->has_tle())
-                    op.source_prj_info["metadata"]["tle"] = products->get_tle();
+                    proj_cfg["metadata"]["tle"] = products->get_tle();
                 if (products->has_timestamps)
-                    op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
-                reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-                projected_img = res.img;
-                projection_ready = true;
+                    proj_cfg["metadata"]["timestamps"] = current_timestamps;
+
+                nlohmann::json meta;
+                meta["proj_cfg"] = proj_cfg;
+                image::set_metadata(current_image, meta);
+                viewer_app->projection_layers.push_back({products->instrument_name, current_image});
+
+                if (rotate_image)
+                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
             }
             catch (std::exception &e)
             {
@@ -901,8 +874,54 @@ namespace satdump
         }
     }
 
-    image::Image<uint16_t> &ImageViewerHandler::getProjection()
-    {
-        return projected_img;
-    }
+    //    bool ImageViewerHandler::hasProjection()
+    //    {
+    //        return projection_ready && should_project;
+    //    }
+
+    //    bool ImageViewerHandler::shouldProject()
+    //    {
+    //        return should_project;
+    //    }
+
+    /*    void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+        {
+            if (canBeProjected())
+            {
+                try
+                {
+                    reprojection::ReprojectionOperation op;
+                    op.source_prj_info = products->get_proj_cfg();
+                    op.source_prj_info["metadata"] = current_proj_metadata;
+                    op.target_prj_info = settings;
+                    op.img = current_image;
+                    op.use_old_algorithm = project_old_algorithm;
+                    if (rotate_image)
+                        op.img.mirror(true, true);
+                    op.output_width = width;
+                    op.output_height = height;
+                    if (products->has_tle())
+                        op.source_prj_info["metadata"]["tle"] = products->get_tle();
+                    if (products->has_timestamps)
+                        op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
+                    reprojection::ProjectionResult res = reprojection::reproject(op, progess);
+                    projected_img = res.img;
+                    projection_ready = true;
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Could not project image! %s", e.what());
+                }
+            }
+            else
+            {
+                logger->error("Current image can't be projected!");
+            }
+        }
+    */
+
+    //    image::Image<uint16_t> &ImageViewerHandler::getProjection()
+    //    {
+    //        return projected_img;
+    //    }
 }

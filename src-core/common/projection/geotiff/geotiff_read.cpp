@@ -48,7 +48,7 @@ namespace geotiff
                 if (pixelscale_c >= 2)
                 {
                     proj->proj_scalar_x = pixelscale[0];
-                    proj->proj_scalar_y = pixelscale[1];
+                    proj->proj_scalar_y = -pixelscale[1];
                     has_pixelscale = true;
                 }
 

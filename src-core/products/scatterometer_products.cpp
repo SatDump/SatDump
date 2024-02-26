@@ -173,11 +173,15 @@ namespace satdump
 
             if (proj_cfg != nullptr)
             {
-                (*proj_cfg)["type"] = "equirectangular";
-                (*proj_cfg)["tl_lon"] = std::min(result1.top_left.lon, result2.top_left.lon);
-                (*proj_cfg)["tl_lat"] = std::max(result1.top_left.lat, result2.top_left.lat);
-                (*proj_cfg)["br_lon"] = std::max(result1.bottom_right.lon, result2.bottom_right.lon);
-                (*proj_cfg)["br_lat"] = std::min(result1.bottom_right.lat, result2.bottom_right.lat);
+                double tl_lon = std::min(result1.top_left.lon, result2.top_left.lon);
+                double tl_lat = std::max(result1.top_left.lat, result2.top_left.lat);
+                double br_lon = std::max(result1.bottom_right.lon, result2.bottom_right.lon);
+                double br_lat = std::min(result1.bottom_right.lat, result2.bottom_right.lat);
+                (*proj_cfg)["type"] = "equirec";
+                (*proj_cfg)["offset_x"] = tl_lon;
+                (*proj_cfg)["offset_y"] = tl_lat;
+                (*proj_cfg)["scalar_x"] = (br_lon - tl_lon) / double(final_img.width());
+                (*proj_cfg)["scalar_y"] = (br_lat - tl_lat) / double(final_img.height());
             }
 
             return final_img;

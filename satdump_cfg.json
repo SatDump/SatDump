@@ -1045,6 +1045,18 @@
                         "type": "equirectangular"
                     }
                 }
+                /*"project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    //"individual_equalize": true,
+                    //"draw_map_overlay": true,
+                    "config": {
+                        "type": "equirec",
+                        "auto": true,
+                        "geotiff": true
+                    }
+                }*/
             },
             "virr": {
                 "handler": "image_handler",
@@ -1293,7 +1305,19 @@
                         "white_balance": true,
                         "apply_lut": true
                     }
-                }
+                } /*,
+                "project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    //"individual_equalize": true,
+                    //"draw_map_overlay": true,
+                    "config": {
+                        "type": "equirec",
+                        "auto": true,
+                        "geotiff": true
+                    }
+                }*/
             },
             "viirs_dnb": {
                 "handler": "image_handler",
@@ -1306,7 +1330,19 @@
                     "DNB Night": {
                         "equation": "chdnb * 50 - 0.5"
                     }
-                }
+                } /*,
+                "project_channels": {
+                    "channels": "all",
+                    "width": 2048,
+                    "height": 1024,
+                    //"individual_equalize": true,
+                    //"draw_map_overlay": true,
+                    "config": {
+                        "type": "equirec",
+                        "auto": true,
+                        "geotiff": true
+                    }
+                }*/
             },
             "modis": {
                 "handler": "image_handler",

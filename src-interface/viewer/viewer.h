@@ -28,15 +28,6 @@ namespace satdump
         virtual void drawContents(ImVec2 win_size) = 0;
         virtual float drawTreeMenu() = 0;
 
-        // Projection stuff
-        virtual bool canBeProjected() { return false; } // Can the current product be projected?
-        virtual bool hasProjection() { return false; }  // Does it have a projection ready?
-        virtual bool shouldProject() { return false; }  // Should it be projected?
-        virtual void updateProjection(int /*width*/, int /*height*/, nlohmann::json /*settings*/, float * /*progess*/) {}
-        virtual image::Image<uint16_t> &getProjection() { throw std::runtime_error("Did you check this could be projected!?"); }
-        virtual unsigned int getPreviewImageTexture() { return 0; }
-        virtual void setShouldProject(bool) {}
-
         static std::string getID();
         static std::shared_ptr<ViewerHandler> getInstance();
     };
@@ -103,55 +94,30 @@ namespace satdump
         ImageViewWidget projection_image_widget;
         void drawProjectionPanel();
 
-        struct ExternalProjSource
-        {
-            std::string name;
-            nlohmann::json cfg;
-            nlohmann::json path;
-            image::Image<uint16_t> img;
-        };
-        int selected_external_type = 0;
-        std::vector<std::shared_ptr<ExternalProjSource>> projections_external_sources;
-        image::Image<uint16_t> projectExternal(int width, int height, nlohmann::json tcfg, std::shared_ptr<ExternalProjSource> ep, float *progress);
-
         int projection_osm_zoom = 3;
         bool is_opening_layer = false;
-        bool projections_should_refresh = false;
 
         struct ProjectionLayer
         {
             std::string name;
-            int type; // 0 = products, 1 = external
-            std::shared_ptr<ProductsHandler> viewer_prods;
-            std::shared_ptr<ExternalProjSource> external;
+            image::Image<uint16_t> img;
             float opacity = 100;
             bool enabled = true;
             float progress = 0;
 
-            unsigned int non_products_texid = 0;
+            unsigned int preview_texid = 0;
             unsigned int getPreview()
             {
-                if (type == 0)
+                if (preview_texid == 0)
                 {
-                    return viewer_prods->handler->getPreviewImageTexture();
+                    preview_texid = makeImageTexture();
+                    auto img8 = img.resize_to(100, 100).to8bits();
+                    uint32_t *tmp_rgba = new uint32_t[img8.width() * img8.height()];
+                    uchar_to_rgba(img8.data(), tmp_rgba, img8.width() * img8.height(), img8.channels());
+                    updateImageTexture(preview_texid, tmp_rgba, img8.width(), img8.height());
+                    delete[] tmp_rgba;
                 }
-                else if (type == 1)
-                {
-                    if (non_products_texid == 0)
-                    {
-                        non_products_texid = makeImageTexture();
-                        auto img = external->img.resize_to(100, 100).to8bits();
-                        uint32_t *tmp_rgba = new uint32_t[img.width() * img.height()];
-                        uchar_to_rgba(img.data(), tmp_rgba, img.width() * img.height(), img.channels());
-                        updateImageTexture(non_products_texid, tmp_rgba, img.width(), img.height());
-                        delete[] tmp_rgba;
-                    }
-                    return non_products_texid;
-                }
-                else
-                {
-                    return 0;
-                }
+                return preview_texid;
             }
         };
         std::vector<ProjectionLayer> projection_layers;
@@ -160,7 +126,8 @@ namespace satdump
         FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Layer Image");
         FileSelectWidget projection_new_layer_cfg = FileSelectWidget("Config (JSON)", "Select Projection Config");
 
-        void refreshProjectionLayers();
+        bool projection_auto_mode = false, projection_auto_scale_mode = false;
+        double projection_autoscale_x = 0.016, projection_autoscale_y = 0.016;
 
         int projections_current_selected_proj = 0;
         /////////////
@@ -168,11 +135,12 @@ namespace satdump
         float projections_equirectangular_tl_lat = 90;
         float projections_equirectangular_br_lon = 180;
         float projections_equirectangular_br_lat = -90;
-         /////////////
+        /////////////
         float projections_mercator_tl_lon = -180;
         float projections_mercator_tl_lat = 90;
         float projections_mercator_br_lon = 180;
         float projections_mercator_br_lat = -90;
+        int projections_utm_zone = 30;
         /////////////
         float projections_stereo_center_lon = 0;
         float projections_stereo_center_lat = 0;

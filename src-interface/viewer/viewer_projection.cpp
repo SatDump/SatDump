@@ -12,6 +12,9 @@
 #include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
+#include "common/image/image_meta.h"
+#include "common/projection/projs2/proj_json.h"
+
 namespace satdump
 {
     re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
@@ -41,10 +44,11 @@ namespace satdump
 
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.96f);
             ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
-                                                                             "Mercator\0"
+                                                                             "UTM (Mercator)\0"
                                                                              "Stereo\0"
-                                                                             "Satellite (TPERS)\0"
-                                                                             "Azimuthal Equidistant\0");
+                         //  "Satellite (TPERS)\0"
+                         //  "Azimuthal Equidistant\0"
+            );
 
             if (projections_current_selected_proj == 0)
             {
@@ -65,6 +69,12 @@ namespace satdump
                 ImGui::Text("Bottom Right Coordinates :");
                 ImGui::InputFloat("Lat##br", &projections_mercator_br_lat);
                 ImGui::InputFloat("Lon##br", &projections_mercator_br_lon);
+
+                ImGui::InputInt("UTM Zone###projutmzone", &projections_utm_zone);
+                if (projections_utm_zone > 60)
+                    projections_utm_zone = 60;
+                if (projections_utm_zone < 1)
+                    projections_utm_zone = 1;
             }
             else if (projections_current_selected_proj == 2)
             {
@@ -74,22 +84,34 @@ namespace satdump
                 ImGui::Spacing();
                 ImGui::InputFloat("Scale##stereo", &projections_stereo_scale);
             }
-            else if (projections_current_selected_proj == 3)
+            /*            else if (projections_current_selected_proj == 3)
+                        {
+                            ImGui::Text("Center Coordinates :");
+                            ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
+                            ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
+                            ImGui::Spacing();
+                            ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
+                            ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
+                            ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
+                        }
+                        else if (projections_current_selected_proj == 4)
+                        {
+                            ImGui::Text("Center Coordinates :");
+                            ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
+                            ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
+                        }*/
+
+            if (projections_current_selected_proj != 0)
+                style::beginDisabled();
+            ImGui::Checkbox("Auto Mode###pojautomode", &projection_auto_mode);
+            ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
+            if (projection_auto_scale_mode)
             {
-                ImGui::Text("Center Coordinates :");
-                ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
-                ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
-                ImGui::Spacing();
-                ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
-                ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
-                ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
+                ImGui::InputDouble("Scale X##projscalexauto", &projection_autoscale_x);
+                ImGui::InputDouble("Scale Y##projscalexauto", &projection_autoscale_y);
             }
-            else if (projections_current_selected_proj == 4)
-            {
-                ImGui::Text("Center Coordinates :");
-                ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
-                ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
-            }
+            if (projections_current_selected_proj != 0)
+                style::endDisabled();
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -171,117 +193,118 @@ namespace satdump
                 style::endDisabled();
 
             {
-                if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
-                {
-                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-                    ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-                    ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
-                    ImGui::RadioButton("Other", &selected_external_type, 1);
-
-                    if (selected_external_type == 2)
-                    {
-                        ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
-                        if (!urlgood)
-                            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
-
-                        ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
-
-                        if (!urlgood)
-                        {
-                            if (ImGui::IsItemHovered())
-                                ImGui::SetTooltip("Invalid URL! must be https://server/{z}/{x}/{y}.ext");
-                            ImGui::PopStyleColor();
-                        }
-                    }
-                    else
-                    {
-                        ImGui::InputText("Name", &projection_new_layer_name);
-                        projection_new_layer_file.draw("Input Image");
-                        if (selected_external_type == 1)
-                            projection_new_layer_cfg.draw("Projection Config File");
-                    }
-
-                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.isValid() &&
-                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.isValid()))))
-                    {
-                        if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
-                        {
-                            urlgood = true;
-                            auto genfun = [this](int)
-                            {
-                                is_opening_layer = true;
-                                if (progress_pointer == nullptr)
-                                    progress_pointer = new float;
-                                general_progress = 0;
-                                general_sum = 1;
-
-                                std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
-                                if (selected_external_type == 2)
-                                    new_layer_cfg->name = "Tile Map";
-                                else
-                                    new_layer_cfg->name = projection_new_layer_name;
-
-                                if (selected_external_type == 1)
-                                    new_layer_cfg->path = projection_new_layer_cfg.getPath();
-                                else if (selected_external_type == 2)
-                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
-                                else
-                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-
-                                int i = -1;
-                                bool contains = false;
-                                do
+                /*                if (ImGui::BeginPopupModal("Add Layer##popup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
                                 {
-                                    contains = false;
-                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i + 1)));
-                                    for (int i = 0; i < (int)projection_layers.size(); i++)
-                                        if (projection_layers[i].name == curr_name)
-                                            contains = true;
-                                    i++;
-                                } while (contains);
-                                new_layer_cfg->name = (i == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i)));
+                                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                                    ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
+                                    ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 2);
+                                    ImGui::RadioButton("Other", &selected_external_type, 1);
 
-                                if (selected_external_type == 2)
-                                {
-                                    std::stringstream test(mapurl);
-                                    std::string segment;
-                                    std::vector<std::string> seglist;
-
-                                    while (std::getline(test, segment, '/'))
+                                    if (selected_external_type == 2)
                                     {
-                                        seglist.push_back(segment);
+                                        ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
+                                        if (!urlgood)
+                                            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+
+                                        ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
+
+                                        if (!urlgood)
+                                        {
+                                            if (ImGui::IsItemHovered())
+                                                ImGui::SetTooltip("Invalid URL! must be https://server/{z}/{x}/{y}.ext");
+                                            ImGui::PopStyleColor();
+                                        }
                                     }
-                                    logger->info("Generating tile map");
-                                    tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, progress_pointer).to16bits();
+                                    else
+                                    {
+                                        ImGui::InputText("Name", &projection_new_layer_name);
+                                        projection_new_layer_file.draw("Input Image");
+                                        if (selected_external_type == 1)
+                                            projection_new_layer_cfg.draw("Projection Config File");
+                                    }
+
+                                    if (ImGui::Button("Add layer") && (selected_external_type == 2 || (projection_new_layer_file.isValid() &&
+                                                                                                       (selected_external_type == 0 ? 1 : projection_new_layer_cfg.isValid()))))
+                                    {
+                                        if (re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len) || selected_external_type != 2)
+                                        {
+                                            urlgood = true;
+                                            auto genfun = [this](int)
+                                            {
+                                                is_opening_layer = true;
+                                                if (progress_pointer == nullptr)
+                                                    progress_pointer = new float;
+                                                general_progress = 0;
+                                                general_sum = 1;
+
+                                                std::shared_ptr<ExternalProjSource> new_layer_cfg = std::make_shared<ExternalProjSource>();
+                                                if (selected_external_type == 2)
+                                                    new_layer_cfg->name = "Tile Map";
+                                                else
+                                                    new_layer_cfg->name = projection_new_layer_name;
+
+                                                if (selected_external_type == 1)
+                                                    new_layer_cfg->path = projection_new_layer_cfg.getPath();
+                                                else if (selected_external_type == 2)
+                                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"mercator\"}");
+                                                else
+                                                    new_layer_cfg->cfg = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+
+                                                int i = -1;
+                                                bool contains = false;
+                                                do
+                                                {
+                                                    contains = false;
+                                                    std::string curr_name = ((i + 1) == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i + 1)));
+                                                    for (int i = 0; i < (int)projection_layers.size(); i++)
+                                                        if (projection_layers[i].name == curr_name)
+                                                            contains = true;
+                                                    i++;
+                                                } while (contains);
+                                                new_layer_cfg->name = (i == 0 ? new_layer_cfg->name : (new_layer_cfg->name + " #" + std::to_string(i)));
+
+                                                if (selected_external_type == 2)
+                                                {
+                                                    std::stringstream test(mapurl);
+                                                    std::string segment;
+                                                    std::vector<std::string> seglist;
+
+                                                    while (std::getline(test, segment, '/'))
+                                                    {
+                                                        seglist.push_back(segment);
+                                                    }
+                                                    logger->info("Generating tile map");
+                                                    tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                                    new_layer_cfg->img = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, progress_pointer).to16bits();
+                                                }
+                                                else
+                                                    new_layer_cfg->img.load_img(projection_new_layer_file.getPath());
+
+                                                projections_external_sources.push_back(new_layer_cfg);
+
+                                                if (selected_external_type == 2)
+                                                    selected_external_type = 0;
+
+                                                progress_pointer = nullptr;
+                                                projections_should_refresh = true;
+                                                is_opening_layer = false;
+                                            };
+                                            ui_thread_pool.push(genfun);
+                                            ImGui::CloseCurrentPopup();
+                                        }
+                                        else
+                                        {
+                                            urlgood = false;
+                                        }
+                                    }
+                                    ImGui::SameLine();
+
+                                    if (ImGui::Button("Cancel"))
+                                        ImGui::CloseCurrentPopup();
+
+                                    ImGui::EndPopup();
                                 }
-                                else
-                                    new_layer_cfg->img.load_img(projection_new_layer_file.getPath());
-
-                                projections_external_sources.push_back(new_layer_cfg);
-
-                                if (selected_external_type == 2)
-                                    selected_external_type = 0;
-
-                                progress_pointer = nullptr;
-                                projections_should_refresh = true;
-                                is_opening_layer = false;
-                            };
-                            ui_thread_pool.push(genfun);
-                            ImGui::CloseCurrentPopup();
-                        }
-                        else
-                        {
-                            urlgood = false;
-                        }
-                    }
-                    ImGui::SameLine();
-
-                    if (ImGui::Button("Cancel"))
-                        ImGui::CloseCurrentPopup();
-
-                    ImGui::EndPopup();
-                }
+                */
             }
 
             if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
@@ -292,20 +315,20 @@ namespace satdump
                     ImGui::BeginGroup();
                     ProjectionLayer &layer = projection_layers[i];
                     std::string label;
-                    if (layer.type == 0)
-                    {
-                        label = layer.viewer_prods->products->instrument_name;
-                        if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
-                            label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
-                    }
-                    else
-                        label = layer.name;
+                    //                    if (layer.type == 0)
+                    //                    {
+                    //                        label = layer.viewer_prods->products->instrument_name;
+                    //                        if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
+                    //                            label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
+                    //                    }
+                    //                    else
+                    label = layer.name;
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 4 * ui_scale));
                     ImGui::Text("%s", label.c_str());
-                    if (ImGui::IsItemHovered() && layer.type == 0)
-                    {
-                        ImGui::SetTooltip("%s", layer.viewer_prods->dataset_name.c_str());
-                    }
+                    //                    if (ImGui::IsItemHovered() && layer.type == 0)
+                    //                    {
+                    //                        ImGui::SetTooltip("%s", layer.viewer_prods->dataset_name.c_str());
+                    //                    }
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
@@ -321,19 +344,7 @@ namespace satdump
                         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
                         if (ImGui::Button(std::string(u8"\uf00d##layerdelete" + layer.name + std::to_string(i)).c_str()))
                         {
-                            if (layer.type == 1 || layer.type == 2)
-                            {
-                                for (int f = 0; f < (int)projections_external_sources.size(); f++)
-                                    if (projections_external_sources[f]->name == projection_layers[i].name)
-                                        projections_external_sources.erase(projections_external_sources.begin() + f);
-
-                                projection_layers.erase(projection_layers.begin() + i);
-                            }
-                            else if (layer.type == 0)
-                            {
-                                layer.viewer_prods->handler->setShouldProject(false);
-                            }
-                            refreshProjectionLayers();
+                            projection_layers.erase(projection_layers.begin() + i);
                             ImGui::PopStyleVar();
                             ImGui::PopStyleColor(2);
                             ImGui::EndGroup();
@@ -411,12 +422,6 @@ namespace satdump
         {
             projection_overlay_handler.drawUI();
         }
-
-        if (projections_should_refresh) // Refresh in the UI thread!
-        {
-            refreshProjectionLayers();
-            projections_should_refresh = false;
-        }
     }
 
     void ViewerApplication::generateProjectionImage()
@@ -448,7 +453,7 @@ namespace satdump
             cfg["offset_y"] = projections_mercator_tl_lat;
             cfg["scalar_x"] = projections_mercator_br_lon;
             cfg["scalar_y"] = projections_mercator_br_lat;
-            // cfg["zone"] = 33;
+            cfg["zone"] = projections_utm_zone;
             //  cfg["tl_lon"] = projections_equirectangular_tl_lon;
             //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
             //  cfg["br_lon"] = projections_equirectangular_br_lon;
@@ -464,20 +469,66 @@ namespace satdump
             cfg["offset_x"] = -projections_image_width * 0.5 * projections_stereo_scale;
             cfg["offset_y"] = projections_image_height * 0.5 * projections_stereo_scale;
         }
-        else if (projections_current_selected_proj == 3)
+        /*        else if (projections_current_selected_proj == 3)
+                {
+                    cfg["type"] = "tpers";
+                    cfg["lon"] = projections_tpers_lon;
+                    cfg["lat"] = projections_tpers_lat;
+                    cfg["alt"] = projections_tpers_alt;
+                    cfg["ang"] = projections_tpers_ang;
+                    cfg["azi"] = projections_tpers_azi;
+                }
+                else if (projections_current_selected_proj == 4)
+                {
+                    cfg["type"] = "azeq";
+                    cfg["lon"] = projections_azeq_lon;
+                    cfg["lat"] = projections_azeq_lat;
+                }*/
+
+        // Automatic projection settings!
+        if (projection_auto_mode && projections_current_selected_proj == 0)
         {
-            cfg["type"] = "tpers";
-            cfg["lon"] = projections_tpers_lon;
-            cfg["lat"] = projections_tpers_lat;
-            cfg["alt"] = projections_tpers_alt;
-            cfg["ang"] = projections_tpers_ang;
-            cfg["azi"] = projections_tpers_azi;
-        }
-        else if (projections_current_selected_proj == 4)
-        {
-            cfg["type"] = "azeq";
-            cfg["lon"] = projections_azeq_lon;
-            cfg["lat"] = projections_azeq_lat;
+            reprojection::ProjBounds bounds;
+            bounds.min_lon = 180;
+            bounds.max_lon = -180;
+            bounds.min_lat = 90;
+            bounds.max_lat = -90;
+            for (auto &layer : projection_layers)
+            {
+                auto boundshere = reprojection::determineProjectionBounds(layer.img);
+                if (boundshere.valid)
+                {
+                    if (boundshere.min_lon < bounds.min_lon)
+                        bounds.min_lon = boundshere.min_lon;
+                    if (boundshere.max_lon > bounds.max_lon)
+                        bounds.max_lon = boundshere.max_lon;
+                    if (boundshere.min_lat < bounds.min_lat)
+                        bounds.min_lat = boundshere.min_lat;
+                    if (boundshere.max_lat > bounds.max_lat)
+                        bounds.max_lat = boundshere.max_lat;
+                }
+            }
+
+            logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
+
+            if (projection_auto_scale_mode)
+            {
+                cfg["scale_x"] = projection_autoscale_x;
+                cfg["scale_y"] = projection_autoscale_y;
+            }
+            else
+            {
+                cfg["width"] = projections_image_width;
+                cfg["height"] = projections_image_height;
+            }
+
+            reprojection::tryAutoTuneProjection(bounds, cfg);
+            if (cfg.contains("width"))
+                projections_image_width = cfg["width"];
+            if (cfg.contains("height"))
+                projections_image_height = cfg["height"];
+
+            logger->debug("\n%s", cfg.dump(4).c_str());
         }
 
         // Setup final image
@@ -504,17 +555,24 @@ namespace satdump
             if (progress_pointer == nullptr)
                 progress_pointer = &layer.progress;
 
-            if (layer.type == 0)
-            {
-                layer.viewer_prods->handler->updateProjection(projections_image_width, projections_image_height, cfg, &layer.progress);
-                layers_images.push_back(layer.viewer_prods->handler->getProjection());
-            }
-            else
-            {
-                auto img = projectExternal(projections_image_width, projections_image_height, cfg, layer.external, &layer.progress);
-                // img.to_rgb();
-                layers_images.push_back(img);
-            }
+            int width = projections_image_width;
+            int height = projections_image_height;
+
+            reprojection::ReprojectionOperation op;
+
+            if (!image::has_metadata_proj_cfg(layer.img))                  // Just in case...
+                continue;                                                  //   return image::Image<uint16_t>(width, height, 4);
+            if (!image::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
+                continue;                                                  //        return image::Image<uint16_t>(width, height, 4);
+
+            op.target_prj_info = cfg;
+            op.img = layer.img;
+            op.output_width = width;
+            op.output_height = height;
+
+            image::Image<uint16_t> res = reprojection::reproject(op, progress_pointer);
+            layers_images.push_back(res);
+
             general_progress++;
         }
 
@@ -560,85 +618,5 @@ namespace satdump
         general_progress = 1;
         progress_pointer = nullptr;
         projections_are_generating = false;
-    }
-
-    image::Image<uint16_t> ViewerApplication::projectExternal(int width, int height, nlohmann::json tcfg, std::shared_ptr<ExternalProjSource> ep, float *progress)
-    {
-        reprojection::ReprojectionOperation op;
-
-        if (ep->path.size() > 0)
-            op.source_prj_info = loadJsonFile(ep->path);
-        else
-            op.source_prj_info = ep->cfg;
-
-        if (!op.source_prj_info.contains("type")) // Just in case...
-            return image::Image<uint16_t>(width, height, 4);
-
-        op.target_prj_info = tcfg;
-        op.img = ep->img;
-        op.output_width = width;
-        op.output_height = height;
-        reprojection::ProjectionResult res = reprojection::reproject(op, progress);
-        return res.img;
-    }
-
-    void ViewerApplication::refreshProjectionLayers()
-    {
-        // Check for *new* ext layers
-        for (int i = 0; i < (int)projections_external_sources.size(); i++)
-        {
-            bool contains = false;
-
-            for (ProjectionLayer &lay : projection_layers)
-                if (projections_external_sources[i]->name == lay.name)
-                    contains = true;
-
-            if (!contains)
-                projection_layers.insert(projection_layers.begin(), {projections_external_sources[i]->name, 1, nullptr, projections_external_sources[i]});
-        }
-
-        // Check for *new* products layers
-        for (int i = 0; i < (int)products_and_handlers.size(); i++)
-        {
-            if (products_and_handlers[i]->handler->canBeProjected() && products_and_handlers[i]->handler->shouldProject())
-            {
-                std::string label = products_and_handlers[i]->products->instrument_name;
-
-                bool contains = false;
-                for (ProjectionLayer &lay : projection_layers)
-                {
-                    if (lay.type != 0)
-                        continue;
-
-                    if (label == lay.name && products_and_handlers[i].get() == lay.viewer_prods.get())
-                        contains = true;
-                }
-
-                if (!contains)
-                    projection_layers.insert(projection_layers.begin(), {label, 0, products_and_handlers[i], nullptr});
-            }
-        }
-
-    recheck:
-        // Check for products layers to delete
-        for (int i = 0; i < (int)projection_layers.size(); i++)
-        {
-            ProjectionLayer &lay = projection_layers[i];
-
-            if (lay.type != 0)
-                continue;
-
-            bool contains = false;
-            for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                if (products_and_handlers[i]->handler->canBeProjected() && products_and_handlers[i]->handler->shouldProject())
-                    if (products_and_handlers[i]->products->instrument_name == lay.name && products_and_handlers[i].get() == lay.viewer_prods.get())
-                        contains = true;
-
-            if (!contains)
-            {
-                projection_layers.erase(projection_layers.begin() + i);
-                goto recheck;
-            }
-        }
     }
 }

@@ -12,27 +12,47 @@
 
 #include "common/overlay_handler.h"
 
+#include "common/image/image_meta.h"
+
 namespace satdump
 {
-    reprojection::ProjectionResult projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
+    image::Image<uint16_t> projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
     {
         reprojection::ReprojectionOperation op;
-        op.source_prj_info = img_products.get_proj_cfg();
+        nlohmann::json proj_cfg;
+        proj_cfg = img_products.get_proj_cfg();
         op.target_prj_info = proj_settings["config"];
-        if (!op.target_prj_info.contains("tl_lon"))
-            op.target_prj_info["tl_lon"] = -180;
-        if (!op.target_prj_info.contains("tl_lat"))
-            op.target_prj_info["tl_lat"] = 90;
-        if (!op.target_prj_info.contains("br_lon"))
-            op.target_prj_info["br_lon"] = 180;
-        if (!op.target_prj_info.contains("br_lat"))
-            op.target_prj_info["br_lat"] = -90;
+        //        if (!op.target_prj_info.contains("tl_lon"))
+        //            op.target_prj_info["tl_lon"] = -180;
+        //        if (!op.target_prj_info.contains("tl_lat"))
+        //            op.target_prj_info["tl_lat"] = 90;
+        //        if (!op.target_prj_info.contains("br_lon"))
+        //            op.target_prj_info["br_lon"] = 180;
+        //        if (!op.target_prj_info.contains("br_lat"))
+        //            op.target_prj_info["br_lat"] = -90;
         op.img = img;
-        op.output_width = proj_settings["width"].get<int>();
-        op.output_height = proj_settings["height"].get<int>();
-        op.source_prj_info["metadata"] = metadata;
-        op.source_prj_info["metadata"]["tle"] = img_products.get_tle();
-        op.source_prj_info["metadata"]["timestamps"] = timestamps;
+        proj_cfg["metadata"] = metadata;
+        proj_cfg["metadata"]["tle"] = img_products.get_tle();
+        proj_cfg["metadata"]["timestamps"] = timestamps;
+
+        image::set_metadata_proj_cfg(op.img, proj_cfg);
+
+        if (op.target_prj_info.contains("auto") && op.target_prj_info["auto"].get<bool>())
+        {
+            auto bounds = reprojection::determineProjectionBounds(op.img);
+            logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
+            reprojection::tryAutoTuneProjection(bounds, op.target_prj_info);
+            logger->debug("%d, %d\n%s", op.output_width, op.output_height, op.target_prj_info.dump(4).c_str());
+        }
+
+        if (!op.target_prj_info.contains("width") || !op.target_prj_info.contains("height"))
+        {
+            logger->error("No width or height defined for projection!");
+            return image::Image<uint16_t>();
+        }
+
+        op.output_width = op.target_prj_info["width"].get<int>();
+        op.output_height = op.target_prj_info["height"].get<int>();
 
         if (proj_settings.contains("old_algo"))
             op.use_old_algorithm = proj_settings["old_algo"];
@@ -41,20 +61,20 @@ namespace satdump
             if (proj_settings["equalize"].get<bool>())
                 op.img.equalize();
 
-        reprojection::ProjectionResult ret = reprojection::reproject(op);
+        image::Image<uint16_t> retimg = reprojection::reproject(op);
 
         OverlayHandler overlay_handler;
         overlay_handler.set_config(proj_settings);
 
-        if (overlay_handler.enabled())
+        if (overlay_handler.enabled() && image::has_metadata_proj_cfg(retimg))
         {
-            auto proj_func = satdump::reprojection::setupProjectionFunction(ret.img.width(), ret.img.height(), ret.settings);
-            overlay_handler.apply(ret.img, proj_func);
+            auto proj_func = satdump::reprojection::setupProjectionFunction(retimg.width(), retimg.height(), image::get_metadata_proj_cfg(retimg));
+            overlay_handler.apply(retimg, proj_func);
         }
 
-        ret.img.to_rgb();
+        retimg.to_rgba();
 
-        return ret;
+        return retimg;
     }
 
     void process_image_products(Products *products, std::string product_path)
@@ -184,12 +204,15 @@ namespace satdump
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
                         logger->debug("Reprojecting composite %s", name.c_str());
-                        reprojection::ProjectionResult ret = projectImg(compo.value()["project"],
-                                                                        final_metadata,
-                                                                        rgb_image,
-                                                                        final_timestamps,
-                                                                        *img_products);
-                        ret.img.save_img(product_path + "/rgb_" + name + "_projected");
+                        image::Image<uint16_t> retimg = projectImg(compo.value()["project"],
+                                                                   final_metadata,
+                                                                   rgb_image,
+                                                                   final_timestamps,
+                                                                   *img_products);
+                        if (compo.value()["project"]["config"].contains("geotiff"))
+                            retimg.save_tiff(product_path + "/rgb_" + name + "_projected.tif");
+                        else
+                            retimg.save_img(product_path + "/rgb_" + name + "_projected");
                     }
                 }
                 catch (std::exception &e)
@@ -231,12 +254,15 @@ namespace satdump
                     auto &img = img_products->images[chanid];
 
                     logger->debug("Reprojecting channel %s", img.channel_name.c_str());
-                    reprojection::ProjectionResult ret = projectImg(instrument_viewer_settings["project_channels"],
-                                                                    img_products->get_channel_proj_metdata(chanid),
-                                                                    img.image,
-                                                                    img_products->get_timestamps(chanid),
-                                                                    *img_products);
-                    ret.img.save_img(product_path + "/channel_" + img.channel_name + "_projected");
+                    image::Image<uint16_t> retimg = projectImg(instrument_viewer_settings["project_channels"],
+                                                               img_products->get_channel_proj_metdata(chanid),
+                                                               img.image,
+                                                               img_products->get_timestamps(chanid),
+                                                               *img_products);
+                    if (instrument_viewer_settings["project_channels"]["config"].contains("geotiff"))
+                        retimg.save_tiff(product_path + "/channel_" + img.channel_name + "_projected.tif");
+                    else
+                        retimg.save_img(product_path + "/channel_" + img.channel_name + "_projected");
                 }
                 catch (std::exception &e)
                 {

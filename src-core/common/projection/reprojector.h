@@ -12,23 +12,28 @@ namespace satdump
         // Re-Projection operation
         struct ReprojectionOperation
         {
-            nlohmann::json source_prj_info;
-            nlohmann::json target_prj_info;
             image::Image<uint16_t> img;
             int output_width, output_height;
+            nlohmann::json target_prj_info;
             bool use_old_algorithm = false;
         };
 
-        struct ProjectionResult
-        {
-            nlohmann::json settings;
-            image::Image<uint16_t> img;
-        };
-
-        ProjectionResult reproject(ReprojectionOperation &op, float *progress = nullptr);
+        image::Image<uint16_t> reproject(ReprojectionOperation &op, float *progress = nullptr);
 
         std::function<std::pair<int, int>(double, double, int, int)> setupProjectionFunction(int width, int height,
                                                                                              nlohmann::json params,
                                                                                              bool rotate = false);
+
+        struct ProjBounds
+        {
+            double min_lon;
+            double max_lon;
+            double min_lat;
+            double max_lat;
+            bool valid = false;
+        };
+
+        ProjBounds determineProjectionBounds(image::Image<uint16_t> &img);
+        void tryAutoTuneProjection(ProjBounds bounds, nlohmann::json &params);
     }
 }

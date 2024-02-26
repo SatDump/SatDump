@@ -44,7 +44,7 @@ namespace geotiff
         TIFFSetField(tif, GEOTIFFTAG_ModelTiepointTag, 6, &tiepoints);
 
         // Then write pixel scales
-        double pixelscales[3] = {proj->proj_scalar_x, proj->proj_scalar_y, 0.0};
+        double pixelscales[3] = {proj->proj_scalar_x, -proj->proj_scalar_y, 0.0};
         TIFFSetField(tif, GEOTIFFTAG_ModelPixelScaleTag, 3, &pixelscales);
 
         // Finally, the GeoKeys

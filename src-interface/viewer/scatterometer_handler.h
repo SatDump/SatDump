@@ -42,8 +42,6 @@ namespace satdump
         std::string ascat_select_channel_image_str;
 
         // Projections
-        bool use_draw_proj_algo = false;
-        bool projection_ready = false, should_project = false;
         image::Image<uint16_t> projected_img;
 
         // GUI
@@ -64,12 +62,7 @@ namespace satdump
         float drawTreeMenu();
 
         bool canBeProjected();
-        bool hasProjection();
-        bool shouldProject();
-        void updateProjection(int width, int height, nlohmann::json settings, float *progess);
-        image::Image<uint16_t> &getProjection();
-        unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
-        void setShouldProject(bool proj) { should_project = proj; }
+        void addCurrentToProjections();
 
         static std::string getID() { return "scatterometer_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ScatterometerViewerHandler>(); }

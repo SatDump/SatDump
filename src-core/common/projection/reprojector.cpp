@@ -50,15 +50,16 @@ namespace satdump
             }
         }
 
-        ProjectionResult reproject(ReprojectionOperation &op, float *progress)
+        image::Image<uint16_t> reproject(ReprojectionOperation &op, float *progress)
         {
-            ProjectionResult result_prj;
+            image::Image<uint16_t> result_img;
 
             if (op.img.size() == 0)
                 throw std::runtime_error("Can't reproject an empty image!");
+            if (!image::has_metadata_proj_cfg(op.img))
+                throw std::runtime_error("Can't reproject an image with no proj config!");
 
-            result_prj.img.init(op.output_width, op.output_height, 4);
-            result_prj.settings = op.target_prj_info;
+            result_img.init(op.output_width, op.output_height, 4);
 
             // Attempt to init target proj
             proj::projection_t trg_proj;
@@ -75,7 +76,7 @@ namespace satdump
             if (proj::projection_setup(&trg_proj) || trg_proj_err)
             {
                 logger->error("Invalid target projection? Could not init! %d : \n%s", (int)trg_proj_err, op.target_prj_info.dump(4).c_str());
-                return result_prj;
+                return result_img;
             }
 
             // Attempt to init source proj
@@ -83,7 +84,7 @@ namespace satdump
             bool src_proj_err = false;
             try
             {
-                src_proj = op.source_prj_info;
+                src_proj = image::get_metadata_proj_cfg(op.img);
             }
             catch (std::exception &e)
             {
@@ -92,19 +93,19 @@ namespace satdump
 
             if (!proj::projection_setup(&src_proj) && !src_proj_err)
             { // If the input is a standard projection
-                for (int x = 0; x < (int)result_prj.img.width(); x++)
+                for (int x = 0; x < (int)result_img.width(); x++)
                 {
-                    for (int y = 0; y < (int)result_prj.img.height(); y++)
+                    for (int y = 0; y < (int)result_img.height(); y++)
                     {
                         double lon, lat, x2, y2; // To allow OMP...
                         if (proj::projection_perform_inv(&trg_proj, x, y, &lon, &lat))
                             continue;
                         if (proj::projection_perform_fwd(&src_proj, lon, lat, &x2, &y2))
                             continue;
-                        transposePixel(op.img, result_prj.img, x2, y2, x, y);
+                        transposePixel(op.img, result_img, x2, y2, x, y);
                     }
                     if (progress != nullptr)
-                        *progress = float(x) / float(result_prj.img.width());
+                        *progress = float(x) / float(result_img.width());
                 }
 
                 proj::projection_free(&src_proj);
@@ -121,7 +122,7 @@ namespace satdump
                     logger->info("New?");
 
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(op.source_prj_info, op.img.width(), op.img.height());
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
                     operation.input_image = op.img;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
@@ -133,36 +134,31 @@ namespace satdump
 
                     satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation, progress);
 
-                    //  warped_image = result.output_image;
-                    //  tl_lon = result.top_left.lon;
-                    //  tl_lat = result.top_left.lat;
-                    //  br_lon = result.bottom_right.lon;
-                    //  br_lat = result.bottom_right.lat;
                     src_proj = proj::projection_t();
                     src_proj.type = proj::ProjType_Equirectangular;
                     src_proj.proj_offset_x = result.top_left.lon;
                     src_proj.proj_offset_y = result.top_left.lat;
-                    src_proj.proj_scalar_x = -(result.top_left.lon - result.bottom_right.lon) / double(result.output_image.width());
-                    src_proj.proj_scalar_y = (result.top_left.lat - result.bottom_right.lat) / double(result.output_image.height());
+                    src_proj.proj_scalar_x = (result.bottom_right.lon - result.top_left.lon) / double(result.output_image.width());
+                    src_proj.proj_scalar_y = (result.bottom_right.lat - result.top_left.lat) / double(result.output_image.height());
 
                     result.output_image.save_jpeg("intermediate.jpg");
                     logger->debug("\n%d", nlohmann::json(src_proj).dump(4));
 
                     if (!proj::projection_setup(&src_proj) && !src_proj_err)
                     { // If the input is a standard projection
-                        for (int x = 0; x < (int)result_prj.img.width(); x++)
+                        for (int x = 0; x < (int)result_img.width(); x++)
                         {
-                            for (int y = 0; y < (int)result_prj.img.height(); y++)
+                            for (int y = 0; y < (int)result_img.height(); y++)
                             {
                                 double lon, lat, x2, y2; // To allow OMP...
                                 if (proj::projection_perform_inv(&trg_proj, x, y, &lon, &lat))
                                     continue;
                                 if (proj::projection_perform_fwd(&src_proj, lon, lat, &x2, &y2))
                                     continue;
-                                transposePixel(result.output_image, result_prj.img, x2, y2, x, y);
+                                transposePixel(result.output_image, result_img, x2, y2, x, y);
                             }
                             if (progress != nullptr)
-                                *progress = float(x) / float(result_prj.img.width());
+                                *progress = float(x) / float(result_img.width());
                         }
 
                         proj::projection_free(&src_proj);
@@ -170,8 +166,10 @@ namespace satdump
                 }
             }
 
+            image::set_metadata_proj_cfg(result_img, trg_proj);
+
             proj::projection_free(&trg_proj);
-            return result_prj;
+            return result_img;
         }
 
         std::function<std::pair<int, int>(double, double, int, int)> setupProjectionFunction(int width, int height,
@@ -231,6 +229,127 @@ namespace satdump
             }
 
             throw std::runtime_error("Invalid projection!!!!");
+        }
+
+        ProjBounds determineProjectionBounds(image::Image<uint16_t> &img)
+        {
+            if (!image::has_metadata(img))
+                return {0, 0, 0, 0, false};
+
+            if (!image::get_metadata(img).contains("proj_cfg"))
+                return {0, 0, 0, 0, false};
+
+            nlohmann::json params = image::get_metadata(img)["proj_cfg"];
+
+            proj::projection_t proj;
+            bool proj_err = false;
+            try
+            {
+                proj = params;
+            }
+            catch (std::exception &e)
+            {
+                proj_err = true;
+            }
+
+            ProjBounds bounds;
+            if (!proj::projection_setup(&proj) && !proj_err)
+            {
+                proj::projection_perform_inv(&proj, 0, 0, &bounds.min_lon, &bounds.max_lat);
+                proj::projection_perform_inv(&proj, img.width(), img.height(), &bounds.max_lon, &bounds.min_lat);
+                bounds.valid = true;
+                proj::projection_free(&proj);
+            }
+            else
+            {
+                auto gcps = gcp_compute::compute_gcps(params, img.width(), img.height());
+
+                bounds.min_lon = 180;
+                bounds.max_lon = -180;
+                bounds.min_lat = 90;
+                bounds.max_lat = -90;
+                for (auto &gcp : gcps)
+                {
+                    if (bounds.min_lon > gcp.lon)
+                        bounds.min_lon = gcp.lon;
+                    if (bounds.max_lon < gcp.lon)
+                        bounds.max_lon = gcp.lon;
+                    if (bounds.min_lat > gcp.lat)
+                        bounds.min_lat = gcp.lat;
+                    if (bounds.max_lat < gcp.lat)
+                        bounds.max_lat = gcp.lat;
+                }
+                if (gcps.size() > 2)
+                    bounds.valid = true;
+            }
+
+            bounds.min_lon -= 1;
+            bounds.max_lon += 1;
+            bounds.min_lat -= 1;
+            bounds.max_lat += 1;
+
+            if (bounds.min_lon < -180)
+                bounds.min_lon = -180;
+            if (bounds.max_lon > 180)
+                bounds.max_lon = 180;
+            if (bounds.min_lat < -90)
+                bounds.min_lat = -90;
+            if (bounds.max_lat > 90)
+                bounds.max_lat = 90;
+
+            return bounds;
+        }
+
+        void tryAutoTuneProjection(ProjBounds bounds, nlohmann::json &params)
+        {
+            proj::projection_t p_main = params;
+            if (p_main.type == proj::ProjType_Equirectangular)
+            {
+                params["offset_x"] = bounds.min_lon;
+                params["offset_y"] = bounds.max_lat;
+                if (!params.contains("width") || !params.contains("height"))
+                {
+                    double scale_x = params.contains("scale_x") ? params["scale_x"].get<double>() : 0.016;
+                    double scale_y = params.contains("scale_y") ? params["scale_y"].get<double>() : 0.016;
+                    params["scalar_x"] = scale_x;
+                    params["scalar_y"] = -scale_y;
+                    params["width"] = (bounds.max_lon - bounds.min_lon) / scale_x;
+                    params["height"] = (bounds.max_lat - bounds.min_lat) / scale_y;
+                }
+                else
+                {
+                    double width = params["width"];
+                    double height = params["height"];
+                    params["scalar_x"] = (bounds.max_lon - bounds.min_lon) / width;
+                    params["scalar_y"] = -(bounds.max_lat - bounds.min_lat) / height;
+                }
+            }
+            /*else if (p_main.type == proj::ProjType_UniversalTransverseMercator)
+            {
+                params["offset_x"] = 0.0;
+                params["offset_y"] = 0.0;
+                params["scalar_x"] = 1.0;
+                params["scalar_y"] = 1.0;
+                proj::projection_t proj = params;
+                if (!proj::projection_setup(&proj))
+                {
+                    double dummy;
+                    double tl_x, tl_y;
+                    double br_x, br_y;
+                    if (!proj::projection_perform_fwd(&proj, bounds.max_lon, bounds.max_lat, &dummy, &tl_y) &&
+                        !proj::projection_perform_fwd(&proj, bounds.max_lon, bounds.min_lat, &br_x, &dummy) &&
+                        !proj::projection_perform_fwd(&proj, bounds.min_lon, bounds.min_lat, &tl_x, &dummy) &&
+                        !proj::projection_perform_fwd(&proj, (bounds.min_lon + bounds.max_lon) / 2.0, bounds.min_lat, &dummy, &br_y))
+                    {
+                        logger->trace("Final Bounds are : %f, %f - %f, %f", tl_x, tl_y, br_x, br_y);
+                        params["offset_x"] = tl_x;
+                        params["offset_y"] = tl_y;
+                        params["scalar_x"] = -(tl_x - br_x) / vx;
+                        params["scalar_y"] = -(tl_y - br_y) / vy;
+                    }
+                    proj::projection_free(&proj);
+                }
+            }*/
         }
     }
 }

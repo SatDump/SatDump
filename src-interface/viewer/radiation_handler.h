@@ -42,17 +42,10 @@ namespace satdump
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<RadiationViewerHandler>(); }
 
         // Projections
-        bool use_draw_proj_algo = false;
-        bool projection_ready = false, should_project = false;
         image::Image<uint16_t> projected_img;
 
         bool canBeProjected();
-        bool hasProjection();
-        bool shouldProject();
-        void updateProjection(int width, int height, nlohmann::json settings, float *progess);
-        image::Image<uint16_t> &getProjection();
-        unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
-        void setShouldProject(bool proj) { should_project = proj; }
+        void addCurrentToProjections();
 
         ctpl::thread_pool handler_thread_pool = ctpl::thread_pool(1);
         std::mutex async_image_mutex;
