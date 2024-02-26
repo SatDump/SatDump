@@ -40,8 +40,8 @@ namespace meteor
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
             {
-                if (packet.payload.size() - 1 != packet.header.packet_length)
-                    return;
+                // if (packet.payload.size() - 1 != packet.header.packet_length)
+                //     return;
 
                 int currentChannel = -1;
 
