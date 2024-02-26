@@ -206,6 +206,7 @@ namespace nat2pro
         proj.proj_offset_y = 5568748.275756353;  // 6356583.80;
         proj.proj_scalar_x = 3000.403165817;
         proj.proj_scalar_y = -3000.403165817;
+        proj.lam0 = longitude * DEG2RAD;
         nlohmann::json proj_cfg = proj;
         proj_cfg["width"] = 3712;
         proj_cfg["height"] = 3712;
