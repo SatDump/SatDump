@@ -18,7 +18,7 @@ namespace ccsds
           d_iq_invert(parameters.count("iq_invert") > 0 ? parameters["iq_invert"].get<bool>() : false),
           d_cadu_size(parameters["cadu_size"].get<int>()),
           d_cadu_bytes(ceil(d_cadu_size / 8.0)), // If we can't use complete bytes, add one and padding
-          d_buffer_size(d_cadu_size),
+          d_buffer_size(std::max<int>(d_cadu_size, 8192)),
 
           d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
           d_viterbi_ber_threasold(parameters["viterbi_ber_thresold"].get<float>()),
@@ -39,7 +39,7 @@ namespace ccsds
     {
         viterbi_out = new uint8_t[d_buffer_size * 8];
         soft_buffer = new int8_t[d_buffer_size];
-        frame_buffer = new uint8_t[d_cadu_size * 8]; // Larger by safety
+        frame_buffer = new uint8_t[d_buffer_size * 8]; // Larger by safety
         d_bpsk_90 = false;
         d_oqpsk_mode = false;
 
