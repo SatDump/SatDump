@@ -73,6 +73,12 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": true,
+                "name": "Fill Missing Data",
+                "description": "Fills in black lines caused by\nsignal drop-outs or interference"
             }
         },
         "work": {
@@ -93,7 +99,8 @@
             },
             "products": {
                 "meteor_msumr_lrpt": {
-                    "m2x_mode": false
+                    "m2x_mode": false,
+                    "max_fill_lines": 40
                 }
             }
         }
@@ -124,6 +131,12 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": true,
+                "name": "Fill Missing Data",
+                "description": "Fills in black lines caused by\nsignal drop-outs or interference"
             }
         },
         "work": {
@@ -155,7 +168,8 @@
             },
             "products": {
                 "meteor_msumr_lrpt": {
-                    "m2x_mode": true
+                    "m2x_mode": true,
+                    "max_fill_lines": 40
                 }
             }
         }
@@ -186,6 +200,12 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": true,
+                "name": "Fill Missing Data",
+                "description": "Fills in black lines caused by\nsignal drop-outs or interference"
             }
         },
         "work": {
@@ -209,7 +229,8 @@
             },
             "products": {
                 "meteor_msumr_lrpt": {
-                    "m2x_mode": true
+                    "m2x_mode": true,
+                    "max_fill_lines": 40
                 }
             }
         }

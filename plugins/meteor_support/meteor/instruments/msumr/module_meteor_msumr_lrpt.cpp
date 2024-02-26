@@ -145,9 +145,17 @@ namespace meteor
             else // Default to M2
                 msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
 
+            int max_fill_lines = 0;
+            if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
+            {
+                max_fill_lines = 40;
+                if (d_parameters.contains("max_fill_lines"))
+                    max_fill_lines = d_parameters["max_fill_lines"];
+            }
+
             for (int i = 0; i < 6; i++)
             {
-                image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
+                image::Image<uint16_t> img = msureader.getChannel(i, max_fill_lines).to16bits();
                 if (img.size() > 0)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
