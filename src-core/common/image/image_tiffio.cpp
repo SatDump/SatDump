@@ -28,7 +28,7 @@ namespace image
             TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, d_width);
             TIFFSetField(tif, TIFFTAG_IMAGELENGTH, d_height);
             TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, d_channels);
-            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, d_depth);
             TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
             TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
             TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, d_channels == 1 ? PHOTOMETRIC_MINISBLACK : PHOTOMETRIC_RGB);
@@ -39,7 +39,7 @@ namespace image
                 TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, 1, &out);
             }
 
-            tsize_t linebytes = d_channels * d_width * sizeof(uint8_t); // length in memory of one row of pixel in the image.
+            tsize_t linebytes = d_channels * d_width * (d_depth == 8 ? sizeof(uint8_t) : sizeof(uint16_t));
 
             unsigned char *buf = NULL;
             if (TIFFScanlineSize(tif) == linebytes)
@@ -47,10 +47,8 @@ namespace image
             else
                 buf = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
 
-            // We set the strip size of the file to be size of one row of pixels
             TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, d_width * d_channels));
 
-            // Now writing image to the file one strip at a time
             for (size_t y = 0; y < d_height; y++)
             {
                 if (d_channels == 4)
@@ -60,17 +58,13 @@ namespace image
                         size_t i2 = /*((d_height - 1) - y)*/ y * d_width + x;
                         if (d_depth == 8)
                         {
-                            buf[x * 4 + 0] = channel(0)[i2];
-                            buf[x * 4 + 1] = channel(1)[i2];
-                            buf[x * 4 + 2] = channel(2)[i2];
-                            buf[x * 4 + 3] = channel(3)[i2];
+                            for (int i = 0; i < d_channels; i++)
+                                ((uint8_t *)buf)[x * d_channels + i] = channel(i)[i2];
                         }
                         else if (d_depth == 16)
                         {
-                            buf[x * 4 + 0] = channel(0)[i2] >> 8;
-                            buf[x * 4 + 1] = channel(1)[i2] >> 8;
-                            buf[x * 4 + 2] = channel(2)[i2] >> 8;
-                            buf[x * 4 + 3] = channel(3)[i2] >> 8;
+                            for (int i = 0; i < d_channels; i++)
+                                ((uint16_t *)buf)[x * d_channels + i] = channel(i)[i2];
                         }
                     }
                 }

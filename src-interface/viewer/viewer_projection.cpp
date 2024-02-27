@@ -498,36 +498,19 @@ namespace satdump
         general_progress = 0;
         general_sum = 0;
 
-        nlohmann::json cfg; //= nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
+        nlohmann::json cfg;
 
         if (projections_current_selected_proj == 0)
         {
-            // cfg["type"] = "equirectangular";
-            // cfg["tl_lon"] = projections_equirectangular_tl_lon;
-            //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
-            //  cfg["br_lon"] = projections_equirectangular_br_lon;
-            //  cfg["br_lat"] = projections_equirectangular_br_lat;
-
             cfg["type"] = "equirec";
             cfg["offset_x"] = projections_equirectangular_tl_lon;
             cfg["offset_y"] = projections_equirectangular_tl_lat;
-            cfg["scalar_x"] = projections_equirectangular_br_lon;
-            cfg["scalar_y"] = projections_equirectangular_br_lat;
+            cfg["scalar_x"] = (projections_equirectangular_br_lon - projections_equirectangular_tl_lon) / double(projections_image_width);
+            cfg["scalar_y"] = (projections_equirectangular_br_lat - projections_equirectangular_tl_lat) / double(projections_image_height);
         }
         else if (projections_current_selected_proj == 1)
         {
             cfg["type"] = "utm";
-            //        cfg["offset_x"] = projections_mercator_tl_lon;
-            //        cfg["offset_y"] = projections_mercator_tl_lat;
-            //        cfg["scalar_x"] = projections_mercator_br_lon;
-            //        cfg["scalar_y"] = projections_mercator_br_lat;
-            //        cfg["zone"] = projections_utm_zone;
-            //  cfg["tl_lon"] = projections_equirectangular_tl_lon;
-            //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
-            //  cfg["br_lon"] = projections_equirectangular_br_lon;
-            //  cfg["br_lat"] = projections_equirectangular_br_lat;
-            //    cfg["lon0"] = projections_utm_center_lon;
-            //    cfg["lat0"] = projections_utm_center_lat;
             cfg["scalar_x"] = projections_utm_scale;
             cfg["scalar_y"] = -projections_utm_scale;
             cfg["offset_x"] = -projections_image_width * 0.5 * projections_utm_scale;
@@ -642,10 +625,10 @@ namespace satdump
 
             reprojection::ReprojectionOperation op;
 
-            if (!image::has_metadata_proj_cfg(layer.img))                  // Just in case...
-                continue;                                                  //   return image::Image<uint16_t>(width, height, 4);
+            if (!image::has_metadata_proj_cfg(layer.img)) // Just in case...
+                continue;
             if (!image::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
-                continue;                                                  //        return image::Image<uint16_t>(width, height, 4);
+                continue;
 
             op.target_prj_info = cfg;
             op.img = layer.img;
