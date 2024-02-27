@@ -26,7 +26,7 @@ namespace meteor
                 MSUMRReader(bool meteorm2x_mode);
                 ~MSUMRReader();
                 void work(ccsds::CCSDSPacket &packet);
-                image::Image<uint8_t> getChannel(int channel, int max_correct = 0, int32_t first = -1, int32_t last = -1, int32_t offset = 1);
+                image::Image<uint8_t> getChannel(int channel, size_t max_correct = 0, int32_t first = -1, int32_t last = -1, int32_t offset = 1);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2);
                 std::array<int32_t, 3> correlateChannels(int channel1, int channel2, int channel3);
 

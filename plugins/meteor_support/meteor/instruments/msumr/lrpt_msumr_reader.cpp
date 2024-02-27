@@ -100,7 +100,7 @@ namespace meteor
                 segCount[currentChannel]++;
             }
 
-            image::Image<uint8_t> MSUMRReader::getChannel(int channel, int max_correct, int32_t first, int32_t last, int32_t offsett)
+            image::Image<uint8_t> MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
             {
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
@@ -178,7 +178,7 @@ namespace meteor
                     size_t width = ret.width();
                     size_t height = ret.height();
 #pragma omp parallel for
-                    for (int x = 0; x < width; x++)
+                    for (int x = 0; x < (int)width; x++)
                     {
                         int last_good = -1;
                         bool found_bad = false;

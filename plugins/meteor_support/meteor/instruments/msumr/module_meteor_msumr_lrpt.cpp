@@ -164,7 +164,7 @@ namespace meteor
                 if (!std::filesystem::exists(fill_directory))
                     std::filesystem::create_directory(fill_directory);
 
-                int max_fill_lines = 50;
+                size_t max_fill_lines = 50;
                 if (d_parameters.contains("max_fill_lines"))
                     max_fill_lines = d_parameters["max_fill_lines"];
 
