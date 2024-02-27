@@ -127,6 +127,7 @@ namespace satdump
         bool projection_normalize_image = false;
         FileSelectWidget projection_new_layer_file = FileSelectWidget("Image (Equ)", "Select Layer Image");
         FileSelectWidget projection_new_layer_cfg = FileSelectWidget("Config (JSON)", "Select Projection Config");
+        bool projections_loading_new_layer = false;
 
         bool projection_auto_mode = false, projection_auto_scale_mode = false;
         double projection_autoscale_x = 0.016, projection_autoscale_y = 0.016;

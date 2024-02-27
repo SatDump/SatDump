@@ -14,6 +14,7 @@
 
 #include "common/image/image_meta.h"
 #include "common/projection/projs2/proj_json.h"
+#include "common/widgets/spinner.h"
 
 namespace satdump
 {
@@ -125,6 +126,11 @@ namespace satdump
                     generateProjectionImage();
                     logger->info("Done"); });
             }
+            if (projections_are_generating)
+            {
+                ImGui::SameLine();
+                widgets::Spinner("###spinner1", 10 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
+            }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
                 if (projections_are_generating)
@@ -178,13 +184,17 @@ namespace satdump
 
             ImGui::Text("Layers :");
 
-            ImGui::SameLine(ImGui::GetWindowWidth() - 85 * ui_scale);
+            ImGui::SameLine(ImGui::GetWindowWidth() - (projections_loading_new_layer ? 105 : 95) * ui_scale);
             if (disable_add_layer)
                 style::beginDisabled();
 
             if (ImGui::Button("Add Layer##button"))
-            {
                 ImGui::OpenPopup("Add Layer##popup", ImGuiPopupFlags_None);
+
+            if (projections_loading_new_layer)
+            {
+                ImGui::SameLine();
+                widgets::Spinner("###spinner1", 10 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
             }
 
             if (disable_add_layer)
@@ -214,50 +224,58 @@ namespace satdump
 
                     if (ImGui::Button("Add layer"))
                     {
-                        if ((selected_external_type == 0 || selected_external_type == 3) && projection_new_layer_file.isValid())
+                        auto func = [this](int)
                         {
-                            image::Image<uint16_t> equi_file;
-                            equi_file.load_img(projection_new_layer_file.getPath());
-                            if (equi_file.size() > 0)
+                            if ((selected_external_type == 0 || selected_external_type == 3) && projection_new_layer_file.isValid())
                             {
-                                double tl_lon = -180;
-                                double tl_lat = 90;
-                                double br_lon = 180;
-                                double br_lat = -90;
-                                nlohmann::json proj_cfg;
-                                if (selected_external_type == 0)
+                                image::Image<uint16_t> equi_file;
+                                equi_file.load_img(projection_new_layer_file.getPath());
+                                if (equi_file.size() > 0)
                                 {
-                                    proj_cfg["type"] = "equirec";
-                                    proj_cfg["offset_x"] = tl_lon;
-                                    proj_cfg["offset_y"] = tl_lat;
-                                    proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(equi_file.width());
-                                    proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(equi_file.height());
+                                    double tl_lon = -180;
+                                    double tl_lat = 90;
+                                    double br_lon = 180;
+                                    double br_lat = -90;
+                                    nlohmann::json proj_cfg;
+                                    if (selected_external_type == 0)
+                                    {
+                                        proj_cfg["type"] = "equirec";
+                                        proj_cfg["offset_x"] = tl_lon;
+                                        proj_cfg["offset_y"] = tl_lat;
+                                        proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(equi_file.width());
+                                        proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(equi_file.height());
+                                    }
+                                    else if (selected_external_type == 3)
+                                    {
+                                        proj_cfg = loadJsonFile(projection_new_layer_cfg.getPath());
+                                    }
+                                    if (projection_normalize_image)
+                                        equi_file.normalize();
+                                    image::set_metadata_proj_cfg(equi_file, proj_cfg);
+                                    projection_layers.push_back({projection_new_layer_name, equi_file});
                                 }
-                                else if (selected_external_type == 3)
-                                {
-                                    proj_cfg = loadJsonFile(projection_new_layer_cfg.getPath());
-                                }
-                                if (projection_normalize_image)
-                                    equi_file.normalize();
-                                image::set_metadata_proj_cfg(equi_file, proj_cfg);
-                                projection_layers.push_back({projection_new_layer_name, equi_file});
+                                else
+                                    logger->error("Could not load image file!");
                             }
-                            else
-                                logger->error("Could not load image file!");
-                        }
-                        else if (selected_external_type == 2 && projection_new_layer_file.isValid())
-                        {
-                            image::Image<uint16_t> geotiff_file;
-                            geotiff_file.load_tiff(projection_new_layer_file.getPath());
-                            if (geotiff_file.size() > 0 && image::has_metadata_proj_cfg(geotiff_file))
+                            else if (selected_external_type == 2 && projection_new_layer_file.isValid())
                             {
-                                if (projection_normalize_image)
-                                    geotiff_file.normalize();
-                                projection_layers.push_back({projection_new_layer_name, geotiff_file});
+                                image::Image<uint16_t> geotiff_file;
+                                geotiff_file.load_tiff(projection_new_layer_file.getPath());
+                                if (geotiff_file.size() > 0 && image::has_metadata_proj_cfg(geotiff_file))
+                                {
+                                    if (projection_normalize_image)
+                                        geotiff_file.normalize();
+                                    projection_layers.push_back({projection_new_layer_name, geotiff_file});
+                                }
+                                else
+                                    logger->error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
                             }
-                            else
-                                logger->error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
-                        }
+
+                            projections_loading_new_layer = false;
+                        };
+
+                        ui_thread_pool.push(func);
+                        projections_loading_new_layer = true;
 
                         ImGui::CloseCurrentPopup();
                     }
@@ -466,19 +484,6 @@ namespace satdump
             ImGui::ProgressBar((general_progress + (progress_pointer == nullptr ? 0 : *(progress_pointer))) / general_sum);
 
             if (!(disable_buttons || disable_add_layer))
-                style::endDisabled();
-
-            if (disable_buttons || projection_layers.size() == 0)
-                style::beginDisabled();
-            if (ImGui::Button("Generate Projection##layers"))
-            {
-                ui_thread_pool.push([this](int)
-                                    { 
-                    logger->info("Update projection...");
-                    generateProjectionImage();
-                    logger->info("Done"); });
-            }
-            if (disable_buttons || projection_layers.size() == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
