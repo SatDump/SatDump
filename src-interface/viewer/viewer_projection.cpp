@@ -46,7 +46,7 @@ namespace satdump
             ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
                                                                              "UTM (Mercator)\0"
                                                                              "Stereo\0"
-                         //  "Satellite (TPERS)\0"
+                                                                             "Satellite (TPERS)\0"
                          //  "Azimuthal Equidistant\0"
             );
 
@@ -62,57 +62,42 @@ namespace satdump
             }
             else if (projections_current_selected_proj == 1)
             {
-                //                ImGui::Text("Top Left Coordinates :");
-                //                ImGui::InputFloat("Lat##tl", &projections_mercator_tl_lat);
-                //                ImGui::InputFloat("Lon##tl", &projections_mercator_tl_lon);
-                //                ImGui::Spacing();
-                //                ImGui::Text("Bottom Right Coordinates :");
-                //                ImGui::InputFloat("Lat##br", &projections_mercator_br_lat);
-                //                ImGui::InputFloat("Lon##br", &projections_mercator_br_lon);
-                //
-                //                ImGui::InputInt("UTM Zone###projutmzone", &projections_utm_zone);
-                //                if (projections_utm_zone > 60)
-                //                    projections_utm_zone = 60;
-                //                if (projections_utm_zone < 1)
-                //                    projections_utm_zone = 1;
-                ImGui::Text("Center Coordinates :");
-                //   ImGui::InputFloat("Lon##utm", &projections_utm_center_lon);
-                //
                 ImGui::InputInt("UTM Zone###projutmzone", &projections_utm_zone);
                 if (projections_utm_zone > 60)
                     projections_utm_zone = 60;
                 if (projections_utm_zone < 1)
                     projections_utm_zone = 1;
                 ImGui::Checkbox("South###projutmsouth", &projections_utm_south);
-
-                ImGui::InputFloat("Y offset##utm", &projections_utm_offset_y);
+                ImGui::InputFloat("Northing (m)##utm", &projections_utm_offset_y);
                 ImGui::Spacing();
-                ImGui::InputFloat("Scale##utm", &projections_utm_scale);
+                ImGui::InputFloat("Scale (m/px)##utm", &projections_utm_scale);
             }
             else if (projections_current_selected_proj == 2)
             {
                 ImGui::Text("Center Coordinates :");
-                ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
                 ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
+                ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
                 ImGui::Spacing();
-                ImGui::InputFloat("Scale##stereo", &projections_stereo_scale);
+                ImGui::InputFloat("Scale (m/px)##stereo", &projections_stereo_scale);
             }
-            /*            else if (projections_current_selected_proj == 3)
-                        {
-                            ImGui::Text("Center Coordinates :");
-                            ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
-                            ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
-                            ImGui::Spacing();
-                            ImGui::InputFloat("Altitude (km)##tpers", &projections_tpers_alt);
-                            ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
-                            ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
-                        }
-                        else if (projections_current_selected_proj == 4)
-                        {
-                            ImGui::Text("Center Coordinates :");
-                            ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
-                            ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
-                        }*/
+            else if (projections_current_selected_proj == 3)
+            {
+                ImGui::Text("Center Coordinates :");
+                ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
+                ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
+                ImGui::Spacing();
+                ImGui::InputFloat("Altitude (m)##tpers", &projections_tpers_alt);
+                ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
+                ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
+                ImGui::Spacing();
+                ImGui::InputFloat("Scale##tpers", &projections_tpers_scale);
+            }
+            /*else if (projections_current_selected_proj == 4)
+            {
+                ImGui::Text("Center Coordinates :");
+                ImGui::InputFloat("Lat##eqaz", &projections_azeq_lat);
+                ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
+            }*/
 
             if (projections_current_selected_proj != 0)
                 style::beginDisabled();
@@ -120,8 +105,8 @@ namespace satdump
             ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
             if (projection_auto_scale_mode)
             {
-                ImGui::InputDouble("Scale X##projscalexauto", &projection_autoscale_x);
-                ImGui::InputDouble("Scale Y##projscalexauto", &projection_autoscale_y);
+                ImGui::InputDouble("Scale X (m/px)##projscalexauto", &projection_autoscale_x);
+                ImGui::InputDouble("Scale Y (m/px)##projscalexauto", &projection_autoscale_y);
             }
             if (projections_current_selected_proj != 0)
                 style::endDisabled();
@@ -555,21 +540,25 @@ namespace satdump
             cfg["offset_x"] = -projections_image_width * 0.5 * projections_stereo_scale;
             cfg["offset_y"] = projections_image_height * 0.5 * projections_stereo_scale;
         }
-        /*        else if (projections_current_selected_proj == 3)
-                {
-                    cfg["type"] = "tpers";
-                    cfg["lon"] = projections_tpers_lon;
-                    cfg["lat"] = projections_tpers_lat;
-                    cfg["alt"] = projections_tpers_alt;
-                    cfg["ang"] = projections_tpers_ang;
-                    cfg["azi"] = projections_tpers_azi;
-                }
-                else if (projections_current_selected_proj == 4)
-                {
-                    cfg["type"] = "azeq";
-                    cfg["lon"] = projections_azeq_lon;
-                    cfg["lat"] = projections_azeq_lat;
-                }*/
+        else if (projections_current_selected_proj == 3)
+        {
+            cfg["type"] = "tpers";
+            cfg["lon0"] = projections_tpers_lon;
+            cfg["lat0"] = projections_tpers_lat;
+            cfg["altitude"] = projections_tpers_alt;
+            cfg["tilt"] = projections_tpers_ang;
+            cfg["azimuth"] = projections_tpers_azi;
+            cfg["scalar_x"] = projections_tpers_scale;
+            cfg["scalar_y"] = -projections_tpers_scale;
+            cfg["offset_x"] = -projections_image_width * 0.5 * projections_tpers_scale;
+            cfg["offset_y"] = projections_image_height * 0.5 * projections_tpers_scale;
+        }
+        /*else if (projections_current_selected_proj == 4)
+        {
+            cfg["type"] = "azeq";
+            cfg["lon"] = projections_azeq_lon;
+            cfg["lat"] = projections_azeq_lat;
+        }*/
 
         // Automatic projection settings!
         if (projection_auto_mode && projections_current_selected_proj == 0)
