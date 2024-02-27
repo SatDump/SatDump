@@ -8,7 +8,6 @@ namespace image
         if (img.metadata_obj != nullptr)
         {
             set_metadata(*this, get_metadata(img));
-            printf("META SET!\n");
         }
     }
 

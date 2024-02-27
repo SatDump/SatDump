@@ -209,10 +209,10 @@ namespace satdump
                                                                    rgb_image,
                                                                    final_timestamps,
                                                                    *img_products);
-                        if (compo.value()["project"]["config"].contains("geotiff"))
-                            retimg.save_tiff(product_path + "/rgb_" + name + "_projected.tif");
-                        else
-                            retimg.save_img(product_path + "/rgb_" + name + "_projected");
+                        std::string fmt = "";
+                        if (compo.value()["project"]["config"].contains("img_format"))
+                            fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
+                        retimg.save_img(product_path + "/rgb_" + name + "_projected" + fmt);
                     }
                 }
                 catch (std::exception &e)
@@ -259,10 +259,10 @@ namespace satdump
                                                                img.image,
                                                                img_products->get_timestamps(chanid),
                                                                *img_products);
-                    if (instrument_viewer_settings["project_channels"]["config"].contains("geotiff"))
-                        retimg.save_tiff(product_path + "/channel_" + img.channel_name + "_projected.tif");
-                    else
-                        retimg.save_img(product_path + "/channel_" + img.channel_name + "_projected");
+                    std::string fmt = "";
+                    if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
+                        fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();
+                    retimg.save_img(product_path + "/channel_" + img.channel_name + "_projected" + fmt);
                 }
                 catch (std::exception &e)
                 {

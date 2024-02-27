@@ -119,15 +119,12 @@ namespace satdump
             }
             else
             { // Otherwise we assume it to be a satellite warp
-                logger->info("Warp?");
                 if (op.use_old_algorithm)
                 {
-                    logger->info("Old?");
+                    logger->info("Using old algorithm");
                 }
                 else
                 {
-                    logger->info("New?");
-
                     warp::WarpOperation operation;
                     operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
                     operation.input_image = op.img;
@@ -194,14 +191,10 @@ namespace satdump
             catch (std::exception &e)
             {
                 proj_err = true;
-                printf("ERROR PARSING PROJ!!!!!!\n");
             }
-
-            printf("INIT PROJ!!!!!!\n");
 
             if (!proj::projection_setup(proj.get()) && !proj_err)
             {
-                printf("------------------- Using New Proj\n");
                 return [proj](double lat, double lon, int, int) mutable -> std::pair<int, int>
                 {
                     double x, y;

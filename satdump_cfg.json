@@ -1051,7 +1051,7 @@
                     "config": {
                         "type": "equirec",
                         "auto": true,
-                        "geotiff": true
+                        "img_format": "tif"
                     }
                 }*/
             },
@@ -1349,7 +1349,7 @@
                     "config": {
                         "type": "equirec",
                         "auto": true,
-                        "geotiff": true
+                        "img_format": "tif"
                     }
                 }*/
             },
@@ -1374,7 +1374,7 @@
                     "config": {
                         "type": "equirec",
                         "auto": true,
-                        "geotiff": true
+                        "img_format": "tif"
                     }
                 }*/
             },
