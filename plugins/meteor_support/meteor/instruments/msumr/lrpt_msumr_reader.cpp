@@ -1,6 +1,7 @@
 #include "lrpt_msumr_reader.h"
 #include "logger.h"
 #include <ctime>
+#include <cmath>
 
 #define SEG_CNT 20000 // 12250
 
@@ -60,7 +61,8 @@ namespace meteor
                 else
                     return;
 
-                Segment newSeg(&packet.payload.data()[0], packet.payload.size(), meteorm2x_mode);
+                Segment newSeg(&packet.payload.data()[0], packet.payload.size(),
+                    packet.payload.size() - 1 != packet.header.packet_length, meteorm2x_mode);
 
                 if (!newSeg.isValid())
                     return;
@@ -134,6 +136,10 @@ namespace meteor
                             {
                                 for (int f = 0; f < 14 * 8; f++)
                                     channels[channel][index + f] = segments[channel][x + j].lines[i][f];
+
+                                if(segments[channel][x + j].partial)
+                                    for (uint32_t f = 0; f < 14 * 8; f++)
+                                        bad_px.insert(index + f);
 
                                 if (!hasDoneTimestamps)
                                 {
@@ -230,7 +236,7 @@ namespace meteor
                     // Round all timestamps to 3 decimal places to ensure made-up timestamps
                     // Match with timestamps in other channels
                     for (double &timestamp : timestamps)
-                        timestamp = floor(timestamp * 1000) / 1000;
+                        timestamp = std::floor(timestamp * 1000) / 1000;
                 }
 
                 return ret;

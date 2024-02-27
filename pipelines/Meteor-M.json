@@ -76,9 +76,9 @@
             },
             "fill_missing": {
                 "type": "bool",
-                "value": true,
+                "value": false,
                 "name": "Fill Missing Data",
-                "description": "Fills in black lines caused by\nsignal drop-outs or interference"
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
             }
         },
         "work": {
@@ -134,9 +134,9 @@
             },
             "fill_missing": {
                 "type": "bool",
-                "value": true,
+                "value": false,
                 "name": "Fill Missing Data",
-                "description": "Fills in black lines caused by\nsignal drop-outs or interference"
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
             }
         },
         "work": {
@@ -203,9 +203,9 @@
             },
             "fill_missing": {
                 "type": "bool",
-                "value": true,
+                "value": false,
                 "name": "Fill Missing Data",
-                "description": "Fills in black lines caused by\nsignal drop-outs or interference"
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
             }
         },
         "work": {

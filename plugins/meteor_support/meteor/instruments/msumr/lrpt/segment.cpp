@@ -19,7 +19,8 @@ namespace meteor
                               // day_time == 0 && us_time == 0;
             }
 
-            Segment::Segment(uint8_t *data, int length, bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode)
+            Segment::Segment(uint8_t* data, int length, bool partial, bool meteorm2x_mode) : partial(partial),
+                                                                                             meteorm2x_mode(meteorm2x_mode)
             {
                 // buffer = new bool[length * 8];
                 buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p)
@@ -55,7 +56,8 @@ namespace meteor
                 }
             }
 
-            Segment::Segment() : meteorm2x_mode(false) // We don't care if invalid
+            Segment::Segment() : partial(true),
+                                 meteorm2x_mode(false) // We don't care if invalid
             {
                 valid = false;
             }
