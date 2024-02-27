@@ -721,7 +721,7 @@ namespace satdump
                 ImGui::SameLine();
 
                 ImGui::EndGroup();
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !canBeProjected())
                 {
                     ImGui::BeginTooltip();
                     if (current_timestamps.size() == 0)
