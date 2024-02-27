@@ -22,6 +22,21 @@ namespace meteor
 {
     namespace msumr
     {
+        void createMSUMRProduct(satdump::ImageProducts &product, int norad, int msumr_serial_number)
+        {
+            product.instrument_name = "msu_mr";
+            product.has_timestamps = true;
+            product.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+            product.needs_correlation = true;
+            product.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+            if (msumr_serial_number == 0) // M2
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+            else if (msumr_serial_number == 3) // M2-3
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
+            else // Default to M2
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+        }
+
         METEORMSUMRLRPTDecoderModule::METEORMSUMRLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
@@ -133,27 +148,37 @@ namespace meteor
                 std::filesystem::create_directory(directory);
 
             satdump::ImageProducts msumr_products;
-            msumr_products.instrument_name = "msu_mr";
-            msumr_products.has_timestamps = true;
-            msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-            msumr_products.needs_correlation = true;
-            msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-            if (msumr_serial_number == 0) // M2
-                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
-            else if (msumr_serial_number == 3) // M2-3
-                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
-            else // Default to M2
-                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
-
+            createMSUMRProduct(msumr_products, norad, msumr_serial_number);
             for (int i = 0; i < 6; i++)
             {
                 image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
                 if (img.size() > 0)
-                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
+                    msumr_products.images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8 });
             }
-
             msumr_products.save(directory);
             dataset.products_list.push_back("MSU-MR");
+
+            if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
+            {
+                std::string fill_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSU-MR (Filled)";
+                if (!std::filesystem::exists(fill_directory))
+                    std::filesystem::create_directory(fill_directory);
+
+                size_t max_fill_lines = 50;
+                if (d_parameters.contains("max_fill_lines"))
+                    max_fill_lines = d_parameters["max_fill_lines"];
+
+                satdump::ImageProducts filled_products;
+                createMSUMRProduct(filled_products, norad, msumr_serial_number);
+                for (int i = 0; i < 6; i++)
+                {
+                    image::Image<uint16_t> img = msureader.getChannel(i, max_fill_lines).to16bits();
+                    if (img.size() > 0)
+                        filled_products.images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8 });
+                }
+                filled_products.save(fill_directory);
+                dataset.products_list.push_back("MSU-MR (Filled)");
+            }
 
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }

@@ -1,5 +1,7 @@
 #include "lrpt_msumr_reader.h"
+#include "logger.h"
 #include <ctime>
+#include <cmath>
 
 #define SEG_CNT 20000 // 12250
 
@@ -59,7 +61,8 @@ namespace meteor
                 else
                     return;
 
-                Segment newSeg(&packet.payload.data()[0], packet.payload.size(), meteorm2x_mode);
+                Segment newSeg(&packet.payload.data()[0], packet.payload.size(),
+                    packet.payload.size() - 1 != packet.header.packet_length, meteorm2x_mode);
 
                 if (!newSeg.isValid())
                     return;
@@ -97,7 +100,7 @@ namespace meteor
                 segCount[currentChannel]++;
             }
 
-            image::Image<uint8_t> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
+            image::Image<uint8_t> MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
             {
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
@@ -118,6 +121,7 @@ namespace meteor
 
                 lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
 
+                std::set<uint32_t> bad_px;
                 uint32_t index = 0;
                 if(lastSeg_l != 0)
                     timestamps.clear();
@@ -133,6 +137,10 @@ namespace meteor
                                 for (int f = 0; f < 14 * 8; f++)
                                     channels[channel][index + f] = segments[channel][x + j].lines[i][f];
 
+                                if(segments[channel][x + j].partial)
+                                    for (uint32_t f = 0; f < 14 * 8; f++)
+                                        bad_px.insert(index + f);
+
                                 if (!hasDoneTimestamps)
                                 {
                                     if (meteorm2x_mode)
@@ -144,8 +152,11 @@ namespace meteor
                             }
                             else
                             {
-                                for (int f = 0; f < 14 * 8; f++)
+                                for (uint32_t f = 0; f < 14 * 8; f++)
+                                {
                                     channels[channel][index + f] = 0;
+                                    bad_px.insert(index + f);
+                                }
                             }
 
                             index += 14 * 8;
@@ -158,7 +169,77 @@ namespace meteor
                     }
                 }
 
-                return image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
+                image::Image<uint8_t> ret = image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
+                if (max_correct > 0 && ret.size() > 0)
+                {
+                    logger->info("Filling missing data in channel %d...", channel + 1);
+
+                    // Interpolate image
+                    size_t width = ret.width();
+                    size_t height = ret.height();
+#pragma omp parallel for
+                    for (int x = 0; x < (int)width; x++)
+                    {
+                        int last_good = -1;
+                        bool found_bad = false;
+                        for (size_t y = 0; y < height; y++)
+                        {
+                            if (found_bad)
+                            {
+                                if (bad_px.find(y * width + x) == bad_px.end())
+                                {
+                                    size_t range = y - last_good;
+                                    if (last_good != -1 && range <= max_correct)
+                                    {
+                                        uint8_t top_val = ret[last_good * width + x];
+                                        uint8_t bottom_val = ret[y * width + x];
+                                        for (size_t fix_y = 1; fix_y < range; fix_y++)
+                                        {
+                                            float percent = (float)fix_y / (float)range;
+                                            ret[(fix_y + last_good) * width + x] = (1.0f - percent) * (float)top_val + percent * (float)bottom_val;
+                                        }
+                                    }
+                                    found_bad = false;
+                                    last_good = y;
+                                }
+                            }
+                            else if (bad_px.find(y * width + x) != bad_px.end())
+                                found_bad = true;
+                            else
+                                last_good = y;
+                        }
+                    }
+
+                    // Interpolate timestamps
+                    int last_good = -1;
+                    bool found_bad = false;
+                    for (size_t i = 0; i < timestamps.size(); i++)
+                    {
+                        if (found_bad)
+                        {
+                            if (timestamps[i] != -1)
+                            {
+                                if (last_good != -1)
+                                    for (size_t j = 1; j < i - last_good; j++)
+                                        timestamps[last_good + j] = timestamps[last_good] + (timestamps[i] - timestamps[last_good]) * ((double)j / double(i - last_good));
+
+                                last_good = i;
+                                found_bad = false;
+                            }
+                        }
+                        else if (timestamps[i] == -1)
+                            found_bad = true;
+                        else
+                            last_good = i;
+                    }
+
+                    // Round all timestamps to 3 decimal places to ensure made-up timestamps
+                    // Match with timestamps in other channels
+                    for (double &timestamp : timestamps)
+                        timestamp = std::floor(timestamp * 1000) / 1000;
+                }
+
+                return ret;
             }
 
             std::array<int32_t, 3> MSUMRReader::correlateChannels(int channel1, int channel2)
