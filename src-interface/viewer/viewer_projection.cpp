@@ -62,25 +62,38 @@ namespace satdump
             }
             else if (projections_current_selected_proj == 1)
             {
-                ImGui::Text("Top Left Coordinates :");
-                ImGui::InputFloat("Lat##tl", &projections_mercator_tl_lat);
-                ImGui::InputFloat("Lon##tl", &projections_mercator_tl_lon);
-                ImGui::Spacing();
-                ImGui::Text("Bottom Right Coordinates :");
-                ImGui::InputFloat("Lat##br", &projections_mercator_br_lat);
-                ImGui::InputFloat("Lon##br", &projections_mercator_br_lon);
-
+                //                ImGui::Text("Top Left Coordinates :");
+                //                ImGui::InputFloat("Lat##tl", &projections_mercator_tl_lat);
+                //                ImGui::InputFloat("Lon##tl", &projections_mercator_tl_lon);
+                //                ImGui::Spacing();
+                //                ImGui::Text("Bottom Right Coordinates :");
+                //                ImGui::InputFloat("Lat##br", &projections_mercator_br_lat);
+                //                ImGui::InputFloat("Lon##br", &projections_mercator_br_lon);
+                //
+                //                ImGui::InputInt("UTM Zone###projutmzone", &projections_utm_zone);
+                //                if (projections_utm_zone > 60)
+                //                    projections_utm_zone = 60;
+                //                if (projections_utm_zone < 1)
+                //                    projections_utm_zone = 1;
+                ImGui::Text("Center Coordinates :");
+                //   ImGui::InputFloat("Lon##utm", &projections_utm_center_lon);
+                //
                 ImGui::InputInt("UTM Zone###projutmzone", &projections_utm_zone);
                 if (projections_utm_zone > 60)
                     projections_utm_zone = 60;
                 if (projections_utm_zone < 1)
                     projections_utm_zone = 1;
+                ImGui::Checkbox("South###projutmsouth", &projections_utm_south);
+
+                ImGui::InputFloat("Y offset##utm", &projections_utm_offset_y);
+                ImGui::Spacing();
+                ImGui::InputFloat("Scale##utm", &projections_utm_scale);
             }
             else if (projections_current_selected_proj == 2)
             {
                 ImGui::Text("Center Coordinates :");
-                ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
                 ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
+                ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
                 ImGui::Spacing();
                 ImGui::InputFloat("Scale##stereo", &projections_stereo_scale);
             }
@@ -514,15 +527,23 @@ namespace satdump
         else if (projections_current_selected_proj == 1)
         {
             cfg["type"] = "utm";
-            cfg["offset_x"] = projections_mercator_tl_lon;
-            cfg["offset_y"] = projections_mercator_tl_lat;
-            cfg["scalar_x"] = projections_mercator_br_lon;
-            cfg["scalar_y"] = projections_mercator_br_lat;
-            cfg["zone"] = projections_utm_zone;
+            //        cfg["offset_x"] = projections_mercator_tl_lon;
+            //        cfg["offset_y"] = projections_mercator_tl_lat;
+            //        cfg["scalar_x"] = projections_mercator_br_lon;
+            //        cfg["scalar_y"] = projections_mercator_br_lat;
+            //        cfg["zone"] = projections_utm_zone;
             //  cfg["tl_lon"] = projections_equirectangular_tl_lon;
             //  cfg["tl_lat"] = projections_equirectangular_tl_lat;
             //  cfg["br_lon"] = projections_equirectangular_br_lon;
             //  cfg["br_lat"] = projections_equirectangular_br_lat;
+            //    cfg["lon0"] = projections_utm_center_lon;
+            //    cfg["lat0"] = projections_utm_center_lat;
+            cfg["scalar_x"] = projections_utm_scale;
+            cfg["scalar_y"] = -projections_utm_scale;
+            cfg["offset_x"] = -projections_image_width * 0.5 * projections_utm_scale;
+            cfg["offset_y"] = projections_image_height * 0.5 * projections_utm_scale + projections_utm_offset_y;
+            cfg["zone"] = projections_utm_zone;
+            cfg["south"] = projections_utm_south;
         }
         else if (projections_current_selected_proj == 2)
         {

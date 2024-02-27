@@ -138,15 +138,15 @@ namespace satdump
         float projections_equirectangular_br_lon = 180;
         float projections_equirectangular_br_lat = -90;
         /////////////
-        float projections_mercator_tl_lon = -180;
-        float projections_mercator_tl_lat = 90;
-        float projections_mercator_br_lon = 180;
-        float projections_mercator_br_lat = -90;
+        float projections_utm_center_lon = 0;
+        float projections_utm_offset_y = 0;
+        float projections_utm_scale = 2400;
         int projections_utm_zone = 30;
+        bool projections_utm_south = false;
         /////////////
         float projections_stereo_center_lon = 0;
         float projections_stereo_center_lat = 0;
-        float projections_stereo_scale = 2;
+        float projections_stereo_scale = 2400;
         /////////////
         float projections_tpers_lon = 0;
         float projections_tpers_lat = 0;
