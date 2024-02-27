@@ -15,6 +15,8 @@ namespace proj
             j["type"] = "utm";
         else if (p.type == ProjType_Geos)
             j["type"] = "geos";
+        else if (p.type == ProjType_Tpers)
+            j["type"] = "tpers";
         // else if (p.type == ProjType_LambertConformalConic)
         //     j["type"] = "lamcc";
 
@@ -28,6 +30,13 @@ namespace proj
         {
             j["altitude"] = p.params.altitude;
             j["sweep_x"] = p.params.sweep_x;
+        }
+
+        if (p.type == ProjType_Tpers)
+        {
+            j["altitude"] = p.params.altitude;
+            j["tilt"] = p.params.tilt;
+            j["azimuth"] = p.params.azimuth;
         }
 
         if (p.proj_offset_x != 0)
@@ -55,6 +64,8 @@ namespace proj
             p.type = ProjType_UniversalTransverseMercator;
         else if (j["type"].get<std::string>() == "geos")
             p.type = ProjType_Geos;
+        else if (j["type"].get<std::string>() == "tpers")
+            p.type = ProjType_Tpers;
         // else if (j["type"].get<std::string>() == "lamcc")
         //     p.type = ProjType_LambertConformalConic;
 
@@ -72,6 +83,16 @@ namespace proj
                 p.params.altitude = j["altitude"];
             if (j.contains("sweep_x"))
                 p.params.sweep_x = j["sweep_x"];
+        }
+
+        if (p.type == ProjType_Tpers)
+        {
+            if (j.contains("altitude"))
+                p.params.altitude = j["altitude"];
+            if (j.contains("tilt"))
+                p.params.tilt = j["tilt"];
+            if (j.contains("azimuth"))
+                p.params.azimuth = j["azimuth"];
         }
 
         if (j.contains("offset_x"))

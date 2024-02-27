@@ -205,8 +205,10 @@ namespace satdump
                 return [proj](double lat, double lon, int, int) mutable -> std::pair<int, int>
                 {
                     double x, y;
-                    proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y);
-                    return {(int)x, (int)y};
+                    if (proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y))
+                        return {-1, -1};
+                    else
+                        return {(int)x, (int)y};
                 };
             }
             else

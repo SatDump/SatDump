@@ -7,6 +7,7 @@
 #include "stereo.h"
 #include "tmerc.h"
 #include "geos.h"
+#include "tpers.h"
 // #include "lamcc.h"
 
 namespace proj
@@ -30,6 +31,8 @@ namespace proj
             proj_ret = projection_tmerc_setup(proj, proj->params.zone, proj->params.south);
         else if (proj->type == ProjType_Geos)
             proj_ret = projection_geos_setup(proj, proj->params.altitude, proj->params.sweep_x);
+        else if (proj->type == ProjType_Tpers)
+            proj_ret = projection_tpers_setup(proj, proj->params.altitude, proj->params.tilt * DEG2RAD, proj->params.azimuth * DEG2RAD);
         else
             return true;
 
@@ -71,6 +74,10 @@ namespace proj
 
         case ProjType_Geos:
             proj_ret = projection_geos_fwd(proj, lon, lat, x, y);
+            break;
+
+        case ProjType_Tpers:
+            proj_ret = projection_tpers_fwd(proj, lon, lat, x, y);
             break;
 
         default:
@@ -129,6 +136,10 @@ namespace proj
 
         case ProjType_Geos:
             proj_ret = projection_geos_inv(proj, x, y, lon, lat);
+            break;
+
+        case ProjType_Tpers:
+            proj_ret = projection_tpers_inv(proj, x, y, lon, lat);
             break;
 
         default:

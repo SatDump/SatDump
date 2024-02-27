@@ -19,6 +19,7 @@ namespace proj
         ProjType_Stereographic,
         ProjType_UniversalTransverseMercator,
         ProjType_Geos,
+        ProjType_Tpers,
     };
 
     struct projection_setup_t
@@ -26,7 +27,9 @@ namespace proj
         int zone = -1;        // For UTM
         bool south = false;   // For UTM
         bool sweep_x = false; // For GEOS
-        double altitude = 0;  // For GEOS
+        double altitude = 0;  // For GEOS, TPERS
+        double tilt = 0;      // For TPERS
+        double azimuth = 0;   // For TPERS
     };
 
     struct projection_t
