@@ -84,11 +84,12 @@ namespace inmarsat
                     try
                     {
                         nlohmann::json msg2 = msg;
-                        if (d_station_id != "")
+                        if (d_station_id != ""){
                             msg2["source"]["station_id"] = d_station_id;
+                            msg2["source"]["app"]["name"] = "SatDump";
+                            msg2["source"]["app"]["version"] = (std::string)SATDUMP_VERSION;
+                        }
                         
-                        msg2["source"]["app"]["name"] = "SatDump";
-                        msg2["source"]["app"]["version"] = (std::string)SATDUMP_VERSION;
                         std::string m = msg2.dump();
                         c->send((uint8_t *)m.data(), m.size());
                     }
