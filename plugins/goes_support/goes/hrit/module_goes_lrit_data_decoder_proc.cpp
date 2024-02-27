@@ -156,7 +156,7 @@ namespace goes
 
                                     if (region == "Mesoscale 1")
                                         goes_r_fc_composer = &goes_r_fc_composer_meso1;
-                                    else if (region == "Mesoscale 2")
+                                    else // Meso 2
                                         goes_r_fc_composer = &goes_r_fc_composer_meso2;
 
                                     std::shared_ptr<image::Image<uint8_t>> image = std::make_shared<image::Image<uint8_t>> (&file.lrit_data[primary_header.total_header_length],
