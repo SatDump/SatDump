@@ -635,6 +635,8 @@ namespace satdump
             op.output_width = width;
             op.output_height = height;
 
+            op.use_old_algorithm = layer.old_algo;
+
             image::Image<uint16_t> res = reprojection::reproject(op, progress_pointer);
             layers_images.push_back(res);
 

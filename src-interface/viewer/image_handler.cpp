@@ -720,6 +720,8 @@ namespace satdump
 
                 ImGui::SameLine();
 
+                ImGui::Checkbox("Old Algorithm", &projection_use_old_algo);
+
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !canBeProjected())
                 {
@@ -728,6 +730,16 @@ namespace satdump
                         ImGui::TextColored(style::theme.red, "No timestamps!");
                     else if (correct_image)
                         ImGui::TextColored(style::theme.red, "Disable correction!");
+                    else
+                        ImGui::TextColored(style::theme.yellow, "The old algorithm will\n"
+                                                                "deal with very bad (noisy) data\n"
+                                                                "better.\n"
+                                                                "The new one is preferred if\n"
+                                                                "possible though, as results\n"
+                                                                "are a lot nicer! :-)\n"
+                                                                "If you had to use this\n"
+                                                                "and the data was not that bad\n"
+                                                                "please report as a bug!");
 
                     ImGui::EndTooltip();
                 }
@@ -850,6 +862,8 @@ namespace satdump
 
                 if (rotate_image)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
+                if (projection_use_old_algo)
+                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].old_algo = true;
             }
             catch (std::exception &e)
             {

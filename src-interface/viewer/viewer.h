@@ -104,6 +104,7 @@ namespace satdump
             float opacity = 100;
             bool enabled = true;
             float progress = 0;
+            bool old_algo = false;
 
             unsigned int preview_texid = 0;
             unsigned int getPreview()

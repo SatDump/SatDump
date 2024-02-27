@@ -120,8 +120,102 @@ namespace satdump
             else
             { // Otherwise we assume it to be a satellite warp
                 if (op.use_old_algorithm)
-                {
-                    logger->info("Using old algorithm");
+                { // This is garbage, but robust to noise garbage!
+                    logger->info("Using old algorithm...!");
+
+                    auto src_proj_cfg = image::get_metadata_proj_cfg(op.img);
+
+                    // Init
+                    std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(result_img.width(),
+                                                                                                                            result_img.height(),
+                                                                                                                            op.target_prj_info,
+                                                                                                                            {});
+
+                    nlohmann::json mtd = src_proj_cfg.contains("metadata") ? src_proj_cfg["metadata"] : nlohmann::json();
+                    int img_x_offset = 0;
+                    if (mtd.contains("img_offset_x"))
+                        img_x_offset = mtd["img_offset_x"];
+
+                    TLE tle;
+                    if (mtd.contains("tle"))
+                        tle = mtd["tle"];
+                    else
+                        throw std::runtime_error("Reproj : Could not get TLE!");
+
+                    nlohmann::ordered_json timestamps;
+                    if (mtd.contains("timestamps"))
+                        timestamps = mtd["timestamps"];
+                    else
+                        throw std::runtime_error("Reproj : Could not get timestamps!");
+
+                    // Reproj
+                    // ""TPS""" (Mostly LEO)
+                    {
+                        std::shared_ptr<SatelliteProjection> sat_proj_src = get_sat_proj(src_proj_cfg, tle, timestamps);
+                        bool direction = false;
+
+                        double ratio_x = round((double)sat_proj_src->img_size_x / (double)op.img.width());
+                        double ratio_y = round((double)sat_proj_src->img_size_y / (double)op.img.height());
+
+                        for (int currentScan = 0; currentScan < (int)op.img.height(); currentScan++)
+                        {
+                            // Now compute each pixel's lat / lon and plot it
+                            for (double px = 0; px < op.img.width() - 1; px += 1)
+                            {
+                                geodetic::geodetic_coords_t coords1, coords2, coords3;
+                                bool ret1 = sat_proj_src->get_position(px * ratio_x, currentScan * ratio_y, coords1);
+                                bool ret2 = sat_proj_src->get_position((px + 1) * ratio_x, currentScan * ratio_y, coords2);
+                                sat_proj_src->get_position((px - img_x_offset) * ratio_x, (currentScan + 1) * ratio_y, coords3);
+
+                                if (ret1 || ret2)
+                                    continue;
+
+                                direction = coords1.lat > coords3.lat;
+
+                                std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, result_img.height(), result_img.width());
+                                std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, result_img.height(), result_img.width());
+
+                                uint16_t color[4] = {0, 0, 0, 0};
+                                if (op.img.channels() >= 3)
+                                {
+                                    color[0] = op.img.channel(0)[currentScan * op.img.width() + int(px)];
+                                    color[1] = op.img.channel(1)[currentScan * op.img.width() + int(px)];
+                                    color[2] = op.img.channel(2)[currentScan * op.img.width() + int(px)];
+                                    color[3] = 65535;
+                                }
+                                else
+                                {
+                                    color[0] = op.img[currentScan * op.img.width() + int(px)];
+                                    color[1] = op.img[currentScan * op.img.width() + int(px)];
+                                    color[2] = op.img[currentScan * op.img.width() + int(px)];
+                                    color[3] = 65535;
+                                }
+
+                                // if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
+                                //     continue;
+
+                                // This seems to glitch out sometimes... Need to check
+                                double maxSize = result_img.width() / 100.0;
+                                if (abs(map_cc1.first - map_cc2.first) < maxSize && abs(map_cc1.second - map_cc2.second) < maxSize)
+                                {
+                                    /*
+                                    Using a circle and radius from the next sample is most likely not the best way, computing the instrument's
+                                    actual FOV at each pixel and so would be a better approach... But well, this one has the benefit of being
+                                    fast.
+                                    I guess time will tell how reliable that approximation is.
+                                    */
+                                    double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
+                                    result_img.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
+                                }
+
+                                // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
+                            }
+
+                            if (progress != nullptr)
+                                *progress = float(currentScan) / float(op.img.height());
+                            // logger->critical("%d/%d", currentScan, image.height());
+                        }
+                    }
                 }
                 else
                 {

@@ -84,6 +84,8 @@ namespace satdump
         std::vector<double> current_timestamps;
         nlohmann::json current_proj_metadata;
 
+        bool projection_use_old_algo = false;
+
         // Utils
         void updateScaleImage();
         void updateCorrectionFactors(bool first = false);
