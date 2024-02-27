@@ -170,7 +170,7 @@ namespace meteor
                 }
 
                 image::Image<uint8_t> ret = image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
-                if (max_correct > 0)
+                if (max_correct > 0 && ret.size() > 0)
                 {
                     logger->info("Filling missing data in channel %d...", channel + 1);
 

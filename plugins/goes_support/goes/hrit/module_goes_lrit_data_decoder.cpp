@@ -20,6 +20,7 @@ namespace goes
         {
             write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
+            goes_r_fc_composer_full_disk = goes_r_fc_composer_meso1 = goes_r_fc_composer_meso2 = GOESRFalseColorComposer();
         }
 
         std::vector<ModuleDataType> GOESLRITDataDecoderModule::getInputTypes()
