@@ -231,7 +231,19 @@ namespace satdump
             {
                 nlohmann::json proj_cfg = current_image_proj;
                 image::set_metadata_proj_cfg(current_img, proj_cfg);
-                viewer_app->projection_layers.push_back({products->instrument_name, current_img});
+
+                // Create projection title
+                std::string timestring, name;
+                if (instrument_cfg.contains("name"))
+                    name = instrument_cfg["name"];
+                else
+                    name = products->instrument_name;
+                if (products->has_timestamps)
+                    timestring = "[" + timestamp_to_string(get_median(products->get_timestamps(select_channel_image_id))) + "] ";
+                else
+                    timestring = "";
+
+                viewer_app->projection_layers.push_back({ timestring + name, current_img });
             }
             catch (std::exception &e)
             {

@@ -179,7 +179,20 @@ namespace satdump
                 proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(map_img.height());
 
                 image::set_metadata_proj_cfg(map_img, proj_cfg);
-                viewer_app->projection_layers.push_back({products->instrument_name, map_img});
+
+                // Create projection title
+                std::string timestring, name, composite_name;
+                composite_name = "Channel " + std::to_string(select_channel_image_id);
+                if (instrument_cfg.contains("name"))
+                    name = instrument_cfg["name"];
+                else
+                    name = products->instrument_name;
+                if (products->has_timestamps(select_channel_image_id))
+                    timestring = "[" + timestamp_to_string(get_median(products->get_timestamps(select_channel_image_id))) + "] ";
+                else
+                    timestring = "";
+
+                viewer_app->projection_layers.push_back({ timestring + name + " - " + composite_name, map_img });
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
