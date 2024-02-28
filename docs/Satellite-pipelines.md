@@ -22,7 +22,7 @@ The aim of this is to list all possible satellite processing pipelines as well a
   - `start_timestamp`: Unix timestamp of the start of the file provided. Must be UTC Unix timestamp in seconds.Required in case you are not processing your file on the same Mocow day.
 - `meteor_m2_lrpt`: METEOR M2 LRPT 72k
   - `fill_missing`: Fills in black lines caused by signal drop-outs or interference
-  - `max_fill_lines`: Maximum contiguous lines to correct. Default is 40
+  - `max_fill_lines`: Maximum contiguous lines to correct. Default is 50
 - `meteor_m2-x_lrpt`: METEOR M2-X LRPT 72k (Same parameters as meteor_m2_lrpt)
 - `meteor_m2-x_lrpt_80k`: METEOR M2-x LRPT 80k (Same parameters as meteor_m2_lrpt)
 - `meteor_m_dump_narrow`: METEOR-M Narrow Dump (WIP!)
