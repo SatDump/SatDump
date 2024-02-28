@@ -6,6 +6,11 @@
 #include "common/rimgui.h"
 #include "common/widgets/double_list.h"
 
+// define HW id for RSP1B if it's not available in older version of SDRPlay API
+#ifndef SDRPLAY_RSP1B_ID
+#define SDRPLAY_RSP1B_ID                      (6)
+#endif
+
 class SDRPlaySource : public dsp::DSPSampleSource
 {
 protected:
