@@ -113,6 +113,8 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Add to Projections"))
                 addCurrentToProjections();
+            ImGui::SameLine();
+            proj_notif.draw();
             if (!canBeProjected())
                 style::endDisabled();
         }
@@ -181,7 +183,7 @@ namespace satdump
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
-                logger->warn("Added layer!");
+                proj_notif.set_message(ImColor(255, 0, 0), "Added!");
             }
             catch (std::exception &e)
             {

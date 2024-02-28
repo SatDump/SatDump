@@ -7,6 +7,7 @@
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
@@ -63,6 +64,8 @@ namespace satdump
 
         bool canBeProjected();
         void addCurrentToProjections();
+
+        widgets::TimedMessage proj_notif;
 
         static std::string getID() { return "scatterometer_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ScatterometerViewerHandler>(); }

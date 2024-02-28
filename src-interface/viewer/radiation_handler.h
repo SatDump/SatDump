@@ -7,6 +7,7 @@
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
@@ -46,6 +47,8 @@ namespace satdump
 
         bool canBeProjected();
         void addCurrentToProjections();
+
+        widgets::TimedMessage proj_notif;
 
         ctpl::thread_pool handler_thread_pool = ctpl::thread_pool(1);
         std::mutex async_image_mutex;

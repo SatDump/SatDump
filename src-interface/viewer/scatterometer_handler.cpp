@@ -186,6 +186,8 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Add to Projections"))
                 addCurrentToProjections();
+            ImGui::SameLine();
+            proj_notif.draw();
             if (!canBeProjected())
                 style::endDisabled();
             ImGui::EndGroup();
@@ -235,7 +237,8 @@ namespace satdump
             {
                 logger->error("Could not project image! %s", e.what());
             }
-            logger->warn("Added layer!");
+
+            proj_notif.set_message(ImColor(255, 0, 0), "Added!");
         }
         else
         {

@@ -10,6 +10,7 @@
 #include "core/style.h"
 #include "libs/ctpl/ctpl_stl.h"
 #include "common/widgets/markdown_helper.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
@@ -105,6 +106,8 @@ namespace satdump
 
         bool canBeProjected();
         void addCurrentToProjections();
+
+        widgets::TimedMessage proj_notif;
 
         static std::string getID() { return "image_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ImageViewerHandler>(); }

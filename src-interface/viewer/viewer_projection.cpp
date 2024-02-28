@@ -129,7 +129,7 @@ namespace satdump
             if (projections_are_generating)
             {
                 ImGui::SameLine();
-                widgets::Spinner("###spinner1", 10 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
+                widgets::Spinner("###spinner1", 8 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
             }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
@@ -194,7 +194,7 @@ namespace satdump
             if (projections_loading_new_layer)
             {
                 ImGui::SameLine();
-                widgets::Spinner("###spinner1", 10 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
+                widgets::Spinner("###spinner1", 8 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
             }
 
             if (disable_add_layer)
