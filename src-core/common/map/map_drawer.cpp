@@ -223,7 +223,7 @@ namespace map
                         std::pair<double, double> end = projectionFunc(coordinates[i + 1].y, coordinates[i + 1].x,
                                                                        map_image.height(), map_image.width());
 
-                        if (start.first == -1 || end.first == -1)
+                        if (start.first == -1 || start.second == -1 || end.first == -1 || end.second == -1)
                             continue;
 
                         map_image.draw_line(start.first, start.second, end.first, end.second, color);
@@ -236,7 +236,7 @@ namespace map
                 std::pair<double, double> cc = projectionFunc(coordinates.y, coordinates.x,
                                                               map_image.height(), map_image.width());
 
-                if (cc.first == -1 || cc.first == -1)
+                if (cc.first == -1 || cc.second == -1)
                     return;
 
                 map_image.draw_pixel(cc.first, cc.second, color);

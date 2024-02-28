@@ -289,10 +289,14 @@ namespace satdump
 
             if (!proj::projection_setup(proj.get()) && !proj_err)
             {
-                return [proj](double lat, double lon, int, int) mutable -> std::pair<int, int>
+                return [proj](double lat, double lon, int h, int w) mutable -> std::pair<int, int>
                 {
                     double x, y;
                     if (proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y))
+                        return {-1, -1};
+                    else if (x < 0 || x >= w)
+                        return {-1, -1};
+                    else if (y < 0 || y >= h)
                         return {-1, -1};
                     else
                         return {(int)x, (int)y};
@@ -309,9 +313,9 @@ namespace satdump
                     double x, y;
                     transform->forward(lon, lat, x, y);
 
-                    if (x < 0 || x > map_width)
+                    if (x < 0 || x >= map_width)
                         return {-1, -1};
-                    if (y < 0 || y > map_height)
+                    if (y < 0 || y >= map_height)
                         return {-1, -1};
 
                     if (rotate)
