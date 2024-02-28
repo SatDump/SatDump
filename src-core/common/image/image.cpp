@@ -317,7 +317,7 @@ namespace image
             return false;
         }
 
-        if (image_format != "png" && image_format != "jpg" && image_format != "j2k" && image_format != "pbm")
+        if (image_format != "png" && image_format != "jpg" && image_format != "j2k" && image_format != "pbm" && image_format != "tif")
         {
             logger->error("Image format not specified, and default format is invalid!");
             return false;

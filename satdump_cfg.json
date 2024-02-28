@@ -134,6 +134,7 @@
             "name": "Product Image Format",
             "options": [
                 "png",
+                "tif",
                 "j2k",
                 "jpg",
                 "pbm"
@@ -146,6 +147,7 @@
             "name": "Processed Image Format",
             "options": [
                 "png",
+                "tif",
                 "j2k",
                 "jpg",
                 "pbm"
