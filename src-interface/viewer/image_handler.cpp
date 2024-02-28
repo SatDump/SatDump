@@ -711,18 +711,17 @@ namespace satdump
             if (ImGui::CollapsingHeader("Projection"))
             {
                 ImGui::BeginGroup();
+                ImGui::Checkbox("Old Algorithm", &projection_use_old_algo);
+                ImGui::SameLine();
                 if (!canBeProjected())
                     style::beginDisabled();
                 if (ImGui::Button("Add to Projections"))
                     addCurrentToProjections();
-                ImGui::SameLine();
-                proj_notif.draw();
                 if (!canBeProjected())
                     style::endDisabled();
 
                 ImGui::SameLine();
-
-                ImGui::Checkbox("Old Algorithm", &projection_use_old_algo);
+                proj_notif.draw();
 
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !canBeProjected())
