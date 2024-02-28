@@ -355,8 +355,18 @@ namespace satdump
             ProjBounds bounds;
             if (!proj::projection_setup(&proj) && !proj_err)
             {
-                proj::projection_perform_inv(&proj, 0, 0, &bounds.min_lon, &bounds.max_lat);
-                proj::projection_perform_inv(&proj, img.width(), img.height(), &bounds.max_lon, &bounds.min_lat);
+                if (proj.type == proj::ProjType_Geos)
+                {
+                    bounds.min_lat = -90;
+                    bounds.max_lat = 90;
+                    bounds.min_lon = proj.lam0 * RAD2DEG - 90;
+                    bounds.max_lon = proj.lam0 * RAD2DEG + 90;
+                }
+                else
+                {
+                    proj::projection_perform_inv(&proj, 0, 0, &bounds.min_lon, &bounds.max_lat);
+                    proj::projection_perform_inv(&proj, img.width(), img.height(), &bounds.max_lon, &bounds.min_lat);
+                }
                 bounds.valid = true;
                 proj::projection_free(&proj);
             }
