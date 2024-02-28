@@ -398,24 +398,17 @@ namespace satdump
                     ImGui::BeginGroup();
                     ProjectionLayer &layer = projection_layers[i];
                     std::string label;
-                    //                    if (layer.type == 0)
-                    //                    {
-                    //                        label = layer.viewer_prods->products->instrument_name;
-                    //                        if (layer.viewer_prods->handler->instrument_cfg.contains("name"))
-                    //                            label = layer.viewer_prods->handler->instrument_cfg["name"].get<std::string>();
-                    //                    }
-                    //                    else
                     label = layer.name;
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 4 * ui_scale));
                     ImGui::Text("%s", label.c_str());
-                    //                    if (ImGui::IsItemHovered() && layer.type == 0)
-                    //                    {
-                    //                        ImGui::SetTooltip("%s", layer.viewer_prods->dataset_name.c_str());
-                    //                    }
+
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-                    // if (layer.type == 1)
+
+                    if (projection_layers.size() == 1)
+                        layer.enabled = true;
+
                     {
                         if (disable_buttons)
                             ImGui::BeginDisabled();
@@ -441,6 +434,7 @@ namespace satdump
                         if (disable_buttons)
                             ImGui::EndDisabled();
                     }
+
                     if (layer.enabled)
                     {
                         // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
