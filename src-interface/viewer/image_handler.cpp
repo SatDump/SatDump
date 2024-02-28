@@ -858,12 +858,17 @@ namespace satdump
                     proj_cfg["metadata"]["timestamps"] = current_timestamps;
 
                 image::set_metadata_proj_cfg(current_image, proj_cfg);
-                viewer_app->projection_layers.push_back({products->instrument_name, current_image});
+                if (select_rgb_presets != -1)
+                    viewer_app->projection_layers.push_back({products->instrument_name + " " + rgb_presets[select_rgb_presets].first, current_image});
+                else
+                    viewer_app->projection_layers.push_back({products->instrument_name + " unknown", current_image});
 
                 if (rotate_image)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
                 if (projection_use_old_algo)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].old_algo = true;
+
+                logger->warn("Added layer!");
             }
             catch (std::exception &e)
             {

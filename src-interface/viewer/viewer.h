@@ -188,6 +188,12 @@ namespace satdump
             out["projections_equirectangular_br_lon"] = projections_equirectangular_br_lon;
             out["projections_equirectangular_br_lat"] = projections_equirectangular_br_lat;
 
+            out["projections_utm_center_lon"] = projections_utm_center_lon;
+            out["projections_utm_offset_y"] = projections_utm_offset_y;
+            out["projections_utm_scale"] = projections_utm_scale;
+            out["projections_utm_zone"] = projections_utm_zone;
+            out["projections_utm_south"] = projections_utm_south;
+
             out["projections_stereo_center_lon"] = projections_stereo_center_lon;
             out["projections_stereo_center_lat"] = projections_stereo_center_lat;
             out["projections_stereo_scale"] = projections_stereo_scale;
@@ -197,6 +203,7 @@ namespace satdump
             out["projections_tpers_alt"] = projections_tpers_alt;
             out["projections_tpers_ang"] = projections_tpers_ang;
             out["projections_tpers_azi"] = projections_tpers_azi;
+            out["projections_tpers_scale"] = projections_tpers_scale;
 
             out["projections_image_width"] = projections_image_width;
             out["projections_image_height"] = projections_image_height;
@@ -218,6 +225,12 @@ namespace satdump
             setValueIfExists(in["projections_equirectangular_br_lon"], projections_equirectangular_br_lon);
             setValueIfExists(in["projections_equirectangular_br_lat"], projections_equirectangular_br_lat);
 
+            setValueIfExists(in["projections_utm_center_lon"], projections_utm_center_lon);
+            setValueIfExists(in["projections_utm_offset_y"], projections_utm_offset_y);
+            setValueIfExists(in["projections_utm_scale"], projections_utm_scale);
+            setValueIfExists(in["projections_utm_zone"], projections_utm_zone);
+            setValueIfExists(in["projections_utm_south"], projections_utm_south);
+
             setValueIfExists(in["projections_stereo_center_lon"], projections_stereo_center_lon);
             setValueIfExists(in["projections_stereo_center_lat"], projections_stereo_center_lat);
             setValueIfExists(in["projections_stereo_scale"], projections_stereo_scale);
@@ -227,6 +240,7 @@ namespace satdump
             setValueIfExists(in["projections_tpers_alt"], projections_tpers_alt);
             setValueIfExists(in["projections_tpers_ang"], projections_tpers_ang);
             setValueIfExists(in["projections_tpers_azi"], projections_tpers_azi);
+            setValueIfExists(in["projections_tpers_scale"], projections_tpers_scale);
 
             setValueIfExists(in["projections_image_width"], projections_image_width);
             setValueIfExists(in["projections_image_height"], projections_image_height);

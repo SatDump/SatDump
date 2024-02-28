@@ -235,6 +235,7 @@ namespace satdump
             {
                 logger->error("Could not project image! %s", e.what());
             }
+            logger->warn("Added layer!");
         }
         else
         {

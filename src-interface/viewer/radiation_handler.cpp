@@ -181,6 +181,7 @@ namespace satdump
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
+                logger->warn("Added layer!");
             }
             catch (std::exception &e)
             {
