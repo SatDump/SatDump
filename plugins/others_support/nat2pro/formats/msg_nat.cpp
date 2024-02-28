@@ -1,9 +1,8 @@
+#include "common/projection/projs2/proj_json.h"
 #include "formats.h"
 #include "products/image_products.h"
 #include "common/repack.h"
 #include "logger.h"
-
-#include "common/projection/projs2/proj_json.h"
 
 namespace nat2pro
 {

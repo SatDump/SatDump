@@ -22,6 +22,8 @@ cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\libpng16d.dll Debug\lib
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\fftw3f.dll Debug\fftw3f.dll
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\glfw3.dll Debug\glfw3.dll
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\jpeg62.dll Debug\jpeg62.dll
+cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\tiffd.dll Debug\tiff.dll
+cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\liblzma.dll Debug\liblzma.dll
 cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\libusb-1.0.dll Debug\libusb-1.0.dll
 
 #Remove stray DLLs from plugin folder, if they're there

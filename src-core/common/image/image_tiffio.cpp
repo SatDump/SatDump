@@ -1,4 +1,7 @@
+#include "common/projection/projs2/proj_json.h"
+#include "common/projection/geotiff/geotiff.h"
 #include "image.h"
+#include "image_meta.h"
 #include <cstring>
 #include <fstream>
 #include "logger.h"
@@ -6,10 +9,6 @@
 #include <tiffio.h>
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
-
-#include "image_meta.h"
-#include "common/projection/projs2/proj_json.h"
-#include "common/projection/geotiff/geotiff.h"
 
 namespace image
 {
