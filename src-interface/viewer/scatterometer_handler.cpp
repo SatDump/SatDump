@@ -238,7 +238,7 @@ namespace satdump
                 logger->error("Could not project image! %s", e.what());
             }
 
-            proj_notif.set_message(ImColor(255, 0, 0), "Added!");
+            proj_notif.set_message(style::theme.green, "Added!");
         }
         else
         {

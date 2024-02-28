@@ -53,13 +53,16 @@ namespace satdump
 
             if (projections_current_selected_proj == 0)
             {
-                ImGui::Text("Top Left Coordinates :");
-                ImGui::InputFloat("Lat##tl", &projections_equirectangular_tl_lat);
-                ImGui::InputFloat("Lon##tl", &projections_equirectangular_tl_lon);
-                ImGui::Spacing();
-                ImGui::Text("Bottom Right Coordinates :");
-                ImGui::InputFloat("Lat##br", &projections_equirectangular_br_lat);
-                ImGui::InputFloat("Lon##br", &projections_equirectangular_br_lon);
+                if (!projection_auto_mode)
+                {
+                    ImGui::Text("Top Left Coordinates :");
+                    ImGui::InputFloat("Lat##tl", &projections_equirectangular_tl_lat);
+                    ImGui::InputFloat("Lon##tl", &projections_equirectangular_tl_lon);
+                    ImGui::Spacing();
+                    ImGui::Text("Bottom Right Coordinates :");
+                    ImGui::InputFloat("Lat##br", &projections_equirectangular_br_lat);
+                    ImGui::InputFloat("Lon##br", &projections_equirectangular_br_lon);
+                }
             }
             else if (projections_current_selected_proj == 1)
             {
@@ -100,17 +103,16 @@ namespace satdump
                 ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
             }*/
 
-            if (projections_current_selected_proj != 0)
-                style::beginDisabled();
-            ImGui::Checkbox("Auto Mode###pojautomode", &projection_auto_mode);
-            ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
-            if (projection_auto_scale_mode)
+            if (projections_current_selected_proj == 0)
             {
-                ImGui::InputDouble("Scale X (m/px)##projscalexauto", &projection_autoscale_x);
-                ImGui::InputDouble("Scale Y (m/px)##projscalexauto", &projection_autoscale_y);
+                ImGui::Checkbox("Auto Mode###pojautomode", &projection_auto_mode);
+                ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
+                if (projection_auto_scale_mode)
+                {
+                    ImGui::InputDouble("Scale X (m/px)##projscalexauto", &projection_autoscale_x);
+                    ImGui::InputDouble("Scale Y (m/px)##projscalexauto", &projection_autoscale_y);
+                }
             }
-            if (projections_current_selected_proj != 0)
-                style::endDisabled();
 
             ImGui::Spacing();
             ImGui::Separator();

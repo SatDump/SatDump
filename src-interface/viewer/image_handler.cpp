@@ -870,7 +870,7 @@ namespace satdump
                 if (projection_use_old_algo)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].old_algo = true;
 
-                proj_notif.set_message(ImColor(255, 0, 0), "Added!");
+                proj_notif.set_message(style::theme.green, "Added!");
             }
             catch (std::exception &e)
             {

@@ -183,7 +183,7 @@ namespace satdump
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
-                proj_notif.set_message(ImColor(255, 0, 0), "Added!");
+                proj_notif.set_message(style::theme.green, "Added!");
             }
             catch (std::exception &e)
             {
