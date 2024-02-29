@@ -68,6 +68,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     target_link_libraries(satdump_core PUBLIC nng.dll)
+    target_link_libraries(satdump_core PUBLIC tiff.dll)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)

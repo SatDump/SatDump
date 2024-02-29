@@ -1,4 +1,7 @@
+#include "common/projection/projs2/proj_json.h"
+#include "common/projection/geotiff/geotiff.h"
 #include "image.h"
+#include "image_meta.h"
 #include <cstring>
 #include <fstream>
 #include "logger.h"
@@ -6,10 +9,6 @@
 #include <tiffio.h>
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
-
-#include "image_meta.h"
-#include "common/projection/projs2/proj_json.h"
-#include "common/projection/geotiff/geotiff.h"
 
 namespace image
 {
@@ -51,21 +50,18 @@ namespace image
 
             for (size_t y = 0; y < d_height; y++)
             {
-                if (d_channels == 4)
+                for (size_t x = 0; x < d_width; x++)
                 {
-                    for (size_t x = 0; x < d_width; x++)
+                    size_t i2 = /*((d_height - 1) - y)*/ y * d_width + x;
+                    if (d_depth == 8)
                     {
-                        size_t i2 = /*((d_height - 1) - y)*/ y * d_width + x;
-                        if (d_depth == 8)
-                        {
-                            for (int i = 0; i < d_channels; i++)
-                                ((uint8_t *)buf)[x * d_channels + i] = channel(i)[i2];
-                        }
-                        else if (d_depth == 16)
-                        {
-                            for (int i = 0; i < d_channels; i++)
-                                ((uint16_t *)buf)[x * d_channels + i] = channel(i)[i2];
-                        }
+                        for (int i = 0; i < d_channels; i++)
+                            ((uint8_t *)buf)[x * d_channels + i] = channel(i)[i2];
+                    }
+                    else if (d_depth == 16)
+                    {
+                        for (int i = 0; i < d_channels; i++)
+                            ((uint16_t *)buf)[x * d_channels + i] = channel(i)[i2];
                     }
                 }
 

@@ -434,7 +434,9 @@ namespace satdump
                     std::string label;
                     label = layer.name;
                     ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x, ImGui::GetCursorPos().y + 4 * ui_scale));
+                    ImGui::PushTextWrapPos(ImGui::GetContentRegionMax().x - 70 * ui_scale);
                     ImGui::Text("%s", label.c_str());
+                    ImGui::PopTextWrapPos();
 
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);

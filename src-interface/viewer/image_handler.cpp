@@ -715,14 +715,10 @@ namespace satdump
                     style::beginDisabled();
                 if (ImGui::Button("Add to Projections"))
                     addCurrentToProjections();
-                ImGui::SameLine();
                 proj_notif.draw();
+                ImGui::Checkbox("Old Algorithm", &projection_use_old_algo);
                 if (!canBeProjected())
                     style::endDisabled();
-
-                ImGui::SameLine();
-
-                ImGui::Checkbox("Old Algorithm", &projection_use_old_algo);
 
                 ImGui::EndGroup();
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !canBeProjected())
@@ -851,6 +847,7 @@ namespace satdump
         {
             try
             {
+                // Get projection information
                 nlohmann::json proj_cfg;
                 proj_cfg = products->get_proj_cfg();
                 proj_cfg["metadata"] = current_proj_metadata;
@@ -858,12 +855,27 @@ namespace satdump
                     proj_cfg["metadata"]["tle"] = products->get_tle();
                 if (products->has_timestamps)
                     proj_cfg["metadata"]["timestamps"] = current_timestamps;
-
                 image::set_metadata_proj_cfg(current_image, proj_cfg);
-                if (select_rgb_presets != -1)
-                    viewer_app->projection_layers.push_back({products->instrument_name + " " + rgb_presets[select_rgb_presets].first, current_image});
+
+                // Create projection title
+                std::string timestring, name, composite_name;
+                if (instrument_cfg.contains("name"))
+                    name = instrument_cfg["name"];
                 else
-                    viewer_app->projection_layers.push_back({products->instrument_name + " unknown", current_image});
+                    name = products->instrument_name;
+                if (active_channel_id >= 0)
+                    composite_name = "Channel " + channel_numbers[active_channel_id];
+                else if (select_rgb_presets == -1)
+                    composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
+                else
+                    composite_name = rgb_presets[select_rgb_presets].first;
+                if (current_timestamps.size() > 0)
+                    timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
+                else
+                    timestring = "";
+
+                // Add projection layer and settings
+                viewer_app->projection_layers.push_back({timestring + name + " - " + composite_name, current_image});
 
                 if (rotate_image)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
