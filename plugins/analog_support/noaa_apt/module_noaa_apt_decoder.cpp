@@ -120,6 +120,33 @@ namespace noaa_apt
 
             data_in = std::ifstream(d_input_file, std::ios::binary);
         }
+        else
+        {
+            if (d_parameters.contains("frequency"))
+            {
+                uint64_t frequency = d_parameters["frequency"].get<uint64_t>();
+
+                if (abs(mfrequency - 137.1e6) < 1e4)
+                {
+                    autodetected_sat = 19;
+                    logger->info("Detected NOAA-19");
+                }
+                else if (abs(frequency - 137.9125e6) < 1e4)
+                {
+                    autodetected_sat = 18;
+                    logger->info("Detected NOAA-18");
+                }
+                else if (abs(frequency - 137.62e6) < 1e4)
+                {
+                    autodetected_sat = 15;
+                    logger->info("Detected NOAA-15");
+                }
+                else
+                {
+                    logger->warn("Couldn't automatically determine the satellite, in case of unexpected results, please verify you have specified the correct satellite manually");
+                }
+            }
+        }
 
         logger->info("Using input wav " + d_input_file);
 
