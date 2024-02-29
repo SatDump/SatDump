@@ -20,6 +20,7 @@ namespace proj
         ProjType_UniversalTransverseMercator,
         ProjType_Geos,
         ProjType_Tpers,
+        ProjType_WebMerc,
     };
 
     struct projection_setup_t

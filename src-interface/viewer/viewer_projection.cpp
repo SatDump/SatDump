@@ -207,9 +207,7 @@ namespace satdump
                 {
                     ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
                     ImGui::RadioButton("Equirectangular", &selected_external_type, 0);
-                    style::beginDisabled();
                     ImGui::RadioButton("Tile Map (OSM)", &selected_external_type, 1);
-                    style::endDisabled();
                     ImGui::RadioButton("GeoTIFF", &selected_external_type, 2);
                     ImGui::RadioButton("Other", &selected_external_type, 3);
 
@@ -222,6 +220,21 @@ namespace satdump
                         if (selected_external_type == 3)
                             projection_new_layer_cfg.draw("Projection Config File");
                         ImGui::Checkbox("Normalize###normalizeinput", &projection_normalize_image);
+                    }
+                    else if (selected_external_type == 1)
+                    {
+                        ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
+                        if (!urlgood)
+                            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+
+                        ImGui::InputText("Tile URL", &mapurl, ImGuiInputTextFlags_None);
+
+                        if (!urlgood)
+                        {
+                            if (ImGui::IsItemHovered())
+                                ImGui::SetTooltip("Invalid URL! must be https://server/{z}/{x}/{y}.ext");
+                            ImGui::PopStyleColor();
+                        }
                     }
 
                     if (ImGui::Button("Add layer"))
@@ -271,6 +284,27 @@ namespace satdump
                                 }
                                 else
                                     logger->error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
+                            }
+                            else if (selected_external_type == 1 && re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
+                            {
+                                logger->info("Generating tile map");
+                                std::stringstream test(mapurl);
+                                std::string segment;
+                                std::vector<std::string> seglist;
+                                while (std::getline(test, segment, '/'))
+                                    seglist.push_back(segment);
+                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
+
+                                nlohmann::json proj_cfg;
+                                proj_cfg["type"] = "webmerc";
+                                proj_cfg["offset_x"] = -20037508.3427892;
+                                proj_cfg["offset_y"] = 20036051.9193368;
+                                proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
+                                proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
+                                image::set_metadata_proj_cfg(timemap, proj_cfg);
+
+                                projection_layers.push_back({"Tile Map", timemap});
                             }
 
                             projections_loading_new_layer = false;

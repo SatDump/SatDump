@@ -17,6 +17,8 @@ namespace proj
             j["type"] = "geos";
         else if (p.type == ProjType_Tpers)
             j["type"] = "tpers";
+        else if (p.type == ProjType_WebMerc)
+            j["type"] = "webmerc";
         // else if (p.type == ProjType_LambertConformalConic)
         //     j["type"] = "lamcc";
 
@@ -66,6 +68,8 @@ namespace proj
             p.type = ProjType_Geos;
         else if (j["type"].get<std::string>() == "tpers")
             p.type = ProjType_Tpers;
+        else if (j["type"].get<std::string>() == "webmerc")
+            p.type = ProjType_WebMerc;
         // else if (j["type"].get<std::string>() == "lamcc")
         //     p.type = ProjType_LambertConformalConic;
 

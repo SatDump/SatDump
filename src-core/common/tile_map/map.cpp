@@ -76,6 +76,9 @@ mapTile tileMap::downloadTile(std::pair<int, int> t1, int zoom)
 
         perform_http_request(url, res);
         img.load_img((uint8_t *)res.data(), res.size());
+        // system(std::string("wget " + url + " -O /tmp/img.jpg").c_str());
+        // img.load_img("/tmp/img.jpg");
+
         std::filesystem::create_directories(tileSaveDir + std::to_string(zoom) + "/" + std::to_string(t1.first) + "/");
         std::ofstream of(filename, std::ios::binary);
         of << res;
@@ -108,9 +111,11 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, int zoo
     int offX = TILE_SIZE * (cf.first - (int)cf.first);
     int offY = TILE_SIZE * (cf.second - (int)cf.second);
     for (int x = 0; x < xtiles; x++)
-        for (int y = 0; y < ytiles; y++){
+        for (int y = 0; y < ytiles; y++)
+        {
             img.draw_image(0, downloadTile({ft.first + x, ft.second + y}, zoom).data, x * TILE_SIZE - offX, y * TILE_SIZE - offY);
-            *progress = float(x*xtiles+y)/(xtiles*ytiles);
+            if (progress != nullptr)
+                *progress = float(x * xtiles + y) / (xtiles * ytiles);
         }
     return img;
 }
@@ -140,7 +145,8 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pa
         for (int y = 0; y < ytiles; y++)
         {
             img.draw_image(0, downloadTile({std::min(cf.first, cf1.first) + (float)x, std::min(cf.second, cf1.second) + (float)y}, zoom).data, x * TILE_SIZE - offX, y * TILE_SIZE - offY);
-            *progress = float(x*xtiles+y)/(xtiles*ytiles);
+            if (progress != nullptr)
+                *progress = float(x * xtiles + y) / (xtiles * ytiles);
         }
     return img;
 }

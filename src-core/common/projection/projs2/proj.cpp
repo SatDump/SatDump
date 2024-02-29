@@ -8,6 +8,7 @@
 #include "tmerc.h"
 #include "geos.h"
 #include "tpers.h"
+#include "webmerc.h"
 // #include "lamcc.h"
 
 namespace proj
@@ -33,6 +34,8 @@ namespace proj
             proj_ret = projection_geos_setup(proj, proj->params.altitude, proj->params.sweep_x);
         else if (proj->type == ProjType_Tpers)
             proj_ret = projection_tpers_setup(proj, proj->params.altitude, proj->params.tilt * DEG2RAD, proj->params.azimuth * DEG2RAD);
+        else if (proj->type == ProjType_WebMerc)
+            proj_ret = projection_webmerc_setup(proj);
         else
             return true;
 
@@ -78,6 +81,10 @@ namespace proj
 
         case ProjType_Tpers:
             proj_ret = projection_tpers_fwd(proj, lon, lat, x, y);
+            break;
+
+        case ProjType_WebMerc:
+            proj_ret = projection_webmerc_fwd(proj, lon, lat, x, y);
             break;
 
         default:
@@ -140,6 +147,10 @@ namespace proj
 
         case ProjType_Tpers:
             proj_ret = projection_tpers_inv(proj, x, y, lon, lat);
+            break;
+
+        case ProjType_WebMerc:
+            proj_ret = projection_webmerc_inv(proj, x, y, lon, lat);
             break;
 
         default:
