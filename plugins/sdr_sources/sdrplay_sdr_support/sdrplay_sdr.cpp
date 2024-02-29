@@ -40,7 +40,7 @@ void SDRPlaySource::set_bias()
     if (!is_started)
         return;
 
-    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
+    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID) // RSP1A or RSP1B
     {
         channel_params->rsp1aTunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_BiasTControl, sdrplay_api_Update_Ext1_None);
@@ -83,7 +83,7 @@ void SDRPlaySource::set_others()
     if (!is_started)
         return;
 
-    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
+    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID) // RSP1A or RSP1B
     {
         dev_params->devParams->rsp1aParams.rfNotchEnable = fm_notch;
         dev_params->devParams->rsp1aParams.rfDabNotchEnable = dab_notch;
@@ -213,7 +213,7 @@ void SDRPlaySource::open()
     // Set max gain
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1_ID) // RSP1
         max_gain = 4;
-    else if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID) // RSP1A or RSP1B
         max_gain = 10;
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
         max_gain = 9;
@@ -359,7 +359,7 @@ void SDRPlaySource::drawControlUI()
         set_agcs();
 
     // RSP1A-specific settings
-    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID)
+    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID)
     {
         if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
@@ -457,6 +457,8 @@ std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()
             results.push_back({"sdrplay", "RSP1 " + ss.str(), i});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP1A_ID)
             results.push_back({"sdrplay", "RSP1A " + ss.str(), i});
+        else if (devices_addresses[i].hwVer == SDRPLAY_RSP1B_ID)
+            results.push_back({"sdrplay", "RSP1B " + ss.str(), i});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP2_ID)
             results.push_back({"sdrplay", "RSP2 " + ss.str(), i});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSPduo_ID)
