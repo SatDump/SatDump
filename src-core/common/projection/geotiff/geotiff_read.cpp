@@ -135,6 +135,10 @@ namespace geotiff
                                 proj->params.zone = Value_Offset - PCS_WGS84_UTM_zone_1S + 1;
                                 proj->params.south = true;
                             }
+                            else if (Value_Offset == 3857) // WGS 84 / Pseudo-Mercator
+                            {
+                                proj->type = proj::ProjType_WebMerc;
+                            }
 
                             if (debug)
                                 printf(" --- [ProjectedCSTypeGeoKey] : %d\n", Value_Offset);

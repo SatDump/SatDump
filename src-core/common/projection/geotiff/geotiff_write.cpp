@@ -92,6 +92,14 @@ namespace geotiff
                 geoskeys.push_back(CT_Stereographic);
                 keysn++;
             }
+            else if (proj->type == proj::ProjType_WebMerc)
+            {
+                geoskeys.push_back(ProjectedCSTypeGeoKey);
+                geoskeys.push_back(0);
+                geoskeys.push_back(1);
+                geoskeys.push_back(3857);
+                keysn++;
+            }
 
             // Longitude/Latitude of origin
             if (proj->lam0 != 0)
