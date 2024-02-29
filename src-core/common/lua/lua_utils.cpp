@@ -56,14 +56,14 @@ namespace lua_utils
 
         image_type["clear"] = &image::Image<T>::clear;
 
-        image_type["get"] = [](image::Image<T> &img, int i) -> T
+        image_type["get"] = [](image::Image<T> &img, size_t i) -> T
         {
             if (i < img.size())
                 return img[i];
             else
                 return 0;
         };
-        image_type["set"] = [](image::Image<T> &img, int i, T x)
+        image_type["set"] = [](image::Image<T> &img, size_t i, T x)
         {
             if (i < img.size())
                 img[i] = img.clamp(x);
