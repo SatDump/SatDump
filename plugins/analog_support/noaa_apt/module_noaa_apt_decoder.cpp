@@ -126,7 +126,7 @@ namespace noaa_apt
             {
                 uint64_t frequency = d_parameters["frequency"].get<uint64_t>();
 
-                if (abs(mfrequency - 137.1e6) < 1e4)
+                if (abs(frequency - 137.1e6) < 1e4)
                 {
                     autodetected_sat = 19;
                     logger->info("Detected NOAA-19");
