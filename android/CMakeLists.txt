@@ -71,6 +71,11 @@ add_library(zstd STATIC IMPORTED)
 set_target_properties(zstd PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libzstd.a)
 # include_directories(deps/zstd/jni/)
 
+# TIFF
+add_library(tiff STATIC IMPORTED)
+set_target_properties(tiff PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libtiff.a)
+# include_directories(deps/tiff/jni/)
+
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )

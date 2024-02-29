@@ -98,6 +98,9 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC zstd)
     target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
 
+    # Tiff
+    target_link_libraries(satdump_core PUBLIC tiff)
+
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
     if(NOT APPLE)
@@ -167,7 +170,11 @@ else()
     endif()
 
     # Dynamic linking
-    target_link_libraries(satdump_core PUBLIC dl tiff)
+    target_link_libraries(satdump_core PUBLIC dl)
+
+    # Tiff
+    find_library(TIFF_LIBRARY tiff REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${TIFF_LIBRARY})
 
     include(CheckCXXSourceCompiles)
 
