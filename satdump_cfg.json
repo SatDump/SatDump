@@ -388,7 +388,7 @@
             // 46984, // Sentinel-6
             // 48900, // TUBIN
             // 57172, // UmKA-1 (RS40S)
-            56211 // Inspire-Sat 7
+            56211, // Inspire-Sat 7
             // 40376, // SMAP
             // 44874, // CHEOPS
             // 36036, // SMOS
@@ -407,6 +407,7 @@
             // 41857, // Yunhai 1
             // 44547, // Yunhai 1-02
             // 53877 // Yunhai 1-03
+            59051 // M2-4
         ]
     },
     // Advanced user settings

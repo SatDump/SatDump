@@ -136,7 +136,7 @@ namespace meteor
             else if (msumr_serial_number == 3)
                 norad = 57166; // M2-3
             else if (msumr_serial_number == 4)
-                norad = 57166; // M2-4, WAITING FOR NORAD
+                norad = 59051; // M2-4, WAITING FOR NORAD
 
             // Products dataset
             satdump::ProductDataSet dataset;
