@@ -1,7 +1,7 @@
 {
     "type": "normal_single_line",
     "scan_angle": 110.4,
-    "roll_offset": -0.19,
+    "roll_offset": 0.45,
     "pitch_offset": 0,
     "yaw_offset": 0, // 3.2,
     "timestamp_offset": -0.5, //0.8, //1.0,
