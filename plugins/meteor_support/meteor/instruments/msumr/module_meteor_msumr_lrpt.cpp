@@ -33,6 +33,8 @@ namespace meteor
                 product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
             else if (msumr_serial_number == 3) // M2-3
                 product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
+            else if (msumr_serial_number == 4) // M2-4
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr_lrpt.json")));
             else // Default to M2
                 product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
         }
@@ -121,6 +123,8 @@ namespace meteor
                 sat_name = "METEOR-M2-2";
             else if (msumr_serial_number == 3)
                 sat_name = "METEOR-M2-3";
+            else if (msumr_serial_number == 4)
+                sat_name = "METEOR-M2-4";
 
             int norad = 0;
             if (msumr_serial_number == 0)
@@ -131,6 +135,8 @@ namespace meteor
                 norad = 44387; // M2-2
             else if (msumr_serial_number == 3)
                 norad = 57166; // M2-3
+            else if (msumr_serial_number == 4)
+                norad = 57166; // M2-4, WAITING FOR NORAD
 
             // Products dataset
             satdump::ProductDataSet dataset;
@@ -153,7 +159,7 @@ namespace meteor
             {
                 image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
                 if (img.size() > 0)
-                    msumr_products.images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8 });
+                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
             msumr_products.save(directory);
             dataset.products_list.push_back("MSU-MR");
@@ -174,7 +180,7 @@ namespace meteor
                 {
                     image::Image<uint16_t> img = msureader.getChannel(i, max_fill_lines).to16bits();
                     if (img.size() > 0)
-                        filled_products.images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8 });
+                        filled_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
                 }
                 filled_products.save(fill_directory);
                 dataset.products_list.push_back("MSU-MR (Filled)");

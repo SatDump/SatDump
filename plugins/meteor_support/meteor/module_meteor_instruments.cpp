@@ -170,6 +170,8 @@ namespace meteor
                 sat_name = "METEOR-M2-2";
             else if (msumr_serial_number == 3)
                 sat_name = "METEOR-M2-3";
+            else if (msumr_serial_number == 4)
+                sat_name = "METEOR-M2-4";
 
             int norad = 0;
             if (msumr_serial_number == 0)
@@ -180,6 +182,8 @@ namespace meteor
                 norad = 44387; // M2-2
             else if (msumr_serial_number == 3)
                 norad = 57166; // M2-3
+            else if (msumr_serial_number == 4)
+                norad = 57166; // M2-4, WAITING FOR NORAD
 
             // Products dataset
             satdump::ProductDataSet dataset;
@@ -243,6 +247,8 @@ namespace meteor
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
                 else if (msumr_serial_number == 3)
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr.json")));
+                else if (msumr_serial_number == 4)
+                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr.json")));
 
                 for (int i = 0; i < 6; i++)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i)});
@@ -279,6 +285,8 @@ namespace meteor
                     mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_mtvza.json")));
                 else if (msumr_serial_number == 3)
                     mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza.json")));
+                else if (msumr_serial_number == 4)
+                    mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_mtvza.json")));
 
                 for (int i = 0; i < 30; i++)
                     mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), mreader.getChannel(i)});
