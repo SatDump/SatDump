@@ -34,6 +34,7 @@ namespace satdump
     struct TrackedObject
     {
         int norad = -1;
+        float min_elevation = 0;
 
         // Config
         struct Downlink
@@ -51,6 +52,8 @@ namespace satdump
     inline void to_json(nlohmann::ordered_json &j, const TrackedObject &v)
     {
         j["norad"] = v.norad;
+        if (v.min_elevation > 0)
+            j["min_elevation"] = v.min_elevation;
         for (int i = 0; i < (int)v.downlinks.size(); i++)
         {
             j["downlinks"][i]["frequency"] = v.downlinks[i].frequency;
@@ -66,6 +69,8 @@ namespace satdump
     inline void from_json(const nlohmann::ordered_json &j, TrackedObject &v)
     {
         v.norad = j["norad"];
+        if (j.contains("min_elevation"))
+            v.min_elevation = j["min_elevation"];
         if (j.contains("frequency"))
         {
             v.downlinks[0].frequency = j["frequency"];

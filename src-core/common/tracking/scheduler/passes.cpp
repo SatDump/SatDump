@@ -120,7 +120,7 @@ namespace satdump
             }
         }
 #else
-        SatellitePass selectedPass = {-1, -1, -1 - 1};
+        SatellitePass selectedPass = {-1, -1, -1 - 1, -1};
         // double busyUntil = 0;
         if (passes.size() > 0)
         {
@@ -140,7 +140,7 @@ namespace satdump
                 // if (current_time < busyUntil)
                 //     continue;
 
-                SatellitePass picked_pass = {-1, -1, -1 - 1};
+                SatellitePass picked_pass = {-1, -1, -1 - 1, -1};
                 for (auto &cpass : ongoing_passes)
                     if (picked_pass.max_elevation < cpass.max_elevation)
                         picked_pass = cpass;

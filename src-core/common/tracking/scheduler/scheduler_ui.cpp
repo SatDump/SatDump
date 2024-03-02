@@ -250,6 +250,19 @@ namespace satdump
                             break;
                         }
                     }
+
+                    if (ImGui::IsMouseHoveringRect({ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y - 50 * ui_scale},
+                                                   {ImGui::GetCursorScreenPos().x + ImGui::GetColumnWidth(), ImGui::GetCursorScreenPos().y + 50 * ui_scale}) ||
+                        cpass.min_elevation > 0)
+                    {
+                        ImGui::SetNextItemWidth(60 * ui_scale);
+                        ImGui::InputFloat(((std::string) "Min El.##objdelminelevation" + idpart).c_str(), &cpass.min_elevation);
+                        if (cpass.min_elevation < 0)
+                            cpass.min_elevation = 0;
+                        if (cpass.min_elevation > 90)
+                            cpass.min_elevation = 90;
+                    }
+
                     ImGui::TableSetColumnIndex(1);
                     widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + idpart).c_str(), &downlink.frequency, 0.75f, false);
                     ImGui::TableSetColumnIndex(2);

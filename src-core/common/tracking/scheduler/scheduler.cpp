@@ -70,7 +70,7 @@ namespace satdump
             recheck:
                 for (auto &p : vfo_mode_norads_vis)
                 {
-                    if (curr_time >p.second. los_time)
+                    if (curr_time > p.second.los_time)
                     {
                         logger->critical("LOS!!!!!!!!!!!!!! %d ", p.first);
                         TrackedObject obj;
@@ -157,7 +157,9 @@ namespace satdump
 #endif
             {
                 auto passes = getPassesForSatellite(obj.norad, curr_time, 12 * 3600, qth_lon, qth_lat, qth_alt);
-                upcoming_satellite_passes_all.insert(upcoming_satellite_passes_all.end(), passes.begin(), passes.end());
+                for (auto &pass : passes)
+                    if (pass.max_elevation > obj.min_elevation)
+                        upcoming_satellite_passes_all.push_back(pass);
             }
         }
 
