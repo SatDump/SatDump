@@ -22,7 +22,7 @@ namespace satdump
 {
     namespace reprojection
     {
-        inline void transposePixel(image::Image<uint16_t> &in, image::Image<uint16_t> &out, int ix, int iy, int ox, int oy)
+        inline void transposePixel(image::Image<uint16_t> &in, image::Image<uint16_t> &out, double ix, double iy, int ox, int oy)
         {
             if (ix >= (int)in.width() || iy >= (int)in.height() || ix < 0 || iy < 0)
                 return;
