@@ -41,6 +41,9 @@ namespace spyserver
 
     void SpyServerClientClass::close()
     {
+        if (!isOpen())
+            return;
+
         output->stopWriter();
         client->close();
     }
