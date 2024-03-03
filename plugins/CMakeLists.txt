@@ -380,3 +380,10 @@ option(PLUGIN_AAUDIO_SINK "Enable AAudio Audio Sink plugin" ON)
 if(PLUGIN_AAUDIO_SINK)
     add_subdirectory(audio_sinks/aaudio_audio_sink)
 endif()
+
+# ######################
+option(PLUGIN_BOCHUM_SUPPORT "Enable Bochum-specific plugin" OFF)
+
+if(PLUGIN_BOCHUM_SUPPORT)
+    add_subdirectory(bochum_support)
+endif()

@@ -22,6 +22,47 @@
 
 namespace satdump
 {
+    struct RecorderDrawPanelEvent
+    {
+    };
+
+    struct RecorderSetFrequencyEvent
+    {
+        double frequency;
+    };
+
+    struct RecorderStartDeviceEvent
+    {
+    };
+
+    struct RecorderStopDeviceEvent
+    {
+    };
+
+    struct RecorderSetDeviceSamplerateEvent
+    {
+        uint64_t samplerate;
+    };
+
+    struct RecorderSetDeviceDecimationEvent
+    {
+        int decimation;
+    };
+
+    struct RecorderSetDeviceLoOffsetEvent
+    {
+        double offset;
+    };
+
+    struct RecorderStartProcessingEvent
+    {
+        std::string pipeline_id;
+    };
+
+    struct RecorderStopProcessingEvent
+    {
+    };
+
     class RecorderApplication : public Application
     {
     protected:

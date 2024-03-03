@@ -173,6 +173,26 @@ namespace satdump
                 try_init_tracking_widget();
             }
         }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+        eventBus->register_handler<RecorderSetFrequencyEvent>([this](const RecorderSetFrequencyEvent &evt)
+                                                              { set_frequency(evt.frequency); });
+
+        eventBus->register_handler<RecorderStartDeviceEvent>([this](const RecorderStartDeviceEvent &evt)
+                                                             { start(); });
+        eventBus->register_handler<RecorderStopDeviceEvent>([this](const RecorderStopDeviceEvent &evt)
+                                                            { stop(); });
+        eventBus->register_handler<RecorderSetDeviceSamplerateEvent>([this](const RecorderSetDeviceSamplerateEvent &evt)
+                                                                     { source_ptr->set_samplerate(evt.samplerate); });
+        eventBus->register_handler<RecorderSetDeviceDecimationEvent>([this](const RecorderSetDeviceDecimationEvent &evt)
+                                                                     { current_decimation = evt.decimation; });
+        eventBus->register_handler<RecorderSetDeviceLoOffsetEvent>([this](const RecorderSetDeviceLoOffsetEvent &evt)
+                                                                   { xconverter_frequency = evt.offset; });
+
+        eventBus->register_handler<RecorderStartProcessingEvent>([this](const RecorderStartProcessingEvent &evt)
+                                                                 { pipeline_selector.select_pipeline(evt.pipeline_id); start_processing(); });
+        eventBus->register_handler<RecorderStopProcessingEvent>([this](const RecorderStopProcessingEvent &evt)
+                                                                { stop_processing(); });
     }
 
     RecorderApplication::~RecorderApplication()
@@ -585,6 +605,8 @@ namespace satdump
                         constellation_debug->pushComplex(source_ptr->output_stream->readBuf, 256);
                     constellation_debug->draw();
                 }
+
+                eventBus->fire_event<RecorderDrawPanelEvent>({});
             }
             ImGui::EndChild();
             ImGui::EndGroup();

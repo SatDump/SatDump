@@ -11,101 +11,74 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/projection/projs2/proj.h"
 
-#include "common/image/image.h"
-
-#include "common/map/map_drawer.h"
-
-#include "common/image/image_meta.h"
-#include "common/projection/projs2/proj_json.h"
+#include <sys/types.h>
+#include <stdexcept>
+#include <cstring>
+#if defined(_WIN32)
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#else
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
 
 int main(int argc, char *argv[])
 {
     initLogger();
     completeLoggerInit();
 
-#if 0
-    proj::projection_t p;
+    int the_port = 8877;
 
-    p.type = proj::ProjType_Geos;
-    //   p.proj_offset_x = 418962.397137703;
-    //   p.proj_offset_y = -101148.834767705;
-    //   p.proj_scalar_x = 60.5849500687633;  // 1;
-    //   p.proj_scalar_y = -60.5849500687633; // 1;
-    //   p.lam0 = 2 * DEG2RAD;
-    //   p.phi0 = 48 * DEG2RAD;
-    p.params.altitude = 300000;
+#if defined(_WIN32)
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
 
-    proj::projection_setup(&p);
+    struct sockaddr_in recv_addr;
+    int fd = -1;
 
-    double x = 10000; // 15101; // 678108.04;
-    double y = 10000; // 16495; // 5496954.89;
-    double lon, lat;
-    proj::projection_perform_inv(&p, x, y, &lon, &lat);
+    if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+        throw std::runtime_error("Error creating socket!");
 
-    logger->info("X %f - Y %f", x, y);
-    logger->info("Lon %f - Lat %f", lon, lat);
+    int val_true = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
+        throw std::runtime_error("Error setting socket option!");
 
-    proj::projection_perform_fwd(&p, lon, lat, &x, &y);
+    memset(&recv_addr, 0, sizeof(recv_addr));
+    recv_addr.sin_family = AF_INET;
+    recv_addr.sin_port = htons(the_port);
+    recv_addr.sin_addr.s_addr = INADDR_ANY;
 
-    logger->info("X %f - Y %f", x, y);
+    if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
+        throw std::runtime_error("Error binding socket!");
+
+    uint8_t buffer_rx[65536];
+
+    while (true)
+    {
+        struct sockaddr_in response_addr;
+        socklen_t response_addr_len = sizeof(response_addr);
+        int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
+        if (nrecv < 0)
+            throw std::runtime_error("Error on recvfrom!");
+
+        std::string command = (char *)buffer_rx;
+
+        std::string name = command.substr(20, 11);
+        std::string freq = command.substr(69, 11);
+
+        logger->trace(name);
+        logger->info("%f", std::stof(freq));
+    }
+
+#if defined(_WIN32)
+    closesocket(fd);
+    WSACleanup();
 #else
-
-    image::Image<uint16_t> image_test;
-    image_test.load_tiff(argv[1]);
-    image_test.equalize();
-    image_test.normalize();
-    // image_test.mirror(false, true);
-
-    logger->info("PROC DONE");
-
-    if (!image::has_metadata(image_test))
-    {
-        logger->error("Meta error!");
-        return 0;
-    }
-
-    auto jsonp = image::get_metadata(image_test);
-    logger->debug("\n%s", jsonp.dump(4).c_str());
-    proj::projection_t p = jsonp["proj_cfg"];
-    bool v = proj::projection_setup(&p);
-
-    if (v)
-    {
-        logger->error("Proj error!");
-        return 0;
-    }
-
-    {
-        double x = 0; // 15101; // 678108.04;
-        double y = 0; // 16495; // 5496954.89;
-        double lon, lat;
-        proj::projection_perform_inv(&p, x, y, &lon, &lat);
-
-        logger->info("X %f - Y %f", x, y);
-        logger->info("Lon %f - Lat %f", lon, lat);
-
-        proj::projection_perform_fwd(&p, lon, lat, &x, &y);
-
-        logger->info("X %f - Y %f", x, y);
-    }
-
-    {
-        unsigned short color[4] = {0, 65535, 0, 65535};
-        map::drawProjectedMapShapefile({"resources/maps/ne_10m_admin_0_countries.shp"},
-                                       image_test,
-                                       color,
-                                       [&p](double lat, double lon, int, int) -> std::pair<int, int>
-                                       {
-                                           double x, y;
-                                           proj::projection_perform_fwd(&p, lon, lat, &x, &y);
-                                           return {(int)x, (int)y};
-                                       });
-    }
-
-    image_test.save_tiff(argv[2]);
-
-    proj::projection_free(&p);
+    close(fd);
 #endif
 }
