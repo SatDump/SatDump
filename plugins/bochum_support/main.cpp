@@ -17,14 +17,9 @@
 #include <arpa/inet.h>
 #endif
 
-class BochumSupport : public satdump::Plugin
+namespace bochum
 {
-public:
-    std::string getID()
-    {
-        return "aim_support";
-    }
-
+    void handleBochumPkt(std::string cmd);
     void udpReceiveThread()
     {
         const int internal_port = 10001;
@@ -84,15 +79,6 @@ public:
 
     nlohmann::json bochum_cfg;
     std::thread udprx_th;
-    void init()
-    {
-        bochum_cfg = loadJsonFile("bochum_cfg.json");
-
-        satdump::eventBus->register_handler<satdump::RecorderDrawPanelEvent>([this](const satdump::RecorderDrawPanelEvent &evt)
-                                                                             { recorderDrawPanelEvent(evt); });
-
-        udprx_th = std::thread(&BochumSupport::udpReceiveThread, this);
-    }
 
     /////////////////////////////////////////////////////////////////
 
@@ -170,6 +156,25 @@ public:
             ImGui::Text("Object : %s", curr_name.c_str());
             ImGui::Text("Frequency : %f", curr_freq);
         }
+    }
+};
+
+class BochumSupport : public satdump::Plugin
+{
+public:
+    std::string getID()
+    {
+        return "aim_support";
+    }
+
+    void init()
+    {
+        bochum::bochum_cfg = loadJsonFile("bochum_cfg.json");
+
+        satdump::eventBus->register_handler<satdump::RecorderDrawPanelEvent>([](const satdump::RecorderDrawPanelEvent &evt)
+                                                                             { bochum::recorderDrawPanelEvent(evt); });
+
+        bochum::udprx_th = std::thread(&bochum::udpReceiveThread);
     }
 };
 
