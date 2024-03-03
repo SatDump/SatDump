@@ -212,7 +212,10 @@ void SpyServerSource::set_samplerate(uint64_t samplerate)
 
 uint64_t SpyServerSource::get_samplerate()
 {
-    return current_samplerate;
+    if (is_connected)
+        return current_samplerate;
+    else
+        return buffer_samplerate;
 }
 
 std::vector<dsp::SourceDescriptor> SpyServerSource::getAvailableSources()
