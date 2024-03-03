@@ -152,7 +152,7 @@ namespace satdump
             const char *srcs[1] = {kernel_src.c_str()};
             const size_t lens[1] = {kernel_src.length()};
             cl_int err = 0;
-            char error_msg[10000];
+            char error_msg[100000];
             size_t error_len = 0;
 
             cl_program prg = clCreateProgramWithSource(ocl_context, 1, srcs, lens, &err);
@@ -160,7 +160,7 @@ namespace satdump
 
             if (err != CL_SUCCESS)
             {
-                if (clGetProgramBuildInfo(prg, ocl_device, CL_PROGRAM_BUILD_LOG, 10000, error_msg, &error_len) == CL_SUCCESS)
+                if (clGetProgramBuildInfo(prg, ocl_device, CL_PROGRAM_BUILD_LOG, 100000, error_msg, &error_len) == CL_SUCCESS)
                     throw std::runtime_error("Error building: " + std::string(&error_msg[0], &error_msg[error_len]));
                 else
                     throw std::runtime_error("Error building, and could not read error log!");

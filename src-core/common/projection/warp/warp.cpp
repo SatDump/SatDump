@@ -207,10 +207,10 @@ namespace satdump
                     {
                         if (op.input_image.channels() == 1)
                             for (int c = 0; c < 3; c++)
-                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image[(int)yy * op.input_image.width() + (int)xx];
+                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.get_pixel_bilinear(0, xx, yy); // [(int)yy * op.input_image.width() + (int)xx];
                         else if (op.input_image.channels() == 3)
                             for (int c = 0; c < 3; c++)
-                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
+                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.get_pixel_bilinear(c, xx, yy); // op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
                         result.output_image.channel(3)[y * result.output_image.width() + x] = 65535;
                     }
                     else

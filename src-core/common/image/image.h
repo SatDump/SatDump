@@ -106,6 +106,8 @@ namespace image
         void median_blur();                                                  // Median blur algorithm
         void kuwahara_filter();                                              // Adaptive noise reduction filter
 
+        T get_pixel_bilinear(int channel, double x, double y);
+
         // Drawing functions
         void draw_pixel(int x, int y, T color[]);                                                      // Set a pixel's color
         void draw_line(int x0, int y0, int x1, int y1, T color[]);                                     // Draw a line with Bresenham's algorithm

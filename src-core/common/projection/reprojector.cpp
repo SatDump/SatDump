@@ -32,26 +32,26 @@ namespace satdump
             if (in.channels() == 4)
             {
                 for (int c = 0; c < in.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = in.channel(c)[iy * in.width() + ix];
+                    out.channel(c)[oy * out.width() + ox] = in.get_pixel_bilinear(c, ix, iy); // in.channel(c)[iy * in.width() + ix];
             }
             else if (in.channels() == 3)
             {
                 for (int c = 0; c < in.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = c == 3 ? 65535 : in.channel(c)[iy * in.width() + ix];
+                    out.channel(c)[oy * out.width() + ox] = c == 3 ? 65535 : in.get_pixel_bilinear(c, ix, iy); // in.channel(c)[iy * in.width() + ix];
                 if (out.channels() == 4)
                     out.channel(3)[oy * out.width() + ox] = 65535;
             }
             else if (in.channels() == 1) //|| in.channels() == 2)
             {
                 for (int c = 0; c < out.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = in.channel(0)[iy * in.width() + ix];
+                    out.channel(c)[oy * out.width() + ox] = in.get_pixel_bilinear(0, ix, iy); // in.channel(0)[iy * in.width() + ix];
                 if (out.channels() == 4)
                     out.channel(3)[oy * out.width() + ox] = 65535;
             }
             else
             {
                 for (int c = 0; c < in.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = c == 3 ? 65535 : in.channel(0)[iy * in.width() + ix];
+                    out.channel(c)[oy * out.width() + ox] = c == 3 ? 65535 : in.get_pixel_bilinear(0, ix, iy); // in.channel(0)[iy * in.width() + ix];
                 if (out.channels() == 4)
                     out.channel(3)[oy * out.width() + ox] = 65535;
             }

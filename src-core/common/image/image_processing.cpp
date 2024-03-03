@@ -247,6 +247,47 @@ namespace image
     }
 
     template <typename T>
+    T Image<T>::get_pixel_bilinear(int cc, double rx, double ry)
+    {
+        int x = (int)rx;
+        int y = (int)ry;
+
+        double x_diff = rx - x;
+        double y_diff = ry - y;
+
+        size_t index = (y * d_width + x);
+        size_t max_index = d_width * d_height;
+
+        int a = 0, b = 0, c = 0, d = 0;
+
+        a = channel(cc)[index];
+        if (index + 1 < max_index)
+            b = channel(cc)[index + 1];
+        else
+            return a;
+
+        if (index + d_width < max_index)
+            c = channel(cc)[index + d_width];
+        else
+            return a;
+
+        if (index + d_width + 1 < max_index)
+            d = channel(cc)[index + d_width + 1];
+        else
+            return a;
+
+        if (x == d_width - 1)
+            return a;
+        if (y == d_height - 1)
+            return a;
+
+        return clamp(a * (1 - x_diff) * (1 - y_diff) +
+                     b * (x_diff) * (1 - y_diff) +
+                     c * (y_diff) * (1 - x_diff) +
+                     d * (x_diff * y_diff));
+    }
+
+    template <typename T>
     void Image<T>::resize_bilinear(int width, int height, bool text_mode)
     {
         int a = 0, b = 0, c = 0, d = 0, x = 0, y = 0;
