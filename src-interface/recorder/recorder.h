@@ -63,6 +63,16 @@ namespace satdump
     {
     };
 
+    struct RecorderSetFFTSettingsEvent
+    {
+        int fft_size = -1;
+        int fft_rate = -1;
+        int waterfall_rate = -1;
+        float fft_max = -1;
+        float fft_min = -1;
+        float fft_avg = -1;
+    };
+
     class RecorderApplication : public Application
     {
     protected:

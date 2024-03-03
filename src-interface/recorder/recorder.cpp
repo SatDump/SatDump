@@ -193,6 +193,29 @@ namespace satdump
                                                                  { pipeline_selector.select_pipeline(evt.pipeline_id); start_processing(); });
         eventBus->register_handler<RecorderStopProcessingEvent>([this](const RecorderStopProcessingEvent &evt)
                                                                 { stop_processing(); });
+
+        eventBus->register_handler<RecorderSetFFTSettingsEvent>([this](const RecorderSetFFTSettingsEvent &evt)
+                                                                {
+                                                                    if (evt.fft_min != -1)
+                                                                        fft_plot->scale_min = waterfall_plot->scale_min = evt.fft_min;
+                                                                    if (evt.fft_max != -1)
+                                                                        fft_plot->scale_max = waterfall_plot->scale_max = evt.fft_max;
+                                                                    if(evt.fft_size != -1 || evt.fft_rate != -1 || evt.waterfall_rate!=-1) 
+                                                                    {
+                                                                        if (evt.fft_size != -1)
+                                                                            fft_size = evt.fft_size;
+                                                                        if (evt.fft_rate != -1)
+                                                                            fft_rate = evt.fft_rate;
+                                                                        if (evt.waterfall_rate != -1)
+                                                                            waterfall_rate = evt.waterfall_rate;
+                                                                        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+                                                                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                                                                        waterfall_plot->set_size(fft_size);
+                                                                        fft_plot->set_size(fft_size);
+                                                                        for (int i = 0; i < (int)fft_sizes_lut.size(); i++)
+                                                                            if (fft_sizes_lut[i] == fft_size)
+                                                                                selected_fft_size = i;
+                                                                    } });
     }
 
     RecorderApplication::~RecorderApplication()

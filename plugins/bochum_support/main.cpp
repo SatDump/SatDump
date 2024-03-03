@@ -125,6 +125,29 @@ namespace bochum
                 satdump::eventBus->fire_event<satdump::RecorderSetDeviceLoOffsetEvent>({offset / 1e6});
             }
 
+            if (final_entry.contains("fft_min") ||
+                final_entry.contains("fft_max") ||
+                final_entry.contains("fft_avgn") ||
+                final_entry.contains("fft_rate") ||
+                final_entry.contains("waterfall_rate") ||
+                final_entry.contains("fft_size"))
+            {
+                satdump::RecorderSetFFTSettingsEvent evt;
+                if (final_entry.contains("fft_min"))
+                    evt.fft_min = final_entry["fft_min"];
+                if (final_entry.contains("fft_max"))
+                    evt.fft_min = final_entry["fft_max"];
+                if (final_entry.contains("fft_avgn"))
+                    evt.fft_avg = final_entry["fft_avgn"];
+                if (final_entry.contains("fft_rate"))
+                    evt.fft_rate = final_entry["fft_rate"];
+                if (final_entry.contains("waterfall_rate"))
+                    evt.waterfall_rate = final_entry["waterfall_rate"];
+                if (final_entry.contains("fft_size"))
+                    evt.fft_size = final_entry["fft_size"];
+                satdump::eventBus->fire_event<satdump::RecorderSetFFTSettingsEvent>(evt);
+            }
+
             satdump::eventBus->fire_event<satdump::RecorderStartDeviceEvent>({});
 
             if (final_entry.contains("pipeline"))
