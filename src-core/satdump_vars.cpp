@@ -49,7 +49,11 @@ namespace satdump
             if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
                 return search_dir;
             else
+#ifdef _WIN32
+                return get_search_path("\\");
+#else
                 return std::string(RESOURCES_PATH);
+#endif
         }
         std::string init_lib_path()
         {
@@ -57,7 +61,11 @@ namespace satdump
             if (std::filesystem::exists(search_dir) && std::filesystem::is_directory(search_dir))
                 return search_dir;
             else
+#ifdef _WIN32
+                return get_search_path("\\");
+#else
                 return std::string(LIBRARIES_PATH);
+#endif
         }
 #elif defined (__ANDROID__)
         std::string init_res_path()
