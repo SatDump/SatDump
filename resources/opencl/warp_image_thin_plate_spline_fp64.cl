@@ -70,6 +70,50 @@ inline double VizGeorefSpline2DBase_func(const double x1, const double y1,
   return dist != 0.0 ? dist * log(dist) : 0.0;
 }
 
+inline ushort get_pixel_bilinear(global const ushort *img, const int width,
+                                 const int height, int cc, double rx,
+                                 double ry) {
+  int x = (int)rx;
+  int y = (int)ry;
+
+  double x_diff = rx - x;
+  double y_diff = ry - y;
+
+  size_t index = (y * width + x);
+  size_t max_index = width * height;
+
+  int a = 0, b = 0, c = 0, d = 0;
+
+  a = img[cc * width * height + index];
+  if (index + 1 < max_index)
+    b = img[cc * width * height + index + 1];
+  else
+    return a;
+
+  if (index + width < max_index)
+    c = img[cc * width * height + index + width];
+  else
+    return a;
+
+  if (index + width + 1 < max_index)
+    d = img[cc * width * height + index + width + 1];
+  else
+    return a;
+
+  if (x == width - 1)
+    return a;
+  if (y == height - 1)
+    return a;
+
+  int val = (int)((double)a * (1.0 - x_diff) * (1.0 - y_diff) +
+                  (double)b * (x_diff) * (1.0 - y_diff) +
+                  (double)c * (y_diff) * (1.0 - x_diff) +
+                  (double)d * (x_diff * y_diff));
+  if (val > 65535)
+    val = 65535;
+  return val;
+}
+
 void kernel warp_image_thin_plate_spline(
     global ushort *map_image, global ushort *img, global int *tps_no_points,
     global double *tps_x, global double *tps_y, global double *tps_coef_1,
@@ -155,20 +199,27 @@ void kernel warp_image_thin_plate_spline(
       if (source_channels == 1)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-              img[(int)yy * img_width + (int)xx];
+              get_pixel_bilinear(img, img_width, img_height, 0, xx,
+                                 yy); // img[(int)yy * img_width + (int)xx];
       else if (source_channels == 3 || source_channels == 4)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-              img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
+              get_pixel_bilinear(img, img_width, img_height, c, xx,
+                                 yy); // img[(img_width * img_height) * c +
+                                      // (int)yy * img_width + (int)xx];
       if (source_channels == 4)
         map_image[(crop_width * crop_height) * 3 + y * crop_width + x] =
-            img[(img_width * img_height) * 3 + (int)yy * img_width + (int)xx];
+            get_pixel_bilinear(img, img_width, img_height, 3, xx,
+                               yy); // img[(img_width * img_height) * 3 +
+                                    // (int)yy * img_width + (int)xx];
       else
         map_image[(crop_width * crop_height) * 3 + y * crop_width + x] = 65535;
     } else {
       for (int c = 0; c < source_channels; c++)
         map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-            img[(img_width * img_height) * c + (int)yy * img_width + (int)xx];
+            get_pixel_bilinear(img, img_width, img_height, c, xx,
+                               yy); // img[(img_width * img_height) * c +
+                                    // (int)yy * img_width + (int)xx];
     }
   }
 }
