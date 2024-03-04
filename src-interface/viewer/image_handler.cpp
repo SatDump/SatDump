@@ -858,24 +858,30 @@ namespace satdump
                 image::set_metadata_proj_cfg(current_image, proj_cfg);
 
                 // Create projection title
-                std::string timestring, name, composite_name;
-                if (instrument_cfg.contains("name"))
-                    name = instrument_cfg["name"];
+                std::string timestring, object_name, instrument_name, composite_name;
+                if (current_timestamps.size() > 0)
+                    timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
                 else
-                    name = products->instrument_name;
+                    timestring = "";
+                if (instrument_cfg.contains("name"))
+                    instrument_name = instrument_cfg["name"];
+                else
+                    instrument_name = products->instrument_name;
+                if (products->has_tle())
+                    object_name = products->get_tle().name;
+                else
+                    object_name = "";
+                if (timestring != "" || object_name != "")
+                    object_name += "\n";
                 if (active_channel_id >= 0)
                     composite_name = "Channel " + channel_numbers[active_channel_id];
                 else if (select_rgb_presets == -1)
                     composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
                 else
                     composite_name = rgb_presets[select_rgb_presets].first;
-                if (current_timestamps.size() > 0)
-                    timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
-                else
-                    timestring = "";
 
                 // Add projection layer and settings
-                viewer_app->projection_layers.push_back({timestring + name + " - " + composite_name, current_image});
+                viewer_app->projection_layers.push_back({timestring + object_name + instrument_name + " - " + composite_name, current_image});
 
                 if (rotate_image)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);

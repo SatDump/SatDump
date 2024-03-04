@@ -233,17 +233,23 @@ namespace satdump
                 image::set_metadata_proj_cfg(current_img, proj_cfg);
 
                 // Create projection title
-                std::string timestring, name;
-                if (instrument_cfg.contains("name"))
-                    name = instrument_cfg["name"];
-                else
-                    name = products->instrument_name;
+                std::string timestring, object_name, instrument_name;
                 if (products->has_timestamps)
                     timestring = "[" + timestamp_to_string(get_median(products->get_timestamps(select_channel_image_id))) + "] ";
                 else
                     timestring = "";
+                if (products->has_tle())
+                    object_name = products->get_tle().name;
+                else
+                    object_name = "";
+                if (timestring != "" || object_name != "")
+                    object_name += "\n";
+                if (instrument_cfg.contains("name"))
+                    instrument_name = instrument_cfg["name"];
+                else
+                    instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_back({ timestring + name, current_img });
+                viewer_app->projection_layers.push_back({ timestring + object_name + instrument_name, current_img });
             }
             catch (std::exception &e)
             {
