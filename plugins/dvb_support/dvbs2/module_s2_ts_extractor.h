@@ -8,14 +8,12 @@ namespace dvbs2
     class S2TStoTCPModule : public ProcessingModule
     {
     protected:
-        int port;
         int bbframe_size;
 
         std::ifstream data_in;
         std::ofstream data_out;
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
-
 
     public:
         S2TStoTCPModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

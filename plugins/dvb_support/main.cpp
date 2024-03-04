@@ -4,7 +4,7 @@
 
 #include "dvbs/module_dvbs_demod.h"
 #include "dvbs2/module_dvbs2_demod.h"
-#include "dvbs2/module_s2_ts2tcp.h"
+#include "dvbs2/module_s2_ts_extractor.h"
 
 class DVBSupport : public satdump::Plugin
 {

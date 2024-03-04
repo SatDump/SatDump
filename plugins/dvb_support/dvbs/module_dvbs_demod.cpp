@@ -11,7 +11,7 @@ namespace dvb
 {
     DVBSDemodModule::DVBSDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : BaseDemodModule(input_file, output_file_hint, parameters),
-          viterbi(0.15, 20, VIT_BUF_SIZE, {PHASE_0, PHASE_90})
+          viterbi(0.19, 50, VIT_BUF_SIZE, {PHASE_0, PHASE_90})
     {
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();

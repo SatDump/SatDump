@@ -16,7 +16,7 @@ namespace dvbs2
         float g1, g2;
     };
 
-    dvb_cgf_holder get_dvbs2_cfg(int modcod, bool shortframes, bool pilots)
+    inline dvb_cgf_holder get_dvbs2_cfg(int modcod, bool shortframes, bool pilots)
     {
         dvb_cgf_holder cfg;
 

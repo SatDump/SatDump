@@ -339,11 +339,16 @@ namespace satdump
                     ImGui::Text("%s", label.c_str());
                     ImGui::PopTextWrapPos();
 
+                    int active_layers = 0;
+                    for (auto &lay : projection_layers)
+                        if (lay.enabled)
+                            active_layers++;
+
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
 
-                    if (projection_layers.size() == 1)
+                    if (active_layers < 1)
                         layer.enabled = true;
 
                     {

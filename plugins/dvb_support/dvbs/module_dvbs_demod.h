@@ -25,7 +25,7 @@ namespace dvb
 
         float d_rrc_alpha = 0.35;
         int d_rrc_taps = 31;
-        float d_loop_bw;
+        float d_loop_bw = 0.003;
 
         float d_clock_gain_omega = pow(8.7e-3, 2) / 4.0;
         float d_clock_mu = 0.5f;
