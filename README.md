@@ -51,7 +51,7 @@ Sample command :
 satdump metop_ahrpt baseband /home/user/metop_baseband.s16 metop_output_directory --samplerate 6e6 --baseband_format s16
 ```
 
-You can find a list of Satellite pipelines and their parameters [Here](docs/Satellite-pipelines.md).
+You can find a list of Satellite pipelines and their parameters [Here](https://docs.satdump.org/pipelines.html).
 
 ### Live processing
 
@@ -65,7 +65,7 @@ Sample command :
 satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
 ```
 
-You can find a list of all SDR Options [Here](docs/SDR-Options.md). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
+You can find a list of all SDR Options [Here](https://docs.satdump.org/sdr_options.html). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
 
 ### Recording
 
@@ -86,7 +86,7 @@ The fastest way to get started is to head over to the [Releases](https://github.
 
 Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
 
-For compilation information, see the dedicated documentation [here](/docs/Building-Windows.md). *Note : Mingw builds are NOT supported, VOLK will not work.*
+For compilation information, see the dedicated documentation [here](https://docs.satdump.org/build_windows.html). *Note : Mingw builds are NOT supported, VOLK will not work.*
 
 ### macOS
 Dependency-free macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
