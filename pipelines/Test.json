@@ -110,25 +110,6 @@
             }
         }
     },
-    "dvbs_test": {
-        "name": "DVB-S Test",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
-        ],
-        "work": {
-            "baseband": {},
-            "soft": {
-                "dvbs_demod": {
-                    "symbolrate": 1e6,
-                    "pll_bw": 0.003
-                }
-            }
-        }
-    },
     "test_custom": {
         "name": "test_custom",
         "live": true,

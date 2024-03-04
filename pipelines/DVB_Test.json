@@ -1,0 +1,41 @@
+{
+    "dvbs_test": {
+        "name": "DVB-S Test",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "symbolrate": {
+                "type": "int",
+                "value": 1e6,
+                "name": "Symbolrate",
+                "description": "DVB-S Symbolrate"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "dvbs_demod": {
+                    "symbolrate": 1e6,
+                    "pll_bw": 0.003
+                }
+            },
+            "ts": {
+                "network_server": {
+                    "server_mode": "udp_send",
+                    "server_address": "0.0.0.0",
+                    "server_port": 8888,
+                    "pkt_size": 1316
+                }
+            }
+        }
+    }
+}

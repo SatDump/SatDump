@@ -11,6 +11,8 @@ namespace network
     protected:
         uint8_t *buffer;
 
+        std::string mode = "default";
+
         std::ifstream data_in;
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
