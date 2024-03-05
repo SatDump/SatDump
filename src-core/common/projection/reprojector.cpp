@@ -410,6 +410,37 @@ namespace satdump
             return bounds;
         }
 
+        namespace
+        {
+            struct Pos
+            {
+                double lon;
+                double lat;
+            };
+
+            void computePositionCenter(std::vector<Pos> &gcps, double &lon, double &lat)
+            {
+                double x_total = 0;
+                double y_total = 0;
+                double z_total = 0;
+
+                for (auto &pt : gcps)
+                {
+                    x_total += cos(pt.lat * DEG_TO_RAD) * cos(pt.lon * DEG_TO_RAD);
+                    y_total += cos(pt.lat * DEG_TO_RAD) * sin(pt.lon * DEG_TO_RAD);
+                    z_total += sin(pt.lat * DEG_TO_RAD);
+                }
+
+                x_total /= gcps.size();
+                y_total /= gcps.size();
+                z_total /= gcps.size();
+
+                lon = atan2(y_total, x_total) * RAD_TO_DEG;
+                double hyp = sqrt(x_total * x_total + y_total * y_total);
+                lat = atan2(z_total, hyp) * RAD_TO_DEG;
+            }
+        }
+
         void tryAutoTuneProjection(ProjBounds bounds, nlohmann::json &params)
         {
             proj::projection_t p_main = params;
@@ -432,6 +463,54 @@ namespace satdump
                     double height = params["height"];
                     params["scalar_x"] = (bounds.max_lon - bounds.min_lon) / width;
                     params["scalar_y"] = -(bounds.max_lat - bounds.min_lat) / height;
+                }
+            }
+            else if (p_main.type == proj::ProjType_Stereographic)
+            {
+                std::vector<Pos> posi;
+                posi.push_back({bounds.max_lon, bounds.max_lat});
+                posi.push_back({bounds.min_lon, bounds.min_lat});
+                posi.push_back({bounds.min_lon, bounds.max_lat});
+                posi.push_back({bounds.max_lon, bounds.min_lat});
+                double center_lon = 0, center_lat = 0;
+                computePositionCenter(posi, center_lon, center_lat);
+
+                params["lon0"] = center_lon;
+                params["lat0"] = center_lat;
+                params["offset_x"] = 0.0;
+                params["offset_y"] = 0.0;
+                params["scalar_x"] = 1.0;
+                params["scalar_y"] = 1.0;
+                proj::projection_t proj = params;
+                if (!proj::projection_setup(&proj))
+                {
+                    double x1, x2;
+                    double y1, y2;
+                    proj::projection_perform_fwd(&proj, bounds.max_lon, bounds.max_lat, &x1, &y1);
+                    proj::projection_perform_fwd(&proj, bounds.min_lon, bounds.min_lat, &x2, &y2);
+
+                    double dist1 = sqrt(x1 * x1 + y1 * y1);
+                    double dist2 = sqrt(x2 * x2 + y2 * y2);
+                    double max_dist = std::max(dist1, dist2);
+
+                    if (!params.contains("width") || !params.contains("height"))
+                    {
+                        double scale_x = params.contains("scale_x") ? params["scale_x"].get<double>() : 0.016;
+                        double scale_y = params.contains("scale_y") ? params["scale_y"].get<double>() : 0.016;
+                        params["scalar_x"] = scale_x;
+                        params["scalar_y"] = -scale_y;
+                        params["width"] = (max_dist * 2) / scale_x;
+                        params["height"] = (max_dist * 2) / scale_y;
+                    }
+                    else
+                    {
+                        double width = params["width"];
+                        double height = params["height"];
+                        double scale_x = params["scalar_x"] = (max_dist * 2) / width;
+                        double scale_y = params["scalar_y"] = -(max_dist * 2) / height;
+                        params["offset_x"] = -width * 0.5 * scale_x;
+                        params["offset_y"] = height * 0.5 * -scale_y;
+                    }
                 }
             }
             /*else if (p_main.type == proj::ProjType_UniversalTransverseMercator)

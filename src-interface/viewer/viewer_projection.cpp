@@ -103,7 +103,7 @@ namespace satdump
                 ImGui::InputFloat("Lon##eqaz", &projections_azeq_lon);
             }*/
 
-            if (projections_current_selected_proj == 0)
+            if (projections_current_selected_proj == 0 || projections_current_selected_proj == 2)
             {
                 ImGui::Checkbox("Auto Mode###pojautomode", &projection_auto_mode);
                 ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
@@ -487,7 +487,7 @@ namespace satdump
         }*/
 
         // Automatic projection settings!
-        if (projection_auto_mode && projections_current_selected_proj == 0)
+        if (projection_auto_mode && (projections_current_selected_proj == 0 || projections_current_selected_proj == 2))
         {
             reprojection::ProjBounds bounds;
             bounds.min_lon = 180;
