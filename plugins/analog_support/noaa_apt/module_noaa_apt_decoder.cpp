@@ -16,8 +16,8 @@
 #include "common/calibration.h"
 
 #define MAX_WEDGE_DIFF_VALID 12000 //TODO: Move to STDDEV
-#define MAX_WEDGE_STDDEV_VALID 1000
-#define MAX_WEDGE_STDDEV_CROP 2000
+#define MAX_WEDGE_STDDEV_VALID 2000
+#define MAX_WEDGE_STDDEV_CROP 3000
 
 namespace noaa_apt
 {
@@ -358,19 +358,16 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.avg_dev < MAX_WEDGE_STDDEV_VALID)
+                if (channel_a == -1)
                 {
-                    if (channel_a == -1)
+                    channel_a = wed.rchannel;
+                }
+                else if (channel_a1 == -1)
+                {
+                    if (channel_a != wed.rchannel)
                     {
-                        channel_a = wed.rchannel;
-                    }
-                    else if (channel_a1 == -1)
-                    {
-                        if (channel_a != wed.rchannel)
-                        {
-                            channel_a1 = wed.rchannel;
-                            switchy = wed.start_line;
-                        }
+                        channel_a1 = wed.rchannel;
+                        switchy = wed.start_line;
                     }
                 }
 
@@ -442,11 +439,8 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.avg_dev < MAX_WEDGE_STDDEV_VALID)
-                {
-                    if (channel_b == -1)
-                        channel_b = wed.rchannel;
-                }
+                if (channel_b == -1)
+                    channel_b = wed.rchannel;
 
                 if (wed.avg_dev < MAX_WEDGE_STDDEV_VALID)
                 {
@@ -577,26 +571,31 @@ namespace noaa_apt
             int first_valid_wedge = 1e9;
             int last_valid_wedge = 0;
 
-            // TODO: Switch to sub-wedge StdDev
             for (size_t i = 0; i < wedges1.size(); i++)
             {
-                if (wedges1[i].avg_dev < MAX_WEDGE_STDDEV_CROP)
+                for (int j = 0; j < 16; j++)
                 {
-                    if (first_valid_wedge > wedges1[i].start_line)
-                        first_valid_wedge = wedges1[i].start_line;
-                    if (last_valid_wedge < wedges1[i].end_line)
-                        last_valid_wedge = wedges1[i].end_line;
+                    if (wedges1[i].val_dev[j] < MAX_WEDGE_STDDEV_CROP)
+                    {
+                        if (first_valid_wedge > wedges1[i].start_line + 8 * j)
+                            first_valid_wedge = wedges1[i].start_line + 8 * j;
+                        if (last_valid_wedge < (wedges1[i].start_line + 8 * (j + 1)) - 1)
+                            last_valid_wedge = (wedges1[i].start_line + 8 * (j + 1)) - 1;
+                    }
                 }
             }
 
             for (size_t i = 0; i < wedges2.size(); i++)
             {
-                if (wedges2[i].avg_dev < MAX_WEDGE_STDDEV_CROP)
+                for (int j = 0; j < 16; j++)
                 {
-                    if (first_valid_wedge > wedges2[i].start_line)
-                        first_valid_wedge = wedges2[i].start_line;
-                    if (last_valid_wedge < wedges2[i].end_line)
-                        last_valid_wedge = wedges2[i].end_line;
+                    if (wedges2[i].val_dev[j] < MAX_WEDGE_STDDEV_CROP)
+                    {
+                        if (first_valid_wedge > wedges2[i].start_line + 8 * j)
+                            first_valid_wedge = wedges2[i].start_line + 8 * j;
+                        if (last_valid_wedge < (wedges2[i].start_line + 8 * (j + 1)) - 1)
+                            last_valid_wedge = (wedges2[i].start_line + 8 * (j + 1)) - 1;
+                    }
                 }
             }
 
@@ -1001,34 +1000,48 @@ namespace noaa_apt
                     double variance = 0;
                     for (double& val : vals)
                         variance += (val - mean) * (val - mean);
-                    variance /= 343;
-                    wed.avg_dev += sqrt(variance);
+                    wed.val_dev[c] = sqrt(variance / 343);
+                    wed.avg_dev += wed.val_dev[c];
                 }
                 wed.avg_dev /= 16;
             }
             else
             {
+                for (int &this_dev : wed.val_dev)
+                    this_dev = 1e7;
                 wed.avg_dev = 1e7;
             }
 
             /////////////////////////////////////
-            int min_diff = 1e9;
+            int min_diff = 5000;
             int best_wedge = 0;
-            for (int i = 0; i < 8; i++)
+
+            if (wed.val_dev[15] <= MAX_WEDGE_STDDEV_VALID)
             {
-                int diff = abs((int)final_wedge[i] - (int)wed.channel);
-                if (min_diff > diff)
+                for (int i = 0; i < 8; i++)
                 {
-                    best_wedge = i + 1;
-                    min_diff = diff;
+                    if (wed.val_dev[i] > MAX_WEDGE_STDDEV_VALID)
+                        continue;
+
+                    int diff = abs((int)final_wedge[i] - (int)wed.channel);
+                    if (min_diff > diff)
+                    {
+                        best_wedge = i + 1;
+                        min_diff = diff;
+                    }
                 }
             }
             /////////////////////////////////////
 
-            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d CH %d StdDev %d VALID %d",
+            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d CH %d VALID %d",
                           line, best_pos, best_cor,
                           wed.ref1, wed.ref2, wed.ref3, wed.ref4, wed.ref5, wed.ref6, wed.ref7, wed.ref8,
-                          wed.channel, best_wedge, wed.avg_dev, int(wed.avg_dev < MAX_WEDGE_STDDEV_VALID));
+                          wed.channel, best_wedge, int(wed.avg_dev < MAX_WEDGE_STDDEV_VALID));
+            logger->trace("StdDev %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d Avg StdDev %d",
+                          wed.val_dev[0], wed.val_dev[1], wed.val_dev[2], wed.val_dev[3], wed.val_dev[4],
+                          wed.val_dev[5], wed.val_dev[6], wed.val_dev[7], wed.val_dev[8], wed.val_dev[9],
+                          wed.val_dev[10], wed.val_dev[11], wed.val_dev[12], wed.val_dev[13], wed.val_dev[14],
+                          wed.val_dev[15], wed.avg_dev);
 
             if (1 <= best_wedge && best_wedge <= 5)
                 wed.rchannel = best_wedge;
