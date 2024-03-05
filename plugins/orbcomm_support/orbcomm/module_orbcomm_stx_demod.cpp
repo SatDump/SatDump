@@ -110,7 +110,7 @@ namespace orbcomm
             int framen = stx_deframer.work(bits_buf, dat_size, frames);
 
             for (int i = 0; i < framen; i++)
-                for (int y = 3; y < (ORBCOMM_STX_FRM_SIZE / 8); y++)
+                for (int y = 0; y < (ORBCOMM_STX_FRM_SIZE / 8); y++)
                     frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
 
             if (framen > 0)
