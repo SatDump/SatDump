@@ -188,6 +188,9 @@ namespace dvb
 
                 for (int i = 0; i < 8; i++)
                 {
+                    if (errors[i] == -1)
+                        continue;
+
                     if (output_data_type == DATA_FILE)
                         data_out.write((char *)&deinterleaved_frame[204 * i], 188);
                     else
@@ -287,7 +290,7 @@ namespace dvb
                 ber_history[200 - 1] = ber;
 
                 widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
-                    ImVec2(200 * ui_scale, 50 * ui_scale));
+                                         ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
