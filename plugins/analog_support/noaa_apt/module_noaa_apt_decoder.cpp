@@ -17,7 +17,6 @@
 
 #define MAX_SPACE_DIFF_VALID 12000
 #define MAX_WEDGE_STDDEV_VALID 2100
-#define MAX_WEDGE_STDDEV_CROP 5000
 
 namespace noaa_apt
 {
@@ -31,6 +30,8 @@ namespace noaa_apt
 
         if (parameters.count("autocrop_wedges") > 0)
             d_autocrop_wedges = parameters["autocrop_wedges"].get<bool>();
+        if (parameters.count("max_crop_stddev") > 0)
+            d_max_crop_stddev = parameters["max_crop_stddev"].get<int>();
         if (parameters.count("save_unsynced") > 0)
             save_unsynced = parameters["save_unsynced"].get<bool>();
     }
@@ -619,11 +620,11 @@ namespace noaa_apt
                 double variance = 0;
                 for (size_t x = 0; x < 43; x++)
                     variance += (wedge_1[current_line * 43 + x] - avg) * (wedge_1[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < MAX_WEDGE_STDDEV_CROP)
+                if (sqrt(variance / 43) < d_max_crop_stddev)
                     first_valid_wedge1 = current_line;
                 current_line++;
             }
-            current_line = wedge_1.height() - 1;
+            current_line = wedge_1.height() - 2;
             while (last_valid_wedge1 == 0 && current_line >= 0)
             {
                 double avg = 0;
@@ -633,7 +634,7 @@ namespace noaa_apt
                 double variance = 0;
                 for (size_t x = 0; x < 43; x++)
                     variance += (wedge_1[current_line * 43 + x] - avg) * (wedge_1[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < MAX_WEDGE_STDDEV_CROP)
+                if (sqrt(variance / 43) < d_max_crop_stddev)
                     last_valid_wedge1 = current_line;
                 current_line--;
             }
@@ -649,11 +650,11 @@ namespace noaa_apt
                 double variance = 0;
                 for (size_t x = 0; x < 43; x++)
                     variance += (wedge_2[current_line * 43 + x] - avg) * (wedge_2[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < MAX_WEDGE_STDDEV_CROP)
+                if (sqrt(variance / 43) < d_max_crop_stddev)
                     first_valid_wedge2 = current_line;
                 current_line++;
             }
-            current_line = wedge_2.height() - 1;
+            current_line = wedge_2.height() - 2;
             while (last_valid_wedge2 == 0 && current_line >= 0)
             {
                 double avg = 0;
@@ -663,7 +664,7 @@ namespace noaa_apt
                 double variance = 0;
                 for (size_t x = 0; x < 43; x++)
                     variance += (wedge_2[current_line * 43 + x] - avg) * (wedge_2[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < MAX_WEDGE_STDDEV_CROP)
+                if (sqrt(variance / 43) < d_max_crop_stddev)
                     last_valid_wedge2 = current_line;
                 current_line--;
             }

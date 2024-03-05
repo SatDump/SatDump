@@ -233,8 +233,8 @@
             "autocrop_wedges": {
                 "type": "bool",
                 "value": false,
-                "name": "Autocrop with Wedges",
-                "description": "This will automatically crop the image to only include\ntelemetry wedges considered valid.\nMay discard a lot on bad images!"
+                "name": "Autocrop",
+                "description": "This will automatically crop the image to only include\ndata with a low noise value"
             },
             "sdrpp_noise_reduction": {
                 "type": "bool",
@@ -254,6 +254,7 @@
             "products": {
                 "noaa_apt_decoder": {
                     "audio_samplerate": 50e3,
+                    "max_crop_stddev": 5000,
                     "save_unsynced": true
                 }
             }
