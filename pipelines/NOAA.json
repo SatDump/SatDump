@@ -233,7 +233,7 @@
             "autocrop_wedges": {
                 "type": "bool",
                 "value": false,
-                "name": "Autocrop pass",
+                "name": "Autocrop Pass",
                 "description": "This will automatically crop the static from the\ntop and bottom of your pass"
             },
             "sdrpp_noise_reduction": {
