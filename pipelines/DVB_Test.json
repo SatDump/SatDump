@@ -104,7 +104,7 @@
                     //"pll_bw": 0.005,
                     //"modcod": 17,
                     // "pilots": true,
-                    "clock_alpha": 1.7e-4, // Needs to be tighter for 32-APSK.
+                    //"clock_alpha": 1.7e-4, // Needs to be tighter for 32-APSK.
                     "freq_prop_factor": 0.01
                 }
             },
