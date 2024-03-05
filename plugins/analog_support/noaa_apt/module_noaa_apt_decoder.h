@@ -20,8 +20,7 @@ namespace noaa_apt
         // Info about the wedge
         int start_line = 0;      // Start line
         int end_line = 0;        // End Line
-        int avg_dev = 0;         // StdDev in entire wedge (noise est.)
-        int val_dev[16] = { 0 }; // StdDev in specific section
+        int std_dev[16] = { 0 }; // StdDev in section of wedge (noise est)
 
         // Values
         int ref1 = 0;
