@@ -189,7 +189,7 @@ namespace dvb
                 for (int i = 0; i < 8; i++)
                 {
                     if (errors[i] == -1)
-                        continue;
+                        deinterleaved_frame[204 * i + 1] |= 0b10000000;
 
                     if (output_data_type == DATA_FILE)
                         data_out.write((char *)&deinterleaved_frame[204 * i], 188);
