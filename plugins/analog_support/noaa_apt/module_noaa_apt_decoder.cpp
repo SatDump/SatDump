@@ -1028,9 +1028,11 @@ namespace noaa_apt
                 }
             }
 
-            // Not enough data left with the found pos
             if (line * 16 * 8 + best_pos + 15 * 8 + 7 >= wedge_a.size())
+            {
+                logger->trace("Ran out of data before completing wedge");
                 break;
+            }
 
             uint16_t final_wedge[16];
             for (int i = 0; i < 16; i++)
@@ -1043,10 +1045,7 @@ namespace noaa_apt
             }
 
             APTWedge wed;
-
             wed.start_line = line * 16 * 8 + best_pos;
-            wed.end_line = (line + 1) * 16 * 8 + best_pos;
-
             wed.ref1 = final_wedge[0];
             wed.ref2 = final_wedge[1];
             wed.ref3 = final_wedge[2];
@@ -1064,26 +1063,18 @@ namespace noaa_apt
             wed.back_scan = final_wedge[14];
             wed.channel = final_wedge[15];
 
-            if (wed.end_line < (int)wedge.height())
+            for (int c = 0; c < 16; c++)
             {
-                for (int c = 0; c < 16; c++)
-                {
-                    std::vector<double> vals;
-                    for (int x = 0; x < 43; x++)
-                        for (int y = 0; y < 8; y++)
-                            vals.push_back(wedge[(wed.start_line + c * 8 + y) * wedge.width() + x]);
+                std::vector<double> vals;
+                for (int x = 0; x < 43; x++)
+                    for (int y = 0; y < 8; y++)
+                        vals.push_back(wedge[(wed.start_line + c * 8 + y) * wedge.width() + x]);
 
-                    double mean = avg_overflowless(vals);
-                    double variance = 0;
-                    for (double& val : vals)
-                        variance += (val - mean) * (val - mean);
-                    wed.std_dev[c] = sqrt(variance / 343);
-                }
-            }
-            else
-            {
-                for (int &this_dev : wed.std_dev)
-                    this_dev = 1e7;
+                double mean = avg_overflowless(vals);
+                double variance = 0;
+                for (double& val : vals)
+                    variance += (val - mean) * (val - mean);
+                wed.std_dev[c] = sqrt(variance / 343);
             }
 
             /////////////////////////////////////
