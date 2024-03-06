@@ -18,9 +18,8 @@ namespace noaa_apt
     struct APTWedge
     {
         // Info about the wedge
-        int start_line = 0; // Start line
-        int end_line = 0;   // End Line
-        int max_diff = 0;   // Maximum difference (noise est.)
+        int start_line = 0;      // Start line
+        int std_dev[16] = { 0 }; // StdDev in section of wedge (noise est)
 
         // Values
         int ref1 = 0;
@@ -51,6 +50,7 @@ namespace noaa_apt
         std::atomic<uint64_t> progress;
 
         long d_audio_samplerate;
+        int d_max_crop_stddev = 3500;
         bool d_autocrop_wedges = false;
         bool save_unsynced = true;
 

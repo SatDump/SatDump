@@ -15,7 +15,8 @@
 
 #include "common/calibration.h"
 
-#define MAX_WEDGE_DIFF_VALID 12000
+#define MAX_SPACE_DIFF_VALID 12000
+#define MAX_WEDGE_STDDEV_VALID 2100
 
 namespace noaa_apt
 {
@@ -29,6 +30,8 @@ namespace noaa_apt
 
         if (parameters.count("autocrop_wedges") > 0)
             d_autocrop_wedges = parameters["autocrop_wedges"].get<bool>();
+        if (parameters.count("max_crop_stddev") > 0)
+            d_max_crop_stddev = parameters["max_crop_stddev"].get<int>();
         if (parameters.count("save_unsynced") > 0)
             save_unsynced = parameters["save_unsynced"].get<bool>();
     }
@@ -334,8 +337,8 @@ namespace noaa_apt
                 for (size_t x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
                     scale_val(wip_apt_image_sync[l * wip_apt_image_sync.width() + x], new_black, new_white);
 
-            int validn1 = 0, validn1_1 = 0, validn1_0 = 0;
-            // for (auto &wed : wedges1)
+            int valid_temp1 = 0, valid_temp2 = 0, valid_temp3 = 0, valid_temp4 = 0, valid_patch = 0,
+                validn1_1 = 0, validn1_0 = 0;
             for (unsigned int i = 0; i < wedges1.size(); i++)
             { // Calib wedges 1
                 auto &wed = wedges1[i];
@@ -356,30 +359,47 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < 18e3)
+                if (channel_a == -1)
                 {
-                    if (channel_a == -1)
+                    channel_a = wed.rchannel;
+                }
+                else if (channel_a1 == -1)
+                {
+                    if (channel_a != wed.rchannel)
                     {
-                        channel_a = wed.rchannel;
-                    }
-                    else if (channel_a1 == -1)
-                    {
-                        if (channel_a != wed.rchannel)
-                        {
-                            channel_a1 = wed.rchannel;
-                            switchy = wed.start_line;
-                        }
+                        channel_a1 = wed.rchannel;
+                        switchy = wed.start_line;
                     }
                 }
 
-                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wed.std_dev[9] < MAX_WEDGE_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp1 += wed.therm_temp1;
+                    valid_temp1++;
+                }
+                if (wed.std_dev[10] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch1.therm_temp2 += wed.therm_temp2;
+                    valid_temp2++;
+                }
+                if (wed.std_dev[11] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch1.therm_temp3 += wed.therm_temp3;
+                    valid_temp3++;
+                }
+                if (wed.std_dev[12] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
+                    valid_temp4++;
+                }
+                if (wed.std_dev[13] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch1.patch_temp += wed.patch_temp;
+                    valid_patch++;
+                }
 
+                if (wed.std_dev[14] < MAX_WEDGE_STDDEV_VALID)
+                {
                     if (channel_a1 == -1)
                     {
                         bb_a += wed.back_scan;
@@ -390,16 +410,14 @@ namespace noaa_apt
                         bb_a1 += wed.back_scan;
                         validn1_1++;
                     }
-
-                    validn1++;
                 }
             }
 
-            calib_wedge_ch1.therm_temp1 = (calib_wedge_ch1.therm_temp1 / validn1) >> 6;
-            calib_wedge_ch1.therm_temp2 = (calib_wedge_ch1.therm_temp2 / validn1) >> 6;
-            calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / validn1) >> 6;
-            calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / validn1) >> 6;
-            calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / validn1) >> 6;
+            calib_wedge_ch1.therm_temp1 = (calib_wedge_ch1.therm_temp1 / valid_temp1) >> 6;
+            calib_wedge_ch1.therm_temp2 = (calib_wedge_ch1.therm_temp2 / valid_temp2) >> 6;
+            calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / valid_temp3) >> 6;
+            calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / valid_temp4) >> 6;
+            calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / valid_patch) >> 6;
             bb_a = (validn1_0 == 0 ? 0 : (bb_a / validn1_0)) >> 6;
             if (validn1_1 != 0)
                 bb_a1 = (bb_a1 / validn1_1) >> 6;
@@ -420,7 +438,8 @@ namespace noaa_apt
                 // logger->critical("CHA1 %d", channel_a1);
             }
 
-            int validn2 = 0, validn2_0 = 0;
+            int valid_backscan = 0;
+            valid_temp1 = valid_temp2 = valid_temp3 = valid_temp4 = valid_patch = 0;
             for (auto &wed : wedges2)
             { // Calib wedges 2
                 scale_val(wed.ref1, new_black, new_white);
@@ -440,30 +459,47 @@ namespace noaa_apt
                 scale_val(wed.back_scan, new_black, new_white);
                 scale_val(wed.channel, new_black, new_white);
 
-                if (wed.max_diff < 18e3)
-                {
-                    if (channel_b == -1)
-                        channel_b = wed.rchannel;
-                }
+                if (channel_b == -1)
+                    channel_b = wed.rchannel;
 
-                if (wed.max_diff < MAX_WEDGE_DIFF_VALID)
+                if (wed.std_dev[9] < MAX_WEDGE_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp1 += wed.therm_temp1;
+                    valid_temp1++;
+                }
+                if (wed.std_dev[10] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch2.therm_temp2 += wed.therm_temp2;
+                    valid_temp2++;
+                }
+                if (wed.std_dev[11] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch2.therm_temp3 += wed.therm_temp3;
+                    valid_temp3++;
+                }
+                if (wed.std_dev[12] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch2.therm_temp4 += wed.therm_temp4;
+                    valid_temp4++;
+                }
+                if (wed.std_dev[13] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch2.patch_temp += wed.patch_temp;
+                    valid_patch++;
+                }
+                if (wed.std_dev[14] < MAX_WEDGE_STDDEV_VALID)
+                {
                     calib_wedge_ch2.back_scan += wed.back_scan;
-                    validn2++;
+                    valid_backscan++;
                 }
             }
 
-            calib_wedge_ch2.therm_temp1 = (calib_wedge_ch2.therm_temp1 / validn2) >> 6;
-            calib_wedge_ch2.therm_temp2 = (calib_wedge_ch2.therm_temp2 / validn2) >> 6;
-            calib_wedge_ch2.therm_temp3 = (calib_wedge_ch2.therm_temp3 / validn2) >> 6;
-            calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / validn2) >> 6;
-            calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / validn2) >> 6;
-            calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / validn2) >> 6;
+            calib_wedge_ch2.therm_temp1 = (calib_wedge_ch2.therm_temp1 / valid_temp1) >> 6;
+            calib_wedge_ch2.therm_temp2 = (calib_wedge_ch2.therm_temp2 / valid_temp2) >> 6;
+            calib_wedge_ch2.therm_temp3 = (calib_wedge_ch2.therm_temp3 / valid_temp3) >> 6;
+            calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / valid_temp4) >> 6;
+            calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / valid_patch) >> 6;
+            calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / valid_backscan) >> 6;
 
             if (channel_b >= 1)
             {
@@ -501,7 +537,7 @@ namespace noaa_apt
                     avg /= space_a1.width();
                     scale_val(avg, new_black, new_white);
                     int max_diff = max - min;
-                    if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                    if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
                     {
                         space_av1 += avg;
                         validl1_1++;
@@ -525,7 +561,7 @@ namespace noaa_apt
                 avg /= space_a.width();
                 scale_val(avg, new_black, new_white);
                 int max_diff = max - min;
-                if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
                 {
                     space_av += avg;
                     validl1++;
@@ -547,7 +583,7 @@ namespace noaa_apt
                 avg /= space_b.width();
                 scale_val(avg, new_black, new_white);
                 int max_diff = max - min;
-                if (max_diff < MAX_WEDGE_DIFF_VALID && avg != 0 && avg != 65535)
+                if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
                 {
                     space_bv += avg;
                     validl2++;
@@ -570,39 +606,81 @@ namespace noaa_apt
 
         if (d_autocrop_wedges)
         {
-            logger->info("Autocropping using wedges...");
+            logger->info("Autocropping...");
 
-            int first_valid_wedge = 1e9;
-            int last_valid_wedge = 0;
-
-            for (size_t i = 0; i < wedges1.size(); i++)
+            // Check Wedge 1
+            int first_valid_wedge1 = 1e9, first_valid_wedge2 = 1e9;
+            int last_valid_wedge1 = 0, last_valid_wedge2 = 0, current_line = 0;
+            while (first_valid_wedge1 == 1e9 && current_line < (int)wedge_1.height())
             {
-                if (wedges1[i].max_diff < 30e3)
-                {
-                    if (first_valid_wedge > wedges1[i].start_line)
-                        first_valid_wedge = wedges1[i].start_line;
-                    if (last_valid_wedge < wedges1[i].end_line)
-                        last_valid_wedge = wedges1[i].end_line;
-                }
+                double avg = 0;
+                for (size_t x = 0; x < 43; x++)
+                    avg += wedge_1[current_line * 43 + x];
+                avg /= 43;
+                double variance = 0;
+                for (size_t x = 0; x < 43; x++)
+                    variance += (wedge_1[current_line * 43 + x] - avg) * (wedge_1[current_line * 43 + x] - avg);
+                if (sqrt(variance / 43) < d_max_crop_stddev)
+                    first_valid_wedge1 = current_line;
+                current_line++;
+            }
+            current_line = wedge_1.height() - 2;
+            while (last_valid_wedge1 == 0 && current_line >= 0)
+            {
+                double avg = 0;
+                for (size_t x = 0; x < 43; x++)
+                    avg += wedge_1[current_line * 43 + x];
+                avg /= 43;
+                double variance = 0;
+                for (size_t x = 0; x < 43; x++)
+                    variance += (wedge_1[current_line * 43 + x] - avg) * (wedge_1[current_line * 43 + x] - avg);
+                if (sqrt(variance / 43) < d_max_crop_stddev)
+                    last_valid_wedge1 = current_line;
+                current_line--;
             }
 
-            for (size_t i = 0; i < wedges2.size(); i++)
+            // Check wedge 2
+            current_line = 0;
+            while (first_valid_wedge2 == 1e9 && current_line < (int)wedge_2.height())
             {
-                if (wedges2[i].max_diff < 30e3)
-                {
-                    if (first_valid_wedge > wedges2[i].start_line)
-                        first_valid_wedge = wedges2[i].start_line;
-                    if (last_valid_wedge < wedges2[i].end_line)
-                        last_valid_wedge = wedges2[i].end_line;
-                }
+                double avg = 0;
+                for (size_t x = 0; x < 43; x++)
+                    avg += wedge_2[current_line * 43 + x];
+                avg /= 43;
+                double variance = 0;
+                for (size_t x = 0; x < 43; x++)
+                    variance += (wedge_2[current_line * 43 + x] - avg) * (wedge_2[current_line * 43 + x] - avg);
+                if (sqrt(variance / 43) < d_max_crop_stddev)
+                    first_valid_wedge2 = current_line;
+                current_line++;
+            }
+            current_line = wedge_2.height() - 2;
+            while (last_valid_wedge2 == 0 && current_line >= 0)
+            {
+                double avg = 0;
+                for (size_t x = 0; x < 43; x++)
+                    avg += wedge_2[current_line * 43 + x];
+                avg /= 43;
+                double variance = 0;
+                for (size_t x = 0; x < 43; x++)
+                    variance += (wedge_2[current_line * 43 + x] - avg) * (wedge_2[current_line * 43 + x] - avg);
+                if (sqrt(variance / 43) < d_max_crop_stddev)
+                    last_valid_wedge2 = current_line;
+                current_line--;
             }
 
-            logger->trace("Valid lines %d %d", first_valid_wedge, last_valid_wedge);
+            // Find largest bounds
+            if (first_valid_wedge2 < first_valid_wedge1)
+                first_valid_wedge1 = first_valid_wedge2;
+            if (last_valid_wedge2 > last_valid_wedge1)
+                last_valid_wedge1 = last_valid_wedge2;
 
-            if (abs(first_valid_wedge - last_valid_wedge) > 0 && first_valid_wedge != 1e9)
+            logger->trace("Valid lines %d %d", first_valid_wedge1, last_valid_wedge1);
+
+            if (abs(first_valid_wedge1 - last_valid_wedge1) > 0 && first_valid_wedge1 != 1e9 && last_valid_wedge1 != 0)
             {
-                first_valid_line = first_valid_wedge;
-                last_valid_line = last_valid_wedge;
+                first_valid_line = first_valid_wedge1;
+                last_valid_line = last_valid_wedge1;
                 wip_apt_image_sync.crop(0, first_valid_line,
                                         wip_apt_image_sync.width(), last_valid_line);
                 if (switchy != -1)
@@ -610,14 +688,12 @@ namespace noaa_apt
             }
             else
             {
-                logger->error("Not enough valid wedges to autocrop!");
+                logger->error("Not enough valid data to autocrop!");
             }
         }
 
         // Save
         apt_status = SAVING;
-
-        // Products ARE not yet being processed properly. Need to parse the wedges!
         int norad = 0;
         std::string sat_name = "NOAA";
         std::optional<satdump::TLE> satellite_tle;
@@ -952,8 +1028,13 @@ namespace noaa_apt
                 }
             }
 
-            uint16_t final_wedge[16];
+            if (line * 16 * 8 + best_pos + 15 * 8 + 7 >= wedge_a.size())
+            {
+                logger->trace("Ran out of data before completing wedge");
+                break;
+            }
 
+            uint16_t final_wedge[16];
             for (int i = 0; i < 16; i++)
             {
                 int val = 0;
@@ -964,10 +1045,7 @@ namespace noaa_apt
             }
 
             APTWedge wed;
-
             wed.start_line = line * 16 * 8 + best_pos;
-            wed.end_line = (line + 1) * 16 * 8 + best_pos;
-
             wed.ref1 = final_wedge[0];
             wed.ref2 = final_wedge[1];
             wed.ref3 = final_wedge[2];
@@ -985,56 +1063,50 @@ namespace noaa_apt
             wed.back_scan = final_wedge[14];
             wed.channel = final_wedge[15];
 
-            if (wed.end_line < (int)wedge.height())
+            for (int c = 0; c < 16; c++)
             {
-                wed.max_diff = 0;
-                for (int c = 0; c < 16; c++)
-                {
-                    int max_point = 0;
-                    int min_point = 1e9;
-                    for (int x = 0; x < 43; x++)
-                    {
-                        for (int y = 0; y < 8; y++)
-                        {
-                            int v = wedge[(wed.start_line + c * 8 + y) * wedge.width() + x];
-                            if (max_point < v)
-                                max_point = v;
-                            if (min_point > v)
-                                min_point = v;
-                        }
-                    }
-                    // logger->debug("Max %d Min %d Diff %d",
-                    //               max_point, min_point, max_point - min_point);
-                    wed.max_diff += max_point - min_point;
-                }
-                wed.max_diff /= 16;
-                // logger->trace("Diff %d", wed.max_diff);
-            }
-            else
-            {
-                wed.max_diff = 1e7;
+                std::vector<double> vals;
+                for (int x = 0; x < 43; x++)
+                    for (int y = 0; y < 8; y++)
+                        vals.push_back(wedge[(wed.start_line + c * 8 + y) * wedge.width() + x]);
+
+                double mean = avg_overflowless(vals);
+                double variance = 0;
+                for (double& val : vals)
+                    variance += (val - mean) * (val - mean);
+                wed.std_dev[c] = sqrt(variance / 343);
             }
 
             /////////////////////////////////////
-            int min_diff = 1e9;
+            int min_diff = 5000;
             int best_wedge = 0;
-            for (int i = 0; i < 8; i++)
+
+            if (wed.std_dev[15] <= MAX_WEDGE_STDDEV_VALID)
             {
-                int diff = abs((int)final_wedge[i] - (int)wed.channel);
-                if (min_diff > diff)
+                for (int i = 0; i < 8; i++)
                 {
-                    best_wedge = i + 1;
-                    min_diff = diff;
+                    if (wed.std_dev[i] > MAX_WEDGE_STDDEV_VALID)
+                        continue;
+
+                    int diff = abs((int)final_wedge[i] - (int)wed.channel);
+                    if (min_diff > diff)
+                    {
+                        best_wedge = i + 1;
+                        min_diff = diff;
+                    }
                 }
             }
             /////////////////////////////////////
 
-            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d Diff %d CH %d VALID %d",
+            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d CH %d",
                           line, best_pos, best_cor,
                           wed.ref1, wed.ref2, wed.ref3, wed.ref4, wed.ref5, wed.ref6, wed.ref7, wed.ref8,
-                          wed.channel, wed.max_diff,
-                          best_wedge,
-                          int(wed.max_diff < MAX_WEDGE_DIFF_VALID));
+                          wed.channel, best_wedge);
+            logger->trace("StdDev %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                          wed.std_dev[0], wed.std_dev[1], wed.std_dev[2], wed.std_dev[3], wed.std_dev[4],
+                          wed.std_dev[5], wed.std_dev[6], wed.std_dev[7], wed.std_dev[8], wed.std_dev[9],
+                          wed.std_dev[10], wed.std_dev[11], wed.std_dev[12], wed.std_dev[13], wed.std_dev[14],
+                          wed.std_dev[15]);
 
             if (1 <= best_wedge && best_wedge <= 5)
                 wed.rchannel = best_wedge;
@@ -1052,11 +1124,10 @@ namespace noaa_apt
 
         for (auto &wedge : wedges)
         {
-            if (wedge.max_diff < MAX_WEDGE_DIFF_VALID)
-            {
+            if (wedge.std_dev[7] < MAX_WEDGE_STDDEV_VALID)
                 calib_white.push_back(wedge.ref8);
+            if (wedge.std_dev[8] < MAX_WEDGE_STDDEV_VALID)
                 calib_black.push_back(wedge.zero_mod_ref);
-            }
         }
 
         new_white = 0;
