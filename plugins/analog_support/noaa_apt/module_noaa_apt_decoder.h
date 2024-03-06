@@ -19,7 +19,6 @@ namespace noaa_apt
     {
         // Info about the wedge
         int start_line = 0;      // Start line
-        int end_line = 0;        // End Line
         int std_dev[16] = { 0 }; // StdDev in section of wedge (noise est)
 
         // Values
