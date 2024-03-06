@@ -677,7 +677,7 @@ namespace noaa_apt
 
             logger->trace("Valid lines %d %d", first_valid_wedge1, last_valid_wedge1);
 
-            if (abs(first_valid_wedge1 - last_valid_wedge1) > 0 && first_valid_wedge1 != 1e9)
+            if (abs(first_valid_wedge1 - last_valid_wedge1) > 0 && first_valid_wedge1 != 1e9 && last_valid_wedge1 != 0)
             {
                 first_valid_line = first_valid_wedge1;
                 last_valid_line = last_valid_wedge1;
@@ -1028,8 +1028,11 @@ namespace noaa_apt
                 }
             }
 
-            uint16_t final_wedge[16];
+            // Not enough data left with the found pos
+            if (line * 16 * 8 + best_pos + 15 * 8 + 7 >= wedge_a.size())
+                break;
 
+            uint16_t final_wedge[16];
             for (int i = 0; i < 16; i++)
             {
                 int val = 0;
