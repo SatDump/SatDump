@@ -50,7 +50,7 @@ namespace noaa_apt
         std::atomic<uint64_t> progress;
 
         long d_audio_samplerate;
-        int d_max_crop_stddev = 4000;
+        int d_max_crop_stddev = 3500;
         bool d_autocrop_wedges = false;
         bool save_unsynced = true;
 
