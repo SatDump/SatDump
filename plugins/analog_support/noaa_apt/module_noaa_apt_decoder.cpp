@@ -611,7 +611,7 @@ namespace noaa_apt
             // Check Wedge 1
             int first_valid_wedge1 = 1e9, first_valid_wedge2 = 1e9;
             int last_valid_wedge1 = 0, last_valid_wedge2 = 0, current_line = 0;
-            while (first_valid_wedge1 == 1e9 && current_line < wedge_1.height())
+            while (first_valid_wedge1 == 1e9 && current_line < (int)wedge_1.height())
             {
                 double avg = 0;
                 for (size_t x = 0; x < 43; x++)
@@ -641,7 +641,7 @@ namespace noaa_apt
 
             // Check wedge 2
             current_line = 0;
-            while (first_valid_wedge2 == 1e9 && current_line < wedge_2.height())
+            while (first_valid_wedge2 == 1e9 && current_line < (int)wedge_2.height())
             {
                 double avg = 0;
                 for (size_t x = 0; x < 43; x++)
