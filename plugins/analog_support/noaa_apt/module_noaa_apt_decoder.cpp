@@ -413,7 +413,7 @@ namespace noaa_apt
                 }
             }
 
-            if (valid_temp1 > 0 && valid_temp2 > 0 && valid_temp3 > 0 && valid_temp4 > 0 && valid_patch > 0 && valid_backscan > 0)
+            if (valid_temp1 > 0 && valid_temp2 > 0 && valid_temp3 > 0 && valid_temp4 > 0 && valid_patch > 0)
             {
                 calib_wedge_ch1.therm_temp1 = (calib_wedge_ch1.therm_temp1 / valid_temp1) >> 6;
                 calib_wedge_ch1.therm_temp2 = (calib_wedge_ch1.therm_temp2 / valid_temp2) >> 6;
