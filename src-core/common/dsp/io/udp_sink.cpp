@@ -25,7 +25,7 @@ namespace dsp
         int nsent = 0;
         while (nsamples - nsent > 0)
         {
-            int to_send = std::min<int>(nsamples - nsent, 32000 / 8);
+            int to_send = std::min<int>(nsamples - nsent, (1472 * 4) / 8);
             udp_sender->send((uint8_t *)&input_stream->readBuf[nsent], to_send * sizeof(complex_t));
             nsent += to_send;
         }

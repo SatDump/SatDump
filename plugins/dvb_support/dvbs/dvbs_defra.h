@@ -53,10 +53,10 @@ namespace dvbs
 
         bool d_fast_deframer = false;
 
-        void start()
-        {
-            dsp::Block<uint8_t, uint8_t>::start();
-            pthread_setname_np(d_thread.native_handle(), "TS Deframer");
-        }
+        // void start()
+        // {
+        //     dsp::Block<uint8_t, uint8_t>::start();
+        //     pthread_setname_np(d_thread.native_handle(), "TS Deframer");
+        // }
     };
 }
