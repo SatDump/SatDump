@@ -15,6 +15,8 @@
 #include "core/live_pipeline.h"
 #include "common/dsp/io/file_sink.h"
 
+#include "common/dsp/io/udp_sink.h"
+
 class AutoTrackApp
 {
 private: // Device and start-of-chain management
@@ -82,6 +84,9 @@ private:
 
     void start_recording();
     void stop_recording();
+
+private:
+    std::shared_ptr<dsp::UDPSinkBlock> udp_sink;
 
 private: // VFO Stuff
     struct VFOInfo

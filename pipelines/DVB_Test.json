@@ -18,6 +18,12 @@
                 "value": 1e6,
                 "name": "Symbolrate",
                 "description": "DVB-S Symbolrate"
+            },
+            "fast_tssync": {
+                "type": "bool",
+                "value": true,
+                "name": "Fast TS Sync",
+                "description": "Faster algorithm for TS synchronization.\nNot fully tested, but appears to work well."
             }
         },
         "work": {

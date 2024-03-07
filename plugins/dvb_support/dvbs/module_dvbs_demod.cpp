@@ -87,6 +87,8 @@ namespace dvb
         // Deframer
         def = std::make_shared<dvbs::DVBSDefra>(vit->output_stream);
         def->ts_deframer = &ts_deframer;
+        if (d_parameters.contains("fast_tssync"))
+            def->d_fast_deframer = d_parameters["fast_tssync"];
     }
 
     DVBSDemodModule::~DVBSDemodModule()

@@ -10,7 +10,7 @@ namespace dvbs
     private:
         void work();
 
-#if 0
+#if 1
         uint8_t curr_ts_buffer[204];
 
         int bit_of_frame = 0;
@@ -39,6 +39,9 @@ namespace dvbs
         int frm_cnt = 0;
 
         float polarity_top = 0.5;
+
+        int dst_to_last = 0;
+        int unsync_cnt = 0;
 #endif
 
     public:
@@ -47,5 +50,13 @@ namespace dvbs
     public:
         DVBSDefra(std::shared_ptr<dsp::stream<uint8_t>> input);
         ~DVBSDefra();
+
+        bool d_fast_deframer = false;
+
+        void start()
+        {
+            dsp::Block<uint8_t, uint8_t>::start();
+            pthread_setname_np(d_thread.native_handle(), "TS Deframer");
+        }
     };
 }

@@ -188,6 +188,20 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     ///////////////////////////////////////////////////////////////////////////////////
 
     setup_webserver();
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////// Experimental - UDP Forward
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    if (parameters.contains("udp_fwd_address") && parameters.contains("udp_fwd_port"))
+    {
+        std::string address = parameters["udp_fwd_address"];
+        int port = parameters["udp_fwd_port"];
+        splitter->add_output("udp_fwd");
+        udp_sink = std::make_shared<dsp::UDPSinkBlock>(splitter->get_output("udp_fwd"), (char *)address.c_str(), port);
+        udp_sink->start();
+        splitter->set_enabled("udp_fwd", true);
+    }
 }
 
 AutoTrackApp::~AutoTrackApp()
@@ -210,6 +224,10 @@ retry_vfo:
         fft->stop();
     if (file_sink)
         file_sink->stop();
+
+    // Experimental
+    if (udp_sink)
+        udp_sink->stop();
 }
 
 void AutoTrackApp::setup_schedular_callbacks()
