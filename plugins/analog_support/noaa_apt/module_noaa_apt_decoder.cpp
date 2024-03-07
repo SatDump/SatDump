@@ -677,7 +677,7 @@ namespace noaa_apt
 
             logger->trace("Valid lines %d %d", first_valid_wedge1, last_valid_wedge1);
 
-            if (abs(first_valid_wedge1 - last_valid_wedge1) > 0 && first_valid_wedge1 != 1e9 && last_valid_wedge1 != 0)
+            if (abs(first_valid_wedge1 - last_valid_wedge1) > 100 && first_valid_wedge1 != 1e9 && last_valid_wedge1 != 0)
             {
                 first_valid_line = first_valid_wedge1;
                 last_valid_line = last_valid_wedge1;
