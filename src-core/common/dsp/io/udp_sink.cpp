@@ -22,7 +22,13 @@ namespace dsp
             return;
         }
 
-        udp_sender->send((uint8_t *)input_stream->readBuf, nsamples * sizeof(complex_t));
+        int nsent = 0;
+        while (nsamples > 0)
+        {
+            int to_send = std::min<int>(nsamples - nsent, 32000 / 8);
+            udp_sender->send((uint8_t *)&input_stream->readBuf[nsent], to_send * sizeof(complex_t));
+            nsent += to_send;
+        }
 
         input_stream->flush();
     }
