@@ -1,9 +1,9 @@
 #include "dvbs_defra.h"
-//#include "dvbs_defines.h"
+// #include "dvbs_defines.h"
 
-//#include "logger.h"
-//#include <fstream>
-// std::ofstream bits_out("dvbs_vit_bits.bin");
+// #include "logger.h"
+// #include <fstream>
+//  std::ofstream bits_out("dvbs_vit_bits.bin");
 
 namespace dvbs
 {
@@ -16,8 +16,8 @@ namespace dvbs
     {
     }
 
-    // float dst_to_last = 0;
-    // int unsync_cnt = 0;
+    float dst_to_last = 0;
+    int unsync_cnt = 0;
 
     void DVBSDefra::work()
     {
@@ -43,7 +43,7 @@ namespace dvbs
             return;
         }
 
-        bits_out.write((char *)input_stream->readBuf, nsamples);
+        // bits_out.write((char *)input_stream->readBuf, nsamples);
         // logger->critical(nsamples);
 
         // frm_cnt = 0;
@@ -90,7 +90,7 @@ namespace dvbs
 
                 if (det_pos || det_neg)
                 {
-                    logger->critical(dst_to_last);
+                    // logger->critical(dst_to_last);
                     dst_to_last = 0;
 
                     in_frame = true;
@@ -111,7 +111,7 @@ namespace dvbs
 
                 if ((det_pos || det_neg))
                 {
-                    logger->critical(dst_to_last);
+                    // logger->critical(dst_to_last);
                     dst_to_last = 0;
 
                     in_frame = true;

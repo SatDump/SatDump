@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include "common/repack_bits_byte.h"
 
 namespace deframing
 {
@@ -47,6 +48,9 @@ namespace deframing
 
         uint8_t *full_frame_shifter;
         uint8_t sync_bytes[8];
+
+        RepackBitsByte repack;
+        uint8_t *buf_bytes; // Repacked bytes buffer
 
     public:
         DVBS_TS_Deframer();
