@@ -220,7 +220,7 @@ namespace noaa_apt
             for (int i = 0; i < nsamp; i++)
             {
                 float v = ctm->output_stream->readBuf[i];
-                v = (v / 0.5f) * 65535.0f;
+                v = (v * 2.0f) * 65535.0f;
                 imagebuf.push_back(wip_apt_image.clamp(v));
                 image_i++;
             }
@@ -413,14 +413,17 @@ namespace noaa_apt
                 }
             }
 
-            calib_wedge_ch1.therm_temp1 = (calib_wedge_ch1.therm_temp1 / valid_temp1) >> 6;
-            calib_wedge_ch1.therm_temp2 = (calib_wedge_ch1.therm_temp2 / valid_temp2) >> 6;
-            calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / valid_temp3) >> 6;
-            calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / valid_temp4) >> 6;
-            calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / valid_patch) >> 6;
-            bb_a = (validn1_0 == 0 ? 0 : (bb_a / validn1_0)) >> 6;
-            if (validn1_1 != 0)
-                bb_a1 = (bb_a1 / validn1_1) >> 6;
+            if (valid_temp1 > 0 && valid_temp2 > 0 && valid_temp3 > 0 && valid_temp4 > 0 && valid_patch > 0 && valid_backscan > 0)
+            {
+                calib_wedge_ch1.therm_temp1 = (calib_wedge_ch1.therm_temp1 / valid_temp1) >> 6;
+                calib_wedge_ch1.therm_temp2 = (calib_wedge_ch1.therm_temp2 / valid_temp2) >> 6;
+                calib_wedge_ch1.therm_temp3 = (calib_wedge_ch1.therm_temp3 / valid_temp3) >> 6;
+                calib_wedge_ch1.therm_temp4 = (calib_wedge_ch1.therm_temp4 / valid_temp4) >> 6;
+                calib_wedge_ch1.patch_temp = (calib_wedge_ch1.patch_temp / valid_patch) >> 6;
+                bb_a = (validn1_0 == 0 ? 0 : (bb_a / validn1_0)) >> 6;
+                if (validn1_1 != 0)
+                    bb_a1 = (bb_a1 / validn1_1) >> 6;
+            }
 
             if (channel_a >= 1)
             {
@@ -494,12 +497,15 @@ namespace noaa_apt
                 }
             }
 
-            calib_wedge_ch2.therm_temp1 = (calib_wedge_ch2.therm_temp1 / valid_temp1) >> 6;
-            calib_wedge_ch2.therm_temp2 = (calib_wedge_ch2.therm_temp2 / valid_temp2) >> 6;
-            calib_wedge_ch2.therm_temp3 = (calib_wedge_ch2.therm_temp3 / valid_temp3) >> 6;
-            calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / valid_temp4) >> 6;
-            calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / valid_patch) >> 6;
-            calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / valid_backscan) >> 6;
+            if (valid_temp1 > 0 && valid_temp2 > 0 && valid_temp3 > 0 && valid_temp4 > 0 && valid_patch > 0 && valid_backscan > 0)
+            {
+                calib_wedge_ch2.therm_temp1 = (calib_wedge_ch2.therm_temp1 / valid_temp1) >> 6;
+                calib_wedge_ch2.therm_temp2 = (calib_wedge_ch2.therm_temp2 / valid_temp2) >> 6;
+                calib_wedge_ch2.therm_temp3 = (calib_wedge_ch2.therm_temp3 / valid_temp3) >> 6;
+                calib_wedge_ch2.therm_temp4 = (calib_wedge_ch2.therm_temp4 / valid_temp4) >> 6;
+                calib_wedge_ch2.patch_temp = (calib_wedge_ch2.patch_temp / valid_patch) >> 6;
+                calib_wedge_ch2.back_scan = (calib_wedge_ch2.back_scan / valid_backscan) >> 6;
+            }
 
             if (channel_b >= 1)
             {
@@ -1072,9 +1078,9 @@ namespace noaa_apt
 
                 double mean = avg_overflowless(vals);
                 double variance = 0;
-                for (double& val : vals)
+                for (double &val : vals)
                     variance += (val - mean) * (val - mean);
-                wed.std_dev[c] = sqrt(variance / 343);
+                wed.std_dev[c] = sqrt(variance / 343.0);
             }
 
             /////////////////////////////////////
