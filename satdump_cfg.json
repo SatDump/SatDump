@@ -1152,8 +1152,7 @@
                         "equation": "ch2, ch2, ch1",
                         "geo_correct": true,
                         "white_balance": true,
-                        "description": "descriptions/221.md",
-                        "equalize": true
+                        "description": "descriptions/221.md"
                     },
                     "321": {
                         "equation": "ch3, ch2, ch1",
@@ -1242,6 +1241,7 @@
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
+                        "geo_correct": true,
                         "lua_vars": {
                             "minoffset": 0,
                             "scalar": 1,
@@ -1260,6 +1260,7 @@
                         "channels": "ch1",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
+                        "geo_correct": true,
                         "lua_vars": {
                             "minoffset": 0,
                             "scalar": 1,
