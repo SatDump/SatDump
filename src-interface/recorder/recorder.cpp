@@ -380,6 +380,7 @@ namespace satdump
                 {
                     if (ImGui::Combo("FFT Size", &selected_fft_size, "131072\0"
                                                                      "65536\0"
+                                                                     "32768\0"
                                                                      "16384\0"
                                                                      "8192\0"
                                                                      "4096\0"
