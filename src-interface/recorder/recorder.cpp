@@ -395,19 +395,42 @@ namespace satdump
 
                         logger->info("Set FFT size to %d", fft_size);
                     }
+                    int old_rate = fft_rate;
                     if (ImGui::InputInt("FFT Rate", &fft_rate))
                     {
-                        fft_size = fft_sizes_lut[selected_fft_size];
-
-                        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
-                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
-
-                        logger->info("Set FFT rate to %d", fft_rate);
+                        if (fft_rate <= 0)
+                            fft_rate = old_rate;
+                        else
+                        {
+                            fft_size = fft_sizes_lut[selected_fft_size];
+                            fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+                            waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                            logger->info("Set FFT rate to %d", fft_rate);
+                        }
                     }
-                    if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
+                    if (ImGui::IsItemDeactivatedAfterEdit() && fft_rate < waterfall_rate)
                     {
+                        waterfall_rate = fft_rate;
                         waterfall_plot->set_rate(fft_rate, waterfall_rate);
                         logger->info("Set Waterfall rate to %d", waterfall_rate);
+                    }
+                    old_rate = waterfall_rate;
+                    if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
+                    {
+                        if (waterfall_rate <= 0)
+                            waterfall_rate = old_rate;
+                        else
+                        {
+                            waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                            logger->info("Set Waterfall rate to %d", waterfall_rate);
+                        }
+                    }
+                    if (ImGui::IsItemDeactivatedAfterEdit() && waterfall_rate > fft_rate)
+                    {
+                        fft_rate = waterfall_rate;
+                        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                        logger->info("Set FFT rate to %d", fft_rate);
                     }
                     widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
                     widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
