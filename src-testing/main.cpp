@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
     uint8_t frm[600];
 
     vector observer_pos;
-   
+    lla2xyz({48.0 * DEG_TO_RAD, 1.0 * DEG_TO_RAD, 173.0 / 1000.0, true}, observer_pos);
+    predict_observer_t *predict_obs = predict_create_observer("Main", 48.0 * DEG_TO_RAD, 1.0 * DEG_TO_RAD, 173.0);
 
     int plot_size = 512;
     image::Image<uint8_t> img(plot_size, plot_size, 3);
