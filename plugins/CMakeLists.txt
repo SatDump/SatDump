@@ -336,10 +336,10 @@ if(PLUGIN_RTAUDIO_SDR_SUPPORT)
     add_subdirectory(sdr_sources/rtaudio_sdr_support)
 endif()
 
-option(PLUGIN_UDP_SOURCE_SDR_SUPPORT "Enable UDP Source Support plugin" ON)
+option(PLUGIN_NET_SOURCE_SDR_SUPPORT "Enable Network Source Support plugin" ON)
 
-if(PLUGIN_UDP_SOURCE_SDR_SUPPORT)
-    add_subdirectory(sdr_sources/udp_source_support)
+if(PLUGIN_NET_SOURCE_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/net_source_support)
 endif()
 
 option(PLUGIN_REMOTE_SDR_SUPPORT "Enable Remote SDR Support plugin (WIP!)" ON)

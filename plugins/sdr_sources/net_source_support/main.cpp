@@ -1,13 +1,13 @@
 #include "core/plugin.h"
 #include "logger.h"
-#include "udp_source.h"
+#include "net_source.h"
 
-class UDPSourceSupport : public satdump::Plugin
+class NetSourceSupport : public satdump::Plugin
 {
 public:
     std::string getID()
     {
-        return "udp_source_support";
+        return "network_source_support";
     }
 
     void init()
@@ -17,8 +17,8 @@ public:
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
     {
-        evt.dsp_sources_registry.insert({UDPSource::getID(), {UDPSource::getInstance, UDPSource::getAvailableSources}});
+        evt.dsp_sources_registry.insert({NetSource::getID(), {NetSource::getInstance, NetSource::getAvailableSources}});
     }
 };
 
-PLUGIN_LOADER(UDPSourceSupport)
+PLUGIN_LOADER(NetSourceSupport)

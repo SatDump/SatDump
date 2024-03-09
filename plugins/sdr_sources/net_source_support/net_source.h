@@ -8,15 +8,30 @@
 #include "common/net/udp.h"
 #include <thread>
 
-class UDPSource : public dsp::DSPSampleSource
+#include <nng/nng.h>
+#include <nng/protocol/pubsub0/sub.h>
+
+class NetSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
+
+    enum netsource_mode_t
+    {
+        MODE_UDP,
+        MODE_NNGSUB,
+    };
+
+    netsource_mode_t mode = MODE_UDP;
+    std::string address = "localhost";
+    int port = 8877;
+
     std::shared_ptr<net::UDPServer> udp_server;
 
-    widgets::NotatedNum<uint64_t> current_samplerate = widgets::NotatedNum<uint64_t>("Samplerate##udp", 0, "sps");
+    nng_socket n_sock;
+    nng_dialer n_dialer;
 
-    int port = 8877;
+    widgets::NotatedNum<uint64_t> current_samplerate = widgets::NotatedNum<uint64_t>("Samplerate##net", 0, "sps");
 
     std::string error;
 
@@ -26,13 +41,13 @@ protected:
     void run_thread();
 
 public:
-    UDPSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
+    NetSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
     {
         should_run = true;
-        work_thread = std::thread(&UDPSource::run_thread, this);
+        work_thread = std::thread(&NetSource::run_thread, this);
     }
 
-    ~UDPSource()
+    ~NetSource()
     {
         stop();
         close();
@@ -56,7 +71,7 @@ public:
     void set_samplerate(uint64_t samplerate);
     uint64_t get_samplerate();
 
-    static std::string getID() { return "udp_source"; }
-    static std::shared_ptr<dsp::DSPSampleSource> getInstance(dsp::SourceDescriptor source) { return std::make_shared<UDPSource>(source); }
+    static std::string getID() { return "net_source"; }
+    static std::shared_ptr<dsp::DSPSampleSource> getInstance(dsp::SourceDescriptor source) { return std::make_shared<NetSource>(source); }
     static std::vector<dsp::SourceDescriptor> getAvailableSources();
 };

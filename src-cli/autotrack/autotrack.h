@@ -15,7 +15,7 @@
 #include "core/live_pipeline.h"
 #include "common/dsp/io/file_sink.h"
 
-#include "common/dsp/io/udp_sink.h"
+#include "common/dsp/io/net_sink.h"
 
 class AutoTrackApp
 {
@@ -86,7 +86,7 @@ private:
     void stop_recording();
 
 private:
-    std::shared_ptr<dsp::UDPSinkBlock> udp_sink;
+    std::shared_ptr<dsp::NetSinkBlock> udp_sink;
 
 private: // VFO Stuff
     struct VFOInfo

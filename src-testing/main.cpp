@@ -12,73 +12,262 @@
 
 #include "logger.h"
 
-#include <sys/types.h>
-#include <stdexcept>
-#include <cstring>
-#if defined(_WIN32)
-#include <winsock2.h>
-#include <WS2tcpip.h>
-#else
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif
+#include <fstream>
+#include "common/utils.h"
+
+#include <cmath>
+#include "common/geodetic/wgs84.h"
+#include "common/geodetic/geodetic_coordinates.h"
+
+#include "common/image/image.h"
+
+#include "libs/predict/predict.h"
+
+#include "common/geodetic/ecef_to_eci.h"
+
+int fcs(uint8_t *data, int len)
+{
+    int i;
+    unsigned char c0 = 0;
+    unsigned char c1 = 0;
+    for (i = 0; i < len; i++)
+    {
+        c0 = c0 + *(data + i);
+        c1 = c1 + c0;
+    }
+    return ((long)(c0 + c1)); /* returns zero if buffer is error-free*/
+}
+
+extern "C"
+{
+    void observer_calculate(const predict_observer_t *observer, double time, const double pos[3], const double vel[3], struct predict_observation *result);
+}
+
+namespace
+{
+    struct vector
+    {
+        double x;
+        double y;
+        double z;
+    };
+
+    // Must already be in radians!
+    void lla2xyz(geodetic::geodetic_coords_t lla, vector &position)
+    {
+        // double asq = geodetic::WGS84::a * geodetic::WGS84::a;
+        double esq = geodetic::WGS84::e * geodetic::WGS84::e;
+        double N = geodetic::WGS84::a / sqrt(1 - esq * pow(sin(lla.lat), 2));
+        position.x = (N + lla.alt) * cos(lla.lat) * cos(lla.lon);
+        position.y = (N + lla.alt) * cos(lla.lat) * sin(lla.lon);
+        position.z = ((1 - esq) * N + lla.alt) * sin(lla.lat);
+    }
+
+    void xyz2lla(vector position, geodetic::geodetic_coords_t &lla)
+    {
+        double asq = geodetic::WGS84::a * geodetic::WGS84::a;
+        double esq = geodetic::WGS84::e * geodetic::WGS84::e;
+
+        double b = sqrt(asq * (1 - esq));
+        double bsq = b * b;
+        double ep = sqrt((asq - bsq) / bsq);
+        double p = sqrt(position.x * position.x + position.y * position.y);
+        double th = atan2(geodetic::WGS84::a * position.z, b * p);
+        double lon = atan2(position.y, position.x);
+        double lat = atan2((position.z + ep * ep * b * pow(sin(th), 3)), (p - esq * geodetic::WGS84::a * pow(cos(th), 3)));
+        // double N = geodetic::WGS84::a / (sqrt(1 - esq * pow(sin(lat), 2)));
+
+        vector g;
+        lla2xyz(geodetic::geodetic_coords_t(lat, lon, 0, true), g);
+
+        double gm = sqrt(g.x * g.x + g.y * g.y + g.z * g.z);
+        double am = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
+        double alt = am - gm;
+
+        lla = geodetic::geodetic_coords_t(lat, lon, alt, true);
+    }
+
+    inline float az_el_to_plot_x(float plot_size, float radius, float az, float el) { return sin(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
+    inline float az_el_to_plot_y(float plot_size, float radius, float az, float el) { return cos(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
+}
+
+#include "common/repack.h"
+
+double calcFreq(int f, bool small = true)
+{
+    if (small)
+    {
+        if (f <= 0x40)
+            f = 0x1 << 8 | f;
+        else if (f >= 0x50)
+            f = 0x0 << 8 | f;
+    }
+    return 137.0 + double(f) * 0.0025;
+}
 
 int main(int argc, char *argv[])
 {
     initLogger();
     completeLoggerInit();
 
-    int the_port = 8877;
+    std::ifstream data_in(argv[1], std::ios::binary);
 
-#if defined(_WIN32)
-    WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        throw std::runtime_error("Couldn't startup WSA socket!");
-#endif
+    uint8_t frm[600];
 
-    struct sockaddr_in recv_addr;
-    int fd = -1;
+    vector observer_pos;
+   
 
-    if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-        throw std::runtime_error("Error creating socket!");
+    int plot_size = 512;
+    image::Image<uint8_t> img(plot_size, plot_size, 3);
+    // {
+    // All black bg
+    img.fill(0);
 
-    int val_true = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
-        throw std::runtime_error("Error setting socket option!");
+    // Draw the "target-like" plot with elevation rings
+    float radius = 0.45;
+    float radius1 = plot_size * radius * (3.0 / 9.0);
+    float radius2 = plot_size * radius * (6.0 / 9.0);
+    float radius3 = plot_size * radius * (9.0 / 9.0);
 
-    memset(&recv_addr, 0, sizeof(recv_addr));
-    recv_addr.sin_family = AF_INET;
-    recv_addr.sin_port = htons(the_port);
-    recv_addr.sin_addr.s_addr = INADDR_ANY;
+    uint8_t color_green[] = {0, 255, 0};
+    uint8_t color_red[] = {255, 0, 0};
+    uint8_t color_orange[] = {255, 165, 0};
+    uint8_t color_cyan[] = {0, 237, 255};
 
-    if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
-        throw std::runtime_error("Error binding socket!");
+    img.draw_circle(plot_size / 2, plot_size / 2,
+                    radius1, color_green, false);
+    img.draw_circle(plot_size / 2, plot_size / 2,
+                    radius2, color_green, false);
+    img.draw_circle(plot_size / 2, plot_size / 2,
+                    radius3, color_green, false);
 
-    uint8_t buffer_rx[65536];
+    img.draw_line(plot_size / 2, 0,
+                  plot_size / 2, plot_size - 1,
+                  color_green);
+    img.draw_line(0, plot_size / 2,
+                  plot_size - 1, plot_size / 2,
+                  color_green);
+    // }
 
-    while (true)
+    while (!data_in.eof())
     {
-        struct sockaddr_in response_addr;
-        socklen_t response_addr_len = sizeof(response_addr);
-        int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
-        if (nrecv < 0)
-            throw std::runtime_error("Error on recvfrom!");
+        data_in.read((char *)frm, 600);
 
-        std::string command = (char *)buffer_rx;
+        for (int i = 0; i < 50; i++)
+        {
+            if (frm[i * 12] == 0x1F)
+            {
+                if (fcs(&frm[i * 12], 24) == 0)
+                {
+                    std::reverse(&frm[i * 12 + 2], &frm[i * 12 + 22]);
 
-        std::string name = command.substr(20, 11);
-        std::string freq = command.substr(69, 11);
+                    int scid = frm[i * 12 + 1];
+                    int week_number = frm[i * 12 + 2] << 8 | frm[i * 12 + 3];
+                    int time_of_week = frm[i * 12 + 4] << 16 | frm[i * 12 + 5] << 8 | frm[i * 12 + 6];
 
-        logger->trace(name);
-        logger->info("%f", std::stof(freq));
+                    // logger->info("Week Number %d, Time Of Week %d", week_number, time_of_week);
+
+                    const double MAX_R_SAT = 8378155.0;
+                    const double VAL_20_BITS = 1048576.0;
+                    const double MAX_V_SAT = 7700.0;
+
+                    uint32_t values[0];
+                    repackBytesTo20bits(&frm[i * 12 + 7], 15, values);
+
+                    long x_raw = values[5];
+                    long y_raw = values[4];
+                    long z_raw = values[3];
+
+                    long x_raw2 = values[2];
+                    long y_raw2 = values[1];
+                    long z_raw2 = values[0];
+
+                    double X = ((2.0 * x_raw * MAX_R_SAT) / VAL_20_BITS - MAX_R_SAT) / 1000.0;
+                    double Y = ((2.0 * y_raw * MAX_R_SAT) / VAL_20_BITS - MAX_R_SAT) / 1000.0;
+                    double Z = ((2.0 * z_raw * MAX_R_SAT) / VAL_20_BITS - MAX_R_SAT) / 1000.0;
+
+                    double X_DOT = ((2.0 * x_raw2 * MAX_V_SAT) / VAL_20_BITS - MAX_R_SAT) / 1000.0;
+                    double Y_DOT = ((2.0 * y_raw2 * MAX_V_SAT) / VAL_20_BITS - MAX_R_SAT) / 1000.0;
+                    double Z_DOT = ((2.0 * z_raw2 * MAX_V_SAT) / VAL_20_BITS - MAX_R_SAT) / 1000.0;
+
+                    geodetic::geodetic_coords_t lla;
+                    xyz2lla({X, Y, Z}, lla);
+                    lla.toDegs();
+
+                    // Az/El
+                    double az, el, range, range_rate;
+                    {
+                        double pos[3];
+                        pos[0] = X * 1000.0;
+                        pos[1] = Y * 1000.0;
+                        pos[2] = Z * 1000.0;
+
+                        double vel[3];
+                        vel[0] = X_DOT * 1000.0;
+                        vel[1] = Y_DOT * 1000.0;
+                        vel[2] = Z_DOT * 1000.0;
+
+                        ecef_epehem_to_eci(0, pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]);
+
+                        predict_observation observ;
+                        observer_calculate(predict_obs, predict_to_julian(0) + 2444238.5, pos, vel, &observ);
+
+                        az = observ.azimuth * RAD_TO_DEG;
+                        el = observ.elevation * RAD_TO_DEG;
+                        range = observ.range;
+                    }
+
+                    logger->info("SCID %d, Week Number %d, Time Of Week %d - X %.3d Y %.3d Z %.3d - X %.3f Y %.3f Z %.3f - Lon %.1f, Lat %.1f, Alt %.1f - Az %.1f El %.1f Range %.1f",
+                                 scid + 70, week_number, time_of_week,
+                                 x_raw, y_raw, z_raw,
+                                 X_DOT, Y_DOT, Z_DOT,
+                                 lla.lon, lla.lat, lla.alt,
+                                 az, el, range);
+
+                    // Polar Plot!
+                    // Draw the current satellite position
+                    if (el > 0)
+                    {
+                        float point_x = plot_size / 2;
+                        float point_y = plot_size / 2;
+
+                        point_x += az_el_to_plot_x(plot_size, radius, az, el);
+                        point_y -= az_el_to_plot_y(plot_size, radius, az, el);
+
+                        uint8_t color[3];
+                        hsv_to_rgb(fmod(scid, 10) / 10.0, 1, 1, color);
+                        img.draw_circle(point_x, point_y, 2, color, true);
+                    }
+                }
+            }
+            else if (frm[i * 12] == 0x65)
+            {
+                if (fcs(&frm[i * 12], 24) == 0)
+                {
+                    int f = frm[i * 12 + 5];
+                    logger->info("Synchronization, Freq %f Mhz", calcFreq(f));
+                }
+            }
+            else if (frm[i * 12] == 0x1C)
+            {
+                if (fcs(&frm[i * 12], 12) == 0)
+                {
+                    int pos = frm[i * 12 + 1] & 0xF;
+
+                    std::reverse(&frm[i * 12 + 2], &frm[i * 12 + 10]);
+                    shift_array_left(&frm[i * 12 + 2], 8, 4, &frm[i * 12 + 2]);
+                    uint16_t values[5];
+                    repackBytesTo12bits(&frm[i * 12 + 2], 8, values);
+
+                    std::string frequencies = "";
+                    for (int i = 0; i < 5; i++)
+                        if (values[i] != 0)
+                            frequencies += std::to_string(calcFreq(values[i], false)) + " Mhz, ";
+                    logger->info("Channels %d : %s", pos, frequencies.c_str());
+                }
+            }
+        }
     }
 
-#if defined(_WIN32)
-    closesocket(fd);
-    WSACleanup();
-#else
-    close(fd);
-#endif
+    img.save_jpeg("orbcomm_plot.jpg");
 }

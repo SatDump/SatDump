@@ -22,5 +22,23 @@
                 }
             }
         }
+    },
+    "orbcomm_stx_auto": {
+        "name": "Orbcomm STX Auto",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "orbcomm_stx_auto_demod": {
+                    "frequency": 137.5e6
+                }
+            }
+        }
     }
 }

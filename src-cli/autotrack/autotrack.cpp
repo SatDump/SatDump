@@ -190,17 +190,20 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     setup_webserver();
 
     ///////////////////////////////////////////////////////////////////////////////////
-    ///////////////// Experimental - UDP Forward
+    ///////////////// Experimental - Net Forward
     ///////////////////////////////////////////////////////////////////////////////////
 
-    if (parameters.contains("udp_fwd_address") && parameters.contains("udp_fwd_port"))
+    if (parameters.contains("net_fwd_address") && parameters.contains("net_fwd_port"))
     {
-        std::string address = parameters["udp_fwd_address"];
-        int port = parameters["udp_fwd_port"];
-        splitter->add_output("udp_fwd");
-        udp_sink = std::make_shared<dsp::UDPSinkBlock>(splitter->get_output("udp_fwd"), (char *)address.c_str(), port);
+        std::string mode = "udp";
+        if (parameters.contains("net_fwd_mode"))
+            mode = parameters["net_fwd_mode"];
+        std::string address = parameters["net_fwd_address"];
+        int port = parameters["net_fwd_port"];
+        splitter->add_output("net_fwd");
+        udp_sink = std::make_shared<dsp::NetSinkBlock>(splitter->get_output("net_fwd"), mode, (char *)address.c_str(), port);
         udp_sink->start();
-        splitter->set_enabled("udp_fwd", true);
+        splitter->set_enabled("net_fwd", true);
     }
 }
 
