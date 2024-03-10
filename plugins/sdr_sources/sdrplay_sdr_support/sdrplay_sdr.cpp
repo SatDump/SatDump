@@ -420,7 +420,7 @@ void SDRPlaySource::drawControlUI()
     }
     else
     {
-        RImGui::Text("This device is not supported yet,\n or perhaps a clone!");
+        RImGui::Text("%s", "This device is not supported yet,\n or perhaps a clone!");
     }
     if (!is_started)
         RImGui::endDisabled();

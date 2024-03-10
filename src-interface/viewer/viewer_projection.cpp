@@ -131,7 +131,7 @@ namespace satdump
             if (projections_are_generating)
             {
                 ImGui::SameLine();
-                widgets::Spinner("###spinner1", 8 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
+                widgets::Spinner("###spinner1", ImGui::GetItemRectSize().y / 2 - ImGui::GetStyle().FramePadding.y, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
             }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {

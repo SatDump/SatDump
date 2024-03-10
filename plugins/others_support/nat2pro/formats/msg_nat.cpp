@@ -116,7 +116,7 @@ namespace nat2pro
         //{
         uint8_t *trailer_ptr = buf + trailerpos;
 
-        int trailer_version = trailer_ptr[0];
+        // int trailer_version = trailer_ptr[0];
 
         int offset = 38 + 1 + 2 +
                      14 +
@@ -131,9 +131,9 @@ namespace nat2pro
         int LowerWestColumnActual = get_i4(&trailer_ptr[offset + 12]);
 
         int UpperSouthLineActual = get_i4(&trailer_ptr[offset + 16]);
-        int UpperNorthLineActual = get_i4(&trailer_ptr[offset + 20]);
+        // int UpperNorthLineActual = get_i4(&trailer_ptr[offset + 20]);
         int UpperEastColumnActual = get_i4(&trailer_ptr[offset + 24]);
-        int UpperWestColumnActual = get_i4(&trailer_ptr[offset + 28]);
+        // int UpperWestColumnActual = get_i4(&trailer_ptr[offset + 28]);
 
         logger->critical("LowerSouthLineActual : %d, LowerNorthLineActual : %d, LowerEastColumnActual : %d, LowerWestColumnActual : %d",
                          LowerSouthLineActual, LowerNorthLineActual, LowerEastColumnActual, LowerWestColumnActual);

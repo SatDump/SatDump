@@ -19,7 +19,7 @@ namespace proj
 
     bool projection_webmerc_fwd(projection_t *proj, double lam, double phi, double *x, double *y)
     {
-        projection_webmerc_t *ptr = (projection_webmerc_t *)proj->proj_dat;
+        // projection_webmerc_t *ptr = (projection_webmerc_t *)proj->proj_dat;
 
         *x = proj->k0 * lam;
         *y = proj->k0 * asinh(tan(phi));
@@ -29,7 +29,7 @@ namespace proj
 
     bool projection_webmerc_inv(projection_t *proj, double x, double y, double *lam, double *phi)
     {
-        projection_webmerc_t *ptr = (projection_webmerc_t *)proj->proj_dat;
+        // projection_webmerc_t *ptr = (projection_webmerc_t *)proj->proj_dat;
 
         *phi = atan(sinh(y / proj->k0));
         *lam = x / proj->k0;

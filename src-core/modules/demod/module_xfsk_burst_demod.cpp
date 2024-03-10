@@ -84,9 +84,6 @@ namespace demod
         resamplerf->start();
         rec->start();
 
-        uint8_t wip_byte = 0;
-        int wipbitn = 0;
-
         ////////////////////////////////////////////////////////////////
         /*std::shared_ptr<audio::AudioSink> audio_sink;
         if (input_data_type != DATA_FILE && audio::has_sink())

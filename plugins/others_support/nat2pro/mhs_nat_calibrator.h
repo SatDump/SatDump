@@ -17,7 +17,7 @@ namespace nat2pro
         {
         }
 
-        double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
+        double compute(int channel, int /*pos_x*/, int /*pos_y*/, int px_val)
         {
             double final_val = px_val << 4;
 

@@ -85,7 +85,7 @@ namespace satdump
         double xconverter_frequency = 0;
 
         int selected_fft_size = 0;
-        std::vector<int> fft_sizes_lut = {131072, 65536, 16384, 8192, 4096, 2048, 1024};
+        std::vector<int> fft_sizes_lut = {131072, 65536, 32768, 16384, 8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
         int fft_rate = 120;
         int waterfall_rate = 60;

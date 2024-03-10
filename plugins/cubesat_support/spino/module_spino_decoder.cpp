@@ -94,7 +94,7 @@ namespace spino
                     {
                         int size = wip_frame[17] << 8 | wip_frame[16];
 
-                        if (wip_frame.size() >= size + 16)
+                        if ((int)wip_frame.size() >= size + 16)
                         {
                             // CRC Check
                             uint64_t crc = wip_frame[wip_frame.size() - 1] << 8 | wip_frame[wip_frame.size() - 2];

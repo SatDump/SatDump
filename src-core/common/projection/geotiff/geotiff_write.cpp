@@ -26,14 +26,21 @@ namespace geotiff
         }
 
         // Register the tags we need
+        char tag_pixelScale[] = "ModelPixelScaleTag";
+        // char tag_geoTransform[] = "GeoTransformationMatrix";
+        char tag_tiepoint[] = "ModelTiepointTag";
+        char tag_geoKeyDirectory[] = "GeoKeyDirectoryTag";
+        char tag_geoKeyDoubles[] = "GeoKeysDoubles";
+        // char tag_ASCIIParams[] = "GeoASCIIParams";
+
         static const TIFFFieldInfo xtiffFieldInfo[] = {
             //
-            {GEOTIFFTAG_ModelPixelScaleTag, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, true, true, "ModelPixelScaleTag"},
-            //  {TIFFTAG_GEOTRANSMATRIX, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, TRUE, TRUE, "GeoTransformationMatrix"},
-            {GEOTIFFTAG_ModelTiepointTag, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, true, true, "ModelTiepointTag"},
-            {GEOTIFFTAG_GeoKeyDirectoryTag, -1, -1, TIFF_SHORT, FIELD_CUSTOM, true, true, "GeoKeyDirectoryTag"},
-            {GEOTIFFTAG_GeoKeysDoubles, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, true, true, "GeoKeysDoubles"},
-            //  {TIFFTAG_GEOASCIIPARAMS, -1, -1, TIFF_ASCII, FIELD_CUSTOM, TRUE, FALSE, "GeoASCIIParams"}
+            {GEOTIFFTAG_ModelPixelScaleTag, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, true, true, tag_pixelScale},
+            //  {TIFFTAG_GEOTRANSMATRIX, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, TRUE, TRUE, tag_geoTransform},
+            {GEOTIFFTAG_ModelTiepointTag, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, true, true, tag_tiepoint},
+            {GEOTIFFTAG_GeoKeyDirectoryTag, -1, -1, TIFF_SHORT, FIELD_CUSTOM, true, true, tag_geoKeyDirectory},
+            {GEOTIFFTAG_GeoKeysDoubles, -1, -1, TIFF_DOUBLE, FIELD_CUSTOM, true, true, tag_geoKeyDoubles},
+            //  {TIFFTAG_GEOASCIIPARAMS, -1, -1, TIFF_ASCII, FIELD_CUSTOM, TRUE, FALSE, tag_ASCIIParams}
             //
         };
 #define N(a) (sizeof(a) / sizeof(a[0]))

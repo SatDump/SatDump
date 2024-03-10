@@ -44,7 +44,7 @@ namespace generic
         logger->info("Using input frames " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".frm");
 
-        uint8_t byte_shifter;
+        uint8_t byte_shifter = 0;
         int bitshift_in_byte = 0;
         uint8_t byte_buffer[256];
         int bytes_in_buf = 0;

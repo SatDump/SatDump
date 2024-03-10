@@ -41,9 +41,9 @@ namespace geoscan
             }
             else if (frame_buffer[4] == 0x02 || frame_buffer[4] == 0x01) // Imagery
             {
-                uint16_t hdr = frame_buffer[4 + 1] << 8 | frame_buffer[4 + 0];
-                uint8_t data_size = frame_buffer[4 + 2];
-                uint16_t msg_type = frame_buffer[4 + 4] << 8 | frame_buffer[4 + 3];
+                // uint16_t hdr = frame_buffer[4 + 1] << 8 | frame_buffer[4 + 0];
+                // uint8_t data_size = frame_buffer[4 + 2];
+                // uint16_t msg_type = frame_buffer[4 + 4] << 8 | frame_buffer[4 + 3];
                 uint16_t pkt_offset = frame_buffer[4 + 6] << 8 | frame_buffer[4 + 5];
 
                 if (pkt_offset <= 49112)

@@ -249,8 +249,8 @@ namespace image
     template <typename T>
     T Image<T>::get_pixel_bilinear(int cc, double rx, double ry)
     {
-        int x = (int)rx;
-        int y = (int)ry;
+        size_t x = (size_t)rx;
+        size_t y = (size_t)ry;
 
         double x_diff = rx - x;
         double y_diff = ry - y;
