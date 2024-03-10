@@ -243,6 +243,17 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "METEOR Satellite",
+                "options": [
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Please select the satellite being received!"
             }
         },
         "work": {

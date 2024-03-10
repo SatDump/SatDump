@@ -113,100 +113,25 @@ namespace meteor
 #endif
 
             std::string sat_name = "Unknown Meteor";
-#if 0
-            if (msumr_serial_number == 0)
-                sat_name = "METEOR-M2";
-            else if (msumr_serial_number == 1)
-                sat_name = "METEOR-M2-1";
-            else if (msumr_serial_number == 2)
+            if (d_parameters["satellite_number"].get<std::string>() == "M2-2")
                 sat_name = "METEOR-M2-2";
-            else if (msumr_serial_number == 3)
+            else if (d_parameters["satellite_number"].get<std::string>() == "M2-3")
                 sat_name = "METEOR-M2-3";
+            else if (d_parameters["satellite_number"].get<std::string>() == "M2-4")
+                sat_name = "METEOR-M2-4";
 
             int norad = 0;
-            if (msumr_serial_number == 0)
-                norad = 40069; // M2
-            else if (msumr_serial_number == 1)
-                norad = 0; // M2-1, failed launch
-            else if (msumr_serial_number == 2)
+            if (d_parameters["satellite_number"].get<std::string>() == "M2-2")
                 norad = 44387; // M2-2
-            else if (msumr_serial_number == 3)
+            else if (d_parameters["satellite_number"].get<std::string>() == "M2-3")
                 norad = 57166; // M2-3
-#endif
+            else if (d_parameters["satellite_number"].get<std::string>() == "M2-4")
+                norad = 59051; // M2-4
 
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = time(0); // avg_overflowless(msumr_timestamps);
-
-#if 0
-            // Satellite ID
-            {
-                logger->info("----------- Satellite");
-                logger->info("NORAD : " + std::to_string(norad));
-                logger->info("Name  : " + sat_name);
-            }
-
-            // MSU-MR
-            {
-                msumr_status = SAVING;
-                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSU-MR";
-
-                if (!std::filesystem::exists(directory))
-                    std::filesystem::create_directory(directory);
-
-                logger->info("----------- MSU-MR");
-                logger->info("Lines : " + std::to_string(msumr_reader.lines));
-
-                satdump::ImageProducts msumr_products;
-                msumr_products.instrument_name = "msu_mr";
-                msumr_products.has_timestamps = true;
-                msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-
-                std::vector<double> filter_timestamps = msumr_timestamps;
-                double avg = avg_overflowless(filter_timestamps);
-                double last = 0;
-                for (double &v : filter_timestamps)
-                {
-                    if (abs(avg - v) > 10000)
-                    {
-                        last = v;
-                        v = -1;
-                        continue;
-                    }
-
-                    if (last >= v || abs(last - v) > 1.0)
-                    {
-                        last = v;
-                        v = -1;
-                        continue;
-                    }
-                    last = v;
-
-                    // logger->info(v);
-                }
-
-                // for (double &v : filter_timestamps)
-                //     logger->info(v);
-
-                msumr_products.set_timestamps(filter_timestamps);
-                if (msumr_serial_number == 0)
-                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr.json")));
-                else if (msumr_serial_number == 2)
-                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
-                else if (msumr_serial_number == 3)
-                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr.json")));
-
-                for (int i = 0; i < 6; i++)
-                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i)});
-
-                msumr_products.save(directory);
-                dataset.products_list.push_back("MSU-MR");
-
-                msumr_status = DONE;
-            }
-#endif
 
             // MTVZA
             {
@@ -223,7 +148,6 @@ namespace meteor
                 mtvza_products.instrument_name = "mtvza";
                 mtvza_products.has_timestamps = true;
                 mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                int norad = 57166;
                 mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 mtvza_products.set_timestamps(timestamps);
                 mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")));
