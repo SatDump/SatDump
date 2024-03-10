@@ -150,7 +150,7 @@ namespace widgets
         uint8_t color_cyan[] = {0, 237, 255};
         uint8_t color_red[] = {255, 0, 0};
         uint8_t color_scale[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
-        uint8_t color_scale2[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
+        // uint8_t color_scale2[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
 
         // Draw lines
         float vscale = ((scale_max - scale_min) / scale_resolution);
@@ -195,7 +195,7 @@ namespace widgets
         // Draw VFOs
         if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
         {
-            const ImU32 col_base_vfo = style::theme.red;
+            // const ImU32 col_base_vfo = style::theme.red;
 
             for (auto vfo : vfo_freqs)
             {

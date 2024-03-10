@@ -167,8 +167,6 @@ namespace ccsds
 
         diff::NRZMDiff diff;
 
-        int8_t last_q_oqpsk = 0; // For delaying OQPSK
-
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer

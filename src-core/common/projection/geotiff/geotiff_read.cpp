@@ -77,7 +77,7 @@ namespace geotiff
                 { // We assume KeyIDs are in order!
                     int KeyID = geokeys[4 + i * 4 + 0];
                     int TIFFTagLocation = geokeys[4 + i * 4 + 1];
-                    int Count = geokeys[4 + i * 4 + 2];
+                    // int Count = geokeys[4 + i * 4 + 2];
                     int Value_Offset = geokeys[4 + i * 4 + 3];
 
                     if (TIFFTagLocation == 0)

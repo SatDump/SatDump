@@ -22,12 +22,11 @@ namespace satdump
             "TIFF Files", "*.tif *.tiff *.gtif"
         };
 
-        int i = 1;
+        size_t i = 1;
         for (auto it = saveopts.begin() + 1 ;; it += 2)
         {
             std::stringstream ss(*it);
             std::string token;
-            bool found = false;
 
             while (std::getline(ss, token, ' '))
             {

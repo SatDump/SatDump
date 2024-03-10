@@ -178,9 +178,9 @@ namespace satdump
         eventBus->register_handler<RecorderSetFrequencyEvent>([this](const RecorderSetFrequencyEvent &evt)
                                                               { set_frequency(evt.frequency); });
 
-        eventBus->register_handler<RecorderStartDeviceEvent>([this](const RecorderStartDeviceEvent &evt)
+        eventBus->register_handler<RecorderStartDeviceEvent>([this](const RecorderStartDeviceEvent &)
                                                              { start(); });
-        eventBus->register_handler<RecorderStopDeviceEvent>([this](const RecorderStopDeviceEvent &evt)
+        eventBus->register_handler<RecorderStopDeviceEvent>([this](const RecorderStopDeviceEvent &)
                                                             { stop(); });
         eventBus->register_handler<RecorderSetDeviceSamplerateEvent>([this](const RecorderSetDeviceSamplerateEvent &evt)
                                                                      { source_ptr->set_samplerate(evt.samplerate); });
@@ -191,7 +191,7 @@ namespace satdump
 
         eventBus->register_handler<RecorderStartProcessingEvent>([this](const RecorderStartProcessingEvent &evt)
                                                                  { pipeline_selector.select_pipeline(evt.pipeline_id); start_processing(); });
-        eventBus->register_handler<RecorderStopProcessingEvent>([this](const RecorderStopProcessingEvent &evt)
+        eventBus->register_handler<RecorderStopProcessingEvent>([this](const RecorderStopProcessingEvent &)
                                                                 { stop_processing(); });
 
         eventBus->register_handler<RecorderSetFFTSettingsEvent>([this](const RecorderSetFFTSettingsEvent &evt)

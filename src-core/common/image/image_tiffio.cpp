@@ -102,8 +102,6 @@ namespace image
         {
             uint32_t w, h;
             int16_t bit_depth, channels_number;
-            size_t npixels;
-            uint32_t *raster;
 
             TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
