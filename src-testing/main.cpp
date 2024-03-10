@@ -25,6 +25,8 @@
 
 #include "common/geodetic/ecef_to_eci.h"
 
+#include <unistd.h>
+
 int fcs(uint8_t *data, int len)
 {
     int i;
@@ -41,6 +43,61 @@ int fcs(uint8_t *data, int len)
 extern "C"
 {
     void observer_calculate(const predict_observer_t *observer, double time, const double pos[3], const double vel[3], struct predict_observation *result);
+}
+
+namespace
+{
+    // Define GPS leap seconds
+    uint64_t leap_seconds[] = {46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017};
+    int leapLen = 18;
+
+    // Test to see if a GPS second is a leap second
+    bool isleap(uint64_t gpsTime)
+    {
+        bool isLeap = false;
+        for (int i = 0; i < leapLen; i++)
+            if (gpsTime == leap_seconds[i])
+                isLeap = true;
+        return isLeap;
+    }
+
+    // Count number of leap seconds that have passed
+    int countleaps(uint64_t gpsTime, bool to_gps)
+    {
+        int nleaps = 0; // number of leap seconds prior to gpsTime
+        for (int i = 0; i < leapLen; i++)
+        {
+            if (!to_gps)
+            {
+                if (gpsTime >= leap_seconds[i] - i)
+                    nleaps++;
+            }
+            else if (to_gps)
+            {
+                if (gpsTime >= leap_seconds[i])
+                    nleaps++;
+            }
+        }
+        return nleaps;
+    }
+
+    // Convert GPS Time to Unix Time
+    time_t gps2unix(uint64_t gpsTime)
+    {
+        // Add offset in seconds
+        time_t unixTime = gpsTime + 315964800;
+        int nleaps = countleaps(gpsTime, false);
+        unixTime = unixTime - nleaps;
+        if (isleap(gpsTime))
+            unixTime = unixTime + 0.5;
+        return unixTime;
+    }
+
+    time_t gps_time_to_unix(uint64_t gps_weeks, uint64_t gps_week_time)
+    {
+        return gps2unix(gps_weeks * 604800 + gps_week_time);
+    }
+
 }
 
 namespace
@@ -105,6 +162,13 @@ double calcFreq(int f, bool small = true)
     return 137.0 + double(f) * 0.0025;
 }
 
+struct OrbComEphem
+{
+    time_t time;
+    int scid;
+    float az, el;
+};
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -149,6 +213,8 @@ int main(int argc, char *argv[])
                   plot_size - 1, plot_size / 2,
                   color_green);
     // }
+
+    std::vector<OrbComEphem> all_ephem_points;
 
     while (!data_in.eof())
     {
@@ -218,8 +284,10 @@ int main(int argc, char *argv[])
                         range = observ.range;
                     }
 
-                    logger->info("SCID %d, Week Number %d, Time Of Week %d - X %.3d Y %.3d Z %.3d - X %.3f Y %.3f Z %.3f - Lon %.1f, Lat %.1f, Alt %.1f - Az %.1f El %.1f Range %.1f",
-                                 scid + 70, week_number, time_of_week,
+                    time_t ephem_time = gps_time_to_unix(week_number, time_of_week);
+
+                    logger->info("SCID %d, Week Number %d, Time Of Week %d, Time %s - X %.3d Y %.3d Z %.3d - X %.3f Y %.3f Z %.3f - Lon %.1f, Lat %.1f, Alt %.1f - Az %.1f El %.1f Range %.1f",
+                                 scid + 70, week_number, time_of_week, timestamp_to_string(ephem_time).c_str(),
                                  x_raw, y_raw, z_raw,
                                  X_DOT, Y_DOT, Z_DOT,
                                  lla.lon, lla.lat, lla.alt,
@@ -239,6 +307,9 @@ int main(int argc, char *argv[])
                         hsv_to_rgb(fmod(scid, 10) / 10.0, 1, 1, color);
                         img.draw_circle(point_x, point_y, 2, color, true);
                     }
+
+                    if (ephem_time < 1741609584)
+                        all_ephem_points.push_back({ephem_time, scid, az, el});
                 }
             }
             else if (frm[i * 12] == 0x65)
@@ -271,4 +342,88 @@ int main(int argc, char *argv[])
     }
 
     img.save_jpeg("orbcomm_plot.jpg");
+
+    if (true)
+    {
+        time_t min_time = std::numeric_limits<time_t>::max();
+        time_t max_time = 0;
+
+        for (auto &ephem : all_ephem_points)
+        {
+            if (ephem.time < min_time)
+                min_time = ephem.time;
+            if (ephem.time > max_time)
+                max_time = ephem.time;
+        }
+
+        logger->critical("Min Time " + timestamp_to_string(min_time));
+        logger->critical("Max Time " + timestamp_to_string(max_time));
+
+        sleep(5);
+
+        int img_cnt = 1;
+
+        image::Image<uint8_t> img(plot_size, plot_size + 50, 3);
+        img.init_font("resources/fonts/font.ttf");
+        for (time_t current_time = min_time; current_time < max_time; current_time += 10)
+        {
+            int plot_size = 512;
+
+            // {
+            // All black bg
+            img.fill(0);
+
+            // Draw the "target-like" plot with elevation rings
+            float radius = 0.45;
+            float radius1 = plot_size * radius * (3.0 / 9.0);
+            float radius2 = plot_size * radius * (6.0 / 9.0);
+            float radius3 = plot_size * radius * (9.0 / 9.0);
+
+            uint8_t color_green[] = {0, 255, 0};
+            uint8_t color_red[] = {255, 0, 0};
+            uint8_t color_orange[] = {255, 165, 0};
+            uint8_t color_cyan[] = {0, 237, 255};
+
+            img.draw_circle(plot_size / 2, plot_size / 2,
+                            radius1, color_green, false);
+            img.draw_circle(plot_size / 2, plot_size / 2,
+                            radius2, color_green, false);
+            img.draw_circle(plot_size / 2, plot_size / 2,
+                            radius3, color_green, false);
+
+            img.draw_line(plot_size / 2, 0,
+                          plot_size / 2, plot_size - 1,
+                          color_green);
+            img.draw_line(0, plot_size / 2,
+                          plot_size - 1, plot_size / 2,
+                          color_green);
+            // }
+
+            for (auto &ephem : all_ephem_points)
+            {
+                if (ephem.time < current_time && ephem.time > current_time - 240)
+                {
+                    // Draw the current satellite position
+                    if (ephem.el > 0)
+                    {
+                        float point_x = plot_size / 2;
+                        float point_y = plot_size / 2;
+
+                        point_x += az_el_to_plot_x(plot_size, radius, ephem.az, ephem.el);
+                        point_y -= az_el_to_plot_y(plot_size, radius, ephem.az, ephem.el);
+
+                        uint8_t color[3];
+                        hsv_to_rgb(fmod(ephem.scid, 10) / 10.0, 1, 1, color);
+                        img.draw_circle(point_x, point_y, 2, color, true);
+                    }
+                }
+            }
+
+            uint8_t text_color[] = {255, 255, 255, 255};
+            img.draw_text(130, plot_size + 10, text_color, 30, timestamp_to_string(current_time));
+
+            img.save_jpeg("/data_ssd/orbcomm/orbcomm_movie/" + std::to_string(img_cnt++) + ".jpg");
+            logger->trace(img_cnt);
+        }
+    }
 }
