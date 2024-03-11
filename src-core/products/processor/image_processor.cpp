@@ -30,6 +30,7 @@ namespace satdump
         //            op.target_prj_info["br_lon"] = 180;
         //        if (!op.target_prj_info.contains("br_lat"))
         //            op.target_prj_info["br_lat"] = -90;
+
         op.img = img;
         proj_cfg["metadata"] = metadata;
         proj_cfg["metadata"]["tle"] = img_products.get_tle();
@@ -45,14 +46,14 @@ namespace satdump
             logger->debug("%d, %d\n%s", op.output_width, op.output_height, op.target_prj_info.dump(4).c_str());
         }
 
-        if (!op.target_prj_info.contains("width") || !op.target_prj_info.contains("height"))
+        if (!proj_settings.contains("width") || !proj_settings.contains("height"))
         {
             logger->error("No width or height defined for projection!");
             return image::Image<uint16_t>();
         }
 
-        op.output_width = op.target_prj_info["width"].get<int>();
-        op.output_height = op.target_prj_info["height"].get<int>();
+        op.output_width = proj_settings["width"].get<int>();
+        op.output_height = proj_settings["height"].get<int>();
 
         if (proj_settings.contains("old_algo"))
             op.use_old_algorithm = proj_settings["old_algo"];
