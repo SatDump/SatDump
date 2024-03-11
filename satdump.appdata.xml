@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.satdump.satdump</id>
+  
+  <name>satdump</name>
+  <summary>SatDump is a general purpose satellite data processing software</summary>
+  
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  
+  <description>
+    <p>
+      A one-stop-shop that provides all the necessary stages to get from the satellite transmission to actual products.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">satdump.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://www.satdump.org/assets/release_110/SatDump_autotrack.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/SatDump/SatDump/blob/master/gui_recording.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/SatDump/SatDump/blob/master/cli_example.png</image>
+    </screenshot>
+  </screenshots>
+</component>
