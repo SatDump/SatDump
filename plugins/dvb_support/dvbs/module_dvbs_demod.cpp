@@ -153,6 +153,8 @@ namespace dvb
             module_stats["viterbi_ber"] = viterbi.ber();
             module_stats["viterbi_lock"] = viterbi.getState();
             module_stats["viterbi_rate"] = rate;
+            if (def->d_fast_deframer)
+                module_stats["deframer_synced"] = def->isSynced();
             module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3] + errors[4] + errors[5] + errors[6] + errors[7]) / 8;
 
             if (input_data_type == DATA_FILE)
@@ -162,7 +164,7 @@ namespace dvb
                 lastTime = time(NULL);
 
                 std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Deframer Sync : " + std::to_string(def->isSynced()) + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
 
             // Read data
@@ -293,6 +295,20 @@ namespace dvb
 
                 widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
                                          ImVec2(200 * ui_scale, 50 * ui_scale));
+            }
+
+            if (def->d_fast_deframer)
+            {
+                ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
+
+                ImGui::Spacing();
+
+                ImGui::Text("State : ");
+                ImGui::SameLine();
+                if (def->isSynced())
+                    ImGui::TextColored(style::theme.green, "SYNCED");
+                else
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
             }
 
             ImGui::Spacing();

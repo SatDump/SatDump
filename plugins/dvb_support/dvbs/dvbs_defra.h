@@ -58,5 +58,7 @@ namespace dvbs
         //     dsp::Block<uint8_t, uint8_t>::start();
         //     pthread_setname_np(d_thread.native_handle(), "TS Deframer");
         // }
+
+        bool isSynced() { return synced; }
     };
 }
