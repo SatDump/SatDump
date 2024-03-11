@@ -7,6 +7,8 @@
 
 #include "sdr_probe.h"
 
+#include "project/project.h"
+
 int main(int argc, char *argv[])
 {
     // Init logger
@@ -33,6 +35,12 @@ int main(int argc, char *argv[])
     else if (std::string(argv[1]) == "autotrack")
     {
         int ret = main_autotrack(argc, argv);
+        if (ret != 0)
+            return ret;
+    }
+    else if (std::string(argv[1]) == "project")
+    {
+        int ret = main_project(argc - 2, argv + 2);
         if (ret != 0)
             return ret;
     }
