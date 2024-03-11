@@ -483,7 +483,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -531,7 +535,11 @@
                             "height": 2048,
                             "draw_map_overlay": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1042,7 +1050,11 @@
                     "individual_equalize": true,
                     "draw_map_overlay": true,
                     "config": {
-                        "type": "equirectangular"
+                        "type": "equirec",
+                        "offset_x": -180,
+                        "offset_y": 90,
+                        "scalar_x": 0.087890625,
+                        "scalar_y": -0.087890625
                     }
                 }
                 /*"project_channels": {
@@ -1077,7 +1089,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1091,7 +1107,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1104,7 +1124,11 @@
                             "height": 2048,
                             "draw_map_overlay": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1118,7 +1142,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1140,7 +1168,11 @@
                     "individual_equalize": true,
                     "draw_map_overlay": true,
                     "config": {
-                        "type": "equirectangular"
+                        "type": "equirec",
+                        "offset_x": -180,
+                        "offset_y": 90,
+                        "scalar_x": 0.087890625,
+                        "scalar_y": -0.087890625
                     }
                 }
             },
@@ -1165,7 +1197,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1193,7 +1229,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1395,7 +1435,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1409,7 +1453,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     },
@@ -1922,7 +1970,11 @@
                     "individual_equalize": true,
                     "draw_map_overlay": true,
                     "config": {
-                        "type": "equirectangular"
+                        "type": "equirec",
+                        "offset_x": -180,
+                        "offset_y": 90,
+                        "scalar_x": 0.17578125,
+                        "scalar_y": -0.17578125
                     }
                 }
             },
@@ -1946,7 +1998,11 @@
                     "individual_equalize": true,
                     "draw_map_overlay": true,
                     "config": {
-                        "type": "equirectangular"
+                        "type": "equirec",
+                        "offset_x": -180,
+                        "offset_y": 90,
+                        "scalar_x": 0.17578125,
+                        "scalar_y": -0.17578125
                     }
                 }
             },
@@ -1978,7 +2034,11 @@
                     "individual_equalize": true,
                     "draw_map_overlay": true,
                     "config": {
-                        "type": "equirectangular"
+                        "type": "equirec",
+                        "offset_x": -180,
+                        "offset_y": 90,
+                        "scalar_x": 0.17578125,
+                        "scalar_y": -0.17578125
                     }
                 }
             },
@@ -1993,7 +2053,11 @@
                     "individual_equalize": true,
                     "draw_map_overlay": true,
                     "config": {
-                        "type": "equirectangular"
+                        "type": "equirec",
+                        "offset_x": -180,
+                        "offset_y": 90,
+                        "scalar_x": 0.17578125,
+                        "scalar_y": -0.17578125
                     }
                 }
             },
@@ -2306,7 +2370,11 @@
                             "height": 1024,
                             "draw_map_overlay": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.17578125,
+                                "scalar_y": -0.17578125
                             }
                         }
                     },
@@ -2318,7 +2386,11 @@
                             "height": 1024,
                             "draw_map_overlay": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.17578125,
+                                "scalar_y": -0.17578125
                             }
                         }
                     }
@@ -2409,7 +2481,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.087890625,
+                                "scalar_y": -0.087890625
                             }
                         }
                     }
@@ -2466,7 +2542,11 @@
                             "draw_map_overlay": true,
                             "individual_equalize": true,
                             "config": {
-                                "type": "equirectangular"
+                                "type": "equirec",
+                                "offset_x": -180,
+                                "offset_y": 90,
+                                "scalar_x": 0.17578125,
+                                "scalar_y": -0.17578125
                             }
                         }
                     }
