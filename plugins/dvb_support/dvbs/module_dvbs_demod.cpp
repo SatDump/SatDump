@@ -183,20 +183,20 @@ namespace dvb
 
                 dvb_interleaving.deinterleave(current_frame, deinterleaved_frame);
 
-                for (int i = 0; i < 8; i++)
-                    errors[i] = reed_solomon.decode(&deinterleaved_frame[204 * i]);
+                for (int ii = 0; ii < 8; ii++)
+                    errors[ii] = reed_solomon.decode(&deinterleaved_frame[204 * ii]);
 
                 scrambler.descramble(deinterleaved_frame);
 
-                for (int i = 0; i < 8; i++)
+                for (int ii = 0; ii < 8; ii++)
                 {
-                    if (errors[i] == -1)
-                        deinterleaved_frame[204 * i + 1] |= 0b10000000;
+                    if (errors[ii] == -1)
+                        deinterleaved_frame[204 * ii + 1] |= 0b10000000;
 
                     if (output_data_type == DATA_FILE)
-                        data_out.write((char *)&deinterleaved_frame[204 * i], 188);
+                        data_out.write((char *)&deinterleaved_frame[204 * ii], 188);
                     else
-                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * i], 188);
+                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * ii], 188);
                 }
             }
 
