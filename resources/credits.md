@@ -78,7 +78,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [Roboto](https://fonts.google.com/specimen/Roboto), for default font
 - [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
 - [Perfect DOS VGA 437](https://www.dafont.com/perfect-dos-vga-437.font), for Phosphor theme
-- [MS Sans Serif](https://fontstruct.com/fontstructions/show/1384746/ms-sans-serif), for Windows 98 theme
+- [PX Sans Nouveaux](https://www.dafont.com/px-sans-nouveaux.font), for Windows 98 theme
 *3270 Nerd Font and Roboto have been merged into a single font.ttf*
 
 # Developers
