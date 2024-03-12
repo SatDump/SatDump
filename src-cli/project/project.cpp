@@ -76,11 +76,11 @@ int main_project(int argc, char *argv[])
                         nlohmann::json final_metadata;
                         newlayer.img = satdump::make_composite_from_product(*products, composite_config, nullptr, &final_timestamps, &final_metadata);
                         nlohmann::json proj_cfg = products->get_proj_cfg();
+                        proj_cfg["metadata"] = final_metadata;
                         if (products->has_tle())
                             proj_cfg["metadata"]["tle"] = products->get_tle();
                         if (products->has_timestamps)
-                            proj_cfg["timestamps"] = final_timestamps;
-                        proj_cfg["metadata"] = final_metadata;
+                            proj_cfg["metadata"]["timestamps"] = final_timestamps;
                         image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
                     }
 
