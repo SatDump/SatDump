@@ -95,7 +95,9 @@ int main_project(int argc, char *argv[])
                 {
                     target_cfg = params;
                     projections_image_width = params["width"];
-                    projections_image_width = params["height"];
+                    projections_image_height = params["height"];
+                    if (target_cfg.contains("scalar_y"))
+                        target_cfg["scalar_y"] = -target_cfg["scalar_y"].get<double>();
                 }
                 else
                 {
