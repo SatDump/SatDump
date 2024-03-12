@@ -1,7 +1,7 @@
 {
   "light": true,
-  "font": "MSSansSerif",
-  "font_size": 12,
+  "font": "px_sans_nouveaux",
+  "font_size": 15,
   "ImGuiStyle": {
     "WindowRounding": 0.0,
     "ChildRounding": 0.0,
