@@ -32,7 +32,7 @@ namespace satdump
             {
                 rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
             }
         }
@@ -115,7 +115,7 @@ namespace satdump
                 {
                     rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
                 }
-                catch (std::exception &e)
+                catch (std::exception &)
                 {
                 }
             }
@@ -129,9 +129,17 @@ namespace satdump
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Schedule and Config"))
+        float width_available = ImGui::GetContentRegionAvail().x;
+        std::string is_engaged = auto_scheduler.getEngaged() ? "YES" : "NO";
+        float centered_pos = width_available / 2.0f - ImGui::CalcTextSize(std::string("Autotrack Engaged: " + is_engaged).c_str()).x / 2.0f;
+        if(centered_pos > 0)
+            ImGui::SetCursorPosX(centered_pos);
+        ImGui::TextUnformatted("Autotrack Engaged:");
+        ImGui::SameLine();
+        ImGui::TextColored(auto_scheduler.getEngaged() ? style::theme.green : style::theme.red, "%s", is_engaged.c_str());
+        if (ImGui::Button("Schedule and Config", ImVec2(width_available, 0.0f)))
             config_window_was_asked = show_window_config = true;
-
+        ImGui::Spacing();
         renderConfig();
     }
 

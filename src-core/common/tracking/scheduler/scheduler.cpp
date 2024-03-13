@@ -220,6 +220,11 @@ namespace satdump
         upcoming_satellite_passes_mtx.unlock();
     }
 
+    bool AutoTrackScheduler::getEngaged()
+    {
+        return autotrack_engaged;
+    }
+
     std::vector<TrackedObject> AutoTrackScheduler::getTracked()
     {
         return enabled_satellites;

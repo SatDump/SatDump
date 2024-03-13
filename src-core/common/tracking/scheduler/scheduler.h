@@ -128,6 +128,8 @@ namespace satdump
         void backend_run();
 
         std::string availablesatssearch, selectedsatssearch;
+        int hovered_sat = -1;
+        bool sat_was_hovered = false;
 
         std::map<int, SatellitePass> vfo_mode_norads_vis;
 
@@ -158,6 +160,7 @@ namespace satdump
         void start();
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setEngaged(bool v, double curr_time);
+        bool getEngaged();
 
         std::vector<TrackedObject> getTracked();
         void setTracked(std::vector<TrackedObject> tracked);

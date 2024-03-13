@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/style.h"
 #include "common/utils.h"
@@ -222,6 +223,9 @@ namespace satdump
 
         if (ImGui::BeginTable("##trackingwidgettrackeobjectsconfig", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit))
         {
+            int sat_row = 0, new_hovered = -1;
+            bool is_hovered = false;
+            ImVec2 min_el_size(ImGui::CalcTextSize("Min El.").x + ImGui::GetStyle().ItemInnerSpacing.x + (60.0f * ui_scale), 0.0f);
             for (auto &cpass : enabled_satellites)
             {
                 int dl_pos = 0;
@@ -251,17 +255,22 @@ namespace satdump
                         }
                     }
 
-                    if (ImGui::IsMouseHoveringRect({ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y - 50 * ui_scale},
-                                                   {ImGui::GetCursorScreenPos().x + ImGui::GetColumnWidth(), ImGui::GetCursorScreenPos().y + 50 * ui_scale}) ||
-                        cpass.min_elevation > 0)
+                    if (&downlink == &cpass.downlinks[0] && (sat_row == hovered_sat || cpass.min_elevation > 0))
                     {
                         ImGui::SetNextItemWidth(60 * ui_scale);
                         ImGui::InputFloat(((std::string) "Min El.##objdelminelevation" + idpart).c_str(), &cpass.min_elevation);
+                        if (ImGui::IsItemActive())
+                        {
+                            is_hovered = true;
+                            new_hovered = sat_row;
+                        }
                         if (cpass.min_elevation < 0)
                             cpass.min_elevation = 0;
                         if (cpass.min_elevation > 90)
                             cpass.min_elevation = 90;
                     }
+                    else
+                        ImGui::Dummy(min_el_size);
 
                     ImGui::TableSetColumnIndex(1);
                     widgets::FrequencyInput(((std::string) "Hz##objcfgfreq1" + idpart).c_str(), &downlink.frequency, 0.75f, false);
@@ -290,9 +299,22 @@ namespace satdump
                     }
                     ImGui::PopID();
                     // ImGui::InputText(((std::string) "Pipeline##objcfgfreq4" + std::to_string(cpass.norad)).c_str(), &cpass.pipeline_name);
+
+                    ImRect namecell_rect = ImGui::TableGetCellBgRect(ImGui::GetCurrentContext()->CurrentTable, 0);
+                    if (!is_hovered && !autotrack_engaged && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) &&
+                        ImGui::IsMouseHoveringRect(namecell_rect.Min, namecell_rect.Max, false))
+                    {
+                        is_hovered = true;
+                        new_hovered = sat_row;
+                    }
                     dl_pos++;
+                    sat_row++;
                 }
             }
+            if (!sat_was_hovered || is_hovered)
+                hovered_sat = new_hovered;
+            sat_was_hovered = is_hovered;
+
             ImGui::EndTable();
         }
 
