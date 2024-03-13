@@ -12,6 +12,8 @@
 #include "nlohmann/json_utils.h"
 #include "common/overlay_handler.h"
 
+#include "common/projection/reprojector_backend_utils.h"
+
 namespace satdump
 {
     class ViewerHandler
@@ -97,30 +99,6 @@ namespace satdump
         int projection_osm_zoom = 3;
         bool is_opening_layer = false;
 
-        struct ProjectionLayer
-        {
-            std::string name;
-            image::Image<uint16_t> img;
-            float opacity = 100;
-            bool enabled = true;
-            float progress = 0;
-            bool old_algo = false;
-
-            unsigned int preview_texid = 0;
-            unsigned int getPreview()
-            {
-                if (preview_texid == 0)
-                {
-                    preview_texid = makeImageTexture();
-                    auto img8 = img.resize_to(100, 100).to8bits();
-                    uint32_t *tmp_rgba = new uint32_t[img8.width() * img8.height()];
-                    uchar_to_rgba(img8.data(), tmp_rgba, img8.width() * img8.height(), img8.channels());
-                    updateImageTexture(preview_texid, tmp_rgba, img8.width(), img8.height());
-                    delete[] tmp_rgba;
-                }
-                return preview_texid;
-            }
-        };
         std::vector<ProjectionLayer> projection_layers;
 
         int selected_external_type = 0;

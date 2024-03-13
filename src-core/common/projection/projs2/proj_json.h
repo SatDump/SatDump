@@ -56,8 +56,10 @@ namespace proj
             j["lat0"] = p.phi0 * RAD2DEG;
     }
 
-    inline void from_json(const nlohmann::json &j, projection_t &p)
+    inline void from_json(const nlohmann::json &j_in, projection_t &p)
     {
+        nlohmann::json j = j_in;
+
         if (j["type"].get<std::string>() == "equirec")
             p.type = ProjType_Equirectangular;
         else if (j["type"].get<std::string>() == "stereo")
@@ -72,6 +74,56 @@ namespace proj
             p.type = ProjType_WebMerc;
         // else if (j["type"].get<std::string>() == "lamcc")
         //     p.type = ProjType_LambertConformalConic;
+
+        ////////////////////////////////////////////////////////////////////
+
+        if (p.type == ProjType_Stereographic &&
+            j.contains("center_lon") && j.contains("center_lat") && j.contains("scale") &&
+            j.contains("width") && j.contains("height"))
+        {
+            double projections_image_width = j["width"];
+            double projections_image_height = j["height"];
+            double projections_stereo_center_lon = j["center_lon"];
+            double projections_stereo_center_lat = j["center_lat"];
+            double projections_stereo_scale = j["scale"];
+            j["lon0"] = projections_stereo_center_lon;
+            j["lat0"] = projections_stereo_center_lat;
+            j["scalar_x"] = projections_stereo_scale;
+            j["scalar_y"] = -projections_stereo_scale;
+            j["offset_x"] = -projections_image_width * 0.5 * projections_stereo_scale;
+            j["offset_y"] = projections_image_height * 0.5 * projections_stereo_scale;
+        }
+        else if (p.type == ProjType_Tpers &&
+                 j.contains("center_lon") && j.contains("center_lat") && j.contains("scale") &&
+                 j.contains("width") && j.contains("height"))
+        {
+            double projections_image_width = j["width"];
+            double projections_image_height = j["height"];
+            double projections_tpers_center_lon = j["center_lon"];
+            double projections_tpers_center_lat = j["center_lat"];
+            double projections_tpers_scale = j["scale"];
+            j["lon0"] = projections_tpers_center_lon;
+            j["lat0"] = projections_tpers_center_lat;
+            j["scalar_x"] = projections_tpers_scale;
+            j["scalar_y"] = -projections_tpers_scale;
+            j["offset_x"] = -projections_image_width * 0.5 * projections_tpers_scale;
+            j["offset_y"] = projections_image_height * 0.5 * projections_tpers_scale;
+        }
+        else if (p.type == ProjType_UniversalTransverseMercator &&
+                 j.contains("scale") &&
+                 j.contains("width") && j.contains("height"))
+        {
+            double projections_image_width = j["width"];
+            double projections_image_height = j["height"];
+            double projections_utm_scale = j["scale"];
+            double projections_utm_offset_y = j.contains("offset_y") ? j["offset_y"].get<double>() : 0.0;
+            j["scalar_x"] = projections_utm_scale;
+            j["scalar_y"] = -projections_utm_scale;
+            j["offset_x"] = -projections_image_width * 0.5 * projections_utm_scale;
+            j["offset_y"] = projections_image_height * 0.5 * projections_utm_scale + projections_utm_offset_y;
+        }
+
+        ////////////////////////////////////////////////////////////////////
 
         if (p.type == ProjType_UniversalTransverseMercator)
         {
@@ -98,6 +150,8 @@ namespace proj
             if (j.contains("azimuth"))
                 p.params.azimuth = j["azimuth"];
         }
+
+        ////////////////////////////////////////////////////////////////////
 
         if (j.contains("offset_x"))
             p.proj_offset_x = j["offset_x"];

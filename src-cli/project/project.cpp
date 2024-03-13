@@ -10,16 +10,9 @@
 #include "common/projection/reprojector.h"
 #include "resources.h"
 #include "common/image/image_utils.h"
+#include "common/overlay_handler.h"
 
-struct ProjectionLayer
-{
-    std::string name;
-    image::Image<uint16_t> img;
-    float opacity = 100;
-    bool enabled = true;
-    float progress = 0;
-    bool old_algo = false;
-};
+#include "common/projection/reprojector_backend_utils.h"
 
 int main_project(int argc, char *argv[])
 {
@@ -31,7 +24,7 @@ int main_project(int argc, char *argv[])
 
     logger->info("Starting projection tool...");
 
-    std::vector<ProjectionLayer> projection_layers;
+    std::vector<satdump::ProjectionLayer> projection_layers;
     nlohmann::json target_cfg;
     int projections_image_width = 0, projections_image_height = 0;
 
@@ -58,13 +51,15 @@ int main_project(int argc, char *argv[])
                         break;
                 }
 
+                //    for (int xi = 0; xi < end; xi++)
+                //        logger->trace((argv + i + 1)[xi]);
                 //  logger->error(end - i);
                 auto params = parse_common_flags(end - i, argv + i + 1);
-                //     logger->trace("\n" + params.dump(4));
+                //    logger->trace("\n" + params.dump(4));
 
                 if (flag == "layer")
                 {
-                    ProjectionLayer newlayer;
+                    satdump::ProjectionLayer newlayer;
                     if (params["type"] == "product")
                     {
                         logger->info("Loading product...");
@@ -94,8 +89,11 @@ int main_project(int argc, char *argv[])
                 else if (flag == "target")
                 {
                     target_cfg = params;
-                    projections_image_width = params["width"];
-                    projections_image_height = params["height"];
+                    if (params.contains("width"))
+                        projections_image_width = params["width"];
+                    if (params.contains("height"))
+                        projections_image_height = params["height"];
+
                     if (target_cfg.contains("scalar_y"))
                         target_cfg["scalar_y"] = -target_cfg["scalar_y"].get<double>();
                 }
@@ -110,39 +108,16 @@ int main_project(int argc, char *argv[])
 
     ////////////////////////////////////////////////////////////////////
 
+    bool projection_auto_mode = target_cfg.contains("auto_mode") ? target_cfg["auto_mode"].get<bool>() : false;
+    bool projection_auto_scale_mode = target_cfg.contains("auto_scale_mode") ? target_cfg["auto_scale_mode"].get<bool>() : false;
+
+    satdump::applyAutomaticProjectionSettings(projection_layers, projection_auto_mode, projection_auto_scale_mode, projections_image_width, projections_image_height, target_cfg);
+
+    ////////////////////////////////////////////////////////////////////
+
     // Generate all layers
-    std::vector<image::Image<uint16_t>> layers_images;
-
-    for (int i = projection_layers.size() - 1; i >= 0; i--)
-    {
-        ProjectionLayer &layer = projection_layers[i];
-        if (!layer.enabled)
-            continue;
-        //     if (progress_pointer == nullptr)
-        //         progress_pointer = &layer.progress;
-
-        int width = projections_image_width;
-        int height = projections_image_height;
-
-        satdump::reprojection::ReprojectionOperation op;
-
-        if (!image::has_metadata_proj_cfg(layer.img)) // Just in case...
-            continue;
-        if (!image::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
-            continue;
-
-        op.target_prj_info = target_cfg;
-        op.img = layer.img;
-        op.output_width = width;
-        op.output_height = height;
-
-        op.use_old_algorithm = layer.old_algo;
-
-        image::Image<uint16_t> res = satdump::reprojection::reproject(op); //, progress_pointer);
-        layers_images.push_back(res);
-
-        // general_progress++;
-    }
+    std::vector<image::Image<uint16_t>> layers_images =
+        satdump::generateAllProjectionLayers(projection_layers, projections_image_width, projections_image_height, target_cfg);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -152,13 +127,13 @@ int main_project(int argc, char *argv[])
     projected_image_result.init_font(resources::getResourcePath("fonts/font.ttf"));
 
     logger->info("Combining images...");
-    if (false) // Blend
+    if (target_cfg.contains("blend_mode") ? target_cfg["blend_mode"].get<bool>() : false) // Blend
     {
         projected_image_result = layers_images[0];
         for (int i = 1; i < (int)layers_images.size(); i++)
             projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
     }
-    else if (true)
+    else
     {
         projected_image_result = layers_images[0];
         for (int i = 1; i < (int)layers_images.size(); i++)
@@ -168,11 +143,16 @@ int main_project(int argc, char *argv[])
                                                                  projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
         }
     }
-    else
+
+    ////////////////////////////////////////////////////////////////////
+
+    OverlayHandler projection_overlay_handler;
+    projection_overlay_handler.set_config(target_cfg);
+    if (projection_overlay_handler.enabled())
     {
-        // This sucks but temporary
-        for (auto &img : layers_images)
-            projected_image_result.draw_image(0, img);
+        auto proj_func = satdump::reprojection::setupProjectionFunction(projections_image_width, projections_image_height, target_cfg, {});
+        projection_overlay_handler.clear_cache();
+        projection_overlay_handler.apply(projected_image_result, proj_func, nullptr);
     }
 
     ////////////////////////////////////////////////////////////////////

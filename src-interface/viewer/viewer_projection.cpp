@@ -449,35 +449,30 @@ namespace satdump
         else if (projections_current_selected_proj == 1)
         {
             cfg["type"] = "utm";
-            cfg["scalar_x"] = projections_utm_scale;
-            cfg["scalar_y"] = -projections_utm_scale;
-            cfg["offset_x"] = -projections_image_width * 0.5 * projections_utm_scale;
-            cfg["offset_y"] = projections_image_height * 0.5 * projections_utm_scale + projections_utm_offset_y;
+            cfg["scale"] = projections_utm_scale;
             cfg["zone"] = projections_utm_zone;
             cfg["south"] = projections_utm_south;
         }
         else if (projections_current_selected_proj == 2)
         {
             cfg["type"] = "stereo";
-            cfg["lon0"] = projections_stereo_center_lon;
-            cfg["lat0"] = projections_stereo_center_lat;
-            cfg["scalar_x"] = projections_stereo_scale;
-            cfg["scalar_y"] = -projections_stereo_scale;
-            cfg["offset_x"] = -projections_image_width * 0.5 * projections_stereo_scale;
-            cfg["offset_y"] = projections_image_height * 0.5 * projections_stereo_scale;
+            cfg["center_lon"] = projections_stereo_center_lon;
+            cfg["center_lat"] = projections_stereo_center_lat;
+            cfg["scale"] = projections_stereo_scale;
+            cfg["width"] = projections_image_width;
+            cfg["height"] = projections_image_height;
         }
         else if (projections_current_selected_proj == 3)
         {
             cfg["type"] = "tpers";
-            cfg["lon0"] = projections_tpers_lon;
-            cfg["lat0"] = projections_tpers_lat;
+            cfg["center_lon"] = projections_tpers_lon;
+            cfg["center_lat"] = projections_tpers_lat;
             cfg["altitude"] = projections_tpers_alt;
             cfg["tilt"] = projections_tpers_ang;
             cfg["azimuth"] = projections_tpers_azi;
-            cfg["scalar_x"] = projections_tpers_scale;
-            cfg["scalar_y"] = -projections_tpers_scale;
-            cfg["offset_x"] = -projections_image_width * 0.5 * projections_tpers_scale;
-            cfg["offset_y"] = projections_image_height * 0.5 * projections_tpers_scale;
+            cfg["scale"] = projections_tpers_scale;
+            cfg["width"] = projections_image_width;
+            cfg["height"] = projections_image_height;
         }
         /*else if (projections_current_selected_proj == 4)
         {
@@ -487,52 +482,18 @@ namespace satdump
         }*/
 
         // Automatic projection settings!
-        if (projection_auto_mode && (projections_current_selected_proj == 0 || projections_current_selected_proj == 2))
+        if (projection_auto_scale_mode)
         {
-            reprojection::ProjBounds bounds;
-            bounds.min_lon = 180;
-            bounds.max_lon = -180;
-            bounds.min_lat = 90;
-            bounds.max_lat = -90;
-            for (auto &layer : projection_layers)
-            {
-                if (!layer.enabled)
-                    continue;
-                auto boundshere = reprojection::determineProjectionBounds(layer.img);
-                if (boundshere.valid)
-                {
-                    if (boundshere.min_lon < bounds.min_lon)
-                        bounds.min_lon = boundshere.min_lon;
-                    if (boundshere.max_lon > bounds.max_lon)
-                        bounds.max_lon = boundshere.max_lon;
-                    if (boundshere.min_lat < bounds.min_lat)
-                        bounds.min_lat = boundshere.min_lat;
-                    if (boundshere.max_lat > bounds.max_lat)
-                        bounds.max_lat = boundshere.max_lat;
-                }
-            }
-
-            logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
-
-            if (projection_auto_scale_mode)
-            {
-                cfg["scale_x"] = projection_autoscale_x;
-                cfg["scale_y"] = projection_autoscale_y;
-            }
-            else
-            {
-                cfg["width"] = projections_image_width;
-                cfg["height"] = projections_image_height;
-            }
-
-            reprojection::tryAutoTuneProjection(bounds, cfg);
-            if (cfg.contains("width"))
-                projections_image_width = cfg["width"];
-            if (cfg.contains("height"))
-                projections_image_height = cfg["height"];
-
-            logger->debug("\n%s", cfg.dump(4).c_str());
+            cfg["scale_x"] = projection_autoscale_x;
+            cfg["scale_y"] = projection_autoscale_y;
         }
+        else
+        {
+            cfg["width"] = projections_image_width;
+            cfg["height"] = projections_image_height;
+        }
+
+        satdump::applyAutomaticProjectionSettings(projection_layers, projection_auto_mode, projection_auto_scale_mode, projections_image_width, projections_image_height, cfg);
 
         // Setup final image
         projected_image_result.init(projections_image_width, projections_image_height, 3);
@@ -548,38 +509,8 @@ namespace satdump
         general_sum += projection_overlay_handler.enabled();
 
         // Generate all layers
-        std::vector<image::Image<uint16_t>> layers_images;
-
-        for (int i = projection_layers.size() - 1; i >= 0; i--)
-        {
-            ProjectionLayer &layer = projection_layers[i];
-            if (!layer.enabled)
-                continue;
-            if (progress_pointer == nullptr)
-                progress_pointer = &layer.progress;
-
-            int width = projections_image_width;
-            int height = projections_image_height;
-
-            reprojection::ReprojectionOperation op;
-
-            if (!image::has_metadata_proj_cfg(layer.img)) // Just in case...
-                continue;
-            if (!image::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
-                continue;
-
-            op.target_prj_info = cfg;
-            op.img = layer.img;
-            op.output_width = width;
-            op.output_height = height;
-
-            op.use_old_algorithm = layer.old_algo;
-
-            image::Image<uint16_t> res = reprojection::reproject(op, progress_pointer);
-            layers_images.push_back(res);
-
-            general_progress++;
-        }
+        std::vector<image::Image<uint16_t>> layers_images =
+            generateAllProjectionLayers(projection_layers, projections_image_width, projections_image_height, cfg, &general_progress);
 
         logger->info("Combining images...");
         if (projections_mode_radio == 0) // Blend
@@ -597,12 +528,6 @@ namespace satdump
                                                                      layers_images[i],
                                                                      projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
             }
-        }
-        else
-        {
-            // This sucks but temporary
-            for (auto &img : layers_images)
-                projected_image_result.draw_image(0, img);
         }
 
         // Free up memory

@@ -40,6 +40,11 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
 
                     try // Attempt to parse it as a number
                     {
+                        for (char &c : std::string(argv[i + 1]))
+                            if (c < '0' || '9' < c)
+                                if (c != '.' && c != 'e')
+                                    throw std::runtime_error("");
+
                         int points_cnt = 0;
                         for (char &c : std::string(argv[i + 1]))
                             if (c == '.')
@@ -55,7 +60,7 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
                         else // Otherwse, cast to an integer
                             parameters[flag] = (long long)integral;
                     }
-                    catch (std::exception&) // If it fails, parse to a string
+                    catch (std::exception &) // If it fails, parse to a string
                     {
                         parameters[flag] = value;
                     }
