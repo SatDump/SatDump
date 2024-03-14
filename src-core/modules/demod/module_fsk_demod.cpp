@@ -18,7 +18,7 @@ namespace demod
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else if (!d_basic_shaping)
-            throw std::runtime_error("RRC Alpha parameter must be present!");
+            throw satdump_exception("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
             d_rrc_taps = parameters["rrc_taps"].get<int>();

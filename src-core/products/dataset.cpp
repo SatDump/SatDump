@@ -1,6 +1,7 @@
 #include "dataset.h"
 #include "nlohmann/json_utils.h"
 #include "common/utils.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -22,7 +23,7 @@ namespace satdump
         {
             std::string res;
             if (perform_http_request(path, res))
-                throw std::runtime_error("Could not download from : " + path);
+                throw satdump_exception("Could not download from : " + path);
             json_ojb = nlohmann::json::parse(res);
         }
         else

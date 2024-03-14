@@ -94,7 +94,7 @@ void BladeRFSource::open()
             {
                 selected_dev_id = i;
                 if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-                    throw std::runtime_error("Could not open BladeRF device!");
+                    throw satdump_exception("Could not open BladeRF device!");
             }
         }
     }
@@ -139,7 +139,7 @@ void BladeRFSource::start()
     DSPSampleSource::start();
 
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-        throw std::runtime_error("Could not open BladeRF device!");
+        throw satdump_exception("Could not open BladeRF device!");
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
@@ -296,7 +296,7 @@ void BladeRFSource::drawControlUI()
 void BladeRFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 61.44e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t BladeRFSource::get_samplerate()

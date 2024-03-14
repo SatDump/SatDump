@@ -3,6 +3,7 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
+#include "core/exception.h"
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
 
@@ -85,7 +86,7 @@ namespace image
             else if (signature == "P6")
                 channels = 3;
             else
-                throw std::runtime_error("Invalid Magic Number " + signature);
+                throw satdump_exception("Invalid Magic Number " + signature);
 
             init(width, height, channels);
             filei.seekg(1, std::ios_base::cur);

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include "nlohmann/json.hpp"
+#include "core/exception.h"
 
 namespace inmarsat
 {
@@ -113,7 +114,7 @@ namespace inmarsat
 
                     // Check length is valid
                     if (descriptor.length > len_max)
-                        throw std::runtime_error("Invalid PKT length!");
+                        throw satdump_exception("Invalid PKT length!");
 
                     // Check CRC
                     uint16_t sent_crc = (pkt[descriptor.length - 2] << 8) | pkt[descriptor.length - 1];
@@ -121,7 +122,7 @@ namespace inmarsat
                     bool crc_valid = sent_crc == 0 || sent_crc == comp_crc;
 
                     if (!crc_valid)
-                        throw std::runtime_error("Invalid CRC!");
+                        throw satdump_exception("Invalid CRC!");
                 }
 
                 // NLOHMANN_DEFINE_TYPE_INTRUSIVE(PacketBase, descriptor)

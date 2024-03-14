@@ -15,7 +15,7 @@ namespace dvb
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else
-            throw std::runtime_error("RRC Alpha parameter must be present!");
+            throw satdump_exception("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
             d_rrc_taps = parameters["rrc_taps"].get<int>();
@@ -23,7 +23,7 @@ namespace dvb
         if (parameters.count("pll_bw") > 0)
             d_loop_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL BW parameter must be present!");
+            throw satdump_exception("PLL BW parameter must be present!");
 
         if (parameters.count("freq_prop_factor") > 0)
             freq_propagation_factor = parameters["freq_prop_factor"].get<float>();
@@ -50,7 +50,7 @@ namespace dvb
         if (parameters.count("modcod") > 0)
             d_modcod = parameters["modcod"].get<int>();
         else
-            throw std::runtime_error("MODCOD parameter must be present!");
+            throw satdump_exception("MODCOD parameter must be present!");
 
         if (parameters.count("shortframes") > 0)
             d_shortframes = parameters["shortframes"].get<bool>();

@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "core/config.h"
 #include <fstream>
+#include "core/exception.h"
 
 #ifdef USE_OPENCL
 namespace satdump
@@ -44,7 +45,7 @@ namespace satdump
         void initOpenCL()
         {
 #ifdef __ANDROID__
-            if(OpenCLHelper::Loader::Init())
+            if (OpenCLHelper::Loader::Init())
             {
                 logger->debug("Failed to init OpenCL!");
                 platform_id = device_id = -1;
@@ -65,8 +66,8 @@ namespace satdump
                 return;
             }
 
-            if(platform_id == -1)
-                throw std::runtime_error("User specified CPU processing");
+            if (platform_id == -1)
+                throw satdump_exception("User specified CPU processing");
 
             cl_platform_id platforms_ids[100];
             cl_uint platforms_cnt = 0;
@@ -79,10 +80,10 @@ namespace satdump
             logger->trace("First OpenCL context request. Initializing...");
 
             if (clGetPlatformIDs(100, platforms_ids, &platforms_cnt) != CL_SUCCESS)
-                throw std::runtime_error("Could not get OpenCL platform IDs!");
+                throw satdump_exception("Could not get OpenCL platform IDs!");
 
             if (platforms_cnt == 0)
-                throw std::runtime_error("No platforms found. Check OpenCL installation!");
+                throw satdump_exception("No platforms found. Check OpenCL installation!");
 
             cl_platform_id platform = platforms_ids[platform_id];
             if (clGetPlatformInfo(platform, CL_PLATFORM_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
@@ -91,10 +92,10 @@ namespace satdump
                 logger->error("Could not get platform name!");
 
             if (clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 100, devices_ids, &devices_cnt) != CL_SUCCESS)
-                throw std::runtime_error("Could not get OpenCL devices IDs!");
+                throw satdump_exception("Could not get OpenCL devices IDs!");
 
             if (devices_cnt == 0)
-                throw std::runtime_error("No devices found. Check OpenCL installation!");
+                throw satdump_exception("No devices found. Check OpenCL installation!");
 
             ocl_device = devices_ids[device_id];
             if (clGetDeviceInfo(ocl_device, CL_DEVICE_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
@@ -102,7 +103,7 @@ namespace satdump
 
             ocl_context = clCreateContext(NULL, 1, &ocl_device, NULL, NULL, &err);
             if (err != CL_SUCCESS)
-                throw std::runtime_error("Could not init OpenCL context!");
+                throw satdump_exception("Could not init OpenCL context!");
 
             context_is_init = true;
         }
@@ -112,10 +113,10 @@ namespace satdump
             if (context_is_init)
             {
                 context_is_init = false;
-                for (auto& kernel : cached_kernels)
+                for (auto &kernel : cached_kernels)
                 {
                     int ret = clReleaseProgram(kernel.second);
-                    if(ret != CL_SUCCESS)
+                    if (ret != CL_SUCCESS)
                         logger->error("Could not release CL program! Code %d", ret);
                 }
 
@@ -161,9 +162,9 @@ namespace satdump
             if (err != CL_SUCCESS)
             {
                 if (clGetProgramBuildInfo(prg, ocl_device, CL_PROGRAM_BUILD_LOG, 100000, error_msg, &error_len) == CL_SUCCESS)
-                    throw std::runtime_error("Error building: " + std::string(&error_msg[0], &error_msg[error_len]));
+                    throw satdump_exception((std::string) "Error building: " + std::string(&error_msg[0], &error_msg[error_len]));
                 else
-                    throw std::runtime_error("Error building, and could not read error log!");
+                    throw satdump_exception("Error building, and could not read error log!");
             }
 
             if (use_cache)                              // If cache enabled...

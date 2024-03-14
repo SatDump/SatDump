@@ -1,6 +1,7 @@
 #include "acars_parser.h"
 #include "logger.h"
 #include <algorithm>
+#include "core/exception.h"
 
 namespace inmarsat
 {
@@ -43,7 +44,7 @@ namespace inmarsat
                 for (int k = 4; k < 11; k++)
                 {
                     if (!char_parity[k])
-                        throw std::runtime_error("Acars Text Parity Error");
+                        throw satdump_exception("Acars Text Parity Error");
                     plane_reg += pkt[k] & 0x7F;
                 }
 
@@ -54,7 +55,7 @@ namespace inmarsat
                     for (int k = 16; k < (int)pkt.size() - 4; k++)
                     {
                         if (!char_parity[k])
-                            throw std::runtime_error("Acars Text Parity Error");
+                            throw satdump_exception("Acars Text Parity Error");
                         char ch = pkt[k] & 0x7F;
                         if (ch == 0x7F)
                             message += "<DEL>";

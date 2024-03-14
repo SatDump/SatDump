@@ -10,6 +10,7 @@
 #include "processor/radiation_processor.h"
 #include "processor/scatterometer_processor.h"
 #include "common/utils.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -37,7 +38,7 @@ namespace satdump
         {
             std::string res;
             if (perform_http_request(file, res))
-                throw std::runtime_error("Could not download from : " + file);
+                throw satdump_exception("Could not download from : " + file);
             for (auto &v : res)
                 cbor_data.push_back(*((uint8_t *)&v));
         }

@@ -29,7 +29,7 @@ void USRPSource::open_sdr()
 void USRPSource::open_channel()
 {
     if (channel >= (int)usrp_device->get_rx_num_channels())
-        throw std::runtime_error("Channel " + std::to_string(channel) + " is invalid!");
+        throw satdump_exception("Channel " + std::to_string(channel) + " is invalid!");
 
     logger->info("Using USRP channel %d", channel);
 
@@ -148,7 +148,7 @@ void USRPSource::start()
     usrp_device->set_rx_bandwidth(current_samplerate, channel);
 
     if (antenna >= (int)usrp_device->get_rx_antennas(channel).size())
-        throw std::runtime_error("Antenna " + std::to_string(antenna) + " is invalid!");
+        throw satdump_exception("Antenna " + std::to_string(antenna) + " is invalid!");
 
     usrp_device->set_rx_antenna(usrp_antennas[antenna], channel);
 
@@ -244,7 +244,7 @@ void USRPSource::drawControlUI()
 void USRPSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 0))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t USRPSource::get_samplerate()

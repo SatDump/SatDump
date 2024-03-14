@@ -27,18 +27,18 @@ namespace bochum
 #if defined(_WIN32)
         WSADATA wsa;
         if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-            throw std::runtime_error("Couldn't startup WSA socket!");
+            throw satdump_exception("Couldn't startup WSA socket!");
 #endif
 
         struct sockaddr_in recv_addr;
         int fd = -1;
 
         if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-            throw std::runtime_error("Error creating socket!");
+            throw satdump_exception("Error creating socket!");
 
         int val_true = 1;
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
-            throw std::runtime_error("Error setting socket option!");
+            throw satdump_exception("Error setting socket option!");
 
         memset(&recv_addr, 0, sizeof(recv_addr));
         recv_addr.sin_family = AF_INET;
@@ -46,7 +46,7 @@ namespace bochum
         recv_addr.sin_addr.s_addr = INADDR_ANY;
 
         if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
-            throw std::runtime_error("Error binding socket!");
+            throw satdump_exception("Error binding socket!");
 
         uint8_t buffer_rx[65536];
 
@@ -56,7 +56,7 @@ namespace bochum
             socklen_t response_addr_len = sizeof(response_addr);
             int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
             if (nrecv < 0)
-                throw std::runtime_error("Error on recvfrom!");
+                throw satdump_exception("Error on recvfrom!");
 
             try
             {

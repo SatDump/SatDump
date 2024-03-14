@@ -46,13 +46,13 @@ void AirspyHFSource::open_sdr()
 {
 #ifndef __ANDROID__
     if (airspyhf_open_sn(&airspyhf_dev_obj, d_sdr_id) != AIRSPYHF_SUCCESS)
-        throw std::runtime_error("Could not open AirspyHF device!");
+        throw satdump_exception("Could not open AirspyHF device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path);
     if (airspyhf_open_fd(&airspyhf_dev_obj, fd) != AIRSPYHF_SUCCESS)
-        throw std::runtime_error("Could not open AirspyHF device!");
+        throw satdump_exception("Could not open AirspyHF device!");
 #endif
 }
 
@@ -173,7 +173,7 @@ void AirspyHFSource::drawControlUI()
 void AirspyHFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 3.2e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspyHFSource::get_samplerate()

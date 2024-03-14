@@ -28,7 +28,7 @@ namespace dsp
         for (std::pair<std::string, RegisteredSource> source : dsp_sources_registry)
             if (descriptor.source_type == source.first)
                 return source.second.getInstance(descriptor);
-        throw std::runtime_error("Could not find a handler for device " + descriptor.name);
+        throw satdump_exception("Could not find a handler for device " + descriptor.name);
     }
 
     void registerAllSources()

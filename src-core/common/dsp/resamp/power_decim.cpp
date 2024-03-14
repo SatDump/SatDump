@@ -14,9 +14,9 @@ namespace dsp
             int id = log2(d_decimation) - 1;
 
             if (id > (int)power_decim::plans_len)
-                throw std::runtime_error("Power Decimator Plan ID over 13!");
+                throw satdump_exception("Power Decimator Plan ID over 13!");
             if ((d_decimation & (d_decimation - 1)) != 0)
-                throw std::runtime_error("Power Decimator Plan decimation is NOT a power of 2!");
+                throw satdump_exception("Power Decimator Plan decimation is NOT a power of 2!");
 
             power_decim::plan plan = power_decim::plans[id];
 

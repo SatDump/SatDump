@@ -2,6 +2,7 @@
 #include "common/geodetic/euler_raytrace.h"
 #include "common/geodetic/vincentys_calculations.h"
 #include "nlohmann/json_utils.h"
+#include "core/exception.h"
 
 #include "common/projection/thinplatespline.h"
 #include "logger.h"
@@ -64,6 +65,6 @@ namespace satdump
         if (projs.size() > 0)
             return projs[0];
 
-        throw std::runtime_error("Invalid satellite projection!");
+        throw satdump_exception("Invalid satellite projection!");
     }
 }

@@ -1,6 +1,7 @@
 #include "warp_bkd.h"
 
 #include "logger.h"
+#include "core/exception.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/geodetic/vincentys_calculations.h"
 
@@ -274,7 +275,7 @@ namespace satdump
         WarpResult performSmartWarp(WarpOperation operation_t, float *progress)
         {
             if (operation_t.input_image.size() == 0)
-                throw std::runtime_error("Can't warp an empty image!");
+                throw satdump_exception("Can't warp an empty image!");
 
             WarpResult result; // Final output
 

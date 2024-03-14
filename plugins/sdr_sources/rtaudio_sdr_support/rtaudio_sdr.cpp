@@ -63,7 +63,7 @@ void RtAudioSource::start()
     DSPSampleSource::start();
 
     if (adc_dev.getDeviceCount() < 1)
-        throw std::runtime_error("No audio devices found!");
+        throw satdump_exception("No audio devices found!");
 
     adc_prm.deviceId = d_sdr_id;
     adc_prm.nChannels = channel_mode;
@@ -138,7 +138,7 @@ void RtAudioSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t RtAudioSource::get_samplerate()

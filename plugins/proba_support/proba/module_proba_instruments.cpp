@@ -9,6 +9,7 @@
 #include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "core/exception.h"
 
 namespace proba
 {
@@ -24,7 +25,7 @@ namespace proba
             else if (parameters["satellite"] == "probaV")
                 d_satellite = PROBA_V;
             else
-                throw std::runtime_error("Proba Instruments Decoder : Proba satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+                throw satdump_exception("Proba Instruments Decoder : Proba satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
         }
 
         void PROBAInstrumentsDecoderModule::process()

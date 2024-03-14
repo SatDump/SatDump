@@ -2,6 +2,7 @@
 #include "nlohmann/json_utils.h"
 #include "../sat_proj/sat_proj.h"
 // #include "logger.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -33,13 +34,13 @@ namespace satdump
             if (mtd.contains("tle"))
                 tle = mtd["tle"];
             else
-                throw std::runtime_error("Could not get TLE!");
+                throw satdump_exception("Could not get TLE!");
 
             nlohmann::ordered_json timestamps;
             if (mtd.contains("timestamps"))
                 timestamps = mtd["timestamps"];
             else
-                throw std::runtime_error("Could not get timestamps!");
+                throw satdump_exception("Could not get timestamps!");
 
             std::vector<satdump::projection::GCP> gcps;
 

@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <thread>
 #include "core/config.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -58,7 +59,7 @@ namespace satdump
             PipelineModule module2 = steps[2].modules[0];
 
             if (modules_registry.count(module1.module_name) <= 0 || modules_registry.count(module2.module_name) <= 0)
-                throw std::runtime_error("Module " + module1.module_name + " or " + module2.module_name + " is not registered. Cancelling pipeline.");
+                throw satdump_exception("Module " + module1.module_name + " or " + module2.module_name + " is not registered. Cancelling pipeline.");
 
             nlohmann::json params1 = prepareParameters(module1.parameters, parameters);
             nlohmann::json params2 = prepareParameters(module2.parameters, parameters);
@@ -149,7 +150,7 @@ namespace satdump
             {
                 // Check module exists!
                 if (modules_registry.count(modStep.module_name) <= 0)
-                    throw std::runtime_error("Module " + modStep.module_name + " is not registered. Cancelling pipeline.");
+                    throw satdump_exception("Module " + modStep.module_name + " is not registered. Cancelling pipeline.");
 
                 nlohmann::json final_parameters = prepareParameters(modStep.parameters, parameters);
 

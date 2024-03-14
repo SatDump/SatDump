@@ -116,7 +116,7 @@ namespace orbcomm
         if (input_data_type == DATA_FILE)
         {
             filesize = file_source->getFilesize();
-            throw std::runtime_error("The Orbcomm Auto STX Demodulator is live-only!");
+            throw satdump_exception("The Orbcomm Auto STX Demodulator is live-only!");
         }
         else
             filesize = 0;

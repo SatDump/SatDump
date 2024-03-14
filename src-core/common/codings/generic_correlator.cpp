@@ -86,27 +86,27 @@ CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<
 
         buffer_syncs = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(float) * syncword_length * syncwords.size(), NULL, &err);
         if (err != CL_SUCCESS)
-            throw std::runtime_error("Couldn't load buffer_map!");
+            throw satdump_exception("Couldn't load buffer_map!");
 
         buffer_input = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(float) * max_frm_size, NULL, &err);
         if (err != CL_SUCCESS)
-            throw std::runtime_error("Couldn't load buffer_map!");
+            throw satdump_exception("Couldn't load buffer_map!");
 
         buffer_corrs = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(float) * max_frm_size, NULL, &err);
         if (err != CL_SUCCESS)
-            throw std::runtime_error("Couldn't load buffer_map!");
+            throw satdump_exception("Couldn't load buffer_map!");
 
         buffer_matches = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(int) * max_frm_size, NULL, &err);
         if (err != CL_SUCCESS)
-            throw std::runtime_error("Couldn't load buffer_map!");
+            throw satdump_exception("Couldn't load buffer_map!");
 
         buffer_nsyncs = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
         if (err != CL_SUCCESS)
-            throw std::runtime_error("Couldn't load buffer_map!");
+            throw satdump_exception("Couldn't load buffer_map!");
 
         buffer_syncsize = clCreateBuffer(satdump::opencl::ocl_context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
         if (err != CL_SUCCESS)
-            throw std::runtime_error("Couldn't load buffer_map!");
+            throw satdump_exception("Couldn't load buffer_map!");
 
         cl_queue = clCreateCommandQueue(satdump::opencl::ocl_context, satdump::opencl::ocl_device, 0, &err);
 
@@ -187,7 +187,7 @@ int CorrelatorGeneric::correlate(int8_t *soft_input, phase_t &phase, bool &swap,
 
         size_t total_wg_size = length - syncword_length;
         if (clEnqueueNDRangeKernel(cl_queue, corr_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
-            throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
+            throw satdump_exception("Couldn't clEnqueueNDRangeKernel!");
 
         clEnqueueReadBuffer(cl_queue, buffer_corrs, true, 0, sizeof(float) * length, corro, 0, NULL, NULL);
         clEnqueueReadBuffer(cl_queue, buffer_matches, true, 0, sizeof(int) * length, matcho, 0, NULL, NULL);

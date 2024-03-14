@@ -12,7 +12,7 @@ void AutoTrackApp::start_device()
     {
         current_samplerate = source_ptr->get_samplerate();
         if (current_samplerate == 0)
-            throw std::runtime_error("Samplerate not set!");
+            throw satdump_exception("Samplerate not set!");
 
         source_ptr->start();
 

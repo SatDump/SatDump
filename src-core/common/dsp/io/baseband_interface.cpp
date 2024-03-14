@@ -1,4 +1,5 @@
 #include "baseband_interface.h"
+#include "core/exception.h"
 
 namespace dsp
 {
@@ -21,6 +22,6 @@ namespace dsp
         else if (type == "ziq2")
             return ZIQ2;
         else
-            throw std::runtime_error("Unknown baseband type " + type);
+            throw satdump_exception("Unknown baseband type " + type);
     }
 }

@@ -67,7 +67,7 @@ void BladeRFSink::open()
             {
                 selected_dev_id = i;
                 if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-                    throw std::runtime_error("Could not open BladeRF device!");
+                    throw satdump_exception("Could not open BladeRF device!");
             }
         }
     }
@@ -114,7 +114,7 @@ void BladeRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
     DSPSampleSink::start(stream);
 
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-        throw std::runtime_error("Could not open BladeRF device!");
+        throw satdump_exception("Could not open BladeRF device!");
 
 #ifdef BLADERF_HAS_WIDEBAND
     if (current_samplerate > 61.44e6)
@@ -242,7 +242,7 @@ void BladeRFSink::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t BladeRFSink::get_samplerate()

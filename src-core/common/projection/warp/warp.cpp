@@ -1,5 +1,6 @@
 #include "warp_bkd.h"
 #include "logger.h"
+#include "core/exception.h"
 #include <map>
 #include "common/utils.h"
 #include "resources.h"
@@ -240,10 +241,10 @@ namespace satdump
                 // Images
                 cl_mem buffer_map = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_map!");
+                    throw satdump_exception("Couldn't load buffer_map!");
                 cl_mem buffer_img = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_img!");
+                    throw satdump_exception("Couldn't load buffer_img!");
 
                 // TPS Stuff
                 cl_mem buffer_tps_npoints = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
@@ -303,7 +304,7 @@ namespace satdump
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
                 if (clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
+                    throw satdump_exception("Couldn't clEnqueueNDRangeKernel!");
 
                 // Read image result back from VRAM
                 clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
@@ -342,10 +343,10 @@ namespace satdump
                 // Images
                 cl_mem buffer_map = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_map!");
+                    throw satdump_exception("Couldn't load buffer_map!");
                 cl_mem buffer_img = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_img!");
+                    throw satdump_exception("Couldn't load buffer_img!");
 
                 // TPS Stuff
                 cl_mem buffer_tps_npoints = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points, NULL, &err);
@@ -411,7 +412,7 @@ namespace satdump
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
                 if (clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
+                    throw satdump_exception("Couldn't clEnqueueNDRangeKernel!");
 
                 // Read image result back from VRAM
                 clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);

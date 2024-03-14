@@ -15,6 +15,7 @@
 
 #include "common/calibration.h"
 #include "instruments/modis/calibrator/modis_calibrator.h"
+#include "core/exception.h"
 
 namespace eos
 {
@@ -31,7 +32,7 @@ namespace eos
             else if (parameters["satellite"] == "aura")
                 d_satellite = AURA;
             else
-                throw std::runtime_error("EOS Instruments Decoder : EOS satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+                throw satdump_exception("EOS Instruments Decoder : EOS satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
         }
 
         void EOSInstrumentsDecoderModule::process()

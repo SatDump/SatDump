@@ -135,13 +135,13 @@ void HackRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
     std::stringstream ss;
     ss << std::hex << d_sdr_id;
     if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
-        throw std::runtime_error("Could not open HackRF device!");
+        throw satdump_exception("Could not open HackRF device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
     if (hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
-        throw std::runtime_error("Could not open HackRF device!");
+        throw satdump_exception("Could not open HackRF device!");
 #endif
 
     // hackrf_reset(hackrf_dev_obj);
@@ -235,7 +235,7 @@ void HackRFSink::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t HackRFSink::get_samplerate()

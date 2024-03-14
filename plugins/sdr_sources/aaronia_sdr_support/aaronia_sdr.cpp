@@ -17,7 +17,7 @@ std::wstring get_spectran_samplerate_str(uint64_t rate)
     else if (rate == SPECTRAN_SAMPLERATE_245M)
         return L"245MHz";
     else
-        throw std::runtime_error("Invalid samplerate!");
+        throw satdump_exception("Invalid samplerate!");
 }
 
 std::wstring get_spectran_usbcomp_str(int mode)
@@ -29,7 +29,7 @@ std::wstring get_spectran_usbcomp_str(int mode)
     else if (mode == 2)
         return L"compressed";
     else
-        throw std::runtime_error("Invalid USB compression!");
+        throw satdump_exception("Invalid USB compression!");
 }
 
 std::wstring get_spectran_agc_str(int mode)
@@ -41,7 +41,7 @@ std::wstring get_spectran_agc_str(int mode)
     else if (mode == 2)
         return L"power";
     else
-        throw std::runtime_error("Invalid AGC mode!");
+        throw satdump_exception("Invalid AGC mode!");
 }
 
 void AaroniaSource::set_gains()
@@ -147,21 +147,21 @@ void AaroniaSource::start()
     AARTSAAPI_Open(&aaronia_handle);
 
     if (AARTSAAPI_RescanDevices(&aaronia_handle, 2000) != AARTSAAPI_OK)
-        throw std::runtime_error("Could not scan for Aaronia Devices!");
+        throw satdump_exception("Could not scan for Aaronia Devices!");
 
     // if (AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", 0, &aaronia_dinfo) != AARTSAAPI_OK)
     for (uint64_t i = 0; AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
         goto got_device;
-    throw std::runtime_error("Could not enum Aaronia Devices!");
+    throw satdump_exception("Could not enum Aaronia Devices!");
 got_device:
 
     if (AARTSAAPI_OpenDevice(&aaronia_handle, &aaronia_device, L"spectranv6/raw", aaronia_dinfo.serialNumber) != AARTSAAPI_OK)
-        throw std::runtime_error("Could not open Aaronia Device!");
+        throw satdump_exception("Could not open Aaronia Device!");
 
     is_started = true;
 
     if (AARTSAAPI_ConfigRoot(&aaronia_device, &root) != AARTSAAPI_OK)
-        throw std::runtime_error("Could not get Aaronia ConfigRoot!");
+        throw satdump_exception("Could not get Aaronia ConfigRoot!");
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverchannel") == AARTSAAPI_OK)
     {
@@ -227,10 +227,10 @@ got_device:
     set_gains();
 
     if (AARTSAAPI_ConnectDevice(&aaronia_device) != AARTSAAPI_OK)
-        throw std::runtime_error("Could not connect to Aaronia device!");
+        throw satdump_exception("Could not connect to Aaronia device!");
 
     if (AARTSAAPI_StartDevice(&aaronia_device) != AARTSAAPI_OK)
-        throw std::runtime_error("Could not start Aaronia device!");
+        throw satdump_exception("Could not start Aaronia device!");
 
     // Wait
     logger->info("Waiting for device to stream...");
@@ -334,7 +334,7 @@ void AaroniaSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AaroniaSource::get_samplerate()

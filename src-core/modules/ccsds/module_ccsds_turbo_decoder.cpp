@@ -6,6 +6,7 @@
 #include "common/codings/randomization.h"
 #include "common/codings/turbo/ccsds_turbo.h"
 #include "common/codings/crc/crc_generic.h"
+#include "core/exception.h"
 
 namespace ccsds
 {
@@ -15,20 +16,20 @@ namespace ccsds
         if (parameters.contains("turbo_rate"))
             d_turbo_rate = parameters["turbo_rate"].get<std::string>();
         else
-            throw std::runtime_error("Turbo Rate is required!");
+            throw satdump_exception("Turbo Rate is required!");
 
         if (parameters.contains("turbo_base"))
             d_turbo_base = parameters["turbo_base"].get<int>();
         else
-            throw std::runtime_error("Turbo Base is required!");
+            throw satdump_exception("Turbo Base is required!");
 
         if (parameters.contains("turbo_iters"))
             d_turbo_iters = parameters["turbo_iters"].get<int>();
         else
-            throw std::runtime_error("Turbo Iters is required!");
+            throw satdump_exception("Turbo Iters is required!");
 
         if (!(d_turbo_base == 223 || d_turbo_base == 446 || d_turbo_base == 892 || d_turbo_base == 1115))
-            throw std::runtime_error("Turbo Base must be 223, 446, 892 or 1115!");
+            throw satdump_exception("Turbo Base must be 223, 446, 892 or 1115!");
 
         if (d_turbo_rate == "1/2")
         {
@@ -126,7 +127,7 @@ namespace ccsds
                 d_codeword_size = 53544;
         }
         else
-            throw std::runtime_error("Invalid Turbo Rate!");
+            throw satdump_exception("Invalid Turbo Rate!");
 
         d_frame_size = d_codeword_size + d_asm_size;
 

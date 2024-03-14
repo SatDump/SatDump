@@ -1,5 +1,6 @@
 #include "live_pipeline.h"
 #include "logger.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -21,10 +22,10 @@ namespace satdump
         for (std::pair<int, int> currentModule : mods)
         {
             if ((int)d_pipeline.steps.size() <= currentModule.first)
-                throw std::runtime_error("Invalid live pipeline step!");
+                throw satdump_exception("Invalid live pipeline step!");
 
             if ((int)d_pipeline.steps[currentModule.first].modules.size() <= currentModule.second)
-                throw std::runtime_error("Invalid live pipeline module!");
+                throw satdump_exception("Invalid live pipeline module!");
 
             // Prep parameters
             nlohmann::json final_parameters = Pipeline::prepareParameters(
@@ -59,7 +60,7 @@ namespace satdump
         if (server) // Server mode
         {
             if (d_pipeline.live_cfg.server_live.size() == 0)
-                throw std::runtime_error("Pipeline does not support server mode!");
+                throw satdump_exception("Pipeline does not support server mode!");
 
             prepare_modules(d_pipeline.live_cfg.server_live);
             d_parameters["pkt_size"] = d_pipeline.live_cfg.pkt_size;
@@ -118,7 +119,7 @@ namespace satdump
         // Init modules
         {
             if (d_pipeline.live_cfg.client_live.size() == 0)
-                throw std::runtime_error("Pipeline does not support client mode!");
+                throw satdump_exception("Pipeline does not support client mode!");
 
             d_parameters["pkt_size"] = d_pipeline.live_cfg.pkt_size;
             prepare_module("network_client");

@@ -12,7 +12,7 @@ namespace demod
         if (parameters.count("samplerate") > 0)
             d_samplerate = parameters["samplerate"].get<long>();
         else
-            throw std::runtime_error("Samplerate parameter must be present!");
+            throw satdump_exception("Samplerate parameter must be present!");
 
         if (parameters.count("buffer_size") > 0)
             d_buffer_size = parameters["buffer_size"].get<long>();
@@ -90,7 +90,7 @@ namespace demod
         logger->debug("Final SPS : %f", final_sps);
 
         if (input_sps < 1.0)
-            throw std::runtime_error("SPS is invalid. Must be above 1!");
+            throw satdump_exception("SPS is invalid. Must be above 1!");
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
@@ -111,7 +111,7 @@ namespace demod
             if (d_parameters.count("satellite_frequency"))
                 frequency = d_parameters["satellite_frequency"].get<double>();
             else
-                throw std::runtime_error("Satellite Frequency is required for doppler correction!");
+                throw satdump_exception("Satellite Frequency is required for doppler correction!");
 
             if (d_frequency_shift != 0)
                 frequency += d_frequency_shift;
@@ -120,7 +120,7 @@ namespace demod
             if (d_parameters.count("satellite_norad"))
                 norad = d_parameters["satellite_norad"].get<double>();
             else
-                throw std::runtime_error("Satellite NORAD is required for doppler correction!");
+                throw satdump_exception("Satellite NORAD is required for doppler correction!");
 
             // QTH, with a way to override it
             double qth_lon = 0, qth_lat = 0, qth_alt = 0;

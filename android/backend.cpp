@@ -11,25 +11,25 @@ float funcDeviceScale()
 
     jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
     if (jni_return == JNI_ERR)
-        throw std::runtime_error("Could not get JNI environement");
+        throw satdump_exception("Could not get JNI environement");
 
     jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
     if (jni_return != JNI_OK)
-        throw std::runtime_error("Could not attach to thread");
+        throw satdump_exception("Could not attach to thread");
 
     jclass native_activity_clazz = java_env->GetObjectClass(g_App->activity->clazz);
     if (native_activity_clazz == NULL)
-        throw std::runtime_error("Could not get MainActivity class");
+        throw satdump_exception("Could not get MainActivity class");
 
     jmethodID method_id = java_env->GetMethodID(native_activity_clazz, "get_dpi", "()F");
     if (method_id == NULL)
-        throw std::runtime_error("Could not get methode ID");
+        throw satdump_exception("Could not get methode ID");
 
     jfloat jflt = java_env->CallFloatMethod(g_App->activity->clazz, method_id);
 
     jni_return = java_vm->DetachCurrentThread();
     if (jni_return != JNI_OK)
-        throw std::runtime_error("Could not detach from thread");
+        throw satdump_exception("Could not detach from thread");
 
     return jflt;
 }

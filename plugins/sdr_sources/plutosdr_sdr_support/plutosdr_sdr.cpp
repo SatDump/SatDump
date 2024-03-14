@@ -124,7 +124,7 @@ void PlutoSDRSource::drawControlUI()
 void PlutoSDRSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 61.44e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t PlutoSDRSource::get_samplerate()
@@ -198,18 +198,18 @@ void PlutoSDRSource::sdr_startup()
     ctx = usb_create_context_fd(0, fd, 0, 1);
 #endif
     if (ctx == NULL)
-        throw std::runtime_error("Could not open PlutoSDR device!");
+        throw satdump_exception("Could not open PlutoSDR device!");
     phy = iio_context_find_device(ctx, "ad9361-phy");
     if (phy == NULL)
     {
         iio_context_destroy(ctx);
-        throw std::runtime_error("Could not connect to PlutoSDR PHY!");
+        throw satdump_exception("Could not connect to PlutoSDR PHY!");
     }
     dev = iio_context_find_device(ctx, "cf-ad9361-lpc");
     if (dev == NULL)
     {
         iio_context_destroy(ctx);
-        throw std::runtime_error("Could not connect to PlutoSDR device!");
+        throw satdump_exception("Could not connect to PlutoSDR device!");
     }
 
     iio_channel_attr_write_bool(iio_device_find_channel(phy, "altvoltage1", true), "powerdown", true);

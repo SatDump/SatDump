@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "common/utils.h"
+#include "core/exception.h"
 
 #if !(defined(__APPLE__) || defined(_WIN32))
 #include <netdb.h>
@@ -35,7 +36,7 @@ namespace dvbs2
             if (parameters.count("modcod") > 0)
                 d_modcod = parameters["modcod"].get<int>();
             else
-                throw std::runtime_error("MODCOD parameter must be present!");
+                throw satdump_exception("MODCOD parameter must be present!");
 
             if (parameters.count("shortframes") > 0)
                 d_shortframes = parameters["shortframes"].get<bool>();

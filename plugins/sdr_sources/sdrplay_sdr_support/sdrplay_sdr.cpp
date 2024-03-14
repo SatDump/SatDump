@@ -246,7 +246,7 @@ void SDRPlaySource::start()
     callback_funcs.StreamBCbFn = stream_callback;
 
     if (sdrplay_api_GetDeviceParams(sdrplay_dev.dev, &dev_params) != sdrplay_api_Success)
-        throw std::runtime_error("Error getting SDRPlay device params!");
+        throw satdump_exception("Error getting SDRPlay device params!");
 
     // Get channel params
     channel_params = dev_params->rxChannelA;
@@ -254,7 +254,7 @@ void SDRPlaySource::start()
         set_duo_channel();
 
     if (sdrplay_api_Init(sdrplay_dev.dev, &callback_funcs, &output_stream) != sdrplay_api_Success)
-        throw std::runtime_error("Error starting SDRPlay device!");
+        throw satdump_exception("Error starting SDRPlay device!");
 
     // Initial freq
     channel_params->tunerParams.rfFreq.rfHz = d_frequency;
@@ -429,7 +429,7 @@ void SDRPlaySource::drawControlUI()
 void SDRPlaySource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 10e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t SDRPlaySource::get_samplerate()

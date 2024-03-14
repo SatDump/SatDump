@@ -127,7 +127,7 @@ void LimeSDRSource::start()
         }
 
         if (err)
-            throw std::runtime_error("Could not open LimeSDR Device!");
+            throw satdump_exception("Could not open LimeSDR Device!");
 #else
         lime::ConnectionHandle handle;
         int vid, pid;
@@ -141,7 +141,7 @@ void LimeSDRSource::start()
         limeDevice = limeDevice_android;
 
         if (limeDevice == NULL)
-            throw std::runtime_error("Could not open LimeSDR Device!");
+            throw satdump_exception("Could not open LimeSDR Device!");
 #endif
     }
 
@@ -171,7 +171,7 @@ void LimeSDRSource::start()
     limeStreamID = limeStreamID_android;
 
     if (limeStreamID == 0)
-        throw std::runtime_error("Could not open LimeSDR device stream!");
+        throw satdump_exception("Could not open LimeSDR device stream!");
 
     limeStream = limeStreamID;
     limeStream->Start();
@@ -307,7 +307,7 @@ void LimeSDRSource::drawControlUI()
 void LimeSDRSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 100e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t LimeSDRSource::get_samplerate()

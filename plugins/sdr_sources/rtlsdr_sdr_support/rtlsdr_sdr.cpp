@@ -157,13 +157,13 @@ void RtlSdrSource::start()
     DSPSampleSource::start();
 #ifndef __ANDROID__
     if (rtlsdr_open(&rtlsdr_dev_obj, d_sdr_id) != 0)
-        throw std::runtime_error("Could not open RTL-SDR device!");
+        throw satdump_exception("Could not open RTL-SDR device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, RTLSDR_USB_VID_PID, path);
     if (rtlsdr_open_fd(&rtlsdr_dev_obj, fd) != 0)
-        throw std::runtime_error("Could not open RTL-SDR device!");
+        throw satdump_exception("Could not open RTL-SDR device!");
 #endif
 
     uint64_t current_samplerate = samplerate_widget.get_value();
@@ -245,7 +245,7 @@ void RtlSdrSource::drawControlUI()
 void RtlSdrSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 3.2e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t RtlSdrSource::get_samplerate()

@@ -88,13 +88,13 @@ void MiriSdrSource::start()
     DSPSampleSource::start();
 #ifndef __ANDROID__
     if (mirisdr_open(&mirisdr_dev_obj, d_sdr_id) != 0)
-        throw std::runtime_error("Could not open MiriSDR device!");
+        throw satdump_exception("Could not open MiriSDR device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, MIRISDR_USB_VID_PID, path);
     if (mirisdr_open_fd(&mirisdr_dev_obj, 0, fd) != 0)
-        throw std::runtime_error("Could not open MiriSDR device!");
+        throw satdump_exception("Could not open MiriSDR device!");
 #endif
 
     uint64_t current_samplerate = samplerate_widget.get_value();
@@ -196,7 +196,7 @@ void MiriSdrSource::drawControlUI()
 void MiriSdrSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 20e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t MiriSdrSource::get_samplerate()

@@ -5,6 +5,7 @@
 #include <memory>
 #include "complex.h"
 #include "logger.h"
+#include "core/exception.h"
 
 #define BRANCHLESS_CLIP(x, clip) (0.5 * (std::abs(x + clip) - std::abs(x - clip)))
 #ifndef M_PI

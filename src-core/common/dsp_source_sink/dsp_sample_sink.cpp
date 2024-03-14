@@ -25,7 +25,7 @@ namespace dsp
         for (std::pair<std::string, RegisteredSink> sink : dsp_sinks_registry)
             if (descriptor.sink_type == sink.first)
                 return sink.second.getInstance(descriptor);
-        throw std::runtime_error("Could not find a handler for device " + descriptor.name);
+        throw satdump_exception("Could not find a handler for device " + descriptor.name);
     }
 
     void registerAllSinks()

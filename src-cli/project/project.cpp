@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "core/exception.h"
 #include "init.h"
 #include "project.h"
 #include "common/cli_utils.h"
@@ -138,7 +139,7 @@ int main_project(int argc, char *argv[])
                             image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
                         }
                         else
-                            throw std::runtime_error("Could not load image file!");
+                            throw satdump_exception("Could not load image file!");
                     }
                     else if (params["type"] == "geotiff")
                     {
@@ -149,7 +150,7 @@ int main_project(int argc, char *argv[])
                                 newlayer.img.normalize();
                         }
                         else
-                            throw std::runtime_error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
+                            throw satdump_exception("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
                     }
 
                     if (params.contains("opacity"))

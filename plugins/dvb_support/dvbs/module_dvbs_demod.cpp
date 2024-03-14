@@ -22,7 +22,7 @@ namespace dvb
         if (parameters.count("pll_bw") > 0)
             d_loop_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL BW parameter must be present!");
+            throw satdump_exception("PLL BW parameter must be present!");
 
         if (parameters.count("clock_alpha") > 0)
         {

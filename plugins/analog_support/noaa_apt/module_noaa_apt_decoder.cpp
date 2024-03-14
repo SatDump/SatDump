@@ -26,7 +26,7 @@ namespace noaa_apt
         if (parameters.count("audio_samplerate") > 0)
             d_audio_samplerate = parameters["audio_samplerate"].get<long>();
         else
-            throw std::runtime_error("Audio samplerate parameter must be present!");
+            throw satdump_exception("Audio samplerate parameter must be present!");
 
         if (parameters.count("autocrop_wedges") > 0)
             d_autocrop_wedges = parameters["autocrop_wedges"].get<bool>();

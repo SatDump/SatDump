@@ -1,5 +1,6 @@
 #include "reprojector.h"
 #include "logger.h"
+#include "core/exception.h"
 #include "warp/warp.h"
 #include "gcp_compute/gcp_compute.h"
 
@@ -62,9 +63,9 @@ namespace satdump
             image::Image<uint16_t> result_img;
 
             if (op.img.size() == 0)
-                throw std::runtime_error("Can't reproject an empty image!");
+                throw satdump_exception("Can't reproject an empty image!");
             if (!image::has_metadata_proj_cfg(op.img))
-                throw std::runtime_error("Can't reproject an image with no proj config!");
+                throw satdump_exception("Can't reproject an image with no proj config!");
 
             result_img.init(op.output_width, op.output_height, 4);
 
@@ -140,13 +141,13 @@ namespace satdump
                     if (mtd.contains("tle"))
                         tle = mtd["tle"];
                     else
-                        throw std::runtime_error("Reproj : Could not get TLE!");
+                        throw satdump_exception("Reproj : Could not get TLE!");
 
                     nlohmann::ordered_json timestamps;
                     if (mtd.contains("timestamps"))
                         timestamps = mtd["timestamps"];
                     else
-                        throw std::runtime_error("Reproj : Could not get timestamps!");
+                        throw satdump_exception("Reproj : Could not get timestamps!");
 
                     // Reproj
                     // ""TPS""" (Mostly LEO)
@@ -307,7 +308,7 @@ namespace satdump
                 auto gcps = gcp_compute::compute_gcps(params, width, height);
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 if (transform->init(gcps, true, false))
-                    throw std::runtime_error("Error generating TPS!");
+                    throw satdump_exception("Error generating TPS!");
                 return [transform, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
                 {
                     double x, y;
@@ -328,7 +329,7 @@ namespace satdump
                 };
             }
 
-            throw std::runtime_error("Invalid projection!!!!");
+            throw satdump_exception("Invalid projection!!!!");
         }
 
         ProjBounds determineProjectionBounds(image::Image<uint16_t> &img)

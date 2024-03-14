@@ -87,7 +87,7 @@ void RTLTCPSource::open()
 void RTLTCPSource::start()
 {
     if (client.connectToRTL((char *)ip_address.c_str(), port) != 1)
-        throw std::runtime_error("Could not connect to RTL-TCP");
+        throw satdump_exception("Could not connect to RTL-TCP");
 
     DSPSampleSource::start(); // Do NOT reset the stream
 
@@ -177,7 +177,7 @@ void RTLTCPSource::drawControlUI()
 void RTLTCPSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 3.2e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t RTLTCPSource::get_samplerate()

@@ -4,6 +4,7 @@
 #include "common/codings/randomization.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
+#include "core/exception.h"
 
 namespace ccsds
 {
@@ -32,7 +33,7 @@ namespace ccsds
         else if (d_constellation_str == "oqpsk")
             d_constellation = dsp::OQPSK;
         else
-            throw std::runtime_error("CCSDS LDPC Decoder : invalid constellation type!");
+            throw satdump_exception("CCSDS LDPC Decoder : invalid constellation type!");
 
         // Parse LDPC settings
         d_ldpc_rate = codings::ldpc::ldpc_rate_from_string(d_ldpc_rate_str);

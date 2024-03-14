@@ -4,6 +4,7 @@
 #include "imgui/imgui.h"
 #include "common/codings/randomization.h"
 #include "common/codings/differential/qpsk_diff.h"
+#include "core/exception.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -49,7 +50,7 @@ namespace ccsds
         else if (d_constellation_str == "qpsk")
             d_constellation = dsp::QPSK;
         else
-            throw std::runtime_error("CCSDS Simple PSK Decoder : invalid constellation type!");
+            throw satdump_exception("CCSDS Simple PSK Decoder : invalid constellation type!");
 
         // Parse RS
         reedsolomon::RS_TYPE rstype = reedsolomon::RS223;
@@ -60,7 +61,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                throw std::runtime_error("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
+                throw satdump_exception("CCSDS Simple PSK Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set

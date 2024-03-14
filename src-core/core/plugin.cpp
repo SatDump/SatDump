@@ -8,6 +8,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "satdump_vars.h"
+#include "core/exception.h"
 
 std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 {
@@ -15,7 +16,7 @@ std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 
     void *dynlib = dlopen(plugin.c_str(), RTLD_LAZY);
     if (!dynlib)
-        throw std::runtime_error("Error loading " + plugin + "! Error : " + std::string(dlerror()));
+        throw satdump_exception("Error loading " + plugin + "! Error : " + std::string(dlerror()));
 
     void *create = dlsym(dynlib, "loader");
     const char *dlsym_error = dlerror();

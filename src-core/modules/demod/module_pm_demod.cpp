@@ -17,7 +17,7 @@ namespace demod
         if (parameters.count("pll_bw") > 0)
             d_pll_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL Bw parameter must be present!");
+            throw satdump_exception("PLL Bw parameter must be present!");
 
         if (parameters.count("pll_max_offset") > 0)
             d_pll_max_offset = parameters["pll_max_offset"].get<float>();
@@ -25,7 +25,7 @@ namespace demod
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else
-            throw std::runtime_error("RRC Alpha parameter must be present!");
+            throw satdump_exception("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
             d_rrc_taps = parameters["rrc_taps"].get<int>();

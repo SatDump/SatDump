@@ -3,6 +3,7 @@
 #include "common/codings/differential/nrzm.h"
 #include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
+#include "core/exception.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -62,7 +63,7 @@ namespace ccsds
             d_oqpsk_mode = true;
         }
         else
-            throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
+            throw satdump_exception("CCSDS Concatenated 1/2 Decoder : invalid constellation type!");
 
         std::vector<phase_t> d_phases;
 
@@ -83,7 +84,7 @@ namespace ccsds
             else if (d_rs_type == "rs239")
                 rstype = reedsolomon::RS239;
             else
-                throw std::runtime_error("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
+                throw satdump_exception("CCSDS Concatenated 1/2 Decoder : invalid Reed-Solomon type!");
         }
 
         // Parse sync marker if set

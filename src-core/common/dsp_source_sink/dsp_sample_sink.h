@@ -7,6 +7,7 @@
 #include <memory>
 #include "nlohmann/json_utils.h"
 #include "format_notated.h"
+#include "core/exception.h"
 
 namespace dsp
 {

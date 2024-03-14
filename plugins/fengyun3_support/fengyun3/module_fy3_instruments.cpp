@@ -15,6 +15,7 @@
 #include "instruments/mersi_histmatch.h"
 #include "instruments/mersi_offset_interleaved.h"
 #include "nlohmann/json_utils.h"
+#include "core/exception.h"
 
 namespace fengyun3
 {
@@ -38,7 +39,7 @@ namespace fengyun3
             else if (parameters["satellite"] == "fy3g")
                 d_satellite = FY_3G;
             else
-                throw std::runtime_error("FY3 Instruments Decoder : FY3 satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+                throw satdump_exception("FY3 Instruments Decoder : FY3 satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
 
             if (parameters["downlink"] == "ahrpt")
                 d_downlink = AHRPT;
