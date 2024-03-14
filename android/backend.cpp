@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "core/exception.h"
 
 extern struct android_app *g_App;
 extern EGLDisplay g_EglDisplay;
