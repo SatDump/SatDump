@@ -13,7 +13,7 @@ namespace xrit
 {
     GOESRecvPublisherModule::GOESRecvPublisherModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                         address(parameters["address"].get<std::string>()),
-                                                                                                                                        port(parameters["port"].get<int>())
+                                                                                                                                        port(parameters["nanomsg_port"].get<int>())
     {
         buffer = new uint8_t[FRAME_SIZE];
     }
@@ -106,7 +106,7 @@ namespace xrit
 
     std::vector<std::string> GOESRecvPublisherModule::getParameters()
     {
-        return {"address", "port"};
+        return {"address", "nanomsg_port"};
     }
 
     std::shared_ptr<ProcessingModule> GOESRecvPublisherModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
