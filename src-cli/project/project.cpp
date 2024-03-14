@@ -17,6 +17,17 @@
 
 #include "common/projection/reprojector_backend_utils.h"
 
+bool isFlag(std::string flag)
+{
+    if (flag[0] == '-' && flag[1] != '-')
+    {
+        flag = flag.substr(1, flag.length());
+        if (flag == "layer" || flag == "target")
+            return true;
+    }
+    return false;
+}
+
 int main_project(int argc, char *argv[])
 {
     // We don't wanna spam with init this time around
@@ -39,7 +50,7 @@ int main_project(int argc, char *argv[])
         {
             std::string flag = argv[i];
 
-            if (flag[0] == '-' && flag[1] != '-') // Detect a flag
+            if (isFlag(flag)) // Detect a flag
             {
                 flag = flag.substr(1, flag.length()); // Remove the "--"
 
@@ -50,7 +61,7 @@ int main_project(int argc, char *argv[])
                 {
                     end = ii;
                     std::string flag2 = argv[ii];
-                    if (flag2[0] == '-' && flag2[1] != '-') // Detect a flag
+                    if (isFlag(flag2)) // Detect a flag
                         break;
                 }
 
