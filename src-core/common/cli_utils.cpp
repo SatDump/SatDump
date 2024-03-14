@@ -43,7 +43,8 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
                         for (char &c : std::string(argv[i + 1]))
                             if (c < '0' || '9' < c)
                                 if (c != '.' && c != 'e')
-                                    throw std::runtime_error("");
+                                    if (c != '-')
+                                        throw std::runtime_error("");
 
                         int points_cnt = 0;
                         for (char &c : std::string(argv[i + 1]))

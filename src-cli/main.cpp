@@ -40,9 +40,16 @@ int main(int argc, char *argv[])
     }
     else if (std::string(argv[1]) == "project")
     {
-        int ret = main_project(argc - 2, argv + 2);
-        if (ret != 0)
-            return ret;
+        try
+        {
+            int ret = main_project(argc - 2, argv + 2);
+            if (ret != 0)
+                return ret;
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error running project! %s", e.what());
+        }
     }
     //////////////
     else if (std::string(argv[1]) == "sdr_probe")

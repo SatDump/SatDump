@@ -241,71 +241,41 @@ namespace satdump
                     {
                         auto func = [this](int)
                         {
-                            if ((selected_external_type == 0 || selected_external_type == 3) && projection_new_layer_file.isValid())
-                            {
-                                image::Image<uint16_t> equi_file;
-                                equi_file.load_img(projection_new_layer_file.getPath());
-                                if (equi_file.size() > 0)
-                                {
-                                    double tl_lon = -180;
-                                    double tl_lat = 90;
-                                    double br_lon = 180;
-                                    double br_lat = -90;
-                                    nlohmann::json proj_cfg;
-                                    if (selected_external_type == 0)
-                                    {
-                                        proj_cfg["type"] = "equirec";
-                                        proj_cfg["offset_x"] = tl_lon;
-                                        proj_cfg["offset_y"] = tl_lat;
-                                        proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(equi_file.width());
-                                        proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(equi_file.height());
-                                    }
-                                    else if (selected_external_type == 3)
-                                    {
-                                        proj_cfg = loadJsonFile(projection_new_layer_cfg.getPath());
-                                    }
-                                    if (projection_normalize_image)
-                                        equi_file.normalize();
-                                    image::set_metadata_proj_cfg(equi_file, proj_cfg);
-                                    projection_layers.push_back({projection_new_layer_name, equi_file});
-                                }
-                                else
-                                    logger->error("Could not load image file!");
-                            }
-                            else if (selected_external_type == 2 && projection_new_layer_file.isValid())
-                            {
-                                image::Image<uint16_t> geotiff_file;
-                                geotiff_file.load_tiff(projection_new_layer_file.getPath());
-                                if (geotiff_file.size() > 0 && image::has_metadata_proj_cfg(geotiff_file))
-                                {
-                                    if (projection_normalize_image)
-                                        geotiff_file.normalize();
-                                    projection_layers.push_back({projection_new_layer_name, geotiff_file});
-                                }
-                                else
-                                    logger->error("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
-                            }
-                            else if (selected_external_type == 1 && re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
-                            {
-                                logger->info("Generating tile map");
-                                std::stringstream test(mapurl);
-                                std::string segment;
-                                std::vector<std::string> seglist;
-                                while (std::getline(test, segment, '/'))
-                                    seglist.push_back(segment);
-                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
+                            LayerLoadingConfig cfg;
+                            if (selected_external_type == 0)
+                                cfg.type = "equirectangular";
+                            else if (selected_external_type == 1)
+                                cfg.type = "tilemap";
+                            else if (selected_external_type == 2)
+                                cfg.type = "geotiff";
+                            else if (selected_external_type == 3)
+                                cfg.type = "other";
 
-                                nlohmann::json proj_cfg;
-                                proj_cfg["type"] = "webmerc";
-                                proj_cfg["offset_x"] = -20037508.3427892;
-                                proj_cfg["offset_y"] = 20036051.9193368;
-                                proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
-                                proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
-                                image::set_metadata_proj_cfg(timemap, proj_cfg);
+                            cfg.file = projection_new_layer_file.getPath();
+                            cfg.normalize = projection_normalize_image;
+                            cfg.projfile = projection_new_layer_cfg.getPath();
 
-                                projection_layers.push_back({"Tile Map", timemap});
-                            }
+                            /* if (selected_external_type == 1 && re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
+                             {
+                                 logger->info("Generating tile map");
+                                 std::stringstream test(mapurl);
+                                 std::string segment;
+                                 std::vector<std::string> seglist;
+                                 while (std::getline(test, segment, '/'))
+                                     seglist.push_back(segment);
+                                 tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                 image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
+
+                                 nlohmann::json proj_cfg;
+                                 proj_cfg["type"] = "webmerc";
+                                 proj_cfg["offset_x"] = -20037508.3427892;
+                                 proj_cfg["offset_y"] = 20036051.9193368;
+                                 proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
+                                 proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
+                                 image::set_metadata_proj_cfg(timemap, proj_cfg);
+
+                                 projection_layers.push_back({"Tile Map", timemap});
+                             } */
 
                             projections_loading_new_layer = false;
                         };

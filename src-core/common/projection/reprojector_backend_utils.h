@@ -1,8 +1,17 @@
 #pragma once
 
+#include "core/exception.h"
 #include "reprojector.h"
 #include "imgui/imgui_image.h"
 #include "common/image/image_meta.h"
+
+#include "common/utils.h"
+#include "core/config.h"
+
+#include "common/image/image_meta.h"
+#include "products/image_products.h"
+#include "products/scatterometer_products.h"
+#include "products/radiation_products.h"
 
 namespace satdump
 {
@@ -101,6 +110,7 @@ namespace satdump
 
         for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
+            logger->info("Reprojecting layer %d...", i);
             ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
                 continue;
@@ -132,5 +142,154 @@ namespace satdump
         }
 
         return layers_images;
+    }
+
+    struct LayerLoadingConfig
+    {
+        std::string type;
+        std::string file;
+        std::string projfile;
+        bool normalize = false;
+        nlohmann::json raw_cfg;
+    };
+
+    inline void from_json(const nlohmann::json &j, LayerLoadingConfig &v)
+    {
+        if (j.contains("type"))
+            v.type = j["type"];
+        else
+            throw satdump_exception("Layer type must be present!");
+        if (j.contains("file"))
+            v.file = j["file"];
+        if (j.contains("proj_cfg"))
+            v.projfile = j["proj_cfg"];
+        if (j.contains("normalize"))
+            v.normalize = j["normalize"];
+        v.raw_cfg = j;
+    }
+
+    inline ProjectionLayer loadExternalLayer(LayerLoadingConfig cfg)
+    {
+        satdump::ProjectionLayer newlayer;
+
+        if (cfg.type == "product")
+        {
+            logger->info("Loading product...");
+            std::shared_ptr<satdump::Products> products_raw = satdump::loadProducts(cfg.file);
+
+            // Get instrument settings
+            nlohmann::ordered_json instrument_cfg;
+            if (satdump::config::main_cfg["viewer"]["instruments"].contains(products_raw->instrument_name))
+                instrument_cfg = satdump::config::main_cfg["viewer"]["instruments"][products_raw->instrument_name];
+            else
+                logger->error("Unknown instrument : %s!", products_raw->instrument_name.c_str());
+
+            if (products_raw->type == "image")
+            {
+                satdump::ImageProducts *products = (satdump::ImageProducts *)products_raw.get();
+
+                satdump::ImageCompositeCfg composite_config;
+                if (cfg.raw_cfg.contains("composite"))
+                {
+                    std::string search = cfg.raw_cfg["composite"];
+                    if (instrument_cfg.contains("rgb_composites"))
+                    {
+                        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
+                            if (check_composite_from_product_can_be_made(*products, compo.value().get<satdump::ImageCompositeCfg>()))
+                                if (isStringPresent(compo.key(), search))
+                                {
+                                    logger->info("Composite candidate : " + compo.key());
+                                    composite_config = compo.value();
+                                }
+                    }
+                }
+                else
+                {
+                    composite_config = cfg.raw_cfg;
+                }
+                std::vector<double> final_timestamps;
+                nlohmann::json final_metadata;
+                newlayer.img = satdump::make_composite_from_product(*products, composite_config, nullptr, &final_timestamps, &final_metadata);
+                nlohmann::json proj_cfg = products->get_proj_cfg();
+                proj_cfg["metadata"] = final_metadata;
+                if (products->has_tle())
+                    proj_cfg["metadata"]["tle"] = products->get_tle();
+                if (products->has_timestamps)
+                    proj_cfg["metadata"]["timestamps"] = final_timestamps;
+                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+            }
+            else if (products_raw->type == "scatterometer")
+            {
+                satdump::ScatterometerProducts *products = (satdump::ScatterometerProducts *)products_raw.get();
+
+                satdump::GrayScaleScatCfg _cfg = cfg.raw_cfg;
+                nlohmann::json proj_prm;
+                newlayer.img = make_scatterometer_grayscale_projs(*products, _cfg, nullptr, &proj_prm);
+                image::set_metadata_proj_cfg(newlayer.img, proj_prm);
+            }
+            else if (products_raw->type == "radiation")
+            {
+                satdump::RadiationProducts *products = (satdump::RadiationProducts *)products_raw.get();
+
+                satdump::RadiationMapCfg _cfg = cfg.raw_cfg;
+                nlohmann::json proj_prm;
+                newlayer.img = make_radiation_map(*products, _cfg, true);
+                nlohmann::json proj_cfg;
+                double tl_lon = -180;
+                double tl_lat = 90;
+                double br_lon = 180;
+                double br_lat = -90;
+                proj_cfg["type"] = "equirec";
+                proj_cfg["offset_x"] = tl_lon;
+                proj_cfg["offset_y"] = tl_lat;
+                proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(newlayer.img.width());
+                proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(newlayer.img.height());
+                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+            }
+        }
+        else if (cfg.type == "equirectangular" || cfg.type == "other")
+        {
+            newlayer.img.load_img(cfg.file);
+            if (newlayer.img.size() > 0)
+            {
+                double tl_lon = -180;
+                double tl_lat = 90;
+                double br_lon = 180;
+                double br_lat = -90;
+                nlohmann::json proj_cfg;
+                if (cfg.type == "equirectangular")
+                {
+                    proj_cfg["type"] = "equirec";
+                    proj_cfg["offset_x"] = tl_lon;
+                    proj_cfg["offset_y"] = tl_lat;
+                    proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(newlayer.img.width());
+                    proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(newlayer.img.height());
+                }
+                else if (cfg.type == "other")
+                {
+                    proj_cfg = loadJsonFile(cfg.projfile);
+                }
+                if (cfg.normalize)
+                    newlayer.img.normalize();
+                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+            }
+            else
+                throw satdump_exception("Could not load image file!");
+        }
+        else if (cfg.type == "geotiff")
+        {
+            newlayer.img.load_tiff(cfg.file);
+            if (newlayer.img.size() > 0 && image::has_metadata_proj_cfg(newlayer.img))
+            {
+                if (cfg.normalize)
+                    newlayer.img.normalize();
+            }
+            else
+                throw satdump_exception("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");
+        }
+        else
+            throw satdump_exception("Invalid Layer Type! " + cfg.type);
+
+        return newlayer;
     }
 }
