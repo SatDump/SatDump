@@ -68,6 +68,7 @@ int main_project(int argc, char *argv[])
 
                 if (flag == "layer")
                 {
+                    logger->info("Loading layer...");
                     satdump::ProjectionLayer newlayer = satdump::loadExternalLayer((satdump::LayerLoadingConfig)params);
 
                     if (params.contains("opacity"))
