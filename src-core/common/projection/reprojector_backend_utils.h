@@ -191,6 +191,7 @@ namespace satdump
                 satdump::ImageCompositeCfg composite_config;
                 if (cfg.raw_cfg.contains("composite"))
                 {
+                    bool compo_set = false;
                     std::string search = cfg.raw_cfg["composite"];
                     if (instrument_cfg.contains("rgb_composites"))
                     {
@@ -199,7 +200,11 @@ namespace satdump
                                 if (isStringPresent(compo.key(), search))
                                 {
                                     logger->info("Composite candidate : " + compo.key());
-                                    composite_config = compo.value();
+                                    if (!compo_set)
+                                    {
+                                        composite_config = compo.value();
+                                        compo_set = true;
+                                    }
                                 }
                     }
                 }
