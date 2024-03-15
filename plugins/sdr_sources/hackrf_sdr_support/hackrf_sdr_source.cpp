@@ -210,7 +210,7 @@ void HackRFSource::drawControlUI()
 void HackRFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 40e6))
-        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t HackRFSource::get_samplerate()

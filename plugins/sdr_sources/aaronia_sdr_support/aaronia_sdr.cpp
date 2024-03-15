@@ -334,7 +334,7 @@ void AaroniaSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AaroniaSource::get_samplerate()
