@@ -27,7 +27,7 @@
             ],
             [
                 "NOAA POES S-Band",
-                2247.5
+                2247.5e6
             ]
         ],
         "parameters": {
