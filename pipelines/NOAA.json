@@ -24,6 +24,10 @@
             [
                 "NOAA-15",
                 1702.5e6
+            ],
+            [
+                "NOAA POES S-Band",
+                2247.5
             ]
         ],
         "parameters": {
