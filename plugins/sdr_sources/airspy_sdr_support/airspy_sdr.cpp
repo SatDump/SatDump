@@ -240,7 +240,7 @@ void AirspySource::drawControlUI()
 void AirspySource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 10e6))
-        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspySource::get_samplerate()

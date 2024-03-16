@@ -296,7 +296,7 @@ void BladeRFSource::drawControlUI()
 void BladeRFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 61.44e6))
-        throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t BladeRFSource::get_samplerate()

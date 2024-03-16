@@ -189,7 +189,7 @@ void SDDCSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw satdump_exception("Unspported samplerate : " + std::to_string(samplerate * 2) + "!");
+    throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate * 2) + "!");
 }
 
 uint64_t SDDCSource::get_samplerate()
