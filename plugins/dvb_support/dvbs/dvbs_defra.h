@@ -11,7 +11,7 @@ namespace dvbs
         void work();
 
 #if 1
-        uint8_t curr_ts_buffer[204];
+        uint8_t curr_ts_buffer[204 * 8];
 
         int bit_of_frame = 0;
         void write_bit(uint8_t b)
