@@ -20,6 +20,8 @@ namespace proj
     bool projection_geos_setup(projection_t *proj, double altitude, bool sweep_x)
     {
         projection_geos_t *ptr = (projection_geos_t *)malloc(sizeof(projection_geos_t));
+        if (ptr == nullptr)
+            return true;
         proj->proj_dat = ptr;
 
         if (altitude <= 0)

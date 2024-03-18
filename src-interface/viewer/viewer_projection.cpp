@@ -186,18 +186,22 @@ namespace satdump
 
             ImGui::Text("Layers :");
 
-            ImGui::SameLine(ImGui::GetWindowWidth() - (projections_loading_new_layer ? 105 : 95) * ui_scale);
             if (disable_add_layer)
                 style::beginDisabled();
 
-            if (ImGui::Button("Add Layer##button"))
-                ImGui::OpenPopup("Add Layer##popup", ImGuiPopupFlags_None);
+            ImGui::SameLine();
+            ImGuiStyle &imguistyle = ImGui::GetStyle();
+            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) +
+                ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0));
 
             if (projections_loading_new_layer)
             {
-                ImGui::SameLine();
                 widgets::Spinner("###spinner1", 8 * ui_scale, 3 * ui_scale, ImGui::GetColorU32(ImGuiCol_Text));
+                ImGui::SameLine();
             }
+
+            if (ImGui::Button("Add Layer##button"))
+                ImGui::OpenPopup("Add Layer##popup", ImGuiPopupFlags_None);
 
             if (disable_add_layer)
                 style::endDisabled();
@@ -255,27 +259,46 @@ namespace satdump
                             cfg.normalize = projection_normalize_image;
                             cfg.projfile = projection_new_layer_cfg.getPath();
 
-                            /* if (selected_external_type == 1 && re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
-                             {
-                                 logger->info("Generating tile map");
-                                 std::stringstream test(mapurl);
-                                 std::string segment;
-                                 std::vector<std::string> seglist;
-                                 while (std::getline(test, segment, '/'))
-                                     seglist.push_back(segment);
-                                 tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                 image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
+                            if (selected_external_type == 1) // TODO: Move to reprojector backend
+                            {
+                                if (!re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
+                                {
+                                    logger->error("Invalid URL for tile map!");
+                                    projections_loading_new_layer = false;
+                                }
 
-                                 nlohmann::json proj_cfg;
-                                 proj_cfg["type"] = "webmerc";
-                                 proj_cfg["offset_x"] = -20037508.3427892;
-                                 proj_cfg["offset_y"] = 20036051.9193368;
-                                 proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
-                                 proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
-                                 image::set_metadata_proj_cfg(timemap, proj_cfg);
+                                logger->info("Generating tile map");
+                                std::stringstream test(mapurl);
+                                std::string segment;
+                                std::vector<std::string> seglist;
+                                while (std::getline(test, segment, '/'))
+                                    seglist.push_back(segment);
+                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
 
-                                 projection_layers.push_back({"Tile Map", timemap});
-                             } */
+                                nlohmann::json proj_cfg;
+                                proj_cfg["type"] = "webmerc";
+                                proj_cfg["offset_x"] = -20037508.3427892;
+                                proj_cfg["offset_y"] = 20036051.9193368;
+                                proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
+                                proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
+                                image::set_metadata_proj_cfg(timemap, proj_cfg);
+
+                                projection_layers.push_back({"Tile Map", timemap});
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    ProjectionLayer newlayer = satdump::loadExternalLayer(cfg);
+                                    newlayer.name = projection_new_layer_name;
+                                    projection_layers.push_back(newlayer);
+                                }
+                                catch (std::exception &e)
+                                {
+                                    logger->error(e.what());
+                                }
+                            }
 
                             projections_loading_new_layer = false;
                         };
