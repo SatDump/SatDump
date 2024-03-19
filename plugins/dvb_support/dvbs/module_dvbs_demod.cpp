@@ -273,9 +273,11 @@ namespace dvb
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
-
-            ImGui::Spacing();
-
+        }
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        {
             ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
             {
                 float ber = viterbi.ber();
