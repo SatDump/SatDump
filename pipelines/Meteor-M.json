@@ -132,6 +132,12 @@
             "samplerate": {
                 "value": 1e6
             },
+            "rs_usecheck": {
+              "type": "bool",
+              "value": true,
+              "name": "Use RS Check",
+              "description": "Discards data that fails the Reed-Solomon check\n\nIt is strongly recommended to leave this on - unless the satellite\nis transmitting bad RS codes, which may happen from time to time."
+            },
             "fill_missing": {
                 "type": "bool",
                 "value": false,
