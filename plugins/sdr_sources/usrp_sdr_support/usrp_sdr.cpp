@@ -168,10 +168,11 @@ void USRPSource::start()
         sargs.otw_format = "sc16";
 
     usrp_streamer = usrp_device->get_rx_stream(sargs);
-    usrp_streamer->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
 
     thread_should_run = true;
     work_thread = std::thread(&USRPSource::mainThread, this);
+
+    usrp_streamer->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
 }
 
 void USRPSource::stop()

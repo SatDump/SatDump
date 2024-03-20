@@ -214,19 +214,19 @@ namespace map
 
             std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
             {
+                int width = map_image.width();
+                int height = map_image.height();
+
                 for (std::vector<shapefile::point_t> coordinates : parts)
                 {
-                    for (int i = 0; i < (int)coordinates.size() - 1; i++)
+                    std::pair<double, double> start = projectionFunc(coordinates[0].y, coordinates[0].x, height, width);
+                    for (int i = 1; i < (int)coordinates.size() - 1; i++)
                     {
-                        std::pair<double, double> start = projectionFunc(coordinates[i].y, coordinates[i].x,
-                                                                         map_image.height(), map_image.width());
-                        std::pair<double, double> end = projectionFunc(coordinates[i + 1].y, coordinates[i + 1].x,
-                                                                       map_image.height(), map_image.width());
+                        std::pair<double, double> end = projectionFunc(coordinates[i].y, coordinates[i].x, height, width);
+                        if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
+                            map_image.draw_line(start.first, start.second, end.first, end.second, color);
 
-                        if (start.first == -1 || start.second == -1 || end.first == -1 || end.second == -1)
-                            continue;
-
-                        map_image.draw_line(start.first, start.second, end.first, end.second, color);
+                        start = end;
                     }
                 }
             };
@@ -242,16 +242,16 @@ namespace map
                 map_image.draw_pixel(cc.first, cc.second, color);
             };
 
-            for (shapefile::PolyLineRecord polylineRecord : shape_file.polyline_records)
+            for (shapefile::PolyLineRecord &polylineRecord : shape_file.polyline_records)
                 polylineDraw(polylineRecord.parts_points);
 
-            for (shapefile::PolygonRecord polygonRecord : shape_file.polygon_records)
+            for (shapefile::PolygonRecord &polygonRecord : shape_file.polygon_records)
                 polylineDraw(polygonRecord.parts_points);
 
-            for (shapefile::PointRecord pointRecord : shape_file.point_records)
+            for (shapefile::PointRecord &pointRecord : shape_file.point_records)
                 pointDraw(pointRecord.point);
 
-            for (shapefile::MultiPointRecord multipointRecord : shape_file.multipoint_records)
+            for (shapefile::MultiPointRecord &multipointRecord : shape_file.multipoint_records)
                 for (shapefile::point_t p : multipointRecord.points)
                     pointDraw(p);
         }

@@ -36,7 +36,7 @@ namespace dvbs
 
             int err = correct_reed_solomon_decode(this->rs, buffer, 255, obuffer);
 
-            if (err == 1)
+            if (err == -1)
                 return -1;
 
             err = 0;

@@ -129,6 +129,8 @@ namespace dvb
         dvbs::DVBSReedSolomon reed_solomon;
         dvbs::DVBSScrambling scrambler;
 
+        int failed_rs_nums = 0;
+
         int dat_size = 0;
         while (demod_should_run())
         {
@@ -190,15 +192,28 @@ namespace dvb
 
                 scrambler.descramble(deinterleaved_frame);
 
+                bool rs_entirely_failed = true;
                 for (int ii = 0; ii < 8; ii++)
                 {
                     if (errors[ii] == -1)
                         deinterleaved_frame[204 * ii + 1] |= 0b10000000;
+                    else
+                        rs_entirely_failed = false;
 
                     if (output_data_type == DATA_FILE)
                         data_out.write((char *)&deinterleaved_frame[204 * ii], 188);
                     else
                         output_fifo->write((uint8_t *)&deinterleaved_frame[204 * ii], 188);
+                }
+
+                if (rs_entirely_failed)
+                {
+                    failed_rs_nums++;
+                    if (failed_rs_nums == 20)
+                    {
+                        def->reset();
+                        failed_rs_nums = 0;
+                    }
                 }
             }
 
@@ -258,9 +273,11 @@ namespace dvb
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
-
-            ImGui::Spacing();
-
+        }
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        {
             ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
             {
                 float ber = viterbi.ber();
