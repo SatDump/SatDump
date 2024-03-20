@@ -133,10 +133,10 @@
                 "value": 1e6
             },
             "rs_usecheck": {
-              "type": "bool",
-              "value": true,
-              "name": "Use RS Check",
-              "description": "Discards data that fails the Reed-Solomon check\n\nIt is strongly recommended to leave this on - unless the satellite\nis transmitting bad RS codes, which may happen from time to time."
+                "type": "bool",
+                "value": true,
+                "name": "Use RS Check",
+                "description": "Discards data that fails the Reed-Solomon check\n\nIt is strongly recommended to leave this on - unless the satellite\nis transmitting bad RS codes, which may happen from time to time."
             },
             "fill_missing": {
                 "type": "bool",
@@ -257,6 +257,11 @@
                     "M2-4"
                 ],
                 "description": "Please select the satellite being received!"
+            },
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
             }
         },
         "work": {
@@ -320,6 +325,11 @@
                     "M2-4"
                 ],
                 "description": "Please select the satellite being received!"
+            },
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
             }
         },
         "work": {
