@@ -57,7 +57,7 @@ int main(int /*argc*/, char *argv[])
     printf("\n%s\n", img_pro.contents.dump(4).c_str());
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "1-ch6,1-ch6,1-ch6"; //"(ch7421+ch7422+ch7423+ch7242)/4";
+    rgb_cfg.equation = "ch1,ch1,ch1"; //"(ch7421+ch7422+ch7423+ch7242)/4";
     //    rgb_cfg.equation = "1-ch37";
     // rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.individual_equalize = true;
@@ -88,9 +88,11 @@ int main(int /*argc*/, char *argv[])
 
     auto warp_result = satdump::warp::performSmartWarp(operation_t);
 
+    logger->info("Wrapped!");
     geodetic::projection::EquirectangularProjection projector_final;
     projector_final.init(warp_result.output_image.width(), warp_result.output_image.height(), warp_result.top_left.lon, warp_result.top_left.lat, warp_result.bottom_right.lon, warp_result.bottom_right.lat);
 
+    logger->info("Map overlay!");
     unsigned short color[4] = {0, 65535, 0, 65535};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    warp_result.output_image,
@@ -105,7 +107,7 @@ int main(int /*argc*/, char *argv[])
     {
         unsigned short color[4] = {65535, 65535, 0, 65535};
         map::drawProjectedMapShapefile(
-            {"/home/alan/Downloads/ne_10m_coastline/ne_10m_coastline.shp"}, //{resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+            {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
             warp_result.output_image,
             color,
             [&projector_final](float lat, float lon, int, int) -> std::pair<int, int>

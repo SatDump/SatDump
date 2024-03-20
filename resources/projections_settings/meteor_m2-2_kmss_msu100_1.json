@@ -1,0 +1,21 @@
+{
+    "type": "normal_single_line",
+    "scan_angle": 31,
+    "roll_offset": 15,
+    "pitch_offset": 0,
+    "yaw_offset": 2.4,
+    "timestamp_offset": 0.2,
+    "image_width": 8000,
+    "gcp_spacing_x": 400,
+    "gcp_spacing_y": 400,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.008,
+        "max_diff": 1.0
+    }
+    ///////////////////////
+    // "corr_swath": 2800,
+    // "corr_resol": 1,
+    // "corr_altit": 820
+}

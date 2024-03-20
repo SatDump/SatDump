@@ -236,14 +236,11 @@
         }
     },
     // TEST
-    "meteor_m_dump_narrow": {
-        "name": "METEOR-M Narrow Dump (WIP!)",
+    "meteor_m_mtvza_dump": {
+        "name": "METEOR-M MTVZA Dump (Narrow BPSK)",
         "live": false,
         "frequencies": [],
         "parameters": {
-            "samplerate": {
-                "value": 1e6
-            },
             "satellite_number": {
                 "type": "options",
                 "value": "M2-2",
@@ -268,10 +265,14 @@
                 }
             },
             "frm": {
-                "meteor_dump_decoder": {}
+                "meteor_xband_decoder": {
+                    "instrument_type": "mtvza"
+                }
             },
             "products": {
-                "meteor_dump_instruments": {}
+                "meteor_xband_instruments": {
+                    "instrument_type": "mtvza"
+                }
             }
         }
     },
@@ -296,6 +297,46 @@
                 }
             },
             "frm": {}
+        }
+    },
+    "meteor_m_kmss_bpsk_db": {
+        "name": "METEOR-M KMSS DB (Wide BPSK)",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "satellite_number": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "METEOR Satellite",
+                "options": [
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Please select the satellite being received!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 61.44e6,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {
+                "meteor_xband_decoder": {
+                    "instrument_type": "kmss_bpsk"
+                }
+            },
+            "products": {
+                "meteor_xband_instruments": {
+                    "instrument_type": "kmss_bpsk"
+                }
+            }
         }
     }
 }

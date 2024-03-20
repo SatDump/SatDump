@@ -1,14 +1,17 @@
 #pragma once
 
 #include "core/module.h"
+#include "meteor_xband_types.h"
 
 namespace meteor
 {
     namespace instruments
     {
-        class MeteorDumpInstrumentsDecoderModule : public ProcessingModule
+        class MeteorXBandInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
+            dump_instrument_type_t d_instrument_mode;
+
             std::atomic<uint64_t> filesize;
             std::atomic<uint64_t> progress;
 
@@ -20,7 +23,7 @@ namespace meteor
             instrument_status_t mtvza_status = DECODING;
 
         public:
-            MeteorDumpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            MeteorXBandInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
             void drawUI(bool window);
 
