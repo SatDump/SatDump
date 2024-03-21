@@ -1057,18 +1057,6 @@
                         "scalar_y": -0.087890625
                     }
                 }
-                /*"project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    //"individual_equalize": true,
-                    //"draw_map_overlay": true,
-                    "config": {
-                        "type": "equirec",
-                        "auto": true,
-                        "img_format": "tif"
-                    }
-                }*/
             },
             "virr": {
                 "handler": "image_handler",
@@ -1410,19 +1398,6 @@
                         "white_balance": true
                     }
                 }
-                /*,
-                               "project_channels": {
-                                   "channels": "all",
-                                   "width": 2048,
-                                   "height": 1024,
-                                   //"individual_equalize": true,
-                                   //"draw_map_overlay": true,
-                                   "config": {
-                                       "type": "equirec",
-                                       "auto": true,
-                                       "img_format": "tif"
-                                   }
-                               }*/
             },
             "viirs_dnb": {
                 "handler": "image_handler",
@@ -1436,19 +1411,6 @@
                         "equation": "chdnb * 50 - 0.5"
                     }
                 }
-                /*,
-                               "project_channels": {
-                                   "channels": "all",
-                                   "width": 2048,
-                                   "height": 1024,
-                                   //"individual_equalize": true,
-                                   //"draw_map_overlay": true,
-                                   "config": {
-                                       "type": "equirec",
-                                       "auto": true,
-                                       "img_format": "tif"
-                                   }
-                               }*/
             },
             "modis": {
                 "handler": "image_handler",
