@@ -1,0 +1,52 @@
+{
+  "saocom1_ab_tlm_dump": {
+        "name": "SAOCOM 1A/1B TLM Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+		[
+			"TL1A",
+			2255.45e6
+		],
+		[
+			"TL2A",
+			2255.5e6
+		]
+	],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+		    "agc_rate": 0.03,
+		    "rrc_taps": 31,
+                    "pll_bw": 0.003
+                }
+	    },
+		"cadu": {
+			"ccsds_conv_concat_decoder": {
+				"constellation": "oqpsk",
+				"cadu_size": 8952,
+				"nrzm": true,
+				"derandomize": true,
+				"conv_rate": "1/2",
+				"viterbi_outsync_after": 20,
+				"viterbi_ber_thresold": 0.300,
+				"asm": "0x1acffc1d",
+				"rs_i": 0
+      }
+    }
+        }
+  }
+}
