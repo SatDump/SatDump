@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstring>
 #include <cstdint>
 
 #define MTVZA_REC_FRM_SIZE 3072
 #define KMSS_BPSK_REC_FRM_SIZE 12288
+#define KMSS_QPSK_REC_FRM_SIZE 24576
 
 namespace meteor
 {
@@ -109,6 +111,7 @@ namespace meteor
 
         bool synced = 0;
         int runs_since_sync = 0;
+        int skip_bits = 0;
 
         uint8_t sync_reg_1[2];
         uint8_t sync_reg_2[4];
@@ -157,6 +160,9 @@ namespace meteor
 
                 for (int s = 0; s < 8; s++)
                 {
+                    if (skip_bits-- > 0)
+                        continue;
+
                     sync_reg_1[0] = ((shift_buffer[0 + 0] << s) | (shift_buffer[0 + 1] >> (8 - s))) & 0xFF;
                     sync_reg_1[1] = ((shift_buffer[1 + 0] << s) | (shift_buffer[1 + 1] >> (8 - s))) & 0xFF;
 
@@ -172,15 +178,46 @@ namespace meteor
                                 compare_8(sync_reg_2[2], 0x00) +
                                 compare_8(sync_reg_2[3], 0x00);
 
-                    if (sync1 < 1 && sync2 < 3)
+                    if (synced ? (sync1 < 6 && sync2 < 8) : (sync1 < 1 && sync2 < 3))
                     {
                         for (int ii = 0; ii < (KMSS_BPSK_REC_FRM_SIZE / 8); ii++)
                             output[frames_out * (KMSS_BPSK_REC_FRM_SIZE / 8) + ii] = ((shift_buffer[ii + 0] << s) | (shift_buffer[ii + 1] >> (8 - s))) & 0xFF;
                         frames_out++;
+
+                        synced = true;
+                        skip_bits = KMSS_BPSK_REC_FRM_SIZE - 1;
+                    }
+                    else
+                    {
+                        synced = false;
                     }
                 }
             }
             return frames_out;
         }
+    };
+
+    class KMSS_QPSK_ExtDeframer
+    {
+    private:
+        uint8_t *shift_buffer;
+
+        bool synced = 0;
+        int runs_since_sync = 0;
+
+        int skip_bits = 0;
+
+        uint8_t sync_reg_1[4];
+        uint8_t sync_reg_2[8];
+
+    private:
+        int compare_8(uint8_t v1, uint8_t v2);
+        uint8_t repack_8(uint8_t *bit);
+
+    public:
+        KMSS_QPSK_ExtDeframer();
+        ~KMSS_QPSK_ExtDeframer();
+
+        int work(uint8_t *input_bytes, int length, uint8_t *output);
     };
 }

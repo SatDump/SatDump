@@ -311,6 +311,15 @@ namespace meteor
                         {
                             if (f == 0)
                             {
+                                /*    msu100_1_dat[0].push_back(line_buffer_raw1[x * 3 + 0] << 6);
+                                    msu100_1_dat[0].push_back(line_buffer_raw1[x * 3 + 0] << 6);
+
+                                    msu100_1_dat[1].push_back(line_buffer_raw1[x * 3 + 1] << 6);
+                                    msu100_1_dat[1].push_back(line_buffer_raw1[x * 3 + 1] << 6);
+
+                                    msu100_1_dat[2].push_back(line_buffer_raw1[x * 3 + 2] << 6);
+                                    msu100_1_dat[2].push_back(line_buffer_raw1[x * 3 + 2] << 6);*/
+
                                 msu100_1_dat[0].push_back(line_buffer_raw1[x * 3 + 0] << 6);
                                 msu100_1_dat[1].push_back(line_buffer_raw1[x * 3 + 1] << 6);
                                 msu100_1_dat[2].push_back(line_buffer_raw2[x * 3 + 0] << 6);

@@ -9,6 +9,8 @@
 #include "meteor/module_meteor_instruments.h"
 #include "meteor/module_meteor_xband_instruments.h"
 
+#include "meteor/module_meteor_qpsk_kmss_decoder.h"
+
 class MeteorSupport : public satdump::Plugin
 {
 public:
@@ -30,6 +32,8 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::msumr::METEORMSUMRLRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::instruments::MeteorInstrumentsDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::instruments::MeteorXBandInstrumentsDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::MeteorQPSKKmssDecoderModule);
     }
 };
 

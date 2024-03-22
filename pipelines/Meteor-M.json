@@ -287,13 +287,26 @@
             }
         }
     },
-    "meteor_m_dump_wide": {
-        "name": "METEOR-M Wide Dump (WIP!)",
+    "meteor_m_kmss_qpsk_dump": {
+        "name": "METEOR-M KMSS Dump (Wide QPSK)",
         "live": false,
         "frequencies": [],
         "parameters": {
-            "samplerate": {
-                "value": 1e6
+            "satellite_number": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "METEOR Satellite",
+                "options": [
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Please select the satellite being received!"
+            },
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
             }
         },
         "work": {
@@ -307,7 +320,14 @@
                     "pll_bw": 0.004
                 }
             },
-            "frm": {}
+            "frm": {
+                "meteor_qpsk_kmss_decoder": {}
+            },
+            "products": {
+                "meteor_xband_instruments": {
+                    "instrument_type": "kmss_bpsk"
+                }
+            }
         }
     },
     "meteor_m_kmss_bpsk_db": {
