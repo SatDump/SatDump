@@ -123,7 +123,7 @@ void tcp_rx_handler(uint8_t *buffer, int len)
         if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATESET)
         {
             source_mtx.lock();
-            last_samplerate = *((uint64_t *)&buffer[1]);
+            memcpy(&last_samplerate, &buffer[1], sizeof(uint64_t));
             logger->debug("Samplerate sent %llu", last_samplerate);
             if (source_is_open)
                 current_sample_source->set_samplerate(last_samplerate);
