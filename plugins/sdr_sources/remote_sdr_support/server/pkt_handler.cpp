@@ -91,7 +91,8 @@ void tcp_rx_handler(uint8_t *buffer, int len)
         if (pkt_type == dsp::remote::PKT_TYPE_SETFREQ)
         {
             source_mtx.lock();
-            double freq = *((double *)&buffer[1]);
+            double freq;
+            memcpy(&freq, &buffer[1], sizeof(double));
             logger->debug("Frequency sent %f", freq);
             if (source_is_open)
                 current_sample_source->set_frequency(freq);
