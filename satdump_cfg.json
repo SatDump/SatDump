@@ -1057,18 +1057,6 @@
                         "scalar_y": -0.087890625
                     }
                 }
-                /*"project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    //"individual_equalize": true,
-                    //"draw_map_overlay": true,
-                    "config": {
-                        "type": "equirec",
-                        "auto": true,
-                        "img_format": "tif"
-                    }
-                }*/
             },
             "virr": {
                 "handler": "image_handler",
@@ -1322,6 +1310,32 @@
                     }
                 }
             },
+            "kmss_msu100": {
+                "handler": "image_handler",
+                "name": "KMSS (MSU-100)",
+                "rgb_composites": {
+                    "CIR (Color Infrared)": {
+                        "equation": "ch3, ch2, ch1",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "NDVI (Uncalibrated)": {
+                        "equation": "(ch3-ch2)/(ch3+ch2)",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "OSAVI (Uncalibrated)": {
+                        "equation": "(ch3-ch2)/(ch3+ch2+0.16)",
+                        "equalize": true,
+                        "geo_correct": true
+                    },
+                    "Vegetation classification": {
+                        "equation": "ch2/ch1",
+                        "equalize": true,
+                        "geo_correct": true
+                    }
+                }
+            },
             "viirs": {
                 "handler": "image_handler",
                 "name": "VIIRS",
@@ -1383,19 +1397,7 @@
                         "equation": "chm12, chm11, chm10",
                         "white_balance": true
                     }
-                } /*,
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    //"individual_equalize": true,
-                    //"draw_map_overlay": true,
-                    "config": {
-                        "type": "equirec",
-                        "auto": true,
-                        "img_format": "tif"
-                    }
-                }*/
+                }
             },
             "viirs_dnb": {
                 "handler": "image_handler",
@@ -1408,19 +1410,7 @@
                     "DNB Night": {
                         "equation": "chdnb * 50 - 0.5"
                     }
-                } /*,
-                "project_channels": {
-                    "channels": "all",
-                    "width": 2048,
-                    "height": 1024,
-                    //"individual_equalize": true,
-                    //"draw_map_overlay": true,
-                    "config": {
-                        "type": "equirec",
-                        "auto": true,
-                        "img_format": "tif"
-                    }
-                }*/
+                }
             },
             "modis": {
                 "handler": "image_handler",

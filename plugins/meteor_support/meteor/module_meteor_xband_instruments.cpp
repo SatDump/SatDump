@@ -59,11 +59,19 @@ namespace meteor
 
                 if (rotate != 0)
                 {
-                    for (int y = 0; y < cimg.height(); y++)
+                    for (double y = 0; y < cimg.height(); y++)
                     {
-                        for (int x = 0; x < cimg.width(); x++)
+                        for (double x = 0; x < cimg.width(); x++)
                         {
                             auto point = rotate_point(4000, y, rotate * 0.01745329, {x, y});
+                            if (point.x < 0)
+                                point.x = 0;
+                            if (point.y < 0)
+                                point.y = 0;
+                            if (point.x > img.width() - 1)
+                                point.x = img.width() - 1;
+                            if (point.y > img.height() - 1)
+                                point.y = img.height() - 1;
                             cimg[y * 8000 + x] = img.get_pixel_bilinear(0, point.x, point.y);
                         }
                     }
