@@ -5,7 +5,7 @@
   <name>satdump</name>
   <summary>SatDump is a general purpose satellite data processing software</summary>
   
-  <metadata_license>FSFAP</metadata_license>
+  <metadata_license>GPL-3.0-or-later</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   
   <description>
