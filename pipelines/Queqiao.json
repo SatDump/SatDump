@@ -28,10 +28,11 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "bpsk",
-                    "cadu_size": 1816,
-                    "nrzm": false,
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2048,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
                     "derandomize": true,
                     "rs_i": 1,
                     "rs_fill_bytes": 3,
