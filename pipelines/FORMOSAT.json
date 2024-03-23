@@ -1,6 +1,6 @@
 {
    "formosat7_s_dump": {
-        "name": "FORMOSAT-7 S-Band dump",
+        "name": "FORMOSAT-7/COSMIC-2 S-Band dump",
         "live": true,
         "live_cfg": [
             [
@@ -22,12 +22,12 @@
             "baseband": {},
             "soft": {
                 "psk_demod": {
-                    "constellation": "bpsk",
-                    "symbolrate": 2.048e6,
-                    "rrc_alpha": 0.5,
-                    "agc_rate": 0.03,
-		                "rrc_taps": 31,
-                    "pll_bw": 0.003
+			"constellation": "bpsk",
+                    	"symbolrate": 2.048e6,
+                    	"rrc_alpha": 0.5,
+                    	"agc_rate": 0.03,
+			"rrc_taps": 31,
+			"pll_bw": 0.003
                 }
 	    },
 		"cadu": {
