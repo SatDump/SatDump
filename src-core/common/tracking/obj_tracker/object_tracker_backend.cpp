@@ -87,19 +87,20 @@ namespace satdump
 
     void ObjectTracker::updateNextPass(double current_time)
     {
+        upcoming_passes_mtx.lock();
         logger->trace("Update pass trajectory...");
 
         upcoming_pass_points.clear();
-
         next_aos_time = 0;
         next_los_time = 0;
 
         if (tracking_mode == TRACKING_HORIZONS)
         {
             if (horizons_data.size() == 0)
+            {
+                upcoming_passes_mtx.unlock();
                 return;
-
-            upcoming_passes_mtx.lock();
+            }
 
             int iter = 0;
             for (int i = 0; i < (int)horizons_data.size(); i++)
@@ -172,8 +173,6 @@ namespace satdump
                     upcoming_pass_points.push_back({horizons_data[iter].az, horizons_data[iter].el});
                 }
             }
-
-            upcoming_passes_mtx.unlock();
         }
         else if (tracking_mode == TRACKING_SATELLITE)
         {
@@ -181,10 +180,9 @@ namespace satdump
             {
                 next_aos_time = 0;
                 next_los_time = DBL_MAX;
+                upcoming_passes_mtx.unlock();
                 return;
             }
-
-            upcoming_passes_mtx.lock();
 
             // Get next LOS
             predict_observation next_aos, next_los;
@@ -219,8 +217,8 @@ namespace satdump
                     upcoming_pass_points.push_back({float(observation_pos2.azimuth * RAD_TO_DEG), float(observation_pos2.elevation * RAD_TO_DEG)});
                 }
             }
-
-            upcoming_passes_mtx.unlock();
         }
+
+        upcoming_passes_mtx.unlock();
     }
 }
