@@ -1,3 +1,4 @@
+#include <cstring>
 #include "huffman.h"
 #include "tables.h"
 
@@ -60,7 +61,7 @@ namespace meteor
 
                     //std::cout << "DC_KLEN " <<  m.klen << std::endl;
 
-                    if (memcmp(buf, m.code, m.klen) == 0)
+                    if (std::memcmp(buf, m.code, m.klen) == 0)
                     {
                         // std::cout << "DC_EQUAL" << std::endl;
                         if (bufl < m.klen + m.len)
@@ -95,7 +96,7 @@ namespace meteor
 
                     //std::cout << "AC_KLEN " <<  m.klen << std::endl;
 
-                    if (memcmp(dat, m.code, m.klen) == 0)
+                    if (std::memcmp(dat, m.code, m.klen) == 0)
                     {
                         if (m.clen == 0 && m.zlen == 0)
                         {
