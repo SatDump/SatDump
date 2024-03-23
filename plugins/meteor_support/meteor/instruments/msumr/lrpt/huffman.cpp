@@ -27,7 +27,7 @@ namespace meteor
                 return table;
             }
 
-            bool fastEqual(bool *a, std::vector<bool> b, int length)
+            bool fastEqual(bool *a, const std::vector<bool> &b, int length)
             {
                 for (int i = 0; i < length; i++)
                     if (a[i] != b[i])
@@ -61,7 +61,7 @@ namespace meteor
 
                 //std::cout << "DC_BUFL " << bufl << std::endl;
 
-                for (dc_t m : dcCategories)
+                for (const dc_t &m : dcCategories)
                 {
                     int klen = m.code.size(); // := len(m.code)
                     if (bufl < klen)
@@ -103,7 +103,7 @@ namespace meteor
             {
                 int bufl = length; // := len(*dat)
                 //std::cout << "AC_BUFL = " << bufl << std::endl;
-                for (ac_t m : acCategories)
+                for (const ac_t &m : acCategories)
                 {
                     int klen = m.code.size(); // := len(m.code)
                     if (bufl < klen)
