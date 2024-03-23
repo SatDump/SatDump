@@ -57,7 +57,7 @@ namespace nat2pro
             decodeMHSNat(nat_file, pro_output_file);
 
         else
-            logger->error("Uknown File Type!");
+            logger->error("Unknown File Type!");
 
         if (std::filesystem::exists(pro_output_file + "/product.cbor"))
         {

@@ -277,7 +277,7 @@ namespace noaa
                         std::filesystem::create_directory(directory);
 
                     logger->info("----------- SEM");
-                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Sample counts from selected channels :");
                     logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
                     logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
                     logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
@@ -498,7 +498,7 @@ namespace noaa
                         std::filesystem::create_directory(directory);
 
                     logger->info("----------- SEM");
-                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Sample counts from selected channels :");
                     logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
                     logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
                     logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));

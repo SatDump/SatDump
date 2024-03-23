@@ -7,3 +7,4 @@ Name=SatDump
 Icon=@CMAKE_INSTALL_PREFIX@/share/satdump/icon.png
 StartupWMClass=SatDump v@SATDUMP_VERSION@
 Categories=Science;HamRadio
+Keywords=Satellite;SDR

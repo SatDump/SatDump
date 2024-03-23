@@ -965,7 +965,7 @@ namespace inmarsat
                     else if (request_status_code_b == 9)
                         request_status_code = "MES Not Commissioned";
                     else if (request_status_code_b == 0xa)
-                        request_status_code = "Waiting TDM Assignement";
+                        request_status_code = "Waiting TDM Assignment";
                     else if (request_status_code_b == 0xb)
                         request_status_code = "Illegal Request";
                     else if (request_status_code_b == 0xc)
@@ -973,7 +973,7 @@ namespace inmarsat
                     else if (request_status_code_b == 0xd)
                         request_status_code = "Requested Service Temporarily Unavailable";
                     else if (request_status_code_b == 0xe)
-                        request_status_code = "Acces To Requested Service Denied";
+                        request_status_code = "Access To Requested Service Denied";
                     else if (request_status_code_b == 0xf)
                         request_status_code = "Invalid Service";
                     else if (request_status_code_b == 0x10)

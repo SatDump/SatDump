@@ -123,7 +123,7 @@ namespace inmarsat
             else if (id == 0x50)
                 return "Unsolicited Reservation";
             else if (id == 0x51)
-                return "T Channel Assignement";
+                return "T Channel Assignment";
             else if (id == 0x52)
                 return "Reserved 0x52";
             else if (id == 0x53)
