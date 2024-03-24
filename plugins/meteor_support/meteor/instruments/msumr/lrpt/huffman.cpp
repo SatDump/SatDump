@@ -61,7 +61,7 @@ namespace meteor
 
                     //std::cout << "DC_KLEN " <<  m.klen << std::endl;
 
-                    if (std::memcmp(buf, m.code, m.klen) == 0)
+                    if (std::memcmp(buf, m.code, m.klen * sizeof(bool)) == 0)
                     {
                         // std::cout << "DC_EQUAL" << std::endl;
                         if (bufl < m.klen + m.len)
@@ -96,7 +96,7 @@ namespace meteor
 
                     //std::cout << "AC_KLEN " <<  m.klen << std::endl;
 
-                    if (std::memcmp(dat, m.code, m.klen) == 0)
+                    if (std::memcmp(dat, m.code, m.klen * sizeof(bool)) == 0)
                     {
                         if (m.clen == 0 && m.zlen == 0)
                         {
