@@ -50,9 +50,8 @@ namespace meteor
 
                     // printf("MCUN %d\n", MCUN);
 
-                    decode(&data[14], length - 14);
-
                     valid = true;
+                    decode(&data[14], length - 14);
                 }
             }
 
@@ -96,7 +95,10 @@ namespace meteor
 
                     if (val == CFC[0])
                     {
-                        valid = false;
+                        if (i == 0)
+                            valid = false;
+                        else
+                            partial = true;
                         // Invalid
                         // std::cout << "INVALID DC" << std::endl;
                         return;
@@ -116,7 +118,10 @@ namespace meteor
                         {
                             // Invalid
                             //  std::cout << "INVALID AC" << std::endl;
-                            valid = false;
+                            if (i == 0)
+                                valid = false;
+                            else
+                                partial = true;
                             return;
                         }
 

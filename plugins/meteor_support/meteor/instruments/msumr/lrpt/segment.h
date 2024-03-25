@@ -31,7 +31,7 @@ namespace meteor
                 uint8_t QF;
                 bool valid;
                 bool partial;
-                uint8_t lines[8][14 * 8];
+                uint8_t lines[8][14 * 8] = {{0}};
 
                 bool isValid();
 

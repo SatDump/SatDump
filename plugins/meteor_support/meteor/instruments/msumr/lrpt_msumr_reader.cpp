@@ -20,7 +20,6 @@ namespace meteor
                     segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
                     lastSeg[i] = 0;
-                    segCount[i] = 0;
                     rollover[i] = 0;
                     offset[i] = 0;
                 }
@@ -97,7 +96,6 @@ namespace meteor
 
                 lastSeq[currentChannel] = sequence;
                 segments[currentChannel][id] = newSeg;
-                segCount[currentChannel]++;
             }
 
             image::Image<uint8_t> MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
