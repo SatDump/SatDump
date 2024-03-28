@@ -1,5 +1,6 @@
 #include "lrpt_msumr_reader.h"
 #include "logger.h"
+#include "common/utils.h"
 #include <ctime>
 #include <cmath>
 
@@ -16,12 +17,9 @@ namespace meteor
                 for (int i = 0; i < 6; i++)
                 {
                     channels[i] = new unsigned char[((SEG_CNT / 14) * 8) * 1568];
-                    lines[i] = 0;
                     segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
-                    lastSeg[i] = 0;
-                    rollover[i] = 0;
-                    offset[i] = 0;
+                    rollover[i] = lastSeq[i] = offset[i] = lastSeg[i] = lines[i] = 0;
                 }
 
                 // Fetch current day
@@ -74,9 +72,11 @@ namespace meteor
                     rollover[currentChannel] += 16384;
                 }
 
-                if (mcuNumber == 0 && offset[currentChannel] == 0)
+                if (offset[currentChannel] == 0)
                 {
-                    offset[currentChannel] = (sequence + rollover[currentChannel]) % 43 % 14;
+                    offset[currentChannel] = (sequence - (mcuNumber / 14) + rollover[currentChannel]) % 43 % 14;
+                    if (offset[currentChannel] == 0)
+                        offset[currentChannel] = 14;
                 }
 
                 uint32_t id = ((sequence + rollover[currentChannel] - offset[currentChannel]) / 43 * 14) + mcuNumber / 14;
@@ -125,7 +125,7 @@ namespace meteor
                     timestamps.clear();
                 for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
                 {
-                    bool hasDoneTimestamps = false;
+                    std::vector<double> line_timestamps;
                     for (uint32_t i = 0; i < 8; i++)
                     {
                         for (uint32_t j = 0; j < 14; j++)
@@ -139,14 +139,10 @@ namespace meteor
                                     for (uint32_t f = 0; f < 14 * 8; f++)
                                         bad_px.insert(index + f);
 
-                                if (!hasDoneTimestamps)
-                                {
-                                    if (meteorm2x_mode)
-                                        timestamps.push_back(segments[channel][x + j].timestamp);
-                                    else
-                                        timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
-                                    hasDoneTimestamps = true;
-                                }
+                                if (meteorm2x_mode)
+                                    line_timestamps.push_back(segments[channel][x + j].timestamp);
+                                else
+                                    line_timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
                             }
                             else
                             {
@@ -161,10 +157,7 @@ namespace meteor
                         }
                     }
 
-                    if (!hasDoneTimestamps)
-                    {
-                        timestamps.push_back(-1);
-                    }
+                    timestamps.push_back(most_common(line_timestamps.begin(), line_timestamps.end(), -1.0));
                 }
 
                 image::Image<uint8_t> ret = image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);

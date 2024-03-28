@@ -16,7 +16,7 @@ namespace meteor
             private:
                 unsigned char *channels[6];
                 Segment *segments[6];
-                uint32_t rollover[6], lastSeq[6], offset[6], firstSeg[6], lastSeg[6];
+                uint32_t firstSeg[6], rollover[6], lastSeq[6], offset[6], lastSeg[6];
 
                 time_t dayValue;
 
