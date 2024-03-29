@@ -37,7 +37,7 @@
             "net": {
                 "network_server": {
                     "server_mode": "udp_send",
-                    "server_address": "0.0.0.0",
+                    "server_address": "127.0.0.1",
                     "server_port": 8888,
                     "pkt_size": 1316
                 }
@@ -122,7 +122,7 @@
             "net": {
                 "network_server": {
                     "server_mode": "udp_send",
-                    "server_address": "0.0.0.0",
+                    "server_address": "127.0.0.1",
                     "server_port": 8888,
                     "pkt_size": 1316
                 }
