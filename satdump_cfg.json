@@ -1412,6 +1412,16 @@
                     }
                 }
             },
+            "airs_hd": {
+                "handler": "image_handler",
+                "name": "AIRS HD",
+                "rgb_composites": {
+                    "321": {
+                        "equation": "ch3,ch2,ch1",
+                        "equalize": true
+                    }
+                }
+            },
             "modis": {
                 "handler": "image_handler",
                 "name": "MODIS",
