@@ -74,7 +74,8 @@ namespace meteor
 
                 if (offset[currentChannel] == 0)
                 {
-                    offset[currentChannel] = (sequence - (mcuNumber / 14) + rollover[currentChannel]) % 43 % 14;
+                    uint32_t mcu_count = mcuNumber / 14;
+                    offset[currentChannel] = (sequence + (mcu_count > sequence ? 16384 : 0) - mcu_count + rollover[currentChannel]) % 43 % 14;
                     if (offset[currentChannel] == 0)
                         offset[currentChannel] = 14;
                 }
