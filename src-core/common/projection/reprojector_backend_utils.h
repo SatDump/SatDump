@@ -114,6 +114,11 @@ namespace satdump
             ProjectionLayer &layer = projection_layers[i];
             if (!layer.enabled)
                 continue;
+            if (layer.img.size() == 0)
+            {
+                logger->warn("Empty image! Skipping...");
+                continue;
+            }
             if (progress_pointer == nullptr)
                 progress_pointer = &layer.progress;
 

@@ -340,75 +340,84 @@ namespace satdump
             if (!image::get_metadata(img).contains("proj_cfg"))
                 return {0, 0, 0, 0, false};
 
-            nlohmann::json params = image::get_metadata(img)["proj_cfg"];
-
-            proj::projection_t proj;
-            bool proj_err = false;
             try
             {
-                proj = params;
-            }
-            catch (std::exception &e)
-            {
-                proj_err = true;
-            }
+                nlohmann::json params = image::get_metadata(img)["proj_cfg"];
 
-            ProjBounds bounds;
-            if (!proj::projection_setup(&proj) && !proj_err)
-            {
-                if (proj.type == proj::ProjType_Geos)
+                proj::projection_t proj;
+                bool proj_err = false;
+                try
                 {
-                    bounds.min_lat = -90;
-                    bounds.max_lat = 90;
-                    bounds.min_lon = proj.lam0 * RAD2DEG - 90;
-                    bounds.max_lon = proj.lam0 * RAD2DEG + 90;
+                    proj = params;
+                }
+                catch (std::exception &e)
+                {
+                    proj_err = true;
+                }
+
+                ProjBounds bounds;
+                if (!proj::projection_setup(&proj) && !proj_err)
+                {
+                    if (proj.type == proj::ProjType_Geos)
+                    {
+                        bounds.min_lat = -90;
+                        bounds.max_lat = 90;
+                        bounds.min_lon = proj.lam0 * RAD2DEG - 90;
+                        bounds.max_lon = proj.lam0 * RAD2DEG + 90;
+                    }
+                    else
+                    {
+                        proj::projection_perform_inv(&proj, 0, 0, &bounds.min_lon, &bounds.max_lat);
+                        proj::projection_perform_inv(&proj, img.width(), img.height(), &bounds.max_lon, &bounds.min_lat);
+                    }
+                    bounds.valid = true;
+                    proj::projection_free(&proj);
                 }
                 else
                 {
-                    proj::projection_perform_inv(&proj, 0, 0, &bounds.min_lon, &bounds.max_lat);
-                    proj::projection_perform_inv(&proj, img.width(), img.height(), &bounds.max_lon, &bounds.min_lat);
+                    auto gcps = gcp_compute::compute_gcps(params, img.width(), img.height());
+
+                    bounds.min_lon = 180;
+                    bounds.max_lon = -180;
+                    bounds.min_lat = 90;
+                    bounds.max_lat = -90;
+                    for (auto &gcp : gcps)
+                    {
+                        if (bounds.min_lon > gcp.lon)
+                            bounds.min_lon = gcp.lon;
+                        if (bounds.max_lon < gcp.lon)
+                            bounds.max_lon = gcp.lon;
+                        if (bounds.min_lat > gcp.lat)
+                            bounds.min_lat = gcp.lat;
+                        if (bounds.max_lat < gcp.lat)
+                            bounds.max_lat = gcp.lat;
+                    }
+                    if (gcps.size() > 2)
+                        bounds.valid = true;
                 }
-                bounds.valid = true;
-                proj::projection_free(&proj);
+
+                bounds.min_lon -= 1;
+                bounds.max_lon += 1;
+                bounds.min_lat -= 1;
+                bounds.max_lat += 1;
+
+                if (bounds.min_lon < -180)
+                    bounds.min_lon = -180;
+                if (bounds.max_lon > 180)
+                    bounds.max_lon = 180;
+                if (bounds.min_lat < -90)
+                    bounds.min_lat = -90;
+                if (bounds.max_lat > 90)
+                    bounds.max_lat = 90;
+
+                return bounds;
             }
-            else
+            catch (std::exception &e)
             {
-                auto gcps = gcp_compute::compute_gcps(params, img.width(), img.height());
-
-                bounds.min_lon = 180;
-                bounds.max_lon = -180;
-                bounds.min_lat = 90;
-                bounds.max_lat = -90;
-                for (auto &gcp : gcps)
-                {
-                    if (bounds.min_lon > gcp.lon)
-                        bounds.min_lon = gcp.lon;
-                    if (bounds.max_lon < gcp.lon)
-                        bounds.max_lon = gcp.lon;
-                    if (bounds.min_lat > gcp.lat)
-                        bounds.min_lat = gcp.lat;
-                    if (bounds.max_lat < gcp.lat)
-                        bounds.max_lat = gcp.lat;
-                }
-                if (gcps.size() > 2)
-                    bounds.valid = true;
+                logger->info("Could not get Bounds! %s", e.what());
             }
 
-            bounds.min_lon -= 1;
-            bounds.max_lon += 1;
-            bounds.min_lat -= 1;
-            bounds.max_lat += 1;
-
-            if (bounds.min_lon < -180)
-                bounds.min_lon = -180;
-            if (bounds.max_lon > 180)
-                bounds.max_lon = 180;
-            if (bounds.min_lat < -90)
-                bounds.min_lat = -90;
-            if (bounds.max_lat > 90)
-                bounds.max_lat = 90;
-
-            return bounds;
+            return {0, 0, 0, 0, false};
         }
 
         namespace
