@@ -40,8 +40,7 @@ namespace satdump
         std::string default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
         projection_new_layer_file.setDefaultDir(default_dir);
         projection_new_layer_cfg.setDefaultDir(default_dir);
-        select_dataset_dialog.setDefaultDir(default_dir);
-        select_products_dialog.setDefaultDir(default_dir);
+        select_dataset_products_dialog.setDefaultDir(default_dir);
 
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
@@ -288,8 +287,8 @@ namespace satdump
                     }
 
                     ImGui::Separator();
-                    ImGui::Text("Load Dataset :");
-                    bool vd = select_dataset_dialog.draw();
+                    ImGui::Text("Load Dataset/Products :");
+                    bool vd = select_dataset_products_dialog.draw();
                     ImGui::SameLine();
                     vd |= ImGui::Button("Load##datasetdialog");
                     if (vd)
@@ -298,28 +297,17 @@ namespace satdump
                                             {
                             try
                             {
-                                loadDatasetInViewer(select_dataset_dialog.getPath());
+                                std::string path = select_dataset_products_dialog.getPath();
+                                if(std::filesystem::path(path).extension() == ".json")
+                                    loadDatasetInViewer(path);
+                                else if(std::filesystem::path(path).extension() == ".cbor")
+                                    loadProductsInViewer(path);
+                                else
+                                    logger->error("Invalid file! Not products or dataset!");
                             }
                             catch (std::exception &e)
                             {
-                                logger->error("Error opening dataset - %s", e.what());
-                            } });
-                    }
-                    ImGui::Text("Load Products :");
-                    bool vp = select_products_dialog.draw();
-                    ImGui::SameLine();
-                    vp |= ImGui::Button("Load##productdialog");
-                    if (vp)
-                    {
-                        ui_thread_pool.push([this](int)
-                                            {
-                            try
-                            {
-                                loadProductsInViewer(select_products_dialog.getPath());
-                            }
-                            catch (std::exception &e)
-                            {
-                                logger->error("Error opening products - %s", e.what());
+                                logger->error("Error opening dataset/products - %s", e.what());
                             } });
                     }
                 }
