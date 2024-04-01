@@ -192,7 +192,7 @@ namespace satdump
             ImGui::SameLine();
             ImGuiStyle &imguistyle = ImGui::GetStyle();
             ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) +
-                ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0));
+                                                                   ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0));
 
             if (projections_loading_new_layer)
             {
@@ -445,6 +445,7 @@ namespace satdump
             cfg["scale"] = projections_utm_scale;
             cfg["zone"] = projections_utm_zone;
             cfg["south"] = projections_utm_south;
+            cfg["offset_y"] = projections_utm_offset_y;
         }
         else if (projections_current_selected_proj == 2)
         {
