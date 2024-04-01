@@ -86,8 +86,8 @@ namespace dsp
                 for (int j = 0; j < (d_ntaps - 1); j++)
                     ((complex_t *)fft_inv_out)[j] += tail[j];
 
-                memcpy(&Block<T, T>::output_stream->writeBuf[i], fft_inv_out, d_nsamples * sizeof(complex_t));
-                memcpy(&tail[0], fft_inv_out + d_nsamples, (d_ntaps - 1) * sizeof(complex_t));
+                memcpy(&Block<T, T>::output_stream->writeBuf[i], (complex_t *)fft_inv_out, d_nsamples * sizeof(complex_t));
+                memcpy(&tail[0], (complex_t *)fft_inv_out + d_nsamples, (d_ntaps - 1) * sizeof(complex_t));
             }
         }
 

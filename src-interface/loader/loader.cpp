@@ -13,11 +13,13 @@ namespace satdump
 {
     LoadingScreenSink::LoadingScreenSink()
     {
+        const time_t timevalue = time(0);
+        std::tm *timeConstant = gmtime(&timevalue);
         image::Image<uint8_t> image;
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<std::mt19937::result_type> check(1, 1000);
-        loader_constant = (check(rng) == 42);
+        loader_constant = ((timeConstant->tm_mon - 3) == 0 && (timeConstant->tm_mday - 1) == 0) ? (check(rng) != 42) : (check(rng) == 42);
         title = loader_constant ? satdump::loader_constant_title : "SatDump";
         slogan = loader_constant ? satdump::loader_constant_slogan : "General Purpose Satellite Data Processor";
         if (loader_constant)

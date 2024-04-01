@@ -4,6 +4,7 @@
 #include <cstring>
 #include <limits>
 #include <fstream>
+#include "image_meta.h"
 
 namespace image
 {
@@ -101,8 +102,7 @@ namespace image
             delete[] ttf_buffer;
         }
 
-        if (metadata_obj != nullptr)
-            delete metadata_obj;
+        free_metadata_proj_cfg(*this);
     }
 
     template <typename T>

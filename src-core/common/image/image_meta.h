@@ -53,4 +53,11 @@ namespace image
         else
             return nlohmann::json();
     }
+
+    template <typename T>
+    void free_metadata_proj_cfg(const Image<T> &img)
+    {
+        if (img.metadata_obj != nullptr)
+            delete ((nlohmann::json *)img.metadata_obj);
+    }
 }
