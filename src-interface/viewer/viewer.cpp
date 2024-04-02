@@ -98,6 +98,20 @@ namespace satdump
         {
             try
             {
+                if (path.find("http") == 0)
+                {
+                    // Make sure the path is URL safe
+                    std::ostringstream encodedUrl;
+                    encodedUrl << std::hex << std::uppercase << std::setfill('0');
+                    for (char& c : pro_path)
+                    {
+                        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~')
+                            encodedUrl << c;
+                        else
+                            encodedUrl << '%' << std::setw(2) << static_cast<unsigned int>(static_cast<unsigned char>(c));
+                    }
+                    pro_path = encodedUrl.str();
+                }
                 loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
             }
             catch (std::exception &e)
@@ -288,10 +302,7 @@ namespace satdump
 
                     ImGui::Separator();
                     ImGui::Text("Load Dataset/Products :");
-                    bool vd = select_dataset_products_dialog.draw();
-                    ImGui::SameLine();
-                    vd |= ImGui::Button("Load##datasetdialog");
-                    if (vd)
+                    if (select_dataset_products_dialog.draw())
                     {
                         ui_thread_pool.push([this](int)
                                             {

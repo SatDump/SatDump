@@ -47,7 +47,7 @@ namespace satdump
         float panel_ratio = 0.23;
         float last_width = -1.0f;
 
-        FileSelectWidget select_dataset_products_dialog = FileSelectWidget("Dataset/Products", "Select Dataset/Products");
+        FileSelectWidget select_dataset_products_dialog = FileSelectWidget("Dataset/Products", "Select Dataset/Products", false, true);
 
         struct ProductsHandler
         {

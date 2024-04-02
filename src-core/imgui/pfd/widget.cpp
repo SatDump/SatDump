@@ -1,6 +1,6 @@
 #include <filesystem>
 #include "widget.h"
-#include "core/style.h"
+#include "core/module.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "android_dialogs.h"
@@ -9,12 +9,14 @@
 #include <direct.h>
 #endif
 
-FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text, bool directory)
-    : label(label), selection_text(selection_text), directory(directory)
+FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text, bool directory, bool allow_url)
+    : label(label), selection_text(selection_text), directory(directory), allow_url(allow_url)
 {
     fileselect = nullptr;
     dirselect = nullptr;
     waiting_for_res = false;
+    file_valid = false;
+    url_valid = false;
     default_dir = ".";
     id = "##filepathselection" + label;
     btnid = u8"\ufc6e Open##filepathselectionbutton" + label;
@@ -40,13 +42,26 @@ bool FileSelectWidget::draw(std::string hint)
             default_dir = cwd;
     }
 #endif
+
     if (disabled)
         style::beginDisabled();
-    if (!file_valid)
+    if (!file_valid && !url_valid)
         ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+    if (allow_url)
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        float textbox_width = ImGui::GetContentRegionAvail().x -
+            (ImGui::CalcTextSize(btnid.c_str(), nullptr, true).x +
+                ImGui::CalcTextSize("Load").x +
+                style.ItemSpacing.x * 2 + style.FramePadding.x * 4);
+        if (textbox_width < 20 * ui_scale)
+            textbox_width = 20 * ui_scale;
+        ImGui::SetNextItemWidth(textbox_width);
+    }
+
     ImGui::InputTextWithHint(id.c_str(), hint.c_str(), &path);
     changed = ImGui::IsItemDeactivatedAfterEdit();
-    if (!file_valid)
+    if (!file_valid && !url_valid)
         ImGui::PopStyleColor();
 
     ImGui::SameLine();
@@ -71,6 +86,7 @@ bool FileSelectWidget::draw(std::string hint)
 
         waiting_for_res = true;
     }
+
     if (disabled)
         style::endDisabled();
 
@@ -112,7 +128,7 @@ bool FileSelectWidget::draw(std::string hint)
             {
 #endif
                 path = get;
-                changed = true;
+                changed |= true;
                 waiting_for_res = false;
             }
         }
@@ -120,7 +136,17 @@ bool FileSelectWidget::draw(std::string hint)
 
     bool is_dir = std::filesystem::is_directory(path);
     file_valid = std::filesystem::exists(path) && (directory ? is_dir : !is_dir);
-    return file_valid && changed;
+    if (allow_url)
+    {
+        ImGui::SameLine();
+        url_valid = path.find("http") == 0;
+        if (disabled || (!file_valid && !url_valid))
+            style::beginDisabled();
+        changed |= ImGui::Button(std::string("Load##" + label).c_str());
+        if (disabled || (!file_valid && !url_valid))
+            style::endDisabled();
+    }
+    return (file_valid || url_valid) && changed;
 }
 
 std::string FileSelectWidget::getPath()
