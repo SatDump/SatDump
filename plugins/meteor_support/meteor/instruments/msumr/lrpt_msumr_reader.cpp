@@ -16,7 +16,6 @@ namespace meteor
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    channels[i] = new unsigned char[((SEG_CNT / 14) * 8) * 1568];
                     segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
                     rollover[i] = lastSeq[i] = offset[i] = lastSeg[i] = lines[i] = 0;
@@ -30,10 +29,7 @@ namespace meteor
             MSUMRReader::~MSUMRReader()
             {
                 for (int i = 0; i < 6; i++)
-                {
-                    delete[] channels[i];
                     delete[] segments[i];
-                }
             }
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
@@ -119,6 +115,7 @@ namespace meteor
                 lastSeg_l -= lastSeg_l % 14;
 
                 lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
+                image::Image<uint8_t> ret = image::Image<uint8_t>(1568, lines[channel], 1);
 
                 std::set<uint32_t> bad_px;
                 uint32_t index = 0;
@@ -134,7 +131,7 @@ namespace meteor
                             if (segments[channel][x + j].isValid())
                             {
                                 for (int f = 0; f < 14 * 8; f++)
-                                    channels[channel][index + f] = segments[channel][x + j].lines[i][f];
+                                    ret[index + f] = segments[channel][x + j].lines[i][f];
 
                                 if(segments[channel][x + j].partial)
                                     for (uint32_t f = 0; f < 14 * 8; f++)
@@ -149,7 +146,7 @@ namespace meteor
                             {
                                 for (uint32_t f = 0; f < 14 * 8; f++)
                                 {
-                                    channels[channel][index + f] = 0;
+                                    ret[index + f] = 0;
                                     bad_px.insert(index + f);
                                 }
                             }
@@ -161,7 +158,6 @@ namespace meteor
                     timestamps.push_back(most_common(line_timestamps.begin(), line_timestamps.end(), -1.0));
                 }
 
-                image::Image<uint8_t> ret = image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
                 if (max_correct > 0 && ret.size() > 0)
                 {
                     logger->info("Filling missing data in channel %d...", channel + 1);

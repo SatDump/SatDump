@@ -14,7 +14,6 @@ namespace meteor
             class MSUMRReader
             {
             private:
-                unsigned char *channels[6];
                 Segment *segments[6];
                 uint32_t firstSeg[6], rollover[6], lastSeq[6], offset[6], lastSeg[6];
 

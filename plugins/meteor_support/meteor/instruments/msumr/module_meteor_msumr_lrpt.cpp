@@ -98,14 +98,6 @@ namespace meteor
             }
 
             data_in.close();
-
-            logger->info("MSU-MR Channel 1 Lines  : " + std::to_string(msureader.getChannel(0).height()));
-            logger->info("MSU-MR Channel 2 Lines  : " + std::to_string(msureader.getChannel(1).height()));
-            logger->info("MSU-MR Channel 3 Lines  : " + std::to_string(msureader.getChannel(2).height()));
-            logger->info("MSU-MR Channel 4 Lines  : " + std::to_string(msureader.getChannel(3).height()));
-            logger->info("MSU-MR Channel 5 Lines  : " + std::to_string(msureader.getChannel(4).height()));
-            logger->info("MSU-MR Channel 6 Lines  : " + std::to_string(msureader.getChannel(5).height()));
-
             logger->info("Writing images.... (Can take a while)");
 
             // Identify satellite, and apply per-sat settings...
@@ -158,6 +150,7 @@ namespace meteor
             for (int i = 0; i < 6; i++)
             {
                 image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
+                logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
