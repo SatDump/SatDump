@@ -128,12 +128,7 @@ namespace meteor
             else if (msumr_serial_number == 3)
                 norad = 57166; // M2-3
             else if (msumr_serial_number == 4)
-                norad = 59051; // M2-4, WAITING FOR NORAD
-
-            // Products dataset
-            satdump::ProductDataSet dataset;
-            dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(msureader.timestamps);
+                norad = 59051; // M2-4
 
             // Satellite ID
             {
@@ -155,6 +150,11 @@ namespace meteor
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
             msumr_products.save(directory);
+
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = sat_name;
+            dataset.timestamp = get_median(msureader.timestamps);
             dataset.products_list.push_back("MSU-MR");
 
             if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
