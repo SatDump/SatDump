@@ -42,7 +42,8 @@ void FancySlider(const char * str_id, const char * label, float* v, int width){
     ImGui::DragFloat(str_id, v, 100.0f/(float)width, 0, 100, "", ImGuiSliderFlags_AlwaysClamp);
     draw_list->AddRectFilled(ImVec2(p.x + 2*ui_scale, p.y + ImGui::GetFrameHeight() * 0.15f),
         ImVec2(p.x + *v * (width - 4*ui_scale) / 100 + 2*ui_scale, p.y + height),
-        ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_SliderGrab]), 2);
+        ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[(GImGui->CurrentItemFlags & ImGuiItemFlags_Disabled) == 0 ?
+             ImGuiCol_SliderGrab : ImGuiCol_Button]), 2);
     draw_list->AddText(ImVec2(p.x + (width-ImGui::CalcTextSize(label).x)/2, p.y + ImGui::GetFrameHeight() * 0.15f), 
         ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), label);
     ImGui::EndGroup();

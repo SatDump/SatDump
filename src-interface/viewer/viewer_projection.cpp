@@ -377,7 +377,14 @@ namespace satdump
                         ImGui::SameLine();
 
                         ImGui::BeginGroup();
+                        if (projections_mode_radio == 0)
+                            style::beginDisabled();
                         FancySlider(std::string("##opacitylayer" + layer.name + std::to_string(i)).c_str(), "Opacity", &layer.opacity, ImGui::GetWindowWidth() - 76 * ui_scale);
+                        if (projections_mode_radio == 0)
+                        {
+                            ImGui::SetItemTooltip("%s", "Opacity is for overlay mode only");
+                            style::endDisabled();
+                        }
                         ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
                         ImGui::EndGroup();
                     }
