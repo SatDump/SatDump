@@ -884,9 +884,9 @@ namespace satdump
                 viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
 
                 if (rotate_image)
-                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
+                    viewer_app->projection_layers.front().img.mirror(true, true);
                 if (projection_use_old_algo)
-                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].old_algo = true;
+                    viewer_app->projection_layers.front().old_algo = true;
 
                 proj_notif.set_message(style::theme.green, "Added!");
             }
