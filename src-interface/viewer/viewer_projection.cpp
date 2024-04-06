@@ -489,10 +489,6 @@ namespace satdump
 
         satdump::applyAutomaticProjectionSettings(projection_layers, projection_auto_mode, projection_auto_scale_mode, projections_image_width, projections_image_height, cfg);
 
-        // Setup final image
-        projected_image_result.init(projections_image_width, projections_image_height, 3);
-        projected_image_result.init_font(resources::getResourcePath("fonts/font.ttf"));
-
         for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
             ProjectionLayer &layer = projection_layers[i];
@@ -513,10 +509,10 @@ namespace satdump
             for (int i = 1; i < (int)layers_images.size(); i++)
                 projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
         }
-        else if (projections_mode_radio == 1)
+        else if (projections_mode_radio == 1) // Overlay
         {
-            projected_image_result = layers_images[0];
-            for (int i = 1; i < (int)layers_images.size(); i++)
+            projected_image_result = image::Image<uint16_t>(layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
+            for (int i = 0; i < (int)layers_images.size(); i++)
             {
                 projected_image_result = image::merge_images_opacity(projected_image_result,
                                                                      layers_images[i],

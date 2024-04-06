@@ -40,25 +40,34 @@ namespace image
             std::string smaxval = "255\n"; // MaxVal + Whitespace
             fileo.write(smaxval.c_str(), smaxval.size());
 
-            for (size_t y = 0; y < d_height; y++)
-                for (size_t x = 0; x < d_width; x++)
-                    for (int c = 0; c < channels; c++)
-                        fileo.write((char *)&channel(c)[y * d_width + x], sizeof(uint8_t));
+            for (size_t i = 0; i < d_width * d_height; i++)
+            {
+                for (int c = 0; c < channels; c++)
+                {
+                    if (d_channels == 4)
+                    {
+                        T write_val = (float)channel(c)[i] * ((float)channel(3)[i] / 255.0f);
+                        fileo.write((char*)&write_val, sizeof(uint8_t));
+                    }
+                    else
+                        fileo.write((char*)&channel(c)[i], sizeof(uint8_t));
+                }
+            }
         }
         else if (d_depth == 16)
         {
             std::string smaxval = "65535\n"; // MaxVal + Whitespace
             fileo.write(smaxval.c_str(), smaxval.size());
 
-            for (size_t y = 0; y < d_height; y++)
+            for (size_t i = 0; i < d_width * d_height; i++)
             {
-                for (size_t x = 0; x < d_width; x++)
+                for (int c = 0; c < channels; c++)
                 {
-                    for (int c = 0; c < channels; c++)
-                    {
-                        uint16_t v = INVERT_ENDIAN_16(channel(c)[y * d_width + x]);
-                        fileo.write((char *)&v, sizeof(uint16_t));
-                    }
+                    uint16_t v = channel(c)[i];
+                    if(d_channels == 4)
+                        v = (float)v * (float)channel(3)[i] / 65535.0f;
+                    v = INVERT_ENDIAN_16(v);
+                    fileo.write((char *)&v, sizeof(uint16_t));
                 }
             }
         }

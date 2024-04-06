@@ -67,8 +67,12 @@ namespace image
             for (int j = 0; j < color_channels; j++)
                 ret.channel(j)[i] = ((alpha_2 * ((float)img2.channel(j)[i] / 65535.0f) +
                     alpha_1 * ((float)img1.channel(j)[i] / 65535.0f) * (1.0f - alpha_2)) / ret_alpha) * 65535.0f;
+
             if (channels_1 == 4)
                 ret.channel(3)[i] = ret_alpha * 65535.0f;
+            else
+                for (int j = 0; j < color_channels; j++)
+                    ret.channel(j)[i] = (float)ret.channel(j)[i] * ret_alpha;
         }
 
         return ret;

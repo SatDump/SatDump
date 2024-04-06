@@ -154,8 +154,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             for (int i = 0; i < 3; i++)
                 img.channel(i)[location.first] = (((color[i] * location.second) +
                     (((float)img.channel(i)[location.first] / 65535.0f) * src_alpha * (1.0f - location.second))) / alpha) * 65535.0f;
+
             if (channels == 4)
                 img.channel(3)[location.first] = alpha * 65535.0f;
+            else
+                for (int i = 0; i < channels; i++)
+                    img.channel(i)[location.first] = (float)img.channel(i)[location.first] * alpha;
         }
 
         if (step_cnt != nullptr)
@@ -203,8 +207,12 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
             for (int i = 0; i < 3; i++)
                 img.channel(i)[location.first] = (((color[i] * location.second) +
                     (((float)img.channel(i)[location.first] / 65535.0f) * src_alpha * (1.0f - location.second))) / alpha) * 65535.0f;
+
             if (channels == 4)
                 img.channel(3)[location.first] = alpha * 65535.0f;
+            else
+                for (int i = 0; i < channels; i++)
+                    img.channel(i)[location.first] = (float)img.channel(i)[location.first] * alpha;
         }
 
         if (step_cnt != nullptr)

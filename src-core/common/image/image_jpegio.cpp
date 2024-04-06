@@ -215,6 +215,12 @@ namespace image
                     jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i] >> 8; // Scale down to 8 if required
         }
 
+        // Apply transparency, if applicable
+        if (d_channels == 4)
+            for (int i = 0; i < (int)d_width * (int)d_height; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    jpeg_decomp[i * cinfo.num_components + c] *= (float)channel(3)[i] / std::numeric_limits<T>::max();
+
         // Compress
         while (cinfo.next_scanline < cinfo.image_height)
         {

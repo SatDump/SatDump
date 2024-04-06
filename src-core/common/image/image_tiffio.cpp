@@ -34,7 +34,7 @@ namespace image
             if (d_channels == 4)
             {
                 uint16_t out[1];
-                out[0] = EXTRASAMPLE_ASSOCALPHA;
+                out[0] = EXTRASAMPLE_UNASSALPHA;
                 TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, 1, &out);
             }
 
