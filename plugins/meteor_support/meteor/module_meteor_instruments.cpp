@@ -215,11 +215,10 @@ namespace meteor
                 msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
 
                 std::vector<double> filter_timestamps = msumr_timestamps;
-                double avg = avg_overflowless(filter_timestamps);
                 double last = 0;
                 for (double &v : filter_timestamps)
                 {
-                    if (abs(avg - v) > 10000)
+                    if (abs(dataset.timestamp - v) > 10000)
                     {
                         last = v;
                         v = -1;
