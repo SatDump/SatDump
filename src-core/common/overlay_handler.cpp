@@ -55,6 +55,8 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
 {
     const size_t width = img.width();
     const size_t height = img.height();
+    const int channels = img.channels();
+
     // Draw map borders
     if (draw_map_overlay)
     {
@@ -79,7 +81,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
 
         uint16_t color[4] = {(uint16_t)(color_borders.x * 65535.0f), (uint16_t)(color_borders.y * 65535.0f), (uint16_t)(color_borders.z * 65535.0f), 65535};
         for (size_t &location : map_cache.map)
-            for (int i = 0; i < img.channels(); i++)
+            for (int i = 0; i < channels; i++)
                 img.channel(i)[location] = color[i];
 
         if (step_cnt != nullptr)
@@ -110,7 +112,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
 
         uint16_t color[4] = {(uint16_t)(color_shores.x * 65535.0f), (uint16_t)(color_shores.y * 65535.0f), (uint16_t)(color_shores.z * 65535.0f), 65535};
         for (size_t &location : shores_cache.map)
-            for (int i = 0; i < img.channels(); i++)
+            for (int i = 0; i < channels; i++)
                 img.channel(i)[location] = color[i];
 
         if (step_cnt != nullptr)
@@ -144,16 +146,16 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         else
             logger->info("Applying cached cities overlay...");
 
-        uint16_t color[4] = {(uint16_t)(color_cities.x * 65535.0f), (uint16_t)(color_cities.y * 65535.0f), (uint16_t)(color_cities.z * 65535.0f), 65535};
-        for (auto &location : cities_cache.map)
+        float color[3] = { color_cities.x, color_cities.y, color_cities.z };
+        for (auto& location : cities_cache.map)
         {
-            for (int i = 0; i < img.channels(); i++)
-            {
-                if (i == 3 || location.second == 1.0f)
-                    img.channel(i)[location.first] = color[i];
-                else
-                    img.channel(i)[location.first] = img.channel(i)[location.first] * (1.0f - location.second) + color[i] * location.second;
-            }
+            float src_alpha = channels == 4 ? (float)img.channel(3)[location.first] / 65535.0f : 1.0f;
+            float alpha = location.second + src_alpha * (1.0f - location.second);
+            for (int i = 0; i < 3; i++)
+                img.channel(i)[location.first] = (((color[i] * location.second) +
+                    (((float)img.channel(i)[location.first] / 65535.0f) * src_alpha * (1.0f - location.second))) / alpha) * 65535.0f;
+            if (channels == 4)
+                img.channel(3)[location.first] = alpha * 65535.0f;
         }
 
         if (step_cnt != nullptr)
@@ -193,16 +195,16 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
         else
             logger->info("Applying cached QTH overlay...");
 
-        uint16_t color[4] = {(uint16_t)(color_qth.x * 65535.0f), (uint16_t)(color_qth.y * 65535.0f), (uint16_t)(color_qth.z * 65535.0f), 65535};
+        float color[3] = { color_qth.x, color_qth.y, color_qth.z };
         for (auto &location : qth_cache.map)
         {
-            for (int i = 0; i < img.channels(); i++)
-            {
-                if (i == 3 || location.second == 1.0f)
-                    img.channel(i)[location.first] = color[i];
-                else
-                    img.channel(i)[location.first] = img.channel(i)[location.first] * (1.0f - location.second) + color[i] * location.second;
-            }
+            float src_alpha = channels == 4 ? (float)img.channel(3)[location.first] / 65535.0f : 1.0f;
+            float alpha = location.second + src_alpha * (1.0f - location.second);
+            for (int i = 0; i < 3; i++)
+                img.channel(i)[location.first] = (((color[i] * location.second) +
+                    (((float)img.channel(i)[location.first] / 65535.0f) * src_alpha * (1.0f - location.second))) / alpha) * 65535.0f;
+            if (channels == 4)
+                img.channel(3)[location.first] = alpha * 65535.0f;
         }
 
         if (step_cnt != nullptr)
@@ -231,7 +233,7 @@ void OverlayHandler::apply(image::Image<uint16_t> &img, std::function<std::pair<
 
         uint16_t color[4] = {(uint16_t)(color_latlon.x * 65535.0f), (uint16_t)(color_latlon.y * 65535.0f), (uint16_t)(color_latlon.z * 65535.0f), 65535};
         for (size_t &location : latlon_cache.map)
-            for (int i = 0; i < img.channels(); i++)
+            for (int i = 0; i < channels; i++)
                 img.channel(i)[location] = color[i];
 
         if (step_cnt != nullptr)

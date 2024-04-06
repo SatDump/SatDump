@@ -284,7 +284,7 @@ namespace satdump
                                 proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
                                 image::set_metadata_proj_cfg(timemap, proj_cfg);
 
-                                projection_layers.push_back({"Tile Map", timemap});
+                                projection_layers.push_front({"Tile Map", timemap});
                             }
                             else
                             {
@@ -292,7 +292,7 @@ namespace satdump
                                 {
                                     ProjectionLayer newlayer = satdump::loadExternalLayer(cfg);
                                     newlayer.name = projection_new_layer_name;
-                                    projection_layers.push_back(newlayer);
+                                    projection_layers.push_front(newlayer);
                                 }
                                 catch (std::exception &e)
                                 {

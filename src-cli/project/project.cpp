@@ -33,7 +33,7 @@ int main_project(int argc, char *argv[])
 
     logger->info("Starting projection tool...");
 
-    std::vector<satdump::ProjectionLayer> projection_layers;
+    std::deque<satdump::ProjectionLayer> projection_layers;
     nlohmann::json target_cfg;
     int projections_image_width = 0, projections_image_height = 0;
 

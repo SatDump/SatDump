@@ -50,57 +50,27 @@ namespace image
 
     image::Image<uint16_t> merge_images_opacity(image::Image<uint16_t> &img1, image::Image<uint16_t> &img2, float op)
     {
-        size_t width = std::min<int>(img1.width(), img2.width());
-        size_t height = std::min<int>(img1.height(), img2.height());
-        image::Image<uint16_t> img_b(width, height, img1.channels());
-        bool are_rgba = img1.channels() == 4 && img2.channels() == 4;
+        const size_t width = std::min<int>(img1.width(), img2.width());
+        const size_t height = std::min<int>(img1.height(), img2.height());
+        const int64_t size = width * height;
+        const int channels_1 = img1.channels();
+        const int channels_2 = img2.channels();
+        const int color_channels = std::min(3, channels_1);
+        image::Image<uint16_t> ret(width, height, channels_1);
 
-        for (int c = 0; c < img1.channels(); c++)
+#pragma omp parallel for
+        for (int64_t i = 0; i < size; i++)
         {
-            for (size_t i = 0; i < height * width; i++)
-            {
-                if (are_rgba)
-                {
-                    if (op == 1.0)
-                    {
-                        if (img2.channel(3)[i] != 0)
-                            img_b.channel(c)[i] = img2.channel(c)[i];
-                        else
-                            img_b.channel(c)[i] = img1.channel(c)[i];
-                    }
-                    else if (op == 0.0)
-                    {
-                        if (img1.channel(3)[i] != 0)
-                            img_b.channel(c)[i] = img1.channel(c)[i];
-                        else
-                            img_b.channel(c)[i] = img2.channel(c)[i];
-                    }
-                    else
-                        img_b.channel(c)[i] = img2.channel(3)[i] != 0
-                                                  ? std::min<int>(65535, img1.channel(c)[i] * (1.0f - op) + img2.channel(c)[i] * op)
-                                                  : img1.channel(c)[i];
-                }
-                else
-                {
-                    if (op == 1.0)
-                    {
-                        if (img2.channel(c)[i] != 0)
-                            img_b.channel(c)[i] = img2.channel(c)[i];
-                        else
-                            img_b.channel(c)[i] = img1.channel(c)[i];
-                    }
-                    else if (op == 0.0)
-                    {
-                        if (img1.channel(c)[i] != 0)
-                            img_b.channel(c)[i] = img1.channel(c)[i];
-                        else
-                            img_b.channel(c)[i] = img2.channel(c)[i];
-                    }
-                    else
-                        img_b.channel(c)[i] = std::min<int>(65535, img1.channel(c)[i] * (1.0f - op) + img2.channel(c)[i] * op);
-                }
-            }
+            float alpha_1 = channels_1 == 4 ? (float)img1.channel(3)[i] / 65535.0f : 1.0f;
+            float alpha_2 = (channels_2 == 4 ? (float)img2.channel(3)[i] / 65535.0f : 1.0f) * op;
+            float ret_alpha = alpha_2 + alpha_1 * (1.0f - alpha_2);
+            for (int j = 0; j < color_channels; j++)
+                ret.channel(j)[i] = ((alpha_2 * ((float)img2.channel(j)[i] / 65535.0f) +
+                    alpha_1 * ((float)img1.channel(j)[i] / 65535.0f) * (1.0f - alpha_2)) / ret_alpha) * 65535.0f;
+            if (channels_1 == 4)
+                ret.channel(3)[i] = ret_alpha * 65535.0f;
         }
-        return img_b;
+
+        return ret;
     }
 }

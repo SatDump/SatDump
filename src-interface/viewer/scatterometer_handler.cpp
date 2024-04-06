@@ -249,7 +249,7 @@ namespace satdump
                 else
                     instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_back({ timestring + object_name + instrument_name, current_img });
+                viewer_app->projection_layers.push_front({ timestring + object_name + instrument_name, current_img });
             }
             catch (std::exception &e)
             {

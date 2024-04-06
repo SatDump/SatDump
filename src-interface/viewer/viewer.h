@@ -98,7 +98,7 @@ namespace satdump
         int projection_osm_zoom = 3;
         bool is_opening_layer = false;
 
-        std::vector<ProjectionLayer> projection_layers;
+        std::deque<ProjectionLayer> projection_layers;
 
         int selected_external_type = 0;
         std::string projection_new_layer_name = "Ext Layer";

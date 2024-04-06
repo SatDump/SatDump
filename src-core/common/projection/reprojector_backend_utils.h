@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include "core/exception.h"
 #include "reprojector.h"
 #include "imgui/imgui_image.h"
@@ -40,7 +41,7 @@ namespace satdump
         }
     };
 
-    inline void applyAutomaticProjectionSettings(std::vector<ProjectionLayer> &projection_layers,
+    inline void applyAutomaticProjectionSettings(std::deque<ProjectionLayer> &projection_layers,
                                                  bool projection_auto_mode, bool projection_auto_scale_mode,
                                                  int &projections_image_width, int &projections_image_height,
                                                  nlohmann::json &target_cfg)
@@ -98,15 +99,13 @@ namespace satdump
         }
     }
 
-    inline std::vector<image::Image<uint16_t>> generateAllProjectionLayers(std::vector<ProjectionLayer> &projection_layers,
+    inline std::vector<image::Image<uint16_t>> generateAllProjectionLayers(std::deque<ProjectionLayer> &projection_layers,
                                                                            int projections_image_width,
                                                                            int projections_image_height,
                                                                            nlohmann::json &target_cfg,
                                                                            float *general_progress = nullptr)
     {
         std::vector<image::Image<uint16_t>> layers_images;
-
-        float *progress_pointer = nullptr;
 
         for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
@@ -119,8 +118,6 @@ namespace satdump
                 logger->warn("Empty image! Skipping...");
                 continue;
             }
-            if (progress_pointer == nullptr)
-                progress_pointer = &layer.progress;
 
             int width = projections_image_width;
             int height = projections_image_height;
@@ -139,7 +136,7 @@ namespace satdump
 
             op.use_old_algorithm = layer.old_algo;
 
-            image::Image<uint16_t> res = reprojection::reproject(op, progress_pointer);
+            image::Image<uint16_t> res = reprojection::reproject(op, &layer.progress);
             layers_images.push_back(res);
 
             if (general_progress != nullptr)

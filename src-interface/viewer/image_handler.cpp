@@ -881,7 +881,7 @@ namespace satdump
                     composite_name = rgb_presets[select_rgb_presets].first;
 
                 // Add projection layer and settings
-                viewer_app->projection_layers.push_back({timestring + object_name + instrument_name + " - " + composite_name, current_image});
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
 
                 if (rotate_image)
                     viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);

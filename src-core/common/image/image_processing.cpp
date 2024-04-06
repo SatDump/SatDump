@@ -259,20 +259,45 @@ namespace image
         size_t max_index = d_width * d_height;
 
         int a = 0, b = 0, c = 0, d = 0;
+        float a_a = 1.0f, b_a = 1.0f, c_a = 1.0f, d_a = 1.0f;
 
         a = channel(cc)[index];
+        if (d_channels == 4 && cc != 3)
+            a_a = (float)channel(3)[index] / (float)std::numeric_limits<T>::max();
+
         if (index + 1 < max_index)
+        {
             b = channel(cc)[index + 1];
+            if (d_channels == 4 && cc != 3)
+            {
+                b_a = (float)channel(3)[index + 1] / (float)std::numeric_limits<T>::max();
+                b = (float)b * b_a;
+            }
+        }
         else
             return a;
 
         if (index + d_width < max_index)
+        {
             c = channel(cc)[index + d_width];
+            if (d_channels == 4 && cc != 3)
+            {
+                c_a = (float)channel(3)[index + d_width] / (float)std::numeric_limits<T>::max();
+                c = (float)c * c_a;
+            }
+        }
         else
             return a;
 
         if (index + d_width + 1 < max_index)
+        {
             d = channel(cc)[index + d_width + 1];
+            if (d_channels == 4 && cc != 3)
+            {
+                d_a = (float)channel(3)[index + d_width + 1] / (float)std::numeric_limits<T>::max();
+                d = (float)d * d_a;
+            }
+        }
         else
             return a;
 
@@ -281,10 +306,20 @@ namespace image
         if (y == d_height - 1)
             return a;
 
-        return clamp(a * (1 - x_diff) * (1 - y_diff) +
-                     b * (x_diff) * (1 - y_diff) +
-                     c * (y_diff) * (1 - x_diff) +
-                     d * (x_diff * y_diff));
+        a = (float)a * a_a;
+        T ret = clamp(a * (1 - x_diff) * (1 - y_diff) +
+            b * (x_diff) * (1 - y_diff) +
+            c * (y_diff) * (1 - x_diff) +
+            d * (x_diff * y_diff));
+        if (d_channels == 4 && cc != 3)
+        {
+            ret = (float)ret / (a_a * (1 - x_diff) * (1 - y_diff) +
+                b_a * (x_diff) * (1 - y_diff) +
+                c_a * (y_diff) * (1 - x_diff) +
+                d_a * (x_diff * y_diff));
+        }
+
+        return ret;
     }
 
     template <typename T>

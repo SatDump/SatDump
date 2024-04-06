@@ -71,7 +71,7 @@ inline double VizGeorefSpline2DBase_func(const double x1, const double y1,
 }
 
 inline ushort get_pixel_bilinear(global const ushort *img, const int width,
-                                 const int height, int cc, double rx,
+                                 const int height, const int channels, int cc, double rx,
                                  double ry) {
   int x = (int)rx;
   int y = (int)ry;
@@ -83,20 +83,39 @@ inline ushort get_pixel_bilinear(global const ushort *img, const int width,
   size_t max_index = width * height;
 
   int a = 0, b = 0, c = 0, d = 0;
+  double a_a = 1.0, b_a = 1.0, c_a = 1.0, d_a = 1.0;
 
   a = img[cc * width * height + index];
-  if (index + 1 < max_index)
+  if (channels == 4 && cc != 3)
+    a_a = img[3 * width * height + index] / 65535.0;
+
+  if (index + 1 < max_index) {
     b = img[cc * width * height + index + 1];
+    if (channels == 4 && cc != 3) {
+      b_a = img[3 * width * height + index + 1] / 65535.0;
+      b = (double)b * b_a;
+    }
+  }
   else
     return a;
 
-  if (index + width < max_index)
+  if (index + width < max_index) {
     c = img[cc * width * height + index + width];
+    if (channels == 4 && cc != 3) {
+      c_a = img[3 * width * height + index + width] / 65535.0;
+      c = (double)c * c_a;
+    }
+  }
   else
     return a;
 
-  if (index + width + 1 < max_index)
+  if (index + width + 1 < max_index) {
     d = img[cc * width * height + index + width + 1];
+    if (channels == 4 && cc != 3) {
+      d_a = img[3 * width * height + index + width + 1] / 65535.0;
+      d = (double)d * d_a;
+    }
+  }
   else
     return a;
 
@@ -105,10 +124,18 @@ inline ushort get_pixel_bilinear(global const ushort *img, const int width,
   if (y == height - 1)
     return a;
 
+  a = (double)a * a_a;
   int val = (int)((double)a * (1.0 - x_diff) * (1.0 - y_diff) +
                   (double)b * (x_diff) * (1.0 - y_diff) +
                   (double)c * (y_diff) * (1.0 - x_diff) +
                   (double)d * (x_diff * y_diff));
+  if (channels == 4 && cc != 3) {
+    val = (int)((double)val / (a_a * (1 - x_diff) * (1 - y_diff) +
+                b_a * (x_diff) * (1 - y_diff) +
+                c_a * (y_diff) * (1 - x_diff) +
+                d_a * (x_diff * y_diff)));
+  }
+
   if (val > 65535)
     val = 65535;
   return val;
@@ -163,7 +190,7 @@ void kernel warp_image_thin_plate_spline(
 
     // Perform TPS
     {
-      shift_latlon_by_lat(&lat, &lon, (float)lat_shiftv);
+      shift_latlon_by_lat(&lat, &lon, (double)lat_shiftv);
       const double Pxy[2] = {lon_shift(lon, (double)lon_shiftv) - x_mean,
                              lat - y_mean};
       for (int v = 0; v < _nof_vars; v++)
@@ -199,17 +226,17 @@ void kernel warp_image_thin_plate_spline(
       if (source_channels == 1)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-              get_pixel_bilinear(img, img_width, img_height, 0, xx,
+              get_pixel_bilinear(img, img_width, img_height, source_channels, 0, xx,
                                  yy); // img[(int)yy * img_width + (int)xx];
       else if (source_channels == 3 || source_channels == 4)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-              get_pixel_bilinear(img, img_width, img_height, c, xx,
+              get_pixel_bilinear(img, img_width, img_height, source_channels, c, xx,
                                  yy); // img[(img_width * img_height) * c +
                                       // (int)yy * img_width + (int)xx];
       if (source_channels == 4)
         map_image[(crop_width * crop_height) * 3 + y * crop_width + x] =
-            get_pixel_bilinear(img, img_width, img_height, 3, xx,
+            get_pixel_bilinear(img, img_width, img_height, source_channels, 3, xx,
                                yy); // img[(img_width * img_height) * 3 +
                                     // (int)yy * img_width + (int)xx];
       else
@@ -217,7 +244,7 @@ void kernel warp_image_thin_plate_spline(
     } else {
       for (int c = 0; c < source_channels; c++)
         map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-            get_pixel_bilinear(img, img_width, img_height, c, xx,
+            get_pixel_bilinear(img, img_width, img_height, source_channels, c, xx,
                                yy); // img[(img_width * img_height) * c +
                                     // (int)yy * img_width + (int)xx];
     }

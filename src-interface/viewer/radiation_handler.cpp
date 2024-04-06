@@ -198,7 +198,7 @@ namespace satdump
                 else
                     instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_back({ timestring + object_name + instrument_name + " - " + composite_name, map_img });
+                viewer_app->projection_layers.push_front({ timestring + object_name + instrument_name + " - " + composite_name, map_img });
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers[viewer_app->projection_layers.size() - 1].img.mirror(true, true);
