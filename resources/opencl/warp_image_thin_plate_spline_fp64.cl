@@ -71,8 +71,8 @@ inline double VizGeorefSpline2DBase_func(const double x1, const double y1,
 }
 
 inline ushort get_pixel_bilinear(global const ushort *img, const int width,
-                                 const int height, const int channels, int cc, double rx,
-                                 double ry) {
+                                 const int height, const int channels, int cc,
+                                 double rx, double ry) {
   int x = (int)rx;
   int y = (int)ry;
 
@@ -95,8 +95,7 @@ inline ushort get_pixel_bilinear(global const ushort *img, const int width,
       b_a = img[3 * width * height + index + 1] / 65535.0;
       b = (double)b * b_a;
     }
-  }
-  else
+  } else
     return a;
 
   if (index + width < max_index) {
@@ -105,8 +104,7 @@ inline ushort get_pixel_bilinear(global const ushort *img, const int width,
       c_a = img[3 * width * height + index + width] / 65535.0;
       c = (double)c * c_a;
     }
-  }
-  else
+  } else
     return a;
 
   if (index + width + 1 < max_index) {
@@ -115,8 +113,7 @@ inline ushort get_pixel_bilinear(global const ushort *img, const int width,
       d_a = img[3 * width * height + index + width + 1] / 65535.0;
       d = (double)d * d_a;
     }
-  }
-  else
+  } else
     return a;
 
   if (x == width - 1)
@@ -130,10 +127,10 @@ inline ushort get_pixel_bilinear(global const ushort *img, const int width,
                   (double)c * (y_diff) * (1.0 - x_diff) +
                   (double)d * (x_diff * y_diff));
   if (channels == 4 && cc != 3) {
-    val = (int)((double)val / (a_a * (1 - x_diff) * (1 - y_diff) +
-                b_a * (x_diff) * (1 - y_diff) +
-                c_a * (y_diff) * (1 - x_diff) +
-                d_a * (x_diff * y_diff)));
+    val = (int)((double)val /
+                (a_a * (1 - x_diff) * (1 - y_diff) +
+                 b_a * (x_diff) * (1 - y_diff) + c_a * (y_diff) * (1 - x_diff) +
+                 d_a * (x_diff * y_diff)));
   }
 
   if (val > 65535)
@@ -166,6 +163,9 @@ void kernel warp_image_thin_plate_spline(
   size_t ratio = (n / nthreads); // number of elements for each thread
   size_t start = ratio * id;
   size_t stop = ratio * (id + 1);
+
+  if (id + 1 == nthreads)
+    stop = n;
 
   // Init TPS
 
@@ -226,17 +226,20 @@ void kernel warp_image_thin_plate_spline(
       if (source_channels == 1)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-              get_pixel_bilinear(img, img_width, img_height, source_channels, 0, xx,
+              get_pixel_bilinear(img, img_width, img_height, source_channels, 0,
+                                 xx,
                                  yy); // img[(int)yy * img_width + (int)xx];
       else if (source_channels == 3 || source_channels == 4)
         for (int c = 0; c < 3; c++)
           map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-              get_pixel_bilinear(img, img_width, img_height, source_channels, c, xx,
+              get_pixel_bilinear(img, img_width, img_height, source_channels, c,
+                                 xx,
                                  yy); // img[(img_width * img_height) * c +
                                       // (int)yy * img_width + (int)xx];
       if (source_channels == 4)
         map_image[(crop_width * crop_height) * 3 + y * crop_width + x] =
-            get_pixel_bilinear(img, img_width, img_height, source_channels, 3, xx,
+            get_pixel_bilinear(img, img_width, img_height, source_channels, 3,
+                               xx,
                                yy); // img[(img_width * img_height) * 3 +
                                     // (int)yy * img_width + (int)xx];
       else
@@ -244,7 +247,8 @@ void kernel warp_image_thin_plate_spline(
     } else {
       for (int c = 0; c < source_channels; c++)
         map_image[(crop_width * crop_height) * c + y * crop_width + x] =
-            get_pixel_bilinear(img, img_width, img_height, source_channels, c, xx,
+            get_pixel_bilinear(img, img_width, img_height, source_channels, c,
+                               xx,
                                yy); // img[(img_width * img_height) * c +
                                     // (int)yy * img_width + (int)xx];
     }

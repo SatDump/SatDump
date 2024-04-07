@@ -15,6 +15,7 @@
 #include "resources.h"
 #include "common/utils.h"
 #include "nlohmann/json_utils.h"
+#include "msumr_tlm.h"
 
 #define BUFFER_SIZE 8192
 
@@ -66,6 +67,7 @@ namespace meteor
             logger->info("Demultiplexing and deframing...");
 
             std::vector<uint8_t> msumr_ids;
+            nlohmann::json msu_mr_telemetry;
 
             while (!data_in.eof())
             {
@@ -84,6 +86,8 @@ namespace meteor
                         {
                             uint8_t msumr_id = pkt.payload[8 + 12] >> 4;
                             msumr_ids.push_back(msumr_id);
+
+                            parseMSUMRTelemetry(msu_mr_telemetry, msumr_ids.size() - 1, &pkt.payload[8]);
                         }
                     }
                 }
@@ -179,6 +183,7 @@ namespace meteor
                 dataset.products_list.push_back("MSU-MR (Filled)");
             }
 
+            saveJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/telemetry.json", msu_mr_telemetry);
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
