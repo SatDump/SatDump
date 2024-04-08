@@ -210,3 +210,10 @@ std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, s
 std::string prepareBasebandFileName(double timeValue_precise, uint64_t samplerate, uint64_t frequency);
 
 void hsv_to_rgb(float h, float s, float v, uint8_t *rgb);
+
+inline int ensureIs2Multiple(int v)
+{
+    if (v % 2 == 1)
+        v++;
+    return v;
+}

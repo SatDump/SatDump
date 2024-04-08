@@ -5,6 +5,7 @@
 #include "common/codings/rotation.h"
 #include "common/codings/viterbi/cc_decoder.h"
 #include "common/codings/viterbi/cc_encoder.h"
+#include "common/codings/viterbi/viterbi_buffer.h"
 #include "depunc.h"
 
 /*
@@ -40,17 +41,17 @@ namespace viterbi
         const std::vector<phase_t> d_phases_to_check;
 
         // Variables
-        int d_state;            // Main decoder state
-        dvb_rate_t d_rate;      // Puncturing rate
-        phase_t d_phase;        // Phase the decoder locked onto
-        int d_shift;            // Shift the decoder locked onto
-        int d_invalid = 0;      // Number of invalid BER tests
-        float d_bers_12[2][12]; // BERs of all branches, rate 1/2
-        float d_bers_23[2][12]; // BERs of all branches, rate 2/3
-        float d_bers_34[2][12]; // BERs of all branches, rate 3/4
-        float d_bers_56[2][12]; // BERs of all branches, rate 5/6
-        float d_bers_78[2][12]; // BERs of all branches, rate 7/8
-        float d_ber;            // Main ber in LOCKED state
+        int d_state;                  // Main decoder state
+        dvb_rate_t d_rate = RATE_1_2; // Puncturing rate
+        phase_t d_phase;              // Phase the decoder locked onto
+        int d_shift;                  // Shift the decoder locked onto
+        int d_invalid = 0;            // Number of invalid BER tests
+        float d_bers_12[2][12];       // BERs of all branches, rate 1/2
+        float d_bers_23[2][12];       // BERs of all branches, rate 2/3
+        float d_bers_34[2][12];       // BERs of all branches, rate 3/4
+        float d_bers_56[2][12];       // BERs of all branches, rate 5/6
+        float d_bers_78[2][12];       // BERs of all branches, rate 7/8
+        float d_ber;                  // Main ber in LOCKED state
 
         // BER Testing
         CCDecoder cc_decoder_ber_12;
@@ -65,11 +66,17 @@ namespace viterbi
         CCEncoder cc_encoder_ber_78;
 
         // Main decoder
+        int vit_bufsize_23;
+        int vit_bufsize_56;
         CCDecoder cc_decoder_12;
         CCDecoder cc_decoder_23;
         CCDecoder cc_decoder_34;
         CCDecoder cc_decoder_56;
         CCDecoder cc_decoder_78;
+
+        // Decoder buffers for the annoying ones
+        viterbi::ViterbiSlidingBuffer vit_buffer_23;
+        viterbi::ViterbiSlidingBuffer vit_buffer_56;
 
         // BER test buffers
         int8_t ber_test_buffer[TEST_BITS_LENGTH];
@@ -86,7 +93,7 @@ namespace viterbi
         // Calculate BER between 2 buffers
         float get_ber(uint8_t *raw, uint8_t *rencoded, int len, float ratio);
 
-        Depunc23 depunc_32;
+        Depunc23 depunc_23;
         Depunc56 depunc_56;
 
         int depuncture_34(uint8_t *in, uint8_t *out, int size, bool shift)

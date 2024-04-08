@@ -70,7 +70,7 @@ namespace viterbi
         CCDecoder &operator=(const CCDecoder &) = delete;
 
         void work(uint8_t *inbuffer, uint8_t *outbuffer);
-        void work(uint8_t *inbuffer, uint8_t *outbuffer, int size);
+        void work(uint8_t *inbuffer, uint8_t *outbuffer, int size) __attribute__((deprecated));
 
         bool set_frame_size(unsigned int frame_size);
         double rate();
