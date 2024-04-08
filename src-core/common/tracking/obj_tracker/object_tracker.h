@@ -131,6 +131,9 @@ namespace satdump
 
         double rotator_update_period = 1;
         bool rotator_park_while_idle = false;
+        bool rotator_rounding = false;
+        int rotator_decimal_multiplier = 1000;
+        int rotator_decimal_precision = 3;
         SatAzEl rotator_park_position;
         double rotator_unpark_at_minus = 60;
 
