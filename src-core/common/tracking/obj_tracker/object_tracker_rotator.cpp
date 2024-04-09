@@ -27,15 +27,15 @@ namespace satdump
                     {
                         if (sat_current_pos.el > 0)
                         {
-                            if(!rotator_rounding)
+                            if (!rotator_rounding)
                             {
                                 rot_current_req_pos.az = sat_current_pos.az;
                                 rot_current_req_pos.el = sat_current_pos.el;
                             }
                             else
                             {
-                                rot_current_req_pos.az = (round(sat_current_pos.az*rotator_decimal_multiplier))/rotator_decimal_multiplier;
-                                rot_current_req_pos.el = (round(sat_current_pos.el*rotator_decimal_multiplier))/rotator_decimal_multiplier; 
+                                rot_current_req_pos.az = (round(sat_current_pos.az * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
+                                rot_current_req_pos.el = (round(sat_current_pos.el * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                             }
                         }
                         else if (rotator_park_while_idle)
@@ -123,33 +123,37 @@ namespace satdump
         ImGui::Spacing();
 
         ImGui::Checkbox("Park while idle", &rotator_park_while_idle);
+
         if (rotator_park_while_idle)
         {
             ImGui::InputFloat("Park Az##Rot Az", &rotator_park_position.az);
             ImGui::InputFloat("Park El##Rot El", &rotator_park_position.el);
             ImGui::InputDouble("Unpark Time##Rot Unpark Time", &rotator_unpark_at_minus);
         }
+
         ImGui::Checkbox("AZ EL Decimal rounding", &rotator_rounding);
-        if (rotator_rounding)
+
+        if (rotator_rounding && ImGui::InputInt("Decimal Place Precision", &rotator_decimal_precision, 1, 3))
         {
-            ImGui::InputInt("Decimal Place Precision", &rotator_decimal_precision,1,3);
-            if (rotator_decimal_precision > 3){
+            if (rotator_decimal_precision > 3)
+            {
                 rotator_decimal_precision = 3;
             }
-            else if (rotator_decimal_precision == 0){
+            else if (rotator_decimal_precision == 0)
+            {
                 rotator_decimal_precision = 1;
             }
             switch (rotator_decimal_precision)
             {
-                case 1:
-                    rotator_decimal_multiplier = 10;
-                    break;
-                case 2:
-                    rotator_decimal_multiplier = 100;
-                    break;
-                case 3:
-                    rotator_decimal_multiplier = 1000;
-                    break;
+            case 1:
+                rotator_decimal_multiplier = 10;
+                break;
+            case 2:
+                rotator_decimal_multiplier = 100;
+                break;
+            case 3:
+                rotator_decimal_multiplier = 1000;
+                break;
             }
         }
     }
