@@ -712,7 +712,6 @@ namespace noaa_apt
         // Save
         apt_status = SAVING;
         int norad = 0;
-        double marker_offset = 0.0;
         std::string sat_name = "NOAA";
         std::optional<satdump::TLE> satellite_tle;
 
@@ -740,19 +739,16 @@ namespace noaa_apt
             { // N15
                 norad = 25338;
                 sat_name = "NOAA-15";
-                marker_offset = -4.0;
             }
             else if (number == 18)
             { // N18
                 norad = 28654;
                 sat_name = "NOAA-18";
-                marker_offset = 13.0;
             }
             else if (number == 19)
             { // N19
                 norad = 33591;
                 sat_name = "NOAA-19";
-                marker_offset = -14.0;
             }
 
             satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
@@ -770,55 +766,6 @@ namespace noaa_apt
         }
 
         double start_tt = -1;
-        if (d_parameters.contains("start_timestamp") && norad != 0)
-            start_tt = d_parameters["start_timestamp"];
-
-        // Adjust time based on timing lines
-        bool good_timing_lines = false;
-        if (start_tt != -1 && timing_lines.size() > 1)
-        {
-            good_timing_lines = true;
-            for (size_t i = 0; i < timing_lines.size() - 1; i++)
-                if (timing_lines[1] - timing_lines[0] != 120)
-                    good_timing_lines = false;
-        }
-        if (good_timing_lines)
-        {
-            double timestamp_offset = fmod(start_tt + marker_offset + (timing_lines[0] / 2.0), 60);
-            if (timestamp_offset > 30)
-                timestamp_offset = -60.0 + timestamp_offset;
-            if (abs(timestamp_offset) <= 15)
-            {
-                logger->trace("Found %zu valid timing lines; correcting timestamp by %.1fs", timing_lines.size(), timestamp_offset);
-                start_tt -= timestamp_offset;
-            }
-            else
-                logger->trace("Found %zu timing lines; but timestamps is off by %.1fs, ignoring!", timing_lines.size(), timestamp_offset);
-        }
-        else
-            logger->trace("No valid timing data; not aligning timestamp");
-
-        satdump::ProductDataSet dataset;
-        dataset.satellite_name = sat_name;
-        dataset.timestamp = start_tt;
-
-        if (sat_name == "NOAA-15" && start_tt != -1)
-        {
-            time_t noaa15_age = dataset.timestamp - 895074720;
-            int seconds = noaa15_age % 60;
-            int minutes = (noaa15_age % 3600) / 60;
-            int hours = (noaa15_age % 86400) / 3600;
-            int days = noaa15_age / 86400;
-            logger->warn("Congratulations for receiving NOAA 15 on APT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
-            if (dataset.timestamp > 0)
-            {
-                time_t tttime = dataset.timestamp;
-                std::tm *timeReadable = gmtime(&tttime);
-                if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
-                    logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
-            }
-        }
-
         // AVHRR
         {
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
@@ -946,17 +893,9 @@ namespace noaa_apt
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
+                start_tt = d_parameters["start_timestamp"];
                 if (start_tt != -1)
                 {
-                    std::vector<double> timestamps;
-
-                    for (int i = first_valid_line; i < last_valid_line; i++)
-                        timestamps.push_back(start_tt + (double(i) * 0.5));
-
-                    avhrr_products.has_timestamps = true;
-                    avhrr_products.set_tle(satellite_tle);
-                    avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    avhrr_products.set_timestamps(timestamps);
                     nlohmann::json proj_cfg;
                     if (norad == 25338)
                         proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json"));
@@ -968,20 +907,78 @@ namespace noaa_apt
                     proj_cfg["image_width"] = 909;
                     proj_cfg["gcp_spacing_x"] = 30;
                     proj_cfg["gcp_spacing_y"] = 30;
+
+                    double apt_marker_offset = proj_cfg["apt_marker_offset"];
+
                     proj_cfg.erase("corr_width");
                     proj_cfg.erase("corr_swath");
                     proj_cfg.erase("corr_resol");
                     proj_cfg.erase("corr_altit");
+                    proj_cfg.erase("apt_marker_offset");
                     avhrr_products.set_proj_cfg(proj_cfg);
+
+                    // Adjust time based on timing lines
+                    bool good_timing_lines = false;
+                    if (timing_lines.size() > 1)
+                    {
+                        good_timing_lines = true;
+                        for (size_t i = 0; i < timing_lines.size() - 1; i++)
+                            if (timing_lines[1] - timing_lines[0] != 120)
+                                good_timing_lines = false;
+                    }
+                    if (good_timing_lines)
+                    {
+                        double timestamp_offset = fmod(start_tt + apt_marker_offset + (timing_lines[0] / 2.0), 60);
+                        if (timestamp_offset > 30)
+                            timestamp_offset = -60.0 + timestamp_offset;
+                        if (abs(timestamp_offset) <= 15)
+                        {
+                            logger->trace("Found %zu valid timing lines; correcting timestamp by %.1fs", timing_lines.size(), timestamp_offset);
+                            start_tt -= timestamp_offset;
+                        }
+                        else
+                            logger->trace("Found %zu timing lines; but timestamps is off by %.1fs, ignoring!", timing_lines.size(), timestamp_offset);
+                    }
+                    else
+                        logger->trace("No valid timing data; not aligning timestamp");
+
+                    std::vector<double> timestamps;
+                    for (int i = first_valid_line; i < last_valid_line; i++)
+                        timestamps.push_back(start_tt + (double(i) * 0.5));
+
+                    avhrr_products.has_timestamps = true;
+                    avhrr_products.set_tle(satellite_tle);
+                    avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    avhrr_products.set_timestamps(timestamps);
                 }
             }
 
             avhrr_products.save(main_dir);
-            dataset.products_list.push_back(".");
+        }
+
+        satdump::ProductDataSet dataset;
+        dataset.satellite_name = sat_name;
+        dataset.timestamp = start_tt;
+        dataset.products_list.push_back(".");
+
+        if (sat_name == "NOAA-15" && start_tt != -1)
+        {
+            time_t noaa15_age = dataset.timestamp - 895074720;
+            int seconds = noaa15_age % 60;
+            int minutes = (noaa15_age % 3600) / 60;
+            int hours = (noaa15_age % 86400) / 3600;
+            int days = noaa15_age / 86400;
+            logger->warn("Congratulations for receiving NOAA 15 on APT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
+            if (dataset.timestamp > 0)
+            {
+                time_t tttime = dataset.timestamp;
+                std::tm* timeReadable = gmtime(&tttime);
+                if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
+                    logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
+            }
         }
 
         apt_status = DONE;
-
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         d_output_files.push_back(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/dataset.json");
     }
