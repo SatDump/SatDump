@@ -92,36 +92,50 @@ namespace service_discovery
 #if defined(_WIN32)
         WSADATA wsa;
         if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-            throw std::runtime_error("Couldn't startup WSA socket!");
+        {
+            logger->error("Couldn't startup WSA socket for UDP discovery requests!");
+            return;
+        }
 #endif
 
         struct sockaddr_in recv_addr;
         int fd = -1;
 
         if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-            throw std::runtime_error("Error creating socket!");
+        {
+            logger->error("Error creating UDP discovery socket!");
+            goto cleanup_server;
+        }
 
         int val_true = 1;
-        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
-            throw std::runtime_error("Error setting socket option!");
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&val_true, sizeof(val_true)) < 0)
+        {
+            logger->error("Error setting UDP discovery socket option!");
+            goto cleanup_server;
+        }
 
         memset(&recv_addr, 0, sizeof(recv_addr));
         recv_addr.sin_family = AF_INET;
         recv_addr.sin_port = htons(cfg.req_port);
         recv_addr.sin_addr.s_addr = INADDR_ANY;
 
-        if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
-            throw std::runtime_error("Error binding socket!");
+        if (bind(fd, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) < 0)
+        {
+            logger->error("Error binding UDP discovery socket!");
+            goto cleanup_server;
+        }
 
-        uint8_t buffer_rx[65536];
-
+        uint8_t *buffer_rx = new uint8_t[65536];
         while (should_run)
         {
             struct sockaddr_in response_addr;
             socklen_t response_addr_len = sizeof(response_addr);
             int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
             if (nrecv < 0)
-                throw std::runtime_error("Error on recvfrom!");
+            {
+                logger->error("Error on UDP discovery recvfrom!");
+                break;
+            }
 
             bool is_valid = true;
             if (nrecv == (int)cfg.req_pkt.size())
@@ -150,6 +164,9 @@ namespace service_discovery
             }
         }
 
+        delete[] buffer_rx;
+
+cleanup_server:
 #if defined(_WIN32)
         closesocket(fd);
         WSACleanup();
@@ -172,44 +189,56 @@ namespace service_discovery
 
     std::vector<std::pair<std::string, int>> discoverUDPServers(UDPDiscoveryConfig cfg, int wait_millis)
     {
-#if defined(_WIN32)
-        WSADATA wsa;
-        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-            throw std::runtime_error("Couldn't startup WSA socket!");
-#endif
-
         std::vector<std::pair<std::string, int>> servers;
-
         bool should_wait = true;
         auto fun_rx = [&should_wait, &servers, &cfg]()
         {
+#if defined(_WIN32)
+            WSADATA wsa;
+            if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            {
+                logger->trace("Error in Remote SDR Discovery: Couldn't startup WSA socket!");
+                return;
+            }
+#endif
             struct sockaddr_in recv_addr;
             int fd = -1;
 
             if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-                throw std::runtime_error("Error creating socket!");
+            {
+                logger->trace("Error in Remote SDR Discovery: could not create socket!");
+                goto cleanup_discover;
+            }
 
             int val_true = 1;
-            if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
-                throw std::runtime_error("Error setting socket option!");
+            if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&val_true, sizeof(val_true)) < 0)
+            {
+                logger->trace("Error in Remote SDR Discovery: error setting socket options!");
+                goto cleanup_discover;
+            }
 
             memset(&recv_addr, 0, sizeof(recv_addr));
             recv_addr.sin_family = AF_INET;
             recv_addr.sin_port = htons(cfg.rep_port);
             recv_addr.sin_addr.s_addr = INADDR_ANY;
 
-            if (bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
-                throw std::runtime_error("Error binding socket!");
+            if (bind(fd, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) < 0)
+            {
+                logger->trace("Error in Remote SDR Discovery: error binding socket!");
+                goto cleanup_discover;
+            }
 
-            uint8_t buffer_rx[65536];
-
+            uint8_t *buffer_rx = new uint8_t[65536];
             while (should_wait)
             {
                 struct sockaddr_in response_addr;
                 socklen_t response_addr_len = sizeof(response_addr);
                 int nrecv = recvfrom(fd, (char *)buffer_rx, 65536, 0, (struct sockaddr *)&response_addr, &response_addr_len);
                 if (nrecv < 0)
-                    throw std::runtime_error("Error on recvfrom!");
+                {
+                    logger->trace("Error in Remote SDR Discovery: error on recvfrom!");
+                    break;
+                }
 
                 bool is_valid = true;
                 if (nrecv - 4 == (int)cfg.rep_pkt.size())
@@ -234,11 +263,14 @@ namespace service_discovery
                 // logger->info("EXIT %d %d %d", (int)is_valid, nrecv, cfg.rep_pkt.size());
             }
 
+            delete[] buffer_rx;
+
+cleanup_discover:
 #if defined(_WIN32)
-        closesocket(fd);
-        WSACleanup();
+            closesocket(fd);
+            WSACleanup();
 #else
-        close(fd);
+            close(fd);
 #endif
         };
         std::thread funrx_th(fun_rx);
