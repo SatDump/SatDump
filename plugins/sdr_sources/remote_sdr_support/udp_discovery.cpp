@@ -17,6 +17,17 @@
 
 namespace service_discovery
 {
+    // Lil helper function
+    void cleanup_socket(int fd)
+    {
+#if defined(_WIN32)
+        closesocket(fd);
+        WSACleanup();
+#else
+        close(fd);
+#endif
+    }
+
     void sendUdpBroadcast(int port, uint8_t *data, int len)
     {
 #if defined(_WIN32)
@@ -43,12 +54,7 @@ namespace service_discovery
         if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(sockaddr)) < 0)
             throw std::runtime_error(std::strerror(errno));
 
-#if defined(_WIN32)
-        closesocket(fd);
-        WSACleanup();
-#else
-        close(fd);
-#endif
+        cleanup_socket(fd);
     }
 
     void sendUdpPacket(const char *address, int port, uint8_t *data, int len)
@@ -79,12 +85,7 @@ namespace service_discovery
         if (ret < 0)
             throw std::runtime_error("Error on send!");
 
-#if defined(_WIN32)
-        closesocket(fd);
-        WSACleanup();
-#else
-        close(fd);
-#endif
+        cleanup_socket(fd);
     }
 
     void UDPDiscoveryServerRunner::discovery_thread()
@@ -104,14 +105,16 @@ namespace service_discovery
         if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         {
             logger->error("Error creating UDP discovery socket!");
-            goto cleanup_server;
+            cleanup_socket(fd);
+            return;
         }
 
         int val_true = 1;
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&val_true, sizeof(val_true)) < 0)
         {
             logger->error("Error setting UDP discovery socket option!");
-            goto cleanup_server;
+            cleanup_socket(fd);
+            return;
         }
 
         memset(&recv_addr, 0, sizeof(recv_addr));
@@ -122,7 +125,8 @@ namespace service_discovery
         if (bind(fd, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) < 0)
         {
             logger->error("Error binding UDP discovery socket!");
-            goto cleanup_server;
+            cleanup_socket(fd);
+            return;
         }
 
         uint8_t *buffer_rx = new uint8_t[65536];
@@ -165,14 +169,7 @@ namespace service_discovery
         }
 
         delete[] buffer_rx;
-
-cleanup_server:
-#if defined(_WIN32)
-        closesocket(fd);
-        WSACleanup();
-#else
-        close(fd);
-#endif
+        cleanup_socket(fd);
     }
 
     UDPDiscoveryServerRunner::UDPDiscoveryServerRunner(UDPDiscoveryConfig cfg) : cfg(cfg)
@@ -207,14 +204,16 @@ cleanup_server:
             if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
             {
                 logger->trace("Error in Remote SDR Discovery: could not create socket!");
-                goto cleanup_discover;
+                cleanup_socket(fd);
+                return;
             }
 
             int val_true = 1;
             if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&val_true, sizeof(val_true)) < 0)
             {
                 logger->trace("Error in Remote SDR Discovery: error setting socket options!");
-                goto cleanup_discover;
+                cleanup_socket(fd);
+                return;
             }
 
             memset(&recv_addr, 0, sizeof(recv_addr));
@@ -225,7 +224,8 @@ cleanup_server:
             if (bind(fd, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) < 0)
             {
                 logger->trace("Error in Remote SDR Discovery: error binding socket!");
-                goto cleanup_discover;
+                cleanup_socket(fd);
+                return;
             }
 
             uint8_t *buffer_rx = new uint8_t[65536];
@@ -264,14 +264,7 @@ cleanup_server:
             }
 
             delete[] buffer_rx;
-
-cleanup_discover:
-#if defined(_WIN32)
-            closesocket(fd);
-            WSACleanup();
-#else
-            close(fd);
-#endif
+            cleanup_socket(fd);
         };
         std::thread funrx_th(fun_rx);
 
