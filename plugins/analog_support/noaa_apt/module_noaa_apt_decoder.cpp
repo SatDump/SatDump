@@ -537,7 +537,7 @@ namespace noaa_apt
                     double stddev = 0;
                     for (size_t i = 0; i < space_a1.width(); i++)
                         stddev += (space_a1[y * space_a1.width() + i] - avg) * (space_a1[y * space_a1.width() + i] - avg);
-                    stddev = sqrt(stddev / space_a1.width() - 1);
+                    stddev = sqrt(stddev / (space_a1.width() - 1));
                     scale_val(avg, new_black, new_white);
                     if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
                     {
@@ -557,7 +557,7 @@ namespace noaa_apt
                 double stddev = 0;
                 for (size_t i = 0; i < space_a.width(); i++)
                     stddev += (space_a[y * space_a.width() + i] - avg) * (space_a[y * space_a.width() + i] - avg);
-                stddev = sqrt(stddev / space_a.width() - 1);
+                stddev = sqrt(stddev / (space_a.width() - 1));
                 scale_val(avg, new_black, new_white);
                 if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
                 {
@@ -576,7 +576,7 @@ namespace noaa_apt
                 double stddev = 0;
                 for (size_t i = 0; i < space_b.width(); i++)
                     stddev += (space_b[y * space_b.width() + i] - avg) * (space_b[y * space_b.width() + i] - avg);
-                stddev = sqrt(stddev / space_b.width() - 1);
+                stddev = sqrt(stddev / (space_b.width() - 1));
                 scale_val(avg, new_black, new_white);
                 // logger->trace("Avg %f, StdDev %f", avg, stddev);
                 if (stddev < MAX_STDDEV_VALID)
