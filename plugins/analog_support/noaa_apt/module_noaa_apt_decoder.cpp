@@ -15,8 +15,7 @@
 
 #include "common/calibration.h"
 
-#define MAX_SPACE_DIFF_VALID 12000
-#define MAX_WEDGE_STDDEV_VALID 2100
+#define MAX_STDDEV_VALID 2100
 
 namespace noaa_apt
 {
@@ -50,7 +49,7 @@ namespace noaa_apt
     {
         float init_val = valv;
         init_val -= new_black;
-        float vval = init_val / new_white;
+        float vval = init_val / (new_white - new_black);
         vval *= 65535;
         if (vval < 0)
             vval = 0;
@@ -302,10 +301,10 @@ namespace noaa_apt
         auto space_a = wip_apt_image.crop_to(42, 42 + 43);
         auto space_b = wip_apt_image.crop_to(1081, 1081 + 43);
 
-        wedge_1.save_png("wedge1.png");
-        wedge_2.save_png("wedge2.png");
-        space_a.save_png("spacea.png");
-        space_b.save_png("spaceb.png");
+        // wedge_1.save_png("wedge1.png");
+        // wedge_2.save_png("wedge2.png");
+        // space_a.save_png("spacea.png");
+        // space_b.save_png("spaceb.png");
 
         logger->trace("Wedge 1");
         auto wedges1 = parse_wedge_full(wedge_1);
@@ -320,6 +319,7 @@ namespace noaa_apt
 
         APTWedge calib_wedge_ch1, calib_wedge_ch2; // We also extract calibration words, scaled to 10-bits
         uint16_t prt_counts[4];
+        std::vector<size_t> timing_lines;
         int space_av = 0, space_av1 = 0, space_bv = 0;
         int bb_a = 0, bb_a1 = 0;
         int channel_a = -1, channel_a1 = -1;
@@ -372,33 +372,33 @@ namespace noaa_apt
                     }
                 }
 
-                if (wed.std_dev[9] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[9] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp1 += wed.therm_temp1;
                     valid_temp1++;
                 }
-                if (wed.std_dev[10] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[10] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp2 += wed.therm_temp2;
                     valid_temp2++;
                 }
-                if (wed.std_dev[11] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[11] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp3 += wed.therm_temp3;
                     valid_temp3++;
                 }
-                if (wed.std_dev[12] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[12] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
                     valid_temp4++;
                 }
-                if (wed.std_dev[13] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[13] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.patch_temp += wed.patch_temp;
                     valid_patch++;
                 }
 
-                if (wed.std_dev[14] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[14] < MAX_STDDEV_VALID)
                 {
                     if (channel_a1 == -1)
                     {
@@ -465,32 +465,32 @@ namespace noaa_apt
                 if (channel_b == -1)
                     channel_b = wed.rchannel;
 
-                if (wed.std_dev[9] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[9] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp1 += wed.therm_temp1;
                     valid_temp1++;
                 }
-                if (wed.std_dev[10] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[10] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp2 += wed.therm_temp2;
                     valid_temp2++;
                 }
-                if (wed.std_dev[11] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[11] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp3 += wed.therm_temp3;
                     valid_temp3++;
                 }
-                if (wed.std_dev[12] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[12] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp4 += wed.therm_temp4;
                     valid_temp4++;
                 }
-                if (wed.std_dev[13] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[13] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.patch_temp += wed.patch_temp;
                     valid_patch++;
                 }
-                if (wed.std_dev[14] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[14] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.back_scan += wed.back_scan;
                     valid_backscan++;
@@ -528,22 +528,18 @@ namespace noaa_apt
                 logger->info("%d, %d", switchy, space_a1.height());
                 space_a1.crop(0, switchy - 1, space_a1.width(), space_a1.height());
 
-                for (unsigned int y = 0; y < space_a1.height() - 1; y++)
+                for (size_t y = 0; y < space_a1.height() - 1; y++)
                 {
-                    int min = space_a1[y * space_a1.width()], max = space_a1[y * space_a1.width()], avg = 0;
-                    for (unsigned int i = 0; i < space_a1.width(); i++)
-                    {
-                        int v = space_a1[y * space_a1.width() + i];
-                        if (v < min)
-                            min = v;
-                        if (v > max)
-                            max = v;
-                        avg += v;
-                    }
+                    double avg = 0;
+                    for (size_t i = 0; i < space_a1.width(); i++)
+                        avg += space_a1[y * space_a1.width() + i];
                     avg /= space_a1.width();
+                    double stddev = 0;
+                    for (size_t i = 0; i < space_a1.width(); i++)
+                        stddev += (space_a1[y * space_a1.width() + i] - avg) * (space_a1[y * space_a1.width() + i] - avg);
+                    stddev = sqrt(stddev / space_a1.width() - 1);
                     scale_val(avg, new_black, new_white);
-                    int max_diff = max - min;
-                    if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
+                    if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
                     {
                         space_av1 += avg;
                         validl1_1++;
@@ -552,47 +548,63 @@ namespace noaa_apt
                 space_av1 /= validl1_1;
             }
 
-            for (unsigned int y = 0; y < (channel_a1 != -1 ? switchy : space_a.height() - 1); y++)
+            for (size_t y = 0; y < (channel_a1 != -1 ? switchy : space_a.height() - 1); y++)
             {
-                int min = space_a[y * space_a.width()], max = space_a[y * space_a.width()], avg = 0;
-                for (unsigned int i = 0; i < space_a.width(); i++)
-                {
-                    int v = space_a[y * space_a.width() + i];
-                    if (v < min)
-                        min = v;
-                    if (v > max)
-                        max = v;
-                    avg += v;
-                }
+                double avg = 0;
+                for (size_t i = 0; i < space_a.width(); i++)
+                    avg += space_a[y * space_a.width() + i];
                 avg /= space_a.width();
+                double stddev = 0;
+                for (size_t i = 0; i < space_a.width(); i++)
+                    stddev += (space_a[y * space_a.width() + i] - avg) * (space_a[y * space_a.width() + i] - avg);
+                stddev = sqrt(stddev / space_a.width() - 1);
                 scale_val(avg, new_black, new_white);
-                int max_diff = max - min;
-                if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
+                if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
                 {
                     space_av += avg;
                     validl1++;
                 }
             }
 
-            for (unsigned int y = 0; y < space_b.height(); y++)
+            size_t wip_timing_line = 0;
+            for (size_t y = 0; y < space_b.height(); y++)
             {
-                int min = space_b[y * space_b.width()], max = space_b[y * space_b.width()], avg = 0;
-                for (unsigned int i = 0; i < space_b.width(); i++)
-                {
-                    int v = space_b[y * space_b.width() + i];
-                    if (v < min)
-                        min = v;
-                    if (v > max)
-                        max = v;
-                    avg += v;
-                }
+                double avg = 0;
+                for (size_t i = 0; i < space_b.width(); i++)
+                    avg += space_b[y * space_b.width() + i];
                 avg /= space_b.width();
+                double stddev = 0;
+                for (size_t i = 0; i < space_b.width(); i++)
+                    stddev += (space_b[y * space_b.width() + i] - avg) * (space_b[y * space_b.width() + i] - avg);
+                stddev = sqrt(stddev / space_b.width() - 1);
                 scale_val(avg, new_black, new_white);
-                int max_diff = max - min;
-                if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
+                // logger->trace("Avg %f, StdDev %f", avg, stddev);
+                if (stddev < MAX_STDDEV_VALID)
                 {
-                    space_bv += avg;
-                    validl2++;
+                    // Get timing marks
+                    if (avg <= stddev)
+                    {
+                        if (wip_timing_line == 0)
+                            wip_timing_line = y;
+                        else if (y - wip_timing_line > 1)
+                            wip_timing_line = 0;
+                    }
+                    else if (avg >= 65535.0 - stddev && wip_timing_line != 0)
+                    {
+                        if(y - wip_timing_line > 3 || y - wip_timing_line < 2)
+                            wip_timing_line = 0;
+                        else if (y - wip_timing_line == 3)
+                        {
+                            timing_lines.push_back(wip_timing_line);
+                            wip_timing_line = 0;
+                        }
+                    }
+                    else //Not a timing mark
+                    {
+                        wip_timing_line = 0;
+                        space_bv += avg;
+                        validl2++;
+                    }
                 }
             }
 
@@ -700,6 +712,7 @@ namespace noaa_apt
         // Save
         apt_status = SAVING;
         int norad = 0;
+        double marker_offset = 0.0;
         std::string sat_name = "NOAA";
         std::optional<satdump::TLE> satellite_tle;
 
@@ -727,16 +740,19 @@ namespace noaa_apt
             { // N15
                 norad = 25338;
                 sat_name = "NOAA-15";
+                marker_offset = -4.0;
             }
             else if (number == 18)
             { // N18
                 norad = 28654;
                 sat_name = "NOAA-18";
+                marker_offset = 13.0;
             }
             else if (number == 19)
             { // N19
                 norad = 33591;
                 sat_name = "NOAA-19";
+                marker_offset = -14.0;
             }
 
             satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
@@ -756,6 +772,31 @@ namespace noaa_apt
         double start_tt = -1;
         if (d_parameters.contains("start_timestamp") && norad != 0)
             start_tt = d_parameters["start_timestamp"];
+
+        // Adjust time based on timing lines
+        bool good_timing_lines = false;
+        if (start_tt != -1 && timing_lines.size() > 1)
+        {
+            good_timing_lines = true;
+            for (size_t i = 0; i < timing_lines.size() - 1; i++)
+                if (timing_lines[1] - timing_lines[0] != 120)
+                    good_timing_lines = false;
+        }
+        if (good_timing_lines)
+        {
+            double timestamp_offset = fmod(start_tt + marker_offset + (timing_lines[0] / 2.0), 60);
+            if (timestamp_offset > 30)
+                timestamp_offset = -60.0 + timestamp_offset;
+            if (abs(timestamp_offset) <= 15)
+            {
+                logger->trace("Found %zu valid timing lines; correcting timestamp by %.1fs", timing_lines.size(), timestamp_offset);
+                start_tt -= timestamp_offset;
+            }
+            else
+                logger->trace("Found %zu timing lines; but timestamps is off by %.1fs, ignoring!", timing_lines.size(), timestamp_offset);
+        }
+        else
+            logger->trace("No valid timing data; not aligning timestamp");
 
         satdump::ProductDataSet dataset;
         dataset.satellite_name = sat_name;
@@ -1086,11 +1127,11 @@ namespace noaa_apt
             int min_diff = 5000;
             int best_wedge = 0;
 
-            if (wed.std_dev[15] <= MAX_WEDGE_STDDEV_VALID)
+            if (wed.std_dev[15] <= MAX_STDDEV_VALID)
             {
                 for (int i = 0; i < 8; i++)
                 {
-                    if (wed.std_dev[i] > MAX_WEDGE_STDDEV_VALID)
+                    if (wed.std_dev[i] > MAX_STDDEV_VALID)
                         continue;
 
                     int diff = abs((int)final_wedge[i] - (int)wed.channel);
@@ -1129,9 +1170,9 @@ namespace noaa_apt
 
         for (auto &wedge : wedges)
         {
-            if (wedge.std_dev[7] < MAX_WEDGE_STDDEV_VALID)
+            if (wedge.std_dev[7] < MAX_STDDEV_VALID)
                 calib_white.push_back(wedge.ref8);
-            if (wedge.std_dev[8] < MAX_WEDGE_STDDEV_VALID)
+            if (wedge.std_dev[8] < MAX_STDDEV_VALID)
                 calib_black.push_back(wedge.zero_mod_ref);
         }
 
