@@ -335,8 +335,8 @@ namespace noaa_apt
             new_white = (new_white + new_white1) / 2;
             new_black = (new_black + new_black1) / 2;
 
-            for (size_t l = 0; l < line_cnt; l++)    // Calib image
-                for (size_t x = 0; x < APT_IMG_WIDTH; x++) // for (int x = 86; x < 86 + 909; x++)
+            for (int l = 0; l < line_cnt; l++)    // Calib image
+                for (int x = 0; x < APT_IMG_WIDTH; x++) // for (int x = 86; x < 86 + 909; x++)
                     scale_val(wip_apt_image[l * APT_IMG_WIDTH + x], new_black, new_white);
 
             int valid_temp1 = 0, valid_temp2 = 0, valid_temp3 = 0, valid_temp4 = 0, valid_patch = 0,
