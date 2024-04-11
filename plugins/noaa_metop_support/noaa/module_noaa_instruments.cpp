@@ -222,6 +222,7 @@ namespace noaa
                     if (scid == 15) // NOAA-19
                         proj_settings = loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json"));
 
+                    proj_settings.erase("apt_marker_offset");
                     if (is_gac)
                         proj_settings["image_width"] = 409;
 

@@ -52,7 +52,8 @@ namespace noaa_apt
         long d_audio_samplerate;
         int d_max_crop_stddev = 3500;
         bool d_autocrop_wedges = false;
-        bool save_unsynced = true;
+        bool d_save_unsynced = true;
+        bool d_align_timestamps = true;
 
         std::shared_ptr<dsp::RealToComplexBlock> rtc;
         std::shared_ptr<dsp::FreqShiftBlock> frs;
@@ -66,7 +67,7 @@ namespace noaa_apt
         instrument_status_t apt_status = DECODING;
         bool has_to_update = false;
         unsigned int textureID = 0;
-        uint32_t *textureBuffer;
+        uint32_t *textureBuffer = nullptr;
 
         // Functions
         image::Image<uint16_t> synchronize(int line_cnt);

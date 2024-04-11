@@ -32,7 +32,9 @@ namespace noaa_apt
         if (parameters.count("max_crop_stddev") > 0)
             d_max_crop_stddev = parameters["max_crop_stddev"].get<int>();
         if (parameters.count("save_unsynced") > 0)
-            save_unsynced = parameters["save_unsynced"].get<bool>();
+            d_save_unsynced = parameters["save_unsynced"].get<bool>();
+        if (parameters.count("align_timestamps") > 0)
+            d_align_timestamps = parameters["align_timestamps"].get<bool>();
     }
 
     NOAAAPTDecoderModule::~NOAAAPTDecoderModule()
@@ -279,7 +281,7 @@ namespace noaa_apt
         wip_apt_image.white_balance();
 
         // Save unsynced
-        if (save_unsynced)
+        if (d_save_unsynced)
         {
             image::Image<uint16_t> wip_apt_image_sized(APT_IMG_WIDTH, line_cnt, 1);
 #pragma omp parallel for
@@ -918,29 +920,32 @@ namespace noaa_apt
                     avhrr_products.set_proj_cfg(proj_cfg);
 
                     // Adjust time based on timing lines
-                    bool good_timing_lines = false;
-                    if (timing_lines.size() > 1)
+                    if (d_align_timestamps)
                     {
-                        good_timing_lines = true;
-                        for (size_t i = 0; i < timing_lines.size() - 1; i++)
-                            if (timing_lines[1] - timing_lines[0] != 120)
-                                good_timing_lines = false;
-                    }
-                    if (good_timing_lines)
-                    {
-                        double timestamp_offset = fmod(start_tt + apt_marker_offset + (timing_lines[0] / 2.0), 60);
-                        if (timestamp_offset > 30)
-                            timestamp_offset = -60.0 + timestamp_offset;
-                        if (abs(timestamp_offset) <= 15)
+                        bool good_timing_lines = false;
+                        if (timing_lines.size() > 1)
                         {
-                            logger->trace("Found %zu valid timing lines; correcting timestamp by %.1fs", timing_lines.size(), timestamp_offset);
-                            start_tt -= timestamp_offset;
+                            good_timing_lines = true;
+                            for (size_t i = 0; i < timing_lines.size() - 1; i++)
+                                if (timing_lines[1] - timing_lines[0] != 120)
+                                    good_timing_lines = false;
+                        }
+                        if (good_timing_lines)
+                        {
+                            double timestamp_offset = fmod(start_tt + apt_marker_offset + (timing_lines[0] / 2.0), 60);
+                            if (timestamp_offset > 30)
+                                timestamp_offset = -60.0 + timestamp_offset;
+                            if (abs(timestamp_offset) <= 15)
+                            {
+                                logger->info("Found %zu valid timing lines; correcting timestamp by %.1fs", timing_lines.size(), timestamp_offset);
+                                start_tt -= timestamp_offset;
+                            }
+                            else
+                                logger->info("Found %zu timing lines; but timestamps is off by %.1fs, ignoring!", timing_lines.size(), timestamp_offset);
                         }
                         else
-                            logger->trace("Found %zu timing lines; but timestamps is off by %.1fs, ignoring!", timing_lines.size(), timestamp_offset);
+                            logger->info("No valid timing data; not aligning timestamp");
                     }
-                    else
-                        logger->trace("No valid timing data; not aligning timestamp");
 
                     std::vector<double> timestamps;
                     for (int i = first_valid_line; i < last_valid_line; i++)
