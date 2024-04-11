@@ -211,6 +211,7 @@ namespace dvb
                     failed_rs_nums++;
                     if (failed_rs_nums == 20)
                     {
+                        viterbi.reset();
                         def->reset();
                         failed_rs_nums = 0;
                     }

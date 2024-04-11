@@ -167,5 +167,7 @@ namespace viterbi
         float ber();
         int getState();
         dvb_rate_t rate() { return d_rate; }
+
+        void reset() { d_state = 0; }
     };
 }
