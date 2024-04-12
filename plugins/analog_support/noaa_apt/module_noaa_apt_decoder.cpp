@@ -927,7 +927,7 @@ namespace noaa_apt
                         {
                             good_timing_lines = true;
                             for (size_t i = 0; i < timing_lines.size() - 1; i++)
-                                if (timing_lines[1] - timing_lines[0] != 120)
+                                if ((timing_lines[1] - timing_lines[0]) % 120 != 0)
                                     good_timing_lines = false;
                         }
                         if (good_timing_lines)
