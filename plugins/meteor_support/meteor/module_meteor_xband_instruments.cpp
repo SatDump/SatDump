@@ -182,17 +182,21 @@ namespace meteor
                             uint16_t vidk1 = frame[12] << 8 | frame[13];
                             //  uint16_t vidk2 = frame[36] << 8 | frame[37];
                             uint32_t vidk2 = frame[14] << 8 | frame[15] << 0; //| frame[16] << 8 | frame[17];
-
                             // uint16_t counter = frame[6] << 8 | frame[7];
 
-                            double vtidk = 16708 * 24 * 3600 + (vidk2) * 65536 + vidk1 + 189 * 60 - 101.1 * 10 * 60; // (double)vidk1 + (double(vidk2) / 65535.0);
+                            double vtidk = -1;
 
-                            last_timestamp = vtidk; // dayValue + double(counter) * (60.0 / 24.85) - 4 * 3600; //+ 5 * 60; //- 3 * 3600.0; //- 14 * 3600 + 3 * 60; //+ 12 * 3600.0;
+                            if (norad == 57166)
+                                vtidk = 16708 * 24 * 3600 + (vidk2) * 65536 + vidk1 + 189 * 60 - 101.1 * 10 * 60;
+                            else if (norad == 59051)
+                                vtidk = 16615 * 24 * 3600 + (vidk2) * 65536 + vidk1 - 24 * 60; //+ 189 * 60 - 101.1 * 10 * 60;
+
+                            last_timestamp = vtidk;
 
                             // logger->trace("%f ---- %f               %f", last_vidk, vtidk - last_vidk, last_timestamp);
 
-                            // printf("TIMET %s \n", timestamp_to_string(last_timestamp).c_str());
-                            // last_vidk = vtidk;
+                            // printf("--------------------------------------------------------- TIMET %s \n", timestamp_to_string(last_timestamp).c_str());
+                            //  last_vidk = vtidk;
                         }
                     }
 
