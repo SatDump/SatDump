@@ -24,6 +24,8 @@ namespace metop
 
             bool write_hpt = false;
 
+            bool ignore_integrated_tle = false;
+
             // Readers
             noaa_metop::avhrr::AVHRRReader avhrr_reader;
             noaa_metop::mhs::MHSReader mhs_reader;

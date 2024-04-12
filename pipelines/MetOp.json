@@ -27,6 +27,12 @@
                 "value": false,
                 "name": "Generate .HPT",
                 "description": "Generate a .hpt file to load into HRPT Reader for processing."
+            },
+            "ignore_integrated_tle": {
+                "type": "bool",
+                "value": false,
+                "name": "Ignore Integrated TLE",
+                "description": "This is normally NOT needed or recommended, but if \nEUMETSAT admin messages are broken, this may be required."
             }
         },
         "work": {
@@ -63,6 +69,18 @@
         "parameters": {
             "samplerate": {
                 "value": 45e6
+            },
+            "write_hpt": {
+                "type": "bool",
+                "value": false,
+                "name": "Generate .HPT",
+                "description": "Generate a .hpt file to load into HRPT Reader for processing."
+            },
+            "ignore_integrated_tle": {
+                "type": "bool",
+                "value": false,
+                "name": "Ignore Integrated TLE",
+                "description": "This is normally NOT needed or recommended, but if \nEUMETSAT admin messages are broken, this may be required."
             }
         },
         "work": {

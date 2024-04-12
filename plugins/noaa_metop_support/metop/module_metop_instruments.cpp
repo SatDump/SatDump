@@ -24,6 +24,7 @@ namespace metop
             : ProcessingModule(input_file, output_file_hint, parameters), avhrr_reader(false, -1)
         {
             write_hpt = parameters.contains("write_hpt") ? parameters["write_hpt"].get<bool>() : false;
+            ignore_integrated_tle = parameters.contains("ignore_integrated_tle") ? parameters["ignore_integrated_tle"].get<bool>() : false;
         }
 
         void MetOpInstrumentsDecoderModule::process()
@@ -165,7 +166,7 @@ namespace metop
                 norad = METOP_C_NORAD;
 
             std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
-            if (!satellite_tle.has_value())
+            if (!satellite_tle.has_value() || ignore_integrated_tle)
                 satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
             // Products dataset
