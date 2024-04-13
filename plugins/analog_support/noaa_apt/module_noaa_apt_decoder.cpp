@@ -788,16 +788,24 @@ namespace noaa_apt
             cha = wip_apt_image.crop_to(86, 86 + 909);
             chb = wip_apt_image.crop_to(1126, 1126 + 909);
 
+            // Fixup "bleed" of telemetry wedges on right edge
+            // TODO: Find a better way to do this...
+            for (size_t y = 0; y < cha.height(); y++)
+            {
+                cha[y * 909 + 908] = (float)cha[y * 909 + 908] * 0.25f + (float)cha[y * 909 + 907] * 0.75f;
+                chb[y * 909 + 908] = (float)chb[y * 909 + 908] * 0.25f + (float)chb[y * 909 + 907] * 0.75f;
+            }
+
             if (channel_a1 != -1)
             {
                 cha1 = image::Image<uint16_t>(cha);
                 cha2 = image::Image<uint16_t>(cha);
-                for (unsigned int i = switchy; i < cha2.height(); i++)
-                    for (unsigned int x = 0; x < cha2.width(); x++)
+                for (size_t i = switchy; i < cha2.height(); i++)
+                    for (size_t x = 0; x < cha2.width(); x++)
                         cha2[i * cha2.width() + x] = 0;
 
                 for (int i = 0; i < switchy; i++)
-                    for (unsigned int x = 0; x < cha1.width(); x++)
+                    for (size_t x = 0; x < cha1.width(); x++)
                         cha1[i * cha1.width() + x] = 0;
             }
 
