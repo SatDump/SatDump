@@ -48,7 +48,7 @@ namespace satdump
 
         predict_orbital_elements_t *satellite_object = nullptr;
         predict_position satellite_orbit;
-        predict_observer_t *satellite_observer_station;
+        predict_observer_t *satellite_observer_station = nullptr;
         predict_observation satellite_observation_pos;
 
     private: // Horizons Tracking (horizons)

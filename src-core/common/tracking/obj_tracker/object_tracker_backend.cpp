@@ -74,6 +74,8 @@ namespace satdump
 
                     auto &tle = general_tle_registry[current_satellite_id];
 
+                    if (satellite_object != nullptr)
+                        delete satellite_object;
                     satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
                     updateNextPass(current_time);
                 }

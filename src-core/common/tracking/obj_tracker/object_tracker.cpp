@@ -57,6 +57,8 @@ namespace satdump
         this->qth_lon = qth_lon;
         this->qth_lat = qth_lat;
         this->qth_alt = qth_alt;
+        if (satellite_observer_station != nullptr)
+            delete satellite_observer_station;
         satellite_observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
         backend_needs_update = true;
         general_mutex.unlock();
