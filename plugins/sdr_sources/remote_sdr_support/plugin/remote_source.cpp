@@ -163,14 +163,7 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
     service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
 
     std::vector<std::pair<std::string, int>> detected_servers;
-    try
-    {
-        detected_servers = service_discovery::discoverUDPServers(cfg, 100);
-    }
-    catch(std::exception &e)
-    {
-        logger->trace("Error on Remote SDR Discovery - " + std::string(e.what()));
-    }
+    detected_servers = service_discovery::discoverUDPServers(cfg, 100);
     detected_servers.insert(detected_servers.end(), additional_servers.begin(), additional_servers.end());
 
     for (auto server_ip : detected_servers)

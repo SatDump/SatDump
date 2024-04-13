@@ -269,11 +269,25 @@ namespace service_discovery
         std::thread funrx_th(fun_rx);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        sendUdpBroadcast(cfg.req_port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        try
+        {
+            sendUdpBroadcast(cfg.req_port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        }
+        catch(std::exception &e)
+        {
+            logger->trace("Error on Remote SDR Discovery - " + std::string(e.what()));
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(wait_millis));
         should_wait = false; // Force close with a new packet
-        sendUdpPacket("127.0.0.1", cfg.rep_port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        try
+        {
+            sendUdpPacket("127.0.0.1", cfg.rep_port, cfg.req_pkt.data(), cfg.req_pkt.size());
+        }
+        catch(std::exception &e)
+        {
+            logger->trace("Error on Remote SDR Discovery - " + std::string(e.what()));
+        }
 
         if (funrx_th.joinable())
             funrx_th.join();
