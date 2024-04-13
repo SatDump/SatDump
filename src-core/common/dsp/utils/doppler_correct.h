@@ -30,6 +30,7 @@ namespace dsp
         DopplerCorrectBlock(std::shared_ptr<dsp::stream<complex_t>> input,
                             double samplerate, float alpha, double signal_frequency, int norad,
                             double qth_lon, double qth_lat, double qth_alt);
+        ~DopplerCorrectBlock();
 
         float getFreq() { return curr_freq; }
 
