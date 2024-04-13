@@ -259,7 +259,8 @@
                 "noaa_apt_decoder": {
                     "audio_samplerate": 50e3,
                     "max_crop_stddev": 3500,
-                    "save_unsynced": true
+                    "save_unsynced": true,
+                    "align_timestamps": true
                 }
             }
         }

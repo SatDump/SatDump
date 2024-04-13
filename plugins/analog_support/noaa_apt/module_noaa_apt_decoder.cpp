@@ -15,8 +15,7 @@
 
 #include "common/calibration.h"
 
-#define MAX_SPACE_DIFF_VALID 12000
-#define MAX_WEDGE_STDDEV_VALID 2100
+#define MAX_STDDEV_VALID 2100
 
 namespace noaa_apt
 {
@@ -33,7 +32,9 @@ namespace noaa_apt
         if (parameters.count("max_crop_stddev") > 0)
             d_max_crop_stddev = parameters["max_crop_stddev"].get<int>();
         if (parameters.count("save_unsynced") > 0)
-            save_unsynced = parameters["save_unsynced"].get<bool>();
+            d_save_unsynced = parameters["save_unsynced"].get<bool>();
+        if (parameters.count("align_timestamps") > 0)
+            d_align_timestamps = parameters["align_timestamps"].get<bool>();
     }
 
     NOAAAPTDecoderModule::~NOAAAPTDecoderModule()
@@ -50,7 +51,7 @@ namespace noaa_apt
     {
         float init_val = valv;
         init_val -= new_black;
-        float vval = init_val / new_white;
+        float vval = init_val / (new_white - new_black);
         vval *= 65535;
         if (vval < 0)
             vval = 0;
@@ -77,9 +78,9 @@ namespace noaa_apt
         {
             wav::WavHeader hdr = wav::parseHeaderFromFileWav(d_input_file);
             if (!wav::isValidWav(hdr))
-                std::runtime_error("File is not WAV!");
+                throw satdump_exception("File is not WAV!");
             if (hdr.bits_per_sample != 16)
-                std::runtime_error("Only 16-bits WAV are supported!");
+                throw satdump_exception("Only 16-bits WAV are supported!");
             d_audio_samplerate = hdr.samplerate;
             is_stereo = hdr.channel_cnt == 2;
             if (is_stereo)
@@ -269,21 +270,18 @@ namespace noaa_apt
 
         apt_status = PROCESSING;
 
-        // Line mumbers
+        // Buffer to image
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got %d lines...", line_cnt);
-
-        // Buffer to image
-        wip_apt_image.init(APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
-        for (size_t i = 0; i < wip_apt_image.size(); i++)
-            wip_apt_image[i] = imagebuf[i];
+        wip_apt_image = image::Image<uint16_t>(imagebuf.data(), APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
+        std::vector<uint16_t>().swap(imagebuf);
 
         // WB
         logger->info("White balance...");
         wip_apt_image.white_balance();
 
         // Save unsynced
-        if (save_unsynced)
+        if (d_save_unsynced)
         {
             image::Image<uint16_t> wip_apt_image_sized(APT_IMG_WIDTH, line_cnt, 1);
 #pragma omp parallel for
@@ -295,17 +293,20 @@ namespace noaa_apt
 
         // Synchronize
         logger->info("Synchronize...");
-        image::Image<uint16_t> wip_apt_image_sync = synchronize(line_cnt);
+        wip_apt_image = synchronize(line_cnt);
 
-        // Parse wedges
-        auto wedge_1 = wip_apt_image_sync.crop_to(996, 996 + 43);
-        auto wedge_2 = wip_apt_image_sync.crop_to(2036, 2036 + 43);
+        // Parse wedges and spaces
+        // Trim 2px of each side to avoid values with "bleed"
+        auto wedge_1 = wip_apt_image.crop_to(997, 997 + 41);
+        auto wedge_2 = wip_apt_image.crop_to(2037, 2037 + 41);
 
-        auto space_a = wip_apt_image_sync.crop_to(41, 86);
-        auto space_b = wip_apt_image_sync.crop_to(1082, 1126);
+        auto space_a = wip_apt_image.crop_to(42, 42 + 43);
+        auto space_b = wip_apt_image.crop_to(1081, 1081 + 43);
 
         // wedge_1.save_png("wedge1.png");
         // wedge_2.save_png("wedge2.png");
+        // space_a.save_png("spacea.png");
+        // space_b.save_png("spaceb.png");
 
         logger->trace("Wedge 1");
         auto wedges1 = parse_wedge_full(wedge_1);
@@ -320,6 +321,7 @@ namespace noaa_apt
 
         APTWedge calib_wedge_ch1, calib_wedge_ch2; // We also extract calibration words, scaled to 10-bits
         uint16_t prt_counts[4];
+        std::vector<size_t> timing_lines;
         int space_av = 0, space_av1 = 0, space_bv = 0;
         int bb_a = 0, bb_a1 = 0;
         int channel_a = -1, channel_a1 = -1;
@@ -333,9 +335,9 @@ namespace noaa_apt
             new_white = (new_white + new_white1) / 2;
             new_black = (new_black + new_black1) / 2;
 
-            for (size_t l = 0; l < wip_apt_image_sync.height(); l++)    // Calib image
-                for (size_t x = 0; x < wip_apt_image_sync.width(); x++) // for (int x = 86; x < 86 + 909; x++)
-                    scale_val(wip_apt_image_sync[l * wip_apt_image_sync.width() + x], new_black, new_white);
+            for (int l = 0; l < line_cnt; l++)    // Calib image
+                for (int x = 0; x < APT_IMG_WIDTH; x++) // for (int x = 86; x < 86 + 909; x++)
+                    scale_val(wip_apt_image[l * APT_IMG_WIDTH + x], new_black, new_white);
 
             int valid_temp1 = 0, valid_temp2 = 0, valid_temp3 = 0, valid_temp4 = 0, valid_patch = 0,
                 validn1_1 = 0, validn1_0 = 0;
@@ -372,33 +374,33 @@ namespace noaa_apt
                     }
                 }
 
-                if (wed.std_dev[9] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[9] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp1 += wed.therm_temp1;
                     valid_temp1++;
                 }
-                if (wed.std_dev[10] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[10] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp2 += wed.therm_temp2;
                     valid_temp2++;
                 }
-                if (wed.std_dev[11] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[11] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp3 += wed.therm_temp3;
                     valid_temp3++;
                 }
-                if (wed.std_dev[12] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[12] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.therm_temp4 += wed.therm_temp4;
                     valid_temp4++;
                 }
-                if (wed.std_dev[13] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[13] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch1.patch_temp += wed.patch_temp;
                     valid_patch++;
                 }
 
-                if (wed.std_dev[14] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[14] < MAX_STDDEV_VALID)
                 {
                     if (channel_a1 == -1)
                     {
@@ -465,32 +467,32 @@ namespace noaa_apt
                 if (channel_b == -1)
                     channel_b = wed.rchannel;
 
-                if (wed.std_dev[9] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[9] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp1 += wed.therm_temp1;
                     valid_temp1++;
                 }
-                if (wed.std_dev[10] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[10] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp2 += wed.therm_temp2;
                     valid_temp2++;
                 }
-                if (wed.std_dev[11] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[11] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp3 += wed.therm_temp3;
                     valid_temp3++;
                 }
-                if (wed.std_dev[12] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[12] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.therm_temp4 += wed.therm_temp4;
                     valid_temp4++;
                 }
-                if (wed.std_dev[13] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[13] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.patch_temp += wed.patch_temp;
                     valid_patch++;
                 }
-                if (wed.std_dev[14] < MAX_WEDGE_STDDEV_VALID)
+                if (wed.std_dev[14] < MAX_STDDEV_VALID)
                 {
                     calib_wedge_ch2.back_scan += wed.back_scan;
                     valid_backscan++;
@@ -528,22 +530,18 @@ namespace noaa_apt
                 logger->info("%d, %d", switchy, space_a1.height());
                 space_a1.crop(0, switchy - 1, space_a1.width(), space_a1.height());
 
-                for (unsigned int y = 0; y < space_a1.height() - 1; y++)
+                for (size_t y = 0; y < space_a1.height() - 1; y++)
                 {
-                    int min = space_a1[y * space_a1.width()], max = space_a1[y * space_a1.width()], avg = 0;
-                    for (unsigned int i = 0; i < space_a1.width(); i++)
-                    {
-                        int v = space_a1[y * space_a1.width() + i];
-                        if (v < min)
-                            min = v;
-                        if (v > max)
-                            max = v;
-                        avg += v;
-                    }
+                    double avg = 0;
+                    for (size_t i = 0; i < space_a1.width(); i++)
+                        avg += space_a1[y * space_a1.width() + i];
                     avg /= space_a1.width();
+                    double stddev = 0;
+                    for (size_t i = 0; i < space_a1.width(); i++)
+                        stddev += (space_a1[y * space_a1.width() + i] - avg) * (space_a1[y * space_a1.width() + i] - avg);
+                    stddev = sqrt(stddev / (space_a1.width() - 1));
                     scale_val(avg, new_black, new_white);
-                    int max_diff = max - min;
-                    if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
+                    if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
                     {
                         space_av1 += avg;
                         validl1_1++;
@@ -552,47 +550,63 @@ namespace noaa_apt
                 space_av1 /= validl1_1;
             }
 
-            for (unsigned int y = 0; y < (channel_a1 != -1 ? switchy : space_a.height() - 1); y++)
+            for (size_t y = 0; y < (channel_a1 != -1 ? switchy : space_a.height() - 1); y++)
             {
-                int min = space_a[y * space_a.width()], max = space_a[y * space_a.width()], avg = 0;
-                for (unsigned int i = 0; i < space_a.width(); i++)
-                {
-                    int v = space_a[y * space_a.width() + i];
-                    if (v < min)
-                        min = v;
-                    if (v > max)
-                        max = v;
-                    avg += v;
-                }
+                double avg = 0;
+                for (size_t i = 0; i < space_a.width(); i++)
+                    avg += space_a[y * space_a.width() + i];
                 avg /= space_a.width();
+                double stddev = 0;
+                for (size_t i = 0; i < space_a.width(); i++)
+                    stddev += (space_a[y * space_a.width() + i] - avg) * (space_a[y * space_a.width() + i] - avg);
+                stddev = sqrt(stddev / (space_a.width() - 1));
                 scale_val(avg, new_black, new_white);
-                int max_diff = max - min;
-                if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
+                if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
                 {
                     space_av += avg;
                     validl1++;
                 }
             }
 
-            for (unsigned int y = 0; y < space_b.height(); y++)
+            size_t wip_timing_line = 0;
+            for (size_t y = 0; y < space_b.height(); y++)
             {
-                int min = space_b[y * space_b.width()], max = space_b[y * space_b.width()], avg = 0;
-                for (unsigned int i = 0; i < space_b.width(); i++)
-                {
-                    int v = space_b[y * space_b.width() + i];
-                    if (v < min)
-                        min = v;
-                    if (v > max)
-                        max = v;
-                    avg += v;
-                }
+                double avg = 0;
+                for (size_t i = 0; i < space_b.width(); i++)
+                    avg += space_b[y * space_b.width() + i];
                 avg /= space_b.width();
+                double stddev = 0;
+                for (size_t i = 0; i < space_b.width(); i++)
+                    stddev += (space_b[y * space_b.width() + i] - avg) * (space_b[y * space_b.width() + i] - avg);
+                stddev = sqrt(stddev / (space_b.width() - 1));
                 scale_val(avg, new_black, new_white);
-                int max_diff = max - min;
-                if (max_diff < MAX_SPACE_DIFF_VALID && avg != 0 && avg != 65535)
+                // logger->trace("Avg %f, StdDev %f", avg, stddev);
+                if (stddev < MAX_STDDEV_VALID)
                 {
-                    space_bv += avg;
-                    validl2++;
+                    // Get timing marks
+                    if (avg <= stddev)
+                    {
+                        if (wip_timing_line == 0)
+                            wip_timing_line = y;
+                        else if (y - wip_timing_line > 1)
+                            wip_timing_line = 0;
+                    }
+                    else if (avg >= 65535.0 - stddev && wip_timing_line != 0)
+                    {
+                        if(y - wip_timing_line > 3 || y - wip_timing_line < 2)
+                            wip_timing_line = 0;
+                        else if (y - wip_timing_line == 3)
+                        {
+                            timing_lines.push_back(wip_timing_line);
+                            wip_timing_line = 0;
+                        }
+                    }
+                    else //Not a timing mark
+                    {
+                        wip_timing_line = 0;
+                        space_bv += avg;
+                        validl2++;
+                    }
                 }
             }
 
@@ -605,10 +619,10 @@ namespace noaa_apt
         }
 
         int first_valid_line = 0;
-        int last_valid_line = wip_apt_image_sync.height();
+        int last_valid_line = line_cnt;
 
         // Save RAW before we crop
-        wip_apt_image_sync.save_img(main_dir + "/raw_sync");
+        wip_apt_image.save_img(main_dir + "/raw_sync");
 
         if (d_autocrop_wedges)
         {
@@ -620,13 +634,13 @@ namespace noaa_apt
             while (first_valid_wedge1 == 1e9 && current_line < (int)wedge_1.height())
             {
                 double avg = 0;
-                for (size_t x = 0; x < 43; x++)
-                    avg += wedge_1[current_line * 43 + x];
-                avg /= 43;
+                for (size_t x = 0; x < 41; x++)
+                    avg += wedge_1[current_line * 41 + x];
+                avg /= 41;
                 double variance = 0;
-                for (size_t x = 0; x < 43; x++)
-                    variance += (wedge_1[current_line * 43 + x] - avg) * (wedge_1[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < d_max_crop_stddev)
+                for (size_t x = 0; x < 41; x++)
+                    variance += (wedge_1[current_line * 41 + x] - avg) * (wedge_1[current_line * 41 + x] - avg);
+                if (sqrt(variance / 41) < d_max_crop_stddev)
                     first_valid_wedge1 = current_line;
                 current_line++;
             }
@@ -634,13 +648,13 @@ namespace noaa_apt
             while (last_valid_wedge1 == 0 && current_line >= 0)
             {
                 double avg = 0;
-                for (size_t x = 0; x < 43; x++)
-                    avg += wedge_1[current_line * 43 + x];
-                avg /= 43;
+                for (size_t x = 0; x < 41; x++)
+                    avg += wedge_1[current_line * 41 + x];
+                avg /= 41;
                 double variance = 0;
-                for (size_t x = 0; x < 43; x++)
-                    variance += (wedge_1[current_line * 43 + x] - avg) * (wedge_1[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < d_max_crop_stddev)
+                for (size_t x = 0; x < 41; x++)
+                    variance += (wedge_1[current_line * 41 + x] - avg) * (wedge_1[current_line * 41 + x] - avg);
+                if (sqrt(variance / 41) < d_max_crop_stddev)
                     last_valid_wedge1 = current_line;
                 current_line--;
             }
@@ -650,13 +664,13 @@ namespace noaa_apt
             while (first_valid_wedge2 == 1e9 && current_line < (int)wedge_2.height())
             {
                 double avg = 0;
-                for (size_t x = 0; x < 43; x++)
-                    avg += wedge_2[current_line * 43 + x];
-                avg /= 43;
+                for (size_t x = 0; x < 41; x++)
+                    avg += wedge_2[current_line * 41 + x];
+                avg /= 41;
                 double variance = 0;
-                for (size_t x = 0; x < 43; x++)
-                    variance += (wedge_2[current_line * 43 + x] - avg) * (wedge_2[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < d_max_crop_stddev)
+                for (size_t x = 0; x < 41; x++)
+                    variance += (wedge_2[current_line * 41 + x] - avg) * (wedge_2[current_line * 41 + x] - avg);
+                if (sqrt(variance / 41) < d_max_crop_stddev)
                     first_valid_wedge2 = current_line;
                 current_line++;
             }
@@ -664,13 +678,13 @@ namespace noaa_apt
             while (last_valid_wedge2 == 0 && current_line >= 0)
             {
                 double avg = 0;
-                for (size_t x = 0; x < 43; x++)
-                    avg += wedge_2[current_line * 43 + x];
-                avg /= 43;
+                for (size_t x = 0; x < 41; x++)
+                    avg += wedge_2[current_line * 41 + x];
+                avg /= 41;
                 double variance = 0;
-                for (size_t x = 0; x < 43; x++)
-                    variance += (wedge_2[current_line * 43 + x] - avg) * (wedge_2[current_line * 43 + x] - avg);
-                if (sqrt(variance / 43) < d_max_crop_stddev)
+                for (size_t x = 0; x < 41; x++)
+                    variance += (wedge_2[current_line * 41 + x] - avg) * (wedge_2[current_line * 41 + x] - avg);
+                if (sqrt(variance / 41) < d_max_crop_stddev)
                     last_valid_wedge2 = current_line;
                 current_line--;
             }
@@ -687,8 +701,7 @@ namespace noaa_apt
             {
                 first_valid_line = first_valid_wedge1;
                 last_valid_line = last_valid_wedge1;
-                wip_apt_image_sync.crop(0, first_valid_line,
-                                        wip_apt_image_sync.width(), last_valid_line);
+                wip_apt_image.crop(0, first_valid_line, APT_IMG_WIDTH, last_valid_line);
                 if (switchy != -1)
                     switchy -= first_valid_line;
             }
@@ -755,30 +768,6 @@ namespace noaa_apt
         }
 
         double start_tt = -1;
-        if (d_parameters.contains("start_timestamp") && norad != 0)
-            start_tt = d_parameters["start_timestamp"];
-
-        satdump::ProductDataSet dataset;
-        dataset.satellite_name = sat_name;
-        dataset.timestamp = start_tt;
-
-        if (sat_name == "NOAA-15" && start_tt != -1)
-        {
-            time_t noaa15_age = dataset.timestamp - 895074720;
-            int seconds = noaa15_age % 60;
-            int minutes = (noaa15_age % 3600) / 60;
-            int hours = (noaa15_age % 86400) / 3600;
-            int days = noaa15_age / 86400;
-            logger->warn("Congratulations for receiving NOAA 15 on APT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
-            if (dataset.timestamp > 0)
-            {
-                time_t tttime = dataset.timestamp;
-                std::tm *timeReadable = gmtime(&tttime);
-                if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
-                    logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
-            }
-        }
-
         // AVHRR
         {
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
@@ -796,19 +785,27 @@ namespace noaa_apt
             avhrr_products.bit_depth = 8;
 
             image::Image<uint16_t> cha, cha1, cha2, chb;
-            cha = wip_apt_image_sync.crop_to(86, 86 + 909);
-            chb = wip_apt_image_sync.crop_to(1126, 1126 + 909);
+            cha = wip_apt_image.crop_to(86, 86 + 909);
+            chb = wip_apt_image.crop_to(1126, 1126 + 909);
+
+            // Fixup "bleed" of telemetry wedges on right edge
+            // TODO: Find a better way to do this...
+            for (size_t y = 0; y < cha.height(); y++)
+            {
+                cha[y * 909 + 908] = (float)cha[y * 909 + 908] * 0.25f + (float)cha[y * 909 + 907] * 0.75f;
+                chb[y * 909 + 908] = (float)chb[y * 909 + 908] * 0.25f + (float)chb[y * 909 + 907] * 0.75f;
+            }
 
             if (channel_a1 != -1)
             {
                 cha1 = image::Image<uint16_t>(cha);
                 cha2 = image::Image<uint16_t>(cha);
-                for (unsigned int i = switchy; i < cha2.height(); i++)
-                    for (unsigned int x = 0; x < cha2.width(); x++)
+                for (size_t i = switchy; i < cha2.height(); i++)
+                    for (size_t x = 0; x < cha2.width(); x++)
                         cha2[i * cha2.width() + x] = 0;
 
                 for (int i = 0; i < switchy; i++)
-                    for (unsigned int x = 0; x < cha1.width(); x++)
+                    for (size_t x = 0; x < cha1.width(); x++)
                         cha1[i * cha1.width() + x] = 0;
             }
 
@@ -906,17 +903,9 @@ namespace noaa_apt
 
             if (d_parameters.contains("start_timestamp") && norad != 0)
             {
+                start_tt = d_parameters["start_timestamp"];
                 if (start_tt != -1)
                 {
-                    std::vector<double> timestamps;
-
-                    for (int i = first_valid_line; i < last_valid_line; i++)
-                        timestamps.push_back(start_tt + (double(i) * 0.5));
-
-                    avhrr_products.has_timestamps = true;
-                    avhrr_products.set_tle(satellite_tle);
-                    avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    avhrr_products.set_timestamps(timestamps);
                     nlohmann::json proj_cfg;
                     if (norad == 25338)
                         proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/noaa_15_avhrr.json"));
@@ -928,27 +917,88 @@ namespace noaa_apt
                     proj_cfg["image_width"] = 909;
                     proj_cfg["gcp_spacing_x"] = 30;
                     proj_cfg["gcp_spacing_y"] = 30;
+
+                    double apt_marker_offset = proj_cfg["apt_marker_offset"];
+
                     proj_cfg.erase("corr_width");
                     proj_cfg.erase("corr_swath");
                     proj_cfg.erase("corr_resol");
                     proj_cfg.erase("corr_altit");
+                    proj_cfg.erase("apt_marker_offset");
                     avhrr_products.set_proj_cfg(proj_cfg);
+
+                    // Adjust time based on timing lines
+                    if (d_align_timestamps)
+                    {
+                        bool good_timing_lines = false;
+                        if (timing_lines.size() > 1)
+                        {
+                            good_timing_lines = true;
+                            for (size_t i = 0; i < timing_lines.size() - 1; i++)
+                                if ((timing_lines[1] - timing_lines[0]) % 120 != 0)
+                                    good_timing_lines = false;
+                        }
+                        if (good_timing_lines)
+                        {
+                            double timestamp_offset = fmod(start_tt + apt_marker_offset + (timing_lines[0] / 2.0), 60);
+                            if (timestamp_offset > 30)
+                                timestamp_offset = -60.0 + timestamp_offset;
+                            if (abs(timestamp_offset) <= 15)
+                            {
+                                logger->info("Found %zu valid timing lines; correcting timestamp by %.1fs", timing_lines.size(), timestamp_offset);
+                                start_tt -= timestamp_offset;
+                            }
+                            else
+                                logger->info("Found %zu timing lines; but timestamps is off by %.1fs, ignoring!", timing_lines.size(), timestamp_offset);
+                        }
+                        else
+                            logger->info("No valid timing data; not aligning timestamp");
+                    }
+
+                    std::vector<double> timestamps;
+                    for (int i = first_valid_line; i < last_valid_line; i++)
+                        timestamps.push_back(start_tt + (double(i) * 0.5));
+
+                    avhrr_products.has_timestamps = true;
+                    avhrr_products.set_tle(satellite_tle);
+                    avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    avhrr_products.set_timestamps(timestamps);
                 }
             }
 
             avhrr_products.save(main_dir);
-            dataset.products_list.push_back(".");
+        }
+
+        satdump::ProductDataSet dataset;
+        dataset.satellite_name = sat_name;
+        dataset.timestamp = start_tt;
+        dataset.products_list.push_back(".");
+
+        if (sat_name == "NOAA-15" && start_tt != -1)
+        {
+            time_t noaa15_age = dataset.timestamp - 895074720;
+            int seconds = noaa15_age % 60;
+            int minutes = (noaa15_age % 3600) / 60;
+            int hours = (noaa15_age % 86400) / 3600;
+            int days = noaa15_age / 86400;
+            logger->warn("Congratulations for receiving NOAA 15 on APT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
+            if (dataset.timestamp > 0)
+            {
+                time_t tttime = dataset.timestamp;
+                std::tm* timeReadable = gmtime(&tttime);
+                if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
+                    logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
+            }
         }
 
         apt_status = DONE;
-
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         d_output_files.push_back(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/dataset.json");
     }
 
     image::Image<uint16_t> NOAAAPTDecoderModule::synchronize(int line_cnt)
     {
-        const int sync_a[] = {0, 0, 0, 0,
+        const int sync_a[] = {0, 0, 0,
                               255, 255, 0, 0,
                               255, 255, 0, 0,
                               255, 255, 0, 0,
@@ -960,7 +1010,7 @@ namespace noaa_apt
                               0, 0, 0, 0};
 
         std::vector<int> final_sync_a;
-        for (int i = 0; i < 40; i++)
+        for (int i = 0; i < 39; i++)
             for (int f = 0; f < APT_IMG_OVERS; f++)
                 final_sync_a.push_back(sync_a[i]);
 
@@ -969,12 +1019,12 @@ namespace noaa_apt
 #pragma omp parallel for
         for (int line = 0; line < line_cnt - 1; line++)
         {
-            int best_cor = 40 * 255 * APT_IMG_OVERS;
+            int best_cor = 39 * 255 * APT_IMG_OVERS;
             int best_pos = 0;
             for (int pos = 0; pos < APT_IMG_WIDTH * APT_IMG_OVERS; pos++)
             {
                 int cor = 0;
-                for (int i = 0; i < 40 * APT_IMG_OVERS; i++)
+                for (int i = 0; i < 39 * APT_IMG_OVERS; i++)
                     cor += abs(int((wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i] >> 8) - final_sync_a[i]));
 
                 if (cor < best_cor)
@@ -1009,9 +1059,9 @@ namespace noaa_apt
         for (size_t line = 0; line < wedge.height(); line++)
         {
             int val = 0;
-            for (int x = 0; x < 43; x++)
+            for (int x = 0; x < 41; x++)
                 val += wedge[line * wedge.width() + x];
-            val /= 43;
+            val /= 41;
             wedge_a.push_back(val);
         }
 
@@ -1072,7 +1122,7 @@ namespace noaa_apt
             for (int c = 0; c < 16; c++)
             {
                 std::vector<double> vals;
-                for (int x = 0; x < 43; x++)
+                for (int x = 0; x < 41; x++)
                     for (int y = 0; y < 8; y++)
                         vals.push_back(wedge[(wed.start_line + c * 8 + y) * wedge.width() + x]);
 
@@ -1080,18 +1130,18 @@ namespace noaa_apt
                 double variance = 0;
                 for (double &val : vals)
                     variance += (val - mean) * (val - mean);
-                wed.std_dev[c] = sqrt(variance / 343.0);
+                wed.std_dev[c] = sqrt(variance / 327.0);
             }
 
             /////////////////////////////////////
             int min_diff = 5000;
             int best_wedge = 0;
 
-            if (wed.std_dev[15] <= MAX_WEDGE_STDDEV_VALID)
+            if (wed.std_dev[15] <= MAX_STDDEV_VALID)
             {
                 for (int i = 0; i < 8; i++)
                 {
-                    if (wed.std_dev[i] > MAX_WEDGE_STDDEV_VALID)
+                    if (wed.std_dev[i] > MAX_STDDEV_VALID)
                         continue;
 
                     int diff = abs((int)final_wedge[i] - (int)wed.channel);
@@ -1130,9 +1180,9 @@ namespace noaa_apt
 
         for (auto &wedge : wedges)
         {
-            if (wedge.std_dev[7] < MAX_WEDGE_STDDEV_VALID)
+            if (wedge.std_dev[7] < MAX_STDDEV_VALID)
                 calib_white.push_back(wedge.ref8);
-            if (wedge.std_dev[8] < MAX_WEDGE_STDDEV_VALID)
+            if (wedge.std_dev[8] < MAX_STDDEV_VALID)
                 calib_black.push_back(wedge.zero_mod_ref);
         }
 
