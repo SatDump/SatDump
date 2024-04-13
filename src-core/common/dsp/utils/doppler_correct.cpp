@@ -18,6 +18,15 @@ namespace dsp
 
         // Init obs object
         observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
+
+        if (observer_station == nullptr || satellite_object == nullptr)
+            throw std::runtime_error("Couldn't init libpredict objects!");
+    }
+
+    DopplerCorrectBlock::~DopplerCorrectBlock()
+    {
+        predict_destroy_observer(observer_station);
+        predict_destroy_orbital_elements(satellite_object);
     }
 
     inline double getTime()
