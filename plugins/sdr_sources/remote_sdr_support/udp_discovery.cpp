@@ -162,9 +162,8 @@ namespace service_discovery
                 pkt.push_back((cfg.discover_port >> 16) & 0xFF);
                 pkt.push_back((cfg.discover_port >> 8) & 0xFF);
                 pkt.push_back(cfg.discover_port & 0xFF);
-                logger->trace("Replying to %s", ip_add);
                 sendUdpPacket(ip_add, cfg.rep_port, (uint8_t *)pkt.data(), pkt.size());
-
+                logger->trace("Replying to %s", ip_add);
             }
         }
 

@@ -32,8 +32,20 @@ nlohmann::json RemoteSource::get_settings()
 {
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_GETSETTINGS);
     waiting_for_settings = true;
+    auto reference_time = std::chrono::steady_clock::now();
     while (waiting_for_settings)
+    {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - reference_time).count() > 10)
+            tcp_client->readOne = true;
+        if (tcp_client->readOne)
+        {
+            logger->trace("Lost connection to the server!");
+            waiting_for_settings = false;
+            is_open = false;
+            return d_settings;
+        }
+    }
     logger->trace("Done waiting for settings!");
     d_settings["remote_bit_depth"] = bit_depth_used;
     return d_settings;

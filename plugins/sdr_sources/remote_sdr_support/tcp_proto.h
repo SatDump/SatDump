@@ -45,8 +45,7 @@ public:
     std::function<void()> callback_func_on_lost_client;
 
 public:
-    TCPServer(int port)
-        : d_port(port)
+    TCPServer(int port) : d_port(port)
     {
 #if defined(_WIN32)
         if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -56,6 +55,18 @@ public:
         serversockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (serversockfd == -1)
             throw std::runtime_error("Socket creation failed");
+
+#ifdef _WIN32
+        int timeout = 60000;
+        const char *timeout_ptr = (const char*) &timeout;
+#else
+        struct timeval timeout;
+        timeout.tv_sec = 60;
+        timeout.tv_usec = 0;
+        struct timeval *timeout_ptr = &timeout;
+#endif
+        if (setsockopt(serversockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
+            logger->trace("Problem setting send timeout on TCP socket; ignoring");
 
         struct sockaddr_in servaddr;
         memset(&servaddr, 0, sizeof(servaddr));
@@ -130,13 +141,26 @@ public:
     void rx_thread_func()
     {
         uint8_t *buffer = new uint8_t[3000000];
+        struct timeval timeout;
+        timeout.tv_sec = 60;
+        timeout.tv_usec = 0;
+
         while (thread_should_run)
         {
             if (clientsockfd != -1)
             {
-                int lpkt_size = sread(buffer, 4);
-                if (lpkt_size == -1)
+                fd_set socket_set;
+                FD_ZERO(&socket_set);
+                FD_SET(clientsockfd, &socket_set);
+                if(select(clientsockfd + 1, &socket_set, nullptr, nullptr, &timeout) == 0) //Prevent timeout from hanging loop
                     continue;
+
+                int lpkt_size = sread(buffer, 4);
+                if (lpkt_size <= 0)
+                {
+                    closeconn();
+                    continue;
+                }
                 if (lpkt_size < 4)
                 {
                     logger->error("Client sent a packet that was too small. Closing connection!");
@@ -156,7 +180,7 @@ public:
                 while (current_pkt_size < expected_pkt_size)
                 {
                     int ret = sread(buffer + current_pkt_size, expected_pkt_size - current_pkt_size);
-                    if (ret == 0)
+                    if (ret <= 0)
                         break;
                     current_pkt_size += ret;
                 }
@@ -175,19 +199,13 @@ private:
     int sread(uint8_t *buff, int len)
     {
         // int ret = read(clientsockfd, buff, len);
-        int ret = recv(clientsockfd, (char *)buff, len, 0);
-        if (ret <= 0)
-        {
-            logger->trace("Server lost client");
-            closeconn();
-            ret = -1;
-        }
-        return ret;
+        return recv(clientsockfd, (char *)buff, len, 0);
     }
 
 public:
-    void swrite(uint8_t *buff, int len)
+    int swrite(uint8_t *buff, int len)
     {
+        int r = -1;
         write_mtx.lock();
         if (clientsockfd != -1)
         {
@@ -197,17 +215,17 @@ public:
             buffer_tx[3] = len & 0xFF;
             memcpy(&buffer_tx[4], buff, len);
             // write(clientsockfd, buffer_tx, len + 4);
-            int r = send(clientsockfd, (char *)buffer_tx, len + 4, MSG_NOSIGNAL);
+            r = send(clientsockfd, (char *)buffer_tx, len + 4, MSG_NOSIGNAL);
             // logger->critical("HEADESENTR %d %d", len, buff2.size());
-            if (r == -1)
-                clientsockfd = -1;
         }
         write_mtx.unlock();
+        return r;
     }
 
-private:
+public:
     void closeconn()
     {
+        logger->trace("Server lost client");
 #if defined(_WIN32)
         closesocket(clientsockfd);
 #else
@@ -239,8 +257,7 @@ public:
     bool readOne = false;
 
 public:
-    TCPClient(char *address, int port)
-        : d_port(port)
+    TCPClient(char *address, int port) : d_port(port)
     {
 #if defined(_WIN32)
         if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -251,6 +268,20 @@ public:
         if (clientsockfd == -1)
             throw std::runtime_error("Socket creation failed");
 
+#ifdef _WIN32
+        int timeout = 10000;
+        const char* timeout_ptr = (const char*)&timeout;
+#else
+        struct timeval timeout;
+        timeout.tv_sec = 10;
+        timeout.tv_usec = 0;
+        struct timeval* timeout_ptr = &timeout;
+#endif
+        if (setsockopt(clientsockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
+            logger->trace("Problem setting send timeout on TCP socket; ignoring");
+        if (setsockopt(clientsockfd, SOL_SOCKET, SO_RCVTIMEO, timeout_ptr, sizeof timeout) < 0)
+            logger->trace("Problem setting receive timeout on TCP socket; ignoring");
+
         struct sockaddr_in servaddr;
         memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
@@ -259,8 +290,6 @@ public:
 
         if (connect(clientsockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0)
             throw std::runtime_error("Connection with the server failed");
-        // else
-        //     logger->trace("Connected to the server");
 
         uint8_t response = 0;
         if (recv(clientsockfd, (char *)&response, 1, 0) == -1)
@@ -311,7 +340,7 @@ public:
                 while (current_pkt_size < expected_pkt_size)
                 {
                     int ret = sread(buffer + current_pkt_size, expected_pkt_size - current_pkt_size);
-                    if (ret == 0)
+                    if (ret <= 0)
                         break;
                     current_pkt_size += ret;
                 }
@@ -337,7 +366,7 @@ private:
     }
 
 public:
-    void swrite(uint8_t *buff, int len)
+    int swrite(uint8_t *buff, int len)
     {
         write_mtx.lock();
         buffer_tx[0] = (len >> 24) & 0xFF;
@@ -346,8 +375,15 @@ public:
         buffer_tx[3] = len & 0xFF;
         memcpy(&buffer_tx[4], buff, len);
         // write(clientsockfd, buffer_tx, len + 4);
-        send(clientsockfd, (char *)buffer_tx, len + 4, 0);
+        int ret = send(clientsockfd, (char *)buffer_tx, len + 4, MSG_NOSIGNAL);
         //  logger->critical("HEADESENTR %d %d", len, buff2.size());
         write_mtx.unlock();
+        return ret;
+    }
+
+public:
+    void closeconn()
+    {
+        readOne = true;
     }
 };
