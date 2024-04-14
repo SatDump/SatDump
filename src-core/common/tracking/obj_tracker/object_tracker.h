@@ -137,6 +137,9 @@ namespace satdump
         SatAzEl rotator_park_position;
         double rotator_unpark_at_minus = 60;
 
+    public: // Handlers
+        std::function<void(double, double)> rotator_target_pos_updated_callback; //Todo: this calls from rotatorth_thread
+
     public: // Functions
         nlohmann::json getStatus();
         image::Image<uint8_t> getPolarPlotImg(int size = 256);
