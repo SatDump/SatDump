@@ -57,6 +57,9 @@ namespace satdump
         void setQTH(double lon, double lat, double alt);
         void setTarget(double azimuth, double elevation);
 
+        void saveConfig();
+        void loadConfig();
+
         void render();
     };
 

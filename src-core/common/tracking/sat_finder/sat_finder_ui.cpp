@@ -1,5 +1,6 @@
 #include "imgui/imgui.h"
 #include "sat_finder_ui.h"
+#include "core/config.h"
 #include "common/tracking/tle.h"
 #include "common/geodetic/geodetic_coordinates.h"
 
@@ -8,9 +9,13 @@ namespace satdump
     SatFinder::SatFinder() {
         blacklist = {"STARLINK", "ONEWEB", "ORBCOMM"};
         satfinder_thread = std::thread(&SatFinder::satfinder_run, this);
+
+        loadConfig();
     }
 
     SatFinder::~SatFinder() {
+        saveConfig();
+
         satfinder_should_run = false;
         if (satfinder_thread.joinable())
             satfinder_thread.join();
@@ -64,7 +69,7 @@ namespace satdump
 
         if(observer_station)
             predict_destroy_observer(observer_station);
-        observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt); // Todo: move it from here?
+        observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
     }
 
     void SatFinder::setTarget(double azimuth, double elevation) {
@@ -73,8 +78,38 @@ namespace satdump
         target_el = elevation;    
     }
 
+    void SatFinder::saveConfig()
+    {
+        config::main_cfg["user"]["satellite_finder"]["update_rate"] = update_period;
+        config::main_cfg["user"]["satellite_finder"]["tolerance_azimuth"] = tolerance_az;
+        config::main_cfg["user"]["satellite_finder"]["tolerance_elevation"] = tolerance_el;
+
+        config::saveUserConfig();
+    }
+
+    void SatFinder::loadConfig()
+    {
+        if (config::main_cfg["user"].contains("satellite_finder"))
+        {
+            if (config::main_cfg["user"]["satellite_finder"].contains("update_rate"))
+                update_period = config::main_cfg["user"]["satellite_finder"]["update_rate"];
+            if (config::main_cfg["user"]["satellite_finder"].contains("tolerance_azimuth"))
+                tolerance_az = config::main_cfg["user"]["satellite_finder"]["tolerance_azimuth"];
+            if (config::main_cfg["user"]["satellite_finder"].contains("tolerance_elevation"))
+                tolerance_el = config::main_cfg["user"]["satellite_finder"]["tolerance_elevation"];
+        }
+    }
+
     void SatFinder::render() {
         std::lock_guard<std::mutex> lock(mutex);
+
+        ImGui::InputDouble("Update Period (s)", &update_period);
+        ImGui::InputDouble("Tolerance Azimuth", &tolerance_az);
+        ImGui::InputDouble("Tolerance Elevation", &tolerance_el);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
 
         if (ImGui::BeginTable("##satfindergwidgettable", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
