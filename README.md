@@ -94,60 +94,23 @@ Dependency-free macOS builds are provided on the [releases page](https://github.
 General build instructions (Brew and XCode command line tools required)
 
 ```bash
-# Install dependencies
-brew install cmake volk jpeg tiff libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio jemalloc
+# Install build dependencies
+brew install cmake dylibbundler pkg-config libtool autoconf automake lit llvm
 
-# Build and install libfftw3 to work around issue with brew version
-wget http://www.fftw.org/fftw-3.3.9.tar.gz
-tar xf fftw-3.3.9.tar.gz
-rm fftw-3.3.9.tar.gz
-cd fftw-3.3.9
-mkdir build && cd build
-
-# For Intel Macs
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
-
-# For Apple Silicon Macs
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false ..
-
-make
-sudo make install
-cd ../..
-
-# Build and install nng since the brew version does not support TLS
-git clone -b v1.6.0 https://github.com/nanomsg/nng
-cd nng
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON ..
-make -j$(sysctl -n hw.logicalcpu)
-sudo make install
-cd ../..
-
-# Build and install airspyhf
-git clone https://github.com/airspy/airspyhf.git
-cd airspyhf
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(sysctl -n hw.logicalcpu)
-sudo make install
-cd ../..
-
-# Finally, SatDump
+# Build SatDump
 git clone https://github.com/altillimity/satdump.git
 cd satdump
 mkdir build && cd build
+../macOS/Configure-vcpkg.sh
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(sysctl -n hw.logicalcpu)
 
-# To run without installing
+# To run without bundling
 ln -s ../pipelines .        # Symlink pipelines so it can run
 ln -s ../resources .        # Symlink resources so it can run
 ln -s ../satdump_cfg.json . # Symlink settings so it can run
-
-# To install system-wide
-sudo make install
 
 # Make an app bundle (to add to your /Applications folder)
 ../macOS/bundle.sh
