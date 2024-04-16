@@ -95,7 +95,7 @@ General build instructions (Brew and XCode command line tools required)
 
 ```bash
 # Install build dependencies
-brew install cmake dylibbundler pkg-config libtool autoconf automake lit llvm
+brew install cmake dylibbundler pkg-config libtool autoconf automake
 
 # Build SatDump
 git clone https://github.com/altillimity/satdump.git
@@ -104,7 +104,8 @@ mkdir build && cd build
 ../macOS/Configure-vcpkg.sh
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release ..
+# <triplet> can be arm64-osx-satdump or x64-osx-satdump
+cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 -DVCPKG_TARGET_TRIPLET=<triplet> ..
 make -j$(sysctl -n hw.logicalcpu)
 
 # To run without bundling
