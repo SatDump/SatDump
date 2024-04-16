@@ -104,13 +104,14 @@ mkdir build && cd build
 ../macOS/Configure-vcpkg.sh
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DVCPKG_TARGET_TRIPLET=osx-satdump ..
+cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=osx-satdump ..
 make -j$(sysctl -n hw.logicalcpu)
 
 # To run without bundling
 ln -s ../pipelines .        # Symlink pipelines so it can run
 ln -s ../resources .        # Symlink resources so it can run
 ln -s ../satdump_cfg.json . # Symlink settings so it can run
+./satdump-ui
 
 # Make an app bundle (to add to your /Applications folder)
 ../macOS/bundle.sh

@@ -32,7 +32,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 install mako
 
-build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target"
+build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON"
 libusb_include="$(cd ../installed/osx-satdump/include/libusb-1.0 && pwd)"
 libusb_lib="$(cd ../installed/osx-satdump/lib && pwd)/libusb-1.0.0.dylib"
 
@@ -108,7 +108,7 @@ mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
 make -j$(sysctl -n hw.logicalcpu)
 make install
-cd ../..
+cd ../../../..
 rm -rf hackrf
 
 deactivate #Exit the venv
