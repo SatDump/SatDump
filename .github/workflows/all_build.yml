@@ -283,7 +283,6 @@ jobs:
         run: brew install cmake dylibbundler pkg-config libtool autoconf automake
 
       - name: Build vcpkg
-        working-directory: ${{runner.workspace}}/macOS
         shell: bash
         run: $GITHUB_WORKSPACE/macOS/Configure-vcpkg.sh
 
@@ -333,7 +332,6 @@ jobs:
         run: brew install cmake dylibbundler pkg-config libtool autoconf automake
 
       - name: Build vcpkg
-        working-directory: ${{runner.workspace}}/macOS
         shell: bash
         run: $GITHUB_WORKSPACE/macOS/Configure-vcpkg.sh
 
