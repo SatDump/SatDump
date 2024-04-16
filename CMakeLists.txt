@@ -38,6 +38,7 @@ endif()
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    link_directories(vcpkg/installed/osx-satdump/lib)
 
     # Jemalloc
     find_package(Jemalloc REQUIRED)

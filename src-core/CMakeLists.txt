@@ -104,6 +104,8 @@ elseif(ANDROID)
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
     if(NOT APPLE)
+        target_link_libraries(satdump_core PUBLIC stdc++fs)
+
         # Jemalloc
         find_package(Jemalloc REQUIRED)
         target_include_directories(satdump_core PUBLIC ${JEMALLOC_INCLUDE_DIR})
@@ -136,8 +138,6 @@ else()
     # FFTW3
     pkg_check_modules(FFTW3 REQUIRED fftw3f)
     target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-
-    target_link_libraries(satdump_core PUBLIC stdc++fs)
 
     # NNG
     find_library(NNG_LIBRARY nng REQUIRED)
