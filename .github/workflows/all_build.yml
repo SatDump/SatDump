@@ -274,22 +274,18 @@ jobs:
           path: ${{runner.workspace}}/build/*.deb
 
   build_macos_intel:
-    runs-on: macos-12
+    runs-on: macos-13
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: brew install cmake volk jpeg libpng libtiff glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio jemalloc
+      - name: Install build dependencies
+        run: brew install cmake dylibbundler pkg-config libtool autoconf automake
 
-      - name: Build airspyhf
-        run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
-
-      - name: Build nng
-        run: git clone -b v1.6.0 https://github.com/nanomsg/nng && cd nng && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON -DNNG_TOOLS=OFF -DNNG_TESTS=OFF -DNNG_ENABLE_NNGCAT=OFF .. && make -j`nproc` && sudo make install
-
-      - name: Build FFTW3
-        run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true .. && make -j8 && sudo make install
+      - name: Build vcpkg
+        working-directory: ${{runner.workspace}}/macOS
+        shell: bash
+        run: $GITHUB_WORKSPACE/macOS/Configure-vcpkg.sh
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -301,7 +297,7 @@ jobs:
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DVCPKG_TARGET_TRIPLET=x64-osx-satdump
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -333,17 +329,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: brew install cmake volk jpeg libpng libtiff glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio jemalloc
+      - name: Install build dependencies
+        run: brew install cmake dylibbundler pkg-config libtool autoconf automake
 
-      - name: Build airspyhf
-        run: git clone https://github.com/airspy/airspyhf.git && cd airspyhf && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8 && sudo make install
-
-      - name: Build nng
-        run: git clone -b v1.6.0 https://github.com/nanomsg/nng && cd nng && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON -DNNG_TOOLS=OFF -DNNG_TESTS=OFF -DNNG_ENABLE_NNGCAT=OFF .. && make -j`nproc` && sudo make install
-
-      - name: Build FFTW3
-        run: wget http://www.fftw.org/fftw-3.3.9.tar.gz && tar xf fftw-3.3.9.tar.gz && rm fftw-3.3.9.tar.gz && cd fftw-3.3.9 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false .. && make -j8 && sudo make install
+      - name: Build vcpkg
+        working-directory: ${{runner.workspace}}/macOS
+        shell: bash
+        run: $GITHUB_WORKSPACE/macOS/Configure-vcpkg.sh
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -355,7 +347,7 @@ jobs:
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DVCPKG_TARGET_TRIPLET=arm64-osx-satdump
 
       - name: Build
         working-directory: ${{runner.workspace}}/build

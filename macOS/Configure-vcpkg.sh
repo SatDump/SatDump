@@ -17,14 +17,16 @@ if [[ "$(uname -m)" == "arm64" ]]
 then
     cp ../macOS/arm64-osx-satdump.cmake triplets
     triplet="arm64-osx-satdump"
+    osx_target="11.0"
 else
     cp ../macOS/x64-osx-satdump.cmake triplets
     triplet="x64-osx-satdump"
+    osx_target="10.15"
 fi
 ./bootstrap-vcpkg.sh
 
 echo "Installing vcpkg packages..."
-./vcpkg install --triplet $triplet libjpeg-turbo tiff libpng glfw3 libusb fftw3 portaudio jemalloc nng[mbedtls] zstd
+./vcpkg install --triplet $triplet libjpeg-turbo tiff libpng glfw3 libusb fftw3 portaudio jemalloc nng[mbedtls] zstd armadillo
 mkdir build && cd build
 
 echo "Setting up venv"
@@ -32,7 +34,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 install mako
 
-build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=$triplet -DCMAKE_INSTALL_PREFIX=$(cd ../installed/$triplet && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15"
+build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=$triplet -DCMAKE_INSTALL_PREFIX=$(cd ../installed/$triplet && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target"
 libusb_include="$(cd ../installed/$triplet/include/libusb-1.0 && pwd)"
 libusb_lib="$(cd ../installed/$triplet/lib && pwd)/libusb-1.0.0.dylib"
 
@@ -45,7 +47,7 @@ tar -xf cmake-17.0.6.src.tar.xz
 mv cmake-17.0.6.src cmake
 cd openmp-17.0.6.src
 mkdir build && cd build
-cmake build_args -DLIBOMP_INSTALL_ALIASES=OFF ..
+cmake $build_args -DLIBOMP_INSTALL_ALIASES=OFF ..
 make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../../..
