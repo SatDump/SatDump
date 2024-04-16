@@ -13,7 +13,7 @@ then
     security create-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
     security default-keychain -s build.keychain
     security unlock-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
-    security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign -q
+    security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
     security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_CERTIFICATE_PWD build.keychain
 fi
 
@@ -57,7 +57,7 @@ fi
 
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
-dylibbundler $SIGN_FLAG -cd -s $(cd .. && pwd)/vcpkg/installed/osx-satdump/lib/ -s . -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump $plugin_args
+dylibbundler $SIGN_FLAG -cd -s $GITHUB_WORKSPACE/vcpkg/installed/osx-satdump/lib/ -s . -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump $plugin_args
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
