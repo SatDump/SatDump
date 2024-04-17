@@ -95,7 +95,7 @@ General build instructions (Brew and XCode command line tools required)
 
 ```bash
 # Install build dependencies
-brew install cmake dylibbundler pkg-config libtool autoconf automake
+brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
 # Build SatDump
 git clone https://github.com/altillimity/satdump.git

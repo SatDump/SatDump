@@ -51,6 +51,15 @@ make install
 cd ../../..
 rm -rf libomp
 
+echo "Building orc"
+git clone https://github.com/GStreamer/orc --depth 1 -b 0.4.38
+cd orc
+MACOSX_DEPLOYMENT_TARGET=$osx_target meson setup --buildtype=release --prefix=$(cd ../../installed/osx-satdump && pwd) -Dgtk_doc=disabled build
+MACOSX_DEPLOYMENT_TARGET=$osx_target meson compile -C build --verbose
+MACOSX_DEPLOYMENT_TARGET=$osx_target meson install -C build
+cd ..
+rm -rf orc
+
 echo "Building cpu_features..."
 git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
 cd cpu_features
@@ -65,7 +74,7 @@ echo "Building Volk..."
 git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.0
 cd volk
 mkdir build && cd build
-cmake $build_args -DENABLE_TESTING=OFF -DENABLE_MODTOOL=OFF -DENABLE_ORC=OFF ..
+cmake $build_args -DENABLE_TESTING=OFF -DENABLE_MODTOOL=OFF ..
 make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../..

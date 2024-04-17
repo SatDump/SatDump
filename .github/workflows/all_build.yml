@@ -283,7 +283,7 @@ jobs:
         run: sudo xcode-select -s '/Applications/Xcode_15.2.app/Contents/Developer'
 
       - name: Install build dependencies
-        run: brew install cmake dylibbundler pkg-config libtool autoconf automake
+        run: brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -343,7 +343,7 @@ jobs:
         run: sudo xcode-select -s '/Applications/Xcode_15.2.app/Contents/Developer'
 
       - name: Install build dependencies
-        run: brew install cmake dylibbundler pkg-config libtool autoconf automake
+        run: brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
       - name: Cache dependencies
         uses: actions/cache@v4
