@@ -120,5 +120,15 @@ make install
 cd ../../../..
 rm -rf hackrf
 
+echo "Adding SDRPlay Libs..."
+curl -LJ --output sdrplay-macos.zip https://www.satdump.org/sdrplay-macos.zip
+unzip sdrplay-macos.zip
+cp sdrplay-macos/lib/* ../installed/osx-satdump/lib
+cp sdrplay-macos/include/* ../installed/osx-satdump/include
+cd ../installed/osx-satdump/lib
+ln -s libsdrplay_api.3.14.dylib libsdrplay_api.dylib
+cd -
+rm -rf sdrplay-macos*
+
 deactivate #Exit the venv
 echo "Done!"
