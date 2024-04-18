@@ -35,6 +35,14 @@ namespace elektro
             return utc_filename;
         }
 
+        void ELEKTROLRITDataDecoderModule::saveImageP(GOMSxRITProductMeta meta, image::Image<uint8_t> img)
+        {
+            if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
+                img.save_img(std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
+            else
+                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
+        }
+
         void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
             std::string current_filename = file.filename;
@@ -179,14 +187,22 @@ namespace elektro
 
                     std::string image_id = current_filename.substr(0, 30);
 
+                    GOMSxRITProductMeta lmeta;
+                    lmeta.filename = file.filename;
+
                     // Channel
-                    int channel = segment_id_header.channel_id + 1;
+                    lmeta.channel = segment_id_header.channel_id + 1;
+
+                    // Try to parse navigation
+                    if (file.hasHeader<::lrit::ImageNavigationRecord>())
+                        lmeta.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(file.getHeader<::lrit::ImageNavigationRecord>());
 
                     // Timestamp
                     std::string timestamp = current_filename.substr(46, 12);
                     std::tm scanTimestamp;
                     strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
                     scanTimestamp.tm_sec = 0; // No seconds
+                    lmeta.scan_time = mktime_utc(&scanTimestamp);
 
                     // If we can, use a better filename
                     {
@@ -194,70 +210,50 @@ namespace elektro
 
                         if (sat_name == "GOMS1") // Dead... But good measure
                         {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L1", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L1", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L1", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L1", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L1", "NC");
+                            lmeta.satellite_name = "ELEKTRO-L1";
+                            lmeta.satellite_short_name = "L1";
                         }
                         else if (sat_name == "GOMS2")
                         {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L2", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L2", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L2", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L2", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L2", "NC");
+                            lmeta.satellite_name = "ELEKTRO-L2";
+                            lmeta.satellite_short_name = "L2";
                         }
                         else if (sat_name == "GOMS3")
                         {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L3", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L3", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L3", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L3", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L3", "NC");
+                            lmeta.satellite_name = "ELEKTRO-L3";
+                            lmeta.satellite_short_name = "L3";
                         }
-                        else if (sat_name == "GOMS4") // Not launched yet, but we can expect it to be the same anyway
+                        else if (sat_name == "GOMS4")
                         {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L4", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L4", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L4", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L4", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L4", "NC");
+                            lmeta.satellite_name = "ELEKTRO-L4";
+                            lmeta.satellite_short_name = "L4";
                         }
                         else if (sat_name == "GOMS5") // Not launched yet, but we can expect it to be the same anyway
                         {
-                            image_id = getHRITImageFilename(&scanTimestamp, "L5", channel);
-                            elektro_221_composer_full_disk->filename = getHRITImageFilename(&scanTimestamp, "L5", "221");
-                            elektro_321_composer_full_disk->filename321 = getHRITImageFilename(&scanTimestamp, "L5", "321");
-                            elektro_321_composer_full_disk->filename231 = getHRITImageFilename(&scanTimestamp, "L5", "231");
-                            elektro_321_composer_full_disk->filenameNC = getHRITImageFilename(&scanTimestamp, "L5", "NC");
+                            lmeta.satellite_name = "ELEKTRO-L5";
+                            lmeta.satellite_short_name = "L5";
                         }
                     }
 
-                    if (all_wip_images.count(channel) == 0)
-                        all_wip_images.insert({channel, std::make_unique<wip_images>()});
+                    if (all_wip_images.count(lmeta.channel) == 0)
+                        all_wip_images.insert({lmeta.channel, std::make_unique<wip_images>()});
 
-                    std::unique_ptr<wip_images> &wip_img = all_wip_images[channel];
+                    std::unique_ptr<wip_images> &wip_img = all_wip_images[lmeta.channel];
 
-                    if (segmentedDecoders.count(channel) == 0)
-                        segmentedDecoders.insert({channel, SegmentedLRITImageDecoder()});
+                    if (segmentedDecoders.count(lmeta.channel) == 0)
+                        segmentedDecoders.insert({lmeta.channel, SegmentedLRITImageDecoder()});
 
-                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
+                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[lmeta.channel];
+
+                    if (lmeta.image_navigation_record)
+                        lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number - 1) * image_structure_record.lines_count;
 
                     if (segmentedDecoder.image_id != image_id)
                     {
                         if (segmentedDecoder.image_id != "")
                         {
-                            current_filename = image_id;
-
                             wip_img->imageStatus = SAVING;
-                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
-
-                            if (elektro_221_composer_full_disk->hasData)
-                                elektro_221_composer_full_disk->save(directory);
-                            if (elektro_321_composer_full_disk->hasData)
-                                elektro_321_composer_full_disk->save(directory);
-
+                            saveImageP(segmentedDecoder.meta, segmentedDecoder.image);
                             wip_img->imageStatus = RECEIVING;
                         }
 
@@ -265,26 +261,11 @@ namespace elektro
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
                                                                      image_id);
+                        segmentedDecoder.meta = lmeta;
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
                     segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], seg_number);
-
-                    // Composite?
-                    if (channel == 1)
-                    {
-                        elektro_221_composer_full_disk->push1(segmentedDecoder.image, mktime(&scanTimestamp));
-                        elektro_321_composer_full_disk->push1(segmentedDecoder.image, mktime(&scanTimestamp));
-                    }
-                    else if (channel == 2)
-                    {
-                        elektro_221_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
-                        elektro_321_composer_full_disk->push2(segmentedDecoder.image, mktime(&scanTimestamp));
-                    }
-                    else if (channel == 3)
-                    {
-                        elektro_321_composer_full_disk->push3(segmentedDecoder.image, mktime(&scanTimestamp));
-                    }
 
                     // If the UI is active, update texture
                     if (wip_img->textureID > 0)
@@ -303,22 +284,16 @@ namespace elektro
                         current_filename = image_id;
 
                         wip_img->imageStatus = SAVING;
-                        segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
-
-                        if (elektro_221_composer_full_disk->hasData)
-                            elektro_221_composer_full_disk->save(directory);
-                        if (elektro_321_composer_full_disk->hasData)
-                            elektro_321_composer_full_disk->save(directory);
-
+                        saveImageP(segmentedDecoder.meta, segmentedDecoder.image);
                         segmentedDecoder = SegmentedLRITImageDecoder();
                         wip_img->imageStatus = IDLE;
                     }
                 }
                 else
-                {
+                { // Left just in case, should not happen on ELEKTRO-L
                     // Write raw image dats
                     image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                    image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                    image.save_img(std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
                 }
             }
             else

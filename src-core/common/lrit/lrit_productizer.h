@@ -9,8 +9,12 @@ namespace lrit
     template <typename T>
     class LRITProductizer
     {
+    private:
+        bool should_sweep_x;
+        std::string instrument_id = "ukn";
+
     public:
-        LRITProductizer();
+        LRITProductizer(std::string instrument_id, bool sweep_x);
         ~LRITProductizer();
 
         void saveImage(image::Image<T> img,

@@ -16,7 +16,8 @@ namespace goes
                                                                                                                                                 write_images(parameters["write_images"].get<bool>()),
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
-                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>()),
+                                                                                                                                                productizer("abi", true)
         {
             write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;

@@ -3,6 +3,7 @@
 #include "core/module.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
+#include "common/lrit/lrit_productizer.h"
 
 namespace elektro
 {
@@ -14,8 +15,6 @@ namespace elektro
             std::atomic<uint64_t> filesize;
             std::atomic<uint64_t> progress;
 
-            std::shared_ptr<ELEKTRO221Composer> elektro_221_composer_full_disk;
-            std::shared_ptr<ELEKTRO321Composer> elektro_321_composer_full_disk;
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;
@@ -40,6 +39,10 @@ namespace elektro
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void processLRITFile(::lrit::LRITFile &file);
+
+            ::lrit::LRITProductizer<uint8_t> productizer;
+
+            void saveImageP(GOMSxRITProductMeta meta, image::Image<uint8_t> img);
 
         public:
             ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

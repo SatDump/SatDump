@@ -34,7 +34,7 @@ namespace lrit
     }
 
     template <typename T>
-    LRITProductizer<T>::LRITProductizer()
+    LRITProductizer<T>::LRITProductizer(std::string instrument_id, bool sweep_x) : instrument_id(instrument_id), should_sweep_x(sweep_x)
     {
     }
 
@@ -66,14 +66,15 @@ namespace lrit
         if (image_navigation_record)
         {
             float sat_pos = 0;
-            if (sscanf(image_navigation_record->projection_name.c_str(), "geos(%f)", &sat_pos) == 1)
+            if (sscanf(image_navigation_record->projection_name.c_str(), "geos(%f)", &sat_pos) == 1 ||
+                sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
             {
                 constexpr float k = 624597.0334223134;
-                double scalar_x = double(image_navigation_record->column_scaling_factor) * pow(2, -16) * 6.433;
-                double scalar_y = double(image_navigation_record->line_scaling_factor) * pow(2, -16) * 6.433;
+                double scalar_x = (pow(2, 16) / double(image_navigation_record->column_scaling_factor)) * k; //* pow(2, -16) * 19.218057929563283; // * 384.3611585912657; // 6.433;
+                double scalar_y = (pow(2, 16) / double(image_navigation_record->line_scaling_factor)) * k;   //* pow(2, -16) * 19.218057929563283;   //* 384.3611585912657;   // 6.433;
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = sat_pos;
-                proj_cfg["sweep_x"] = true;
+                proj_cfg["sweep_x"] = should_sweep_x;
                 proj_cfg["scalar_x"] = scalar_x;
                 proj_cfg["scalar_y"] = -scalar_y;
                 proj_cfg["offset_x"] = double(image_navigation_record->column_offset) * -scalar_x;
@@ -136,7 +137,7 @@ namespace lrit
             {
                 satdump::ImageProducts pro;
                 pro.d_no_not_save_images = true;
-                pro.instrument_name = "abi";
+                pro.instrument_name = instrument_id;
                 pro.bit_depth = sizeof(T) * 8;
                 if (proj_cfg.size() > 0)
                 {

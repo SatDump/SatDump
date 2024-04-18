@@ -3,13 +3,12 @@
 #include "core/module.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
+#include "common/lrit/lrit_productizer.h"
 
 extern "C"
 {
 #include <libs/aec/szlib.h>
 }
-
-#include "common/lrit/lrit_productizer.h"
 
 namespace goes
 {
@@ -56,7 +55,7 @@ namespace goes
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
 
-            lrit::LRITProductizer<uint8_t> productizer;
+            ::lrit::LRITProductizer<uint8_t> productizer;
 
             void saveImageP(GOESxRITProductMeta meta, image::Image<uint8_t> &img);
 
