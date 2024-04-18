@@ -71,7 +71,7 @@ namespace satdump
                 contents["images"][c]["abs_index"] = images[c].abs_index;
 
             savemtx.unlock();
-            if (!save_as_matrix)
+            if (!save_as_matrix && !d_no_not_save_images)
                 images[c].image.save_img(directory + "/" + images[c].filename);
         }
 
@@ -116,18 +116,18 @@ namespace satdump
         if (jni_return != JNI_OK)
             throw std::runtime_error("Could not attach to thread");
 
-        jclass activityClass = java_env->FindClass( "android/app/NativeActivity" );
-        jmethodID getCacheDir = java_env->GetMethodID( activityClass, "getCacheDir", "()Ljava/io/File;" );
-        jobject cache_dir = java_env->CallObjectMethod( g_App->activity->clazz, getCacheDir );
+        jclass activityClass = java_env->FindClass("android/app/NativeActivity");
+        jmethodID getCacheDir = java_env->GetMethodID(activityClass, "getCacheDir", "()Ljava/io/File;");
+        jobject cache_dir = java_env->CallObjectMethod(g_App->activity->clazz, getCacheDir);
 
-        jclass fileClass = java_env->FindClass( "java/io/File" );
-        jmethodID getPath = java_env->GetMethodID( fileClass, "getPath", "()Ljava/lang/String;" );
-        jstring path_string = (jstring)java_env->CallObjectMethod( cache_dir, getPath );
+        jclass fileClass = java_env->FindClass("java/io/File");
+        jmethodID getPath = java_env->GetMethodID(fileClass, "getPath", "()Ljava/lang/String;");
+        jstring path_string = (jstring)java_env->CallObjectMethod(cache_dir, getPath);
 
-        const char *path_chars = java_env->GetStringUTFChars( path_string, NULL );
-        std::string tmp_path( path_chars );
+        const char *path_chars = java_env->GetStringUTFChars(path_string, NULL);
+        std::string tmp_path(path_chars);
 
-        java_env->ReleaseStringUTFChars( path_string, path_chars );
+        java_env->ReleaseStringUTFChars(path_string, path_chars);
         jni_return = java_vm->DetachCurrentThread();
         if (jni_return != JNI_OK)
             throw std::runtime_error("Could not detach from thread");
@@ -148,7 +148,7 @@ namespace satdump
                 if (std::filesystem::exists(tmp_path + "/satdumpdltmp.tmp"))
                     std::filesystem::remove(tmp_path + "/satdumpdltmp.tmp");
             }
-            else
+            else if (!d_no_not_load_images)
             {
                 if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
                     img_matrix.load_img(directory + "/" + contents["images"][0]["file"].get<std::string>());
@@ -176,7 +176,7 @@ namespace satdump
                     if (std::filesystem::exists(tmp_path + "/satdumpdltmp.tmp"))
                         std::filesystem::remove(tmp_path + "/satdumpdltmp.tmp");
                 }
-                else
+                else if (!d_no_not_load_images)
                 {
                     if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
                         img_holder.image.load_img(directory + "/" + contents["images"][c]["file"].get<std::string>());
