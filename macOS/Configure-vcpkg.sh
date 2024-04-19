@@ -120,6 +120,16 @@ make install
 cd ../../../..
 rm -rf hackrf
 
+echo "Building LimeSuite..."
+git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
+cd LimeSuite
+mkdir build-dir && cd build-dir
+cmake $build_args -DENABLE_GUI=OFF ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../..
+rm -rf LimeSuite
+
 echo "Adding SDRPlay Libs..."
 curl -LJ --output sdrplay-macos.zip https://www.satdump.org/sdrplay-macos.zip
 unzip sdrplay-macos.zip
