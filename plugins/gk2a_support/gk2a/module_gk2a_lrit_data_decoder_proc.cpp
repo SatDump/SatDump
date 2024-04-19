@@ -15,6 +15,14 @@ namespace gk2a
 {
     namespace lrit
     {
+        void GK2ALRITDataDecoderModule::saveImageP(GK2AxRITProductMeta meta, image::Image<uint8_t> img)
+        {
+            if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
+                img.save_img(std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
+            else
+                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+        }
+
         void GK2ALRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
             std::string current_filename = file.filename;
@@ -82,6 +90,9 @@ namespace gk2a
                     if (!std::filesystem::exists(directory + "/IMAGES"))
                         std::filesystem::create_directory(directory + "/IMAGES");
 
+                    GK2AxRITProductMeta lmeta;
+                    lmeta.filename = file.filename;
+
                     ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
 
                     if (file.custom_flags[JPG_COMPRESSED] || file.custom_flags[J2K_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
@@ -98,18 +109,40 @@ namespace gk2a
                     if (header_parts.size() < 2)
                         header_parts = {"", ""};
 
-                    if (header_parts[1] == "FD")
+                    // Only FDs are supposed to come down. We only handle other headers in this situation.
+                    if (header_parts.size() >= 6 && header_parts[1] == "FD")
                     {
-                        std::string channel = header_parts[3];
-
-                        if (all_wip_images.count(channel) == 0)
-                            all_wip_images.insert({channel, std::make_unique<wip_images>()});
-
-                        std::unique_ptr<wip_images> &wip_img = all_wip_images[channel];
-
-                        if (segmentedDecoders.count(channel) <= 0)
+                        lmeta.channel = header_parts[3];
+                        lmeta.satellite_name = "GK-2A";
+                        lmeta.satellite_short_name = "GK2A";
+                        // lmeta.scan_time = time(0);
                         {
-                            segmentedDecoders.insert(std::pair<std::string, SegmentedLRITImageDecoder>(channel, SegmentedLRITImageDecoder()));
+                            time_t tttt = time(0);
+                            std::tm scanTimestamp = *gmtime(&tttt);
+                            std::string scanTime = header_parts[4] + "_" + header_parts[5];
+                            strptime(scanTime.c_str(), "%4Y%2m%2d_%2H%2M%2S", &scanTimestamp);
+                            lmeta.scan_time = mktime_utc(&scanTimestamp);
+                        }
+
+                        // Try to parse navigation
+                        if (file.hasHeader<::lrit::ImageNavigationRecord>())
+                        {
+                            lmeta.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(file.getHeader<::lrit::ImageNavigationRecord>());
+                            lmeta.image_navigation_record->line_scaling_factor = -lmeta.image_navigation_record->line_scaling_factor; // Little GK-2A Quirk...
+                        }
+
+                        // Try to parse calibration
+                        if (file.hasHeader<::lrit::ImageDataFunctionRecord>())
+                            lmeta.image_data_function_record = std::make_shared<::lrit::ImageDataFunctionRecord>(file.getHeader<::lrit::ImageDataFunctionRecord>());
+
+                        if (all_wip_images.count(lmeta.channel) == 0)
+                            all_wip_images.insert({lmeta.channel, std::make_unique<wip_images>()});
+
+                        std::unique_ptr<wip_images> &wip_img = all_wip_images[lmeta.channel];
+
+                        if (segmentedDecoders.count(lmeta.channel) <= 0)
+                        {
+                            segmentedDecoders.insert(std::pair<std::string, SegmentedLRITImageDecoder>(lmeta.channel, SegmentedLRITImageDecoder()));
                             wip_img->imageStatus = IDLE;
                             wip_img->img_height = 0;
                             wip_img->img_width = 0;
@@ -120,7 +153,7 @@ namespace gk2a
                         std::string orig_filename = current_filename;
                         std::string image_id = current_filename.substr(0, current_filename.size() - 8);
 
-                        SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
+                        SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[lmeta.channel];
 
                         if (segmentedDecoder.image_id != image_id)
                         {
@@ -129,7 +162,7 @@ namespace gk2a
                                 current_filename = image_id;
 
                                 wip_img->imageStatus = SAVING;
-                                segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                                saveImageP(segmentedDecoder.meta, segmentedDecoder.image);
                                 wip_img->imageStatus = RECEIVING;
                             }
 
@@ -137,6 +170,7 @@ namespace gk2a
                                                                          image_structure_record.columns_count,
                                                                          image_structure_record.lines_count,
                                                                          image_id);
+                            segmentedDecoder.meta = lmeta;
                         }
 
                         std::vector<std::string> header_parts = splitString(orig_filename, '_');
@@ -156,7 +190,7 @@ namespace gk2a
                             wip_img->img_width = 1000;
                             image::Image<uint8_t> imageScaled = segmentedDecoder.image;
                             imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                            uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                            uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width, 1);
                             wip_img->hasToUpdate = true;
                         }
 
@@ -165,17 +199,17 @@ namespace gk2a
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
-                            segmentedDecoder.image.save_img(std::string(directory + "/IMAGES/" + current_filename).c_str());
+                            saveImageP(segmentedDecoder.meta, segmentedDecoder.image);
                             segmentedDecoder = SegmentedLRITImageDecoder();
                             wip_img->imageStatus = IDLE;
                         }
                     }
                     else
                     {
-                        std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
+                        lmeta.filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
                         // Write raw image dats
                         image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                        image.save_img(std::string(directory + "/IMAGES/" + clean_filename).c_str());
+                        saveImageP(lmeta, image);
                     }
                 }
             }

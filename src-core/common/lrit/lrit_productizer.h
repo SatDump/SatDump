@@ -28,7 +28,7 @@ namespace lrit
                        ImageNavigationRecord *navigationHdr = nullptr,
                        ImageDataFunctionRecord *calibHdr = nullptr);
 
-        void setInstrumentID(std::string instument_id) { this->instrument_id = instrument_id; }
+        void setInstrumentID(std::string id) { instrument_id = id; }
 
         // Calibration WILL vary between sats
         // std::function<void(satdump::ImageProducts *, ImageDataFunctionRecord *)> appendCalibrationToProductFunc;

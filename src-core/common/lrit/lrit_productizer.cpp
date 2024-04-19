@@ -43,54 +43,37 @@ namespace lrit
     {
     }
 
+    inline void fillLUTGaps(nlohmann::json &jlut)
+    {
+        nlohmann::json newlut;
+        std::vector<std::pair<int, float>> lut;
+        for (int i = 0; i < jlut.size(); i++)
+            if (jlut[i].is_number())
+                lut.push_back({i, jlut[i].get<float>()});
+        for (int i = 0; i < lut.size() - 1; i++)
+        {
+            auto currentIT = lut[i];
+            auto currentITp = lut[i + 1];
+            newlut[currentIT.first] = currentIT.second;
+
+            if (currentIT.first + 1 != currentITp.first)
+            {
+                float val_start = currentIT.first;
+                float val_end = currentITp.first;
+                float valo_start = currentIT.second;
+                float valo_end = currentITp.second;
+
+                for (int i = val_start; i < val_end; i++)
+                    newlut[i] = ((i - val_start) / (val_end - val_start)) * (valo_end - valo_start) + valo_start;
+            }
+        }
+        newlut[lut[lut.size() - 1].first] = lut[lut.size() - 1].second;
+        jlut = newlut;
+    }
+
     // This will most probably get moved over to each
     inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string satellite, std::string instrument_id)
     {
-        const float goesn_imager_wavelength_table[5] = {
-            630,
-            3900,
-            64800,
-            10700,
-            13300,
-        };
-
-        const float goes_abi_wavelength_table[16] = {
-            470,
-            640,
-            860,
-            1380,
-            1610,
-            2260,
-            3900,
-            6190,
-            6950,
-            7340,
-            850,
-            9610,
-            10350,
-            11200,
-            12300,
-            13300,
-        };
-
-        const float hima_ahi_wavelength_table[16] = {
-            470,
-            510,
-            640,
-            860,
-            1600,
-            2300,
-            3900,
-            6200,
-            6900,
-            7300,
-            8600,
-            9600,
-            10400,
-            11200,
-            12400,
-            13300,
-        };
 
         if (image_data_function_record)
         {
@@ -98,56 +81,227 @@ namespace lrit
             pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
 
             if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
+            {
+                const float goesn_imager_wavelength_table[5] = {
+                    630,
+                    3900,
+                    64800,
+                    10700,
+                    13300,
+                };
                 pro.set_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
+            }
             else if (instrument_id == "abi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
+            {
+                const float goes_abi_wavelength_table[16] = {
+                    470,
+                    640,
+                    860,
+                    1380,
+                    1610,
+                    2260,
+                    3900,
+                    6190,
+                    6950,
+                    7340,
+                    850,
+                    9610,
+                    10350,
+                    11200,
+                    12300,
+                    13300,
+                };
                 pro.set_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
+            }
             else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
+            {
+                const float hima_ahi_wavelength_table[16] = {
+                    470,
+                    510,
+                    640,
+                    860,
+                    1600,
+                    2300,
+                    3900,
+                    6200,
+                    6900,
+                    7300,
+                    8600,
+                    9600,
+                    10400,
+                    11200,
+                    12400,
+                    13300,
+                };
                 pro.set_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
+            }
+            else if (instrument_id == "ami")
+            {
+                double wavelength_nm = std::stod(channel.substr(2, channel.size() - 1)) * 100;
+                pro.set_wavenumber(pro.images.size() - 1, 1e7 / wavelength_nm);
+            }
             else
                 pro.set_wavenumber(pro.images.size() - 1, -1);
 
+            if (instrument_id == "ahi")
+                printf("\n%s\n", image_data_function_record->datas.c_str());
+
             auto lines = splitString(image_data_function_record->datas, '\n');
-            if (lines[0] == "$HALFTONE:=8")
+            if (lines.size() < 4)
             {
-                if (lines[1] == "_NAME:=toa_lambertian_equivalent_albedo_multiplied_by_cosine_solar_zenith_angle")
+                lines = splitString(image_data_function_record->datas, '\r');
+                if (lines.size() < 4)
                 {
-                    nlohmann::json lut;
-                    for (int i = 3; i < lines.size(); i++)
-                    {
-                        int val;
-                        float valo;
-                        if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                            lut[val] = valo;
-                    }
-
-                    nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                    if (satellite.find("GOES-") != std::string::npos || satellite == "Himawari")
-                        calib_cfg["calibrator"] = "goes_xrit";
-
-                    calib_cfg[channel] = lut;
-                    pro.set_calibration(calib_cfg);
-                    pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                    logger->error("Error parsing calibration info into lines!");
+                    return;
                 }
-                else if (lines[1] == "_NAME:=toa_brightness_temperature")
+            }
+
+            if (lines[0].find("HALFTONE:=") != std::string::npos)
+            {
+                // GOES xRIT modes
+                if (instrument_id == "goesn_imager" || instrument_id == "abi")
                 {
-                    nlohmann::json lut;
-                    for (int i = 3; i < lines.size(); i++)
+                    if (lines[1] == "_NAME:=toa_lambertian_equivalent_albedo_multiplied_by_cosine_solar_zenith_angle")
                     {
-                        int val;
-                        float valo;
-                        if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                            lut[val] = valo;
-                    }
+                        nlohmann::json lut;
+                        for (int i = 3; i < lines.size(); i++)
+                        {
+                            int val;
+                            float valo;
+                            if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                lut[val] = valo;
+                        }
 
-                    nlohmann::json calib_cfg = pro.get_calibration_raw();
+                        nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                    if (satellite.find("GOES-") != std::string::npos || satellite == "Himawari")
                         calib_cfg["calibrator"] = "goes_xrit";
 
-                    calib_cfg[channel] = lut;
-                    pro.set_calibration(calib_cfg);
-                    pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                        calib_cfg[channel] = lut;
+                        pro.set_calibration(calib_cfg);
+                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                    }
+                    else if (lines[1] == "_NAME:=toa_brightness_temperature")
+                    {
+                        nlohmann::json lut;
+                        for (int i = 3; i < lines.size(); i++)
+                        {
+                            int val;
+                            float valo;
+                            if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                lut[val] = valo;
+                        }
+
+                        nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                        calib_cfg["calibrator"] = "goes_xrit";
+
+                        calib_cfg[channel] = lut;
+                        pro.set_calibration(calib_cfg);
+                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                    }
+                }
+
+                // GK-2A xRIT modes
+                if (instrument_id == "ami")
+                {
+                    int bits_for_calib = 8;
+                    if (lines[0].find("HALFTONE:=10") != std::string::npos)
+                        bits_for_calib = 10;
+
+                    if (lines[2] == "_UNIT:=ALBEDO(%)")
+                    {
+                        nlohmann::json lut;
+                        for (int i = 3; i < lines.size(); i++)
+                        {
+                            int val;
+                            float valo;
+                            if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                lut[val] = valo / 100.0;
+                        }
+
+                        nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["bits_for_calib"] = bits_for_calib;
+
+                        calib_cfg[channel] = lut;
+                        pro.set_calibration(calib_cfg);
+                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                    }
+                    else if (lines[2] == "_UNIT:=KELVIN")
+                    {
+                        nlohmann::json lut;
+                        for (int i = 3; i < lines.size(); i++)
+                        {
+                            int val;
+                            float valo;
+                            if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                lut[val] = valo;
+                        }
+
+                        nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["bits_for_calib"] = bits_for_calib;
+
+                        calib_cfg[channel] = lut;
+                        pro.set_calibration(calib_cfg);
+                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                    }
+                }
+
+                // Himawari xRIT modes
+                if (instrument_id == "ahi")
+                {
+                    int bits_for_calib = 8;
+                    if (lines[0].find("HALFTONE:=10") != std::string::npos)
+                        bits_for_calib = 10;
+
+                    if (lines[2].find("_UNIT:=PERCENT") != std::string::npos)
+                    {
+                        nlohmann::json lut;
+                        for (int i = 3; i < lines.size(); i++)
+                        {
+                            int val;
+                            float valo;
+                            if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                lut[val] = valo / 100.0;
+                        }
+
+                        fillLUTGaps(lut);
+
+                        nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["bits_for_calib"] = bits_for_calib;
+
+                        calib_cfg[channel] = lut;
+                        pro.set_calibration(calib_cfg);
+                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                    }
+                    else if (lines[2].find("_UNIT:=KELVIN") != std::string::npos)
+                    {
+                        nlohmann::json lut;
+                        for (int i = 3; i < lines.size(); i++)
+                        {
+                            int val;
+                            float valo;
+                            if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                lut[val] = valo;
+                        }
+
+                        fillLUTGaps(lut);
+
+                        nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["bits_for_calib"] = bits_for_calib;
+
+                        calib_cfg[channel] = lut;
+                        pro.set_calibration(calib_cfg);
+                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                    }
                 }
             }
         }
@@ -180,9 +334,15 @@ namespace lrit
             if (sscanf(image_navigation_record->projection_name.c_str(), "geos(%f)", &sat_pos) == 1 ||
                 sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
             {
-                constexpr float k = 624597.0334223134;
-                double scalar_x = (pow(2, 16) / double(image_navigation_record->column_scaling_factor)) * k;
-                double scalar_y = (pow(2, 16) / double(image_navigation_record->line_scaling_factor)) * k;
+                constexpr double k = 624597.0334223134;
+                double scalar_x = (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k;
+                double scalar_y = (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k;
+
+                logger->critical("Column Factor : %d - %f", image_navigation_record->column_scaling_factor, scalar_x);
+                logger->critical("Line Factor : %d - %f", image_navigation_record->line_scaling_factor, scalar_y);
+                logger->critical("Column Offset : %d", image_navigation_record->column_offset);
+                logger->critical("Line Offset : %d", image_navigation_record->line_offset);
+
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = sat_pos;
                 proj_cfg["sweep_x"] = should_sweep_x;

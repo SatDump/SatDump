@@ -69,8 +69,8 @@ namespace lrit
         uint8_t type;
         uint16_t record_length;
         std::string projection_name;
-        uint32_t column_scaling_factor;
-        uint32_t line_scaling_factor;
+        int32_t column_scaling_factor;
+        int32_t line_scaling_factor;
         int32_t column_offset;
         int32_t line_offset;
 

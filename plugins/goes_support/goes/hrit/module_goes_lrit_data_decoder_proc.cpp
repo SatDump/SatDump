@@ -224,9 +224,10 @@ namespace goes
                     // Himawari-8 rebroadcast
                     else if (primary_header.file_type_code == 0 && noaa_header.product_id == 43)
                     {
-                        lmeta.satellite_name = "Himwari";
+                        lmeta.satellite_name = "Himawari";
                         lmeta.satellite_short_name = "HIM";
                         lmeta.channel = noaa_header.product_subid;
+                        lmeta.region = "";
 
                         // Apparently the timestamp is in there for Himawari-8 data
                         AnnotationRecord annotation_record = file.getHeader<AnnotationRecord>();
@@ -268,12 +269,8 @@ namespace goes
                     SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[file.vcid];
 
                     if (lmeta.image_navigation_record)
-                    {
-                        if (noaa_header.product_id == ID_HIMAWARI)
-                            lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number - 1) * image_structure_record.lines_count;
-                        else
+                        if (noaa_header.product_id != ID_HIMAWARI)
                             lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number) * image_structure_record.lines_count;
-                    }
 
                     if (segmentedDecoder.image_id != segment_id_header.image_identifier)
                     {
