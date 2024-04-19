@@ -43,6 +43,116 @@ namespace lrit
     {
     }
 
+    // This will most probably get moved over to each
+    inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string satellite, std::string instrument_id)
+    {
+        const float goesn_imager_wavelength_table[5] = {
+            630,
+            3900,
+            64800,
+            10700,
+            13300,
+        };
+
+        const float goes_abi_wavelength_table[16] = {
+            470,
+            640,
+            860,
+            1380,
+            1610,
+            2260,
+            3900,
+            6190,
+            6950,
+            7340,
+            850,
+            9610,
+            10350,
+            11200,
+            12300,
+            13300,
+        };
+
+        const float hima_ahi_wavelength_table[16] = {
+            470,
+            510,
+            640,
+            860,
+            1600,
+            2300,
+            3900,
+            6200,
+            6900,
+            7300,
+            8600,
+            9600,
+            10400,
+            11200,
+            12400,
+            13300,
+        };
+
+        if (image_data_function_record)
+        {
+            // Default, to not crash the viewer on no calib
+            pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+
+            if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
+                pro.set_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
+            else if (instrument_id == "abi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
+                pro.set_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
+            else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
+                pro.set_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
+            else
+                pro.set_wavenumber(pro.images.size() - 1, -1);
+
+            auto lines = splitString(image_data_function_record->datas, '\n');
+            if (lines[0] == "$HALFTONE:=8")
+            {
+                if (lines[1] == "_NAME:=toa_lambertian_equivalent_albedo_multiplied_by_cosine_solar_zenith_angle")
+                {
+                    nlohmann::json lut;
+                    for (int i = 3; i < lines.size(); i++)
+                    {
+                        int val;
+                        float valo;
+                        if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                            lut[val] = valo;
+                    }
+
+                    nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                    if (satellite.find("GOES-") != std::string::npos || satellite == "Himawari")
+                        calib_cfg["calibrator"] = "goes_xrit";
+
+                    calib_cfg[channel] = lut;
+                    pro.set_calibration(calib_cfg);
+                    pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                }
+                else if (lines[1] == "_NAME:=toa_brightness_temperature")
+                {
+                    nlohmann::json lut;
+                    for (int i = 3; i < lines.size(); i++)
+                    {
+                        int val;
+                        float valo;
+                        if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                            lut[val] = valo;
+                    }
+
+                    nlohmann::json calib_cfg = pro.get_calibration_raw();
+
+                    if (satellite.find("GOES-") != std::string::npos || satellite == "Himawari")
+                        calib_cfg["calibrator"] = "goes_xrit";
+
+                    calib_cfg[channel] = lut;
+                    pro.set_calibration(calib_cfg);
+                    pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                }
+            }
+        }
+    }
+
     template <typename T>
     void LRITProductizer<T>::saveImage(image::Image<T> img,
                                        std::string directory,
@@ -51,7 +161,8 @@ namespace lrit
                                        std::string channel,
                                        time_t timestamp,
                                        std::string region,
-                                       lrit::ImageNavigationRecord *image_navigation_record)
+                                       lrit::ImageNavigationRecord *image_navigation_record,
+                                       ImageDataFunctionRecord *image_data_function_record)
     {
         std::string directory_path = region == ""
                                          ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
@@ -70,8 +181,8 @@ namespace lrit
                 sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
             {
                 constexpr float k = 624597.0334223134;
-                double scalar_x = (pow(2, 16) / double(image_navigation_record->column_scaling_factor)) * k; //* pow(2, -16) * 19.218057929563283; // * 384.3611585912657; // 6.433;
-                double scalar_y = (pow(2, 16) / double(image_navigation_record->line_scaling_factor)) * k;   //* pow(2, -16) * 19.218057929563283;   //* 384.3611585912657;   // 6.433;
+                double scalar_x = (pow(2, 16) / double(image_navigation_record->column_scaling_factor)) * k;
+                double scalar_y = (pow(2, 16) / double(image_navigation_record->line_scaling_factor)) * k;
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = sat_pos;
                 proj_cfg["sweep_x"] = should_sweep_x;
@@ -130,6 +241,9 @@ namespace lrit
                         if (proj_cfg["width"].get<int>() > pro.get_proj_cfg()["width"].get<int>())
                             pro.set_proj_cfg(proj_cfg);
                 }
+
+                addCalibrationInfoFunc(pro, image_data_function_record, channel, satellite, instrument_id);
+
                 pro.save(directory_path);
             }
             // Otherwise, create a new product with the current single channel we have.
@@ -145,6 +259,9 @@ namespace lrit
                     logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
                 pro.images.push_back({filename, channel, image::Image<uint16_t>()});
+
+                addCalibrationInfoFunc(pro, image_data_function_record, channel, satellite, instrument_id);
+
                 pro.save(directory_path);
             }
         }

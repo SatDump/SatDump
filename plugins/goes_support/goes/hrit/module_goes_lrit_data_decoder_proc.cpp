@@ -76,7 +76,13 @@ namespace goes
             }
             else
             {
-                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, meta.region, meta.image_navigation_record.get());
+                if (meta.satellite_name == "Himawari")
+                    productizer.setInstrumentID("ahi");
+                else if (meta.is_goesn)
+                    productizer.setInstrumentID("goesn_imager");
+                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                if (meta.satellite_name == "Himawari" || meta.is_goesn)
+                    productizer.setInstrumentID("abi");
             }
         }
 
@@ -113,6 +119,10 @@ namespace goes
                 // Try to parse navigation
                 if (file.hasHeader<::lrit::ImageNavigationRecord>())
                     lmeta.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(file.getHeader<::lrit::ImageNavigationRecord>());
+
+                // Try to parse calibration
+                if (file.hasHeader<::lrit::ImageDataFunctionRecord>())
+                    lmeta.image_data_function_record = std::make_shared<::lrit::ImageDataFunctionRecord>(file.getHeader<::lrit::ImageDataFunctionRecord>());
 
                 // Process as a specific dataset
                 {

@@ -24,6 +24,7 @@ namespace goes
             std::string satellite_short_name;
             time_t scan_time = 0;
             std::shared_ptr<::lrit::ImageNavigationRecord> image_navigation_record;
+            std::shared_ptr<::lrit::ImageDataFunctionRecord> image_data_function_record;
         };
 
         class SegmentedLRITImageDecoder

@@ -3,6 +3,7 @@
 #include <string>
 #include "common/image/image.h"
 #include "lrit_file.h"
+// #include "products/image_products.h"
 
 namespace lrit
 {
@@ -24,6 +25,12 @@ namespace lrit
                        std::string channel,
                        time_t timestamp,
                        std::string region = "",
-                       lrit::ImageNavigationRecord *navigationHdr = nullptr);
+                       ImageNavigationRecord *navigationHdr = nullptr,
+                       ImageDataFunctionRecord *calibHdr = nullptr);
+
+        void setInstrumentID(std::string instument_id) { this->instrument_id = instrument_id; }
+
+        // Calibration WILL vary between sats
+        // std::function<void(satdump::ImageProducts *, ImageDataFunctionRecord *)> appendCalibrationToProductFunc;
     };
 }

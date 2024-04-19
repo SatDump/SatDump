@@ -90,6 +90,22 @@ namespace lrit
         }
     };
 
+    struct ImageDataFunctionRecord
+    {
+        static constexpr int TYPE = 3;
+
+        uint8_t type;
+        uint16_t record_length;
+        std::string datas;
+
+        ImageDataFunctionRecord(uint8_t *data)
+        {
+            type = data[0];
+            record_length = data[1] << 8 | data[2];
+            datas = std::string((char *)&data[3], (char *)&data[3 + record_length - 3]);
+        }
+    };
+
     struct AnnotationRecord
     {
         static constexpr int TYPE = 4;
