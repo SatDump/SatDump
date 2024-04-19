@@ -412,6 +412,8 @@ namespace lrit
                 satdump::ImageProducts pro;
                 pro.d_no_not_save_images = true;
                 pro.instrument_name = instrument_id;
+                pro.set_product_source(satellite);
+                pro.set_product_timestamp(timestamp);
                 pro.bit_depth = sizeof(T) * 8;
                 if (proj_cfg.size() > 0)
                 {

@@ -103,7 +103,7 @@ namespace satdump
                     // Make sure the path is URL safe
                     std::ostringstream encodedUrl;
                     encodedUrl << std::hex << std::uppercase << std::setfill('0');
-                    for (char& c : pro_path)
+                    for (char &c : pro_path)
                     {
                         if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~')
                             encodedUrl << c;
@@ -173,6 +173,10 @@ namespace satdump
         std::string label = ph.products->instrument_name;
         if (ph.handler->instrument_cfg.contains("name"))
             label = ph.handler->instrument_cfg["name"].get<std::string>();
+        if (ph.products->has_product_source())
+            label = ph.products->get_product_source() + " " + label;
+        if (ph.products->has_product_timestamp())
+            label = label + " " + timestamp_to_string(ph.products->get_product_timestamp());
 
         ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | (index == current_handler_id ? ImGuiTreeNodeFlags_Selected : 0));
         if (ImGui::IsItemClicked())
