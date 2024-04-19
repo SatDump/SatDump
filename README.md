@@ -94,16 +94,19 @@ Dependency-free macOS builds are provided on the [releases page](https://github.
 General build instructions (Brew and XCode command line tools required)
 
 ```bash
-# Install build dependencies
+# Install build tools
 brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
-# Build SatDump
-git clone https://github.com/altillimity/satdump.git
-cd satdump
-mkdir build && cd build
-../macOS/Configure-vcpkg.sh
+# Clone SatDump
+git clone https://github.com/altillimity/satdump.git && cd satdump
+
+# Build dependencies
+./macOS/Configure-vcpkg.sh
+
+# Finally, build.
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
+mkdir build && cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=osx-satdump ..
 make -j$(sysctl -n hw.logicalcpu)
 
@@ -113,7 +116,8 @@ ln -s ../resources .        # Symlink resources so it can run
 ln -s ../satdump_cfg.json . # Symlink settings so it can run
 ./satdump-ui
 
-# Make an app bundle (to add to your /Applications folder)
+# Make an app bundle (to add to your /Applications folder). Saves to build/MacApp, and
+# a .dmg is created as well. 'make install' is not supported.
 ../macOS/bundle.sh
 ```
 
