@@ -188,6 +188,14 @@ namespace lrit
             {
                 double wavelength_nm = std::stod(channel.substr(2, channel.size() - 1)) * 100;
                 pro.set_wavenumber(pro.images.size() - 1, 1e7 / wavelength_nm);
+                if (channel == "IR105")
+                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 10, 120);
+                else if (channel == "IR123")
+                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 20, 100);
+                else if (channel == "SW038")
+                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0.01, 2.20);
+                else if (channel == "WV069")
+                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0, 6);
             }
             else
                 pro.set_wavenumber(pro.images.size() - 1, -1);
