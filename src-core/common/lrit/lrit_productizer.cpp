@@ -101,14 +101,14 @@ namespace lrit
                     {0, 1},
                     {0.01, 2.20}, // 3900,
                     {0, 6},       // 6190,
-                    {0, 6},       // 6950,
+                    {0, 16},      // 6950,
                     {0.02, 20},   // 7340,
                     {5, 100},     // 8500,
                     {10, 120},    // 9610,
                     {10, 120},    // 10350,
                     {10, 150},    // 11200,
-                    {20, 100},    // 12300,
-                    {20, 90},     // 13300,
+                    {20, 150},    // 12300,
+                    {20, 150},    // 13300,
                 };
                 pro.set_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
                 if (std::stoi(channel) > 6)
@@ -143,14 +143,14 @@ namespace lrit
                     {0, 1},
                     {0.01, 2.20}, // 3900,
                     {0, 6},       // 6200,
-                    {0, 6},       // 6900,
+                    {0, 16},      // 6900,
                     {0.02, 20},   // 7300,
                     {5, 100},     // 8600,
                     {10, 120},    // 9600,
                     {10, 120},    // 10400,
                     {10, 150},    // 11200,
-                    {20, 100},    // 12400,
-                    {20, 90},     // 13300,
+                    {20, 150},    // 12400,
+                    {20, 150},    // 13300,
                 };
                 pro.set_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
                 if (std::stoi(channel) > 6)
@@ -163,11 +163,11 @@ namespace lrit
                 if (channel == "IR105")
                     pro.set_calibration_default_radiance_range(pro.images.size() - 1, 10, 120);
                 else if (channel == "IR123")
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 20, 100);
+                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 20, 150);
                 else if (channel == "SW038")
                     pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0.01, 2.20);
                 else if (channel == "WV069")
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0, 6);
+                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0, 16);
             }
             else
                 pro.set_wavenumber(pro.images.size() - 1, -1);
