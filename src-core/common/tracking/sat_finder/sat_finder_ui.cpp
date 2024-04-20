@@ -57,6 +57,8 @@ namespace satdump
                     }
                 }
             }
+            if(update_period < 0.5)
+                update_period = 0.5;
             std::this_thread::sleep_for(std::chrono::milliseconds(uint64_t(update_period * 1e3)));
         }
     }
@@ -103,7 +105,9 @@ namespace satdump
     void SatFinder::render() {
         std::lock_guard<std::mutex> lock(mutex);
 
-        ImGui::InputDouble("Update Period (s)", &update_period);
+        ImGui::InputDouble("Update Period (s)", &update_period, 0.1, 1, "%.1f", ImGuiInputTextFlags_CharsDecimal);
+        if(update_period < 0.5)
+                update_period = 0.5;
         ImGui::InputDouble("Tolerance Azimuth", &tolerance_az);
         ImGui::InputDouble("Tolerance Elevation", &tolerance_el);
 
