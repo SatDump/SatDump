@@ -33,7 +33,7 @@
                     "pll_bw": 0.004
                 }
             },
-            "frm": {
+            "cadu": {
                 "ccsds_conv_concat_decoder": {
                     "constellation": "bpsk_90",
                     "cadu_size": 8192,
@@ -44,7 +44,9 @@
                     "rs_i": 0
                 }
             },
-            "products": {}
+            "products": {
+                "wsfm_instruments": {}
+            }
         }
     }
 }
