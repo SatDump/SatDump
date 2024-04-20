@@ -47,7 +47,7 @@ namespace satdump
                                 predict_orbit(satellite_object, &satellite_orbit, predict_to_julian_double(curr_time));
                                 predict_observe_orbit(observer_station, &satellite_orbit, &observation_pos);
 
-                                if(std::abs((observation_pos.azimuth * RAD_TO_DEG) - target_az) <= tolerance_az && std::abs((observation_pos.elevation * RAD_TO_DEG) - target_el) <= tolerance_el) {
+                                if(std::abs((observation_pos.azimuth * RAD_TO_DEG) - target_az) <= tolerance && std::abs((observation_pos.elevation * RAD_TO_DEG) - target_el) <= tolerance) {
                                     sats_in_sight.emplace_back(Satellite{tle.name, (observation_pos.azimuth * RAD_TO_DEG), (observation_pos.elevation * RAD_TO_DEG), observation_pos.range});
                                 }
                                 
@@ -83,9 +83,7 @@ namespace satdump
     void SatFinder::saveConfig()
     {
         config::main_cfg["user"]["satellite_finder"]["update_rate"] = update_period;
-        config::main_cfg["user"]["satellite_finder"]["tolerance_azimuth"] = tolerance_az;
-        config::main_cfg["user"]["satellite_finder"]["tolerance_elevation"] = tolerance_el;
-
+        config::main_cfg["user"]["satellite_finder"]["tolerance"] = tolerance;
         config::saveUserConfig();
     }
 
@@ -95,10 +93,8 @@ namespace satdump
         {
             if (config::main_cfg["user"]["satellite_finder"].contains("update_rate"))
                 update_period = config::main_cfg["user"]["satellite_finder"]["update_rate"];
-            if (config::main_cfg["user"]["satellite_finder"].contains("tolerance_azimuth"))
-                tolerance_az = config::main_cfg["user"]["satellite_finder"]["tolerance_azimuth"];
-            if (config::main_cfg["user"]["satellite_finder"].contains("tolerance_elevation"))
-                tolerance_el = config::main_cfg["user"]["satellite_finder"]["tolerance_elevation"];
+            if (config::main_cfg["user"]["satellite_finder"].contains("tolerance"))
+                tolerance = config::main_cfg["user"]["satellite_finder"]["tolerance"];
         }
     }
 
@@ -108,8 +104,9 @@ namespace satdump
         ImGui::InputDouble("Update Period (s)", &update_period, 0.1, 1, "%.1f", ImGuiInputTextFlags_CharsDecimal);
         if(update_period < 0.5)
                 update_period = 0.5;
-        ImGui::InputDouble("Tolerance Azimuth", &tolerance_az);
-        ImGui::InputDouble("Tolerance Elevation", &tolerance_el);
+        ImGui::InputDouble("Az/El Tolerance", &tolerance, 0.1, 1, "%.1f", ImGuiInputTextFlags_CharsDecimal);
+        if(tolerance < 0)
+            tolerance = 0;
 
         ImGui::Spacing();
         ImGui::Separator();

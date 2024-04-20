@@ -28,8 +28,7 @@ namespace satdump
         double qth_alt = 0;
         double target_az = -1;  
         double target_el = -1;    
-        double tolerance_az = 3;
-        double tolerance_el = 3;
+        double tolerance = 3;
 
     private: //Thread
         std::mutex mutex;
