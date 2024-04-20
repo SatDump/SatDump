@@ -24,7 +24,7 @@ fi
 ./bootstrap-vcpkg.sh
 
 echo "Installing vcpkg packages..."
-./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 portaudio jemalloc nng[mbedtls] zstd armadillo
+./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng[mbedtls] zstd armadillo
 mkdir build && cd build
 
 echo "Setting up venv"
@@ -71,7 +71,7 @@ cd ../..
 rm -rf cpu_features
 
 echo "Building Volk..."
-git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.0
+git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.2
 cd volk
 mkdir build && cd build
 cmake $build_args -DENABLE_TESTING=OFF -DENABLE_MODTOOL=OFF ..
@@ -129,6 +129,39 @@ make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../..
 rm -rf LimeSuite
+
+echo "Building libiio..."
+git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.25
+cd libiio
+mkdir build && cd build
+cmake $build_args -DWITH_IIOD=OFF -DOSX_FRAMEWORK=OFF -DWITH_TESTS=OFF -DWITH_ZSTD=ON ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../..
+rm -rf libiio
+
+echo "Building libad9361-iio..."
+git clone https://github.com/analogdevicesinc/libad9361-iio --depth 1 -b v0.3
+cd libad9361-iio
+sed -i '' 's/<iio\/iio.h>/<iio.h>/g' test/*.c    #Patch tests for macOS
+sed -i '' 's/FRAMEWORK TRUE//' CMakeLists.txt    #Just a dylib, please!
+mkdir build && cd build
+cmake $build_args -DOSX_PACKAGE=OFF -DWITH_DOC=OFF -DENABLE_PACKAGING=OFF ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../..
+rm -rf libad9361-iio
+
+echo "Building bladeRF..."
+git clone https://github.com/Nuand/bladeRF
+cd bladeRF
+git checkout 2fbae2c
+cd host && mkdir build && cd build
+cmake $build_args -DTEST_LIBBLADERF=OFF ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../../..
+rm -rf bladeRF
 
 echo "Adding SDRPlay Libs..."
 curl -LJ --output sdrplay-macos.zip https://www.satdump.org/sdrplay-macos.zip
