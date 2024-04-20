@@ -4,35 +4,42 @@
 {\*\expandedcolortbl;;\csgray\c0;}
 {\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
 {\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
-\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\margl1440\margr1440\vieww10720\viewh10500\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
 \f0\b\fs24 \cf0 SatDump for macOS Notes\
 \
 
-\f1\b0 For the main docs, see {\field{\*\fldinst{HYPERLINK "https://github.com/SatDump/SatDump"}}{\fldrslt https://github.com/SatDump/SatDump}}. This pre-compiled app for macOS comes with support for the following SDR sources:\
+\f1\b0 SatDump is a general purpose satellite data processing software. It is a one-stop-shop that provides all the necessary stages to get from the satellite transmission to actual products.
+\f0\b \
+\
+
+\f1\b0 For the main docs, see {\field{\*\fldinst{HYPERLINK "https://docs.satdump.org/"}}{\fldrslt https://docs.satdump.org/}} This pre-compiled app for macOS comes with support for the following SDR sources:\
 \
 \pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\pardirnatural\partightenfactor0
 \ls1\ilvl0\cf0 {\listtext	\uc0\u8226 	}File Source\
-{\listtext	\uc0\u8226 	}RTL-SDR\
-{\listtext	\uc0\u8226 	}AirSpy\
+{\listtext	\uc0\u8226 	}AirSpy/AirSpy HF\
+{\listtext	\uc0\u8226 	}BladeRF\
 {\listtext	\uc0\u8226 	}HackRF\
+{\listtext	\uc0\u8226 	}LimeSDR\
 {\listtext	\uc0\u8226 	}MiriSDR\
-{\listtext	\uc0\u8226 	}RTL-TCP\
+{\listtext	\uc0\u8226 	}Network Source\
+{\listtext	\uc0\u8226 	}PlutoSDR\
+{\listtext	\uc0\u8226 	}RTL-SDR/RTL-TCP\
+{\listtext	\uc0\u8226 	}SDR++ Server\
+{\listtext	\uc0\u8226 	}SDRPlay (Requires {\field{\*\fldinst{HYPERLINK "https://www.sdrplay.com/api/"}}{\fldrslt SDRPlay API 3.14}})\
 {\listtext	\uc0\u8226 	}SpyServer\
-{\listtext	\uc0\u8226 	}UDP Source\
+{\listtext	\uc0\u8226 	}USRP\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 \cf0 \
-Other SDRs are not officially supported, but you may try compiling it yourself.\
-\
 
 \f0\b CLI Mode
 \f1\b0 \
-The command-line version of SatDump is available within the app bundle. Open a terminal and call it from /Applications/SatDump.app/Contents/MacOS/satdump [args]\'94.\
+The command-line version of SatDump is available within the app bundle. Open a terminal and call it from /Applications/SatDump.app/Contents/MacOS/satdump [args]\'94. satdump_sdr_server is available this way as well.\
 \
 
 \f0\b Editing pipelines & satdump_cfg.json
 \f1\b0 \
-Due to Apple\'92s app signing requirements for bundled apps on macOS, you cannot currently edit the main pipelines or satdump_cfg.json file. If you need this functionality, it is currently recommended that you compile SatDump from source.\
+Due to Apple\'92s app signing requirements for bundled apps on macOS, you cannot currently edit the main pipelines or satdump_cfg.json file wIthout re-signing the app. If you need this functionality, it is currently recommended that you compile SatDump from source.\
 \
-SatDump settings work normally and are saved to ~/.\cf2 \CocoaLigature0 config/satdump/}
+SatDump settings and logs are saved to ~/.\cf2 \CocoaLigature0 config/satdump/}
