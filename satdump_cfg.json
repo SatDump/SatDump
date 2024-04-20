@@ -1400,6 +1400,26 @@
                     }
                 }
             },
+            "abi": {
+                "handler": "image_handler",
+                "name": "ABI",
+                "rgb_composites": {
+                    "789": {
+                        "equation": "ch7,ch8,ch9",
+                        "individual_equalize": true,
+                        "normalize": true
+                    },
+                    "7_13_15": {
+                        "equation": "ch7,ch13,ch15",
+                        "individual_equalize": true,
+                        "normalize": true,
+                        //
+                        "draw_map_overlay": true,
+                        "draw_shores_overlay": true,
+                        "draw_latlon_overlay": true
+                    }
+                }
+            },
             "viirs": {
                 "handler": "image_handler",
                 "name": "VIIRS",

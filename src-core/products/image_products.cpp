@@ -375,7 +375,7 @@ namespace satdump
         }
     }
 
-    bool equation_contains(std::string init, std::string match, int *loc)
+    bool image_equation_contains(std::string init, std::string match, int *loc)
     {
         size_t pos = init.find(match);
     retry:
@@ -528,6 +528,8 @@ namespace satdump
         if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
             str_to_find_channels = cfg.channels;
 
+        bool a_channel_is_empty = false;
+
         for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto &img = product.images[i];
@@ -540,7 +542,7 @@ namespace satdump
             int cal_loc = -1;
             int loc = -1;
 
-            if (equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && img.image.size() > 0 && product.has_calibation())
+            if (image_equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && product.has_calibation())
             {
                 logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
                 product.init_calibration();
@@ -564,9 +566,12 @@ namespace satdump
 
                 if (min_offset > img.offset_x)
                     min_offset = img.offset_x;
+
+                if (img.image.size() == 0)
+                    a_channel_is_empty = true;
             }
 
-            if (equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() > 0 && cal_loc != loc)
+            if (image_equation_contains(str_to_find_channels, equ_str, &loc) && cal_loc != loc)
             {
                 channel_indexes.push_back(i);
                 channel_numbers.push_back(equ_str);
@@ -579,12 +584,15 @@ namespace satdump
 
                 if (min_offset > img.offset_x)
                     min_offset = img.offset_x;
+
+                if (img.image.size() == 0)
+                    a_channel_is_empty = true;
             }
         }
 
-        if (channel_indexes.size() == 0)
+        if (channel_indexes.size() == 0 || a_channel_is_empty)
         {
-            logger->error("None of the required channels are present!");
+            logger->error("One or more of the required channels are missing!");
             return image::Image<uint16_t>();
         }
 

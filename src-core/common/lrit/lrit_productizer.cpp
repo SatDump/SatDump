@@ -4,6 +4,9 @@
 #include <filesystem>
 #include "logger.h"
 
+#include "products/processor/image_processor.h"
+#include "core/config.h"
+
 namespace lrit
 {
     inline std::string getXRITTimestamp(time_t tim)
@@ -338,6 +341,74 @@ namespace lrit
         }
     }
 
+    inline void attemptToGenerateComposites(satdump::ImageProducts *pro, std::string pro_path)
+    {
+        try
+        {
+            // Get instrument settings
+            nlohmann::ordered_json instrument_viewer_settings;
+            if (satdump::config::main_cfg["viewer"]["instruments"].contains(pro->instrument_name))
+                instrument_viewer_settings = satdump::config::main_cfg["viewer"]["instruments"][pro->instrument_name];
+            else
+                logger->error("Unknown instrument : %s!", pro->instrument_name.c_str());
+
+            // Generate composites
+            if (instrument_viewer_settings.contains("rgb_composites"))
+            {
+                for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
+                {
+                    if (pro->contents.contains("autocomposite_cache_done"))
+                        if (pro->contents["autocomposite_cache_done"].contains(compo.key()))
+                            continue;
+
+                    // Check each can be made
+                    satdump::ImageCompositeCfg cfg = compo.value();
+                    if (satdump::check_composite_from_product_can_be_made(*pro, cfg))
+                    {
+                        logger->trace("Trying to make composite " + compo.key());
+
+                        // Load ONLY the images needed for this
+                        std::string str_to_find_channels = cfg.equation;
+                        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+                            str_to_find_channels = cfg.channels;
+                        for (int i = 0; i < (int)pro->images.size(); i++)
+                        {
+                            auto &img = pro->images[i];
+                            std::string equ_str = "ch" + img.channel_name;
+
+                            int loc;
+                            if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc))
+                            {
+                                logger->trace("Loading image channel " + img.channel_name);
+                                if (img.image.size() == 0)
+                                    img.image.load_img(pro_path + "/" + img.filename);
+                            }
+                            else
+                            {
+                                img.image.clear();
+                            }
+                        }
+
+                        // Generate
+                        satdump::process_image_products((satdump::Products *)pro, pro_path);
+
+                        pro->contents["autocomposite_cache_done"][compo.key()] = true;
+                    }
+                    // else
+                    //     logger->trace("Can't make composite " + compo.key());
+                }
+            }
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error trying to autogen xRIT composite! : %s", e.what());
+        }
+
+        // Unload everything
+        for (int i = 0; i < (int)pro->images.size(); i++)
+            pro->images[i].image.clear();
+    }
+
     template <typename T>
     void LRITProductizer<T>::saveImage(image::Image<T> img,
                                        std::string directory,
@@ -387,6 +458,9 @@ namespace lrit
             }
         }
 
+        // To forward to composites if we actually produced products
+        satdump::ImageProducts *pro = nullptr;
+
         // Check if the image already exists, this can happen when GOES goes (laugh please, pretty please) wrong.
         // If it does, we append a number and do NOT overwrite.
         if (std::filesystem::exists(directory_path + filename))
@@ -408,58 +482,67 @@ namespace lrit
             // Products are loaded without loading images.
             if (std::filesystem::exists(pro_f_path))
             {
-                satdump::ImageProducts pro;
-                pro.d_no_not_save_images = true;
-                pro.d_no_not_load_images = true;
-                pro.load(pro_f_path);
+                pro = new satdump::ImageProducts();
+                pro->d_no_not_save_images = true;
+                pro->d_no_not_load_images = true;
+                pro->load(pro_f_path);
                 bool contains = false;
-                for (auto &img : pro.images)
+                for (auto &img : pro->images)
                     if (img.channel_name == channel)
                         contains = true;
                 if (!contains)
-                    pro.images.push_back({filename, channel, image::Image<uint16_t>()});
-                if (!pro.has_proj_cfg())
+                    pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+                if (!pro->has_proj_cfg())
                 {
                     if (proj_cfg.size() > 0)
                     {
-                        pro.set_proj_cfg(proj_cfg);
+                        pro->set_proj_cfg(proj_cfg);
                         logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                     }
                 }
                 else
                 {
-                    if (pro.get_proj_cfg().contains("width") && proj_cfg.contains("width"))
-                        if (proj_cfg["width"].get<int>() > pro.get_proj_cfg()["width"].get<int>())
-                            pro.set_proj_cfg(proj_cfg);
+                    if (pro->get_proj_cfg().contains("width") && proj_cfg.contains("width"))
+                        if (proj_cfg["width"].get<int>() > pro->get_proj_cfg()["width"].get<int>())
+                            pro->set_proj_cfg(proj_cfg);
                 }
 
-                addCalibrationInfoFunc(pro, image_data_function_record, channel, satellite, instrument_id);
+                addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
 
-                pro.save(directory_path);
+                pro->save(directory_path);
             }
             // Otherwise, create a new product with the current single channel we have.
             else
             {
-                satdump::ImageProducts pro;
-                pro.d_no_not_save_images = true;
-                pro.instrument_name = instrument_id;
-                pro.set_product_source(satellite);
-                pro.set_product_timestamp(timestamp);
-                pro.bit_depth = sizeof(T) * 8;
+                pro = new satdump::ImageProducts();
+                pro->d_no_not_save_images = true;
+                pro->instrument_name = instrument_id;
+                pro->set_product_source(satellite);
+                pro->set_product_timestamp(timestamp);
+                pro->bit_depth = sizeof(T) * 8;
                 if (proj_cfg.size() > 0)
                 {
-                    pro.set_proj_cfg(proj_cfg);
+                    pro->set_proj_cfg(proj_cfg);
                     logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
-                pro.images.push_back({filename, channel, image::Image<uint16_t>()});
+                pro->images.push_back({filename, channel, image::Image<uint16_t>()});
 
-                addCalibrationInfoFunc(pro, image_data_function_record, channel, satellite, instrument_id);
+                addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
 
-                pro.save(directory_path);
+                pro->save(directory_path);
             }
         }
 
         img.save_png(directory_path + filename);
+
+        if (pro != nullptr)
+        {
+            attemptToGenerateComposites(pro, directory_path);
+            pro->save(directory_path); // Re-save CBOR!
+        }
+
+        if (pro != nullptr)
+            delete pro;
     }
 
     template class LRITProductizer<uint8_t>;

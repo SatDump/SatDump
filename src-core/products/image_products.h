@@ -370,6 +370,7 @@ namespace satdump
             v.description_markdown = j["description"].get<std::string>();
     }
 
+    bool image_equation_contains(std::string init, std::string match, int *loc);
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
