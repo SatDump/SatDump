@@ -129,11 +129,11 @@ namespace satdump
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("%s", sat.name.c_str());
                 ImGui::TableSetColumnIndex(1);
-                ImGui::InputDouble("##satfinderaz", &sat.azimuth, 0.0, 0.0, "%.2f");
+                ImGui::Text("%.2f", sat.azimuth);
                 ImGui::TableSetColumnIndex(2);
-                ImGui::InputDouble("##satfinderel", &sat.elevation, 0.0, 0.0, "%.2f");
+                ImGui::Text("%.2f", sat.elevation);
                 ImGui::TableSetColumnIndex(3);
-                ImGui::InputDouble("##satfinderdist", &sat.distance, 0.0, 0.0, "%.2f");
+                ImGui::Text("%.2f", sat.distance);
             }
 
             ImGui::EndTable();
