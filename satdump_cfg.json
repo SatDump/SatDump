@@ -1385,6 +1385,21 @@
                     }
                 }
             },
+            "msu_gs": {
+                "handler": "image_handler",
+                "name": "MSU-GS",
+                "rgb_composites": {
+                    "221": {
+                        "equation": "ch2,ch2,ch1"
+                    },
+                    "321": {
+                        "equation": "ch3,ch2,ch1"
+                    },
+                    "Thermal Channel": {
+                        "equation": "1-ch9"
+                    }
+                }
+            },
             "viirs": {
                 "handler": "image_handler",
                 "name": "VIIRS",
