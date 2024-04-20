@@ -24,9 +24,17 @@ fi
 ./bootstrap-vcpkg.sh
 
 echo "Installing vcpkg packages..."
+
+# Core packages. libxml2 is for libiio
 ./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng[mbedtls] zstd armadillo
+
+# Entirely for UHD...
+./vcpkg install --triplet osx-satdump boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread \
+                                      boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        \
+                                      boost-assign boost-dll
 mkdir build && cd build
 
+#Used for volk and uhd builds
 echo "Setting up venv"
 python3 -m venv venv
 source venv/bin/activate
@@ -163,7 +171,17 @@ make install
 cd ../../..
 rm -rf bladeRF
 
-echo "Adding SDRPlay Libs..."
+echo "Building UHD..."
+git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.6.0.0
+cd uhd/host
+mkdir build && cd build
+cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../../..
+rm -rf uhd
+
+echo "Adding SDRPlay Library..."
 curl -LJ --output sdrplay-macos.zip https://www.satdump.org/sdrplay-macos.zip
 unzip sdrplay-macos.zip
 cp sdrplay-macos/lib/* ../installed/osx-satdump/lib
