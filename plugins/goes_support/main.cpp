@@ -12,8 +12,6 @@
 #include "goes/sd/module_sd_image_decoder.h"
 #include "goes/raw/module_goesr_instruments.h"
 
-#include "goes/hrit/goes_xrit_calibrator.h"
-
 class GOESSupport : public satdump::Plugin
 {
 public:
@@ -25,7 +23,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
-        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -41,11 +39,11 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::instruments::GOESRInstrumentsDecoderModule);
     }
 
-    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
-    {
-        if (evt.id == "goes_xrit")
-            evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
-    }
+    // static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    // {
+    //     if (evt.id == "goes_xrit")
+    //         evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
+    // }
 };
 
 PLUGIN_LOADER(GOESSupport)

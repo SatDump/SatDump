@@ -43,34 +43,6 @@ namespace lrit
     {
     }
 
-    inline void fillLUTGaps(nlohmann::json &jlut)
-    {
-        nlohmann::json newlut;
-        std::vector<std::pair<int, float>> lut;
-        for (int i = 0; i < jlut.size(); i++)
-            if (jlut[i].is_number())
-                lut.push_back({i, jlut[i].get<float>()});
-        for (int i = 0; i < lut.size() - 1; i++)
-        {
-            auto currentIT = lut[i];
-            auto currentITp = lut[i + 1];
-            newlut[currentIT.first] = currentIT.second;
-
-            if (currentIT.first + 1 != currentITp.first)
-            {
-                float val_start = currentIT.first;
-                float val_end = currentITp.first;
-                float valo_start = currentIT.second;
-                float valo_end = currentITp.second;
-
-                for (int i = val_start; i < val_end; i++)
-                    newlut[i] = ((i - val_start) / (val_end - val_start)) * (valo_end - valo_start) + valo_start;
-            }
-        }
-        newlut[lut[lut.size() - 1].first] = lut[lut.size() - 1].second;
-        jlut = newlut;
-    }
-
     // This will most probably get moved over to each
     inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string satellite, std::string instrument_id)
     {
@@ -201,7 +173,7 @@ namespace lrit
                 pro.set_wavenumber(pro.images.size() - 1, -1);
 
             if (instrument_id == "ahi")
-                printf("\n%s\n", image_data_function_record->datas.c_str());
+                printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
 
             auto lines = splitString(image_data_function_record->datas, '\n');
             if (lines.size() < 4)
@@ -214,6 +186,9 @@ namespace lrit
                 }
             }
 
+            // for (int i = 0; i < lines.size(); i++)
+            //     logger->critical("%d => %s", i, lines[i].c_str());
+
             if (lines[0].find("HALFTONE:=") != std::string::npos)
             {
                 // GOES xRIT modes
@@ -221,18 +196,18 @@ namespace lrit
                 {
                     if (lines[1] == "_NAME:=toa_lambertian_equivalent_albedo_multiplied_by_cosine_solar_zenith_angle")
                     {
-                        nlohmann::json lut;
+                        std::vector<std::pair<int, float>> lut;
                         for (int i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
                             if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                lut[val] = valo;
+                                lut.push_back({val, valo});
                         }
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["calibrator"] = "generic_xrit";
 
                         calib_cfg[channel] = lut;
                         pro.set_calibration(calib_cfg);
@@ -240,18 +215,18 @@ namespace lrit
                     }
                     else if (lines[1] == "_NAME:=toa_brightness_temperature")
                     {
-                        nlohmann::json lut;
+                        std::vector<std::pair<int, float>> lut;
                         for (int i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
                             if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                lut[val] = valo;
+                                lut.push_back({val, valo});
                         }
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["calibrator"] = "generic_xrit";
 
                         calib_cfg[channel] = lut;
                         pro.set_calibration(calib_cfg);
@@ -268,18 +243,18 @@ namespace lrit
 
                     if (lines[2] == "_UNIT:=ALBEDO(%)")
                     {
-                        nlohmann::json lut;
+                        std::vector<std::pair<int, float>> lut;
                         for (int i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
                             if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                lut[val] = valo / 100.0;
+                                lut.push_back({val, valo / 100.0});
                         }
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
 
                         calib_cfg[channel] = lut;
@@ -288,18 +263,18 @@ namespace lrit
                     }
                     else if (lines[2] == "_UNIT:=KELVIN")
                     {
-                        nlohmann::json lut;
+                        std::vector<std::pair<int, float>> lut;
                         for (int i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
                             if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                lut[val] = valo;
+                                lut.push_back({val, valo});
                         }
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
 
                         calib_cfg[channel] = lut;
@@ -314,24 +289,24 @@ namespace lrit
                     int bits_for_calib = 8;
                     if (lines[0].find("HALFTONE:=10") != std::string::npos)
                         bits_for_calib = 10;
-
-                    if (lines[2].find("_UNIT:=PERCENT") != std::string::npos)
+                    if (lines[0].find("HALFTONE:=16") != std::string::npos)
+                        bits_for_calib = 10; // Yes, they send 10 over 16
+                    if (lines[2].find("_UNIT:=PERCENT") != std::string::npos || lines[2].find("_UNIT:=ALBEDO(%)") != std::string::npos)
                     {
-                        nlohmann::json lut;
+                        std::vector<std::pair<int, float>> lut;
                         for (int i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
                             if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                lut[val] = valo / 100.0;
+                                lut.push_back({val, valo / 100.0});
                         }
-
-                        fillLUTGaps(lut);
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
+                        calib_cfg["to_complete"] = true;
 
                         calib_cfg[channel] = lut;
                         pro.set_calibration(calib_cfg);
@@ -339,21 +314,20 @@ namespace lrit
                     }
                     else if (lines[2].find("_UNIT:=KELVIN") != std::string::npos)
                     {
-                        nlohmann::json lut;
+                        std::vector<std::pair<int, float>> lut;
                         for (int i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
                             if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                lut[val] = valo;
+                                lut.push_back({val, valo});
                         }
-
-                        fillLUTGaps(lut);
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "goes_xrit";
+                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
+                        calib_cfg["to_complete"] = true;
 
                         calib_cfg[channel] = lut;
                         pro.set_calibration(calib_cfg);

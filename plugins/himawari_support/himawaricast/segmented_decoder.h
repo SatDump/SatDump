@@ -6,11 +6,23 @@
 #include <string>
 #include <map>
 #include <memory>
+#include "common/lrit/lrit_file.h"
 
 namespace himawari
 {
     namespace himawaricast
     {
+        struct HIMxRITProductMeta
+        {
+            std::string filename;
+            int channel = -1;
+            std::string satellite_name;
+            std::string satellite_short_name;
+            time_t scan_time = 0;
+            std::shared_ptr<::lrit::ImageNavigationRecord> image_navigation_record;
+            std::shared_ptr<::lrit::ImageDataFunctionRecord> image_data_function_record;
+        };
+
         class SegmentedLRITImageDecoder
         {
         private:
@@ -62,6 +74,8 @@ namespace himawari
 
             image::Image<uint16_t> image;
             long image_id = -1;
+
+            HIMxRITProductMeta meta;
         };
     }
 }

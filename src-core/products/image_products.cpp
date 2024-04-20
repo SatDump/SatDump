@@ -16,6 +16,8 @@
 extern struct android_app *g_App;
 #endif
 
+#include "common/lrit/generic_xrit_calibrator.h"
+
 namespace satdump
 {
     void ImageProducts::save(std::string directory)
@@ -246,6 +248,8 @@ namespace satdump
             satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"], this});
             if (calibrators.size() > 0)
                 calibrator_ptr = calibrators[0];
+            else if (calibrator_id == "generic_xrit")
+                calibrator_ptr = std::make_shared<lrit::GenericxRITCalibrator>(contents["calibration"], this);
             else
             {
                 logger->error("Requested calibrator " + calibrator_id + " does not exist!");

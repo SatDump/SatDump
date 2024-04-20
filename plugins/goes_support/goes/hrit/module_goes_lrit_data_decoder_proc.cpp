@@ -229,6 +229,14 @@ namespace goes
                         lmeta.channel = noaa_header.product_subid;
                         lmeta.region = "";
 
+                        // Translate to real numbers
+                        if (lmeta.channel == 3)
+                            lmeta.channel = 13;
+                        else if (lmeta.channel == 7)
+                            lmeta.channel = 8;
+                        else if (lmeta.channel == 1)
+                            lmeta.channel = 3;
+
                         // Apparently the timestamp is in there for Himawari-8 data
                         AnnotationRecord annotation_record = file.getHeader<AnnotationRecord>();
 
