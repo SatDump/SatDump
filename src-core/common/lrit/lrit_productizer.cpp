@@ -446,8 +446,6 @@ namespace lrit
             int queue_size = compo_queue.size();
             compo_queue_mtx.unlock();
 
-            logger->warn("Queue size.. (generating) %d", queue_size);
-
             if (queue_size > 0)
             {
                 compo_queue_mtx.lock();
