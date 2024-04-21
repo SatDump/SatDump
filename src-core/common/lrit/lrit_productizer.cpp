@@ -39,6 +39,7 @@ namespace lrit
     template <typename T>
     LRITProductizer<T>::LRITProductizer(std::string instrument_id, bool sweep_x) : instrument_id(instrument_id), should_sweep_x(sweep_x)
     {
+        autogen_composites = satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>();
     }
 
     template <typename T>
@@ -537,7 +538,7 @@ namespace lrit
 
         img.save_png(directory_path + filename);
 
-        if (pro != nullptr)
+        if (pro != nullptr && autogen_composites)
         {
             attemptToGenerateComposites(pro, directory_path);
             pro->save(directory_path); // Re-save CBOR!

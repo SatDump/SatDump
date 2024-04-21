@@ -17,13 +17,12 @@ function process()
         for y = 0, rgb_output:height() - 1, 1 do
             --get channels from satdump.json
             get_channel_values(x, y)
-            cha_curved = img_curve:get(get_channel_value(0) * 255.0)
-            chb = get_channel_value(1) * 255.0
+            lut_pos = (img_curve:get(get_channel_value(0) * 255.0) * lut_width) + (get_channel_value(1) * 255.0)
 
             --return RGB 0=R 1=G 2=B
-            set_img_out(0, x, y, img_lut:get(0 * lut_size + cha_curved * lut_width + chb) / 255.0)
-            set_img_out(1, x, y, img_lut:get(1 * lut_size + cha_curved * lut_width + chb) / 255.0)
-            set_img_out(2, x, y, img_lut:get(2 * lut_size + cha_curved * lut_width + chb) / 255.0)
+            set_img_out(0, x, y, img_lut:get(0 * lut_size + lut_pos) / 255.0)
+            set_img_out(1, x, y, img_lut:get(1 * lut_size + lut_pos) / 255.0)
+            set_img_out(2, x, y, img_lut:get(2 * lut_size + lut_pos) / 255.0)
         end
         --set the progress bar accordingly
         set_progress(x, rgb_output:width())
