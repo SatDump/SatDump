@@ -438,7 +438,7 @@ namespace lrit
     {
         setLowestThreadPriority();
 
-        std::string file_for_cache = compo_cache_path + "/.composite_cache_do_not_delete.cbor";
+        std::string file_for_cache = compo_cache_path + "/.composite_cache_do_not_delete.json";
 
         while (composite_th_should_run)
         {
@@ -461,7 +461,7 @@ namespace lrit
                     if (pro != nullptr)
                     {
                         // Load cache
-                        auto filecache = loadCborFile(file_for_cache);
+                        auto filecache = loadJsonFile(file_for_cache);
                         if (filecache.contains(directory_path_rel))
                             pro->contents["autocomposite_cache_done"] = filecache[directory_path_rel]["compos"];
 
@@ -483,7 +483,7 @@ namespace lrit
                                 filecache.erase(v.key());
 
                         if (!filecache.is_null())
-                            saveCborFile(file_for_cache, filecache);
+                            saveJsonFile(file_for_cache, filecache);
 
                         delete pro;
                     }
