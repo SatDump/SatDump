@@ -126,6 +126,12 @@ namespace satdump
                     nlohmann::json final_metadata;
                     image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
 
+                    if (rgb_image.size() == 0)
+                    {
+                        logger->debug("Empty image, skipping any further processing!");
+                        continue;
+                    }
+
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
                                        initial_name;

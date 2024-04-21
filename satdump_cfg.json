@@ -1393,7 +1393,11 @@
                         "equation": "ch2,ch2,ch1"
                     },
                     "321": {
-                        "equation": "ch3,ch2,ch1"
+                        "equation": "ch3,ch2,ch1",
+                        //
+                        "draw_map_overlay": true,
+                        "draw_shores_overlay": true,
+                        "draw_latlon_overlay": true
                     },
                     "Thermal Channel": {
                         "equation": "1-ch9"
