@@ -13,7 +13,6 @@ namespace lrit
     class LRITProductizer
     {
     private:
-        bool autogen_composites;
         bool should_sweep_x;
         std::string instrument_id = "ukn";
 

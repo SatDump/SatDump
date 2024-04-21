@@ -42,9 +42,8 @@ namespace lrit
     LRITProductizer<T>::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path)
         : instrument_id(instrument_id), should_sweep_x(sweep_x), compo_cache_path(cache_path)
     {
-        autogen_composites = satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>();
-
-        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id))
+        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) &&
+            satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
             can_make_composites = true;
 
         if (can_make_composites)
