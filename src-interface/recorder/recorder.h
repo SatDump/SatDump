@@ -70,7 +70,7 @@ namespace satdump
         int waterfall_rate = -1;
         float fft_max = -1;
         float fft_min = -1;
-        float fft_avg = -1;
+        float fft_avgn = -1;
     };
 
     class RecorderApplication : public Application

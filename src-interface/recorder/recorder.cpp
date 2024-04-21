@@ -200,6 +200,8 @@ namespace satdump
                                                                         fft_plot->scale_min = waterfall_plot->scale_min = evt.fft_min;
                                                                     if (evt.fft_max != -1)
                                                                         fft_plot->scale_max = waterfall_plot->scale_max = evt.fft_max;
+                                                                    if (evt.fft_avgn != -1)
+                                                                        fft->avg_num = evt.fft_avgn;
                                                                     if(evt.fft_size != -1 || evt.fft_rate != -1 || evt.waterfall_rate!=-1) 
                                                                     {
                                                                         if (evt.fft_size != -1)

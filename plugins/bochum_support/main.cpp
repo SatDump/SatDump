@@ -176,7 +176,7 @@ namespace bochum
                 if (final_entry.contains("fft_max"))
                     evt.fft_min = final_entry["fft_max"];
                 if (final_entry.contains("fft_avgn"))
-                    evt.fft_avg = final_entry["fft_avgn"];
+                    evt.fft_avgn = final_entry["fft_avgn"];
                 if (final_entry.contains("fft_rate"))
                     evt.fft_rate = final_entry["fft_rate"];
                 if (final_entry.contains("waterfall_rate"))
