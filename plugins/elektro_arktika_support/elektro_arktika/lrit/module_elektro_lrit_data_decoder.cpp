@@ -12,7 +12,7 @@ namespace elektro
     namespace lrit
     {
         ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                      productizer("msugs", false)
+                                                                                                                                                      productizer("msu_gs", false)
         {
         }
 
