@@ -1404,6 +1404,21 @@
                 "handler": "image_handler",
                 "name": "ABI",
                 "rgb_composites": {
+                    "GEO False Color": {
+                        "channels": "ch2, ch13",
+                        "lua": "scripted_compos/geo_false_color.lua",
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ]
+                    },
+                    "Night Microphysics (WIP)": {
+                        "equation": "cch15-cch13,cch13-cch7,cch13",
+                        "individual_equalize": true,
+                        "white_balance": true
+                    },
                     "789": {
                         "equation": "ch7,ch8,ch9",
                         "individual_equalize": true,
