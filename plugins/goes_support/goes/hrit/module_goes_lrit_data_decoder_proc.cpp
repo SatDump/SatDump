@@ -222,7 +222,7 @@ namespace goes
                         }
                     }
                     // Himawari-8 rebroadcast
-                    else if (primary_header.file_type_code == 0 && noaa_header.product_id == 43)
+                    else if (primary_header.file_type_code == 0 && noaa_header.product_id == ID_HIMAWARI)
                     {
                         lmeta.satellite_name = "Himawari";
                         lmeta.satellite_short_name = "HIM";
@@ -280,7 +280,11 @@ namespace goes
                         if (noaa_header.product_id != ID_HIMAWARI)
                             lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number) * image_structure_record.lines_count;
 
-                    if (segmentedDecoder.image_id != segment_id_header.image_identifier)
+                    uint16_t image_identifier = segment_id_header.image_identifier;
+                    if (noaa_header.product_id == ID_HIMAWARI) // Image IDs are invalid for Himawari; make one up
+                        image_identifier = lmeta.scan_time % 10000 + lmeta.channel;
+
+                    if (segmentedDecoder.image_id != image_identifier)
                     {
                         if (segmentedDecoder.image_id != -1)
                         {
@@ -292,7 +296,7 @@ namespace goes
                         segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
                                                                      segment_id_header.max_column,
                                                                      segment_id_header.max_row,
-                                                                     segment_id_header.image_identifier);
+                                                                     image_identifier);
                         segmentedDecoder.meta = lmeta;
                     }
 
