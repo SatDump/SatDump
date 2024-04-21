@@ -491,7 +491,14 @@ namespace lrit
                     if (img.channel_name == channel)
                         contains = true;
                 if (!contains)
-                    pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+                {
+                    pro->images.push_back({ filename, channel, image::Image<uint16_t>() });
+                    std::sort(pro->images.begin(), pro->images.end(), [](satdump::ImageProducts::ImageHolder a, satdump::ImageProducts::ImageHolder b)
+                                                                      {
+                                                                          return a.channel_name.size() < b.channel_name.size() ||
+                                                                              (a.channel_name.size() == b.channel_name.size() && a.channel_name < b.channel_name);
+                                                                      });
+                }
                 if (!pro->has_proj_cfg())
                 {
                     if (proj_cfg.size() > 0)
