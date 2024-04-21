@@ -15,7 +15,6 @@ function process()
     lut_width = img_lut:width()
     for x = 0, rgb_output:width() - 1, 1 do
         for y = 0, rgb_output:height() - 1, 1 do
-
             --get channels from satdump.json
             get_channel_values(x, y)
             cha_curved = img_curve:get(get_channel_value(0) * 255.0)

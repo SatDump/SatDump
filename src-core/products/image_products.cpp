@@ -525,11 +525,26 @@ namespace satdump
 
         std::string str_to_find_channels = cfg.equation;
 
+        bool is_lut_or_lua = false;
         if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+        {
             str_to_find_channels = cfg.channels;
+            is_lut_or_lua = true;
+        }
 
         bool a_channel_is_empty = false;
 
+        // We want channels in equation order!
+        struct TempBeforeSort
+        {
+            int loc;
+            int index;
+            std::string number;
+            image::Image<uint16_t> img;
+        };
+        std::vector<TempBeforeSort> channel_indexes_locations;
+
+        // Find all channels and prepare them
         for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto &img = product.images[i];
@@ -544,22 +559,46 @@ namespace satdump
 
             if (image_equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && product.has_calibation())
             {
-                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
                 product.init_calibration();
-                channel_indexes.push_back(i);
-                channel_numbers.push_back(equ_str_calib);
-                if (cfg.calib_cfg.contains(equ_str_calib))
+                if (is_lut_or_lua)
                 {
-                    ImageProducts::calib_vtype_t type;
-                    std::pair<double, double> range;
-                    get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
-                    images_obj.push_back(product.get_calibrated_image(i, progress, type, range));
+                    channel_indexes_locations.push_back(TempBeforeSort());
+                    TempBeforeSort &cur = channel_indexes_locations[channel_indexes_locations.size() - 1];
+                    cur.loc = cal_loc;
+                    cur.index = i;
+                    cur.number = equ_str_calib;
+
+                    if (cfg.calib_cfg.contains(equ_str_calib))
+                    {
+                        ImageProducts::calib_vtype_t type;
+                        std::pair<double, double> range;
+                        get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                        cur.img = product.get_calibrated_image(i, progress, type, range);
+                    }
+                    else
+                    {
+                        cur.img = product.get_calibrated_image(i, progress);
+                    }
                 }
                 else
                 {
-                    images_obj.push_back(product.get_calibrated_image(i, progress));
+                    channel_indexes.push_back(i);
+                    channel_numbers.push_back(equ_str_calib);
+
+                    if (cfg.calib_cfg.contains(equ_str_calib))
+                    {
+                        ImageProducts::calib_vtype_t type;
+                        std::pair<double, double> range;
+                        get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                        images_obj.push_back(product.get_calibrated_image(i, progress, type, range));
+                    }
+                    else
+                    {
+                        images_obj.push_back(product.get_calibrated_image(i, progress));
+                    }
                 }
                 offsets.emplace(equ_str_calib, img.offset_x);
+                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
@@ -573,9 +612,21 @@ namespace satdump
 
             if (image_equation_contains(str_to_find_channels, equ_str, &loc) && cal_loc != loc)
             {
-                channel_indexes.push_back(i);
-                channel_numbers.push_back(equ_str);
-                images_obj.push_back(img.image);
+                channel_indexes_locations.push_back(TempBeforeSort());
+                if (is_lut_or_lua)
+                {
+                    TempBeforeSort &cur = channel_indexes_locations[channel_indexes_locations.size() - 1];
+                    cur.loc = loc;
+                    cur.index = i;
+                    cur.number = equ_str;
+                    cur.img = img.image;
+                }
+                else
+                {
+                    channel_indexes.push_back(i);
+                    channel_numbers.push_back(equ_str);
+                    images_obj.push_back(img.image);
+                }
                 offsets.emplace(equ_str, img.offset_x);
                 logger->debug("Composite needs channel %s", equ_str.c_str());
 
@@ -587,6 +638,22 @@ namespace satdump
 
                 if (img.image.size() == 0)
                     a_channel_is_empty = true;
+            }
+        }
+
+        // They need to be in equation order!
+        if (is_lut_or_lua)
+        {
+            std::sort(channel_indexes_locations.begin(), channel_indexes_locations.end(),
+                      [](auto &a, auto &b)
+                      {
+                          return a.loc < b.loc;
+                      });
+            for (auto &v : channel_indexes_locations)
+            {
+                channel_indexes.push_back(v.index);
+                channel_numbers.push_back(v.number);
+                images_obj.push_back(std::move(v.img));
             }
         }
 

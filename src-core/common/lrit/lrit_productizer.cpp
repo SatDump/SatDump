@@ -390,9 +390,8 @@ namespace lrit
                         }
 
                         // Generate
+                        pro->contents["autocomposite_cache_enabled"] = true;
                         satdump::process_image_products((satdump::Products *)pro, pro_path);
-
-                        pro->contents["autocomposite_cache_done"][compo.key()] = true;
                     }
                     // else
                     //     logger->trace("Can't make composite " + compo.key());
@@ -486,19 +485,15 @@ namespace lrit
                 pro->d_no_not_save_images = true;
                 pro->d_no_not_load_images = true;
                 pro->load(pro_f_path);
+
                 bool contains = false;
                 for (auto &img : pro->images)
                     if (img.channel_name == channel)
                         contains = true;
+
                 if (!contains)
-                {
-                    pro->images.push_back({ filename, channel, image::Image<uint16_t>() });
-                    std::sort(pro->images.begin(), pro->images.end(), [](satdump::ImageProducts::ImageHolder a, satdump::ImageProducts::ImageHolder b)
-                                                                      {
-                                                                          return a.channel_name.size() < b.channel_name.size() ||
-                                                                              (a.channel_name.size() == b.channel_name.size() && a.channel_name < b.channel_name);
-                                                                      });
-                }
+                    pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+
                 if (!pro->has_proj_cfg())
                 {
                     if (proj_cfg.size() > 0)
