@@ -104,6 +104,8 @@ elseif(ANDROID)
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
     if(NOT APPLE)
+        target_link_libraries(satdump_core PUBLIC stdc++fs)
+
         # Jemalloc
         find_package(Jemalloc REQUIRED)
         target_include_directories(satdump_core PUBLIC ${JEMALLOC_INCLUDE_DIR})
@@ -134,16 +136,8 @@ else()
     target_link_libraries(satdump_core PUBLIC PNG::PNG)
 
     # FFTW3
-    if(APPLE)
-        set(FFTW3f_DIR /usr/local/lib/cmake/fftw3f)
-        find_package(FFTW3f CONFIG REQUIRED)
-        target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
-    else()
-        pkg_check_modules(FFTW3 REQUIRED fftw3f)
-        target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-
-        target_link_libraries(satdump_core PUBLIC stdc++fs)
-    endif()
+    pkg_check_modules(FFTW3 REQUIRED fftw3f)
+    target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
 
     # NNG
     find_library(NNG_LIBRARY nng REQUIRED)

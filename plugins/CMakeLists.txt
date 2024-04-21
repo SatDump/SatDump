@@ -105,6 +105,12 @@ if(PLUGIN_AIM OR PLUGINS_ALL)
     add_subdirectory(aim_support)
 endif()
 
+option(PLUGIN_WSF "Enable the WSF (WSF-M) support plugin" OFF)
+
+if(PLUGIN_WSF OR PLUGINS_ALL)
+    add_subdirectory(wsf_support)
+endif()
+
 option(PLUGIN_MATS "Enable the MATS support plugin" OFF)
 
 if(PLUGIN_MATS OR PLUGINS_ALL)

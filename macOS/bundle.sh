@@ -46,7 +46,6 @@ rm -rf macOSIcon.iconset
 
 echo "Copying binaries..."
 cp satdump-ui MacApp/SatDump.app/Contents/MacOS
-cp libsatdump_core.dylib MacApp/SatDump.app/Contents/MacOS
 cp satdump MacApp/SatDump.app/Contents/MacOS
 cp satdump_sdr_server MacApp/SatDump.app/Contents/MacOS
 cp plugins/*.dylib MacApp/SatDump.app/Contents/Resources/plugins
@@ -58,7 +57,7 @@ fi
 
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
-dylibbundler $SIGN_FLAG -cd -s /usr/local/lib -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump -x MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib $plugin_args
+dylibbundler $SIGN_FLAG -cd -s $GITHUB_WORKSPACE/vcpkg/installed/osx-satdump/lib/ -s . -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump $plugin_args
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
@@ -73,7 +72,6 @@ then
 	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
     done
 
-    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/libsatdump_core.dylib
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump-ui
