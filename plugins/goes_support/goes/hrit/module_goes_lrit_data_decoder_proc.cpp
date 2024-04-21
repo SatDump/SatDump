@@ -101,8 +101,11 @@ namespace goes
             }
 
             // Check if this is image data, and if so also write it as an image
-            else if (write_images && primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+            else if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
             {
+                if (!write_images)
+                    return;
+
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
 
@@ -348,10 +351,12 @@ namespace goes
                 }
             }
             // Check if this EMWIN data
-            else if (write_emwin && primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
+            else if (primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
             {
-                std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
+                if (!write_emwin)
+                    return;
 
+                std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
                 if (noaa_header.noaa_specific_compression == 0) // Uncompressed TXT
                 {
                     if (!std::filesystem::exists(directory + "/EMWIN"))
