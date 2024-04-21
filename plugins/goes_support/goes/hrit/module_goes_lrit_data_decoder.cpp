@@ -17,7 +17,7 @@ namespace goes
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
-                                                                                                                                                productizer("abi", true)
+                                                                                                                                                productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
             write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;

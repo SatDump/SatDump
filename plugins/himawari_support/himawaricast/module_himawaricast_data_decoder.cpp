@@ -17,7 +17,7 @@ namespace himawari
     namespace himawaricast
     {
         HimawariCastDataDecoderModule::HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                        productizer("ahi", true)
+                                                                                                                                                        productizer("ahi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
         }
 

@@ -21,7 +21,7 @@ namespace gk2a
                                                                                                                                                 write_images(parameters["write_images"].get<bool>()),
                                                                                                                                                 write_additional(parameters["write_additional"].get<bool>()),
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
-                                                                                                                                                productizer("ami", false)
+                                                                                                                                                productizer("ami", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
         }
 

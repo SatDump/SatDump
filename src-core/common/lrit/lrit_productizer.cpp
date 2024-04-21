@@ -6,6 +6,8 @@
 
 #include "products/processor/image_processor.h"
 #include "core/config.h"
+#include "common/thread_priority.h"
+#include "nlohmann/json_utils.h"
 
 namespace lrit
 {
@@ -37,14 +39,36 @@ namespace lrit
     }
 
     template <typename T>
-    LRITProductizer<T>::LRITProductizer(std::string instrument_id, bool sweep_x) : instrument_id(instrument_id), should_sweep_x(sweep_x)
+    LRITProductizer<T>::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path)
+        : instrument_id(instrument_id), should_sweep_x(sweep_x), compo_cache_path(cache_path)
     {
         autogen_composites = satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>();
+
+        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id))
+            can_make_composites = true;
+
+        if (can_make_composites)
+            compositeGeneratorThread = std::thread(&LRITProductizer<T>::compositeThreadFunc, this);
     }
 
     template <typename T>
     LRITProductizer<T>::~LRITProductizer()
     {
+        if (can_make_composites)
+        {
+            int queue_size;
+            do
+            {
+                compo_queue_mtx.lock();
+                queue_size = compo_queue.size();
+                compo_queue_mtx.unlock();
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            } while (queue_size > 0);
+
+            composite_th_should_run = false;
+            if (compositeGeneratorThread.joinable())
+                compositeGeneratorThread.join();
+        }
     }
 
     // This will most probably get moved over to each
@@ -410,6 +434,75 @@ namespace lrit
     }
 
     template <typename T>
+    void LRITProductizer<T>::compositeThreadFunc()
+    {
+        setLowestThreadPriority();
+
+        std::string file_for_cache = compo_cache_path + "/.composite_cache_do_not_delete.cbor";
+
+        while (composite_th_should_run)
+        {
+            compo_queue_mtx.lock();
+            int queue_size = compo_queue.size();
+            compo_queue_mtx.unlock();
+
+            logger->warn("Queue size.. (generating) %d", queue_size);
+
+            if (queue_size > 0)
+            {
+                compo_queue_mtx.lock();
+                satdump::ImageProducts *pro = (satdump::ImageProducts *)compo_queue[0].first;
+                std::string directory_path = compo_queue[0].second;
+                compo_queue.erase(compo_queue.begin());
+                compo_queue_mtx.unlock();
+
+                std::string directory_path_rel = std::filesystem::relative(directory_path, compo_cache_path);
+
+                try
+                {
+                    if (pro != nullptr)
+                    {
+                        // Load cache
+                        auto filecache = loadCborFile(file_for_cache);
+                        if (filecache.contains(directory_path_rel))
+                            pro->contents["autocomposite_cache_done"] = filecache[directory_path_rel]["compos"];
+
+                        // Try to generate compos
+                        attemptToGenerateComposites(pro, directory_path);
+
+                        // Write those we just generated to not redo them more than once...
+                        if (pro->contents.contains("autocomposite_cache_done"))
+                        {
+                            filecache[directory_path_rel]["compos"] = pro->contents["autocomposite_cache_done"];
+                            filecache[directory_path_rel]["time"] = time(0);
+                        }
+
+                        // Delete very old metadata
+                        time_t ctime = time(0);
+                    recheck:
+                        for (auto &v : filecache.items())
+                            if (ctime - v.value()["time"].get<time_t>() > 3600 * 24)
+                                filecache.erase(v.key());
+
+                        if (!filecache.is_null())
+                            saveCborFile(file_for_cache, filecache);
+
+                        delete pro;
+                    }
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Error trying to autogen composites! %s", e.what());
+                }
+            }
+            else
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
+    }
+
+    template <typename T>
     void LRITProductizer<T>::saveImage(image::Image<T> img,
                                        std::string directory,
                                        std::string satellite,
@@ -538,14 +631,37 @@ namespace lrit
 
         img.save_png(directory_path + filename);
 
-        if (pro != nullptr && autogen_composites)
+        // Attempt to autogen composites
+        if (can_make_composites)
         {
-            attemptToGenerateComposites(pro, directory_path);
-            pro->save(directory_path); // Re-save CBOR!
-        }
+            // We do NOT want to overload our queue and run out of RAM...
+            {
+                int queue_size;
+                do
+                {
+                    compo_queue_mtx.lock();
+                    queue_size = compo_queue.size();
+                    compo_queue_mtx.unlock();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                } while (queue_size > 50);
+            }
 
-        if (pro != nullptr)
-            delete pro;
+            compo_queue_mtx.lock();
+            if (pro != nullptr)
+                compo_queue.push_back({pro, directory_path});
+            compo_queue_mtx.unlock();
+        }
+        else
+        {
+            // if (pro != nullptr)
+            // {
+            //     attemptToGenerateComposites(pro, directory_path);
+            //     pro->save(directory_path); // Re-save CBOR!
+            // }
+
+            if (pro != nullptr)
+                delete pro;
+        }
     }
 
     template class LRITProductizer<uint8_t>;
