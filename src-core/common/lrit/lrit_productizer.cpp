@@ -454,7 +454,7 @@ namespace lrit
                 compo_queue.erase(compo_queue.begin());
                 compo_queue_mtx.unlock();
 
-                std::string directory_path_rel = std::filesystem::relative(directory_path, compo_cache_path);
+                std::string directory_path_rel = std::filesystem::relative(directory_path, compo_cache_path).string();
 
                 try
                 {
