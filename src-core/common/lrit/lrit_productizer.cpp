@@ -439,10 +439,10 @@ namespace lrit
                 double scalar_x = (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k;
                 double scalar_y = (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k;
 
-                logger->critical("Column Factor : %d - %f", image_navigation_record->column_scaling_factor, scalar_x);
-                logger->critical("Line Factor : %d - %f", image_navigation_record->line_scaling_factor, scalar_y);
-                logger->critical("Column Offset : %d", image_navigation_record->column_offset);
-                logger->critical("Line Offset : %d", image_navigation_record->line_offset);
+                // logger->critical("Column Factor : %d - %f", image_navigation_record->column_scaling_factor, scalar_x);
+                // logger->critical("Line Factor : %d - %f", image_navigation_record->line_scaling_factor, scalar_y);
+                // logger->critical("Column Offset : %d", image_navigation_record->column_offset);
+                // logger->critical("Line Offset : %d", image_navigation_record->line_offset);
 
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = sat_pos;
@@ -499,7 +499,7 @@ namespace lrit
                     if (proj_cfg.size() > 0)
                     {
                         pro->set_proj_cfg(proj_cfg);
-                        logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
+                        // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                     }
                 }
                 else
@@ -525,7 +525,7 @@ namespace lrit
                 if (proj_cfg.size() > 0)
                 {
                     pro->set_proj_cfg(proj_cfg);
-                    logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
+                    // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
                 pro->images.push_back({filename, channel, image::Image<uint16_t>()});
 
