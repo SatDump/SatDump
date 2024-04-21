@@ -1439,6 +1439,22 @@
                     }
                 }
             },
+            "ahi": {
+                "handler": "image_handler",
+                "name": "AHI",
+                "rgb_composites": {
+                    "GEO False Color (WIP)": {
+                        "channels": "ch3, ch13",
+                        "lua": "scripted_compos/geo_false_color.lua",
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ]
+                    }
+                }
+            },
             "viirs": {
                 "handler": "image_handler",
                 "name": "VIIRS",
