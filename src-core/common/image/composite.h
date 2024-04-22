@@ -24,7 +24,7 @@ namespace image
     struct compo_cfg_t
     {
         bool hasOffsets;
-        std::map<std::string, int> offsets;
+        std::vector<int> offsets;
         int maxWidth;
         int maxHeight;
         std::vector<std::pair<float, float>> image_scales;
@@ -33,18 +33,23 @@ namespace image
     };
 
     template <typename T>
-    compo_cfg_t get_compo_cfg(std::vector<Image<T>> &inputChannels, /*std::vector<std::string> &channelNumbers, */ nlohmann::json &offsets_cfg)
+    compo_cfg_t get_compo_cfg(std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, nlohmann::json &offsets_cfg)
     {
         bool hasOffsets = !offsets_cfg.empty();
-        std::map<std::string, int> offsets;
+        std::vector<int> offsets;
         if (hasOffsets)
         {
             bool has_actual_offset = false;
             std::map<std::string, int> offsetsStr = offsets_cfg.get<std::map<std::string, int>>();
-            for (std::pair<std::string, int> currentOff : offsetsStr)
+            for (int i = 0; i < (int)inputChannels.size(); i++)
             {
-                offsets.emplace(currentOff.first, -currentOff.second);
-                has_actual_offset |= currentOff.second != 0;
+                if (offsetsStr.count(channelNumbers[i]))
+                {
+                    offsets.push_back(-offsetsStr[channelNumbers[i]]);
+                    has_actual_offset |= offsetsStr[channelNumbers[i]] != 0;
+                }
+                else
+                    offsets.push_back(0);
             }
             hasOffsets = has_actual_offset;
         }
@@ -85,7 +90,7 @@ namespace image
     }
 
     template <typename T>
-    inline void get_channel_vals(double *channelValues, std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, compo_cfg_t &f, size_t &line, size_t &pixel)
+    inline void get_channel_vals(double *channelValues, std::vector<Image<T>> &inputChannels, compo_cfg_t &f, size_t &line, size_t &pixel)
     {
         // Set variables and scale to 1.0
         for (int i = 0; i < (int)inputChannels.size(); i++)
@@ -94,16 +99,16 @@ namespace image
             int pixe_ch = pixel * f.image_scales[i].second;
 
             // If we have to offset some channels
-            if (f.hasOffsets && f.offsets.count(channelNumbers[i]) > 0 && f.offsets[channelNumbers[i]] != 0)
+            if (f.hasOffsets && f.offsets[i] != 0)
             {
-                int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
+                int currentPx = pixe_ch + f.offsets[i];
                 if (currentPx < 0 || currentPx >= (int)inputChannels[i].width())
                 {
                     channelValues[i] = 0;
                     continue;
                 }
 
-                pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
+                pixe_ch += f.offsets[i] * f.image_scales[i].second;
             }
 
             channelValues[i] = double(inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch]) / double(std::numeric_limits<T>::max());
@@ -111,7 +116,7 @@ namespace image
     }
 
     template <typename T>
-    inline void get_channel_vals_raw(T *channelValues, std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, compo_cfg_t &f, size_t &line, size_t &pixel)
+    inline void get_channel_vals_raw(T *channelValues, std::vector<Image<T>> &inputChannels, compo_cfg_t &f, size_t &line, size_t &pixel)
     {
         // Set variables and scale to 1.0
         for (int i = 0; i < (int)inputChannels.size(); i++)
@@ -120,16 +125,16 @@ namespace image
             int pixe_ch = pixel * f.image_scales[i].second;
 
             // If we have to offset some channels
-            if (f.hasOffsets && f.offsets.count(channelNumbers[i]) > 0 && f.offsets[channelNumbers[i]] != 0)
+            if (f.hasOffsets && f.offsets[i] != 0)
             {
-                int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
+                int currentPx = pixe_ch + f.offsets[i];
                 if (currentPx < 0 || currentPx >= (int)inputChannels[i].width())
                 {
                     channelValues[i] = 0;
                     continue;
                 }
 
-                pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
+                pixe_ch += f.offsets[i] * f.image_scales[i].second;
             }
 
             channelValues[i] = inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch];

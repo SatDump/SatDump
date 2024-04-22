@@ -19,7 +19,7 @@ namespace image
         mu::Parser rgbParser;
         int outValsCnt = 0;
 
-        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -59,7 +59,7 @@ namespace image
         {
             for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
             {
-                get_channel_vals(channelValues, inputChannels, channelNumbers, f, line, pixel);
+                get_channel_vals(channelValues, inputChannels, f, line, pixel);
 
                 // Do the math
                 double *rgbOut = rgbParser.Eval(outValsCnt);
@@ -125,7 +125,7 @@ namespace image
         Image<T> lut;
         lut.load_png(lut_path);
 
-        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -140,7 +140,7 @@ namespace image
         {
             for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
             {
-                get_channel_vals(channelValues, inputChannels, channelNumbers, f, line, pixel);
+                get_channel_vals(channelValues, inputChannels, f, line, pixel);
 
                 // Apply the LUT
                 if (inputChannels.size() == 1) // 1D Case
@@ -200,7 +200,7 @@ namespace image
     template <typename T>
     Image<T> generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image<T>> &inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, std::vector<double> *final_timestamps, float *progress)
     {
-        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -254,7 +254,7 @@ namespace image
             lua["get_channel_value"] = [channelValues](int x)
             { return channelValues[x]; };
             lua["get_channel_values"] = [channelValues, &inputChannels, &channelNumbers, &f](size_t x, size_t y)
-            { get_channel_vals(channelValues, inputChannels, channelNumbers, f, y, x); };
+            { get_channel_vals(channelValues, inputChannels, f, y, x); };
             lua["get_channel_image"] = [&inputChannels](int ch)
             { return inputChannels[ch]; };
             lua["get_calibrated_image"] = [img_pro](int ch, std::string type, float min, float max)

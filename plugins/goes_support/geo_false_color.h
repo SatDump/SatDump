@@ -16,7 +16,7 @@ namespace goes
                                                     std::vector<double> *final_timestamps = nullptr,
                                                     float *progress = nullptr)
     {
-        image::compo_cfg_t f = image::get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Load the lut and curve
         image::Image<uint8_t> img_lut;
@@ -36,7 +36,7 @@ namespace goes
             for (size_t y = 0; y < output.height(); y++)
             {
                 // get channels from satdump.json
-                image::get_channel_vals_raw(channelVals, inputChannels, channelNumbers, f, y, x);
+                image::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
                 int lut_pos = (img_curve[channelVals[0] >> 8] * lut_width) + (channelVals[1] >> 8);
 
                 // return RGB 0=R 1=G 2=B
