@@ -135,7 +135,8 @@
             },
             "cadu": {
                 "ccsds_simple_psk_decoder": {
-                    "constellation": "oqpsk",
+                    "constellation": "qpsk",
+                    "d_oqpsk_method_2": true,
                     "cadu_size": 10232,
                     "rs_i": 5,
                     "rs_type": "rs223"
