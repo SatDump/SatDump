@@ -9,6 +9,10 @@
 #include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace lrit
 {
     inline std::string getXRITTimestamp(time_t tim)
@@ -482,7 +486,14 @@ namespace lrit
                                 filecache.erase(v.key());
 
                         if (!filecache.is_null())
+                        {
                             saveJsonFile(file_for_cache, filecache);
+#ifdef _WIN32
+                            int attr = GetFileAttributes(file_for_cache.c_str());
+                            if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0)
+                                SetFileAttributes(file_for_cache.c_str(), attr | FILE_ATTRIBUTE_HIDDEN);
+#endif
+                        }
 
                         delete pro;
                     }
