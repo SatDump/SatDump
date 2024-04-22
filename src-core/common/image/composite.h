@@ -113,5 +113,40 @@ namespace image
             channelValues[i] = double(inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch]) / double(std::numeric_limits<T>::max());
         }
     }
+
+    template <typename T>
+    inline void get_channel_vals_raw(T *channelValues, std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, compo_cfg_t &f, size_t &line, size_t &pixel)
+    {
+        // Set variables and scale to 1.0
+        for (int i = 0; i < (int)inputChannels.size(); i++)
+        {
+            int line_ch = line * f.image_scales[i].first;
+            int pixe_ch = pixel * f.image_scales[i].second;
+
+            // If we have to offset some channels
+            if (f.hasOffsets)
+            {
+                if (f.offsets.count(channelNumbers[i]) > 0)
+                {
+                    int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
+
+                    if (currentPx < 0)
+                    {
+                        channelValues[i] = 0;
+                        continue;
+                    }
+                    else if (currentPx >= (int)inputChannels[i].width())
+                    {
+                        channelValues[i] = 0;
+                        continue;
+                    }
+
+                    pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
+                }
+            }
+
+            channelValues[i] = inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch];
+        }
+    }
 #endif
 }

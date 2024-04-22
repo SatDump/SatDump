@@ -29,15 +29,15 @@ namespace goes
         // return 3 channels, RGB
         image::Image<uint16_t> output(f.maxWidth, f.maxHeight, 3);
 
-        double *channelVals = new double[inputChannels.size()];
+        uint16_t *channelVals = new uint16_t[inputChannels.size()];
 
         for (size_t x = 0; x < output.width(); x++)
         {
             for (size_t y = 0; y < output.height(); y++)
             {
                 // get channels from satdump.json
-                image::get_channel_vals(channelVals, inputChannels, channelNumbers, f, y, x);
-                int lut_pos = (img_curve[channelVals[0] * 255.0] * lut_width) + (channelVals[1] * 255.0);
+                image::get_channel_vals_raw(channelVals, inputChannels, channelNumbers, f, y, x);
+                int lut_pos = (img_curve[channelVals[0] >> 8] * lut_width) + (channelVals[1] >> 8);
 
                 // return RGB 0=R 1=G 2=B
                 output.channel(0)[y * output.width() + x] = img_lut[0 * lut_size + lut_pos] << 8;
