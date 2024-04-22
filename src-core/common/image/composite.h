@@ -89,25 +89,16 @@ namespace image
             int pixe_ch = pixel * f.image_scales[i].second;
 
             // If we have to offset some channels
-            if (f.hasOffsets)
+            if (f.hasOffsets && f.offsets.count(channelNumbers[i]) > 0 && f.offsets[channelNumbers[i]] != 0)
             {
-                if (f.offsets.count(channelNumbers[i]) > 0)
+                int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
+                if (currentPx < 0 || currentPx >= (int)inputChannels[i].width())
                 {
-                    int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
-
-                    if (currentPx < 0)
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-                    else if (currentPx >= (int)inputChannels[i].width())
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-
-                    pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
+                    channelValues[i] = 0;
+                    continue;
                 }
+
+                pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
             }
 
             channelValues[i] = double(inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch]) / double(std::numeric_limits<T>::max());
@@ -124,25 +115,16 @@ namespace image
             int pixe_ch = pixel * f.image_scales[i].second;
 
             // If we have to offset some channels
-            if (f.hasOffsets)
+            if (f.hasOffsets && f.offsets.count(channelNumbers[i]) > 0 && f.offsets[channelNumbers[i]] != 0)
             {
-                if (f.offsets.count(channelNumbers[i]) > 0)
+                int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
+                if (currentPx < 0 || currentPx >= (int)inputChannels[i].width())
                 {
-                    int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
-
-                    if (currentPx < 0)
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-                    else if (currentPx >= (int)inputChannels[i].width())
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-
-                    pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
+                    channelValues[i] = 0;
+                    continue;
                 }
+
+                pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
             }
 
             channelValues[i] = inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch];
