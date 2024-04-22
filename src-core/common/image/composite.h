@@ -39,14 +39,19 @@ namespace image
         std::map<std::string, int> offsets;
         if (hasOffsets)
         {
+            bool has_actual_offset = false;
             std::map<std::string, int> offsetsStr = offsets_cfg.get<std::map<std::string, int>>();
             for (std::pair<std::string, int> currentOff : offsetsStr)
+            {
                 offsets.emplace(currentOff.first, -currentOff.second);
+                has_actual_offset |= currentOff.second != 0;
+            }
+            hasOffsets = has_actual_offset;
         }
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
-        for (int i = 0; i < (int)inputChannels.size(); i++)
+        for (size_t i = 0; i < inputChannels.size(); i++)
             channelValues[i] = 0;
 
         // Get maximum image size, and resize them all to that. Also acts as basic safety
