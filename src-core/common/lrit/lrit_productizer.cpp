@@ -521,10 +521,12 @@ namespace lrit
                                        lrit::ImageNavigationRecord *image_navigation_record,
                                        ImageDataFunctionRecord *image_data_function_record)
     {
+        std::string ext;
+        img.append_ext(ext);
         std::string directory_path = region == ""
                                          ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
                                          : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
-        std::string filename = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + ".png";
+        std::string filename = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + ext;
         std::string pro_f_path = directory_path + "product.cbor";
 
         if (!std::filesystem::exists(directory_path))
@@ -570,7 +572,7 @@ namespace lrit
             std::string filename_new;
             do
             {
-                filename_new = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + "_" + std::to_string(current_iteration++) + ".png";
+                filename_new = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + "_" + std::to_string(current_iteration++) + ext;
             } while (std::filesystem::exists(directory_path + filename_new));
             img.save_png(directory_path + filename_new);
             logger->warn("Image already existed. Written as %s", filename_new.c_str());
