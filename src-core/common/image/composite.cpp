@@ -1,3 +1,4 @@
+#define DEFINE_COMPOSITE_UTILS 1
 #include "composite.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
@@ -10,99 +11,6 @@
 
 namespace image
 {
-    struct compo_cfg_t
-    {
-        bool hasOffsets;
-        std::map<std::string, int> offsets;
-        int maxWidth;
-        int maxHeight;
-        std::vector<std::pair<float, float>> image_scales;
-        int img_width;
-        int img_height;
-    };
-
-    template <typename T>
-    compo_cfg_t get_compo_cfg(std::vector<Image<T>> &inputChannels, /*std::vector<std::string> &channelNumbers, */ nlohmann::json &offsets_cfg)
-    {
-        bool hasOffsets = !offsets_cfg.empty();
-        std::map<std::string, int> offsets;
-        if (hasOffsets)
-        {
-            std::map<std::string, int> offsetsStr = offsets_cfg.get<std::map<std::string, int>>();
-            for (std::pair<std::string, int> currentOff : offsetsStr)
-                offsets.emplace(currentOff.first, -currentOff.second);
-        }
-
-        // Compute channel variable names
-        double *channelValues = new double[inputChannels.size()];
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-            channelValues[i] = 0;
-
-        // Get maximum image size, and resize them all to that. Also acts as basic safety
-        int maxWidth = 0, maxHeight = 0;
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-        {
-            if ((int)inputChannels[i].width() > maxWidth)
-                maxWidth = inputChannels[i].width();
-
-            if ((int)inputChannels[i].height() > maxHeight)
-                maxHeight = inputChannels[i].height();
-        }
-
-        std::vector<std::pair<float, float>> image_scales;
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-            image_scales.push_back({float(inputChannels[i].width()) / float(maxWidth), float(inputChannels[i].height()) / float(maxHeight)});
-
-        // Get output width
-        int img_width = maxWidth;
-        int img_height = maxHeight;
-
-        delete[] channelValues;
-
-        return {hasOffsets,
-                offsets,
-                maxWidth,
-                maxHeight,
-                image_scales,
-                img_width,
-                img_height};
-    }
-
-    template <typename T>
-    inline void get_channel_vals(double *channelValues, std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, compo_cfg_t &f, size_t &line, size_t &pixel)
-    {
-        // Set variables and scale to 1.0
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-        {
-            int line_ch = line * f.image_scales[i].first;
-            int pixe_ch = pixel * f.image_scales[i].second;
-
-            // If we have to offset some channels
-            if (f.hasOffsets)
-            {
-                if (f.offsets.count(channelNumbers[i]) > 0)
-                {
-                    int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
-
-                    if (currentPx < 0)
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-                    else if (currentPx >= (int)inputChannels[i].width())
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-
-                    pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
-                }
-            }
-
-            channelValues[i] = double(inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch]) / double(std::numeric_limits<T>::max());
-        }
-    }
-
     // Generate a composite from channels and an equation
     template <typename T>
     Image<T> generate_composite_from_equ(std::vector<Image<T>> &inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
@@ -207,8 +115,8 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>&, std::vector<std::string>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>&, std::vector<std::string>, std::string, nlohmann::json, float *);
+    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
+    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
 
     // Generate a composite from channels and a LUT
     template <typename T>
@@ -272,8 +180,8 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_lut<uint8_t>(std::vector<Image<uint8_t>>&, std::vector<std::string>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_lut<uint16_t>(std::vector<Image<uint16_t>>&, std::vector<std::string>, std::string, nlohmann::json, float *);
+    template Image<uint8_t> generate_composite_from_lut<uint8_t>(std::vector<Image<uint8_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
+    template Image<uint16_t> generate_composite_from_lut<uint16_t>(std::vector<Image<uint16_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
 
     void bindCompoCfgType(sol::state &lua)
     {
@@ -380,6 +288,6 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_lua<uint8_t>(satdump::ImageProducts *, std::vector<Image<uint8_t>>&, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
-    template Image<uint16_t> generate_composite_from_lua<uint16_t>(satdump::ImageProducts *, std::vector<Image<uint16_t>>&, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
+    template Image<uint8_t> generate_composite_from_lua<uint8_t>(satdump::ImageProducts *, std::vector<Image<uint8_t>> &, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
+    template Image<uint16_t> generate_composite_from_lua<uint16_t>(satdump::ImageProducts *, std::vector<Image<uint16_t>> &, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
 }

@@ -304,7 +304,8 @@ namespace satdump
         std::string lut = "";
         std::string channels = "";
         std::string lua = "";
-        nlohmann::json lua_vars;
+        std::string cpp = "";
+        nlohmann::json vars;
         nlohmann::json calib_cfg;
 
         std::string description_markdown = "";
@@ -324,7 +325,8 @@ namespace satdump
         j["lut"] = v.lut;
         j["channels"] = v.channels;
         j["lua"] = v.lua;
-        j["lua_vars"] = v.lua_vars;
+        j["cpp"] = v.cpp;
+        j["vars"] = v.vars;
 
         j["calib_cfg"] = v.calib_cfg;
     }
@@ -344,8 +346,15 @@ namespace satdump
         {
             v.lua = j["lua"].get<std::string>();
             v.channels = j["channels"].get<std::string>();
-            if (j.contains("lua_vars"))
-                v.lua_vars = j["lua_vars"];
+            if (j.contains("vars"))
+                v.vars = j["vars"];
+        }
+        else if (j.contains("cpp"))
+        {
+            v.cpp = j["cpp"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+            if (j.contains("vars"))
+                v.vars = j["vars"];
         }
 
         if (j.contains("calib_cfg"))
@@ -372,6 +381,32 @@ namespace satdump
 
     bool image_equation_contains(std::string init, std::string match, int *loc);
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
+
+    inline void dummyCppCompositor(satdump::ImageProducts *img_pro,
+                                   std::vector<image::Image<uint16_t>> &inputChannels,
+                                   std::vector<std::string> channelNumbers,
+                                   std::string cpp_id,
+                                   nlohmann::json vars,
+                                   nlohmann::json offsets_cfg,
+                                   std::vector<double> *final_timestamps = nullptr,
+                                   float *progress = nullptr)
+    {
+    }
+
+    struct RequestCppCompositeEvent
+    {
+        std::string id;
+        std::vector<std::function<image::Image<uint16_t>(
+            satdump::ImageProducts *,
+            std::vector<image::Image<uint16_t>> &,
+            std::vector<std::string>,
+            std::string,
+            nlohmann::json,
+            nlohmann::json,
+            std::vector<double> *,
+            float *)>> &compositors;
+        satdump::ImageProducts *img_pro;
+    };
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);

@@ -425,7 +425,7 @@ namespace satdump
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg)
     {
         std::string str_to_find_channels = cfg.equation;
-        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
             str_to_find_channels = cfg.channels;
 
         std::vector<std::string> channels_present;
@@ -525,11 +525,11 @@ namespace satdump
 
         std::string str_to_find_channels = cfg.equation;
 
-        bool is_lut_or_lua = false;
-        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+        bool is_lut_or_lua_or_cpp = false;
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
         {
             str_to_find_channels = cfg.channels;
-            is_lut_or_lua = true;
+            is_lut_or_lua_or_cpp = true;
         }
 
         bool a_channel_is_empty = false;
@@ -560,7 +560,7 @@ namespace satdump
             if (image_equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && product.has_calibation())
             {
                 product.init_calibration();
-                if (is_lut_or_lua)
+                if (is_lut_or_lua_or_cpp)
                 {
                     channel_indexes_locations.push_back(TempBeforeSort());
                     TempBeforeSort &cur = channel_indexes_locations[channel_indexes_locations.size() - 1];
@@ -613,7 +613,7 @@ namespace satdump
             if (image_equation_contains(str_to_find_channels, equ_str, &loc) && cal_loc != loc)
             {
                 channel_indexes_locations.push_back(TempBeforeSort());
-                if (is_lut_or_lua)
+                if (is_lut_or_lua_or_cpp)
                 {
                     TempBeforeSort &cur = channel_indexes_locations[channel_indexes_locations.size() - 1];
                     cur.loc = loc;
@@ -642,7 +642,7 @@ namespace satdump
         }
 
         // They need to be in equation order!
-        if (is_lut_or_lua)
+        if (is_lut_or_lua_or_cpp)
         {
             std::sort(channel_indexes_locations.begin(), channel_indexes_locations.end(),
                       [](auto &a, auto &b)
@@ -758,8 +758,26 @@ namespace satdump
 
         image::Image<uint16_t> rgb_composite;
 
-        if (cfg.lua != "")
-            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, final_timestamps, progress);
+        if (cfg.cpp != "")
+        {
+            std::vector<std::function<image::Image<uint16_t>(
+                satdump::ImageProducts *,
+                std::vector<image::Image<uint16_t>> &,
+                std::vector<std::string>,
+                std::string,
+                nlohmann::json,
+                nlohmann::json,
+                std::vector<double> *,
+                float *)>>
+                compositors;
+            satdump::eventBus->fire_event<RequestCppCompositeEvent>({cfg.cpp, compositors, &product});
+            if (compositors.size() > 0)
+                rgb_composite = compositors[0](&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
+            else
+                logger->error("Could not get a C++ compositor with ID " + cfg.cpp);
+        }
+        else if (cfg.lua != "")
+            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
         else if (cfg.lut != "")
             rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
         else

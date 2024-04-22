@@ -615,7 +615,7 @@
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/CloudUnderlay.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1.5,
                             "thresold": 0,
@@ -628,7 +628,7 @@
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/CloudUnderlay.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1.5,
                             "thresold": 0.15,
@@ -641,7 +641,7 @@
                         "channels": "cch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -660,7 +660,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
@@ -679,7 +679,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
@@ -763,7 +763,7 @@
                         "channels": "cch4",
                         "description": "descriptions/SST.md",
                         "lua": "scripted_compos/sst_landmask.lua",
-                        "lua_vars": {
+                        "vars": {
                             "minval": 0,
                             "maxval": 1
                         },
@@ -1016,7 +1016,7 @@
                         "channels": "chb",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -1034,7 +1034,7 @@
                         "channels": "cha",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
@@ -1052,7 +1052,7 @@
                         "channels": "cha, chb",
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "description": "descriptions/MCIR_precip.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0.21,
                             "scalar": 1,
                             "thresold": 0.8,
@@ -1319,7 +1319,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -1338,7 +1338,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -1410,7 +1410,7 @@
                 "rgb_composites": {
                     "GEO False Color": {
                         "channels": "ch2, ch13",
-                        "lua": "scripted_compos/geo_false_color.lua",
+                        "cpp": "geo_false_color",
                         "draw_map_overlay": true,
                         "borders_color": [
                             1,
@@ -1445,7 +1445,7 @@
                 "rgb_composites": {
                     "GEO False Color (WIP)": {
                         "channels": "ch3, ch13",
-                        "lua": "scripted_compos/geo_false_color.lua",
+                        "cpp": "geo_false_color",
                         "draw_map_overlay": true,
                         "borders_color": [
                             1,

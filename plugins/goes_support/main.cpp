@@ -12,6 +12,8 @@
 #include "goes/sd/module_sd_image_decoder.h"
 #include "goes/raw/module_goesr_instruments.h"
 
+#include "geo_false_color.h"
+
 class GOESSupport : public satdump::Plugin
 {
 public:
@@ -24,6 +26,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -44,6 +47,12 @@ public:
     //     if (evt.id == "goes_xrit")
     //         evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
     // }
+
+    static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
+    {
+        if (evt.id == "geo_false_color")
+            evt.compositors.push_back(goes::goesFalseColorCompositor);
+    }
 };
 
 PLUGIN_LOADER(GOESSupport)

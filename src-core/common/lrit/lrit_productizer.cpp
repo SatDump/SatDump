@@ -397,7 +397,7 @@ namespace lrit
 
                         // Load ONLY the images needed for this
                         std::string str_to_find_channels = cfg.equation;
-                        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+                        if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
                             str_to_find_channels = cfg.channels;
                         for (int i = 0; i < (int)pro->images.size(); i++)
                         {
