@@ -217,6 +217,15 @@ namespace satdump
     void ImageProducts::init_calibration()
     {
         calib_mutex.lock();
+
+        calibration_type_lut.clear();
+        calibration_wavenumber_lut.clear();
+        for (int i = 0; i < images.size(); i++)
+        {
+            calibration_type_lut.push_back(get_calibration_type(i));
+            calibration_wavenumber_lut.push_back(get_wavenumber(i));
+        }
+
         if (contents["calibration"].contains("lua"))
         { // Lua-based calibration
             if (lua_state_ptr == nullptr)
@@ -299,8 +308,8 @@ namespace satdump
         else if (lua_state_ptr != nullptr)
             val2 = ((sol::function *)lua_comp_func_ptr)->call(calib_index, x, y, val).get<double>();
 
-        if (get_calibration_type(image_index) == calib_type_t::CALIB_RADIANCE && temp)
-            val2 = radiance_to_temperature(val2, get_wavenumber(image_index));
+        if (calibration_type_lut[image_index] == calib_type_t::CALIB_RADIANCE && temp)
+            val2 = radiance_to_temperature(val2, calibration_wavenumber_lut[image_index]);
 
         calib_mutex.unlock();
         return val2;
@@ -349,7 +358,7 @@ namespace satdump
                     {
                         double cal_val = get_calibrated_value(image_index, x, y);
 
-                        if (vtype == CALIB_VTYPE_TEMPERATURE && get_calibration_type(image_index) == CALIB_RADIANCE)
+                        if (vtype == CALIB_VTYPE_TEMPERATURE && calibration_type_lut[image_index] == CALIB_RADIANCE)
                             cal_val = radiance_to_temperature(cal_val, wn);
 
                         output[y * output.width() + x] =

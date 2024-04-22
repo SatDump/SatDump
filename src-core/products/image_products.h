@@ -285,6 +285,8 @@ namespace satdump
         std::map<int, image::Image<uint16_t>> calibrated_img_cache;
         std::mutex calib_mutex;
         std::shared_ptr<CalibratorBase> calibrator_ptr = nullptr;
+        std::vector<calib_type_t> calibration_type_lut;
+        std::vector<double> calibration_wavenumber_lut;
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
         void *lua_comp_func_ptr = nullptr;
     };
