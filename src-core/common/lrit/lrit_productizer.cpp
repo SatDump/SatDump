@@ -522,7 +522,7 @@ namespace lrit
                                        ImageDataFunctionRecord *image_data_function_record)
     {
         std::string ext;
-        img.append_ext(ext);
+        img.append_ext(&ext);
         std::string directory_path = region == ""
                                          ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
                                          : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
