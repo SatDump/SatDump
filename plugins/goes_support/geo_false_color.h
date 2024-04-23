@@ -50,7 +50,7 @@ namespace goes
                 *progress = double(x) / double(output.width());
         }
 
-        delete channelVals;
+        delete[] channelVals;
 
         return output;
     }
