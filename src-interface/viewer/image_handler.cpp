@@ -645,6 +645,7 @@ namespace satdump
             if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
             {
                 select_rgb_presets = -1; // Editing, NOT the compo anymore!
+                rgb_compo_cfg.cpp = "";
                 rgb_compo_cfg.lua = "";
                 rgb_compo_cfg.lut = "";
             }

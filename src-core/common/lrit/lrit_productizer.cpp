@@ -73,7 +73,6 @@ namespace lrit
     // This will most probably get moved over to each
     inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string satellite, std::string instrument_id)
     {
-
         if (image_data_function_record)
         {
             // Default, to not crash the viewer on no calib
@@ -614,6 +613,9 @@ namespace lrit
                 pro->instrument_name = instrument_id;
                 pro->set_product_source(satellite);
                 pro->set_product_timestamp(timestamp);
+                pro->has_timestamps = true;
+                pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
+                pro->set_timestamps({timestamp});
                 pro->bit_depth = sizeof(T) * 8;
                 if (proj_cfg.size() > 0)
                 {

@@ -13,6 +13,7 @@
 #include "goes/raw/module_goesr_instruments.h"
 
 #include "geo_false_color.h"
+#include "geo_false_color_ir_merge.h"
 
 class GOESSupport : public satdump::Plugin
 {
@@ -52,6 +53,8 @@ public:
     {
         if (evt.id == "geo_false_color")
             evt.compositors.push_back(goes::goesFalseColorCompositor);
+        else if (evt.id == "goes_abi_false_color_ir_merge")
+            evt.compositors.push_back(goes::goesFalseColorIRMergeCompositor);
     }
 };
 

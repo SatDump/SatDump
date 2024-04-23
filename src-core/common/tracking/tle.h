@@ -11,7 +11,7 @@ namespace satdump
     // Simple struct to hold TLE definitions
     struct TLE
     {
-        int norad;
+        int norad = -1;
         std::string name;
         std::string line1;
         std::string line2;
@@ -59,10 +59,10 @@ namespace satdump
 
     SATDUMP_DLL extern TLERegistry general_tle_registry;
 
-    int  parseTLEStream(std::istream& inputStream, TLERegistry& new_registry);  //Helper - Takes an input stream and parses out the valid TLEs
-    void updateTLEFile(std::string path);                                       //Updates the TLE file now based on the URLs in the config
-    void autoUpdateTLE(std::string path);                                       //Updates the TLE file if it's old enough, per user setting
-    void loadTLEFileIntoRegistry(std::string path);                             //Loads the TLE file into the general registry
+    int parseTLEStream(std::istream &inputStream, TLERegistry &new_registry); // Helper - Takes an input stream and parses out the valid TLEs
+    void updateTLEFile(std::string path);                                     // Updates the TLE file now based on the URLs in the config
+    void autoUpdateTLE(std::string path);                                     // Updates the TLE file if it's old enough, per user setting
+    void loadTLEFileIntoRegistry(std::string path);                           // Loads the TLE file into the general registry
 
     void fetchTLENow(int norad); // Utils, in case you want to fetch & load a TLE into the regristry right now. Should NOT be used in most cases
 }

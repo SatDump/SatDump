@@ -18,13 +18,18 @@ namespace goes
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
+        std::string lut_path = vars.contains("lut") ? vars["lut"].get<std::string>() : std::string("goes/abi/wxstar/lut.png");
+
         // Load the lut and curve
         image::Image<uint8_t> img_lut;
         image::Image<uint8_t> img_curve;
-        img_lut.load_png(resources::getResourcePath("goes/abi/wxstar/lut.png"));
+        img_lut.load_png(resources::getResourcePath(lut_path));
         img_curve.load_png(resources::getResourcePath("goes/abi/wxstar/ch2_curve.png"));
         size_t lut_size = img_lut.height() * img_lut.width();
         size_t lut_width = img_lut.width();
+
+        if (img_lut.width() != 256 || img_lut.height() != 256 || img_lut.channels() < 3)
+            logger->error("Lut " + lut_path + " did not load!");
 
         // return 3 channels, RGB
         image::Image<uint16_t> output(f.maxWidth, f.maxHeight, 3);

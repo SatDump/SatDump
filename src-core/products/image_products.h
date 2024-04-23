@@ -41,6 +41,7 @@ namespace satdump
             TIMESTAMP_LINE,
             TIMESTAMP_MULTIPLE_LINES,
             TIMESTAMP_IFOV,
+            TIMESTAMP_SINGLE_IMAGE,
         };
 
         Timestamp_Type timestamp_type;

@@ -1415,12 +1415,29 @@
                     "GEO False Color": {
                         "channels": "ch2, ch13",
                         "cpp": "geo_false_color",
+                        "vars": {
+                            "lut": "goes/abi/wxstar/lut.png"
+                        },
                         "draw_map_overlay": true,
                         "borders_color": [
                             1,
                             1,
                             1
                         ]
+                    },
+                    "GEO False Color IR Merge": {
+                        "channels": "ch2, ch13",
+                        "cpp": "goes_abi_false_color_ir_merge",
+                        "draw_map_overlay": true,
+                        "vars": {
+                            "lut": "goes/abi/usradioguycustomlut.png"
+                        },
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": false // Needs to be optimized...
                     },
                     "Night Microphysics (WIP)": {
                         "equation": "cch15-cch13,cch13-cch7,cch13",
