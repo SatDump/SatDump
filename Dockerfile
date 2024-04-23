@@ -19,7 +19,7 @@ RUN cmake -B build \
           -DCMAKE_STAGING_PREFIX=/target/usr \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DCMAKE_BUILD_TYPE=Release \
-          -DBUILD_GUI=OFF \
+          -DBUILD_GUI=ON \
           -DPLUGIN_SCRIPTING=ON \
           -DBUILD_TOOLS=ON &&\
     cmake --build build --target install

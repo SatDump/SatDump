@@ -1,13 +1,18 @@
-version: '3.8'
 services:
   satdump:
     build:
       context: .
     image: satdump:latest
-    command: 
+    command: bash
     network_mode: host
     device_cgroup_rules:
       - 'c 189:* rwm'
     devices:
       - '/dev/bus/usb'
+    volumes:
+      - type: 'tmpfs'
+        target: '/tmp'
+#      - type: 'bind'
+#        source: './srv'
+#        target: '/srv'
     restart: 'unless-stopped'
