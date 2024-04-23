@@ -54,7 +54,7 @@ namespace satdump
                 images[c].filename.find(".j2k") == std::string::npos &&
                 images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
-            else
+            else if(!d_no_not_save_images)
                 logger->trace("Image format was specified in product call. Not supposed to happen!");
 
             contents["images"][c]["file"] = images[c].filename;

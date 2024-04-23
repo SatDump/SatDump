@@ -59,7 +59,7 @@ namespace goes
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
             {
                 std::string ext;
-                img.append_ext(&ext);
+                img.append_ext(&ext, true);
                 if (std::filesystem::exists(directory + "/IMAGES/Unknown/" + meta.filename + ext))
                 {
                     int current_iteration = 1;
