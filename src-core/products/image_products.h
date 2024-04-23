@@ -257,7 +257,7 @@ namespace satdump
 
         calib_type_t get_calibration_type(int image_index)
         {
-            if (!has_calibation())
+            if (!has_calibation() || images[image_index].abs_index == -2)
                 return CALIB_REFLECTANCE;
 
             if (images[image_index].abs_index != -1)

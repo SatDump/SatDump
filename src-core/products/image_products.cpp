@@ -299,7 +299,10 @@ namespace satdump
 
         double val2 = CALIBRATION_INVALID_VALUE;
         if (images[image_index].abs_index == -2)
+        {
+            calib_mutex.unlock();
             return val2;
+        }
         else if (images[image_index].abs_index != -1)
             calib_index = images[image_index].abs_index;
 
