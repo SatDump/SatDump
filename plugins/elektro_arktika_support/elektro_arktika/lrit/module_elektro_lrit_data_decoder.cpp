@@ -11,10 +11,9 @@ namespace elektro
 {
     namespace lrit
     {
-        ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                      productizer("msu_gs", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
-            elektro_221_composer_full_disk = std::make_shared<ELEKTRO221Composer>();
-            elektro_321_composer_full_disk = std::make_shared<ELEKTRO321Composer>();
         }
 
         std::vector<ModuleDataType> ELEKTROLRITDataDecoderModule::getInputTypes()
@@ -98,6 +97,9 @@ namespace elektro
                 }
             };
 
+            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
+                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
+
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer
@@ -125,12 +127,7 @@ namespace elektro
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != "")
-                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
-
-            if (elektro_221_composer_full_disk->hasData)
-                elektro_221_composer_full_disk->save(directory);
-            if (elektro_321_composer_full_disk->hasData)
-                elektro_321_composer_full_disk->save(directory);
+                    saveImageP(segmentedDecoder.second.meta, segmentedDecoder.second.image);
         }
 
         void ELEKTROLRITDataDecoderModule::drawUI(bool window)
@@ -172,86 +169,6 @@ namespace elektro
                             if (dec->imageStatus == SAVING)
                                 ImGui::TextColored(style::theme.green, "Writing image...");
                             else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(style::theme.orange, "Receiving...");
-                            else
-                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                // Full disk 221
-                {
-                    if (elektro_221_composer_full_disk->textureID == 0)
-                    {
-                        elektro_221_composer_full_disk->textureID = makeImageTexture();
-                        elektro_221_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(elektro_221_composer_full_disk->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        elektro_221_composer_full_disk->hasToUpdate = true;
-                    }
-
-                    if (elektro_221_composer_full_disk->imageStatus != IDLE)
-                    {
-                        if (elektro_221_composer_full_disk->hasToUpdate)
-                        {
-                            elektro_221_composer_full_disk->hasToUpdate = false;
-                            updateImageTexture(elektro_221_composer_full_disk->textureID,
-                                               elektro_221_composer_full_disk->textureBuffer,
-                                               1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem("221 Color"))
-                        {
-                            ImGui::Image((void *)(intptr_t)elektro_221_composer_full_disk->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (elektro_221_composer_full_disk->imageStatus == SAVING)
-                                ImGui::TextColored(style::theme.green, "Writing image...");
-                            else if (elektro_221_composer_full_disk->imageStatus == RECEIVING)
-                                ImGui::TextColored(style::theme.orange, "Receiving...");
-                            else
-                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                // Full disk 321
-                {
-                    if (elektro_321_composer_full_disk->textureID == 0)
-                    {
-                        elektro_321_composer_full_disk->textureID = makeImageTexture();
-                        elektro_321_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(elektro_321_composer_full_disk->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        elektro_321_composer_full_disk->hasToUpdate = true;
-                    }
-
-                    if (elektro_321_composer_full_disk->imageStatus != IDLE)
-                    {
-                        if (elektro_321_composer_full_disk->hasToUpdate)
-                        {
-                            elektro_321_composer_full_disk->hasToUpdate = false;
-                            updateImageTexture(elektro_321_composer_full_disk->textureID,
-                                               elektro_321_composer_full_disk->textureBuffer,
-                                               1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem("321 Color"))
-                        {
-                            ImGui::Image((void *)(intptr_t)elektro_321_composer_full_disk->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (elektro_321_composer_full_disk->imageStatus == SAVING)
-                                ImGui::TextColored(style::theme.green, "Writing image...");
-                            else if (elektro_321_composer_full_disk->imageStatus == RECEIVING)
                                 ImGui::TextColored(style::theme.orange, "Receiving...");
                             else
                                 ImGui::TextColored(style::theme.red, "Idle (Image)...");

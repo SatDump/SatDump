@@ -41,6 +41,7 @@ namespace satdump
             TIMESTAMP_LINE,
             TIMESTAMP_MULTIPLE_LINES,
             TIMESTAMP_IFOV,
+            TIMESTAMP_SINGLE_IMAGE,
         };
 
         Timestamp_Type timestamp_type;
@@ -197,6 +198,11 @@ namespace satdump
                 contents["calibration"]["wavenumbers"] = buff;
         }
 
+        nlohmann::json get_calibration_raw()
+        {
+            return contents.contains("calibration") ? contents["calibration"] : nlohmann::json();
+        }
+
         double get_wavenumber(int image_index)
         {
             if (!has_calibation())
@@ -252,7 +258,7 @@ namespace satdump
 
         calib_type_t get_calibration_type(int image_index)
         {
-            if (!has_calibation())
+            if (!has_calibation() || images[image_index].abs_index == -2)
                 return CALIB_REFLECTANCE;
 
             if (images[image_index].abs_index != -1)
@@ -269,6 +275,8 @@ namespace satdump
         image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
+        bool d_no_not_save_images = false;
+        bool d_no_not_load_images = false;
         virtual void save(std::string directory);
         virtual void load(std::string file);
 
@@ -278,6 +286,8 @@ namespace satdump
         std::map<int, image::Image<uint16_t>> calibrated_img_cache;
         std::mutex calib_mutex;
         std::shared_ptr<CalibratorBase> calibrator_ptr = nullptr;
+        std::vector<calib_type_t> calibration_type_lut;
+        std::vector<double> calibration_wavenumber_lut;
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
         void *lua_comp_func_ptr = nullptr;
     };
@@ -297,7 +307,8 @@ namespace satdump
         std::string lut = "";
         std::string channels = "";
         std::string lua = "";
-        nlohmann::json lua_vars;
+        std::string cpp = "";
+        nlohmann::json vars;
         nlohmann::json calib_cfg;
 
         std::string description_markdown = "";
@@ -317,7 +328,8 @@ namespace satdump
         j["lut"] = v.lut;
         j["channels"] = v.channels;
         j["lua"] = v.lua;
-        j["lua_vars"] = v.lua_vars;
+        j["cpp"] = v.cpp;
+        j["vars"] = v.vars;
 
         j["calib_cfg"] = v.calib_cfg;
     }
@@ -337,8 +349,15 @@ namespace satdump
         {
             v.lua = j["lua"].get<std::string>();
             v.channels = j["channels"].get<std::string>();
-            if (j.contains("lua_vars"))
-                v.lua_vars = j["lua_vars"];
+            if (j.contains("vars"))
+                v.vars = j["vars"];
+        }
+        else if (j.contains("cpp"))
+        {
+            v.cpp = j["cpp"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+            if (j.contains("vars"))
+                v.vars = j["vars"];
         }
 
         if (j.contains("calib_cfg"))
@@ -363,7 +382,23 @@ namespace satdump
             v.description_markdown = j["description"].get<std::string>();
     }
 
+    bool image_equation_contains(std::string init, std::string match, int *loc);
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
+
+    struct RequestCppCompositeEvent
+    {
+        std::string id;
+        std::vector<std::function<image::Image<uint16_t>(
+            satdump::ImageProducts *,
+            std::vector<image::Image<uint16_t>> &,
+            std::vector<std::string>,
+            std::string,
+            nlohmann::json,
+            nlohmann::json,
+            std::vector<double> *,
+            float *)>> &compositors;
+        satdump::ImageProducts *img_pro;
+    };
 
     image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
     image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);

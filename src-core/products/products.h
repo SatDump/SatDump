@@ -39,6 +39,15 @@ namespace satdump
         }
 
     public:
+        void set_product_timestamp(time_t timestamp) { contents["product_timestamp"] = timestamp; }
+        bool has_product_timestamp() { return contents.contains("product_timestamp"); }
+        time_t get_product_timestamp() { return contents["product_timestamp"].get<time_t>(); }
+
+        void set_product_source(std::string source) { contents["product_source"] = source; }
+        bool has_product_source() { return contents.contains("product_source"); }
+        std::string get_product_source() { return contents["product_source"].get<std::string>(); }
+
+    public:
         virtual void save(std::string directory);
         virtual void load(std::string file);
     };

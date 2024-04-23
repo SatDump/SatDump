@@ -181,11 +181,11 @@ std::wstring s2ws(const std::string &str)
 std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, std::string pipeline_name, std::string folder)
 {
     std::tm *timeReadable = gmtime(&timevalue);
-    if(folder == "")
+    if (folder == "")
     {
         folder = satdump::config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>();
 #ifdef __ANDROID__
-        if(folder == "./live_output")
+        if (folder == "./live_output")
             folder = "/storage/emulated/0/live_output";
 #endif
     }

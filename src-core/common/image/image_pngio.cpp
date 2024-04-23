@@ -51,6 +51,7 @@ namespace image
         // Write row-per-row to save up on memory
         {
             png_byte *const image_row = new png_byte[sizeof(T) * d_channels * d_width];
+            memset(image_row, 0, sizeof(T) * d_channels * d_width);
 
             if (d_depth == 8)
             {

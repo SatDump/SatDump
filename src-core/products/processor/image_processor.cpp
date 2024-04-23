@@ -107,6 +107,9 @@ namespace satdump
                     if (compo.value().contains("autogen")) // Skip auto-generating if requested
                         if (compo.value()["autogen"].get<bool>() == false)
                             continue;
+                    if (img_products->contents.contains("autocomposite_cache_enabled") && img_products->contents["autocomposite_cache_enabled"].get<bool>())
+                        if (img_products->contents["autocomposite_cache_done"].contains(compo.key()))
+                            continue;
 
                     // rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
                     std::string initial_name = compo.key();
@@ -122,6 +125,12 @@ namespace satdump
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
                     image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+
+                    if (rgb_image.size() == 0)
+                    {
+                        logger->debug("Empty image, skipping any further processing!");
+                        continue;
+                    }
 
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
@@ -215,6 +224,9 @@ namespace satdump
                             fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
                         retimg.save_img(product_path + "/rgb_" + name + "_projected" + fmt);
                     }
+
+                    if (img_products->contents.contains("autocomposite_cache_enabled") && img_products->contents["autocomposite_cache_enabled"].get<bool>())
+                        img_products->contents["autocomposite_cache_done"][compo.key()] = true;
                 }
                 catch (std::exception &e)
                 {

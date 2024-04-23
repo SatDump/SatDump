@@ -301,7 +301,8 @@ namespace satdump
                     cfg.lut = rgb_compo_cfg.lut;
                     cfg.channels = rgb_compo_cfg.channels;
                     cfg.lua = rgb_compo_cfg.lua;
-                    cfg.lua_vars = rgb_compo_cfg.lua_vars;
+                    cfg.cpp = rgb_compo_cfg.cpp;
+                    cfg.vars = rgb_compo_cfg.vars;
                     cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
 
                     despeckle = rgb_compo_cfg.despeckle;
@@ -644,6 +645,7 @@ namespace satdump
             if (ImGui::InputText("##rgbEquation", &rgb_compo_cfg.equation))
             {
                 select_rgb_presets = -1; // Editing, NOT the compo anymore!
+                rgb_compo_cfg.cpp = "";
                 rgb_compo_cfg.lua = "";
                 rgb_compo_cfg.lut = "";
             }

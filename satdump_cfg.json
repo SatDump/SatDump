@@ -615,7 +615,7 @@
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/CloudUnderlay.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1.5,
                             "thresold": 0,
@@ -628,7 +628,7 @@
                         "channels": "ch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/CloudUnderlay.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1.5,
                             "thresold": 0.15,
@@ -641,7 +641,7 @@
                         "channels": "cch4",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -660,7 +660,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
@@ -679,7 +679,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
@@ -763,7 +763,7 @@
                         "channels": "cch4",
                         "description": "descriptions/SST.md",
                         "lua": "scripted_compos/sst_landmask.lua",
-                        "lua_vars": {
+                        "vars": {
                             "minval": 0,
                             "maxval": 1
                         },
@@ -1016,7 +1016,7 @@
                         "channels": "chb",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -1034,7 +1034,7 @@
                         "channels": "cha",
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
@@ -1052,7 +1052,7 @@
                         "channels": "cha, chb",
                         "lua": "scripted_compos/underlay_with_clouds_lut.lua",
                         "description": "descriptions/MCIR_precip.md",
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0.21,
                             "scalar": 1,
                             "thresold": 0.8,
@@ -1319,7 +1319,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MCIR.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -1338,7 +1338,7 @@
                         "lua": "scripted_compos/underlay_with_clouds.lua",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
-                        "lua_vars": {
+                        "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
@@ -1382,6 +1382,97 @@
                         "equation": "ch2/ch1",
                         "equalize": true,
                         "geo_correct": true
+                    }
+                }
+            },
+            "msu_gs": {
+                "handler": "image_handler",
+                "name": "MSU-GS",
+                "rgb_composites": {
+                    "221": {
+                        "equation": "ch2,ch2,ch1"
+                    },
+                    "321": {
+                        "equation": "ch3,ch2,ch1",
+                        //
+                        "draw_map_overlay": true,
+                        "draw_shores_overlay": true,
+                        "draw_latlon_overlay": true
+                    },
+                    "Natural Color": {
+                        "channels": "ch3, ch2, ch1",
+                        "cpp": "msugs_natural_color"
+                    },
+                    "Thermal Channel": {
+                        "equation": "1-ch9"
+                    }
+                }
+            },
+            "abi": {
+                "handler": "image_handler",
+                "name": "ABI",
+                "rgb_composites": {
+                    "GEO False Color": {
+                        "channels": "ch2, ch13",
+                        "cpp": "geo_false_color",
+                        "vars": {
+                            "lut": "goes/abi/wxstar/lut.png"
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ]
+                    },
+                    "GEO False Color IR Merge": {
+                        "channels": "ch2, ch13",
+                        "cpp": "goes_abi_false_color_ir_merge",
+                        "draw_map_overlay": true,
+                        "vars": {
+                            "lut": "goes/abi/usradioguycustomlut.png"
+                        },
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": false // Needs to be optimized...
+                    },
+                    "Night Microphysics (WIP)": {
+                        "equation": "cch15-cch13,cch13-cch7,cch13",
+                        "individual_equalize": true,
+                        "white_balance": true
+                    },
+                    "789": {
+                        "equation": "ch7,ch8,ch9",
+                        "individual_equalize": true,
+                        "normalize": true
+                    },
+                    "7_13_15": {
+                        "equation": "ch7,ch13,ch15",
+                        "individual_equalize": true,
+                        "normalize": true,
+                        //
+                        "draw_map_overlay": true,
+                        "draw_shores_overlay": true,
+                        "draw_latlon_overlay": true
+                    }
+                }
+            },
+            "ahi": {
+                "handler": "image_handler",
+                "name": "AHI",
+                "rgb_composites": {
+                    "GEO False Color (WIP)": {
+                        "channels": "ch3, ch13",
+                        "cpp": "geo_false_color",
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ]
                     }
                 }
             },

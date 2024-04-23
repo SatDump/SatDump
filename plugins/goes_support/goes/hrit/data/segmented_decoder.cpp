@@ -27,7 +27,7 @@ namespace goes
 
         void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, size_t this_size, int segc)
         {
-            if (segc >= seg_count)
+            if (segc >= seg_count || segc < 0)
                 return;
             std::memcpy(&(*image)[seg_size * segc], data, this_size);
             segments_done.get()[segc] = true;

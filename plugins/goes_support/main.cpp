@@ -12,6 +12,9 @@
 #include "goes/sd/module_sd_image_decoder.h"
 #include "goes/raw/module_goesr_instruments.h"
 
+#include "geo_false_color.h"
+#include "geo_false_color_ir_merge.h"
+
 class GOESSupport : public satdump::Plugin
 {
 public:
@@ -23,6 +26,8 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -36,6 +41,20 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::GOESNSDDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::SDImageDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::instruments::GOESRInstrumentsDecoderModule);
+    }
+
+    // static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    // {
+    //     if (evt.id == "goes_xrit")
+    //         evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
+    // }
+
+    static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
+    {
+        if (evt.id == "geo_false_color")
+            evt.compositors.push_back(goes::goesFalseColorCompositor);
+        else if (evt.id == "goes_abi_false_color_ir_merge")
+            evt.compositors.push_back(goes::goesFalseColorIRMergeCompositor);
     }
 };
 

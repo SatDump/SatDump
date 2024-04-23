@@ -290,7 +290,7 @@ namespace image
 
     // Append selected file extension
     template <typename T>
-    bool Image<T>::append_ext(std::string *file)
+    bool Image<T>::append_ext(std::string *file, bool prod)
     {
         // Do nothing if there's already an extension
         if (file->find(".png") != std::string::npos ||
@@ -309,7 +309,10 @@ namespace image
         std::string image_format;
         try
         {
-            image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];
+            if(prod)
+                image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
+            else
+                image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];
         }
         catch (std::exception &e)
         {

@@ -290,17 +290,15 @@ namespace satdump
 
             if (!proj::projection_setup(proj.get()) && !proj_err)
             {
-                return [proj](double lat, double lon, int h, int w) mutable -> std::pair<int, int>
+                return [proj, rotate](double lat, double lon, int h, int w) mutable -> std::pair<int, int>
                 {
                     double x, y;
-                    if (proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y))
+                    if (proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
-                    else if (x < 0 || x >= w)
-                        return {-1, -1};
-                    else if (y < 0 || y >= h)
-                        return {-1, -1};
+                    else if(rotate)
+                        return { w - 1 - (int)x, h - 1 - (int)y };
                     else
-                        return {(int)x, (int)y};
+                        return { (int)x, (int)y };
                 };
             }
             else
@@ -314,18 +312,12 @@ namespace satdump
                     double x, y;
                     transform->forward(lon, lat, x, y);
 
-                    if (x < 0 || x >= map_width)
+                    if (x < 0 || x >= map_width || y < 0 || y >= map_height)
                         return {-1, -1};
-                    if (y < 0 || y >= map_height)
-                        return {-1, -1};
-
-                    if (rotate)
-                    {
-                        x = (map_width - 1) - x;
-                        y = (map_height - 1) - y;
-                    }
-
-                    return {x, y};
+                    else if (rotate)
+                        return { map_width - 1 - x, map_height - 1 - y };
+                    else
+                        return { x, y };
                 };
             }
 

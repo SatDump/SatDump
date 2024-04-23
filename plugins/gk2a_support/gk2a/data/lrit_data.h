@@ -7,11 +7,24 @@
 #include <string>
 #include <map>
 #include <memory>
+#include "common/lrit/lrit_file.h"
 
 namespace gk2a
 {
     namespace lrit
     {
+        struct GK2AxRITProductMeta
+        {
+            std::string filename;
+
+            std::string channel;
+            std::string satellite_name;
+            std::string satellite_short_name;
+            time_t scan_time = 0;
+            std::shared_ptr<::lrit::ImageNavigationRecord> image_navigation_record;
+            std::shared_ptr<::lrit::ImageDataFunctionRecord> image_data_function_record;
+        };
+
         class SegmentedLRITImageDecoder
         {
         private:
@@ -27,6 +40,8 @@ namespace gk2a
             bool isComplete();
             image::Image<uint8_t> image;
             std::string image_id = "";
+
+            GK2AxRITProductMeta meta;
         };
 
         enum lrit_image_status
