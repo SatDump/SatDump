@@ -1399,6 +1399,10 @@
                         "draw_shores_overlay": true,
                         "draw_latlon_overlay": true
                     },
+                    "Natural Color": {
+                        "channels": "ch3, ch2, ch1",
+                        "cpp": "msugs_natural_color"
+                    },
                     "Thermal Channel": {
                         "equation": "1-ch9"
                     }
