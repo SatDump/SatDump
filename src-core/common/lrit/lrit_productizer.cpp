@@ -9,10 +9,6 @@
 #include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 namespace lrit
 {
     inline std::string getXRITTimestamp(time_t tim)
@@ -486,14 +482,7 @@ namespace lrit
                                 filecache.erase(v.key());
 
                         if (!filecache.is_null())
-                        {
                             saveJsonFile(file_for_cache, filecache);
-#ifdef _WIN32
-                            int attr = GetFileAttributes(file_for_cache.c_str());
-                            if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0)
-                                SetFileAttributes(file_for_cache.c_str(), attr | FILE_ATTRIBUTE_HIDDEN);
-#endif
-                        }
 
                         delete pro;
                     }
@@ -574,7 +563,7 @@ namespace lrit
             {
                 filename_new = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + "_" + std::to_string(current_iteration++) + ext;
             } while (std::filesystem::exists(directory_path + filename_new));
-            img.save_png(directory_path + filename_new);
+            img.save_img(directory_path + filename_new);
             logger->warn("Image already existed. Written as %s", filename_new.c_str());
         }
         // Otherwise, we can go on as usual and write a proper product.
@@ -639,7 +628,7 @@ namespace lrit
             }
         }
 
-        img.save_png(directory_path + filename);
+        img.save_img(directory_path + filename);
 
         // Attempt to autogen composites
         if (can_make_composites)
