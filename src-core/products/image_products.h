@@ -384,17 +384,6 @@ namespace satdump
     bool image_equation_contains(std::string init, std::string match, int *loc);
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
 
-    inline void dummyCppCompositor(satdump::ImageProducts *img_pro,
-                                   std::vector<image::Image<uint16_t>> &inputChannels,
-                                   std::vector<std::string> channelNumbers,
-                                   std::string cpp_id,
-                                   nlohmann::json vars,
-                                   nlohmann::json offsets_cfg,
-                                   std::vector<double> *final_timestamps = nullptr,
-                                   float *progress = nullptr)
-    {
-    }
-
     struct RequestCppCompositeEvent
     {
         std::string id;
