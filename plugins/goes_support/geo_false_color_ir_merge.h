@@ -52,6 +52,7 @@ namespace goes
             timestamp = img_pro->get_timestamps()[0];
         else if (img_pro->has_product_timestamp()) // Maybe to remove?
             timestamp = img_pro->get_product_timestamp();
+        predict_julian_date_t julian_date = predict_to_julian(timestamp);
 
         img_pro->get_product_timestamp();
         predict_observer_t *observer = predict_create_observer("Main", 0, 0, 0);
@@ -73,7 +74,7 @@ namespace goes
                     observer->longitude = coords.lon * DEG2RAD;
                     observer->latitude = coords.lat * DEG2RAD;
 
-                    predict_observe_sun(observer, predict_to_julian(timestamp), &obs);
+                    predict_observe_sun(observer, julian_date, &obs);
 
                     float val = ((obs.elevation * RAD_TO_DEG) / 10.0);
                     if (val < 0)
