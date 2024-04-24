@@ -89,9 +89,14 @@ namespace goes
                         mcir_v = 1;
                     if (mcir_v < 0)
                         mcir_v = 0;
-                    uint16_t mcir_val0 = channelVals[1] * mcir_v + (img_nightmap.channel(0)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
-                    uint16_t mcir_val1 = channelVals[1] * mcir_v + (img_nightmap.channel(1)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
-                    uint16_t mcir_val2 = channelVals[1] * mcir_v + (img_nightmap.channel(2)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
+
+                    uint16_t mcir_val0 = 0, mcir_val1 = 0, mcir_val2 = 0;
+                    if (map_x != -1 && map_y != -1)
+                    {
+                        mcir_val0 = channelVals[1] * mcir_v + (img_nightmap.channel(0)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
+                        mcir_val1 = channelVals[1] * mcir_v + (img_nightmap.channel(1)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
+                        mcir_val2 = channelVals[1] * mcir_v + (img_nightmap.channel(2)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
+                    }
 
                     output.channel(0)[y * output.width() + x] = (img_lut[0 * lut_size + lut_pos] << 8) * val + mcir_val0 * (1.0 - val);
                     output.channel(1)[y * output.width() + x] = (img_lut[1 * lut_size + lut_pos] << 8) * val + mcir_val1 * (1.0 - val);
