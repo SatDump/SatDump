@@ -225,7 +225,7 @@ namespace image
             lua_utils::bindEquProjType(lua);
 
             lua["has_sat_proj"] = [img_pro]()
-            { return img_pro->has_proj_cfg() && img_pro->has_tle() && img_pro->has_timestamps; };
+            { return img_pro->has_proj_cfg() /*&& img_pro->has_tle() && img_pro->has_timestamps*/; };
             if (final_timestamps != nullptr)
                 lua["get_sat_proj"] = [img_pro, &final_timestamps]()
                 { return satdump::get_sat_proj(img_pro->get_proj_cfg(), img_pro->get_tle(), *final_timestamps, true); };

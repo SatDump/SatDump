@@ -613,40 +613,40 @@
                     },
                     "Clouds Underlay (Merge)": {
                         "channels": "ch4",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/CloudUnderlay.md",
                         "vars": {
                             "minoffset": 0,
                             "scalar": 1.5,
                             "thresold": 0,
-                            "blend": 0,
-                            "invert": 0
+                            "blend": false,
+                            "invert": false
                         },
                         "autogen": false
                     },
                     "Clouds Underlay (Isolate)": {
                         "channels": "ch4",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/CloudUnderlay.md",
                         "vars": {
                             "minoffset": 0,
                             "scalar": 1.5,
                             "thresold": 0.15,
-                            "blend": 0,
-                            "invert": 0
+                            "blend": false,
+                            "invert": false
                         },
                         "autogen": false
                     },
                     "MCIR": {
                         "channels": "cch4",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 1
+                            "blend": true,
+                            "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -657,15 +657,15 @@
                     },
                     "MSA (channel 1)": {
                         "channels": "cch1",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 0
+                            "blend": true,
+                            "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -676,15 +676,15 @@
                     },
                     "MSA (channel 2)": {
                         "channels": "cch2",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 0
+                            "blend": true,
+                            "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1014,14 +1014,14 @@
                     },
                     "MCIR (Uncalibrated)": {
                         "channels": "chb",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 0
+                            "blend": true,
+                            "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1032,14 +1032,14 @@
                     },
                     "MSA (Uncalibrated)": {
                         "channels": "cha",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MSA.md",
                         "vars": {
                             "minoffset": 0,
                             "scalar": 0.95,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 0
+                            "blend": true,
+                            "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1316,15 +1316,15 @@
                     },
                     "MCIR": {
                         "channels": "ch4",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "geo_correct": true,
                         "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 1
+                            "blend": true,
+                            "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1335,15 +1335,15 @@
                     },
                     "MSA": {
                         "channels": "ch1",
-                        "lua": "scripted_compos/underlay_with_clouds.lua",
+                        "cpp": "underlay_with_clouds",
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
                             "minoffset": 0,
                             "scalar": 1,
                             "thresold": 0,
-                            "blend": 1,
-                            "invert": 0
+                            "blend": true,
+                            "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1477,6 +1477,30 @@
                             1,
                             1,
                             1
+                        ]
+                    }
+                }
+            },
+            "ami": {
+                "handler": "image_handler",
+                "name": "AMI",
+                "rgb_composites": {
+                    "MCIR": {
+                        "channels": "cchIR105",
+                        "cpp": "underlay_with_clouds",
+                        "description": "descriptions/MCIR.md",
+                        "vars": {
+                            "minoffset": 0.3,
+                            "scalar": 1.2,
+                            "thresold": 0,
+                            "blend": true,
+                            "invert": true
+                        },
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            0
                         ]
                     }
                 }

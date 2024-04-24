@@ -32,7 +32,6 @@ function process()
     pos = geodetic_coords_t.new()
     for x = 0, width - 1, 1 do
         for y = 0, height - 1, 1 do
-
             if not sat_proj:get_position(x, y, pos) then
                 x2, y2 = equ_proj:forward(pos.lon, pos.lat)
 
@@ -40,6 +39,14 @@ function process()
                     val = 1.0 - ((ch_equal:get((y * width) + x) / 65535.0) - cfg_offset) * cfg_scalar
                 else
                     val = ((ch_equal:get((y * width) + x) / 65535.0) - cfg_offset) * cfg_scalar
+                end
+
+                if val > 1 then
+                    val = 1
+                end
+
+                if val < 0 then
+                    val = 0
                 end
 
                 mappos = y2 * img_background:width() + x2

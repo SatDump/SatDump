@@ -54,7 +54,7 @@ namespace satdump
                 images[c].filename.find(".j2k") == std::string::npos &&
                 images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
-            else if(!d_no_not_save_images)
+            else if (!d_no_not_save_images)
                 logger->trace("Image format was specified in product call. Not supposed to happen!");
 
             contents["images"][c]["file"] = images[c].filename;
@@ -770,30 +770,37 @@ namespace satdump
 
         image::Image<uint16_t> rgb_composite;
 
-        if (cfg.cpp != "")
+        try
         {
-            std::vector<std::function<image::Image<uint16_t>(
-                satdump::ImageProducts *,
-                std::vector<image::Image<uint16_t>> &,
-                std::vector<std::string>,
-                std::string,
-                nlohmann::json,
-                nlohmann::json,
-                std::vector<double> *,
-                float *)>>
-                compositors;
-            satdump::eventBus->fire_event<RequestCppCompositeEvent>({cfg.cpp, compositors, &product});
-            if (compositors.size() > 0)
-                rgb_composite = compositors[0](&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
+            if (cfg.cpp != "")
+            {
+                std::vector<std::function<image::Image<uint16_t>(
+                    satdump::ImageProducts *,
+                    std::vector<image::Image<uint16_t>> &,
+                    std::vector<std::string>,
+                    std::string,
+                    nlohmann::json,
+                    nlohmann::json,
+                    std::vector<double> *,
+                    float *)>>
+                    compositors;
+                satdump::eventBus->fire_event<RequestCppCompositeEvent>({cfg.cpp, compositors, &product});
+                if (compositors.size() > 0)
+                    rgb_composite = compositors[0](&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
+                else
+                    logger->error("Could not get a C++ compositor with ID " + cfg.cpp);
+            }
+            else if (cfg.lua != "")
+                rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
+            else if (cfg.lut != "")
+                rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
             else
-                logger->error("Could not get a C++ compositor with ID " + cfg.cpp);
+                rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
         }
-        else if (cfg.lua != "")
-            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
-        else if (cfg.lut != "")
-            rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
-        else
-            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
+        catch (std::exception &e)
+        {
+            logger->error("Error making composite! %s", e.what());
+        }
 
         if (cfg.despeckle)
             rgb_composite.kuwahara_filter();

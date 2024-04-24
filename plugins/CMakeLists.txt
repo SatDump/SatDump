@@ -393,3 +393,10 @@ option(PLUGIN_BOCHUM_SUPPORT "Enable Bochum-specific plugin" OFF)
 if(PLUGIN_BOCHUM_SUPPORT)
     add_subdirectory(bochum_support)
 endif()
+
+# ######################
+option(PLUGIN_STANDARD_CPP_COMPOS "Enable Standard C++ Composites plugin" OFF)
+
+if(PLUGIN_STANDARD_CPP_COMPOS OR PLUGINS_ALL)
+    add_subdirectory(standard_cpp_compos_support)
+endif()
