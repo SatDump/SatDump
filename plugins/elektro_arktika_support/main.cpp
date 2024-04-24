@@ -6,6 +6,7 @@
 #include "elektro_arktika/lrit/module_elektro_lrit_data_decoder.h"
 
 #include "msugs_natural_color.h"
+#include "msugs_color_ir_merge.h"
 
 class ElektroArktikaSupport : public satdump::Plugin
 {
@@ -31,6 +32,8 @@ public:
     {
         if (evt.id == "msugs_natural_color")
             evt.compositors.push_back(elektro::msuGsNaturalColorCompositor);
+        else if (evt.id == "msugs_color_ir_merge")
+            evt.compositors.push_back(elektro::msuGsFalseColorIRMergeCompositor);
     }
 };
 

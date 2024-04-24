@@ -51,7 +51,7 @@ public:
 
     static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
     {
-        if (evt.id == "geo_false_color")
+        if (evt.id == "goes_abi_false_color")
             evt.compositors.push_back(goes::goesFalseColorCompositor);
         else if (evt.id == "goes_abi_false_color_ir_merge")
             evt.compositors.push_back(goes::goesFalseColorIRMergeCompositor);

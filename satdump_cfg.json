@@ -1403,6 +1403,11 @@
                         "channels": "ch3, ch2, ch1",
                         "cpp": "msugs_natural_color"
                     },
+                    "Color IR Merge": {
+                        "channels": "ch3, ch2, ch1, ch4",
+                        "cpp": "msugs_color_ir_merge",
+                        "autogen": false // Needs to be optimized...
+                    },
                     "Thermal Channel": {
                         "equation": "1-ch9"
                     }
@@ -1414,7 +1419,7 @@
                 "rgb_composites": {
                     "GEO False Color": {
                         "channels": "ch2, ch13",
-                        "cpp": "geo_false_color",
+                        "cpp": "goes_abi_false_color",
                         "vars": {
                             "lut": "goes/abi/wxstar/lut.png"
                         },
@@ -1466,7 +1471,7 @@
                 "rgb_composites": {
                     "GEO False Color (WIP)": {
                         "channels": "ch3, ch13",
-                        "cpp": "geo_false_color",
+                        "cpp": "goes_abi_false_color",
                         "draw_map_overlay": true,
                         "borders_color": [
                             1,
