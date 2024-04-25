@@ -61,8 +61,8 @@ namespace demod
         is_oqpsk = constellation_type == "oqpsk";
         if (is_oqpsk)
         {
-            MIN_SPS = 2; // 1.6;
-            MAX_SPS = 2; // 2.4;
+            MIN_SPS = 1.6;
+            MAX_SPS = 2.4;
         }
 
         // Window Name in the UI
