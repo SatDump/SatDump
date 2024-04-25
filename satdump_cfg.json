@@ -1446,6 +1446,50 @@
                         ],
                         "autogen": false // Needs to be optimized...
                     },
+                    "Fog Brightness Temperature Difference": {
+                    "channels": "cch7, cch13",
+                    "remove_background": true,
+                    "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch7": {
+                                "type": "temperature",
+					            "min": 0,
+					            "max": 500
+                            },
+				    "cch13": {
+					"type": "temperature",
+					"min": 0,
+					"max": 500
+				}
+			},
+			"lua": "scripted_compos/fog_btd.lua",
+                        "lut": "lut/cal/fog_btd.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": false
+                    },
+		    "\"Clean\" Longwave IR Window Band": {
+                        "channels": "cch13",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+			"calib_cfg": {
+				"cch13": {
+					"type": "temperature",
+					"min": 163,
+					"max": 330
+				}
+			},
+                        "lut": "lut/cal/abi_ir_11-14.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": false
+                    },
                     "Night Microphysics (WIP)": {
                         "equation": "cch15-cch13,cch13-cch7,cch13",
                         "remove_background": false,
