@@ -32,7 +32,8 @@ namespace cpp_compos
         uint16_t *channelVals = new uint16_t[inputChannels.size()];
 
         geodetic::geodetic_coords_t coords;
-        auto projFunc = satdump::get_sat_proj(img_pro->get_proj_cfg(), img_pro->get_tle(), *final_timestamps, true);
+        auto proj_cfg = img_pro->get_proj_cfg();
+        auto projFunc = satdump::get_sat_proj(proj_cfg, img_pro->get_tle(), *final_timestamps, true);
 
         float cfg_offset = vars["minoffset"];
         float cfg_scalar = vars["scalar"];
@@ -48,11 +49,19 @@ namespace cpp_compos
         ch_equal.equalize();
         float val = 0;
 
+        float proj_x_scale = 1.0;
+        if (proj_cfg.contains("width"))
+            proj_x_scale = proj_cfg["width"].get<double>() / double(rgb_output.width());
+
+        float proj_y_scale = 1.0;
+        if (proj_cfg.contains("height"))
+            proj_y_scale = proj_cfg["height"].get<double>() / double(rgb_output.height());
+
         for (size_t x = 0; x < rgb_output.width(); x++)
         {
             for (size_t y = 0; y < rgb_output.height(); y++)
             {
-                if (!projFunc->get_position(x, y, coords))
+                if (!projFunc->get_position(x * proj_x_scale, y * proj_y_scale, coords))
                 {
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 
