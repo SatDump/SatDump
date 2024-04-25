@@ -388,37 +388,29 @@ namespace lrit
                     satdump::ImageCompositeCfg cfg = compo.value();
                     if (satdump::check_composite_from_product_can_be_made(*pro, cfg))
                     {
-                        logger->trace("Trying to make composite " + compo.key());
-
-                        // Load ONLY the images needed for this
+                        // Load ONLY the images needed for these composites
                         std::string str_to_find_channels = cfg.equation;
                         if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
                             str_to_find_channels = cfg.channels;
+
                         for (int i = 0; i < (int)pro->images.size(); i++)
                         {
                             auto &img = pro->images[i];
                             std::string equ_str = "ch" + img.channel_name;
-
                             int loc;
-                            if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc))
+
+                            if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() == 0)
                             {
                                 logger->trace("Loading image channel " + img.channel_name);
-                                if (img.image.size() == 0)
-                                    img.image.load_img(pro_path + "/" + img.filename);
-                            }
-                            else
-                            {
-                                img.image.clear();
+                                img.image.load_img(pro_path + "/" + img.filename);
                             }
                         }
-
-                        // Generate
-                        pro->contents["autocomposite_cache_enabled"] = true;
-                        satdump::process_image_products((satdump::Products *)pro, pro_path);
                     }
-                    // else
-                    //     logger->trace("Can't make composite " + compo.key());
                 }
+
+                // Generate all composites possible
+                pro->contents["autocomposite_cache_enabled"] = true;
+                satdump::process_image_products((satdump::Products*)pro, pro_path);
             }
         }
         catch (std::exception &e)
@@ -475,7 +467,6 @@ namespace lrit
 
                         // Delete very old metadata
                         time_t ctime = time(0);
-                    recheck:
                         for (auto &v : filecache.items())
                             if (ctime - v.value()["time"].get<time_t>() > 3600 * 24)
                                 filecache.erase(v.key());
