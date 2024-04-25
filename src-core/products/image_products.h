@@ -130,6 +130,14 @@ namespace satdump
             return true;
         }
 
+        bool can_remove_background()
+        {
+            if (!has_proj_cfg() || !get_proj_cfg().contains("type"))
+                return false;
+            std::string type = get_proj_cfg()["type"];
+            return type == "equirec" || type == "stereo" || type == "utm" || type == "geos" || type == "tpers" || type == "webmerc";
+        }
+
         /// CALIBRATION
 
         enum calib_type_t
@@ -296,12 +304,14 @@ namespace satdump
     struct ImageCompositeCfg
     {
         std::string equation;
+        bool median_blur = false;
         bool despeckle = false;
         bool equalize = false;
         bool individual_equalize = false;
         bool invert = false;
         bool normalize = false;
         bool white_balance = false;
+        bool remove_background = false;
         bool apply_lut = false;
 
         std::string lut = "";
@@ -316,6 +326,7 @@ namespace satdump
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
     {
+        j["median_blur"] = v.median_blur;
         j["equation"] = v.equation;
         j["despeckle"] = v.despeckle;
         j["equalize"] = v.equalize;
@@ -323,6 +334,7 @@ namespace satdump
         j["invert"] = v.invert;
         j["normalize"] = v.normalize;
         j["white_balance"] = v.white_balance;
+        j["remove_background"] = v.remove_background;
         j["apply_lut"] = v.apply_lut;
 
         j["lut"] = v.lut;
@@ -363,6 +375,8 @@ namespace satdump
         if (j.contains("calib_cfg"))
             v.calib_cfg = j["calib_cfg"];
 
+        if (j.contains("median_blur"))
+            v.median_blur = j["median_blur"].get<bool>();
         if (j.contains("despeckle"))
             v.despeckle = j["despeckle"].get<bool>();
         if (j.contains("equalize"))
@@ -375,6 +389,8 @@ namespace satdump
             v.normalize = j["normalize"].get<bool>();
         if (j.contains("white_balance"))
             v.white_balance = j["white_balance"].get<bool>();
+        if (j.contains("remove_background"))
+            v.remove_background = j["remove_background"].get<bool>();
         if (j.contains("apply_lut"))
             v.apply_lut = j["apply_lut"].get<bool>();
 

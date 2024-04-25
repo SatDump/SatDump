@@ -39,6 +39,7 @@ namespace satdump
         size_t last_height = 0;
 
         // Other controls
+        bool remove_background = false;
         bool median_blur = false;
         bool despeckle = false;
         bool rotate_image = false;

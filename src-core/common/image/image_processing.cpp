@@ -76,7 +76,7 @@ namespace image
                 break;
 
             T *data_ptr = channel(c);
-            int nlevels = std::numeric_limits<T>::max() + 1;
+            constexpr int nlevels = std::numeric_limits<T>::max() + 1;
             int size = d_width * d_height * (per_channel ? 1 : d_channels);
 
             // Init histogram buffer
@@ -386,7 +386,7 @@ namespace image
     template <typename T>
     void Image<T>::white_balance(float percentileValue)
     {
-        float maxVal = std::numeric_limits<T>::max();
+        constexpr float maxVal = std::numeric_limits<T>::max();
 
         T *sorted_array = new T[d_height * d_width];
 
@@ -421,7 +421,7 @@ namespace image
     {
         float brightness_v = brightness / 2.0f;
         float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);
-        const float max = std::numeric_limits<T>::max();
+        constexpr float max = std::numeric_limits<T>::max();
 
         for (size_t i = 0; i < data_size; i++)
         {

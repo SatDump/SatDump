@@ -1419,6 +1419,7 @@
                 "rgb_composites": {
                     "GEO False Color": {
                         "channels": "ch2, ch13",
+                        "remove_background": false,
                         "cpp": "goes_abi_false_color",
                         "vars": {
                             "lut": "goes/abi/wxstar/lut.png"
@@ -1432,6 +1433,7 @@
                     },
                     "GEO False Color IR Merge": {
                         "channels": "ch2, ch13",
+                        "remove_background": false,
                         "cpp": "goes_abi_false_color_ir_merge",
                         "draw_map_overlay": true,
                         "vars": {
@@ -1446,6 +1448,7 @@
                     },
                     "Night Microphysics (WIP)": {
                         "equation": "cch15-cch13,cch13-cch7,cch13",
+                        "remove_background": false,
                         "individual_equalize": true,
                         "white_balance": true
                     },

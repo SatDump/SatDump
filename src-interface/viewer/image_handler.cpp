@@ -1,5 +1,6 @@
 #include "image_handler.h"
 #include "common/calibration.h"
+#include "common/image/image_background.h"
 
 #include "imgui/pfd/pfd_utils.h"
 #include "imgui/imgui_internal.h"
@@ -144,6 +145,9 @@ namespace satdump
                 current_image.channel(2)[i] = lut_image.channel(2)[val];
             }
         }
+
+        if (remove_background)
+            image::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
 
         int pre_corrected_width = current_image.width();
         int pre_corrected_height = current_image.height();
@@ -305,12 +309,14 @@ namespace satdump
                     cfg.vars = rgb_compo_cfg.vars;
                     cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
 
-                    despeckle = rgb_compo_cfg.despeckle;
+                    // median_blur = rgb_compo_cfg.median_blur;
+                    // despeckle = rgb_compo_cfg.despeckle;
                     equalize_image = rgb_compo_cfg.equalize;
                     individual_equalize_image = rgb_compo_cfg.individual_equalize;
                     invert_image = rgb_compo_cfg.invert;
                     normalize_image = rgb_compo_cfg.normalize;
                     white_balance_image = rgb_compo_cfg.white_balance;
+                    remove_background = rgb_compo_cfg.remove_background;
                     using_lut = rgb_compo_cfg.apply_lut;
 
                     rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
@@ -545,11 +551,11 @@ namespace satdump
             if (ImGui::Checkbox("Rotate", &rotate_image))
                 asyncUpdate();
 
-            if (products->can_geometrically_correct())
-            {
-                if (ImGui::Checkbox("Correct", &correct_image))
-                    asyncUpdate();
-            }
+            if (products->can_geometrically_correct() && ImGui::Checkbox("Correct", &correct_image))
+                asyncUpdate();
+
+            if (products->can_remove_background() && ImGui::Checkbox("Remove Background", &remove_background))
+                asyncUpdate();
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
                 asyncUpdate();

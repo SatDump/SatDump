@@ -2,8 +2,9 @@
 #include "logger.h"
 #include "core/config.h"
 #include "common/image/composite.h"
-#include "resources.h"
+#include "common/image/image_background.h"
 #include "common/image/earth_curvature.h"
+#include "resources.h"
 #include <filesystem>
 #include "libs/sol2/sol.hpp"
 #include "common/lua/lua_utils.h"
@@ -802,6 +803,9 @@ namespace satdump
             logger->error("Error making composite! %s", e.what());
         }
 
+        if (cfg.median_blur)
+            rgb_composite.median_blur();
+
         if (cfg.despeckle)
             rgb_composite.kuwahara_filter();
 
@@ -819,6 +823,9 @@ namespace satdump
 
         if (cfg.normalize)
             rgb_composite.normalize();
+
+        if (cfg.remove_background)
+            image::remove_background(rgb_composite, product.get_proj_cfg(), progress);
 
         if (cfg.apply_lut)
         {
