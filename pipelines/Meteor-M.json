@@ -220,8 +220,8 @@
                 "psk_demod": {
                     "constellation": "oqpsk",
                     "symbolrate": 80e3,
-                    "rrc_alpha": 0.6,
-                    "pll_bw": 0.0008
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
                 }
             },
             "cadu": {
