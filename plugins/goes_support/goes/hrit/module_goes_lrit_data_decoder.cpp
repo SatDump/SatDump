@@ -17,6 +17,7 @@ namespace goes
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
+                                                                                                                                                max_fill_lines(parameters["max_fill_lines"].get<int>()),
                                                                                                                                                 productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
             fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
@@ -155,11 +156,10 @@ namespace goes
                             size_t max_fill = image_structure_record.columns_count * image_structure_record.lines_count + file.total_header_length -
                                 (file.lrit_data.size() + output_size);
 
-                            // Interpolate missing data if the user selected the option and it is below the threshold; otherwise
-                            // fill with black
+                            // Repeat next line if the user selected the fill missing option and it is below the threshold; otherwise fill with black
                             if (to_fill <= max_fill)
                             {
-                                if (fill_missing) // && diff <= max_fill_lines; //TODO
+                                if (fill_missing && diff <= max_fill_lines)
                                 {
                                     for(uint16_t i = 0; i < diff - 1; i++)
                                         file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
@@ -167,8 +167,6 @@ namespace goes
                                 else
                                     file.lrit_data.insert(file.lrit_data.end(), to_fill, 0);
                             }
-                            else
-                                logger->trace("Suspected segment corruption! Packet counter jumped by %hd", diff);
                         }
 
                         file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);

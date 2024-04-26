@@ -20,14 +20,15 @@ namespace goes
             std::atomic<uint64_t> filesize;
             std::atomic<uint64_t> progress;
 
-            bool fill_missing;
-
             bool write_images;
             bool write_emwin;
             bool write_messages;
             bool write_dcs;
             bool write_unknown;
             bool write_lrit;
+
+            bool fill_missing;
+            int max_fill_lines;
 
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 

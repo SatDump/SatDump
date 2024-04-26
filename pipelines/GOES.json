@@ -152,6 +152,7 @@
             },
             "products": {
                 "goes_lrit_data_decoder": {
+                    "max_fill_lines": 50,
                     "write_images": true,
                     "write_emwin": true,
                     "write_messages": true,
