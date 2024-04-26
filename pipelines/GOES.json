@@ -111,7 +111,7 @@
                 "type": "bool",
                 "value": false,
                 "name": "Fill Missing Data",
-                "description": "corrects black lines\ncaused by interference or signal drop-outs"
+                "description": "Corrects black lines caused by\ninterference or signal drop-outs"
             },
             "write_dcs": {
                 "type": "bool",
