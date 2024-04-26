@@ -19,6 +19,7 @@ namespace goes
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
                                                                                                                                                 productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
+            fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
             write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
         }
@@ -121,10 +122,13 @@ namespace goes
             };
 
             lrit_demux.onProcessData =
-                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt) -> bool
+                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
             {
                 if (file.custom_flags[RICE_COMPRESSED])
                 {
+                    if (fill_missing && bad_crc)
+                        return false;
+
                     SZ_com_t &rice_parameters = rice_parameters_all[file.filename];
 
                     if (rice_parameters.bits_per_pixel == 0)
@@ -135,7 +139,41 @@ namespace goes
                     size_t output_size = decompression_buffer.size();
                     int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size() - 2, &rice_parameters);
                     if (r == AEC_OK)
+                    {
+                        // Check to see if there are missing lines
+                        uint16_t diff;
+                        if (file.last_tracked_counter < pkt.header.packet_sequence_count)
+                            diff = pkt.header.packet_sequence_count - file.last_tracked_counter;
+                        else
+                            diff = 16384 - file.last_tracked_counter + pkt.header.packet_sequence_count;
+
+                        // There are missing lines
+                        if (diff > 1)
+                        {
+                            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                            size_t to_fill = rice_parameters.pixels_per_scanline * (diff - 1);
+                            size_t max_fill = image_structure_record.columns_count * image_structure_record.lines_count + file.total_header_length -
+                                (file.lrit_data.size() + output_size);
+
+                            // Interpolate missing data if the user selected the option and it is below the threshold; otherwise
+                            // fill with black
+                            if (to_fill <= max_fill)
+                            {
+                                if (fill_missing) // && diff <= max_fill_lines; //TODO
+                                {
+                                    for(uint16_t i = 0; i < diff - 1; i++)
+                                        file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                                }
+                                else
+                                    file.lrit_data.insert(file.lrit_data.end(), to_fill, 0);
+                            }
+                            else
+                                logger->trace("Suspected segment corruption! Packet counter jumped by %hd", diff);
+                        }
+
                         file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                        file.last_tracked_counter = pkt.header.packet_sequence_count;
+                    }
                     else
                         logger->warn("Rice decompression failed. This may be an issue!");
 

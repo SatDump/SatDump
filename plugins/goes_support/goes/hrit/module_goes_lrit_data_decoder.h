@@ -20,6 +20,8 @@ namespace goes
             std::atomic<uint64_t> filesize;
             std::atomic<uint64_t> progress;
 
+            bool fill_missing;
+
             bool write_images;
             bool write_emwin;
             bool write_messages;

@@ -148,6 +148,7 @@ namespace lrit
     struct LRITFile
     {
         int vcid = -1;
+        int last_tracked_counter = -1;
 
         bool file_in_progress = false;
         bool header_parsed = false;
