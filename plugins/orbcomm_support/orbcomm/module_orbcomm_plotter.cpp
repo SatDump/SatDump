@@ -164,7 +164,7 @@ namespace orbcomm
                         const double VAL_20_BITS = 1048576.0;
                         const double MAX_V_SAT = 7700.0;
 
-                        uint32_t values[0];
+                        uint32_t values[6];
                         repackBytesTo20bits(&frm[i * 12 + 7], 15, values);
 
                         long x_raw = values[5];
