@@ -49,6 +49,9 @@ namespace satdump
         bool correct_image = false;
         bool normalize_image = false;
         bool white_balance_image = false;
+        bool manual_brightness_contrast = false;
+        float manual_brightness_contrast_brightness = 0.0;
+        float manual_brightness_contrast_constrast = 0.0;
 
         // GUI
         bool range_window = false;

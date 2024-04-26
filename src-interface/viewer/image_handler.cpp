@@ -14,6 +14,7 @@
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "main_ui.h"
+#include "common/image/brightness_contrast.h"
 
 #include "common/image/image_meta.h"
 #include "common/projection/reprojector.h"
@@ -128,6 +129,9 @@ namespace satdump
 
         if (normalize_image)
             current_image.normalize();
+
+        if (manual_brightness_contrast)
+            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast, current_image.channels());
 
         // TODO : Cleanup?
         if (using_lut)
@@ -579,6 +583,16 @@ namespace satdump
             {
                 asyncUpdate();
                 updateScaleImage();
+            }
+
+            if (ImGui::Checkbox("Manual Brightness/Constrast", &manual_brightness_contrast))
+                asyncUpdate();
+            if (manual_brightness_contrast)
+            {
+                if (ImGui::SliderFloat("Brightness", &manual_brightness_contrast_brightness, -2, 2))
+                    asyncUpdate();
+                if (ImGui::SliderFloat("Contrast", &manual_brightness_contrast_constrast, -2, 2))
+                    asyncUpdate();
             }
 
             bool save_disabled = is_updating || rgb_processing;
