@@ -237,7 +237,7 @@ namespace orbcomm
 #endif
 
                         all_ephem_points_mtx.lock();
-                        all_ephem_points.push_back({ephem_time, scid, az, el});
+                        all_ephem_points.push_back({ephem_time, scid, (float)az, (float)el});
 
                         int contained = -1;
                         for (int c = 0; c < last_ephems.size(); c++)
@@ -245,9 +245,9 @@ namespace orbcomm
                                 contained = c;
 
                         if (contained != -1)
-                            last_ephems[contained] = OrbComEphem{ephem_time, scid, az, el};
+                            last_ephems[contained] = OrbComEphem{ephem_time, scid, (float)az, (float)el};
                         else
-                            last_ephems.push_back(OrbComEphem{ephem_time, scid, az, el});
+                            last_ephems.push_back(OrbComEphem{ephem_time, scid, (float)az, (float)el});
 
                         std::sort(last_ephems.begin(), last_ephems.end(), [](const auto &v1, const auto &v2)
                                   { return v1.time > v2.time; });
@@ -380,7 +380,7 @@ namespace orbcomm
             }
             all_ephem_points_mtx.unlock();
 
-            ImGui::Dummy({d_pplot_size, d_pplot_size});
+            ImGui::Dummy({(float)d_pplot_size, (float)d_pplot_size});
         }
         ImGui::EndGroup();
 
