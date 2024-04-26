@@ -17,8 +17,10 @@ namespace goes
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
+                                                                                                                                                max_fill_lines(parameters["max_fill_lines"].get<int>()),
                                                                                                                                                 productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
+            fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
             write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
         }
@@ -121,10 +123,13 @@ namespace goes
             };
 
             lrit_demux.onProcessData =
-                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt) -> bool
+                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
             {
                 if (file.custom_flags[RICE_COMPRESSED])
                 {
+                    if (fill_missing && bad_crc)
+                        return false;
+
                     SZ_com_t &rice_parameters = rice_parameters_all[file.filename];
 
                     if (rice_parameters.bits_per_pixel == 0)
@@ -135,7 +140,38 @@ namespace goes
                     size_t output_size = decompression_buffer.size();
                     int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size() - 2, &rice_parameters);
                     if (r == AEC_OK)
+                    {
+                        // Check to see if there are missing lines
+                        uint16_t diff;
+                        if (file.last_tracked_counter < pkt.header.packet_sequence_count)
+                            diff = pkt.header.packet_sequence_count - file.last_tracked_counter;
+                        else
+                            diff = 16384 - file.last_tracked_counter + pkt.header.packet_sequence_count;
+
+                        // There are missing lines
+                        if (diff > 1)
+                        {
+                            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                            size_t to_fill = rice_parameters.pixels_per_scanline * (diff - 1);
+                            size_t max_fill = image_structure_record.columns_count * image_structure_record.lines_count + file.total_header_length -
+                                (file.lrit_data.size() + output_size);
+
+                            // Repeat next line if the user selected the fill missing option and it is below the threshold; otherwise fill with black
+                            if (to_fill <= max_fill)
+                            {
+                                if (fill_missing && diff <= max_fill_lines)
+                                {
+                                    for(uint16_t i = 0; i < diff - 1; i++)
+                                        file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                                }
+                                else
+                                    file.lrit_data.insert(file.lrit_data.end(), to_fill, 0);
+                            }
+                        }
+
                         file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                        file.last_tracked_counter = pkt.header.packet_sequence_count;
+                    }
                     else
                         logger->warn("Rice decompression failed. This may be an issue!");
 
@@ -160,6 +196,19 @@ namespace goes
                     if (primary_header.file_type_code == 0 &&
                         (image_header.compression_flag == 0 || (image_header.compression_flag == 1 && noaa_header.noaa_specific_compression == 1)))
                     {
+                        if (fill_missing && file.lrit_data.size() > primary_header.total_header_length + image_header.columns_count)
+                        {
+                            // Fill remaining data with last line
+                            uint32_t to_fill = (image_header.lines_count * image_header.columns_count -
+                                (file.lrit_data.size() - file.total_header_length)) / image_header.columns_count;
+                            if (to_fill > 0 && to_fill <= max_fill_lines)
+                            {
+                                file.lrit_data.reserve(file.lrit_data.size() + to_fill * image_header.columns_count);
+                                for (int i = 0; i < to_fill; i++)
+                                    file.lrit_data.insert(file.lrit_data.end(), file.lrit_data.end() - image_header.columns_count, file.lrit_data.end());
+                            }
+                        }
+
                         uint32_t target_size = image_header.lines_count * image_header.columns_count + primary_header.total_header_length;
                         if (file.lrit_data.size() != target_size)
                             file.lrit_data.resize(target_size, 0);

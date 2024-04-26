@@ -27,6 +27,9 @@ namespace goes
             bool write_unknown;
             bool write_lrit;
 
+            bool fill_missing;
+            int max_fill_lines;
+
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;

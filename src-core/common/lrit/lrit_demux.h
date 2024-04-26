@@ -22,14 +22,14 @@ namespace lrit
     private:
         void processLRITHeader(LRITFile &file, ccsds::CCSDSPacket &pkt);
         void parseHeader(LRITFile &file);
-        void processLRITData(LRITFile &file, ccsds::CCSDSPacket &pkt);
+        void processLRITData(LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc = false);
         void finalizeLRITData(LRITFile &file);
 
     public:
         std::function<void(LRITFile &)> onParseHeader =
             [](LRITFile &) -> void {};
-        std::function<bool(LRITFile &, ccsds::CCSDSPacket &)> onProcessData =
-            [](LRITFile &, ccsds::CCSDSPacket &) -> bool
+        std::function<bool(LRITFile &, ccsds::CCSDSPacket &, bool)> onProcessData =
+            [](LRITFile &, ccsds::CCSDSPacket &, bool) -> bool
         { return true; };
         std::function<void(LRITFile&)> onFinalizeData =
             [](LRITFile&) -> void {};
