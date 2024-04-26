@@ -34,10 +34,35 @@
         ],
         "work": {
             "baseband": {},
-            "soft": {
+            "frm": {
                 "orbcomm_stx_auto_demod": {
                     "frequency": 137.5e6
                 }
+            }
+        }
+    },
+    "orbcomm_stx_auto_plotter": {
+        "name": "Orbcomm STX Auto Plotter",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "frm": {
+                "orbcomm_stx_auto_demod": {
+                    "frequency": 137.5e6
+                }
+            },
+            "products": {
+                "orbcomm_plotter": {}
             }
         }
     }

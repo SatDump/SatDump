@@ -4,6 +4,7 @@
 
 #include "orbcomm/module_orbcomm_stx_demod.h"
 #include "orbcomm/module_orbcomm_stx_auto_demod.h"
+#include "orbcomm/module_orbcomm_plotter.h"
 
 class OrbcommSupport : public satdump::Plugin
 {
@@ -22,6 +23,7 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, orbcomm::OrbcommSTXDemodModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, orbcomm::OrbcommSTXAutoDemodModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, orbcomm::OrbcommPlotterModule);
     }
 };
 

@@ -55,7 +55,11 @@ namespace orbcomm
             for (int fi = 0; fi < cnt; fi++)
             {
                 uint8_t *frm = &frms[fi * 600];
-                data_out.write((char *)frm, 600);
+
+                if (output_data_type == DATA_FILE)
+                    data_out.write((char *)frm, 600);
+                else
+                    output_fifo->write((uint8_t *)frm, 600);
 
                 for (int i = 0; i < 50; i++)
                 {
@@ -102,6 +106,7 @@ namespace orbcomm
         add_stx_link(137.2875e6);
         add_stx_link(137.3125e6);
         add_stx_link(137.25e6);
+        add_stx_link(137.46e6);
         add_stx_link(137.7375e6);
         add_stx_link(137.8e6);
         add_stx_link(137.6625e6);
@@ -193,9 +198,11 @@ namespace orbcomm
         // Stop
         BaseDemodModule::stop();
         splitter->stop();
+        logger->trace("Splitter stopped");
 
         for (auto &freq : stx_link_lst)
             freq.second.demod->stop();
+        logger->trace("Demodulators stopped");
 
         if (output_data_type == DATA_FILE)
             data_out.close();
@@ -214,9 +221,46 @@ namespace orbcomm
         ImGui::BeginGroup();
         {
             stx_link_lst_mtx.lock();
-            for (auto &freq : stx_link_lst)
+            if (ImGui::BeginTable("##orbcommsatellitesdemodtable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
-                ImGui::Text("Freq : %s - %f - %f - SNR %f,%d", format_notated(freq.first, "Hz").c_str(), freq.first, d_center_frequency - freq.first, freq.second.demod->getSNR(), freq.second.demod->getDefState());
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Frequency");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("Freq (Raw)");
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Text("Offset");
+                ImGui::TableSetColumnIndex(3);
+                ImGui::Text("SNR");
+                ImGui::TableSetColumnIndex(4);
+                ImGui::Text("State");
+
+                for (auto &freq : stx_link_lst)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::TextColored(style::theme.green, "%s", format_notated(freq.first, "Hz").c_str());
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%f", freq.first);
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("%f", d_center_frequency - freq.first);
+                    ImGui::TableSetColumnIndex(3);
+                    if (freq.second.demod->getSNR() > 10)
+                        ImGui::TextColored(style::theme.green, "%f", freq.second.demod->getSNR());
+                    else if (freq.second.demod->getSNR() > 2)
+                        ImGui::TextColored(style::theme.orange, "%f", freq.second.demod->getSNR());
+                    else
+                        ImGui::TextColored(style::theme.red, "%f", freq.second.demod->getSNR());
+                    ImGui::TableSetColumnIndex(4);
+                    if (freq.second.demod->getDefState() == 8)
+                        ImGui::TextColored(style::theme.green, "SYNCED");
+                    else if (freq.second.demod->getDefState() == 6)
+                        ImGui::TextColored(style::theme.orange, "SYNCING");
+                    else
+                        ImGui::TextColored(style::theme.red, "NOSYNC");
+                }
+
+                ImGui::EndTable();
             }
             stx_link_lst_mtx.unlock();
         }

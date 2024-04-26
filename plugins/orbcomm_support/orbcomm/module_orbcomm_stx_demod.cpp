@@ -114,7 +114,12 @@ namespace orbcomm
                     frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
 
             if (framen > 0)
-                data_out.write((char *)frames, framen * (ORBCOMM_STX_FRM_SIZE / 8));
+            {
+                if (output_data_type == DATA_FILE)
+                    data_out.write((char *)frames, framen * (ORBCOMM_STX_FRM_SIZE / 8));
+                else
+                    output_fifo->write((uint8_t *)frames, framen * (ORBCOMM_STX_FRM_SIZE / 8));
+            }
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();

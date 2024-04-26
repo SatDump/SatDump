@@ -59,5 +59,7 @@ namespace orbcomm
         rrc->stop();
         rec->stop();
         def->stop();
+        def->output_stream->stopReader();
+        def->output_stream->stopWriter();
     }
 }
