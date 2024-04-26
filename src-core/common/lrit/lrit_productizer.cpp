@@ -378,6 +378,7 @@ namespace lrit
             // Generate composites
             if (instrument_viewer_settings.contains("rgb_composites"))
             {
+                bool can_make_composites = false;
                 for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
                 {
                     if (pro->contents.contains("autocomposite_cache_done"))
@@ -389,6 +390,7 @@ namespace lrit
                     if (satdump::check_composite_from_product_can_be_made(*pro, cfg))
                     {
                         // Load ONLY the images needed for these composites
+                        can_make_composites = true;
                         std::string str_to_find_channels = cfg.equation;
                         if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
                             str_to_find_channels = cfg.channels;
@@ -408,9 +410,12 @@ namespace lrit
                     }
                 }
 
-                // Generate all composites possible
-                pro->contents["autocomposite_cache_enabled"] = true;
-                satdump::process_image_products((satdump::Products*)pro, pro_path);
+                // Generate all composites currently possible
+                if (can_make_composites)
+                {
+                    pro->contents["autocomposite_cache_enabled"] = true;
+                    satdump::process_image_products((satdump::Products*)pro, pro_path);
+                }
             }
         }
         catch (std::exception &e)
