@@ -58,7 +58,7 @@ public:
 
 #ifdef _WIN32
         int timeout = 60000;
-        const char *timeout_ptr = (const char*) &timeout;
+        const char *timeout_ptr = (const char *)&timeout;
 #else
         struct timeval timeout;
         timeout.tv_sec = 60;
@@ -152,7 +152,7 @@ public:
                 fd_set socket_set;
                 FD_ZERO(&socket_set);
                 FD_SET(clientsockfd, &socket_set);
-                if(select(clientsockfd + 1, &socket_set, nullptr, nullptr, &timeout) == 0) //Prevent timeout from hanging loop
+                if (select(clientsockfd + 1, &socket_set, nullptr, nullptr, &timeout) == 0) // Prevent timeout from hanging loop
                     continue;
 
                 int lpkt_size = sread(buffer, 4);
@@ -187,10 +187,8 @@ public:
 
                 callback_func(buffer + 4, expected_pkt_size - 4);
             }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         delete[] buffer;
     }
@@ -270,12 +268,12 @@ public:
 
 #ifdef _WIN32
         int timeout = 10000;
-        const char* timeout_ptr = (const char*)&timeout;
+        const char *timeout_ptr = (const char *)&timeout;
 #else
         struct timeval timeout;
         timeout.tv_sec = 10;
         timeout.tv_usec = 0;
-        struct timeval* timeout_ptr = &timeout;
+        struct timeval *timeout_ptr = &timeout;
 #endif
         if (setsockopt(clientsockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
             logger->trace("Problem setting send timeout on TCP socket; ignoring");
