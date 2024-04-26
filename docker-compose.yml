@@ -1,13 +1,32 @@
-version: '3.8'
 services:
   satdump:
     build:
       context: .
     image: satdump:latest
-    command: 
+    command: bash
+    init: true
     network_mode: host
+    working_dir: '/srv'
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
     device_cgroup_rules:
       - 'c 189:* rwm'
     devices:
       - '/dev/bus/usb'
+    volumes:
+      - type: 'tmpfs'
+        target: '/tmp'
+#      - type: 'bind'  # map working dir to host
+#        source: './srv'
+#        target: '/srv'
+#      - type: 'bind'  # for X11 usage
+#        source: '/tmp/.X11-unix'
+#        target: '/tmp/.X11-unix'
+      - type: 'volume'  # persistent storage of configs
+        source: 'satdump-config'
+        target: '/root/.config/'
     restart: 'unless-stopped'
+    stop_grace_period: 3s
+
+volumes:
+  satdump-config:

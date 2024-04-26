@@ -207,3 +207,18 @@ Supported SDR devices are :
 - AirspyHF
 - LimeSDR Mini
 - HackRF
+
+
+### Docker
+
+Building and running under docker is a nice way to separate the build environment and libraries from the host OS.
+The build process is a multistage build that uses two images, one with the -dev packages and another for the runtime.
+This means that the runtime image can be kept smaller, although the disk space is still needed to complete the build.
+
+```bash
+# Build the images with compose, 8 parallel
+docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
+
+# Launch a shell inside the container/service
+docker compose run --rm -it satdump
+```

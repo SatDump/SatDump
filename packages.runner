@@ -3,13 +3,17 @@ libairspy0
 libairspyhf1
 libbladerf2
 libfftw3-bin
+libglfw3
 libhackrf0
 libiio0
+libjemalloc2
 liblimesuite22.09-1
 libnng1
 libomp5-14
+libopengl0
 libpng16-16
 librtlsdr0
+libtiff6
 libuhd4.3.0
 libvolk2.5
 libzstd1

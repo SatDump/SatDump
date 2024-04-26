@@ -8,13 +8,16 @@ libairspyhf-dev
 libbladerf-dev
 libboost-dev
 libfftw3-dev
+libglfw3-dev
 libhackrf-dev
 libiio-dev
+libjemalloc-dev
 liblimesuite-dev
 libnng-dev
 libomp-dev
 libpng-dev
 librtlsdr-dev
+libtiff-dev
 libuhd-dev
 libvolk2-dev
 libzstd-dev
