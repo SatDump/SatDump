@@ -11,6 +11,9 @@ namespace image
         float brightness_v = brightness / 2.0f;
         float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);
 
+        if (channelCount == 4)
+            channelCount = 3;
+
         for (size_t i = 0; i < image.height() * image.width() * channelCount; i++)
         {
             float v = float(image[i]) / scale;

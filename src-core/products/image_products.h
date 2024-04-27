@@ -313,6 +313,8 @@ namespace satdump
         bool white_balance = false;
         bool remove_background = false;
         bool apply_lut = false;
+        float manual_brightness = 0;
+        float manual_contrast = 0;
 
         std::string lut = "";
         std::string channels = "";
@@ -336,6 +338,8 @@ namespace satdump
         j["white_balance"] = v.white_balance;
         j["remove_background"] = v.remove_background;
         j["apply_lut"] = v.apply_lut;
+        j["manual_brightness"] = v.manual_brightness;
+        j["manual_contrast"] = v.manual_contrast;
 
         j["lut"] = v.lut;
         j["channels"] = v.channels;
@@ -393,6 +397,10 @@ namespace satdump
             v.remove_background = j["remove_background"].get<bool>();
         if (j.contains("apply_lut"))
             v.apply_lut = j["apply_lut"].get<bool>();
+        if (j.contains("manual_brightness"))
+            v.manual_brightness = j["manual_brightness"].get<float>();
+        if (j.contains("manual_contrast"))
+            v.manual_contrast = j["manual_contrast"].get<float>();
 
         if (j.contains("description"))
             v.description_markdown = j["description"].get<std::string>();

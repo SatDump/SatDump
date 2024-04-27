@@ -11,6 +11,7 @@
 #include "common/calibration.h"
 #include "core/plugin.h"
 #include "common/utils.h"
+#include "common/image/brightness_contrast.h"
 
 #ifdef __ANDROID__
 #include <android_native_app_glue.h>
@@ -826,6 +827,9 @@ namespace satdump
 
         if (cfg.remove_background)
             image::remove_background(rgb_composite, product.get_proj_cfg(), progress);
+
+        if (cfg.manual_brightness != 0 || cfg.manual_contrast != 0)
+            image::brightness_contrast(rgb_composite, cfg.manual_brightness, cfg.manual_contrast, rgb_composite.channels());
 
         if (cfg.apply_lut)
         {
