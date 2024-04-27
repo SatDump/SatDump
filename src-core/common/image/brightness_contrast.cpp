@@ -6,7 +6,7 @@ namespace image
     template <typename T>
     void brightness_contrast(Image<T> &image, float brightness, float contrast, int channelCount)
     {
-        float scale = std::numeric_limits<T>::max() - 1;
+        constexpr float scale = std::numeric_limits<T>::max() - 1;
 
         float brightness_v = brightness / 2.0f;
         float slant = tanf((contrast + 1.0f) * 0.78539816339744830961566084581987572104929234984378f);

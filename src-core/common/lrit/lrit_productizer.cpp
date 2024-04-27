@@ -381,6 +381,9 @@ namespace lrit
                 bool can_make_composites = false;
                 for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
                 {
+                    if (compo.value().contains("autogen"))
+                        if (compo.value()["autogen"].get<bool>() == false)
+                            continue;
                     if (pro->contents.contains("autocomposite_cache_done"))
                         if (pro->contents["autocomposite_cache_done"].contains(compo.key()))
                             continue;
