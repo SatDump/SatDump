@@ -1419,7 +1419,7 @@
                 "rgb_composites": {
                     "GEO False Color": {
                         "channels": "ch2, ch13",
-                        "remove_background": false,
+                        "remove_background": true,
                         "cpp": "goes_abi_false_color",
                         "vars": {
                             "lut": "goes/abi/wxstar/lut.png"
@@ -1433,7 +1433,6 @@
                     },
                     "GEO False Color IR Merge": {
                         "channels": "ch2, ch13",
-                        "remove_background": false,
                         "cpp": "goes_abi_false_color_ir_merge",
                         "draw_map_overlay": true,
                         "vars": {
@@ -1447,22 +1446,22 @@
                         "autogen": false // Needs to be optimized...
                     },
                     "Fog Brightness Temperature Difference": {
-                    "channels": "cch7, cch13",
-                    "remove_background": true,
-                    "draw_map_overlay": true,
+                        "channels": "cch7, cch13",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch7": {
                                 "type": "temperature",
-					            "min": 0,
-					            "max": 500
+                                "min": 0,
+                                "max": 500
                             },
-				    "cch13": {
-					"type": "temperature",
-					"min": 0,
-					"max": 500
-				}
-			},
-			"lua": "scripted_compos/fog_btd.lua",
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 500
+                            }
+                        },
+                        "lua": "scripted_compos/fog_btd.lua",
                         "lut": "lut/cal/fog_btd.png",
                         "borders_color": [
                             1,
@@ -1471,130 +1470,118 @@
                         ],
                         "autogen": false
                     },
-		    "\"Clean\" Longwave IR Window Band": {
+                    "Clean Longwave IR Window Band": {
                         "channels": "cch13",
-                        "remove_background": true,
                         "draw_map_overlay": true,
-			"calib_cfg": {
-				"cch13": {
-					"type": "temperature",
-					"min": 163,
-					"max": 330
-				}
-			},
+                        "calib_cfg": {
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
                         "lut": "lut/cal/abi_ir_11-14.png",
                         "borders_color": [
                             1,
                             1,
                             1
-                        ],
-                        "autogen": true
+                        ]
                     },
-			"Infrared Longwave Window Band": {
+                    "Infrared Longwave Window Band": {
                         "channels": "cch14",
-                        "remove_background": true,
                         "draw_map_overlay": true,
-			"calib_cfg": {
-				"cch14": {
-					"type": "temperature",
-					"min": 163,
-					"max": 330
-				}
-			},
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
                         "lut": "lut/cal/abi_ir_11-14.png",
                         "borders_color": [
                             1,
                             1,
                             1
-                        ],
-                        "autogen": false
+                        ]
                     },
-		    "\"Dirty\" Longwave Window": {
+                    "Dirty Longwave Window": {
                         "channels": "cch15",
-                        "remove_background": true,
                         "draw_map_overlay": true,
-			"calib_cfg": {
-				"cch15": {
-					"type": "temperature",
-					"min": 163,
-					"max": 330
-				}
-			},
+                        "calib_cfg": {
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
                         "lut": "lut/cal/abi_ir_15.png",
                         "borders_color": [
                             1,
                             1,
                             1
-                        ],
-                        "autogen": false
+                        ]
                     },
-		    "Mid-level Tropospheric Water Vapor": {
+                    "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
-                        "remove_background": true,
                         "draw_map_overlay": true,
-			"calib_cfg": {
-				"cch9": {
-					"type": "temperature",
-					"min": 180,
-					"max": 280
-				}
-			},
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 280
+                            }
+                        },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
-                        ],
-                        "autogen": false
+                            0,
+                            0,
+                            0
+                        ]
                     },
-		    "Upper-Level Tropospheric Water Vapor": {
-                        "channels": "cch8",
-                        "remove_background": true,
+                    "Upper-Level Tropospheric Water Vapor": {
+                    "channels": "cch8",
                         "draw_map_overlay": true,
-			"calib_cfg": {
-				"cch8": {
-					"type": "temperature",
-					"min": 180,
-					"max": 280
-				}
-			},
+                        "calib_cfg": {
+                            "cch8": {
+                            "type": "temperature",
+                                "min": 180,
+                                "max": 280
+                            }
+                        },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
-                        ],
-                        "autogen": false
+                            0,
+                            0,
+                            0
+                        ]
                     },
-		    "\"Shortwave Window\" Band": {
+                    "Shortwave Window Band": {
                         "channels": "cch7",
-                        "remove_background": true,
                         "draw_map_overlay": true,
-			"calib_cfg": {
-				"cch7": {
-					"type": "temperature",
-					"min": 190,
-					"max": 400
-				}
-			},
+                        "calib_cfg": {
+                            "cch7": {
+                                "type": "temperature",
+                                "min": 190,
+                                "max": 400
+                            }
+                        },
                         "lut": "lut/cal/abi_ir_7.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
-                        ],
-                        "autogen": false
+                            0,
+                            0,
+                            0
+                        ]
                     },
                     "Night Microphysics (WIP)": {
                         "equation": "cch15-cch13,cch13-cch7,cch13",
-                        "remove_background": false,
                         "individual_equalize": true,
                         "white_balance": true
                     },
                     "789": {
                         "equation": "ch7,ch8,ch9",
                         "individual_equalize": true,
-                        "normalize": true
+                        "normalize": true,
+                        "autogen": false
                     },
                     "7_13_15": {
                         "equation": "ch7,ch13,ch15",
@@ -1603,7 +1590,8 @@
                         //
                         "draw_map_overlay": true,
                         "draw_shores_overlay": true,
-                        "draw_latlon_overlay": true
+                        "draw_latlon_overlay": true,
+                        "autogen": false
                     }
                 }
             },
