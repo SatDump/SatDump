@@ -1572,10 +1572,32 @@
                             0
                         ]
                     },
-                    "Night Microphysics (WIP)": {
-                        "equation": "cch15-cch13,cch13-cch7,cch13",
-                        "individual_equalize": true,
-                        "white_balance": true
+                    "Nighttime Microphysics": {
+                        "equation": "(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.45838323353)/0.29401197604",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "calib_cfg": {
+                            "cch7": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            },
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            },
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        }
                     },
                     "789": {
                         "equation": "ch7,ch8,ch9",
