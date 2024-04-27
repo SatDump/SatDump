@@ -282,8 +282,9 @@ namespace goes
                         }
 
                         hasImage = true;
+                        int vcid = decMap.first > 63 ? 60 : decMap.first; // Himawari images use VCID > 63 internally
 
-                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
+                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(vcid)).c_str()))
                         {
                             ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
                             ImGui::SameLine();

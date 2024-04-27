@@ -267,17 +267,24 @@ namespace goes
                 {
                     SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
 
-                    if (all_wip_images.count(file.vcid) == 0)
-                        all_wip_images.insert({file.vcid, std::make_unique<wip_images>()});
+                    // Internal "VCID" to use. Due to interleaving of channel segments on the Himawari relay,
+                    // we need to use adjusted VCIDs to keep one channel's segment from prematurely ending
+                    // another in-progress channel. Use VCID 70+ as these channels should not be used OTA.
+                    int vcid = file.vcid;
+                    if (noaa_header.product_id == ID_HIMAWARI)
+                        vcid = 70 + lmeta.channel;
 
-                    std::unique_ptr<wip_images> &wip_img = all_wip_images[file.vcid];
+                    if (all_wip_images.count(vcid) == 0)
+                        all_wip_images.insert({vcid, std::make_unique<wip_images>()});
+
+                    std::unique_ptr<wip_images> &wip_img = all_wip_images[vcid];
 
                     wip_img->imageStatus = RECEIVING;
 
-                    if (segmentedDecoders.count(file.vcid) == 0)
-                        segmentedDecoders.insert({file.vcid, SegmentedLRITImageDecoder()});
+                    if (segmentedDecoders.count(vcid) == 0)
+                        segmentedDecoders.insert({vcid, SegmentedLRITImageDecoder()});
 
-                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[file.vcid];
+                    SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[vcid];
 
                     if (lmeta.image_navigation_record)
                         if (noaa_header.product_id != ID_HIMAWARI)
