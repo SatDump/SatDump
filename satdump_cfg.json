@@ -1572,6 +1572,31 @@
                             0
                         ]
                     },
+                    "Day Cloud Convection": {
+                        "equation": "cch2^0.58823529411,cch2^0.58823529411,1-cch13",
+                        "equalize": true,
+                        "white_balance": true,
+                        "draw_map_overlay": true,
+                        "remove_background": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "calib_cfg": {
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 100
+                            },
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 203,
+                                "max": 323
+                            }
+                        },
+                        "autogen": false
+                    },
                     "Nighttime Microphysics": {
                         "equation": "(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.45838323353)/0.29401197604",
                         "remove_background": true,
@@ -1630,6 +1655,31 @@
                             1,
                             1
                         ]
+                    },
+                    "Day Cloud Convection": {
+                        "equation": "cch3^0.58823529411,cch3^0.58823529411,1-cch13",
+                        "equalize": true,
+                        "white_balance": true,
+                        "draw_map_overlay": true,
+                        "remove_background": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "calib_cfg": {
+                            "cch3": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 100
+                            },
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 203,
+                                "max": 323
+                            }
+                        },
+                        "autogen": false
                     }
                 }
             },
