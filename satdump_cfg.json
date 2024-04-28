@@ -1472,6 +1472,7 @@
                     },
                     "Clean Longwave IR Window Band": {
                         "channels": "cch13",
+                        "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch13": {
@@ -1480,7 +1481,7 @@
                                 "max": 330
                             }
                         },
-                        "lut": "lut/cal/abi_ir_11-14.png",
+                        "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
                             1,
                             1,
@@ -1489,6 +1490,7 @@
                     },
                     "Infrared Longwave Window Band": {
                         "channels": "cch14",
+                        "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch14": {
@@ -1497,7 +1499,7 @@
                                 "max": 330
                             }
                         },
-                        "lut": "lut/cal/abi_ir_11-14.png",
+                        "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
                             1,
                             1,
@@ -1506,6 +1508,7 @@
                     },
                     "Dirty Longwave Window": {
                         "channels": "cch15",
+                        "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch15": {
@@ -1514,7 +1517,7 @@
                                 "max": 330
                             }
                         },
-                        "lut": "lut/cal/abi_ir_15.png",
+                        "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
                             1,
                             1,
