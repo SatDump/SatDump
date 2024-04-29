@@ -1526,6 +1526,7 @@
                     },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
+                        "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch9": {
@@ -1536,13 +1537,14 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            0,
+                            1,
                             0,
                             0
                         ]
                     },
                     "Upper-Level Tropospheric Water Vapor": {
-                    "channels": "cch8",
+                        "channels": "cch8",
+                        "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch8": {
@@ -1553,7 +1555,7 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            0,
+                            1,
                             0,
                             0
                         ]
