@@ -286,9 +286,9 @@ namespace goes
 
                     SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[vcid];
 
-                    if (lmeta.image_navigation_record)
-                        if (noaa_header.product_id != ID_HIMAWARI)
-                            lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number) * image_structure_record.lines_count;
+                    if (lmeta.image_navigation_record && noaa_header.product_id != ID_HIMAWARI)
+                        lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset +
+                            segment_id_header.segment_sequence_number * (segment_id_header.max_row / segment_id_header.max_segment);
 
                     uint16_t image_identifier = segment_id_header.image_identifier;
                     if (noaa_header.product_id == ID_HIMAWARI) // Image IDs are invalid for Himawari; make one up
