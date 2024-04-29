@@ -475,9 +475,13 @@ namespace lrit
 
                         // Delete very old metadata
                         time_t ctime = time(0);
-                        for (auto &v : filecache.items())
-                            if (ctime - v.value()["time"].get<time_t>() > 3600 * 24)
-                                filecache.erase(v.key());
+                        for (auto it = filecache.begin(); it != filecache.end();)
+                        {
+                            if (ctime - it.value()["time"].get<time_t>() > 3600 * 24)
+                                it = filecache.erase(it);
+                            else
+                                ++it;
+                        }
 
                         if (!filecache.is_null())
                             saveJsonFile(file_for_cache, filecache);
