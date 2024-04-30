@@ -44,10 +44,9 @@ namespace satdump
 
         for (int i = 0; i < (int)products->images.size(); i++)
         {
-            auto img = products->images[i];
+            auto &img = products->images[i];
             select_image_str += "Channel " + img.channel_name + '\0';
             channel_numbers.push_back(img.channel_name);
-            images_obj.push_back(img.image);
             disaplay_ranges.push_back(products->get_calibration_default_radiance_range(i));
         }
 
