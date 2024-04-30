@@ -76,12 +76,12 @@ namespace goes
         void GVARImageDecoderModule::writeImages(GVARImages &images, std::string directory)
         {
             const time_t timevalue = images.imageTime;
-            std::tm *timeReadable = gmtime(&timevalue);
-            std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                    (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                    (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                    (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                    (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+            std::tm timeReadable = *gmtime(&timevalue);
+            std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                    (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                    (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                    (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                    (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
 
             // Get stats. This is done over a lot of data to allow decoding at low SNR
             int sat_number = images.sat_number;
@@ -135,14 +135,14 @@ namespace goes
             images.image3.crop(0, 0, ir1_width, ir1_height);
             images.image4.crop(0, 0, ir1_width, ir1_height);
 
-            images.image5.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1")).c_str(), false);
-            images.image1.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2")).c_str());
-            images.image2.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3")).c_str());
-            images.image3.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4")).c_str());
-            images.image4.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5")).c_str());
+            images.image5.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "1")).c_str(), false);
+            images.image1.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "2")).c_str());
+            images.image2.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "3")).c_str());
+            images.image3.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "4")).c_str());
+            images.image4.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "5")).c_str());
 
             // Let plugins do something
-            satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, timevalue, disk_folder});
+            satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, &timeReadable, timevalue, disk_folder});
 
             // We are done with all channels but 1 and 4. Clear others to free up memory!
             images.image1.clear();
@@ -196,10 +196,10 @@ namespace goes
                 hueTuning.hue[image::HUE_RANGE_MAGENTA] = 133.0 / 180.0;
                 hueTuning.overlap = 100.0 / 100.0;
                 image::hue_saturation(compoImage, hueTuning);
-                compoImage.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC")).c_str());
+                compoImage.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "FC")).c_str());
 
                 // Let plugins do something
-                satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, timevalue, disk_folder});
+                satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, &timeReadable, timevalue, disk_folder});
             }
             else
             {
