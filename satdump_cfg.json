@@ -1633,7 +1633,8 @@
                                 "min": 163,
                                 "max": 330
                             }
-                        }
+                        },
+                        "autogen": false
                     },
                     "789": {
                         "equation": "ch7,ch8,ch9",
