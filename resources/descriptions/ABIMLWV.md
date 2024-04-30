@@ -1,6 +1,6 @@
 # Mid-level water vapor - Band 9
 
-"The 6.9 µm “Mid-level water vapor” band is one of three water vapor bands on the ABI, and is used for tracking middle-tropospheric winds, identifying jet streams, forecasting hurricane track and mid-latitude storm motion, monitoring severe weather potential, estimating mid-level moisture (for legacy vertical moisture profiles) and identifying regions where turbulence might exist. Surface features are usually not apparent in this band. Brightness Temperatures show cooling because of absorption of energy at 6.9 µm by water vapor." Bachmeier et al. [1].
+"The 6.9 µm “Mid-level water vapor” band is one of three water vapor bands on the ABI and is used for tracking middle-tropospheric winds, identifying jet streams, forecasting hurricane track and mid-latitude storm motion, monitoring severe weather potential, estimating mid-level moisture (for legacy vertical moisture profiles) and identifying regions where turbulence might exist. Surface features are usually not apparent in this band. Brightness Temperatures show cooling because of absorption of energy at 6.9 µm by water vapor." Bachmeier et al. [1].
 
 ### Intended usage
 
