@@ -671,6 +671,9 @@ namespace satdump
             }
         }
 
+        // Free up memory
+        std::vector<TempBeforeSort>().swap(channel_indexes_locations);
+
         if (channel_indexes.size() == 0 || a_channel_is_empty)
         {
             logger->error("One or more of the required channels are missing!");
@@ -803,6 +806,9 @@ namespace satdump
         {
             logger->error("Error making composite! %s", e.what());
         }
+
+        // Free up memory
+        std::vector<image::Image<uint16_t>>().swap(images_obj);
 
         if (cfg.median_blur)
             rgb_composite.median_blur();
