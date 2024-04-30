@@ -1482,6 +1482,7 @@
                             }
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
+                        "description": "descriptions/ABICleanLWIR.md",
                         "borders_color": [
                             1,
                             1,
