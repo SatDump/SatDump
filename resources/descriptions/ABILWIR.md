@@ -1,6 +1,6 @@
 # Infrared Longwave Window - Band 14
 
-Described in *Band 14 - ABI Quick Information Guide* by Bachmeier et al. [1], even though the 11.2 µm (Band 14) band is a window channel, at this wavelength, the water vapor absorbs energy, affecting the brightness temperatures.
+As described in *Band 14 - ABI Quick Information Guide* by Bachmeier et al. [1], even though the 11.2 µm (Band 14) band is a window channel, at this wavelength, the water vapor absorbs energy, affecting the brightness temperatures.
 
 In general, the brightness temperatures will be cooler than those seen in the 10.3 µm window. This is, by part, due to the amount of moisture in the atmosphere.
 
