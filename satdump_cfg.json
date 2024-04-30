@@ -1529,6 +1529,7 @@
                     },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
+                        "description": "descriptions/ABIMLWV.md",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
@@ -1547,6 +1548,7 @@
                     },
                     "Upper-Level Tropospheric Water Vapor": {
                         "channels": "cch8",
+                        "description": "descriptions/ABIULWV.md",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
@@ -1565,6 +1567,7 @@
                     },
                     "Shortwave Window Band": {
                         "channels": "cch7",
+                        "description": "descriptions/ABISW.md",
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch7": {
