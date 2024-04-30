@@ -1472,6 +1472,7 @@
                     },
                     "Clean Longwave IR Window Band": {
                         "channels": "cch13",
+                        "description": "descriptions/ABICleanLWIR.md",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
@@ -1482,7 +1483,6 @@
                             }
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
-                        "description": "descriptions/ABICleanLWIR.md",
                         "borders_color": [
                             1,
                             1,
@@ -1491,6 +1491,7 @@
                     },
                     "Infrared Longwave Window Band": {
                         "channels": "cch14",
+                        "description": "descriptions/ABILWIR.md",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
@@ -1509,6 +1510,7 @@
                     },
                     "Dirty Longwave Window": {
                         "channels": "cch15",
+                        "description": "descriptions/ABIDirtyLWIR.md",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
