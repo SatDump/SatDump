@@ -333,9 +333,8 @@ namespace goes
                     }
                 }
                 if (crc_valid && imageTime == 0)
-                { // If this header passed CRC, and there is no image date set, then use the time from the header. This is a fallback in case no Block0's are found.
-                    tm time = block_header.time_code_bcd;
-                    imageTime = mktime(&time) + time.tm_gmtoff;
+                {                                           // If this header passed CRC, and there is no image date set, then use the time from the header. This is a fallback in case no Block0's are found.
+                    imageTime = block_header.time_code_bcd; //+ time.tm_gmtoff;
                 }
 
                 // Is this imagery? Blocks 1 to 10 are imagery
@@ -490,14 +489,12 @@ namespace goes
                     Block0Header block_header0 = *((Block0Header *)&frame[8 + 30 * 3]);
                     if (computeXOR((uint8_t *)&block_header0, 278) == 0xff)
                     { // Basic XOR passed. Will only detect single bit errors. Not foolproof.
-                        tm block0_current_time = block_header0.TCURR;
-                        tm block0_image_time = block_header0.CIFST;
-                        time_t current_time = mktime(&block0_current_time);
-                        time_t image_time = mktime(&block0_image_time);
+                        time_t current_time = block_header0.TCURR;
+                        time_t image_time = block_header0.CIFST;
                         float time_diff = difftime(current_time, image_time);
                         if (time_diff < 3600 and time_diff > -60) // Sanity Check.
                         {                                         // Image start time and current header time is within one hour, set image time.
-                            image_Time.push_back(mktime(&block0_image_time) + block0_image_time.tm_gmtoff);
+                            image_Time.push_back(block_header0.CIFST /*+ block0_image_time.tm_gmtoff*/);
                         }
                     }
                 }

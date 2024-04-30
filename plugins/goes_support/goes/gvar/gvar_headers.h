@@ -9,12 +9,35 @@
 #include <arpa/inet.h> // for ntohs() etc.
 #endif
 #include <stdint.h>
+#include <ctime>
+
+#ifdef _WIN32
+extern "C" char *strptime(const char *s,
+                          const char *f,
+                          struct tm *tm)
+{
+    // Isn't the C++ standard lib nice? std::get_time is defined such that its
+    // format parameters are the exact same as strptime. Of course, we have to
+    // create a string stream first, and imbue it with the current C locale, and
+    // we also have to make sure we return the right things if it fails, or
+    // if it succeeds, but this is still far simpler an implementation than any
+    // of the versions in any of the C standard libraries.
+    std::istringstream input(s);
+    input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
+    input >> std::get_time(tm, f);
+    if (input.fail())
+    {
+        return nullptr;
+    }
+    return (char *)(s + input.tellg());
+}
+#endif
 
 enum gvar_product_id
 {
-    NO_DATA,
-    AAA_IR_DATA,
-    AAA_VISIBLE_DATA,
+    GVAR_NO_DATA,
+    GVAR_AAA_IR_DATA,
+    GVAR_AAA_VISIBLE_DATA,
     GVAR_IMAGER_DOCUMENATION,
     GVAR_IMAGER_IR_DATA,
     GVAR_IMAGER_VISIBLE_DATA,
@@ -23,16 +46,16 @@ enum gvar_product_id
     GVAR_COMPENSATION_DATA,
     GVAR_TELEMTRY_STATISTICS,
     GVAR_AUX_TEXT,
-    GIMTACTS_TEXT,
-    SPS_TEXT,
-    AAA_SOUNDING_PRODUCTS,
+    GVAR_GIMTACTS_TEXT,
+    GVAR_SPS_TEXT,
+    GVAR_AAA_SOUNDING_PRODUCTS,
     GVAR_ECAL_DATA,
     GVAR_SPACELOOK_DATA,
     GVAR_BB_DATA,
     GVAR_CALIBRATION_COEFFICIENTS,
     GVAR_VISIBLE_NLUTS,
     GVAR_STAR_SENSE_DATA,
-    IMAGER_FACTORY_COEFFICIENTS
+    GVAR_IMAGER_FACTORY_COEFFICIENTS
 };
 
 #ifdef _WIN32
@@ -140,22 +163,25 @@ public:
     date_t() : be_val_({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
     {
     }
-    // Transparently cast to tm
-    operator tm() const
+    // Transparently cast to time_t
+    operator time_t() const
     {
-        tm r = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        tm r;
+        memset(&r, 0, sizeof(tm));
         r.tm_hour = be_val_.HOURS10 * 10 + be_val_.HOURS1;
         r.tm_min = be_val_.MINUTES10 * 10 + be_val_.MINUTES1;
         r.tm_sec = be_val_.SECONDS10 * 10 + be_val_.SECONDS1;
         r.tm_year = (be_val_.YEAR1000 * 1000 + be_val_.YEAR100 * 100 + be_val_.YEAR10 * 10 + be_val_.YEAR1) - 1900;
         r.tm_yday = (be_val_.DOY100 * 100 + be_val_.DOY10 * 10 + be_val_.DOY1) - 1;
-        r.tm_zone = "GMT";
-        // Now to get day/month
+
+        //  Now to get day/month
         char d[30];
         strftime(d, 30, "%Y-%j %H:%M:%S %Z", &r);
         strptime(d, "%Y-%j %H:%M:%S %Z", &r);
 
-        return r;
+        logger->critical("%d %d", r.tm_hour, r.tm_year);
+
+        return mktime_utc(&r);
     }
 
 private:
