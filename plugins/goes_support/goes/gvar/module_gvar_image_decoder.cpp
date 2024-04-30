@@ -492,8 +492,8 @@ namespace goes
                         time_t current_time = block_header0.TCURR;
                         time_t image_time = block_header0.CIFST;
                         float time_diff = difftime(current_time, image_time);
-                        if (time_diff < 3600 and time_diff > -60) // Sanity Check.
-                        {                                         // Image start time and current header time is within one hour, set image time.
+                        if (time_diff < 3600 && time_diff > -60) // Sanity Check.
+                        {                                        // Image start time and current header time is within one hour, set image time.
                             image_Time.push_back(block_header0.CIFST /*+ block0_image_time.tm_gmtoff*/);
                         }
                     }
