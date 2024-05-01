@@ -15,7 +15,7 @@ namespace dsp
     {
         std::string sink_type;
         std::string name;
-        uint64_t unique_id;
+        std::string unique_id;
     };
 
     class DSPSampleSink
@@ -24,7 +24,7 @@ namespace dsp
         std::shared_ptr<dsp::stream<complex_t>> input_stream;
         nlohmann::json d_settings;
         uint64_t d_frequency;
-        uint64_t d_sdr_id;
+        std::string d_sdr_id;
 
     public:
         virtual void open() = 0;                                                                      // Open the device, sink, etc, but don't start the stream yet

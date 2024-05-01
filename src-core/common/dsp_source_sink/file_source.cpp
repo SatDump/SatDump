@@ -246,7 +246,7 @@ std::vector<dsp::SourceDescriptor> FileSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"file", "File Source", 0, false});
+    results.push_back({"file", "File Source", "0", false});
 
     return results;
 }

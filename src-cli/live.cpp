@@ -118,7 +118,7 @@ int main_live(int argc, char *argv[])
         uint64_t frequency;
         uint64_t timeout;
         std::string handler_id;
-        uint64_t hdl_dev_id = 0;
+        std::string hdl_dev_id = 0;
 
         try
         {
@@ -127,7 +127,7 @@ int main_live(int argc, char *argv[])
             timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
             handler_id = parameters["source"].get<std::string>();
             if (parameters.contains("source_id"))
-                hdl_dev_id = parameters["source_id"].get<uint64_t>();
+                hdl_dev_id = parameters["source_id"].get<std::string>();
         }
         catch (std::exception &e)
         {
@@ -155,18 +155,7 @@ int main_live(int argc, char *argv[])
             {
                 if (parameters.contains("source_id"))
                 {
-#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
-                    char cmp_buff1[100];
-                    char cmp_buff2[100];
-
-                    snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
-                    std::string cmp1 = cmp_buff1;
-                    snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
-                    std::string cmp2 = cmp_buff2;
-                    if (cmp1 == cmp2)
-#else
                     if (hdl_dev_id == src.unique_id)
-#endif
                     {
                         selected_src = src;
                         src_found = true;

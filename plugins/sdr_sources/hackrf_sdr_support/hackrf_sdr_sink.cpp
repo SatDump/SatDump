@@ -114,8 +114,7 @@ void HackRFSink::open()
         15000000,
         20000000,
         24000000,
-        28000000
-    };
+        28000000};
 
     // Init UI stuff
     bandwidth_option_str = samplerate_option_str = samplerate_option_str_exp = "";
@@ -132,9 +131,7 @@ void HackRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
     DSPSampleSink::start(stream);
 
 #ifndef __ANDROID__
-    std::stringstream ss;
-    ss << std::hex << d_sdr_id;
-    if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
+    if (hackrf_open_by_serial(d_sdr_id.c_str(), &hackrf_dev_obj) != 0)
         throw satdump_exception("Could not open HackRF device!");
 #else
     int vid, pid;
@@ -250,25 +247,25 @@ std::vector<dsp::SinkDescriptor> HackRFSink::getAvailableSinks()
 #ifndef __ANDROID__
     hackrf_device_list_t *devlist = hackrf_device_list();
 
-    for (int i = 0; i < devlist->devicecount; i++)
+    if (devlist != nullptr)
     {
-        if (devlist->serial_numbers[i] == nullptr)
-            results.push_back({ "hackrf", "HackRF One [In Use]", 0 });
-        else
+        for (int i = 0; i < devlist->devicecount; i++)
         {
-            std::stringstream ss;
-            uint64_t id = 0;
-            ss << devlist->serial_numbers[i];
-            ss >> std::hex >> id;
-            ss << devlist->serial_numbers[i];
-            results.push_back({ "hackrf", "HackRF One " + ss.str().substr(16, 16), id });
+            if (devlist->serial_numbers[i] == nullptr)
+                results.push_back({"hackrf", "HackRF One [In Use]", 0});
+            else
+            {
+                results.push_back({"hackrf", "HackRF One " + std::string(devlist->serial_numbers[i]), std::string(devlist->serial_numbers[i])});
+            }
         }
+
+        hackrf_device_list_free(devlist);
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path) != -1)
-        results.push_back({"hackrf", "HackRF One USB", 0});
+        results.push_back({"hackrf", "HackRF One USB", "0"});
 #endif
 
     return results;

@@ -185,7 +185,7 @@ nlohmann::json SDRPlaySource::get_settings()
 
 void SDRPlaySource::open()
 {
-    sdrplay_dev = devices_addresses[d_sdr_id];
+    sdrplay_dev = devices_addresses[std::stoi(d_sdr_id)];
 
     sdrplay_dev.tuner = sdrplay_api_Tuner_A;
     sdrplay_dev.rspDuoMode = sdrplay_api_RspDuoMode_Single_Tuner;
@@ -466,7 +466,7 @@ std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()
         else if (devices_addresses[i].hwVer == SDRPLAY_RSPdx_ID)
             results.push_back({"sdrplay", "RSPdx " + ss.str(), i});
         else
-            results.push_back({"sdrplay", "Unknown RSP " + ss.str(), i});
+            results.push_back({"sdrplay", "Unknown RSP " + ss.str(), std::to_string(i)});
     }
 
     return results;

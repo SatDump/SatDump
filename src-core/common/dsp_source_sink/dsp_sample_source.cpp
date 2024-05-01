@@ -3,6 +3,8 @@
 
 #include "file_source.h"
 
+#include "logger.h"
+
 namespace dsp
 {
     std::map<std::string, RegisteredSource> dsp_sources_registry;

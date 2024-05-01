@@ -87,7 +87,7 @@ void MiriSdrSource::start()
 {
     DSPSampleSource::start();
 #ifndef __ANDROID__
-    if (mirisdr_open(&mirisdr_dev_obj, d_sdr_id) != 0)
+    if (mirisdr_open(&mirisdr_dev_obj, std::stoull(d_sdr_id)) != 0)
         throw satdump_exception("Could not open MiriSDR device!");
 #else
     int vid, pid;
@@ -214,13 +214,13 @@ std::vector<dsp::SourceDescriptor> MiriSdrSource::getAvailableSources()
     for (int i = 0; i < c; i++)
     {
         const char *name = mirisdr_get_device_name(i);
-        results.push_back({"mirisdr", std::string(name) + " #" + std::to_string(i), uint64_t(i)});
+        results.push_back({"mirisdr", std::string(name) + " #" + std::to_string(i), std::to_string(i)});
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, MIRISDR_USB_VID_PID, path) != -1)
-        results.push_back({"mirisdr", "MiriSDR USB", 0});
+        results.push_back({"mirisdr", "MiriSDR USB", "0"});
 #endif
 
     return results;

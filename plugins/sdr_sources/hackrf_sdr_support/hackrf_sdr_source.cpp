@@ -119,9 +119,7 @@ void HackRFSource::start()
     DSPSampleSource::start();
 
 #ifndef __ANDROID__
-    std::stringstream ss;
-    ss << std::hex << d_sdr_id;
-    if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
+    if (hackrf_open_by_serial(d_sdr_id.c_str(), &hackrf_dev_obj) != 0)
         throw satdump_exception("Could not open HackRF device!");
 #else
     int vid, pid;
@@ -225,27 +223,25 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
 #ifndef __ANDROID__
     hackrf_device_list_t *devlist = hackrf_device_list();
 
-    for (int i = 0; i < devlist->devicecount; i++)
+    if (devlist != nullptr)
     {
-        if (devlist->serial_numbers[i] == nullptr)
-            results.push_back({"hackrf", "HackRF One [In Use]", 0});
-        else
+        for (int i = 0; i < devlist->devicecount; i++)
         {
-            std::stringstream ss;
-            uint64_t id = 0;
-            ss << devlist->serial_numbers[i];
-            ss >> std::hex >> id;
-            ss << devlist->serial_numbers[i];
-            results.push_back({"hackrf", "HackRF One " + ss.str().substr(16, 16), id});
+            if (devlist->serial_numbers[i] == nullptr)
+                results.push_back({"hackrf", "HackRF One [In Use]", 0});
+            else
+            {
+                results.push_back({"hackrf", "HackRF One " + std::string(devlist->serial_numbers[0]), std::string(devlist->serial_numbers[0])});
+            }
         }
-    }
 
-    hackrf_device_list_free(devlist);
+        hackrf_device_list_free(devlist);
+    }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path) != -1)
-        results.push_back({"hackrf", "HackRF One USB", 0});
+        results.push_back({"hackrf", "HackRF One USB", "0"});
 #endif
 
     return results;

@@ -43,7 +43,7 @@ namespace satdump
             {
                 if (sources[i].source_type == source)
                 {
-                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
+                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<std::string>() != sources[i].unique_id)
                         continue;
 
                     try

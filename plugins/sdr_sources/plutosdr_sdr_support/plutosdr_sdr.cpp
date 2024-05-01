@@ -51,7 +51,7 @@ nlohmann::json PlutoSDRSource::get_settings()
 
 void PlutoSDRSource::open()
 {
-    if (d_sdr_id != 0)
+    if (d_sdr_id != "0")
         is_usb = true;
 
     if (!is_open) // We do nothing there!
@@ -137,7 +137,7 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
     std::vector<dsp::SourceDescriptor> results;
 
 #ifndef __ANDROID__
-    results.push_back({"plutosdr", "PlutoSDR IP", 0, false});
+    results.push_back({"plutosdr", "PlutoSDR IP", "0", false});
 
     // Try to find local USB devices
     iio_scan_context *scan_ctx = iio_create_scan_context("usb", 0);
@@ -153,11 +153,9 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
         uint8_t x1, x2, x3;
         sscanf(dev_id, "usb:%hhd.%hhd.%hhd", &x1, &x2, &x3);
 
-        // Repack to uint64_t
-        uint64_t id = x1 << 16 | x2 << 8 | x3;
         std::string dev_str = "PlutoSDR " + std::to_string(x1) + "." + std::to_string(x2) + "." + std::to_string(x3);
 
-        results.push_back({"plutosdr", dev_str, id});
+        results.push_back({"plutosdr", dev_str, std::string(dev_id)});
     }
 
     iio_scan_context_destroy(scan_ctx);
@@ -165,7 +163,7 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, PLUTOSDR_USB_VID_PID, path) != -1)
-        results.push_back({"plutosdr", "PlutoSDR USB", 0});
+        results.push_back({"plutosdr", "PlutoSDR USB", "0"});
 #endif
 
     return results;
@@ -178,13 +176,8 @@ void PlutoSDRSource::sdr_startup()
 #ifndef __ANDROID__
     if (is_usb)
     {
-        uint8_t x1 = (d_sdr_id >> 16) & 0xFF;
-        uint8_t x2 = (d_sdr_id >> 8) & 0xFF;
-        uint8_t x3 = (d_sdr_id >> 0) & 0xFF;
-
-        std::string usbid = std::to_string(x1) + "." + std::to_string(x2) + "." + std::to_string(x3);
-        logger->trace("Using PlutoSDR Device at " + usbid);
-        ctx = iio_create_context_from_uri(std::string("usb:" + usbid).c_str());
+        logger->trace("Using PlutoSDR Device at " + d_sdr_id);
+        ctx = iio_create_context_from_uri(std::string("usb:" + d_sdr_id).c_str());
     }
     else
     {

@@ -58,12 +58,7 @@ void BladeRFSink::open()
 
         for (int i = 0; i < devs_cnt; i++)
         {
-            std::stringstream ss;
-            uint64_t id = 0;
-            ss << devs_list[i].serial;
-            id = std::hash<std::string>{}(ss.str());
-
-            if (id == d_sdr_id)
+            if (std::string(devs_list[i].serial) == d_sdr_id)
             {
                 selected_dev_id = i;
                 if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
@@ -99,7 +94,7 @@ void BladeRFSink::open()
         available_samplerates.push_back(i);
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);
-  
+
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
@@ -254,19 +249,15 @@ std::vector<dsp::SinkDescriptor> BladeRFSink::getAvailableSinks()
 {
     std::vector<dsp::SinkDescriptor> results;
 
-    bladerf_devinfo *devs_list;
+    bladerf_devinfo *devs_list = nullptr;
     int devs_cnt = bladerf_get_device_list(&devs_list);
 
     for (int i = 0; i < devs_cnt; i++)
     {
-        std::stringstream ss;
-        uint64_t id = 0;
-        ss << devs_list[i].serial;
-        id = std::hash<std::string>{}(ss.str());
-        results.push_back({"bladerf", "BladeRF " + ss.str(), id});
+        results.push_back({"bladerf", "BladeRF " + std::string(devs_list[i].serial), std::string(devs_list[i].serial)});
     }
 
-    if (devs_list != NULL && devs_cnt > 0)
+    if (devs_list != nullptr && devs_cnt > 0)
         bladerf_free_device_list(devs_list);
 
     return results;

@@ -12,7 +12,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
     uint64_t samplerate;
     uint64_t initial_frequency;
     std::string handler_id;
-    uint64_t hdl_dev_id = 0;
+    std::string hdl_dev_id;
 
     try
     {
@@ -20,7 +20,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
         initial_frequency = parameters["initial_frequency"].get<uint64_t>();
         handler_id = parameters["source"].get<std::string>();
         if (parameters.contains("source_id"))
-            hdl_dev_id = parameters["source_id"].get<uint64_t>();
+            hdl_dev_id = parameters["source_id"].get<std::string>();
     }
     catch (std::exception &e)
     {
@@ -46,18 +46,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
         {
             if (parameters.contains("source_id"))
             {
-#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
-                char cmp_buff1[100];
-                char cmp_buff2[100];
-
-                snprintf(cmp_buff1, sizeof(cmp_buff1), "%" PRIu64, hdl_dev_id);
-                std::string cmp1 = cmp_buff1;
-                snprintf(cmp_buff2, sizeof(cmp_buff2), "%" PRIu64, src.unique_id);
-                std::string cmp2 = cmp_buff2;
-                if (cmp1 == cmp2)
-#else
                 if (hdl_dev_id == src.unique_id)
-#endif
                 {
                     selected_src = src;
                     src_found = true;
