@@ -454,17 +454,17 @@ std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()
 
         // Handle all versions
         if (devices_addresses[i].hwVer == SDRPLAY_RSP1_ID)
-            results.push_back({"sdrplay", "RSP1 " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP1 " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP1A_ID)
-            results.push_back({"sdrplay", "RSP1A " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP1A " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP1B_ID)
-            results.push_back({"sdrplay", "RSP1B " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP1B " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP2_ID)
-            results.push_back({"sdrplay", "RSP2 " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP2 " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSPduo_ID)
-            results.push_back({"sdrplay", "RSPDuo " + ss.str(), i});
+            results.push_back({"sdrplay", "RSPDuo " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSPdx_ID)
-            results.push_back({"sdrplay", "RSPdx " + ss.str(), i});
+            results.push_back({"sdrplay", "RSPdx " + ss.str(), std::to_string(i)});
         else
             results.push_back({"sdrplay", "Unknown RSP " + ss.str(), std::to_string(i)});
     }
