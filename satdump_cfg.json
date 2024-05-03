@@ -1470,6 +1470,23 @@
                         ],
                         "autogen": false
                     },
+                    "Split Window Difference": {
+                        "channels": "cch13, cch15",
+                        "calib_cfg": {
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 300
+                            },
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 300
+                            }
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "autogen": false
+                    },
                     "Clean Longwave IR Window Band": {
                         "channels": "cch13",
                         "description": "descriptions/ABICleanLWIR.md",
