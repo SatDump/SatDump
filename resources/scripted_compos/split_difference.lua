@@ -19,11 +19,11 @@ function process()
 
             --get channels from satdump.json
             get_channel_values(x, y)
-            local cch13 = get_channel_value(0)
-            local cch15 = get_channel_value(1)
+            local cch0 = get_channel_value(0)
+            local cch1 = get_channel_value(1)
 
-            --perform Difference, scaling -10 - 10 to 0-1
-            local difference = (cch13-cch15-numerator)/denominator
+            --perform Difference, scaling to minval, maxval
+            local difference = (cch0-cch1-numerator)/denominator
 
             --range convert from 0-1 to 0-255
             local lutval = difference*255
