@@ -739,23 +739,27 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "Fog BTD (VERY experimental)": {
-                        "channels": "cch3b, cch4",
+                    "Fog Brightness Temperature Difference": {
+                        "channels": "cch4, cch3b",
                         "calib_cfg": {
-                            "cch3b": {
-                                "type": "temperature",
-                                "min": 0,
-                                "max": 500
-                            },
                             "cch4": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 500
+                                "min": 230,
+                                "max": 310
+                            },
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 230,
+                                "max": 310
                             }
                         },
-                        "lua": "scripted_compos/fog_btd.lua",
-                        "lut": "lut/cal/fog_btd.png",
-                        "description": "descriptions/sfog_btd.md",
+                        "vars": {
+                            "minval": -16,
+                            "maxval": 16,
+                            "input_range": 80, //310-230
+                            "lut": "lut/cal/fog_btd.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
                         "geo_correct": true,
                         "autogen": false
                     },
@@ -1446,28 +1450,57 @@
                         "autogen": false // Needs to be optimized...
                     },
                     "Fog Brightness Temperature Difference": {
-                        "channels": "cch7, cch13",
+                        "channels": "cch13, cch7",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch7": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 500
+                                "min": 163,
+                                "max": 300
                             },
                             "cch13": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 500
+                                "min": 163,
+                                "max": 300
                             }
                         },
-                        "lua": "scripted_compos/fog_btd.lua",
-                        "lut": "lut/cal/fog_btd.png",
+                        "vars": {
+                            "minval": -16,
+                            "maxval": 16,
+                            "input_range": 137, //300-163
+                            "lut": "lut/cal/fog_btd.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
                         "borders_color": [
                             1,
                             1,
                             1
                         ],
+                        "autogen": false
+                    },
+                    "Split Window Difference": {
+                        "channels": "cch13, cch15",
+                        "remove_background": true,
+                        "calib_cfg": {
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 300
+                            },
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -10,
+                            "maxval": 10,
+                            "input_range": 137, //300-163
+                            "lut": "lut/cal/abi_split_difference.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
                         "autogen": false
                     },
                     "Clean Longwave IR Window Band": {
