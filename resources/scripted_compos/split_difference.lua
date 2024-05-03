@@ -1,10 +1,14 @@
 -- Split Difference
 
 function init()
-    --create an empty image for the LUT
+    --load vars
+    numerator = lua_vars["minval"] / lua_vars["input_range"]
+    denominator = (lua_vars["maxval"] - lua_vars["minval"]) / lua_vars["input_range"]
+
+    --create an empty image for the LUT and load
     img_lut = image8.new()
-    --load the LUT
-    img_lut:load_png(get_resource_path("lut/cal/abi_split_difference.png"), false)
+    img_lut:load_png(get_resource_path(lua_vars["lut"]), false)
+
     --return 3 channels, RGB
     return 3
 end
@@ -19,7 +23,7 @@ function process()
             local cch15 = get_channel_value(1)
 
             --perform Difference, scaling -10 - 10 to 0-1
-            local difference = (cch13-cch15+0.07299270072)/0.14598540146
+            local difference = (cch13-cch15-numerator)/denominator
 
             --range convert from 0-1 to 0-255
             local lutval = difference*255

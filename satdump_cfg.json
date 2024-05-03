@@ -1472,6 +1472,7 @@
                     },
                     "Split Window Difference": {
                         "channels": "cch13, cch15",
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch13": {
                                 "type": "temperature",
@@ -1483,6 +1484,12 @@
                                 "min": 163,
                                 "max": 300
                             }
+                        },
+                        "vars": {
+                            "minval": -10,
+                            "maxval": 10,
+                            "input_range": 137, //300-163
+                            "lut": "lut/cal/abi_split_difference.png"
                         },
                         "lua": "scripted_compos/split_difference.lua",
                         "autogen": false
