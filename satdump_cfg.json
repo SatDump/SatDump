@@ -739,7 +739,7 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "Fog Brightness Tempreature Difference": {
+                    "Fog Brightness Temperature Difference": {
                         "channels": "cch4, cch3b",
                         "calib_cfg": {
                             "cch4": {
