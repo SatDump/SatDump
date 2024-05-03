@@ -118,7 +118,7 @@ int main_live(int argc, char *argv[])
         uint64_t frequency;
         uint64_t timeout;
         std::string handler_id;
-        std::string hdl_dev_id = 0;
+        std::string hdl_dev_id;
 
         try
         {
