@@ -741,7 +741,7 @@
                     },
                     "Fog Brightness Tempreature Difference": {
                         "channels": "cch4, cch3b",
-                         "calib_cfg": {
+                        "calib_cfg": {
                             "cch4": {
                                 "type": "temperature",
                                 "min": 230,
