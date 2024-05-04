@@ -1572,7 +1572,8 @@
                             "cch15": {
                                 "type": "temperature",
                                 "min": 163,
-                                "max": 330                            
+                                "max": 330
+                            }
                         },
                         "lut": "lut/cal/Dirty_IR_CIRA.png",
                         "borders_color": [
