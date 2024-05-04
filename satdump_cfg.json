@@ -1858,6 +1858,7 @@
                     "SW038_IR105_IR123": {
                         "equation": "chSW038,chIR105,chIR123",
                         "individual_equalize": true,
+                        "remove_background": true,
                         "normalize": true,
                         //
                         "draw_map_overlay": true,
