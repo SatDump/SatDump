@@ -1433,7 +1433,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "GEO False Color IR Merge": {
                         "channels": "ch2, ch13",
@@ -1520,7 +1521,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "Infrared Longwave Window Band": {
                         "channels": "cch14",
@@ -1539,7 +1541,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "Dirty Longwave Window": {
                         "channels": "cch15",
@@ -1558,7 +1561,26 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": true
+                    },
+                    "Dirty Longwave Window - CIRA": {
+                        "channels": "cch15",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330                            
+                        },
+                        "lut": "lut/cal/Dirty_IR_CIRA.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": true
                     },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
@@ -1577,7 +1599,8 @@
                             1,
                             0,
                             0
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "Upper-Level Tropospheric Water Vapor": {
                         "channels": "cch8",
@@ -1596,7 +1619,8 @@
                             1,
                             0,
                             0
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "Shortwave Window Band": {
                         "channels": "cch7",
@@ -1614,7 +1638,8 @@
                             0,
                             0,
                             0
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "Day Cloud Convection": {
                         "equation": "cch2^0.58823529411,cch2^0.58823529411,1-cch13",
@@ -1748,7 +1773,97 @@
                             1,
                             1,
                             0
-                        ]
+                        ],
+                        "autogen": false
+                    },
+                    "Clean Longwave IR Window Band": {
+                        "channels": "cchIR105",
+                        "description": "descriptions/ABICleanLWIR.md",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cchIR105": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_11-15.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": true
+                    },
+                    "Dirty Longwave Window": {
+                        "channels": "cchIR123",
+                        "description": "descriptions/ABIDirtyLWIR.md",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cchIR123": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_11-15.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": true
+                    },
+                    "Dirty Longwave Window - CIRA": {
+                        "channels": "cchIR123",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cchIR123": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/Dirty_IR_CIRA.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "autogen": true
+                    },
+                    "Mid-level Tropospheric Water Vapor": {
+                        "channels": "cchWV069",
+                        "description": "descriptions/ABIMLWV.md",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cchWV069": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 280
+                            }
+                        },
+                        "lut": "lut/cal/abi_wv_8-10.png",
+                        "borders_color": [
+                            1,
+                            0,
+                            0
+                        ],
+                        "autogen": true
+                    },
+                    "SW038_IR105_IR123": {
+                        "equation": "chSW038,chIR105,chIR123",
+                        "individual_equalize": true,
+                        "normalize": true,
+                        //
+                        "draw_map_overlay": true,
+                        "draw_shores_overlay": true,
+                        "draw_latlon_overlay": true,
+                        "autogen": false
                     }
                 }
             },
