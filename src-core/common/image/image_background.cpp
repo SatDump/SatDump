@@ -1,6 +1,7 @@
 #include "image_background.h"
 #include "logger.h"
 #include "common/geodetic/geodetic_coordinates.h"
+#include "common/projection/reprojector.h"
 #include "common/projection/projs2/proj_json.h"
 
 namespace image
@@ -8,6 +9,10 @@ namespace image
 	template <typename T>
 	void remove_background(image::Image<T> &img, nlohmann::json proj_cfg, float *progress)
 	{
+		size_t width = img.width();
+		size_t height = img.height();
+
+		satdump::reprojection::rescaleProjectionScalarsIfNeeded(proj_cfg, width, height);
 		proj::projection_t product_proj;
 		try
 		{
@@ -26,8 +31,6 @@ namespace image
 		}
 
 		img.to_rgba();
-		size_t width = img.width();
-		size_t height = img.height();
 		double dummy; // Hey! I resemble that remark!
 
 		for (size_t y = 0; y < height; y++)
