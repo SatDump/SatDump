@@ -45,7 +45,7 @@ int main_record(int argc, char *argv[])
     uint64_t frequency;
     uint64_t timeout;
     std::string handler_id;
-    std::string hdl_dev_id = 0;
+    std::string hdl_dev_id;
     double decimation = 1;
 
     try
