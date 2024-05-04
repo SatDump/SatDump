@@ -1560,6 +1560,24 @@
                             1
                         ]
                     },
+                    "Dirty Longwave Window - CIRA": {
+                        "channels": "cch15",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/Dirty_IR_CIRA.png",
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ]
+                    },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
                         "description": "descriptions/ABIMLWV.md",
