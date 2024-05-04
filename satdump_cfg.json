@@ -1433,7 +1433,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "GEO False Color IR Merge": {
                         "channels": "ch2, ch13",
@@ -1520,7 +1521,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": true
                     },
                     "Infrared Longwave Window Band": {
                         "channels": "cch14",
@@ -1540,7 +1542,7 @@
                             1,
                             1
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Dirty Longwave Window": {
                         "channels": "cch15",
@@ -1560,7 +1562,7 @@
                             1,
                             1
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Dirty Longwave Window - CIRA": {
                         "channels": "cch15",
@@ -1578,7 +1580,7 @@
                             1,
                             1
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
@@ -1598,7 +1600,7 @@
                             0,
                             0
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Upper-Level Tropospheric Water Vapor": {
                         "channels": "cch8",
@@ -1618,7 +1620,7 @@
                             0,
                             0
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Shortwave Window Band": {
                         "channels": "cch7",
@@ -1637,7 +1639,7 @@
                             0,
                             0
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Day Cloud Convection": {
                         "equation": "cch2^0.58823529411,cch2^0.58823529411,1-cch13",
@@ -1812,7 +1814,7 @@
                             1,
                             1
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Dirty Longwave Window - CIRA": {
                         "channels": "cchIR123",
@@ -1831,7 +1833,7 @@
                             1,
                             1
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cchWV069",
@@ -1851,7 +1853,7 @@
                             0,
                             0
                         ],
-                        "autogen": false
+                        "autogen": true
                     },
                     "SW038_IR105_IR123": {
                         "equation": "chSW038,chIR105,chIR123",
