@@ -1539,7 +1539,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": false
                     },
                     "Dirty Longwave Window": {
                         "channels": "cch15",
@@ -1558,7 +1559,8 @@
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": false
                     },
                     "Dirty Longwave Window - CIRA": {
                         "channels": "cch15",
@@ -1568,15 +1570,15 @@
                             "cch15": {
                                 "type": "temperature",
                                 "min": 163,
-                                "max": 330
-                            }
+                                "max": 330                            
                         },
                         "lut": "lut/cal/Dirty_IR_CIRA.png",
                         "borders_color": [
                             1,
                             1,
                             1
-                        ]
+                        ],
+                        "autogen": false
                     },
                     "Mid-level Tropospheric Water Vapor": {
                         "channels": "cch9",
@@ -1595,7 +1597,8 @@
                             1,
                             0,
                             0
-                        ]
+                        ],
+                        "autogen": false
                     },
                     "Upper-Level Tropospheric Water Vapor": {
                         "channels": "cch8",
@@ -1614,7 +1617,8 @@
                             1,
                             0,
                             0
-                        ]
+                        ],
+                        "autogen": false
                     },
                     "Shortwave Window Band": {
                         "channels": "cch7",
@@ -1632,7 +1636,8 @@
                             0,
                             0,
                             0
-                        ]
+                        ],
+                        "autogen": false
                     },
                     "Day Cloud Convection": {
                         "equation": "cch2^0.58823529411,cch2^0.58823529411,1-cch13",
