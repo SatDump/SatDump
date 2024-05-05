@@ -355,7 +355,7 @@ namespace himawari
                                                     time_t tttt = time(0);
                                                     std::tm scanTimestamp = *gmtime(&tttt);
                                                     std::string scanTime = current_filename.substr(12, 12);
-                                                    strptime(scanTime.c_str(), "%4Y%2m%2d%2H%2M", &scanTimestamp);
+                                                    strptime(scanTime.c_str(), "%Y%m%d%H%M", &scanTimestamp);
                                                     scanTimestamp.tm_sec = 0;
                                                     lmeta.scan_time = mktime_utc(&scanTimestamp);
                                                 }

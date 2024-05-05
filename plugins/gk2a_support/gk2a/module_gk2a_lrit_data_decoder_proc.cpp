@@ -119,8 +119,8 @@ namespace gk2a
                         {
                             time_t tttt = time(0);
                             std::tm scanTimestamp = *gmtime(&tttt);
-                            std::string scanTime = header_parts[4] + "_" + header_parts[5];
-                            strptime(scanTime.c_str(), "%4Y%2m%2d_%2H%2M%2S", &scanTimestamp);
+                            std::string scanTime = header_parts[4] + header_parts[5];
+                            strptime(scanTime.c_str(), "%Y%m%d%H%M%S", &scanTimestamp);
                             lmeta.scan_time = mktime_utc(&scanTimestamp);
                         }
 
