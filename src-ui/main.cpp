@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
     // See if we need to add arguments
     satdump::config::main_cfg["cli"] = {};
     if (argc > 1 && !satdump::processing::is_processing)
-        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
+        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1], {{"source_id", typeid(std::string)}});
 
     // Init UI
     satdump::initMainUI();

@@ -39,7 +39,7 @@ int main_record(int argc, char *argv[])
     std::string output_file = argv[2];
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 3, &argv[3]);
+    nlohmann::json parameters = parse_common_flags(argc - 3, &argv[3], {{"source_id", typeid(std::string)}});
 
     uint64_t samplerate;
     uint64_t frequency;

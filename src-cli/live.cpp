@@ -37,7 +37,7 @@ int main_live(int argc, char *argv[])
     std::string output_file = argv[3];
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4]);
+    nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4], {{"source_id", typeid(std::string)}});
 
     // Init SatDump
     satdump::tle_file_override = parameters.contains("tle_override") ? parameters["tle_override"].get<std::string>() : "";
