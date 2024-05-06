@@ -81,7 +81,7 @@ namespace lrit
                 if (current_file.file_in_progress)
                     finalizeLRITData(current_file);
 
-                std::vector<uint8_t>().swap(current_file.lrit_data);
+                current_file.lrit_data.clear();
 
                 processLRITHeader(current_file, pkt);
                 current_file.vcid = vcdu.vcid;
@@ -113,6 +113,12 @@ namespace lrit
                 {
                     parseHeader(current_file);
                     current_file.header_parsed = true;
+                    if (pkt.header.sequence_flag == 3)
+                    {
+                        finalizeLRITData(current_file);
+                        current_file.file_in_progress = false;
+                        std::vector<uint8_t>().swap(current_file.lrit_data);
+                    }
                 }
             }
         }
