@@ -86,11 +86,12 @@ void USRPSource::open_channel()
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);
 
-    usrp_antennas = usrp_device->get_rx_antennas();
+    usrp_antennas = usrp_device->get_rx_antennas(channel);
     antenna_option_str = "";
     for (int i = 0; i < (int)usrp_antennas.size(); i++)
     {
         antenna_option_str += usrp_antennas[i] + '\0';
+        logger->trace("USRP has antenna option %s", usrp_antennas[i].c_str());
     }
 }
 
