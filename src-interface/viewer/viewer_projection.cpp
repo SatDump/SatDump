@@ -6,13 +6,13 @@
 #include "resources.h"
 #include "core/style.h"
 #include "main_ui.h"
-#include "common/image2/image_utils.h"
+#include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
-#include "common/image2/image_meta.h"
+#include "common/image/image_meta.h"
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 
@@ -506,7 +506,7 @@ namespace satdump
         general_sum += projection_overlay_handler.enabled();
 
         // Generate all layers
-        std::vector<image2::Image> layers_images =
+        std::vector<image::Image> layers_images =
             generateAllProjectionLayers(projection_layers, projections_image_width, projections_image_height, cfg, &general_progress);
 
         logger->info("Combining images...");
@@ -514,14 +514,14 @@ namespace satdump
         {
             projected_image_result = layers_images[0];
             for (int i = 1; i < (int)layers_images.size(); i++)
-                projected_image_result = image2::blend_images(projected_image_result, layers_images[i]);
+                projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
         }
         else if (projections_mode_radio == 1) // Overlay
         {
-            projected_image_result = image2::Image(16, layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
+            projected_image_result = image::Image(16, layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
             for (int i = 0; i < (int)layers_images.size(); i++)
             {
-                projected_image_result = image2::merge_images_opacity(projected_image_result,
+                projected_image_result = image::merge_images_opacity(projected_image_result,
                                                                       layers_images[i],
                                                                       projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
             }

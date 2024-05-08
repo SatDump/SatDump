@@ -12,13 +12,13 @@
 
 #include "common/overlay_handler.h"
 
-#include "common/image2/image_meta.h"
-#include "common/image2/image_processing.h"
-#include "common/image2/io.h"
+#include "common/image/image_meta.h"
+#include "common/image/image_processing.h"
+#include "common/image/io.h"
 
 namespace satdump
 {
-    image2::Image projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image2::Image &img, std::vector<double> timestamps, ImageProducts &img_products)
+    image::Image projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image &img, std::vector<double> timestamps, ImageProducts &img_products)
     {
         reprojection::ReprojectionOperation op;
         nlohmann::json proj_cfg;
@@ -38,7 +38,7 @@ namespace satdump
         proj_cfg["metadata"]["tle"] = img_products.get_tle();
         proj_cfg["metadata"]["timestamps"] = timestamps;
 
-        image2::set_metadata_proj_cfg(op.img, proj_cfg);
+        image::set_metadata_proj_cfg(op.img, proj_cfg);
 
         if (op.target_prj_info.contains("auto") && op.target_prj_info["auto"].get<bool>())
         {
@@ -51,7 +51,7 @@ namespace satdump
         if (!proj_settings.contains("width") || !proj_settings.contains("height"))
         {
             logger->error("No width or height defined for projection!");
-            return image2::Image();
+            return image::Image();
         }
 
         op.output_width = proj_settings["width"].get<int>();
@@ -62,16 +62,16 @@ namespace satdump
 
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
-                image2::equalize(op.img);
+                image::equalize(op.img);
 
-        image2::Image retimg = reprojection::reproject(op);
+        image::Image retimg = reprojection::reproject(op);
 
         OverlayHandler overlay_handler;
         overlay_handler.set_config(proj_settings);
 
-        if (overlay_handler.enabled() && image2::has_metadata_proj_cfg(retimg))
+        if (overlay_handler.enabled() && image::has_metadata_proj_cfg(retimg))
         {
-            auto proj_func = satdump::reprojection::setupProjectionFunction(retimg.width(), retimg.height(), image2::get_metadata_proj_cfg(retimg));
+            auto proj_func = satdump::reprojection::setupProjectionFunction(retimg.width(), retimg.height(), image::get_metadata_proj_cfg(retimg));
             overlay_handler.apply(retimg, proj_func);
         }
 
@@ -126,7 +126,7 @@ namespace satdump
 
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
-                    image2::Image rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+                    image::Image rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
 
                     if (rgb_image.size() == 0)
                     {
@@ -140,7 +140,7 @@ namespace satdump
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
                     std::vector<float> corrected_stuff;
-                    image2::Image rgb_image_corr;
+                    image::Image rgb_image_corr;
 
                     if (geo_correct)
                     {
@@ -154,9 +154,9 @@ namespace satdump
                         }
                     }
 
-                    image2::save_img(rgb_image, product_path + "/" + name);
+                    image::save_img(rgb_image, product_path + "/" + name);
                     if (geo_correct)
-                        image2::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
+                        image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
 
                     overlay_handler.set_config(compo.value());
                     corrected_overlay_handler.set_config(compo.value());
@@ -205,18 +205,18 @@ namespace satdump
                         }
 
                         overlay_handler.apply(rgb_image, proj_func);
-                        image2::save_img(rgb_image, product_path + "/" + name + "_map");
+                        image::save_img(rgb_image, product_path + "/" + name + "_map");
                         if (geo_correct)
                         {
                             corrected_overlay_handler.apply(rgb_image_corr, corr_proj_func);
-                            image2::save_img(rgb_image_corr, product_path + "/" + name + "_corrected_map");
+                            image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected_map");
                         }
                     }
 
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
                         logger->debug("Reprojecting composite %s", name.c_str());
-                        image2::Image retimg = projectImg(compo.value()["project"],
+                        image::Image retimg = projectImg(compo.value()["project"],
                                                           final_metadata,
                                                           rgb_image,
                                                           final_timestamps,
@@ -224,7 +224,7 @@ namespace satdump
                         std::string fmt = "";
                         if (compo.value()["project"]["config"].contains("img_format"))
                             fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
-                        image2::save_img(retimg, product_path + "/rgb_" + name + "_projected" + fmt);
+                        image::save_img(retimg, product_path + "/rgb_" + name + "_projected" + fmt);
                     }
 
                     if (img_products->contents.contains("autocomposite_cache_enabled") && img_products->contents["autocomposite_cache_enabled"].get<bool>())
@@ -269,7 +269,7 @@ namespace satdump
                     auto &img = img_products->images[chanid];
 
                     logger->debug("Reprojecting channel %s", img.channel_name.c_str());
-                    image2::Image retimg = projectImg(instrument_viewer_settings["project_channels"],
+                    image::Image retimg = projectImg(instrument_viewer_settings["project_channels"],
                                                       img_products->get_channel_proj_metdata(chanid),
                                                       img.image,
                                                       img_products->get_timestamps(chanid),
@@ -277,7 +277,7 @@ namespace satdump
                     std::string fmt = "";
                     if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
                         fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();
-                    image2::save_img(retimg, product_path + "/channel_" + img.channel_name + "_projected" + fmt);
+                    image::save_img(retimg, product_path + "/channel_" + img.channel_name + "_projected" + fmt);
                 }
                 catch (std::exception &e)
                 {

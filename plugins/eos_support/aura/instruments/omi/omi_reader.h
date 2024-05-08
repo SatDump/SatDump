@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace aura
 {
@@ -21,9 +21,9 @@ namespace aura
             ~OMIReader();
             int lines;
             void work(ccsds::CCSDSPacket &packet);
-            image2::Image getChannel(int channel);
-            image2::Image getImageRaw();
-            image2::Image getImageVisible();
+            image::Image getChannel(int channel);
+            image::Image getImageRaw();
+            image::Image getImageVisible();
         };
     } // namespace ceres
 } // namespace aqua

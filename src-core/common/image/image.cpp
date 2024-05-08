@@ -1,29 +1,76 @@
 #include "image.h"
-#include "logger.h"
-#include "core/config.h"
-#include <cstring>
-#include <limits>
-#include <fstream>
+#include <cstdlib>
+#include "core/exception.h"
 #include "image_meta.h"
+
+#include <cmath>
 
 namespace image
 {
-    template <typename T>
-    void Image<T>::init(size_t width, size_t height, int channels)
+    Image::Image()
+    {
+        // Do nothing
+    }
+
+    Image::Image(int bit_depth, size_t width, size_t height, int channels)
+    {
+        init(bit_depth, width, height, channels);
+    }
+
+    Image::Image(const Image &img)
+    {
+        // Copy contents of the image over
+        init(img.d_depth, img.d_width, img.d_height, img.d_channels);
+        memcpy(d_data, img.d_data, img.data_size * img.type_size);
+        copy_meta(img);
+    }
+
+    Image &Image::operator=(const Image &img)
+    {
+        // Copy contents of the image over
+        init(img.d_depth, img.d_width, img.d_height, img.d_channels);
+        memcpy(d_data, img.d_data, img.data_size * img.type_size);
+        copy_meta(img);
+        return *this;
+    }
+
+    Image::Image(void *buffer, int bit_depth, size_t width, size_t height, int channels)
+    {
+        // Copy contents of the image over
+        init(bit_depth, width, height, channels);
+        memcpy(d_data, buffer, data_size * type_size);
+    }
+
+    Image::~Image()
+    {
+        if (has_data)
+            free(d_data);
+
+        free_metadata(*this);
+    }
+
+    void Image::init(int bit_depth, size_t width, size_t height, int channels)
     {
         // Reset image if we already had one
         if (has_data)
-            delete[] d_data;
+            free(d_data);
+
+        // Internal params
+        if (bit_depth > 8)
+            type_size = 2;
+        else
+            type_size = 1;
 
         // Init buffer
         data_size = width * height * channels;
-        d_data = new T[data_size];
+        d_data = malloc(type_size * data_size);
 
         // Set to 0
-        memset(d_data, 0, sizeof(T) * data_size);
+        memset(d_data, 0, type_size * data_size);
 
         // Init local variables
-        d_depth = sizeof(T) * 8;
+        d_depth = bit_depth;
+        d_maxv = (2 << (d_depth - 1)) - 1;
         d_width = width;
         d_height = height;
         d_channels = channels;
@@ -32,94 +79,41 @@ namespace image
         has_data = true;
     }
 
-    template <typename T>
-    void Image<T>::clear()
+    void Image::clear()
     {
         // Reset image
-        if (has_data)
-            delete[] d_data;
+        if (has_data && d_data != nullptr)
+            free(d_data);
+        d_data = nullptr;
         has_data = false;
     }
 
-    template <typename T>
-    Image<T>::Image()
+    int Image::clamp(int input)
     {
-        // Do nothing
-    }
-
-    template <typename T>
-    Image<T>::Image(size_t width, size_t height, int channels)
-    {
-        init(width, height, channels);
-    }
-
-    template <typename T>
-    Image<T>::Image(const Image &img)
-    {
-        // Copy contents of the image over
-        init(img.d_width, img.d_height, img.d_channels);
-        memcpy(d_data, img.d_data, img.data_size * sizeof(T));
-        copy_meta(img);
-    }
-
-    template <typename T>
-    Image<T>::Image(T *buffer, size_t width, size_t height, int channels)
-    {
-        // Copy contents of the image over
-        init(width, height, channels);
-        memcpy(d_data, buffer, data_size * sizeof(T));
-    }
-
-    template <typename T>
-    Image<T> &Image<T>::operator=(const Image<T> &img)
-    {
-        // Copy contents of the image over
-        init(img.d_width, img.d_height, img.d_channels);
-        memcpy(d_data, img.d_data, img.data_size * sizeof(T));
-        copy_meta(img);
-        return *this;
-    }
-
-    template <typename T>
-    Image<T> &Image<T>::operator<<=(const int &shift)
-    {
-        for (size_t i = 0; i < data_size; i++)
-            d_data[i] <<= shift;
-        return *this;
-    }
-
-    template <typename T>
-    Image<T>::~Image()
-    {
-        if (has_data)
-            delete[] d_data;
-
-        free_metadata_proj_cfg(*this);
-    }
-
-    template <typename T>
-    void Image<T>::init_font(std::string font_path)
-    {
-    }
-
-    template <typename T>
-    T Image<T>::clamp(int input)
-    {
-        if (input > std::numeric_limits<T>::max())
-            return std::numeric_limits<T>::max();
+        if (input > d_maxv)
+            return d_maxv;
         else if (input < 0)
             return 0;
         else
             return input;
     }
 
-    template <typename T>
-    void Image<T>::to_rgb()
+    double Image::clampf(double input)
+    {
+        if (input > 1.0)
+            return 1.0;
+        else if (input < 0)
+            return 0;
+        else
+            return input;
+    }
+
+    void Image::to_rgb()
     {
         if (d_channels == 1)
         {
-            Image<T> tmp = *this;       // Backup image
-            init(d_width, d_height, 3); // Init new image as RGB
+            Image tmp = *this;                   // Backup image
+            init(d_depth, d_width, d_height, 3); // Init new image as RGB
 
             // Fill in all 3 channels
             draw_image(0, tmp);
@@ -128,180 +122,357 @@ namespace image
         }
         else if (d_channels == 4)
         {
-            Image<T> tmp = *this;       // Backup image
-            init(d_width, d_height, 3); // Init new image as RGB
+            Image tmp = *this;                   // Backup image
+            init(d_depth, d_width, d_height, 3); // Init new image as RGB
 
             // Copy over all 3 channels
-            memcpy(d_data, tmp.data(), d_width * d_height * 3 * sizeof(T));
+            memcpy(d_data, tmp.d_data, d_width * d_height * 3 * type_size);
         }
     }
 
-    template <typename T>
-    void Image<T>::to_rgba()
+    void Image::to_rgba()
     {
         if (d_channels == 1)
         {
-            Image<T> tmp = *this;       // Backup image
-            init(d_width, d_height, 4); // Init new image as RGBA
+            Image tmp = *this;                   // Backup image
+            init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy(&d_data[d_width * d_height * 0], tmp.data(), d_width * d_height * sizeof(T));
-            memcpy(&d_data[d_width * d_height * 1], tmp.data(), d_width * d_height * sizeof(T));
-            memcpy(&d_data[d_width * d_height * 2], tmp.data(), d_width * d_height * sizeof(T));
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
             for (size_t i = 0; i < d_width * d_height; i++)
-                channel(3)[i] = std::numeric_limits<T>::max();
+                set(3, i, d_maxv);
         }
-        else if (d_channels == 22)
+        else if (d_channels == 2)
         {
-            Image<T> tmp = *this;       // Backup image
-            init(d_width, d_height, 4); // Init new image as RGBA
+            Image tmp = *this;                   // Backup image
+            init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy(&d_data[d_width * d_height * 0], tmp.data(), d_width * d_height * sizeof(T));
-            memcpy(&d_data[d_width * d_height * 1], tmp.data(), d_width * d_height * sizeof(T));
-            memcpy(&d_data[d_width * d_height * 2], tmp.data(), d_width * d_height * sizeof(T));
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
 
             // Copy over RGBA
-            memcpy(&d_data[d_width * d_height * 3], tmp.data() + d_width * d_height, d_width * d_height * sizeof(T));
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 3, (uint8_t*)tmp.d_data + d_width * d_height, d_width * d_height * type_size);
         }
         else if (d_channels == 3)
         {
-            Image<T> tmp = *this;       // Backup image
-            init(d_width, d_height, 4); // Init new image as RGBA
+            Image tmp = *this;                   // Backup image
+            init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy(d_data, tmp.data(), d_width * d_height * 3 * sizeof(T));
+            memcpy(d_data, tmp.d_data, d_width * d_height * 3 * type_size);
 
             // Fill in RGBA
             for (size_t i = 0; i < d_width * d_height; i++)
-                channel(3)[i] = std::numeric_limits<T>::max();
+                set(3, i, d_maxv);
         }
     }
 
-    template <typename T>
-    Image<uint8_t> Image<T>::to8bits()
+    Image Image::to8bits()
     {
         if (d_depth == 8)
         {
-            return *((image::Image<uint8_t> *)this);
+            return *this;
         }
         else if (d_depth == 16)
         {
-            image::Image<uint8_t> image8(d_width, d_height, d_channels);
+            Image image8(8, d_width, d_height, d_channels);
             for (size_t i = 0; i < data_size; i++)
-                image8[i] = d_data[i] >> 8;
+                image8.set(i, get(i) >> 8);
             return image8;
         }
 
-        return Image<uint8_t>(); // This should never happen
+        throw satdump_exception("Error in to8bits()"); // This should never happen
     }
 
-    template <typename T>
-    Image<uint16_t> Image<T>::to16bits()
+    Image Image::to16bits()
     {
         if (d_depth == 16)
         {
-            return *((image::Image<uint16_t> *)this);
+            return *this;
         }
         else if (d_depth == 8)
         {
-            image::Image<uint16_t> image16(d_width, d_height, d_channels);
+            Image image16(16, d_width, d_height, d_channels);
             for (size_t i = 0; i < data_size; i++)
-                image16[i] = d_data[i] << 8;
+                image16.set(i, get(i) << 8);
             return image16;
         }
 
-        return Image<uint16_t>(); // This should never happen
+        throw satdump_exception("Error in to8bits()"); // This should never happen
     }
 
-    template <typename T>
-    void Image<T>::load_img(std::string file)
+    void Image::crop(int x0, int y0, int x1, int y1)
     {
-        std::ifstream file_sigature_src(file, std::ios::binary);
-        uint8_t signature[10];
-        file_sigature_src.read((char *)signature, 10);
-        if (signature[0] == 0xFF && signature[1] == 0xD8)
-            load_jpeg(file);
-        else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
-            load_png(file);
-        else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
-            load_j2k(file);
-        else if (signature[0] == 'P' && (signature[1] == '5' || signature[1] == '6'))
-            load_pbm(file);
-        else if (signature[0] == 'I' && signature[1] == 'I' && signature[2] == '*')
-            load_tiff(file);
+        int new_width = x1 - x0;
+        int new_height = y1 - y0;
+
+        // Create new buffer
+        void *new_data = malloc(new_width * new_height * d_channels * type_size);
+
+        // Copy cropped area to new region
+        for (int c = 0; c < d_channels; c++)
+            for (int x = 0; x < new_width; x++)
+                for (int y = 0; y < new_height; y++)
+                    memcpy((uint8_t*)new_data + ((new_width * new_height * c) + y * new_width + x) * type_size,
+                           (uint8_t*)d_data + (c * d_width * d_height + (y0 + y) * d_width + (x + x0)) * type_size,
+                           type_size);
+
+        // Swap out buffer
+        free(d_data);
+        d_data = new_data;
+
+        // Update info
+        data_size = new_width * new_height * d_channels;
+        d_width = new_width;
+        d_height = new_height;
     }
 
-    template <typename T>
-    void Image<T>::load_img(uint8_t *buffer, int size)
+    void Image::crop(int x0, int x1)
     {
-        if (buffer[0] == 0xFF && buffer[1] == 0xD8)
-            load_jpeg(buffer, size);
-        else if (buffer[0] == 0x89 && buffer[1] == 0x50 && buffer[2] == 0x4E && buffer[3] == 0x47)
-            load_png(buffer, size);
+        crop(x0, 0, x1, d_height);
     }
 
-    template <typename T>
-    void Image<T>::save_img(std::string file, bool fast)
+    Image Image::crop_to(int x0, int y0, int x1, int y1)
     {
-        if (!append_ext(&file))
-            return;
-        logger->info("Saving " + file + "...");
-        if (file.find(".png") != std::string::npos)
-            save_png(file, fast);
-        else if (file.find(".jpeg") != std::string::npos || file.find(".jpg") != std::string::npos)
-            save_jpeg(file);
-        else if (file.find(".j2k") != std::string::npos)
-            save_j2k(file);
-        else if ((file.find(".ppm") != std::string::npos) || (file.find(".pgm") != std::string::npos) || (file.find(".pbm") != std::string::npos))
-            save_pbm(file);
-        else if ((file.find(".tif") != std::string::npos) || (file.find(".gtif") != std::string::npos) || (file.find(".tiff") != std::string::npos))
-            save_tiff(file);
+        int new_width = x1 - x0;
+        int new_height = y1 - y0;
+
+        // Create new buffer
+        Image new_data(d_depth, new_width, new_height, d_channels);
+
+        // Copy cropped area to new region
+        for (int c = 0; c < d_channels; c++)
+            for (int x = 0; x < new_width; x++)
+                for (int y = 0; y < new_height; y++)
+                    new_data.set(c, x, y, get(c, (x + x0), (y0 + y)));
+
+        return new_data;
     }
 
-    // Append selected file extension
-    template <typename T>
-    bool Image<T>::append_ext(std::string *file, bool prod)
+    Image Image::crop_to(int x0, int x1)
     {
-        // Do nothing if there's already an extension
-        if (file->find(".png") != std::string::npos ||
-            file->find(".jpeg") != std::string::npos ||
-            file->find(".jpg") != std::string::npos ||
-            file->find(".j2k") != std::string::npos ||
-            file->find(".pgm") != std::string::npos ||
-            file->find(".pbm") != std::string::npos ||
-            file->find(".ppm") != std::string::npos ||
-            file->find(".tif") != std::string::npos ||
-            file->find(".tiff") != std::string::npos ||
-            file->find(".gtif") != std::string::npos)
-            return true;
+        return crop_to(x0, 0, x1, d_height);
+    }
 
-        // Otherwise, load the user setting
-        std::string image_format;
-        try
+    void Image::mirror(bool x, bool y)
+    {
+        if (y) // Mirror on the Y axis
         {
-            if (prod)
-                image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
-            else
-                image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];
-        }
-        catch (std::exception &e)
-        {
-            logger->error("Image format not specified, and default format cannot be found! %s", e.what());
-            return false;
+            int *tmp_col = (int *)malloc(d_height * sizeof(int));
+
+            for (int c = 0; c < d_channels; c++)
+            {
+                for (size_t col = 0; col < d_width; col++)
+                {
+                    for (size_t i = 0; i < d_height; i++) // Buffer column
+                        tmp_col[i] = get(c, col, i);
+
+                    for (size_t i = 0; i < d_height; i++) // Restore and mirror
+                        set(c, col, i, tmp_col[(d_height - 1) - i]);
+                }
+            }
+
+            free(tmp_col);
         }
 
-        if (image_format != "png" && image_format != "jpg" && image_format != "j2k" && image_format != "pbm" && image_format != "tif")
+        if (x) // Mirror on the X axis
         {
-            logger->error("Image format not specified, and default format is invalid!");
-            return false;
-        }
+            int *tmp_row = (int *)malloc(d_width * sizeof(int));
 
-        *file += "." + image_format;
-        return true;
+            for (int c = 0; c < d_channels; c++)
+            {
+                for (size_t row = 0; row < d_height; row++)
+                {
+                    for (size_t i = 0; i < d_width; i++) // Buffer column
+                        tmp_row[i] = get(c, i, row);
+
+                    for (size_t i = 0; i < d_width; i++) // Restore and mirror
+                        set(c, i, row, tmp_row[(d_width - 1) - i]);
+                }
+            }
+
+            free(tmp_row);
+        }
     }
 
-    // Generate Images for uint16_t and uint8_t
-    template class Image<uint8_t>;
-    template class Image<uint16_t>;
+    void Image::resize(int width, int height)
+    {
+        double x_scale = double(d_width) / double(width);
+        double y_scale = double(d_height) / double(height);
+
+        Image tmp = *this;
+        init(d_depth, width, height, d_channels);
+
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t x = 0; x < d_width; x++)
+            {
+                for (size_t y = 0; y < d_height; y++)
+                {
+                    int xx = floor(double(x) * x_scale);
+                    int yy = floor(double(y) * y_scale);
+
+                    set(c, x, y, tmp.get(c, xx, yy));
+                }
+            }
+        }
+    }
+
+    Image Image::resize_to(int width, int height)
+    {
+        double x_scale = double(d_width) / double(width);
+        double y_scale = double(d_height) / double(height);
+
+        Image ret(d_depth, width, height, d_channels);
+
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t x = 0; x < (size_t)width; x++)
+            {
+                for (size_t y = 0; y < (size_t)height; y++)
+                {
+                    int xx = floor(double(x) * x_scale);
+                    int yy = floor(double(y) * y_scale);
+
+                    ret.set(c, x, y, get(c, xx, yy));
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    void Image::resize_bilinear(int width, int height, bool text_mode)
+    {
+        int a = 0, b = 0, c = 0, d = 0, x = 0, y = 0;
+        size_t index;
+        double x_scale = double(d_width - 1) / double(width);
+        double y_scale = double(d_height - 1) / double(height);
+        float x_diff, y_diff, val;
+
+        Image tmp = *this;
+        init(d_depth, width, height, d_channels);
+        size_t max_index = tmp.width() * tmp.height();
+
+        for (int cc = 0; cc < d_channels; cc++)
+        {
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    x = (int)(x_scale * j);
+                    y = (int)(y_scale * i);
+
+                    x_diff = (x_scale * j) - x;
+                    y_diff = (y_scale * i) - y;
+
+                    index = (y * tmp.width() + x);
+
+                    a = tmp.get(cc, index);
+                    if (index + 1 < max_index)
+                        b = tmp.get(cc, index + 1);
+                    if (index + tmp.width() < max_index)
+                        c = tmp.get(cc, index + tmp.width());
+                    if (index + tmp.width() + 1 < max_index)
+                        d = tmp.get(cc, index + tmp.width() + 1);
+
+                    val = a * (1 - x_diff) * (1 - y_diff) +
+                          b * (x_diff) * (1 - y_diff) +
+                          c * (y_diff) * (1 - x_diff) +
+                          d * (x_diff * y_diff);
+
+                    if (text_mode) // Special text mode, where we want to keep it clear whatever the res is
+                        set(cc, i * width + j, val > 0 ? d_maxv : 0);
+                    else
+                        set(cc, i * width + j, val);
+                }
+            }
+        }
+    }
+
+    int Image::get_pixel_bilinear(int cc, double rx, double ry)
+    {
+        size_t x = (size_t)rx;
+        size_t y = (size_t)ry;
+
+        double x_diff = rx - x;
+        double y_diff = ry - y;
+
+        size_t index = (y * d_width + x);
+        size_t max_index = d_width * d_height;
+
+        int a = 0, b = 0, c = 0, d = 0;
+        float a_a = 1.0f, b_a = 1.0f, c_a = 1.0f, d_a = 1.0f;
+
+        a = get(cc, index);
+        if (d_channels == 4 && cc != 3)
+            a_a = (float)get(3, index) / (float)d_maxv;
+
+        if (index + 1 < max_index)
+        {
+            b = get(cc, index + 1);
+            if (d_channels == 4 && cc != 3)
+            {
+                b_a = (float)get(3, index + 1) / (float)d_maxv;
+                b = (float)b * b_a;
+            }
+        }
+        else
+            return a;
+
+        if (index + d_width < max_index)
+        {
+            c = get(cc, index + d_width);
+            if (d_channels == 4 && cc != 3)
+            {
+                c_a = (float)get(3, index + d_width) / (float)d_maxv;
+                c = (float)c * c_a;
+            }
+        }
+        else
+            return a;
+
+        if (index + d_width + 1 < max_index)
+        {
+            d = get(cc, index + d_width + 1);
+            if (d_channels == 4 && cc != 3)
+            {
+                d_a = (float)get(3, index + d_width + 1) / (float)d_maxv;
+                d = (float)d * d_a;
+            }
+        }
+        else
+            return a;
+
+        if (x == d_width - 1)
+            return a;
+        if (y == d_height - 1)
+            return a;
+
+        a = (float)a * a_a;
+        int ret = clamp(a * (1 - x_diff) * (1 - y_diff) +
+                        b * (x_diff) * (1 - y_diff) +
+                        c * (y_diff) * (1 - x_diff) +
+                        d * (x_diff * y_diff));
+        if (d_channels == 4 && cc != 3)
+        {
+            ret = (float)ret / (a_a * (1 - x_diff) * (1 - y_diff) +
+                                b_a * (x_diff) * (1 - y_diff) +
+                                c_a * (y_diff) * (1 - x_diff) +
+                                d_a * (x_diff * y_diff));
+        }
+
+        return ret;
+    }
+
+    void Image::fill(int val)
+    {
+        for (int c = 0; c < d_channels; c++)
+            for (size_t i = 0; i < d_width * d_height; i++)
+                set(c, i, val);
+    }
 }

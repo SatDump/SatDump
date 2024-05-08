@@ -49,9 +49,9 @@ namespace oceansat
                 channels[i].resize((lines + 1) * 4072);
         }
 
-        image2::Image OCMReader::getChannel(int channel)
+        image::Image OCMReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 4072, lines, 1);
+            return image::Image(channels[channel].data(), 16, 4072, lines, 1);
         }
     } // namespace avhrr
 } // namespace noaa

@@ -91,7 +91,7 @@ namespace satdump
         OverlayHandler projection_overlay_handler;
 
     public: // Projection UI stuff
-        image2::Image projected_image_result;
+        image::Image projected_image_result;
         ImageViewWidget projection_image_widget;
         void drawProjectionPanel();
 

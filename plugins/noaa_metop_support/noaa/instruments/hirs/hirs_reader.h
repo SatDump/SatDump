@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "../../tip_time_parser.h"
 #include "../../contains.h"
 
@@ -23,7 +23,7 @@ namespace noaa
             ~HIRSReader();
             int line = 0;
             void work(uint8_t *buffer);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
 
             double last_timestamp = -1;
             TIPTimeParser ttp;

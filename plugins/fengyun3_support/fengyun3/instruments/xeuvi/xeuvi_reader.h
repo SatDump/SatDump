@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include <vector>
 #include <string>
 
@@ -13,7 +13,7 @@ namespace fengyun3
         {
         private:
             const std::string directory;
-            image2::Image image;
+            image::Image image;
 
         public:
             XEUVIReader(std::string directory);

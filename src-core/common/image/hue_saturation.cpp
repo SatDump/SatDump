@@ -71,10 +71,9 @@ namespace image
             return value + (v * (1.0 - value));
     }
 
-    template <typename T>
-    void hue_saturation(Image<T> &image, HueSaturation config)
+    void hue_saturation(Image &image, HueSaturation config)
     {
-        float scale = std::numeric_limits<T>::max() - 1;
+        float scale = image.maxval() - 1;
 
         double rgb_r, rgb_g, rgb_b;
         double hsl_h, hsl_s, hsl_l;
@@ -83,9 +82,9 @@ namespace image
 
         for (size_t pixel = 0; pixel < image.width() * image.height(); pixel++)
         {
-            rgb_r = image[image.width() * image.height() * 0 + pixel] / scale;
-            rgb_g = image[image.width() * image.height() * 1 + pixel] / scale;
-            rgb_b = image[image.width() * image.height() * 2 + pixel] / scale;
+            rgb_r = image.get(image.width() * image.height() * 0 + pixel) / scale;
+            rgb_g = image.get(image.width() * image.height() * 1 + pixel) / scale;
+            rgb_b = image.get(image.width() * image.height() * 2 + pixel) / scale;
 
             rgb_to_hsl(rgb_r, rgb_g, rgb_b, hsl_h, hsl_s, hsl_l);
             {
@@ -155,9 +154,9 @@ namespace image
             }
             hsl_to_rgb(hsl_h, hsl_s, hsl_l, rgb_r, rgb_g, rgb_b);
 
-            image[image.width() * image.height() * 0 + pixel] = rgb_r * scale;
-            image[image.width() * image.height() * 1 + pixel] = rgb_g * scale;
-            image[image.width() * image.height() * 2 + pixel] = rgb_b * scale;
+            image.set(image.width() * image.height() * 0 + pixel, rgb_r * scale);
+            image.set(image.width() * image.height() * 1 + pixel, rgb_g * scale);
+            image.set(image.width() * image.height() * 2 + pixel, rgb_b * scale);
         }
     }
 
@@ -252,7 +251,4 @@ namespace image
             b = hsl_value(m1, m2, h * 6.0 - 2.0);
         }
     }
-
-    template void hue_saturation<uint8_t>(Image<uint8_t> &, HueSaturation);
-    template void hue_saturation<uint16_t>(Image<uint16_t> &, HueSaturation);
 }

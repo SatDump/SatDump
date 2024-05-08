@@ -1,6 +1,6 @@
 #include "wai_reader.h"
 #include "logger.h"
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace fengyun3
 {
@@ -9,7 +9,7 @@ namespace fengyun3
         WAIReader::WAIReader(std::string directory) : directory(directory)
         {
             lines = 0;
-            image = image2::Image(16, 832, 832, 1);
+            image = image::Image(16, 832, 832, 1);
         }
 
         WAIReader::~WAIReader()
@@ -18,8 +18,8 @@ namespace fengyun3
 
         void WAIReader::writeCurrent()
         {
-            image2::save_img(image, std::string(directory + "/WAI_" + std::to_string(images_count++ + 1)).c_str());
-            image = image2::Image(16, 832, 832, 1);
+            image::save_img(image, std::string(directory + "/WAI_" + std::to_string(images_count++ + 1)).c_str());
+            image = image::Image(16, 832, 832, 1);
 
             lines = 0;
         }

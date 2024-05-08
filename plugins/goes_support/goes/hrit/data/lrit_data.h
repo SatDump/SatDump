@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -40,7 +40,7 @@ namespace goes
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t *data, size_t this_size, int segc);
             bool isComplete();
-            std::shared_ptr<image2::Image> image;
+            std::shared_ptr<image::Image> image;
             int image_id = -1;
             GOESxRITProductMeta meta;
         };

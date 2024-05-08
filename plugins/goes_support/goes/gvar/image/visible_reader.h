@@ -23,7 +23,7 @@ namespace goes
             ~VisibleReader();
             void startNewFullDisk();
             void pushFrame(uint8_t *data, int block, int counter);
-            image::Image<uint16_t> getImage();
+            image::Image getImage();
         };
     }
 }

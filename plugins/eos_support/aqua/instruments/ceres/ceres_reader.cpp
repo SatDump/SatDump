@@ -56,9 +56,9 @@ namespace aqua
                 channels[i].resize((lines + 1) * 660);
         }
 
-        image2::Image CERESReader::getImage(int channel)
+        image::Image CERESReader::getImage(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 660, lines, 1);
+            return image::Image(channels[channel].data(), 16, 660, lines, 1);
         }
     } // namespace ceres
 } // namespace aqua

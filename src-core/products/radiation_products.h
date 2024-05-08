@@ -1,7 +1,7 @@
 #pragma once
 
 #include "products.h"
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "logger.h"
 
 namespace satdump
@@ -105,5 +105,5 @@ namespace satdump
         v.max = j["max"].get<int>();
     }
 
-    image2::Image make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay = false, float *progress = nullptr);
+    image::Image make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay = false, float *progress = nullptr);
 }

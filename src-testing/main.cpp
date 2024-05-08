@@ -12,18 +12,18 @@
 
 #include "logger.h"
 
-#include "common/image2/image.h"
-#include "common/image2/io.h"
+#include "common/image/image.h"
+#include "common/image/io.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
     completeLoggerInit();
 
-    image2::Image img;
-    image2::load_img(img, argv[1]);
+    image::Image img;
+    image::load_img(img, argv[1]);
     logger->info("Bit Depth %d, Size %d", img.depth(), img.size() * img.typesize());
     img = img.to16bits();
     logger->info("Bit Depth %d, Size %d", img.depth(), img.size() * img.typesize());
-    image2::save_img(img, argv[2]);
+    image::save_img(img, argv[2]);
 }

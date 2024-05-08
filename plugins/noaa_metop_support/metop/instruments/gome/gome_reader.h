@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace metop
 {
@@ -18,7 +18,7 @@ namespace metop
             ~GOMEReader();
             void work(ccsds::CCSDSPacket &packet);
             std::vector<double> timestamps;
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace gome
 } // namespace metop

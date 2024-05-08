@@ -7,7 +7,7 @@
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
 
-namespace image2
+namespace image
 {
     void save_pbm(Image &img, std::string file)
     {

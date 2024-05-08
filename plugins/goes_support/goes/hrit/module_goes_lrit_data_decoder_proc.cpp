@@ -5,7 +5,7 @@
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 #ifdef _MSC_VER
 #define timegm _mkgmtime
@@ -52,7 +52,7 @@ namespace goes
             fileo.close();
         }
 
-        void GOESLRITDataDecoderModule::saveImageP(GOESxRITProductMeta meta, image2::Image &img)
+        void GOESLRITDataDecoderModule::saveImageP(GOESxRITProductMeta meta, image::Image &img)
         {
             if (meta.is_goesn)
                 img.resize(img.width(), img.height() * 1.75);
@@ -60,7 +60,7 @@ namespace goes
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
             {
                 std::string ext;
-                image2::append_ext(img, &ext, true);
+                image::append_ext(img, &ext, true);
                 if (std::filesystem::exists(directory + "/IMAGES/Unknown/" + meta.filename + ext))
                 {
                     int current_iteration = 1;
@@ -69,11 +69,11 @@ namespace goes
                     {
                         filename_new = meta.filename + "_" + std::to_string(current_iteration++);
                     } while (std::filesystem::exists(directory + "/IMAGES/Unknown/" + filename_new + ext));
-                    image2::save_img(img, directory + "/IMAGES/Unknown/" + filename_new);
+                    image::save_img(img, directory + "/IMAGES/Unknown/" + filename_new);
                     logger->warn("Image already existed. Written as %s", filename_new.c_str());
                 }
                 else
-                    image2::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
+                    image::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
             }
             else
             {
@@ -324,7 +324,7 @@ namespace goes
                         // Downscale image
                         wip_img->img_height = 1000;
                         wip_img->img_width = 1000;
-                        image2::Image imageScaled = *(segmentedDecoder.image);
+                        image::Image imageScaled = *(segmentedDecoder.image);
                         imageScaled.resize(wip_img->img_width, wip_img->img_height);
                         if (imageScaled.typesize() == 1)
                             uchar_to_rgba((uint8_t *)imageScaled.raw_data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width, 1);
@@ -354,7 +354,7 @@ namespace goes
                     }
                     else // Write raw image dats
                     {
-                        image2::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         saveImageP(lmeta, image);
                     }
                 }

@@ -3,7 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <vector>
 #include <array>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "channels.h"
 
 extern "C"
@@ -74,7 +74,7 @@ namespace jpss
             void differentialDecode(VIIRSReader &channelSource, int decimation);
 
             std::vector<double> timestamps;
-            image2::Image getImage();
+            image::Image getImage();
         };
     } // namespace viirs
 } // namespace jpss

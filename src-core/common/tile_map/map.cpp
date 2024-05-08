@@ -1,4 +1,5 @@
 #include "map.h"
+/*
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include "common/utils.h"
@@ -149,4 +150,5 @@ image::Image<uint8_t> tileMap::getMapImage(std::pair<float, float> coor, std::pa
                 *progress = float(x * xtiles + y) / (xtiles * ytiles);
         }
     return img;
-}
+}*/
+// TODOIMG

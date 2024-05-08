@@ -6,7 +6,7 @@ namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_offset_interleaved(image2::Image &img, int /*ndet*/, int shift)
+        void mersi_offset_interleaved(image::Image &img, int /*ndet*/, int shift)
         {
             std::vector<int> line_buffer(img.width());
             for (int y = 0; y < (int)img.height(); y += 2)

@@ -25,7 +25,7 @@ namespace fy4
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t *data, int segc, int height);
             bool isComplete();
-            image::Image<uint8_t> image;
+            image::Image image;
             std::string image_id = "";
         };
 

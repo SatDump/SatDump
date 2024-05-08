@@ -38,7 +38,7 @@ namespace coriolis
                 if ((frame[0] & 0b1111) == channel_id) // Select a channel
                 {
                     uint32_t scan_id = /*frame[4] << 24 |*/ frame[5] << 16 | frame[6] << 8 | frame[7]; // Scanline ID
-                    int pixel_offset = (frame[8] & 0b1111) << 8 | frame[9];                        // Pixel offset
+                    int pixel_offset = (frame[8] & 0b1111) << 8 | frame[9];                            // Pixel offset
 
                     if (pixel_offset + 12 > width)
                         return;
@@ -63,14 +63,14 @@ namespace coriolis
             }
         }
 
-        image::Image<uint16_t> WindSatReader::getImage1()
+        image::Image WindSatReader::getImage1()
         {
-            return image::Image<uint16_t>(image1, width, lines, 1);
+            return image::Image(image1, 16, width, lines, 1);
         }
 
-        image::Image<uint16_t> WindSatReader::getImage2()
+        image::Image WindSatReader::getImage2()
         {
-            return image::Image<uint16_t>(image2, width, lines, 1);
+            return image::Image(image2, 16, width, lines, 1);
         }
     } // namespace avhrr
 } // namespace noaa

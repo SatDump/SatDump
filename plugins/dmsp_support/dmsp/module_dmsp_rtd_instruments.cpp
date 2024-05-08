@@ -3,7 +3,6 @@
 #include "imgui/imgui.h"
 #include <volk/volk.h>
 #include "common/utils.h"
-#include "common/image/image.h"
 #include "common/repack.h"
 #include "products/image_products.h"
 #include "products/dataset.h"

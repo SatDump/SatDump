@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace oceansat
 {
@@ -18,7 +18,7 @@ namespace oceansat
             ~OCMReader();
             int lines;
             void work(uint8_t *buffer);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace avhrr
 } // namespace noaa

@@ -1,6 +1,6 @@
 #include "pmr_reader.h"
 #include "logger.h"
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace fengyun3
 {
@@ -19,7 +19,7 @@ namespace fengyun3
         {
             // image.equalize();
             // image.normalize();
-            image2::save_img(image, std::string(directory + "/PMR_" + std::to_string(images_count++ + 1)).c_str());
+            image::save_img(image, std::string(directory + "/PMR_" + std::to_string(images_count++ + 1)).c_str());
             image.fill(0);
         }
 

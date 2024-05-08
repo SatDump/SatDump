@@ -8,21 +8,21 @@
 
 namespace elektro
 {
-    image::Image<uint16_t> msuGsNaturalColorCompositor(satdump::ImageProducts *img_pro,
-                                                       std::vector<image::Image<uint16_t>> &inputChannels,
-                                                       std::vector<std::string> channelNumbers,
-                                                       std::string cpp_id,
-                                                       nlohmann::json vars,
-                                                       nlohmann::json offsets_cfg,
-                                                       std::vector<double> *final_timestamps = nullptr,
-                                                       float *progress = nullptr)
+    image::Image msuGsNaturalColorCompositor(satdump::ImageProducts *img_pro,
+                                              std::vector<image::Image> &inputChannels,
+                                              std::vector<std::string> channelNumbers,
+                                              std::string cpp_id,
+                                              nlohmann::json vars,
+                                              nlohmann::json offsets_cfg,
+                                              std::vector<double> *final_timestamps = nullptr,
+                                              float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // return 3 channels, RGB. Generate 321
-        image::Image<uint16_t> output(f.maxWidth, f.maxHeight, 3);
+        image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
 
-        uint16_t *channelVals = new uint16_t[inputChannels.size()];
+        int *channelVals = new int[inputChannels.size()];
 
         for (size_t x = 0; x < output.width(); x++)
         {
@@ -32,9 +32,9 @@ namespace elektro
                 image::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
 
                 // return RGB 0=R 1=G 2=B
-                output.channel(0)[y * output.width() + x] = channelVals[0];
-                output.channel(1)[y * output.width() + x] = channelVals[1];
-                output.channel(2)[y * output.width() + x] = channelVals[2];
+                output.set(0, y * output.width() + x, channelVals[0]);
+                output.set(1, y * output.width() + x, channelVals[1]);
+                output.set(2, y * output.width() + x, channelVals[2]);
             }
 
             // set the progress bar accordingly

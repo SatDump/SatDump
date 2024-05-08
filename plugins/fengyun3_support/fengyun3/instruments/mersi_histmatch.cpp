@@ -1,5 +1,5 @@
 #include "mersi_histmatch.h"
-#include "common/image2/histogram_utils.h"
+#include "common/image/histogram_utils.h"
 #include "logger.h"
 #include <cmath>
 
@@ -7,7 +7,7 @@ namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_match_detector_histograms(image2::Image &img, int ndet)
+        void mersi_match_detector_histograms(image::Image &img, int ndet)
         {
             std::vector<std::vector<int>> pre_histograms_buffer(ndet);
             std::vector<std::vector<int>> all_histograms(ndet);
@@ -21,13 +21,13 @@ namespace fengyun3
 
             // Get histograms of all channels, then clear buffers
             for (int i = 0; i < ndet; i++)
-                all_histograms[i] = image2::histogram::get_histogram(pre_histograms_buffer[i], 4096);
+                all_histograms[i] = image::histogram::get_histogram(pre_histograms_buffer[i], 4096);
             pre_histograms_buffer.clear();
             logger->trace("Made histograms...");
 
             // Equalize all histograms
             for (int i = 0; i < ndet; i++)
-                all_histograms[i] = image2::histogram::equalize_histogram(all_histograms[i]);
+                all_histograms[i] = image::histogram::equalize_histogram(all_histograms[i]);
             logger->trace("Equalized histograms...");
 
             // Scale down to be faster
@@ -42,7 +42,7 @@ namespace fengyun3
             {
                 if (i > 0)
                 {
-                    matching_tables[i] = image2::histogram::make_hist_match_table(all_histograms[i], all_histograms[0], 100);
+                    matching_tables[i] = image::histogram::make_hist_match_table(all_histograms[i], all_histograms[0], 100);
                 }
                 else
                 {

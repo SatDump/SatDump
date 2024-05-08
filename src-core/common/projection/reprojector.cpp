@@ -17,13 +17,13 @@
 // #include "reproj/reproj.h"
 
 #include "common/projection/projs2/proj_json.h"
-#include "common/image2/image_meta.h"
+#include "common/image/image_meta.h"
 
 namespace satdump
 {
     namespace reprojection
     {
-        inline void transposePixel(image2::Image &in, image2::Image &out, double ix, double iy, int ox, int oy)
+        inline void transposePixel(image::Image &in, image::Image &out, double ix, double iy, int ox, int oy)
         {
             if (ix >= (int)in.width() || iy >= (int)in.height() || ix < 0 || iy < 0)
                 return;
@@ -58,13 +58,13 @@ namespace satdump
             }
         }
 
-        image2::Image reproject(ReprojectionOperation &op, float *progress)
+        image::Image reproject(ReprojectionOperation &op, float *progress)
         {
-            image2::Image result_img;
+            image::Image result_img;
 
             if (op.img.size() == 0)
                 throw satdump_exception("Can't reproject an empty image!");
-            if (!image2::has_metadata_proj_cfg(op.img))
+            if (!image::has_metadata_proj_cfg(op.img))
                 throw satdump_exception("Can't reproject an image with no proj config!");
 
             op.img.to16bits(); // TODOIMG for now can only project 16-bits
@@ -93,7 +93,7 @@ namespace satdump
             bool src_proj_err = false;
             try
             {
-                src_proj = image2::get_metadata_proj_cfg(op.img);
+                src_proj = image::get_metadata_proj_cfg(op.img);
             }
             catch (std::exception &e)
             {
@@ -125,7 +125,7 @@ namespace satdump
                 { // This is garbage, but robust to noise garbage!
                     logger->info("Using old algorithm...!");
 
-                    auto src_proj_cfg = image2::get_metadata_proj_cfg(op.img);
+                    auto src_proj_cfg = image::get_metadata_proj_cfg(op.img);
 
                     // Init
                     std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(result_img.width(),
@@ -222,7 +222,7 @@ namespace satdump
                 else
                 {
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image2::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
                     operation.input_image = op.img;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
@@ -263,7 +263,7 @@ namespace satdump
                 }
             }
 
-            image2::set_metadata_proj_cfg(result_img, trg_proj);
+            image::set_metadata_proj_cfg(result_img, trg_proj);
 
             proj::projection_free(&trg_proj);
             return result_img;
@@ -325,17 +325,17 @@ namespace satdump
             throw satdump_exception("Invalid projection!!!!");
         }
 
-        ProjBounds determineProjectionBounds(image2::Image &img)
+        ProjBounds determineProjectionBounds(image::Image &img)
         {
-            if (!image2::has_metadata(img))
+            if (!image::has_metadata(img))
                 return {0, 0, 0, 0, false};
 
-            if (!image2::get_metadata(img).contains("proj_cfg"))
+            if (!image::get_metadata(img).contains("proj_cfg"))
                 return {0, 0, 0, 0, false};
 
             try
             {
-                nlohmann::json params = image2::get_metadata(img)["proj_cfg"];
+                nlohmann::json params = image::get_metadata(img)["proj_cfg"];
 
                 proj::projection_t proj;
                 bool proj_err = false;

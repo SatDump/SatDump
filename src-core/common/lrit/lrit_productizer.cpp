@@ -9,7 +9,7 @@
 #include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"
 
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace lrit
 {
@@ -407,7 +407,7 @@ namespace lrit
                             if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() == 0)
                             {
                                 logger->trace("Loading image channel " + img.channel_name);
-                                image2::load_img(img.image, pro_path + "/" + img.filename);
+                                image::load_img(img.image, pro_path + "/" + img.filename);
                             }
                         }
                     }
@@ -500,7 +500,7 @@ namespace lrit
         }
     }
 
-    void LRITProductizer::saveImage(image2::Image img,
+    void LRITProductizer::saveImage(image::Image img,
                                     std::string directory,
                                     std::string satellite,
                                     std::string satshort,
@@ -511,7 +511,7 @@ namespace lrit
                                     ImageDataFunctionRecord *image_data_function_record)
     {
         std::string ext;
-        image2::append_ext(img, &ext, true);
+        image::append_ext(img, &ext, true);
         std::string directory_path = region == ""
                                          ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
                                          : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
@@ -563,7 +563,7 @@ namespace lrit
             {
                 filename_new = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + "_" + std::to_string(current_iteration++) + ext;
             } while (std::filesystem::exists(directory_path + filename_new));
-            image2::save_img(img, directory_path + filename_new);
+            image::save_img(img, directory_path + filename_new);
             logger->warn("Image already existed. Written as %s", filename_new.c_str());
         }
         // Otherwise, we can go on as usual and write a proper product.
@@ -585,7 +585,7 @@ namespace lrit
                         contains = true;
 
                 if (!contains)
-                    pro->images.push_back({filename, channel, image2::Image()});
+                    pro->images.push_back({filename, channel, image::Image()});
 
                 if (!pro->has_proj_cfg())
                 {
@@ -623,7 +623,7 @@ namespace lrit
                     pro->set_proj_cfg(proj_cfg);
                     // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
-                pro->images.push_back({filename, channel, image2::Image()});
+                pro->images.push_back({filename, channel, image::Image()});
 
                 addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
 
@@ -631,7 +631,7 @@ namespace lrit
             }
         }
 
-        image2::save_img(img, directory_path + filename);
+        image::save_img(img, directory_path + filename);
 
         // Attempt to autogen composites
         if (can_make_composites)

@@ -6,6 +6,7 @@
 #include "common/image/jpeg_utils.h"
 #include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
+#include "common/image/io.h"
 
 namespace elektro
 {
@@ -35,10 +36,10 @@ namespace elektro
             return utc_filename;
         }
 
-        void ELEKTROLRITDataDecoderModule::saveImageP(GOMSxRITProductMeta meta, image::Image<uint8_t> img)
+        void ELEKTROLRITDataDecoderModule::saveImageP(GOMSxRITProductMeta meta, image::Image img)
         {
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
-                img.save_img(std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
+                image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
             else
                 productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
         }
@@ -60,9 +61,12 @@ namespace elektro
                 if (file.custom_flags[JPEG_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
                 {
                     logger->info("Decompressing JPEG...");
-                    image::Image<uint8_t> img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length, true);
+                    image::Image img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length, true);
+                    if (img.depth() != 8)
+                        logger->error("ELEKTRO xRIT JPEG Depth should be 8!");
+
                     file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
-                    file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
+                    file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.height() * img.width());
                 }
                 else if (file.custom_flags[WT_COMPRESSED]) // Is this Wavelet-Compressed? Decompress. We know this will always be 10-bits
                 {
@@ -121,6 +125,7 @@ namespace elektro
                         decompressedImage.Read(0, image_ptr, buf_size);
                     }
 
+                    // TODOIMG handle 10-bits to 16?
                     if (out_pixels == image_structure_record.columns_count * image_structure_record.lines_count) // Matches?
                     {
                         // Empty current LRIT file
@@ -273,9 +278,9 @@ namespace elektro
                         // Downscale image
                         wip_img->img_height = 1000;
                         wip_img->img_width = 1000;
-                        image::Image<uint8_t> imageScaled = segmentedDecoder.image;
+                        image::Image imageScaled = segmentedDecoder.image;
                         imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                        uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                        uchar_to_rgba((uint8_t *)imageScaled.raw_data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width); // TODO CONSOLIDATE
                         wip_img->hasToUpdate = true;
                     }
 
@@ -292,8 +297,8 @@ namespace elektro
                 else
                 { // Left just in case, should not happen on ELEKTRO-L
                     // Write raw image dats
-                    image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                    image.save_img(std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
+                    image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                    image::save_img(image, std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
                 }
             }
             else

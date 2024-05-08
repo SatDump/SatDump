@@ -3,8 +3,8 @@
 #include "common/tracking/tracking.h"
 #include "resources.h"
 #include <filesystem>
-#include "common/image2/io.h"
-#include "common/image2/image_lut.h"
+#include "common/image/io.h"
+#include "common/image/image_lut.h"
 
 namespace satdump
 {
@@ -25,14 +25,14 @@ namespace satdump
         channel_counts = contents["counts"].get<std::vector<std::vector<int>>>();
     }
 
-    image2::Image make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay, float *progress)
+    image::Image make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay, float *progress)
     {
-        image2::Image map;
+        image::Image map;
         if (!isOverlay)
-            image2::load_jpeg(map, resources::getResourcePath("maps/nasa.jpg").c_str());
+            image::load_jpeg(map, resources::getResourcePath("maps/nasa.jpg").c_str());
         else
             map.init(8, 2048, 1024, 4);
-        image2::Image color_lut = image2::LUT_jet<uint16_t>(); // TODOIMG
+        image::Image color_lut = image::LUT_jet<uint16_t>(); // TODOIMG
 
         int img_x = map.width();
         int img_y = map.height();

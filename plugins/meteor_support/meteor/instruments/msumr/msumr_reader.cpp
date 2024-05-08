@@ -42,9 +42,9 @@ namespace meteor
                 channels[channel].resize((lines + 1) * 1572);
         }
 
-        image2::Image MSUMRReader::getChannel(int channel)
+        image::Image MSUMRReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 1572, lines, 1);
+            return image::Image(channels[channel].data(), 16, 1572, lines, 1);
         }
     } // namespace msumr
 } // namespace meteor

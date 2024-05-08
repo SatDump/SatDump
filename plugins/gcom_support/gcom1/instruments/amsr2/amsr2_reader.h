@@ -22,7 +22,7 @@ namespace gcom1
 
             int lines;
 
-            image::Image<uint16_t> getChannel(int c);
+            image::Image getChannel(int c);
         };
     } // namespace swap
 } // namespace proba

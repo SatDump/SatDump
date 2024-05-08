@@ -9,7 +9,7 @@
 namespace geonetcast
 {
 #ifdef ENABLE_HDF5_PARSING
-    image::Image<uint16_t> parse_goesr_abi_netcdf_fulldisk_CMI(std::vector<uint8_t> data, int bit_depth)
+    image::Image parse_goesr_abi_netcdf_fulldisk_CMI(std::vector<uint8_t> data, int bit_depth)
     {
         // herr_t status;
         hsize_t image_dims[2];
@@ -33,12 +33,12 @@ namespace geonetcast
 
         hid_t memspace = H5Screate_simple(2, image_dims, NULL);
 
-        image::Image<uint16_t> image_out(image_dims[0], image_dims[1], 1);
+        image::Image image_out(16, image_dims[0], image_dims[1], 1);
 
-        /*status =*/H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, image_out.data());
+        /*status =*/H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)image_out.raw_data());
 
         for (size_t i = 0; i < image_out.size(); i++)
-            image_out[i] <<= (16 - bit_depth);
+            image_out.set(i image_out.get(i) << (16 - bit_depth));
 
         H5Dclose(dataset);
         H5Fclose(file);
@@ -48,12 +48,12 @@ namespace geonetcast
 #endif
 
 #if 0
-    image::Image<uint16_t> parse_goesr_abi_netcdf_fulldisk(std::vector<uint8_t> data, int side_chunks, int bit_depth, bool mode2)
+    image::Image parse_goesr_abi_netcdf_fulldisk(std::vector<uint8_t> data, int side_chunks, int bit_depth, bool mode2)
     {
         const int chunk_width = mode2 ? 226 : 1356;
 
-        image::Image<uint16_t> chunk_image(chunk_width, chunk_width, 1);
-        image::Image<uint16_t> final_image(chunk_width * side_chunks, chunk_width * side_chunks, 1);
+        image::Image chunk_image(16, chunk_width, chunk_width, 1);
+        image::Image final_image(16, chunk_width * side_chunks, chunk_width * side_chunks, 1);
         uint8_t *decompressed_chunk = new uint8_t[chunk_width * chunk_width * 2];
 
         int mz_out = MZ_OK;

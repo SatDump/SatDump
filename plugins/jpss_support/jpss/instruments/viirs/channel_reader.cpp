@@ -138,9 +138,9 @@ namespace jpss
             }
         }
 
-        image2::Image VIIRSReader::getImage()
+        image::Image VIIRSReader::getImage()
         {
-            image2::Image image(16, channelSettings.totalWidth, channelSettings.zoneHeight * (segments.size() + 1), 1);
+            image::Image image(16, channelSettings.totalWidth, channelSettings.zoneHeight * (segments.size() + 1), 1);
             timestamps.clear();
 
             // Recompose image

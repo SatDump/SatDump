@@ -1,7 +1,7 @@
 #pragma once
 
 #include "products.h"
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "dll_export.h"
 
 namespace satdump
@@ -114,6 +114,6 @@ namespace satdump
         v.max = j["max"].get<int>();
     }
 
-    image2::Image make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr);
-    image2::Image make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr, nlohmann::json *proj_cfg = nullptr);
+    image::Image make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr);
+    image::Image make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr, nlohmann::json *proj_cfg = nullptr);
 }

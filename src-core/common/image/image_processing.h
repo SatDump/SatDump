@@ -2,7 +2,7 @@
 
 #include "image.h"
 
-namespace image2
+namespace image
 {
     void white_balance(Image &img, float percentileValue = 0.05f); // While balance algorithm from Gimp
     void median_blur(Image &img);                                  // Median blur algorithm

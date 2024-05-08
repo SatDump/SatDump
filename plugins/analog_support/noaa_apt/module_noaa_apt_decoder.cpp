@@ -7,8 +7,8 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "nlohmann/json_utils.h"
-#include "common/image2/io.h"
-#include "common/image2/image_processing.h"
+#include "common/image/io.h"
+#include "common/image/image_processing.h"
 
 #include "common/dsp/filter/firdes.h"
 #include "resources.h"
@@ -241,7 +241,7 @@ namespace noaa_apt
             {
                 int x_scale = (APT_IMG_WIDTH * APT_IMG_OVERS) / 512;
                 int y_scale = ceil((double)line_cnt / 512);
-                image2::Image preview(16, 512, 512, 1);
+                image::Image preview(16, 512, 512, 1);
                 for (int x = 0; x < 512; x++)
                     for (int y = 0; y < line_cnt / y_scale; y++)
                     {
@@ -280,22 +280,22 @@ namespace noaa_apt
         // Buffer to image
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got %d lines...", line_cnt);
-        wip_apt_image = image2::Image(imagebuf.data(), 16, APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
+        wip_apt_image = image::Image(imagebuf.data(), 16, APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
         std::vector<uint16_t>().swap(imagebuf);
 
         // WB
         logger->info("White balance...");
-        image2::white_balance(wip_apt_image);
+        image::white_balance(wip_apt_image);
 
         // Save unsynced
         if (d_save_unsynced)
         {
-            image2::Image wip_apt_image_sized(16, APT_IMG_WIDTH, line_cnt, 1);
+            image::Image wip_apt_image_sized(16, APT_IMG_WIDTH, line_cnt, 1);
 #pragma omp parallel for
             for (int line = 0; line < line_cnt - 1; line++)
                 for (int i = 0; i < APT_IMG_WIDTH; i++)
                     wip_apt_image_sized.set(line * APT_IMG_WIDTH + i, wip_apt_image.get(line * APT_IMG_WIDTH * APT_IMG_OVERS + i * APT_IMG_OVERS));
-            image2::save_img(wip_apt_image_sized, main_dir + "/raw_unsync");
+            image::save_img(wip_apt_image_sized, main_dir + "/raw_unsync");
         }
 
         // Synchronize
@@ -629,7 +629,7 @@ namespace noaa_apt
         int last_valid_line = line_cnt;
 
         // Save RAW before we crop
-        image2::save_img(wip_apt_image, main_dir + "/raw_sync");
+        image::save_img(wip_apt_image, main_dir + "/raw_sync");
 
         if (d_autocrop_wedges)
         {
@@ -791,7 +791,7 @@ namespace noaa_apt
             avhrr_products.instrument_name = "avhrr_3";
             avhrr_products.bit_depth = 8;
 
-            image2::Image cha, cha1, cha2, chb;
+            image::Image cha, cha1, cha2, chb;
             cha = wip_apt_image.crop_to(86, 86 + 909);
             chb = wip_apt_image.crop_to(1126, 1126 + 909);
 
@@ -805,8 +805,8 @@ namespace noaa_apt
 
             if (channel_a1 != -1)
             {
-                cha1 = image2::Image(cha);
-                cha2 = image2::Image(cha);
+                cha1 = image::Image(cha);
+                cha2 = image::Image(cha);
                 for (size_t i = switchy; i < cha2.height(); i++)
                     for (size_t x = 0; x < cha2.width(); x++)
                         cha2.set(i * cha2.width() + x, 0);
@@ -1003,7 +1003,7 @@ namespace noaa_apt
         d_output_files.push_back(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/dataset.json");
     }
 
-    image2::Image NOAAAPTDecoderModule::synchronize(int line_cnt)
+    image::Image NOAAAPTDecoderModule::synchronize(int line_cnt)
     {
         const int sync_a[] = {0, 0, 0,
                               255, 255, 0, 0,
@@ -1021,7 +1021,7 @@ namespace noaa_apt
             for (int f = 0; f < APT_IMG_OVERS; f++)
                 final_sync_a.push_back(sync_a[i]);
 
-        image2::Image wip_apt_image_sync(16, APT_IMG_WIDTH, line_cnt, 1);
+        image::Image wip_apt_image_sync(16, APT_IMG_WIDTH, line_cnt, 1);
 
 #pragma omp parallel for
         for (int line = 0; line < line_cnt - 1; line++)
@@ -1049,7 +1049,7 @@ namespace noaa_apt
         return wip_apt_image_sync;
     }
 
-    std::vector<APTWedge> NOAAAPTDecoderModule::parse_wedge_full(image2::Image &wedge)
+    std::vector<APTWedge> NOAAAPTDecoderModule::parse_wedge_full(image::Image &wedge)
     {
         if (wedge.height() < 128)
             return std::vector<APTWedge>();

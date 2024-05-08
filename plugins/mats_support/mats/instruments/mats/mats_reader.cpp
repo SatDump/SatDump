@@ -9,8 +9,8 @@
 
 #include "common/utils.h"
 
-#include "common/image2/jpeg12_utils.h"
-#include "common/image2/io.h"
+#include "common/image/jpeg12_utils.h"
+#include "common/image/io.h"
 
 namespace mats
 {
@@ -54,7 +54,7 @@ namespace mats
                     {
                         wip_payload.insert(wip_payload.end(), &pkt.payload[11], &pkt.payload[pkt.payload.size() - 2]);
 
-                        image2::Image img = image2::decompress_jpeg12(wip_payload.data(), wip_payload.size());
+                        image::Image img = image::decompress_jpeg12(wip_payload.data(), wip_payload.size());
 
                         if (img.size() > 0)
                         {
@@ -65,7 +65,7 @@ namespace mats
                                 std::string path = directory + "/Raw_Images/" + channel_names[channel_marker];
                                 if (!std::filesystem::exists(path))
                                     std::filesystem::create_directories(path);
-                                image2::save_img(img, path + "/" + std::to_string(img_cnts[channel_marker]++));
+                                image::save_img(img, path + "/" + std::to_string(img_cnts[channel_marker]++));
                             }
                         }
                     }
@@ -77,7 +77,7 @@ namespace mats
             }
         }
 
-        void MATSReader::process_nadir_imager(image2::Image &img)
+        void MATSReader::process_nadir_imager(image::Image &img)
         {
             for (int i = 0; i < 56; i++)
                 nadir_image.push_back(img.get(0 + i));
@@ -86,9 +86,9 @@ namespace mats
             nadir_lines += 2;
         }
 
-        image2::Image MATSReader::getNadirImage()
+        image::Image MATSReader::getNadirImage()
         {
-            return image2::Image(nadir_image.data(), 16, 56, nadir_lines, 1);
+            return image::Image(nadir_image.data(), 16, 56, nadir_lines, 1);
         }
     }
 }

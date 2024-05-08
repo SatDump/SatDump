@@ -86,9 +86,9 @@ namespace noaa
             }
         }
 
-        image2::Image HIRSReader::getChannel(int channel)
+        image::Image HIRSReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 56, line, 1);
+            return image::Image(channels[channel].data(), 16, 56, line, 1);
         }
     } // namespace hirs
 } // namespace noaa

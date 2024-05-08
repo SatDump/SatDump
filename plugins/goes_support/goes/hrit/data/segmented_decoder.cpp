@@ -17,7 +17,7 @@ namespace goes
             segments_done = std::shared_ptr<bool>(new bool[seg_count], [](bool *p)
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
-            image = std::make_shared<image2::Image>(8, max_width, max_height, 1);
+            image = std::make_shared<image::Image>(8, max_width, max_height, 1);
             seg_size = int(max_height / max_seg) * max_width;
         }
 

@@ -31,7 +31,7 @@ private:
     GrayscaleOverlayCache cities_cache;
     GrayscaleOverlayCache qth_cache;
 
-    image2::TextDrawer text_drawer;
+    image::TextDrawer text_drawer;
 
 public:
     // Colors
@@ -70,7 +70,7 @@ public:
 
     int enabled();
     bool drawUI();
-    void apply(image2::Image &img, std::function<std::pair<int, int>(double, double, int, int)> proj_func, float *step_cnt = nullptr);
+    void apply(image::Image &img, std::function<std::pair<int, int>(double, double, int, int)> proj_func, float *step_cnt = nullptr);
     nlohmann::json get_config();
     void set_config(nlohmann::json in, bool status = true);
 };

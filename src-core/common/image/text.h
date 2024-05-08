@@ -1,10 +1,10 @@
 #pragma once
 
 #include "image.h"
-#include "common/image2/font/imstb_truetype.h"
+#include "common/image/font/imstb_truetype.h"
 #include <string>
 
-namespace image2
+namespace image
 {
     class TextDrawer
     {

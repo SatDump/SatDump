@@ -5,6 +5,5 @@
 
 namespace image
 {
-	template <typename T>
-	void remove_background(image::Image<T> &img, nlohmann::json proj_cfg, float *progress);
+	void remove_background(Image &img, nlohmann::json proj_cfg, float *progress);
 }

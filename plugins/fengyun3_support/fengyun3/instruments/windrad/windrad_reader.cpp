@@ -1,7 +1,7 @@
 #include "windrad_reader.h"
 #include "logger.h"
 #include <cmath>
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace fengyun3
 {
@@ -36,16 +36,16 @@ namespace fengyun3
                 {
                     imgCount++;
                     auto img = getChannel(0);
-                    image2::save_img(img, std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount)).c_str());
+                    image::save_img(img, std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount)).c_str());
                     img = getChannel(1);
-                    image2::save_img(img, std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount)).c_str());
+                    image::save_img(img, std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount)).c_str());
                 }
                 else
                 {
                     auto img = getChannel(0);
-                    image2::save_img(img, std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount)).c_str());
+                    image::save_img(img, std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount)).c_str());
                     img = getChannel(1);
-                    image2::save_img(img, std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount)).c_str());
+                    image::save_img(img, std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount)).c_str());
                 }
 
                 lines = 0;
@@ -89,9 +89,9 @@ namespace fengyun3
             }
         }
 
-        image2::Image WindRADReader::getChannel(int channel)
+        image::Image WindRADReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].buf, 16, width, lines, 1);
+            return image::Image(channels[channel].buf, 16, width, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

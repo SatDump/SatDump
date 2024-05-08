@@ -46,9 +46,9 @@ namespace jason3
                 channels[channel].resize((lines + 1) * 12);
         }
 
-        image::Image<uint16_t> AMR2Reader::getChannel(int channel)
+        image::Image AMR2Reader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 12, lines, 1);
+            return image::Image(channels[channel].data(), 16, 12, lines, 1);
         }
     } // namespace modis
 } // namespace eos

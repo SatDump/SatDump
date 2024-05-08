@@ -11,8 +11,7 @@ namespace image
         This was mostly based off the following document :
         https://web.archive.org/web/20200110090856if_/http://ceeserver.cee.cornell.edu:80/wdp2/cee6150/Monograph/615_04_GeomCorrect_rev01.pdf
         */
-        template <typename T>
-        Image<T> correct_earth_curvature(Image<T> &image, float satellite_height, float swath, float resolution_km, float *foward_table)
+        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table)
         {
             float satellite_orbit_radius = EARTH_RADIUS + satellite_height;                                                                                        // Compute the satellite's orbit radius
             int corrected_width = round(swath / resolution_km);                                                                                                    // Compute the output image size, or number of samples from the imager
@@ -29,7 +28,7 @@ namespace image
                 correction_factors[i] = image.width() * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
             }
 
-            Image<T> output_image(corrected_width, image.height(), image.channels()); // Allocate output image
+            Image output_image(image.depth(), corrected_width, image.height(), image.channels()); // Allocate output image
 
             if (foward_table != nullptr)
                 for (int i = 0; i < (int)image.width(); i++)
@@ -37,9 +36,6 @@ namespace image
 
             for (int channel = 0; channel < image.channels(); channel++)
             {
-                int channel_offset = channel * (image.width() * image.height());
-                int channel_offset_output = channel * (output_image.width() * output_image.height());
-
                 // Process each row
 #pragma omp parallel for
                 for (int row = 0; row < (int)image.height(); row++)
@@ -55,12 +51,12 @@ namespace image
                         if ((size_t)nextPixel >= image.width())
                             nextPixel = image.width() - 1;
 
-                        int px1 = image[channel_offset + row * image.width() + currPixel];
-                        int px2 = image[channel_offset + row * image.width() + nextPixel];
+                        int px1 = image.get(channel, currPixel, row);
+                        int px2 = image.get(channel, nextPixel, row);
 
                         int px = px1 * (1.0 - fractionalPx) + px2 * fractionalPx;
 
-                        output_image[channel_offset_output + row * corrected_width + i] = px;
+                        output_image.set(channel, i, row, px);
 
                         if (foward_table != nullptr)
                             foward_table[currPixel] = i;
@@ -92,8 +88,5 @@ namespace image
 
             return output_image;
         }
-
-        template Image<uint8_t> correct_earth_curvature<uint8_t>(Image<uint8_t> &, float, float, float, float *);
-        template Image<uint16_t> correct_earth_curvature<uint16_t>(Image<uint16_t> &, float, float, float, float *);
     }
 }

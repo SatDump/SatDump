@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 #include "atms_structs.h"
 
@@ -35,7 +35,7 @@ namespace jpss
             void work_eng(ccsds::CCSDSPacket &packet);
             void work_hotcal(ccsds::CCSDSPacket &packet);
 
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
             nlohmann::json getCalib();
         };
     } // namespace atms

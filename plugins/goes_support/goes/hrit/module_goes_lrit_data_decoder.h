@@ -60,7 +60,7 @@ namespace goes
 
             ::lrit::LRITProductizer productizer;
 
-            void saveImageP(GOESxRITProductMeta meta, image2::Image &img);
+            void saveImageP(GOESxRITProductMeta meta, image::Image &img);
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -6,7 +6,7 @@
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
 
-namespace image2
+namespace image
 {
     void save_png(Image &img, std::string file, bool fast)
     {

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <vector>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace meteor
 {
@@ -18,7 +18,7 @@ namespace meteor
             ~MSUMRReader();
             int lines;
             void work(uint8_t *buffer);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace msumr
 } // namespace meteor

@@ -3,7 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <map>
 #include <array>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace fengyun3
 {
@@ -20,7 +20,7 @@ namespace fengyun3
             int lines;
             std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
-            image2::Image getChannel();
+            image::Image getChannel();
         };
     }
 }

@@ -42,14 +42,14 @@ namespace scisat1
             }
         }
 
-        image::Image<uint16_t> MaestroReader::getImg1()
+        image::Image MaestroReader::getImg1()
         {
-            return image::Image<uint16_t>(img_data1.data(), 8196, lines_1, 1);
+            return image::Image(img_data1.data(), 16, 8196, lines_1, 1);
         }
 
-        image::Image<uint16_t> MaestroReader::getImg2()
+        image::Image MaestroReader::getImg2()
         {
-            return image::Image<uint16_t>(img_data2.data(), 8196, lines_2, 1);
+            return image::Image(img_data2.data(), 16, 8196, lines_2, 1);
         }
     } // namespace swap
 } // namespace proba

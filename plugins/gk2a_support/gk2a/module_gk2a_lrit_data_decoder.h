@@ -47,8 +47,8 @@ namespace gk2a
 
             void processLRITFile(::lrit::LRITFile &file);
 
-            ::lrit::LRITProductizer<uint8_t> productizer;
-            void saveImageP(GK2AxRITProductMeta meta, image::Image<uint8_t> img);
+            ::lrit::LRITProductizer productizer;
+            void saveImageP(GK2AxRITProductMeta meta, image::Image img);
 
         public:
             GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -3,7 +3,7 @@
 #include <string>
 #include "image.h"
 
-namespace image2
+namespace image
 {
     void save_png(Image &img, std::string file, bool fast = true);
     void load_png(Image &img, std::string file, bool disableIndexing = false);

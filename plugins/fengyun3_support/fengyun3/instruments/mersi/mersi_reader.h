@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace fengyun3
 {
@@ -94,7 +94,7 @@ namespace fengyun3
             MERSIReader();
             ~MERSIReader();
             void work(uint8_t *data, int size);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
         };
 
         class MERSI1Reader : public MERSIReader

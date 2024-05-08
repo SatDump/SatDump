@@ -229,7 +229,7 @@ namespace satdump
             try
             {
                 nlohmann::json proj_cfg = current_image_proj;
-                image2::set_metadata_proj_cfg(current_img, proj_cfg);
+                image::set_metadata_proj_cfg(current_img, proj_cfg);
 
                 // Create projection title
                 std::string timestring, object_name, instrument_name;

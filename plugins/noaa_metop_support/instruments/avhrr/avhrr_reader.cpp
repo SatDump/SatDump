@@ -100,9 +100,9 @@ namespace noaa_metop
             views.push_back(el);
         }
 
-        image2::Image AVHRRReader::getChannel(int channel)
+        image::Image AVHRRReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, width, lines, 1);
+            return image::Image(channels[channel].data(), 16, width, lines, 1);
         }
 
         void AVHRRReader::line2image(uint16_t *buff, int pos, int width, bool is_ch3a)

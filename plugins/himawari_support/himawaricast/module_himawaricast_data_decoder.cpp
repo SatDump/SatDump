@@ -11,6 +11,7 @@
 #include "lrit_header.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/bzlib/bzlib.h"
+#include "common/image/io.h"
 
 namespace himawari
 {
@@ -37,7 +38,6 @@ namespace himawari
             {
                 std::string channel_name = dec.first;
                 std::string current_filename = segmented_decoders_filenames[channel_name];
-                segmented_decoders[channel_name].image.normalize();
                 saveImageP(segmented_decoders[channel_name].meta, segmented_decoders[channel_name].image);
                 // segmented_decoders[channel_name].image.clear();
                 // segmented_decoders.erase(channel_name);
@@ -106,11 +106,11 @@ namespace himawari
             return ret;
         }
 
-        void HimawariCastDataDecoderModule::saveImageP(HIMxRITProductMeta meta, image::Image<uint16_t> &img)
+        void HimawariCastDataDecoderModule::saveImageP(HIMxRITProductMeta meta, image::Image &img)
         {
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
             {
-                img.save_img(directory + "/IMAGES/Unknown/" + meta.filename);
+                image::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
             }
             else
             {
@@ -282,28 +282,29 @@ namespace himawari
                                                     lmeta.image_data_function_record = std::make_shared<::lrit::ImageDataFunctionRecord>(lfile.getHeader<::lrit::ImageDataFunctionRecord>());
 
                                                 // Parse image
-                                                image::Image<uint16_t> image;
+                                                image::Image image;
                                                 if (image_structure_record.bit_per_pixel == 8)
                                                 {
-                                                    image = image::Image<uint8_t>(&lfile.lrit_data[primary_header.total_header_length],
-                                                                                  image_structure_record.columns_count,
-                                                                                  image_structure_record.lines_count, 1)
-                                                                .to16bits();
+                                                    image = image::Image(&lfile.lrit_data[primary_header.total_header_length],
+                                                                          8,
+                                                                          image_structure_record.columns_count,
+                                                                          image_structure_record.lines_count, 1);
                                                 }
                                                 else if (image_structure_record.bit_per_pixel == 16)
                                                 {
-                                                    image::Image<uint16_t> image2(image_structure_record.columns_count,
-                                                                                  image_structure_record.lines_count, 1);
+                                                    image::Image image2(16,
+                                                                         image_structure_record.columns_count,
+                                                                         image_structure_record.lines_count, 1);
 
                                                     for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                                        image2[i] = ((&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
-                                                                     (&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 1]);
+                                                        image2.set(i, ((&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
+                                                                       (&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 1]));
 
                                                     image = image2;
 
                                                     // Needs to be shifted up by 4
                                                     for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                                        image[i] <<= 6;
+                                                        image.set(i, image.get(i) << 6);
                                                 }
 
                                                 std::string channel_name = current_filename.substr(4, 7);
@@ -373,12 +374,12 @@ namespace himawari
 
                                                 if (segmented_decoders.count(channel_name) == 0)
                                                 {
-                                                    segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
+                                                    segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(image.depth(), 10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
                                                     segmented_decoders_filenames.insert({channel_name, current_filename});
                                                     segmented_decoders[channel_name].meta = lmeta;
                                                 }
 
-                                                segmented_decoders[channel_name].pushSegment(image.data(), segment);
+                                                segmented_decoders[channel_name].pushSegment(image, segment);
                                             }
                                         }
                                         else

@@ -9,30 +9,36 @@
 #include "common/projection/sat_proj/sat_proj.h"
 
 #include "common/projection/projs/equirectangular.h"
+#include "common/image/io.h"
+
+#include "core/exception.h"
 
 namespace elektro
 {
-    image::Image<uint16_t> msuGsFalseColorIRMergeCompositor(satdump::ImageProducts *img_pro,
-                                                            std::vector<image::Image<uint16_t>> &inputChannels,
-                                                            std::vector<std::string> channelNumbers,
-                                                            std::string cpp_id,
-                                                            nlohmann::json vars,
-                                                            nlohmann::json offsets_cfg,
-                                                            std::vector<double> *final_timestamps = nullptr,
-                                                            float *progress = nullptr)
+    image::Image msuGsFalseColorIRMergeCompositor(satdump::ImageProducts *img_pro,
+                                                   std::vector<image::Image> &inputChannels,
+                                                   std::vector<std::string> channelNumbers,
+                                                   std::string cpp_id,
+                                                   nlohmann::json vars,
+                                                   nlohmann::json offsets_cfg,
+                                                   std::vector<double> *final_timestamps = nullptr,
+                                                   float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
-        image::Image<uint8_t> img_nightmap;
-        img_nightmap.load_img(resources::getResourcePath("maps/nasa_night.jpg"));
+        image::Image img_nightmap;
+        image::load_img(img_nightmap, resources::getResourcePath("maps/nasa_night.jpg"));
         geodetic::projection::EquirectangularProjection equp;
         equp.init(img_nightmap.width(), img_nightmap.height(), -180, 90, 180, -90);
         int map_x, map_y;
 
-        // return 3 channels, RGB
-        image::Image<uint16_t> output(f.maxWidth, f.maxHeight, 3);
+        if (f.img_depth != 8)
+            throw satdump_exception("Geo False Color MUST be 8-bits at the moment."); // TODOIMG
 
-        uint16_t *channelVals = new uint16_t[inputChannels.size()];
+        // return 3 channels, RGB
+        image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
+
+        int *channelVals = new int[inputChannels.size()];
 
         double timestamp = 0;
         if (img_pro->has_timestamps && img_pro->get_timestamps().size() == 1 && img_pro->timestamp_type == satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE)
@@ -80,20 +86,20 @@ namespace elektro
                     uint16_t mcir_val0 = 0, mcir_val1 = 0, mcir_val2 = 0;
                     if (map_x != -1 && map_y != -1)
                     {
-                        mcir_val0 = channelVals[3] * mcir_v + (img_nightmap.channel(0)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
-                        mcir_val1 = channelVals[3] * mcir_v + (img_nightmap.channel(1)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
-                        mcir_val2 = channelVals[3] * mcir_v + (img_nightmap.channel(2)[map_y * img_nightmap.width() + map_x] << 8) * (1.0 - mcir_v);
+                        mcir_val0 = channelVals[3] * mcir_v + img_nightmap.get(0, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
+                        mcir_val1 = channelVals[3] * mcir_v + img_nightmap.get(1, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
+                        mcir_val2 = channelVals[3] * mcir_v + img_nightmap.get(2, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
                     }
 
-                    output.channel(0)[y * output.width() + x] = channelVals[0] * val + mcir_val0 * (1.0 - val);
-                    output.channel(1)[y * output.width() + x] = channelVals[1] * val + mcir_val1 * (1.0 - val);
-                    output.channel(2)[y * output.width() + x] = channelVals[2] * val + mcir_val2 * (1.0 - val);
+                    output.set(0, y * output.width() + x, channelVals[0] * val + mcir_val0 * (1.0 - val));
+                    output.set(1, y * output.width() + x, channelVals[1] * val + mcir_val1 * (1.0 - val));
+                    output.set(2, y * output.width() + x, channelVals[2] * val + mcir_val2 * (1.0 - val));
                 }
                 else
                 {
-                    output.channel(0)[y * output.width() + x] = 0;
-                    output.channel(1)[y * output.width() + x] = 0;
-                    output.channel(2)[y * output.width() + x] = 0;
+                    output.set(0, y * output.width() + x, 0);
+                    output.set(1, y * output.width() + x, 0);
+                    output.set(2, y * output.width() + x, 0);
                 }
 
                 // return RGB 0=R 1=G 2=B

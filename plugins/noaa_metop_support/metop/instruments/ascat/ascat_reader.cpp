@@ -104,9 +104,9 @@ namespace metop
             }
         }
 
-        image2::Image ASCATReader::getChannelImg(int channel)
+        image::Image ASCATReader::getChannelImg(int channel)
         {
-            return image2::Image(channels_img[channel].data(), 16, 256, lines[channel], 1);
+            return image::Image(channels_img[channel].data(), 16, 256, lines[channel], 1);
         }
 
         std::vector<std::vector<float>> ASCATReader::getChannel(int channel)

@@ -6,7 +6,7 @@
 
 namespace map
 {
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image2::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -154,7 +154,7 @@ namespace map
         }
     }
 
-    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image2::Image &map_image, image2::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
+    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image &map_image, image::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
     {
         if (!text_drawer.font_ready())
             return;
@@ -196,7 +196,7 @@ namespace map
         }
     }
 
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image2::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -248,7 +248,7 @@ namespace map
         }
     }
 
-    void drawProjectedMapLatLonGrid(image2::Image &image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
+    void drawProjectedMapLatLonGrid(image::Image &image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
     {
         for (float lon = -180; lon < 180; lon += 10)
         {
@@ -285,7 +285,7 @@ namespace map
         }
     }
 
-    /* void drawProjectedLabels(std::vector<CustomLabel> labels, image2::Image &image, image2::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, double ratio)
+    /* void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image &image, image::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, double ratio)
      {
          if (!text_drawer.font_ready())
              return;

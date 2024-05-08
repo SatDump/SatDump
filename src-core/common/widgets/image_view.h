@@ -2,9 +2,10 @@
 
 #include "imgui/imgui.h"
 #include "common/image/image.h"
-#include "common/image2/image.h"
 #include <mutex>
 #include <vector>
+#include <string>
+#include <functional>
 
 class ImageViewWidget
 {
@@ -38,9 +39,7 @@ public:
 
     std::function<void(int x, int y)> mouseCallback = [](int, int) {}; // Function that can be used to handle mouse events
 
-    void update(image::Image<uint16_t> image);
-    void update(image::Image<uint8_t> image);
-    void update(image2::Image &image);
+    void update(image::Image &image);
     void draw(ImVec2 win_size);
 
     unsigned int getTextID() { return img_chunks.size() > 0 ? img_chunks[0].texture_id : 0; }

@@ -1,6 +1,6 @@
 #include "image_handler.h"
 #include "common/calibration.h"
-#include "common/image2/image_background.h"
+#include "common/image/image_background.h"
 
 #include "imgui/pfd/pfd_utils.h"
 #include "imgui/imgui_internal.h"
@@ -14,12 +14,13 @@
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "main_ui.h"
-#include "common/image2/brightness_contrast.h"
+#include "common/image/brightness_contrast.h"
 
-#include "common/image2/image_meta.h"
+#include "common/image/image_meta.h"
 #include "common/projection/reprojector.h"
 
-#include "common/image2/image_processing.h"
+#include "common/image/image_processing.h"
+#include "common/image/image_lut.h"
 
 namespace satdump
 {
@@ -108,7 +109,7 @@ namespace satdump
             current_timestamps = products->get_timestamps(select_image_id - 1);
 
         if (median_blur)
-            image2::median_blur(current_image);
+            image::median_blur(current_image);
 
         //   if (despeckle)
         //       current_image.kuwahara_filter(); // TODOIMG
@@ -117,22 +118,22 @@ namespace satdump
             current_image.mirror(true, true);
 
         if (equalize_image)
-            image2::equalize(current_image);
+            image::equalize(current_image);
 
         if (individual_equalize_image)
-            image2::equalize(current_image, true);
+            image::equalize(current_image, true);
 
         if (white_balance_image)
-            image2::white_balance(current_image);
+            image::white_balance(current_image);
 
         if (invert_image)
-            image2::linear_invert(current_image);
+            image::linear_invert(current_image);
 
         if (normalize_image)
-            image2::normalize(current_image);
+            image::normalize(current_image);
 
         if (manual_brightness_contrast)
-            image2::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
+            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
 
         // TODO : Cleanup?
         if (using_lut)
@@ -145,14 +146,14 @@ namespace satdump
                 val = (float(val) / 65535.0) * lut_image.width();
                 if (val >= lut_image.width())
                     val = lut_image.width() - 1;
-                current_image.set(0, i, lut_image.channel(0)[val]);
-                current_image.set(1, i, lut_image.channel(1)[val]);
-                current_image.set(2, i, lut_image.channel(2)[val]);
+                current_image.set(0, i, lut_image.get(0, val));
+                current_image.set(1, i, lut_image.get(1, val));
+                current_image.set(2, i, lut_image.get(2, val));
             }
         }
 
         if (remove_background)
-            image2::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
+            image::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
 
         int pre_corrected_width = current_image.width();
         int pre_corrected_height = current_image.height();
@@ -162,7 +163,7 @@ namespace satdump
         {
             corrected_stuff.resize(current_image.width());
             bool success = false;
-            image2::Image cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
+            image::Image cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
             if (success)
                 current_image = cor;
             if (!success)
@@ -802,12 +803,12 @@ namespace satdump
 
     void ImageViewerHandler::updateScaleImage()
     {
-        scale_image = image::Image<uint16_t>(25, 512, 3);
+        scale_image = image::Image(16, 25, 512, 3);
         for (int i = 0; i < 512; i++)
         {
             for (int x = 0; x < 25; x++)
             {
-                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
+                std::vector<double> color = {double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0};
 
                 if (using_lut)
                 {
@@ -815,9 +816,9 @@ namespace satdump
                     val = (float(val) / 65535.0) * lut_image.width();
                     if (val >= lut_image.width())
                         val = lut_image.width() - 1;
-                    color[0] = lut_image.channel(0)[val];
-                    color[1] = lut_image.channel(1)[val];
-                    color[2] = lut_image.channel(2)[val];
+                    color[0] = lut_image.getf(0, val);
+                    color[1] = lut_image.getf(1, val);
+                    color[2] = lut_image.getf(2, val);
                 }
 
                 scale_image.draw_pixel(x, i, color);
@@ -875,7 +876,7 @@ namespace satdump
                     proj_cfg["metadata"]["tle"] = products->get_tle();
                 if (products->has_timestamps)
                     proj_cfg["metadata"]["timestamps"] = current_timestamps;
-                image2::set_metadata_proj_cfg(current_image, proj_cfg);
+                image::set_metadata_proj_cfg(current_image, proj_cfg);
 
                 // Create projection title
                 std::string timestring, object_name, instrument_name, composite_name;

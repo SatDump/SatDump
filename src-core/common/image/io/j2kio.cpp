@@ -1,4 +1,4 @@
-#include "image.h"
+#include "../io.h"
 #include <cstring>
 #include "logger.h"
 #include "libs/openjp2/openjpeg.h"
@@ -8,10 +8,14 @@
 
 namespace image
 {
-    template <typename T>
-    void Image<T>::save_j2k(std::string file)
+    void save_j2k(Image &img, std::string file)
     {
-        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        auto d_depth = img.depth();
+        auto d_channels = img.channels();
+        auto d_height = img.height();
+        auto d_width = img.width();
+
+        if (img.size() == 0 || d_height == 0) // Make sure we aren't just gonna crash
         {
             logger->trace("Tried to save empty J2K!");
             return;
@@ -55,7 +59,7 @@ namespace image
                 // Put into image
                 for (int c = 0; c < d_channels; c++)
                     for (size_t i = 0; i < d_width * d_height; i++)
-                        image->comps[c].data[i] = channel(c)[i];
+                        image->comps[c].data[i] = img.get(c, i);
             }
         }
 
@@ -116,8 +120,7 @@ namespace image
         return;
     }
 
-    template <typename T>
-    void Image<T>::load_j2k(std::string file)
+    void load_j2k(Image &img, std::string file)
     {
         if (!std::filesystem::exists(file))
             return;
@@ -166,30 +169,28 @@ namespace image
             return;
         }
 
+        int d_channels = image->numcomps;
+        size_t d_width = image->x1;
+        size_t d_height = image->y1;
+
         // Parse into image
         int depth = image->comps[0].prec;
-        init(image->x1, image->y1, image->numcomps);
+        int d_depth = 8;
+        if (depth > 8)
+            d_depth = 16;
+        img.init(d_depth, image->x1, image->y1, image->numcomps);
 
-        if (d_depth == 16)
+        if (depth > 8)
         {
             for (int c = 0; c < d_channels; c++)
                 for (int i = 0; i < int(image->x1 * image->y1); i++)
-                    channel(c)[i] = image->comps[c].data[i] << (16 - depth);
+                    img.set(c, i, image->comps[c].data[i] << (16 - depth));
         }
-        else if (d_depth == 8)
+        else
         {
-            if (depth >= 8)
-            {
-                for (int c = 0; c < d_channels; c++)
-                    for (int i = 0; i < int(image->x1 * image->y1); i++)
-                        channel(c)[i] = image->comps[c].data[i] >> (depth - 8);
-            }
-            else
-            {
-                for (int c = 0; c < d_channels; c++)
-                    for (int i = 0; i < int(image->x1 * image->y1); i++)
-                        channel(c)[i] = image->comps[c].data[i] << (8 - depth);
-            }
+            for (int c = 0; c < d_channels; c++)
+                for (int i = 0; i < int(image->x1 * image->y1); i++)
+                    img.set(c, i, image->comps[c].data[i] << (8 - depth));
         }
 
         // Free everything up
@@ -197,8 +198,4 @@ namespace image
         opj_stream_destroy(l_stream);
         opj_image_destroy(image);
     }
-
-    // Generate Images for uint16_t and uint8_t
-    template class Image<uint8_t>;
-    template class Image<uint16_t>;
 }

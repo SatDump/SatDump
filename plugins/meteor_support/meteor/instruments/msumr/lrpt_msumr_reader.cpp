@@ -95,7 +95,7 @@ namespace meteor
                 segments[currentChannel][id] = newSeg;
             }
 
-            image2::Image MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
+            image::Image MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
             {
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
@@ -115,7 +115,7 @@ namespace meteor
                 lastSeg_l -= lastSeg_l % 14;
 
                 lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
-                image2::Image ret(8, 1568, lines[channel], 1);
+                image::Image ret(8, 1568, lines[channel], 1);
 
                 std::set<uint32_t> bad_px;
                 uint32_t index = 0;

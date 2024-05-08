@@ -7,7 +7,7 @@
 
 #include "common/projection/reprojector.h"
 #include "resources.h"
-#include "common/image2/image_utils.h"
+#include "common/image/image_utils.h"
 #include "common/overlay_handler.h"
 
 #include "common/projection/reprojector_backend_utils.h"
@@ -104,13 +104,13 @@ int main_project(int argc, char *argv[])
     ////////////////////////////////////////////////////////////////////
 
     // Generate all layers
-    std::vector<image2::Image> layers_images =
+    std::vector<image::Image> layers_images =
         satdump::generateAllProjectionLayers(projection_layers, projections_image_width, projections_image_height, target_cfg);
 
     ////////////////////////////////////////////////////////////////////
 
     // Setup final image
-    image2::Image projected_image_result;
+    image::Image projected_image_result;
     projected_image_result.init(16, projections_image_width, projections_image_height, 3); // TODOIMG ALLOW MORE THAN 16
 
     logger->info("Combining images...");
@@ -118,14 +118,14 @@ int main_project(int argc, char *argv[])
     {
         projected_image_result = layers_images[0];
         for (int i = 1; i < (int)layers_images.size(); i++)
-            projected_image_result = image2::blend_images(projected_image_result, layers_images[i]);
+            projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
     }
     else
     {
         projected_image_result = layers_images[0];
         for (int i = 1; i < (int)layers_images.size(); i++)
         {
-            projected_image_result = image2::merge_images_opacity(projected_image_result,
+            projected_image_result = image::merge_images_opacity(projected_image_result,
                                                                   layers_images[i],
                                                                   projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
         }
@@ -144,7 +144,7 @@ int main_project(int argc, char *argv[])
 
     ////////////////////////////////////////////////////////////////////
 
-    image2::save_img(projected_image_result, target_cfg["file"]);
+    image::save_img(projected_image_result, target_cfg["file"]);
 
     return 0;
 }

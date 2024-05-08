@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include <vector>
 #include "common/resizeable_buffer.h"
 
@@ -19,7 +19,7 @@ namespace fengyun3
             ~MWRI2Reader();
             int lines;
             void work(std::vector<uint8_t> &packet);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
 
             std::vector<double> timestamps;
         };

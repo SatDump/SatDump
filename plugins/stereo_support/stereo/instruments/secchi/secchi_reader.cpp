@@ -5,6 +5,10 @@
 
 #include "rice_decomp.h"
 
+#include "common/image/image_processing.h"
+#include "common/image/text.h"
+#include "common/image/io.h"
+
 namespace stereo
 {
     namespace secchi
@@ -32,14 +36,14 @@ namespace stereo
                    (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
 
-        void rotate_image(image::Image<uint16_t> &img)
+        void rotate_image(image::Image &img)
         {
-            image::Image<uint16_t> img2 = img;
+            image::Image img2 = img;
             for (int x = 0; x < (int)img.width(); x++)
             {
                 for (int y = 0; y < (int)img.height(); y++)
                 {
-                    img[y * img.width() + x] = img2[x * img.width() + y];
+                    img.set(y * img.width() + x, img2.get(x * img.width() + y));
                 }
             }
         }
@@ -62,28 +66,29 @@ namespace stereo
                         auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 256);
 
                         for (size_t i = 0; i < img.size(); i++)
-                            img[i] <<= 2;
+                            img.set(i, img.get(i) << 2);
 
                         rotate_image(img);
 
-                        uint16_t text_color[] = {65535, 65535, 65535, 65535};
+                        std::vector<double> text_color = {1, 1, 1, 1};
 
-                        img.white_balance();
+                        image::white_balance(img);
                         img.to_rgba();
-                        img.init_font(resources::getResourcePath("fonts/font.ttf"));
+                        image::TextDrawer text_drawer;
+                        text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
                         std::string channel_name = "COR2";
 
-                        img.draw_text(150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_0));
+                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_0));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
                         logger->info("Saving SECCHI " + channel_name + " Image");
 
                         if (last_timestamp_0 != 0)
-                            img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_0));
+                            image::save_img(img, output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_0));
                         else
-                            img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
+                            image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_0.size() > 0)
                             decompression_status_out << channel_name << "     " << last_filename_0 << " " << timestamp_to_string(last_timestamp_0) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -108,17 +113,18 @@ namespace stereo
                         auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 256);
 
                         for (size_t i = 0; i < img.size(); i++)
-                            img[i] <<= 2;
+                            img.set(i, img.get(i) << 2);
 
-                        uint16_t text_color[] = {65535, 65535, 65535, 65535};
+                        std::vector<double> text_color = {1, 1, 1, 1};
 
-                        img.white_balance();
+                        image::white_balance(img);
                         img.to_rgba();
-                        img.init_font(resources::getResourcePath("fonts/font.ttf"));
+                        image::TextDrawer text_drawer;
+                        text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
                         std::string channel_name = "HI1";
 
-                        img.draw_text(150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_1));
+                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_1));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
@@ -127,7 +133,7 @@ namespace stereo
                         // if (last_timestamp_1 != 0)
                         //     img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_1));
                         // else
-                        img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
+                        image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_1.size() > 0)
                             decompression_status_out << channel_name << "      " << last_filename_1 << " " << timestamp_to_string(last_timestamp_1) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -151,15 +157,16 @@ namespace stereo
                     {
                         auto img = decompress_rice_tool(&b.payload[0], b.hdr.block_length, 256);
 
-                        uint16_t text_color[] = {65535, 65535, 65535, 65535};
+                        std::vector<double> text_color = {1, 1, 1, 1};
 
-                        img.white_balance();
+                        image::white_balance(img);
                         img.to_rgba();
-                        img.init_font(resources::getResourcePath("fonts/font.ttf"));
+                        image::TextDrawer text_drawer;
+                        text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
                         std::string channel_name = "HI2";
 
-                        img.draw_text(150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_2));
+                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_2));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
@@ -168,7 +175,7 @@ namespace stereo
                         // if (last_timestamp_2 != 0)
                         //     img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_2));
                         // else
-                        img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
+                        image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_2.size() > 0)
                             decompression_status_out << channel_name << "      " << last_filename_2 << " " << timestamp_to_string(last_timestamp_2) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -194,16 +201,17 @@ namespace stereo
                         auto img = decompress_icer_tool(&b.payload[0], b.hdr.block_length, 512);
 
                         for (size_t i = 0; i < img.size(); i++)
-                            img[i] <<= 3;
+                            img.set(i, img.get(i) << 3);
 
                         rotate_image(img);
                         img.mirror(false, true);
 
-                        uint16_t text_color[] = {65535, 65535, 65535, 65535};
+                        std::vector<double> text_color = {1, 1, 1, 1};
 
-                        img.white_balance();
+                        image::white_balance(img);
                         img.to_rgba();
-                        img.init_font(resources::getResourcePath("fonts/font.ttf"));
+                        image::TextDrawer text_drawer;
+                        text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
                         std::string channel_name = "Unknown";
 
@@ -214,16 +222,16 @@ namespace stereo
                         else
                             channel_name = "Corrupted";
 
-                        img.draw_text(150, 460, text_color, 30, timestamp_to_string(last_timestamp_3));
+                        text_drawer.draw_text(img, 150, 460, text_color, 30, timestamp_to_string(last_timestamp_3));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
                         logger->info("Saving SECCHI " + channel_name + " Image");
 
                         if (last_timestamp_3 != 0)
-                            img.save_img(output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_3));
+                            image::save_img(img, output_directory + "/" + channel_name + "/" + filename_timestamp(last_timestamp_3));
                         else
-                            img.save_img(output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
+                            image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_3.size() > 0)
                             decompression_status_out << channel_name << " " << last_filename_3 << " " << timestamp_to_string(last_timestamp_3) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
@@ -235,7 +243,7 @@ namespace stereo
             }
         }
 
-        image::Image<uint16_t> SECCHIReader::decompress_icer_tool(uint8_t *data, int dsize, int size)
+        image::Image SECCHIReader::decompress_icer_tool(uint8_t *data, int dsize, int size)
         {
             std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
 
@@ -247,7 +255,7 @@ namespace stereo
             if (!std::filesystem::exists(icer_path))
             {
                 logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
-                return image::Image<uint16_t>();
+                return image::Image();
             }
 
             int ret = system(cmd.data());
@@ -259,7 +267,7 @@ namespace stereo
                 std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
                 uint16_t *buffer = new uint16_t[size * size];
                 data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
-                image::Image<uint16_t> img(buffer, size, size, 1);
+                image::Image img(buffer, 16, size, size, 1);
                 delete[] buffer;
 
                 if (std::filesystem::exists("./stereo_secchi_out.tmp"))
@@ -274,11 +282,11 @@ namespace stereo
                 if (std::filesystem::exists("./stereo_secchi_out.tmp"))
                     std::filesystem::remove("./stereo_secchi_out.tmp");
 
-                return image::Image<uint16_t>();
+                return image::Image();
             }
         }
 
-        image::Image<uint16_t> SECCHIReader::decompress_rice_tool(uint8_t *data, int dsize, int size)
+        image::Image SECCHIReader::decompress_rice_tool(uint8_t *data, int dsize, int size)
         {
 #if !RICE_MEMORY_VERSION
             std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
@@ -350,14 +358,14 @@ namespace stereo
 
             if (ret == 0 && buffer_img != nullptr && ncol == size && nrow == size)
             {
-                image::Image<uint16_t> img(buffer_img, ncol, nrow, 1);
+                image::Image img(buffer_img, 16, ncol, nrow, 1);
                 // delete[] buffer_img;
                 return img;
             }
             else
             {
                 // delete[] buffer_img;
-                return image::Image<uint16_t>();
+                return image::Image();
             }
 #endif
         }

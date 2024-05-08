@@ -356,19 +356,19 @@ namespace eos
             }
         }
 
-        image2::Image MODISReader::getImage250m(int channel)
+        image::Image MODISReader::getImage250m(int channel)
         {
-            return image2::Image(channels250m[channel].data(), 16, 1354 * 4, lines * 4, 1);
+            return image::Image(channels250m[channel].data(), 16, 1354 * 4, lines * 4, 1);
         }
 
-        image2::Image MODISReader::getImage500m(int channel)
+        image::Image MODISReader::getImage500m(int channel)
         {
-            return image2::Image(channels500m[channel].data(), 16, 1354 * 2, lines * 2, 1);
+            return image::Image(channels500m[channel].data(), 16, 1354 * 2, lines * 2, 1);
         }
 
-        image2::Image MODISReader::getImage1000m(int channel)
+        image::Image MODISReader::getImage1000m(int channel)
         {
-            return image2::Image(channels1000m[channel].data(), 16, 1354, lines, 1);
+            return image::Image(channels1000m[channel].data(), 16, 1354, lines, 1);
         }
 
         nlohmann::json MODISReader::getCalib()

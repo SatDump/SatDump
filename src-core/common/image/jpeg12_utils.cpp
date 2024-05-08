@@ -6,7 +6,7 @@ extern "C"
 {
 #include "libs/jpeg12/jpeglib12.h"
 }
-//#include "libs/openjp2/openjpeg.h"
+// #include "libs/openjp2/openjpeg.h"
 
 namespace image
 {
@@ -26,9 +26,9 @@ namespace image
         // longjmp(((jpeg_error_struct *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    Image<uint16_t> decompress_jpeg12(uint8_t *data, int length, bool ignore_errors)
+    Image decompress_jpeg12(uint8_t *data, int length, bool ignore_errors)
     {
-        Image<uint16_t> img;
+        Image img;
         short *jpeg_decomp = NULL;
 
         // Huge thanks to https://gist.github.com/PhirePhly/3080633
@@ -69,11 +69,11 @@ namespace image
         jpeg_destroy_decompress(&cinfo);
 
         // Init CImg image
-        img = Image<uint16_t>(cinfo.image_width, cinfo.image_height, 1);
+        img = Image(16, cinfo.image_width, cinfo.image_height, 1);
 
         // Copy over
         for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-            img[i] = jpeg_decomp[i] << 4;
+            img.set(i, jpeg_decomp[i] << 4);
 
         // Free memory
         delete[] jpeg_decomp;

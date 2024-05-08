@@ -64,9 +64,9 @@ namespace fengyun3
                 channels[i].resize((lines + 1) * 492);
         }
 
-        image2::Image MWRIRMReader::getChannel(int channel)
+        image::Image MWRIRMReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 492, lines, 1);
+            return image::Image(channels[channel].data(), 16, 492, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

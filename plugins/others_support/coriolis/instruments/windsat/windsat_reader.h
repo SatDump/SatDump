@@ -20,8 +20,8 @@ namespace coriolis
             ~WindSatReader();
             int lines;
             void work(uint8_t *buffer);
-            image::Image<uint16_t> getImage1();
-            image::Image<uint16_t> getImage2();
+            image::Image getImage1();
+            image::Image getImage2();
         };
     } // namespace avhrr
 } // namespace noaa

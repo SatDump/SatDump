@@ -4,9 +4,9 @@
 #include "core/exception.h"
 #include "reprojector.h"
 #include "imgui/imgui_image.h"
-#include "common/image2/image_meta.h"
-#include "common/image2/image_processing.h"
-#include "common/image2/io.h"
+#include "common/image/image_meta.h"
+#include "common/image/image_processing.h"
+#include "common/image/io.h"
 
 #include "common/utils.h"
 #include "core/config.h"
@@ -20,7 +20,7 @@ namespace satdump
     struct ProjectionLayer
     {
         std::string name;
-        image2::Image img;
+        image::Image img;
         float opacity = 100;
         bool enabled = true;
         float progress = 0;
@@ -100,13 +100,13 @@ namespace satdump
         }
     }
 
-    inline std::vector<image2::Image> generateAllProjectionLayers(std::deque<ProjectionLayer> &projection_layers,
+    inline std::vector<image::Image> generateAllProjectionLayers(std::deque<ProjectionLayer> &projection_layers,
                                                                   int projections_image_width,
                                                                   int projections_image_height,
                                                                   nlohmann::json &target_cfg,
                                                                   float *general_progress = nullptr)
     {
-        std::vector<image2::Image> layers_images;
+        std::vector<image::Image> layers_images;
 
         for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
@@ -125,9 +125,9 @@ namespace satdump
 
             reprojection::ReprojectionOperation op;
 
-            if (!image2::has_metadata_proj_cfg(layer.img)) // Just in case...
+            if (!image::has_metadata_proj_cfg(layer.img)) // Just in case...
                 continue;
-            if (!image2::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
+            if (!image::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
                 continue;
 
             op.target_prj_info = target_cfg;
@@ -137,7 +137,7 @@ namespace satdump
 
             op.use_old_algorithm = layer.old_algo;
 
-            image2::Image res = reprojection::reproject(op, &layer.progress);
+            image::Image res = reprojection::reproject(op, &layer.progress);
             layers_images.push_back(res);
 
             if (general_progress != nullptr)
@@ -224,7 +224,7 @@ namespace satdump
                     proj_cfg["metadata"]["tle"] = products->get_tle();
                 if (products->has_timestamps)
                     proj_cfg["metadata"]["timestamps"] = final_timestamps;
-                image2::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
             }
             else if (products_raw->type == "scatterometer")
             {
@@ -233,7 +233,7 @@ namespace satdump
                 satdump::GrayScaleScatCfg _cfg = cfg.raw_cfg;
                 nlohmann::json proj_prm;
                 newlayer.img = make_scatterometer_grayscale_projs(*products, _cfg, nullptr, &proj_prm);
-                image2::set_metadata_proj_cfg(newlayer.img, proj_prm);
+                image::set_metadata_proj_cfg(newlayer.img, proj_prm);
             }
             else if (products_raw->type == "radiation")
             {
@@ -252,12 +252,12 @@ namespace satdump
                 proj_cfg["offset_y"] = tl_lat;
                 proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(newlayer.img.width());
                 proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(newlayer.img.height());
-                image2::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
             }
         }
         else if (cfg.type == "equirectangular" || cfg.type == "other")
         {
-            image2::load_img(newlayer.img, cfg.file);
+            image::load_img(newlayer.img, cfg.file);
             if (newlayer.img.size() > 0)
             {
                 double tl_lon = -180;
@@ -278,19 +278,19 @@ namespace satdump
                     proj_cfg = loadJsonFile(cfg.projfile);
                 }
                 if (cfg.normalize)
-                    image2::normalize(newlayer.img);
-                image2::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+                    image::normalize(newlayer.img);
+                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
             }
             else
                 throw satdump_exception("Could not load image file!");
         }
         else if (cfg.type == "geotiff")
         {
-            image2::load_tiff(newlayer.img, cfg.file);
-            if (newlayer.img.size() > 0 && image2::has_metadata_proj_cfg(newlayer.img))
+            image::load_tiff(newlayer.img, cfg.file);
+            if (newlayer.img.size() > 0 && image::has_metadata_proj_cfg(newlayer.img))
             {
                 if (cfg.normalize)
-                    image2::normalize(newlayer.img);
+                    image::normalize(newlayer.img);
             }
             else
                 throw satdump_exception("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");

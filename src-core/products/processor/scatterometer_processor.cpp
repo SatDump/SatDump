@@ -9,7 +9,7 @@
 #include "common/projection/reprojector.h"
 #include "common/map/map_drawer.h"
 
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace satdump
 {
@@ -33,10 +33,10 @@ namespace satdump
                 std::replace(initial_name.begin(), initial_name.end(), '/', '_');
 
                 GrayScaleScatCfg cfg = compo.value().get<GrayScaleScatCfg>();
-                image2::Image grayscale = satdump::make_scatterometer_grayscale(*rad_products, cfg);
+                image::Image grayscale = satdump::make_scatterometer_grayscale(*rad_products, cfg);
 
                 std::string name = products->instrument_name + "_grayscale_" + initial_name;
-                image2::save_img(grayscale, product_path + "/" + name);
+                image::save_img(grayscale, product_path + "/" + name);
             }
         }
 
@@ -50,7 +50,7 @@ namespace satdump
 
                 GrayScaleScatCfg cfg = compo.value().get<GrayScaleScatCfg>();
                 nlohmann::json proj_cfg;
-                image2::Image grayscale = satdump::make_scatterometer_grayscale_projs(*rad_products, cfg, nullptr, &proj_cfg);
+                image::Image grayscale = satdump::make_scatterometer_grayscale_projs(*rad_products, cfg, nullptr, &proj_cfg);
 
                 grayscale.to_rgb();
 
@@ -69,7 +69,7 @@ namespace satdump
                 }
 
                 std::string name = products->instrument_name + "_grayscale_proj_" + initial_name;
-                image2::save_img(grayscale, product_path + "/" + name);
+                image::save_img(grayscale, product_path + "/" + name);
             }
         }
     }

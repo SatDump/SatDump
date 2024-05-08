@@ -51,7 +51,7 @@ bool OverlayHandler::drawUI()
     return update;
 }
 
-void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>(double, double, int, int)> proj_func, float *step_cnt)
+void OverlayHandler::apply(image::Image &img, std::function<std::pair<int, int>(double, double, int, int)> proj_func, float *step_cnt)
 {
     const size_t width = img.width();
     const size_t height = img.height();
@@ -66,7 +66,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             map_cache.map.clear();
             map_cache.width = width;
             map_cache.height = height;
-            image2::Image bitmask(8, width, height, 1);
+            image::Image bitmask(8, width, height, 1);
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                            bitmask,
                                            {1},
@@ -96,7 +96,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             shores_cache.map.clear();
             shores_cache.width = width;
             shores_cache.height = height;
-            image2::Image bitmask(8, width, height, 1);
+            image::Image bitmask(8, width, height, 1);
 
             map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_coastline.shp")},
                                            bitmask,
@@ -128,7 +128,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             cities_cache.map.clear();
             cities_cache.width = width;
             cities_cache.height = height;
-            image2::Image bitmask(8, width, height, 1);
+            image::Image bitmask(8, width, height, 1);
             text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
             map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                             bitmask,
@@ -175,7 +175,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             qth_cache.width = width;
             qth_cache.height = height;
             last_qth_label = qth_label;
-            image2::Image bitmask(8, width, height, 1);
+            image::Image bitmask(8, width, height, 1);
             text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
             double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
             double qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
@@ -224,7 +224,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             latlon_cache.map.clear();
             latlon_cache.width = width;
             latlon_cache.height = height;
-            image2::Image bitmask(8, width, height, 1);
+            image::Image bitmask(8, width, height, 1);
             map::drawProjectedMapLatLonGrid(bitmask, {1}, proj_func);
 
             for (size_t i = 0; i < bitmask.size(); i++)

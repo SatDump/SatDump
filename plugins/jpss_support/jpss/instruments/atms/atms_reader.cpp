@@ -197,9 +197,9 @@ namespace jpss
             last_hot_pkt = hot_pkt;
         }
 
-        image2::Image ATMSReader::getChannel(int channel)
+        image::Image ATMSReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 96, lines, 1);
+            return image::Image(channels[channel].data(), 16, 96, lines, 1);
         }
 
         nlohmann::json ATMSReader::getCalib()

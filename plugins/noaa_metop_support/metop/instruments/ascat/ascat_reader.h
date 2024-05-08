@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace metop
 {
@@ -23,7 +23,7 @@ namespace metop
             ASCATReader();
             ~ASCATReader();
             void work(ccsds::CCSDSPacket &packet);
-            image2::Image getChannelImg(int channel);
+            image::Image getChannelImg(int channel);
             std::vector<std::vector<float>> getChannel(int channel);
         };
     } // namespace avhrr

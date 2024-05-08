@@ -48,9 +48,9 @@ namespace metop
             ir_channel.resize((lines * 64 + 64) * 64 * 36);
         }
 
-        image2::Image IASIIMGReader::getIRChannel()
+        image::Image IASIIMGReader::getIRChannel()
         {
-            image2::Image img(ir_channel.data(), 16, 36 * 64, lines * 64, 1);
+            image::Image img(ir_channel.data(), 16, 36 * 64, lines * 64, 1);
 
             // Calibrate to remove the noise junk
             int mask[64 * 64];

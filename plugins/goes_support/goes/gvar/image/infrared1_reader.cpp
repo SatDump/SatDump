@@ -57,7 +57,7 @@ namespace goes
             goodLines[counter * 2 + 1] = true;
         }
 
-        image::Image<uint16_t> InfraredReader1::getImage1()
+        image::Image InfraredReader1::getImage1()
         {
             // Fill missing lines by averaging above and below line
             for (int y = 1; y < HEIGHT - 2; y++)
@@ -74,10 +74,10 @@ namespace goes
                 }
             }
 
-            return image::Image<uint16_t>(&imageBuffer1[0], WIDTH, HEIGHT, 1);
+            return image::Image(&imageBuffer1[0], 16, WIDTH, HEIGHT, 1);
         }
 
-        image::Image<uint16_t> InfraredReader1::getImage2()
+        image::Image InfraredReader1::getImage2()
         {
             // Fill missing lines by averaging above and below line
             for (int y = 1; y < HEIGHT - 2; y++)
@@ -94,7 +94,7 @@ namespace goes
                 }
             }
 
-            return image::Image<uint16_t>(&imageBuffer2[0], WIDTH, HEIGHT, 1);
+            return image::Image(&imageBuffer2[0], 16, WIDTH, HEIGHT, 1);
         }
     }
 }

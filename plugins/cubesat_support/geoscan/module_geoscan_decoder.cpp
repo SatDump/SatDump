@@ -2,7 +2,6 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/image.h"
 
 #include "../common/scrambling.h"
 

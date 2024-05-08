@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include <string>
 #include <vector>
 
@@ -12,7 +12,7 @@ namespace fengyun3
         class WAIReader
         {
         private:
-            image2::Image image;
+            image::Image image;
             const std::string directory;
             void writeCurrent();
             int lines;

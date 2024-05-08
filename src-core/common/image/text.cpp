@@ -1,7 +1,7 @@
 #include "text.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
-#include "common/image2/font/imstb_truetype.h"
+#include "common/image/font/imstb_truetype.h"
 
 #ifndef _MSC_VER
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -17,7 +17,7 @@
 
 #include "logger.h"
 
-namespace image2
+namespace image
 {
     TextDrawer::~TextDrawer()
     {

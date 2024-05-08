@@ -1,11 +1,11 @@
 #pragma once
 
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_match_detector_histograms(image2::Image &img, int ndet);
+        void mersi_match_detector_histograms(image::Image &img, int ndet);
     };
 };

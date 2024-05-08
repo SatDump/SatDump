@@ -81,9 +81,9 @@ namespace metop
                 channels[channel].resize((lines + 1) * 16);
         }
 
-        image2::Image GOMEReader::getChannel(int channel)
+        image::Image GOMEReader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 16, lines, 1);
+            return image::Image(channels[channel].data(), 16, 16, lines, 1);
         }
     } // namespace gome
 } // namespace metop

@@ -20,9 +20,9 @@ namespace himawari
             std::map<std::string, SegmentedLRITImageDecoder> segmented_decoders;
             std::map<std::string, std::string> segmented_decoders_filenames;
 
-            ::lrit::LRITProductizer<uint16_t> productizer;
+            ::lrit::LRITProductizer productizer;
 
-            void saveImageP(HIMxRITProductMeta meta, image::Image<uint16_t> &img);
+            void saveImageP(HIMxRITProductMeta meta, image::Image &img);
 
         public:
             HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

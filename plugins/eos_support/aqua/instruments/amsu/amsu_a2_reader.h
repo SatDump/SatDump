@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/image2/image.h"
+#include "common/image/image.h"
 
 namespace aqua
 {
@@ -19,7 +19,7 @@ namespace aqua
             int lines;
             std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace amsu
 } // namespace aqua

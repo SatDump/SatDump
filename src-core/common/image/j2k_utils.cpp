@@ -4,9 +4,9 @@
 
 namespace image
 {
-    Image<uint16_t> decompress_j2k_openjp2(uint8_t *data, int length)
+    Image decompress_j2k_openjp2(uint8_t *data, int length)
     {
-        Image<uint16_t> img;
+        Image img;
 
         // Init decoder parameters
         opj_dparameters_t core;
@@ -59,9 +59,9 @@ namespace image
         }
 
         // Parse into CImg
-        img = Image<uint16_t>(image->x1, image->y1, 1);
+        img = Image(16, image->x1, image->y1, 1);
         for (int i = 0; i < int(image->x1 * image->y1); i++)
-            img[i] = image->comps[0].data[i];
+            img.set(i, image->comps[0].data[i]);
 
         // Free everything up
         opj_destroy_codec(l_codec);

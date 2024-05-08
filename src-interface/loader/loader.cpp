@@ -3,6 +3,7 @@
 #include "imgui/imgui_flags.h"
 #include "imgui/imgui_image.h"
 #include "common/image/image.h"
+#include "common/image/io.h"
 #include "resources.h"
 #include "core/style.h"
 #include "core/backend.h"
@@ -15,7 +16,7 @@ namespace satdump
     {
         const time_t timevalue = time(0);
         std::tm *timeConstant = gmtime(&timevalue);
-        image::Image<uint8_t> image;
+        image::Image image;
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<std::mt19937::result_type> check(1, 1000);
@@ -23,9 +24,11 @@ namespace satdump
         title = loader_constant ? satdump::loader_constant_title : "SatDump";
         slogan = loader_constant ? satdump::loader_constant_slogan : "General Purpose Satellite Data Processor";
         if (loader_constant)
-            image.load_png((uint8_t *)satdump::loader_constant_icon, sizeof(satdump::loader_constant_icon));
+            image::load_png(image, (uint8_t *)satdump::loader_constant_icon, sizeof(satdump::loader_constant_icon));
         else
-            image.load_png(resources::getResourcePath("icon.png"));
+            image::load_png(image, resources::getResourcePath("icon.png"));
+
+        image.to8bits(); // TODOIMG CHECK?
 
         uint8_t *px = new uint8_t[image.width() * image.height() * 4];
         memset(px, 255, image.width() * image.height() * 4);
@@ -35,14 +38,14 @@ namespace satdump
             for (int y = 0; y < (int)image.height(); y++)
                 for (int x = 0; x < (int)image.width(); x++)
                     for (int c = 0; c < 4; c++)
-                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+                        px[image.width() * 4 * y + x * 4 + c] = image.get(c, image.width() * y + x);
         }
         else if (image.channels() == 3)
         {
             for (int y = 0; y < (int)image.height(); y++)
                 for (int x = 0; x < (int)image.width(); x++)
                     for (int c = 0; c < 3; c++)
-                        px[image.width() * 4 * y + x * 4 + c] = image.channel(c)[image.width() * y + x];
+                        px[image.width() * 4 * y + x * 4 + c] = image.get(c, image.width() * y + x);
         }
 
         image_texture = makeImageTexture();

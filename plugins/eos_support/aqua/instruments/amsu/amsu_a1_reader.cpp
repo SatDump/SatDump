@@ -66,9 +66,9 @@ namespace aqua
             }
         }
 
-        image2::Image AMSUA1Reader::getChannel(int channel)
+        image::Image AMSUA1Reader::getChannel(int channel)
         {
-            return image2::Image(channels[channel].data(), 16, 30, lines, 1);
+            return image::Image(channels[channel].data(), 16, 30, lines, 1);
         }
     } // namespace amsu
 } // namespace aqua

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../image/image.h"
+/*
+#include "common/image/image.h"
 #include "init.h"
 
 #define TILE_SIZE 256
@@ -27,4 +28,4 @@ struct tileMap
     std::pair<int, int> coorToTile(std::pair<float, float> coor, int zoom);
     std::pair<float, float> coorToTileF(std::pair<float, float> coor, int zoom);
     int widthToZoom(float deg, int width);
-};
+}; TODOIMG*/

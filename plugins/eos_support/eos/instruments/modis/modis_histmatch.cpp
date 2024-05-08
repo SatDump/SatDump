@@ -7,7 +7,7 @@ namespace eos
 {
     namespace modis
     {
-        void modis_match_detector_histograms(image::Image<uint16_t> &img, int ndetx, int ndety)
+        void modis_match_detector_histograms(image::Image &img, int ndetx, int ndety)
         {
             std::vector<std::vector<int>> pre_histograms_buffer(ndetx * ndety);
             std::vector<std::vector<int>> all_histograms(ndetx * ndety);
@@ -16,7 +16,7 @@ namespace eos
             // Fill in buffers, also scale to 12-bits
             for (int i = 0; i < (int)img.height(); i++)
                 for (int f = 0; f < (int)img.width(); f++)
-                    pre_histograms_buffer[(i % ndety) * ndetx + (f % ndetx)].push_back(img[i * img.width() + f] >> 4);
+                    pre_histograms_buffer[(i % ndety) * ndetx + (f % ndetx)].push_back(img.get(i * img.width() + f) >> 4);
             logger->trace("Filled buffers...");
 
             // Get histograms of all channels, then clear buffers
@@ -60,13 +60,13 @@ namespace eos
             {
                 for (int i = 0; i < (int)img.height(); i++)
                 {
-                    int v = img[i * img.width() + f] >> 4;
+                    int v = img.get(i * img.width() + f) >> 4;
                     v = matching_tables[(i % ndety) * ndetx + (f % ndetx)][v];
                     if (v < 0)
                         v = 0;
                     if (v > 4095)
                         v = 4095;
-                    img[i * img.width() + f] = v << 4;
+                    img.set(i * img.width() + f, v << 4);
                 }
             }
             logger->trace("Applied...");

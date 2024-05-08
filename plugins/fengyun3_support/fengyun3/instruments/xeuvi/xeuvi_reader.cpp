@@ -1,6 +1,6 @@
 #include "xeuvi_reader.h"
 #include "logger.h"
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace fengyun3
 {
@@ -17,7 +17,7 @@ namespace fengyun3
 
         void XEUVIReader::writeCurrent()
         {
-            image2::save_img(image, std::string(directory + "/XEUVI_" + std::to_string(images_count + 1)).c_str());
+            image::save_img(image, std::string(directory + "/XEUVI_" + std::to_string(images_count + 1)).c_str());
             image.fill(0);
             images_count++;
         }

@@ -6,7 +6,7 @@
 #include "common/widgets/themed_widgets.h"
 #include "main_ui.h"
 
-#include "common/image2/image_meta.h"
+#include "common/image/image_meta.h"
 
 namespace satdump
 {
@@ -178,7 +178,7 @@ namespace satdump
                 proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(map_img.width());
                 proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(map_img.height());
 
-                image2::set_metadata_proj_cfg(map_img, proj_cfg);
+                image::set_metadata_proj_cfg(map_img, proj_cfg);
 
                 // Create projection title
                 std::string timestring, object_name, instrument_name, composite_name;

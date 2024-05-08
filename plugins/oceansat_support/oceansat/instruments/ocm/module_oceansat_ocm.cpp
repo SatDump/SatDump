@@ -3,7 +3,6 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/earth_curvature.h"
 #include "../../oceansat.h"
 #include "products/image_products.h"
 #include "products/dataset.h"

@@ -4,6 +4,7 @@
 #include "imgui/imgui_image.h"
 #include "resources.h"
 #include "common/image/image.h"
+#include "common/image/io.h"
 #include <filesystem>
 
 #if defined(_WIN32)
@@ -79,12 +80,13 @@ namespace widgets
             {
                 logger->trace("Loading image for markdown : " + image_path);
 
-                image::Image<uint8_t> img;
-                img.load_img(resources::getResourcePath(image_path));
+                image::Image img;
+                image::load_img(img, resources::getResourcePath(image_path));
+                img.to8bits(); // TODOIMG
 
                 unsigned int text_id = makeImageTexture();
                 uint32_t *output_buffer = new uint32_t[img.width() * img.height()];
-                uchar_to_rgba(img.data(), output_buffer, img.width() * img.height(), img.channels());
+                uchar_to_rgba((uint8_t *)img.raw_data(), output_buffer, img.width() * img.height(), img.channels()); // TODOIMG CONSOLIDATE
                 updateImageTexture(text_id, output_buffer, img.width(), img.height());
                 delete[] output_buffer;
 

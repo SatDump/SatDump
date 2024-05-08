@@ -25,7 +25,7 @@ namespace proba
             int lines;
 
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImg();
+            image::Image getImg();
         };
     } // namespace swap
 } // namespace proba

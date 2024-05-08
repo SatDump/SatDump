@@ -9,11 +9,11 @@
 #include <direct.h>
 #endif
 
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace satdump
 {
-    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image2::Image *image, std::string *default_ext)
+    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image *image, std::string *default_ext)
     {
         std::vector<std::string> saveopts = {
             "PNG Files", "*.png",
@@ -75,7 +75,7 @@ namespace satdump
         if (result.result().size() > 0)
         {
             path = result.result();
-            image2::save_img(*image, path);
+            image::save_img(*image, path);
             std::string extension = std::filesystem::path(path).extension().string();
             if (extension.size() > 1)
                 *default_ext = extension.substr(1);

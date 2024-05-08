@@ -40,9 +40,9 @@ namespace elektro
 
             void processLRITFile(::lrit::LRITFile &file);
 
-            ::lrit::LRITProductizer<uint8_t> productizer;
+            ::lrit::LRITProductizer productizer;
 
-            void saveImageP(GOMSxRITProductMeta meta, image::Image<uint8_t> img);
+            void saveImageP(GOMSxRITProductMeta meta, image::Image img);
 
         public:
             ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

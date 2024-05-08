@@ -3,7 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <map>
-#include "common/image/image.h"
+// #include "common/image/image.h"
 #include "libs/predict/predict.h"
 
 namespace jason3

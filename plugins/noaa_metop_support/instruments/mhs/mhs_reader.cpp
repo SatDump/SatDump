@@ -72,9 +72,9 @@ namespace noaa_metop
             calib_lines.push_back(cl);
         }
 
-        image2::Image MHSReader::getChannel(int channel)
+        image::Image MHSReader::getChannel(int channel)
         {
-            image2::Image output(16, MHS_WIDTH, line, 1);
+            image::Image output(16, MHS_WIDTH, line, 1);
             for (int l = 0; l < line; l++)
                 for (int x = 0; x < MHS_WIDTH; x++)
                     output.set(l * MHS_WIDTH + (MHS_WIDTH - x - 1), channels[channel][l][x]);

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "common/ccsds/ccsds.h"
 #include "common/simple_deframer.h"
 #include "nlohmann/json.hpp"
@@ -44,9 +44,9 @@ namespace noaa_metop
             ~AMSUReader();
             void work_noaa(uint8_t *buffer);
             void work_metop(ccsds::CCSDSPacket &packet);
-            image2::Image getChannel(int channel)
+            image::Image getChannel(int channel)
             {
-                image2::Image img(channels[channel].data(), 16, 30, (channel < 2 ? linesA2 : linesA1), 1);
+                image::Image img(channels[channel].data(), 16, 30, (channel < 2 ? linesA2 : linesA1), 1);
                 img.mirror(true, false);
                 return img;
             }

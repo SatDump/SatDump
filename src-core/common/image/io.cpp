@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "core/config.h"
 
-namespace image2
+namespace image
 {
     void load_img(Image &img, std::string file)
     {

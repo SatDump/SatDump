@@ -8,6 +8,7 @@
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
 #include "resources.h"
+#include "common/image/io.h"
 
 namespace fy4
 {
@@ -184,7 +185,7 @@ namespace fy4
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != "")
-                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
+                    image::save_img(segmentedDecoder.second.image, std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
         }
 
         void FY4LRITDataDecoderModule::drawUI(bool window)

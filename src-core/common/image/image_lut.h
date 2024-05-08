@@ -1,6 +1,6 @@
 #include "image.h"
 
-namespace image2
+namespace image
 { // TODOIMG maybe not a template?
     template <typename T>
     Image create_lut(int channels, int width, int points, std::vector<T> data)

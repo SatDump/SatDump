@@ -19,7 +19,7 @@ namespace gk2a
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
 
-            image = image::Image<uint8_t>(segment_width, segment_height * max_seg, 1);
+            image = image::Image(8, segment_width, segment_height * max_seg, 1);
             seg_height = segment_height;
             seg_width = segment_width;
 
@@ -34,7 +34,7 @@ namespace gk2a
         {
             if (segc >= seg_count || segc < 0)
                 return;
-            std::memcpy(&image[(seg_height * seg_width) * segc], data, seg_height * seg_width);
+            std::memcpy((uint8_t *)image.raw_data() + (seg_height * seg_width) * segc * image.typesize(), data, seg_height * seg_width);
             segments_done.get()[segc] = true;
         }
 

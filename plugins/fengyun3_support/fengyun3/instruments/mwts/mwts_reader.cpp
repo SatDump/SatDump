@@ -83,7 +83,7 @@ namespace fengyun3
             }
         }
 
-        image2::Image MWTSReader::getChannel(int channel)
+        image::Image MWTSReader::getChannel(int channel)
         {
             timestamps.clear();
             std::vector<std::pair<double, std::array<std::array<unsigned short, 60>, 27>>> imageVector(imageData.begin(), imageData.end());
@@ -96,7 +96,7 @@ namespace fengyun3
                           return el1.first < el2.first;
                       });
 
-            image2::Image img(16, 58, imageVector.size(), 1);
+            image::Image img(16, 58, imageVector.size(), 1);
 
             if (imageVector.size() > 0)
             {

@@ -1,7 +1,7 @@
 #include "common/projection/projs2/proj_json.h"
 #include "common/projection/geotiff/geotiff.h"
-#include "image.h"
-#include "image_meta.h"
+#include "../io.h"
+#include "../image_meta.h"
 #include <cstring>
 #include <fstream>
 #include "logger.h"
@@ -12,10 +12,14 @@
 
 namespace image
 {
-    template <typename T>
-    void Image<T>::save_tiff(std::string file)
+    void save_tiff(Image &img, std::string file)
     {
-        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        auto d_depth = img.depth();
+        auto d_channels = img.channels();
+        auto d_height = img.height();
+        auto d_width = img.width();
+
+        if (img.size() == 0 || d_height == 0) // Make sure we aren't just gonna crash
         {
             logger->trace("Tried to save empty TIFF!");
             return;
@@ -56,12 +60,12 @@ namespace image
                     if (d_depth == 8)
                     {
                         for (int i = 0; i < d_channels; i++)
-                            ((uint8_t *)buf)[x * d_channels + i] = channel(i)[i2];
+                            ((uint8_t *)buf)[x * d_channels + i] = img.get(i, i2);
                     }
                     else if (d_depth == 16)
                     {
                         for (int i = 0; i < d_channels; i++)
-                            ((uint16_t *)buf)[x * d_channels + i] = channel(i)[i2];
+                            ((uint16_t *)buf)[x * d_channels + i] = img.get(i, i2);
                     }
                 }
 
@@ -71,9 +75,9 @@ namespace image
 
             _TIFFfree(buf);
 
-            if (image::has_metadata(*this))
+            if (image::has_metadata(img))
             {
-                nlohmann::json meta = image::get_metadata(*this);
+                nlohmann::json meta = image::get_metadata(img);
                 if (meta.contains("proj_cfg"))
                 {
                     try
@@ -91,8 +95,7 @@ namespace image
         }
     }
 
-    template <typename T>
-    void Image<T>::load_tiff(std::string file)
+    void load_tiff(Image &img, std::string file)
     {
         if (!std::filesystem::exists(file))
             return;
@@ -113,7 +116,7 @@ namespace image
             {
                 nlohmann::json meta;
                 meta["proj_cfg"] = pro;
-                set_metadata(*this, meta);
+                set_metadata(img, meta);
             }
 
             if (bit_depth != 8 && bit_depth != 16)
@@ -122,7 +125,12 @@ namespace image
                 return;
             }
 
-            init(w, h, channels_number);
+            img.init(bit_depth, w, h, channels_number);
+
+            int d_channels = channels_number;
+            size_t d_width = w;
+            size_t d_height = h;
+            int d_depth = bit_depth;
 
             tsize_t linebytes = d_channels * d_width * (bit_depth == 16 ? sizeof(uint16_t) : sizeof(uint8_t));
             unsigned char *buf = NULL;
@@ -138,33 +146,15 @@ namespace image
                 if (d_depth == 16)
                 {
                     for (size_t x = 0; x < d_width; x++)
-                    {
-                        if (bit_depth == 8)
-                        {
-                            for (int i = 0; i < d_channels; i++)
-                                channel(i)[y * d_width + x] = ((uint8_t *)buf)[x * channels_number + i] << 8;
-                        }
-                        else if (bit_depth == 16)
-                        {
-                            for (int i = 0; i < d_channels; i++)
-                                channel(i)[y * d_width + x] = ((uint16_t *)buf)[x * channels_number + i];
-                        }
-                    }
+                        for (int i = 0; i < d_channels; i++)
+                            img.set(i, y * d_width + x, ((uint16_t *)buf)[x * channels_number + i]);
                 }
                 else if (d_depth == 8)
                 {
                     for (size_t x = 0; x < d_width; x++)
                     {
-                        if (bit_depth == 8)
-                        {
-                            for (int i = 0; i < d_channels; i++)
-                                channel(i)[y * d_width + x] = ((uint8_t *)buf)[x * channels_number + i];
-                        }
-                        else if (bit_depth == 16)
-                        {
-                            for (int i = 0; i < d_channels; i++)
-                                channel(i)[y * d_width + x] = ((uint16_t *)buf)[x * channels_number + i] >> 8;
-                        }
+                        for (int i = 0; i < d_channels; i++)
+                            img.set(i, y * d_width + x, ((uint8_t *)buf)[x * channels_number + i]);
                     }
                 }
             }
@@ -176,8 +166,4 @@ namespace image
 
         printf("Done Loading TIFF\n");
     }
-
-    // Generate Images for uint16_t and uint8_t
-    template class Image<uint8_t>;
-    template class Image<uint16_t>;
 }

@@ -8,7 +8,7 @@
 #include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
-#include "common/image2/io.h"
+#include "common/image/io.h"
 
 namespace aim
 {
@@ -98,7 +98,7 @@ namespace aim
                     int img_cnt = 0;
                     for (auto &img : cips_readers[i].images)
                     {
-                        image2::save_img(img, cips_directory + "/CIPS_" + std::to_string(img_cnt++ + 1));
+                        image::save_img(img, cips_directory + "/CIPS_" + std::to_string(img_cnt++ + 1));
                     }
 
                     cips_status[i] = DONE;

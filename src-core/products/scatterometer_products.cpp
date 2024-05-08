@@ -29,20 +29,20 @@ namespace satdump
         // scat_data = contents["data"];
     }
 
-    image2::Image make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress)
+    image::Image make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress)
     {
         if (cfg.channel >= products.get_channel_cnt())
-            return image2::Image();
+            return image::Image();
 
         auto scat_data = products.get_channel(cfg.channel);
 
         if (scat_data.size() == 0)
-            return image2::Image();
+            return image::Image();
 
         int img_width = scat_data[0].size();
         int img_height = scat_data.size();
 
-        image2::Image img(16, img_width, img_height, 1);
+        image::Image img(16, img_width, img_height, 1);
 
         for (int y = 0; y < img_height; y++)
         {
@@ -66,7 +66,7 @@ namespace satdump
         return img;
     }
 
-    image2::Image make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress, nlohmann::json *proj_cfg)
+    image::Image make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress, nlohmann::json *proj_cfg)
     {
         if (products.get_scatterometer_type() == products.SCAT_TYPE_ASCAT) // Specific to ASCAT!
         {
@@ -90,7 +90,7 @@ namespace satdump
                 cfg2.channel = 4 - 1;
             }
             else
-                return image2::Image();
+                return image::Image();
 
             // Warp both
             satdump::warp::WarpResult result1, result2;
@@ -129,7 +129,7 @@ namespace satdump
 
             int final_size_x = result1.output_image.width() + result2.output_image.width();
             int final_size_y = result1.output_image.height() + result2.output_image.height();
-            image2::Image final_img;
+            image::Image final_img;
 
             { // Reproject both into one...
                 geodetic::projection::EquirectangularProjection projector1, projector2, projector;
@@ -187,6 +187,6 @@ namespace satdump
             return final_img;
         }
         else
-            return image2::Image();
+            return image::Image();
     }
 }

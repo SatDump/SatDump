@@ -123,7 +123,7 @@ namespace nat2pro
             mhs_products.set_proj_cfg(proj_cfg);
 
             for (int i = 0; i < 5; i++)
-                mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), image::Image<uint16_t>(mhs_data[i].data(), image_width, number_of_lines, 1)});
+                mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mhs_data[i].data(), 16, image_width, number_of_lines, 1)});
 
             // calibration
             nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));

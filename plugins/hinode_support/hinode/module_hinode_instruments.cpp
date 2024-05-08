@@ -9,6 +9,7 @@
 #include "products/products.h"
 #include "products/dataset.h"
 #include "nlohmann/json_utils.h"
+#include "common/image/io.h"
 
 #include "common/codings/reedsolomon/reedsolomon.h"
 
@@ -28,11 +29,11 @@ namespace hinode
             // printf("status %d - %d\n", status, result.apid);
             if (result.apid != -1)
             {
-                result.img.save_img(directory + "/" + std::to_string(depack.img_cnt));
+                image::save_img(result.img, directory + "/" + std::to_string(depack.img_cnt));
                 saveJsonFile(directory + "/" + std::to_string(depack.img_cnt) + ".json", nlohmann::json(result.sci));
-                image::Image<uint16_t> img;
+                image::Image img;
                 if (recomp.pushSegment(result, &img))
-                    img.save_img(directory + "/full_" + std::to_string(result.sci.MainID));
+                    image::save_img(img, directory + "/full_" + std::to_string(result.sci.MainID));
             }
         }
 

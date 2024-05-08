@@ -23,7 +23,7 @@ namespace satdump
         int selected_visualization_id = 0;
 
         // Map viz
-        image2::Image map_img;
+        image::Image map_img;
         int select_channel_image_id = 0;
         std::string select_channel_image_str;
         ImageViewWidget image_view;
@@ -43,7 +43,7 @@ namespace satdump
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<RadiationViewerHandler>(); }
 
         // Projections
-        image2::Image projected_img;
+        image::Image projected_img;
 
         bool canBeProjected();
         void addCurrentToProjections();

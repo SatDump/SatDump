@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include <vector>
 
 namespace dmsp
@@ -34,8 +34,8 @@ namespace dmsp
 
             void work(uint8_t *rtd_frame, uint8_t *rtd_words);
 
-            image2::Image getChannelVIS();
-            image2::Image getChannelIR();
+            image::Image getChannelVIS();
+            image::Image getChannelIR();
 
             void set_offsets(int i, int v)
             {

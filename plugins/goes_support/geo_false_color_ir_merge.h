@@ -3,7 +3,7 @@
 #include "products/image_products.h"
 #include "resources.h"
 #define DEFINE_COMPOSITE_UTILS 1
-#include "common/image2/composite.h"
+#include "common/image/composite.h"
 
 #include "libs/predict/predict.h"
 #include "common/projection/sat_proj/sat_proj.h"
@@ -12,8 +12,8 @@
 
 namespace goes
 {
-    image2::Image goesFalseColorIRMergeCompositor(satdump::ImageProducts *img_pro,
-                                                  std::vector<image2::Image> &inputChannels,
+    image::Image goesFalseColorIRMergeCompositor(satdump::ImageProducts *img_pro,
+                                                  std::vector<image::Image> &inputChannels,
                                                   std::vector<std::string> channelNumbers,
                                                   std::string cpp_id,
                                                   nlohmann::json vars,
@@ -21,13 +21,13 @@ namespace goes
                                                   std::vector<double> *final_timestamps = nullptr,
                                                   float *progress = nullptr)
     {
-        image2::compo_cfg_t f = image2::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
+        image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         std::string lut_path = vars.contains("lut") ? vars["lut"].get<std::string>() : std::string("goes/abi/wxstar/lut.png");
 
         // Load the lut and curve
-        image2::Image img_lut;
-        image2::Image img_curve;
+        image::Image img_lut;
+        image::Image img_curve;
         load_png(img_lut, resources::getResourcePath(lut_path));
         load_png(img_curve, resources::getResourcePath("goes/abi/wxstar/ch2_curve.png"));
         size_t lut_size = img_lut.height() * img_lut.width();
@@ -36,8 +36,8 @@ namespace goes
         if (img_lut.width() != 256 || img_lut.height() != 256 || img_lut.channels() < 3)
             logger->error("Lut " + lut_path + " did not load!");
 
-        image2::Image img_nightmap;
-        image2::load_img(img_nightmap, resources::getResourcePath("maps/nasa_night.jpg"));
+        image::Image img_nightmap;
+        image::load_img(img_nightmap, resources::getResourcePath("maps/nasa_night.jpg"));
         geodetic::projection::EquirectangularProjection equp;
         equp.init(img_nightmap.width(), img_nightmap.height(), -180, 90, 180, -90);
         int map_x, map_y;
@@ -46,7 +46,7 @@ namespace goes
             throw satdump_exception("Geo False Color MUST be 8-bits at the moment."); // TODOIMG
 
         // return 3 channels, RGB
-        image2::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
+        image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
 
         int *channelVals = new int[inputChannels.size()];
 
@@ -69,7 +69,7 @@ namespace goes
             for (size_t y = 0; y < output.height(); y++)
             {
                 // get channels from satdump.json
-                image2::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
+                image::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
                 int lut_pos = (img_curve.get(channelVals[0]) * lut_width) + (channelVals[1]);
 
                 if (!projFunc->get_position(x, y, coords))

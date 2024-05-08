@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "noaa/tip_time_parser.h"
 #include "nlohmann/json.hpp"
 #include "resources.h"
@@ -54,7 +54,7 @@ namespace noaa_metop
             ~AVHRRReader();
             void work_metop(ccsds::CCSDSPacket &packet);
             void work_noaa(uint16_t *buffer);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
             void calibrate(nlohmann::json calib_coefs);
         };
     } // namespace noaa_metop

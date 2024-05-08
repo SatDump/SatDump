@@ -4,7 +4,7 @@
 #include <cmath>
 #include <array>
 #include <vector>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "common/calibration.h"
 #include "nlohmann/json.hpp"
 
@@ -67,7 +67,7 @@ namespace noaa_metop
             std::vector<double> timestamps;
             void work_NOAA(uint8_t *buffer);
             void work_metop(ccsds::CCSDSPacket &packet);
-            image2::Image getChannel(int channel);
+            image::Image getChannel(int channel);
             nlohmann::json calib_out;
             void calibrate(nlohmann::json calib_coefs);
             nlohmann::json dump_telemetry(nlohmann::json calib_coefs);

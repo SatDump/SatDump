@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "common/image2/image.h"
+#include "common/image/image.h"
 #include "lrit_file.h"
 // #include "products/image_products.h"
 #include <thread>
@@ -31,7 +31,7 @@ namespace lrit
         LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path);
         ~LRITProductizer();
 
-        void saveImage(image2::Image img,
+        void saveImage(image::Image img,
                        std::string directory,
                        std::string satellite,
                        std::string satshort,

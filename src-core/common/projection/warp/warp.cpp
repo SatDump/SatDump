@@ -453,7 +453,7 @@ namespace satdump
             WarpResult result;
 
             // Prepare the output
-            result.output_image = image2::Image(16, // TODOIMG ALLOW 8-bits
+            result.output_image = image::Image(16, // TODOIMG ALLOW 8-bits
                                                 crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
                                                 op.output_rgba ? 4 : op.input_image.channels());
             result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0

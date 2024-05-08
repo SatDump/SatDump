@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/image.h"
+#include "common/image/io.h"
 
 namespace lucky7
 {
@@ -80,11 +80,11 @@ namespace lucky7
         {
             logger->info("Image Payload %d. Got %d/%d", imgp.first, imgp.second.get_present(), imgp.second.total_chunks);
 
-            image::Image<uint8_t> img;
-            img.load_jpeg(imgp.second.payload.data(), imgp.second.payload.size());
+            image::Image img;
+            image::load_jpeg(img, imgp.second.payload.data(), imgp.second.payload.size());
 
             std::string name = "Img_" + std::to_string(imgp.first);
-            img.save_img(directory + "/" + name);
+            image::save_img(img, directory + "/" + name);
         }
     }
 

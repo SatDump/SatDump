@@ -16,11 +16,11 @@ namespace goes
         struct GVARImages
         {
             // Images used as a buffer when writing it out
-            image::Image<uint16_t> image1;
-            image::Image<uint16_t> image2;
-            image::Image<uint16_t> image3;
-            image::Image<uint16_t> image4;
-            image::Image<uint16_t> image5;
+            image::Image image1;
+            image::Image image2;
+            image::Image image3;
+            image::Image image4;
+            image::Image image5;
             int sat_number;
             int vis_width;
         };
@@ -37,7 +37,7 @@ namespace goes
 
             struct GVARSaveFCImageEvent
             {
-                image::Image<uint8_t> &false_color_image;
+                image::Image &false_color_image;
                 int sat_number;
                 std::tm *timeReadable;
                 time_t timeUTC;

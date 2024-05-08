@@ -1,7 +1,7 @@
 #include "image.h"
 #include "core/exception.h"
 
-namespace image2
+namespace image
 {
     void Image::draw_image(int c, Image image, int x0, int y0)
     {
@@ -137,6 +137,22 @@ namespace image2
                 draw_pixel(x0 + y, y0 - x, color);
                 draw_pixel(x0 - y, y0 - x, color);
             }
+        }
+    }
+
+    void Image::draw_rectangle(int x0, int y0, int x1, int y1, std::vector<double> color, bool fill)
+    {
+        if (fill)
+        {
+            for (int y = std::min(y0, y1); y < std::max(y0, y1); y++)
+                draw_line(x0, y, x1, y, color);
+        }
+        else
+        {
+            draw_line(x0, y0, x0, y1, color);
+            draw_line(x0, y1, x1, y1, color);
+            draw_line(x1, y1, x1, y0, color);
+            draw_line(x1, y0, x0, y0, color);
         }
     }
 }

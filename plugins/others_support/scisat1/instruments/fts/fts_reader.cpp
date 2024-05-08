@@ -55,9 +55,9 @@ namespace scisat1
             }
         }
 
-        image::Image<uint16_t> FTSReader::getImg()
+        image::Image FTSReader::getImg()
         {
-            return image::Image<uint16_t>(img_data.data(), num_samples, lines, 1);
+            return image::Image(img_data.data(), 16, num_samples, lines, 1);
         }
     } // namespace swap
 } // namespace proba

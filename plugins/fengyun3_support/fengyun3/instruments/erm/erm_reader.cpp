@@ -37,7 +37,7 @@ namespace fengyun3
             }
         }
 
-        image2::Image ERMReader::getChannel()
+        image::Image ERMReader::getChannel()
         {
             timestamps.clear();
             std::vector<std::pair<double, std::array<unsigned short, 151>>> imageVector(imageData.begin(), imageData.end());
@@ -50,7 +50,7 @@ namespace fengyun3
                           return el1.first < el2.first;
                       });
 
-            image2::Image img(16, 151, imageVector.size(), 1);
+            image::Image img(16, 151, imageVector.size(), 1);
 
             if (imageVector.size() > 0)
             {
