@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include "core/exception.h"
 
+#include <cmath>
+
 namespace image2
 {
     Image::Image()
@@ -297,4 +299,98 @@ namespace image2
         }
     }
 
+    void Image::resize(int width, int height)
+    {
+        double x_scale = double(d_width) / double(width);
+        double y_scale = double(d_height) / double(height);
+
+        Image tmp = *this;
+        init(d_depth, width, height, d_channels);
+
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t x = 0; x < d_width; x++)
+            {
+                for (size_t y = 0; y < d_height; y++)
+                {
+                    int xx = floor(double(x) * x_scale);
+                    int yy = floor(double(y) * y_scale);
+
+                    set(c, x, y, tmp.get(c, xx, yy));
+                }
+            }
+        }
+    }
+
+    Image Image::resize_to(int width, int height)
+    {
+        double x_scale = double(d_width) / double(width);
+        double y_scale = double(d_height) / double(height);
+
+        Image ret(d_depth, width, height, d_channels);
+
+        for (int c = 0; c < d_channels; c++)
+        {
+            for (size_t x = 0; x < (size_t)width; x++)
+            {
+                for (size_t y = 0; y < (size_t)height; y++)
+                {
+                    int xx = floor(double(x) * x_scale);
+                    int yy = floor(double(y) * y_scale);
+
+                    ret.set(c, x, y, get(c, xx, yy));
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    void Image::resize_bilinear(int width, int height, bool text_mode)
+    {
+        int a = 0, b = 0, c = 0, d = 0, x = 0, y = 0;
+        size_t index;
+        double x_scale = double(d_width - 1) / double(width);
+        double y_scale = double(d_height - 1) / double(height);
+        float x_diff, y_diff, val;
+
+        Image tmp = *this;
+        init(d_depth, width, height, d_channels);
+        size_t max_index = tmp.width() * tmp.height();
+
+        for (int cc = 0; cc < d_channels; cc++)
+        {
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    x = (int)(x_scale * j);
+                    y = (int)(y_scale * i);
+
+                    x_diff = (x_scale * j) - x;
+                    y_diff = (y_scale * i) - y;
+
+                    index = (y * tmp.width() + x);
+
+                    a = tmp.get(cc, index);
+                    if (index + 1 < max_index)
+                        b = tmp.get(cc, index + 1);
+                    if (index + tmp.width() < max_index)
+                        c = tmp.get(cc, index + tmp.width());
+                    if (index + tmp.width() + 1 < max_index)
+                        d = tmp.get(cc, index + tmp.width() + 1);
+
+                    val = a * (1 - x_diff) * (1 - y_diff) +
+                          b * (x_diff) * (1 - y_diff) +
+                          c * (y_diff) * (1 - x_diff) +
+                          d * (x_diff * y_diff);
+
+                    if (text_mode) // Special text mode, where we want to keep it clear whatever the res is
+                        set(cc, i * width + j, val > 0 ? d_maxv : 0);
+                    else
+                        set(cc, i * width + j, val);
+                }
+            }
+        }
+    }
 }

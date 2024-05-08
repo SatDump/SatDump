@@ -58,9 +58,9 @@ namespace goes
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
 
-            ::lrit::LRITProductizer<uint8_t> productizer;
+            ::lrit::LRITProductizer productizer;
 
-            void saveImageP(GOESxRITProductMeta meta, image::Image<uint8_t> &img);
+            void saveImageP(GOESxRITProductMeta meta, image2::Image &img);
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

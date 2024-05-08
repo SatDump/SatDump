@@ -5,6 +5,7 @@
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
+#include "common/image2/io/io.h"
 
 #ifdef _MSC_VER
 #define timegm _mkgmtime
@@ -51,7 +52,7 @@ namespace goes
             fileo.close();
         }
 
-        void GOESLRITDataDecoderModule::saveImageP(GOESxRITProductMeta meta, image::Image<uint8_t> &img)
+        void GOESLRITDataDecoderModule::saveImageP(GOESxRITProductMeta meta, image2::Image &img)
         {
             if (meta.is_goesn)
                 img.resize(img.width(), img.height() * 1.75);
@@ -59,7 +60,7 @@ namespace goes
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
             {
                 std::string ext;
-                img.append_ext(&ext, true);
+                image2::append_ext(img, &ext, true);
                 if (std::filesystem::exists(directory + "/IMAGES/Unknown/" + meta.filename + ext))
                 {
                     int current_iteration = 1;
@@ -68,11 +69,11 @@ namespace goes
                     {
                         filename_new = meta.filename + "_" + std::to_string(current_iteration++);
                     } while (std::filesystem::exists(directory + "/IMAGES/Unknown/" + filename_new + ext));
-                    img.save_img(directory + "/IMAGES/Unknown/" + filename_new);
+                    image2::save_img(img, directory + "/IMAGES/Unknown/" + filename_new);
                     logger->warn("Image already existed. Written as %s", filename_new.c_str());
                 }
                 else
-                    img.save_img(directory + "/IMAGES/Unknown/" + meta.filename);
+                    image2::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
             }
             else
             {
@@ -288,7 +289,7 @@ namespace goes
 
                     if (lmeta.image_navigation_record && noaa_header.product_id != ID_HIMAWARI)
                         lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset +
-                            segment_id_header.segment_sequence_number * (segment_id_header.max_row / segment_id_header.max_segment);
+                                                                     segment_id_header.segment_sequence_number * (segment_id_header.max_row / segment_id_header.max_segment);
 
                     uint16_t image_identifier = segment_id_header.image_identifier;
                     if (noaa_header.product_id == ID_HIMAWARI) // Image IDs are invalid for Himawari; make one up
@@ -323,9 +324,10 @@ namespace goes
                         // Downscale image
                         wip_img->img_height = 1000;
                         wip_img->img_width = 1000;
-                        image::Image<uint8_t> imageScaled = *(segmentedDecoder.image);
+                        image2::Image imageScaled = *(segmentedDecoder.image);
                         imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                        uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width, 1);
+                        if (imageScaled.typesize() == 1)
+                            uchar_to_rgba((uint8_t *)imageScaled.raw_data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width, 1);
                         wip_img->hasToUpdate = true;
                     }
 
@@ -352,7 +354,7 @@ namespace goes
                     }
                     else // Write raw image dats
                     {
-                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image2::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
                         saveImageP(lmeta, image);
                     }
                 }
@@ -364,7 +366,7 @@ namespace goes
                     return;
 
                 std::string clean_filename = current_filename.substr(0, current_filename.size() - 5); // Remove extensions
-                if (noaa_header.noaa_specific_compression == 0) // Uncompressed TXT
+                if (noaa_header.noaa_specific_compression == 0)                                       // Uncompressed TXT
                 {
                     if (!std::filesystem::exists(directory + "/EMWIN"))
                         std::filesystem::create_directory(directory + "/EMWIN");

@@ -69,6 +69,11 @@ namespace image2
         void mirror(bool x, bool y);
 
     public:
+        void resize(int width, int height);                                  // Resize image, using a simple pixel scaling attribution (not the best, but fast)
+        Image resize_to(int width, int height);                              // Resize image, to another image
+        void resize_bilinear(int width, int height, bool text_mode = false); // Resize image, using a bilinear algorithm
+
+    public:
         // Standard int set. No bound check!
         inline void set(size_t p, int v)
         {
