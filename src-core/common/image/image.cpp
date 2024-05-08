@@ -94,41 +94,12 @@ namespace image
         if (has_data)
             delete[] d_data;
 
-        if (has_font)
-        {
-            for (auto &v : font.chars)
-                free(v.bitmap);
-            font.chars.clear();
-            delete[] ttf_buffer;
-        }
-
         free_metadata_proj_cfg(*this);
     }
 
     template <typename T>
     void Image<T>::init_font(std::string font_path)
     {
-        std::ifstream infile(font_path, std::ios::binary);
-
-        if (!infile.good())
-            return;
-        // get length of file
-        infile.seekg(0, std::ios::end);
-        size_t length = infile.tellg();
-        infile.seekg(0, std::ios::beg);
-        ttf_buffer = new uint8_t[length];
-        // read file
-        infile.read((char *)ttf_buffer, length);
-
-        stbtt_fontinfo fontp;
-        stbtt_InitFont(&fontp, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer, 0));
-
-        stbtt_GetFontBoundingBox(&fontp, &font.x0, &font.y0, &font.x1, &font.y1);
-        stbtt_GetFontVMetrics(&fontp, &font.asc, &font.dsc, &font.lg);
-
-        font.fontp = fontp;
-        infile.close();
-        has_font = true;
     }
 
     template <typename T>
@@ -309,7 +280,7 @@ namespace image
         std::string image_format;
         try
         {
-            if(prod)
+            if (prod)
                 image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
             else
                 image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];

@@ -5,14 +5,9 @@
 #include <vector>
 #include "resources.h"
 
-#define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
-#include "common/image/font/imstb_truetype.h"
-
 #ifndef _MSC_VER
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-
-#include "font/utf8.h"
 
 #ifndef _MSC_VER
 #pragma GCC diagnostic pop
@@ -187,98 +182,18 @@ namespace image
     template <typename T>
     void Image<T>::draw_text(int xs0, int ys0, T color[], int s, std::string text)
     {
-        if (!has_font)
-            return;
-        int CP = 0;
-        std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
-        char *c = cstr.data();
-        float SF = stbtt_ScaleForPixelHeight(&font.fontp, s);
-        int BL = SF * font.y1;
-
-        char_el info;
-
-        while (c < c + cstr.size())
-        {
-            try
-            {
-                info.char_nb = utf8::next(c, c + cstr.size());
-            }
-            catch (utf8::invalid_utf8 &)
-            {
-                break;
-            }
-
-            if (info.char_nb == '\0')
-                break;
-
-            if (info.char_nb == 0xA)
-            { // EOL
-                ys0 += SF * (font.asc - font.dsc + font.lg);
-                CP = 0;
-                continue;
-            }
-
-            bool f = false;
-            for (unsigned int k = 0; k < font.chars.size(); k++)
-                if (font.chars[k].char_nb == info.char_nb)
-                {
-                    if (font.chars[k].size != s)
-                    {
-                        font.chars.erase(font.chars.begin() + k);
-                        break;
-                    }
-                    f = true;
-                    info = font.chars[k];
-                    break;
-                }
-
-            if (!f)
-            {
-                // bitmap = stbtt_GetGlyphBitmap(&font.fontp, 0, SF, info.char_nb, &info.w, &info.h, 0, 0);
-                info.glyph_nb = stbtt_FindGlyphIndex(&font.fontp, info.char_nb);
-                stbtt_GetGlyphBox(&font.fontp, info.glyph_nb, &info.cx0, &info.cy0, &info.cx1, &info.cy1);
-                stbtt_GetGlyphBitmapBox(&font.fontp, info.glyph_nb, SF, SF, &info.ix0, &info.iy0, &info.ix1, &info.iy1);
-                stbtt_GetGlyphHMetrics(&font.fontp, info.glyph_nb, &info.advance, &info.lsb);
-                info.w = abs(info.ix1 - info.ix0);
-                info.h = abs(info.iy1 - info.iy0);
-                info.bitmap = (unsigned char *)malloc(info.w * info.h);
-                info.size = s;
-                memset(info.bitmap, 0, info.w * info.h);
-                stbtt_MakeGlyphBitmap(&font.fontp, info.bitmap, info.w, info.h, info.w, SF, SF, info.glyph_nb);
-                font.chars.push_back(info);
-            }
-
-            int pos = 0;
-            for (int j = 0; j < info.h; ++j)
-                for (int i = 0; i < info.w; ++i)
-                {
-                    unsigned char m = info.bitmap[pos];
-                    int x = xs0 + i + CP + SF * info.lsb, y = j + BL - info.cy1 * SF + ys0;
-                    unsigned int pos2 = y * width() + x;
-                    if (m != 0 && pos2 < width() * height())
-                    {
-                        float mf = m / 255.0;
-                        T col[] = {static_cast<T>((color[0] - channel(0)[pos2]) * mf + channel(0)[pos2]),
-                                   d_channels > 1 ? static_cast<T>((color[1] - channel(1)[pos2]) * mf + channel(1)[pos2]) : std::numeric_limits<T>::max(),
-                                   d_channels > 2 ? static_cast<T>((color[2] - channel(2)[pos2]) * mf + channel(2)[pos2]) : std::numeric_limits<T>::max(),
-                                   d_channels > 3 ? static_cast<T>((color[3] - channel(3)[pos2]) * mf + channel(3)[pos2]) : std::numeric_limits<T>::max()};
-                        draw_pixel(x, y, col);
-                    }
-                    pos++;
-                }
-            // if (!f)
-            // stbtt_FreeBitmap(bitmap, font.fontp.userdata);
-
-            CP += SF * info.advance;
-        }
     }
 
     template <typename T>
-    void Image<T>::draw_rectangle(int x0, int y0, int x1, int y1, T color[], bool fill){
-        if (fill){
+    void Image<T>::draw_rectangle(int x0, int y0, int x1, int y1, T color[], bool fill)
+    {
+        if (fill)
+        {
             for (int y = std::min(y0, y1); y < std::max(y0, y1); y++)
                 draw_line(x0, y, x1, y, color);
-        }else{
+        }
+        else
+        {
             draw_line(x0, y0, x0, y1, color);
             draw_line(x0, y1, x1, y1, color);
             draw_line(x1, y1, x1, y0, color);

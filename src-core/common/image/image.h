@@ -7,24 +7,6 @@
 #include <functional>
 #include <utility>
 
-#include "common/image/font/imstb_truetype.h"
-
-struct char_el
-{
-    int char_nb;
-    int glyph_nb;
-    unsigned char *bitmap;
-    int cx0, cx1, cy0, cy1, advance, lsb, w, h, ix0, ix1, iy0, iy1, size;
-};
-
-struct font_info
-{
-    struct stbtt_fontinfo fontp;
-    std::string path;
-    int x0, x1, y0, y1, asc, dsc, lg, wdh, hht;
-    std::vector<char_el> chars;
-};
-
 namespace image
 {
     template <typename T>
@@ -47,12 +29,6 @@ namespace image
         void *metadata_obj = nullptr; // DO NOT USE DIRECTLY!
     protected:
         void copy_meta(const Image<T> &img);
-
-    protected:
-        // font rendering stuff
-        font_info font;
-        bool has_font = false;
-        uint8_t *ttf_buffer;
 
     public:
         // Init
@@ -84,7 +60,7 @@ namespace image
         Image<uint16_t> to16bits(); // Convert to 16-bits. Returns the current image if it's already 16-bits
 
         // Info access functions
-        bool font_ready() { return has_font; }
+        bool font_ready() { return false; }
 
         // Image processing functions
         void fill_color(T color[]);                                          // Fill image with a single color
