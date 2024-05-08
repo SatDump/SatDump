@@ -1,7 +1,5 @@
 #include "image_utils.h"
 
-#include <cstdio>
-
 namespace image2
 {
     Image make_manyimg_composite(int count_width, int count_height, int img_cnt, std::function<Image(int cnt)> get_img_func)

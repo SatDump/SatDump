@@ -197,15 +197,15 @@ namespace fengyun3
             }
         }
 
-        image::Image<uint16_t> MERSIReader::getChannel(int channel)
+        image2::Image MERSIReader::getChannel(int channel)
         {
             if (channel == -1)
-                return image::Image<uint16_t>(calibration.data(), calib_length, (segments + 1), 1);
+                return image2::Image(calibration.data(), 16, calib_length, (segments + 1), 1);
 
             if (channel < ch_cnt_250)
-                return image::Image<uint16_t>(channels_250m[channel].data(), ch250_width, (segments + 1) * 40, 1);
+                return image2::Image(channels_250m[channel].data(), 16, ch250_width, (segments + 1) * 40, 1);
             else
-                return image::Image<uint16_t>(channels_1000m[channel - ch_cnt_250].data(), ch1000_width, (segments + 1) * 10, 1);
+                return image2::Image(channels_1000m[channel - ch_cnt_250].data(), 16, ch1000_width, (segments + 1) * 10, 1);
         }
     } // namespace avhrr
 } // namespace metop

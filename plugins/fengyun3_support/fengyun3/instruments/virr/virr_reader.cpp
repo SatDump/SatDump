@@ -65,9 +65,9 @@ namespace fengyun3
                 channels[i].resize((lines + 1) * 2048);
         }
 
-        image::Image<uint16_t> VIRRReader::getChannel(int channel)
+        image2::Image VIRRReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 2048, lines, 1);
+            return image2::Image(channels[channel].data(), 16, 2048, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

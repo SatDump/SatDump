@@ -15,6 +15,7 @@
 #include "common/tracking/tle.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
+#include "common/image2/io/io.h"
 
 namespace metop
 {
@@ -305,7 +306,7 @@ namespace metop
 
                 // Output a few nice composites as well
                 logger->info("ASCAT Composite...");
-                image::Image<uint16_t> imageAll(256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
+                image2::Image imageAll(16, 256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
                 {
                     int height = ascat_reader.getChannelImg(0).height();
 
@@ -332,7 +333,7 @@ namespace metop
                     imageAll.draw_image(0, image1, 256 * 1, height * 2);
                 }
 
-                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL");
+                image2::save_img(imageAll, directory + "/ASCAT-ALL");
 
                 ascat_products.save(directory);
                 dataset.products_list.push_back("ASCAT");
@@ -364,7 +365,7 @@ namespace metop
                     logger->info("Channel IR imaging...");
                     image2::Image iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image2::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                  //  iasi_imaging.simple_despeckle(10);                     TODOIMG                                        // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                                                                                                                   //  iasi_imaging.simple_despeckle(10);                     TODOIMG                                        // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;

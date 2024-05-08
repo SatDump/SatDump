@@ -93,9 +93,9 @@ namespace jpss
             }
         }
 
-        image::Image<uint16_t> OMPSNadirReader::getChannel(int channel)
+        image2::Image OMPSNadirReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 142, lines, 1);
+            return image2::Image(channels[channel].data(), 16, 142, lines, 1);
         }
     } // namespace atms
 } // namespace jpss

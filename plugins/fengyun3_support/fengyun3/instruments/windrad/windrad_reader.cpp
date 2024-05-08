@@ -1,6 +1,7 @@
 #include "windrad_reader.h"
 #include "logger.h"
 #include <cmath>
+#include "common/image2/io/io.h"
 
 namespace fengyun3
 {
@@ -34,13 +35,17 @@ namespace fengyun3
                 if (lastMarker2 == 21)
                 {
                     imgCount++;
-                    getChannel(0).save_img(std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount)).c_str());
-                    getChannel(1).save_img(std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount)).c_str());
+                    auto img = getChannel(0);
+                    image2::save_img(img, std::string(directory + "/WindRAD-Pol1-" + band + "-" + std::to_string(imgCount)).c_str());
+                    img = getChannel(1);
+                    image2::save_img(img, std::string(directory + "/WindRAD-Pol2-" + band + "-" + std::to_string(imgCount)).c_str());
                 }
                 else
                 {
-                    getChannel(0).save_img(std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount)).c_str());
-                    getChannel(1).save_img(std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount)).c_str());
+                    auto img = getChannel(0);
+                    image2::save_img(img, std::string(directory + "/WindRAD-Pol3-" + band + "-" + std::to_string(imgCount)).c_str());
+                    img = getChannel(1);
+                    image2::save_img(img, std::string(directory + "/WindRAD-Pol4-" + band + "-" + std::to_string(imgCount)).c_str());
                 }
 
                 lines = 0;
@@ -84,9 +89,9 @@ namespace fengyun3
             }
         }
 
-        image::Image<uint16_t> WindRADReader::getChannel(int channel)
+        image2::Image WindRADReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].buf, width, lines, 1);
+            return image2::Image(channels[channel].buf, 16, width, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "common/image2/image.h"
 
 namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_offset_interleaved(image::Image<uint16_t> &img, int ndet, int shift);
+        void mersi_offset_interleaved(image2::Image &img, int ndet, int shift);
     };
 };

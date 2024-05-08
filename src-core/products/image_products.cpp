@@ -2,8 +2,8 @@
 #include "logger.h"
 #include "core/config.h"
 #include "common/image2/composite.h"
-#include "common/image/image_background.h"
-#include "common/image/earth_curvature.h"
+#include "common/image2/image_background.h"
+#include "common/image2/earth_curvature.h"
 #include "resources.h"
 #include <filesystem>
 #include "libs/sol2/sol.hpp"
@@ -11,7 +11,8 @@
 #include "common/calibration.h"
 #include "core/plugin.h"
 #include "common/utils.h"
-#include "common/image/brightness_contrast.h"
+#include "common/image2/brightness_contrast.h"
+#include "common/image2/image_processing.h"
 #include "common/image2/io/io.h"
 #include "common/image2/image_utils.h"
 
@@ -811,54 +812,53 @@ namespace satdump
         // Free up memory
         std::vector<image2::Image>().swap(images_obj);
 
-        /*
-                      if (cfg.median_blur)
-                          rgb_composite.median_blur();
+        if (cfg.median_blur)
+            image2::median_blur(rgb_composite);
 
-                      if (cfg.despeckle)
-                          rgb_composite.kuwahara_filter();
+        // if (cfg.despeckle)
+        //     rgb_composite.kuwahara_filter(); // TODIMG
 
-                      if (cfg.equalize)
-                          rgb_composite.equalize();
+        if (cfg.equalize)
+            image2::equalize(rgb_composite);
 
-                      if (cfg.individual_equalize)
-                          rgb_composite.equalize(true);
+        if (cfg.individual_equalize)
+            image2::equalize(rgb_composite, true);
 
-                      if (cfg.white_balance)
-                          rgb_composite.white_balance();
+        if (cfg.white_balance)
+            image2::white_balance(rgb_composite);
 
-                      if (cfg.invert)
-                          rgb_composite.linear_invert();
+        if (cfg.invert)
+            image2::linear_invert(rgb_composite);
 
-                      if (cfg.normalize)
-                          rgb_composite.normalize();
+        if (cfg.normalize)
+            image2::normalize(rgb_composite);
 
-                      if (cfg.remove_background)
-                          image::remove_background(rgb_composite, product.get_proj_cfg(), progress);
+        if (cfg.remove_background)
+            image2::remove_background(rgb_composite, product.get_proj_cfg(), progress);
 
-                      if (cfg.manual_brightness != 0 || cfg.manual_contrast != 0)
-                          image::brightness_contrast(rgb_composite, cfg.manual_brightness, cfg.manual_contrast, rgb_composite.channels());
+        if (cfg.manual_brightness != 0 || cfg.manual_contrast != 0)
+            image2::brightness_contrast(rgb_composite, cfg.manual_brightness, cfg.manual_contrast);
 
-                      if (cfg.apply_lut)
-                      {
-                          auto lut_image = image::LUT_jet<uint16_t>();
-                          rgb_composite.to_rgb();
-                          for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
-                          {
-                              uint16_t val = rgb_composite[i];
-                              val = (float(val) / 65535.0) * lut_image.width();
-                              if (val >= lut_image.width())
-                                  val = lut_image.width() - 1;
-                              rgb_composite.channel(0)[i] = lut_image.channel(0)[val];
-                              rgb_composite.channel(1)[i] = lut_image.channel(1)[val];
-                              rgb_composite.channel(2)[i] = lut_image.channel(2)[val];
-                          }
-                      }*/
+        /*if (cfg.apply_lut)
+        {
+            auto lut_image = image::LUT_jet<uint16_t>();
+            rgb_composite.to_rgb();
+            for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
+            {
+                uint16_t val = rgb_composite[i];
+                val = (float(val) / 65535.0) * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                rgb_composite.channel(0)[i] = lut_image.channel(0)[val];
+                rgb_composite.channel(1)[i] = lut_image.channel(1)[val];
+                rgb_composite.channel(2)[i] = lut_image.channel(2)[val];
+            }
+        } TODOIMG */
 
         return rgb_composite;
     }
 
-    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table)
+    image2::Image perform_geometric_correction(ImageProducts &product, image2::Image img, bool &success, float *foward_table)
     {
         if (img.width() == 0)
             return img;
@@ -889,7 +889,7 @@ namespace satdump
             }
         }
 
-        return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
+        return image2::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
     }
 
     std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width)

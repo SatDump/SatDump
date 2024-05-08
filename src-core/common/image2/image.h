@@ -22,6 +22,12 @@ namespace image2
         int d_channels = 0;
 
     public:
+        // Metadata stuff
+        void *metadata_obj = nullptr; // DO NOT USE DIRECTLY!
+    protected:
+        void copy_meta(const Image &img);
+
+    public:
         Image();                                                                       // Init null image
         Image(int bit_depth, size_t width, size_t height, int channels);               // Init emtpy image, set to 0
         Image(void *buffer, int bit_depth, size_t width, size_t height, int channels); // Init from existing buffer

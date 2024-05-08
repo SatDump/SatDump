@@ -5,7 +5,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/bowtie.h"
+#include "common/image2/bowtie.h"
 #include "common/utils.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
@@ -16,6 +16,7 @@
 #include "instruments/mersi_offset_interleaved.h"
 #include "nlohmann/json_utils.h"
 #include "core/exception.h"
+#include "common/image2/io/io.h"
 
 namespace fengyun3
 {
@@ -676,12 +677,12 @@ namespace fengyun3
 
                 for (int i = 0; i < 20; i++)
                 {
-                    image::Image<uint16_t> image = mersi1_reader.getChannel(i);
+                    image2::Image image = mersi1_reader.getChannel(i);
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, i < 5 ? 40 : 10);
                     if (d_mersi_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                        image = image2::bowtie::correctGenericBowTie(image, 1, i < 5 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi1_products.images.push_back({"MERSI1-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
@@ -755,12 +756,12 @@ namespace fengyun3
 
                 for (int i = 0; i < 25; i++)
                 {
-                    image::Image<uint16_t> image = mersi2_reader.getChannel(i);
+                    image2::Image image = mersi2_reader.getChannel(i);
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
                     if (d_mersi_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                        image = image2::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi2_products.images.push_back({"MERSI2-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
@@ -832,12 +833,12 @@ namespace fengyun3
 
                 for (int i = 0; i < 25; i++)
                 {
-                    image::Image<uint16_t> image = mersi3_reader.getChannel(i);
+                    image2::Image image = mersi3_reader.getChannel(i);
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
                     if (d_mersi_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                        image = image2::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi3_products.images.push_back({"MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
@@ -902,14 +903,14 @@ namespace fengyun3
 
                 for (int i = 0; i < 18; i++)
                 {
-                    image::Image<uint16_t> image = mersill_reader.getChannel(i);
+                    image2::Image image = mersill_reader.getChannel(i);
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, i < 2 ? 80 : 10);
                     if (i < 2)
                         mersi::mersi_offset_interleaved(image, 40, -3);
                     if (d_mersi_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
+                        image = image2::bowtie::correctGenericBowTie(image, 1, i < 2 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersill_products.images.push_back({"MERSILL-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
                 }
 
@@ -965,12 +966,12 @@ namespace fengyun3
 
                 for (int i = 0; i < 8; i++)
                 {
-                    image::Image<uint16_t> image = mersirm_reader.getChannel(i);
+                    image2::Image image = mersirm_reader.getChannel(i);
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, 10);
                     if (d_mersi_bowtie)
-                        image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
+                        image = image2::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta);
 
                     // What did you do NSMC.... Why did you turn FY-3G 180 degs!?
                     if (rotate)
@@ -982,7 +983,7 @@ namespace fengyun3
                             {
                                 for (int c = 0; c < 10; c++)
                                 {
-                                    image[(l * 10 + c) * img2.width() + x] = img2[(l * 10 + (9 - c)) * img2.width() + x];
+                                    image.set((l * 10 + c) * img2.width() + x, img2.get((l * 10 + (9 - c)) * img2.width() + x));
                                 }
                             }
                         }
@@ -1115,7 +1116,8 @@ namespace fengyun3
                 logger->info("----------- GAS");
                 logger->info("Lines : " + std::to_string(gas_reader.lines));
 
-                gas_reader.getChannel().save_img(directory + "/GAS");
+                auto img = gas_reader.getChannel();
+                image2::save_img(img, directory + "/GAS");
 
                 gas_status = DONE;
             }

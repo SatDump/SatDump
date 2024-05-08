@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <vector>
-#include "common/image/image.h"
+#include "common/image2/image.h"
 
 namespace aim
 {
@@ -56,14 +56,14 @@ namespace aim
 
             void add_image()
             {
-                images.push_back(image::Image<uint16_t>(img_width, img_height, 1));
+                images.push_back(image2::Image(16, img_width, img_height, 1));
             }
 
         public:
             CIPSReader();
             ~CIPSReader();
 
-            std::vector<image::Image<uint16_t>> images;
+            std::vector<image2::Image> images;
 
             void init(int w, int h)
             {

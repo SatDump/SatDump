@@ -6,7 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "jpss.h"
-#include "common/image/bowtie.h"
+#include "common/image2/bowtie.h"
 #include "common/ccsds/ccsds_weather/demuxer.h"
 #include "products/products.h"
 #include "products/image_products.h"
@@ -14,6 +14,7 @@
 #include "resources.h"
 #include "common/calibration.h"
 #include "nlohmann/json_utils.h"
+#include "common/image2/io/io.h"
 
 namespace jpss
 {
@@ -240,7 +241,8 @@ namespace jpss
 
                 for (int i = 0; i < 339; i++)
                 {
-                    WRITE_IMAGE(omps_nadir_reader.getChannel(i), directory + "/OMPS-NADIR-" + std::to_string(i + 1));
+                    auto img = omps_nadir_reader.getChannel(i);
+                    image2::save_img(img, directory + "/OMPS-NADIR-" + std::to_string(i + 1));
                 }
                 omps_nadir_status = DONE;
             }
@@ -258,7 +260,8 @@ namespace jpss
 
                 for (int i = 0; i < 135; i++)
                 {
-                    WRITE_IMAGE(omps_limb_reader.getChannel(i), directory + "/OMPS-LIMB-" + std::to_string(i + 1));
+                    auto img = omps_limb_reader.getChannel(i);
+                    image2::save_img(img, directory + "/OMPS-LIMB-" + std::to_string(i + 1));
                 }
                 omps_limb_status = DONE;
             }
@@ -338,8 +341,8 @@ namespace jpss
                     if (viirs_reader_imaging[i].segments.size() > 0)
                     {
                         logger->info("I" + std::to_string(i + 1) + "...");
-                        image::Image<uint16_t> viirs_image = viirs_reader_imaging[i].getImage();
-                        viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
+                        image2::Image viirs_image = viirs_reader_imaging[i].getImage();
+                        viirs_image = image2::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_imaging_status[i] = SAVING;
 
                         viirs_products.images.push_back({"VIIRS-I" + std::to_string(i + 1),
@@ -356,8 +359,8 @@ namespace jpss
                     if (viirs_reader_moderate[i].segments.size() > 0)
                     {
                         logger->info("M" + std::to_string(i + 1) + "...");
-                        image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
-                        viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
+                        image2::Image viirs_image = viirs_reader_moderate[i].getImage();
+                        viirs_image = image2::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_moderate_status[i] = SAVING;
 
                         viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),

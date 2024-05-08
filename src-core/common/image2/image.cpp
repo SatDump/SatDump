@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "core/exception.h"
+#include "image_meta.h"
 
 #include <cmath>
 
@@ -22,7 +23,7 @@ namespace image2
         // Copy contents of the image over
         init(img.d_depth, img.d_width, img.d_height, img.d_channels);
         memcpy(d_data, img.d_data, img.data_size * img.type_size);
-        //        copy_meta(img);
+        copy_meta(img);
     }
 
     Image &Image::operator=(const Image &img)
@@ -30,7 +31,7 @@ namespace image2
         // Copy contents of the image over
         init(img.d_depth, img.d_width, img.d_height, img.d_channels);
         memcpy(d_data, img.d_data, img.data_size * img.type_size);
-        //        copy_meta(img);
+        copy_meta(img);
         return *this;
     }
 
@@ -46,7 +47,7 @@ namespace image2
         if (has_data)
             free(d_data);
 
-        //        free_metadata(*this);
+        free_metadata(*this);
     }
 
     void Image::init(int bit_depth, size_t width, size_t height, int channels)

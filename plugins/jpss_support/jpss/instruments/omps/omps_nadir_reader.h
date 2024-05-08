@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include "common/image/image.h"
+#include "common/image2/image.h"
 extern "C"
 {
 #include <libs/aec/szlib.h>
@@ -26,7 +26,7 @@ namespace jpss
             int lines;
             std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannel(int channel);
+            image2::Image getChannel(int channel);
         };
     } // namespace atms
 } // namespace jpss

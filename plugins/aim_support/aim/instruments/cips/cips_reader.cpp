@@ -79,7 +79,7 @@ namespace aim
                     if (value < 0)
                         value = 0;
 
-                    img[i] = value;
+                    img.set(i, value);
                 }
             }
             else if (science_header.bits_pixel == 17)
@@ -98,7 +98,7 @@ namespace aim
                     if (value < 0)
                         value = 0;
 
-                    img[i] = value;
+                    img.set(i, value);
                 }
             }
         }

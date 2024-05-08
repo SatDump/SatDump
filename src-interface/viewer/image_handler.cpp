@@ -1,6 +1,6 @@
 #include "image_handler.h"
 #include "common/calibration.h"
-#include "common/image/image_background.h"
+#include "common/image2/image_background.h"
 
 #include "imgui/pfd/pfd_utils.h"
 #include "imgui/imgui_internal.h"
@@ -14,10 +14,12 @@
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "main_ui.h"
-#include "common/image/brightness_contrast.h"
+#include "common/image2/brightness_contrast.h"
 
-#include "common/image/image_meta.h"
+#include "common/image2/image_meta.h"
 #include "common/projection/reprojector.h"
+
+#include "common/image2/image_processing.h"
 
 namespace satdump
 {
@@ -105,133 +107,130 @@ namespace satdump
         if (select_image_id != 0)
             current_timestamps = products->get_timestamps(select_image_id - 1);
 
-        /* if (median_blur)
-             current_image.median_blur();
+        if (median_blur)
+            image2::median_blur(current_image);
 
-         if (despeckle)
-             current_image.kuwahara_filter();
+        //   if (despeckle)
+        //       current_image.kuwahara_filter(); // TODOIMG
 
-         if (rotate_image)
-             current_image.mirror(true, true);
+        if (rotate_image)
+            current_image.mirror(true, true);
 
-         if (equalize_image)
-             current_image.equalize();
+        if (equalize_image)
+            image2::equalize(current_image);
 
-         if (individual_equalize_image)
-             current_image.equalize(true);
+        if (individual_equalize_image)
+            image2::equalize(current_image, true);
 
-         if (white_balance_image)
-             current_image.white_balance();
+        if (white_balance_image)
+            image2::white_balance(current_image);
 
-         if (invert_image)
-             current_image.linear_invert();
+        if (invert_image)
+            image2::linear_invert(current_image);
 
-         if (normalize_image)
-             current_image.normalize();
+        if (normalize_image)
+            image2::normalize(current_image);
 
-         if (manual_brightness_contrast)
-             image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast, current_image.channels());
+        if (manual_brightness_contrast)
+            image2::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
 
-         // TODO : Cleanup?
-         if (using_lut)
-         {
-             if (current_image.channels() < 3)
-                 current_image.to_rgb();
-             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
-             {
-                 uint16_t val = current_image[i];
-                 val = (float(val) / 65535.0) * lut_image.width();
-                 if (val >= lut_image.width())
-                     val = lut_image.width() - 1;
-                 current_image.channel(0)[i] = lut_image.channel(0)[val];
-                 current_image.channel(1)[i] = lut_image.channel(1)[val];
-                 current_image.channel(2)[i] = lut_image.channel(2)[val];
-             }
-         }
+        // TODO : Cleanup?
+        if (using_lut)
+        {
+            if (current_image.channels() < 3)
+                current_image.to_rgb();
+            for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
+            {
+                uint16_t val = current_image.get(i);
+                val = (float(val) / 65535.0) * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                current_image.set(0, i, lut_image.channel(0)[val]);
+                current_image.set(1, i, lut_image.channel(1)[val]);
+                current_image.set(2, i, lut_image.channel(2)[val]);
+            }
+        }
 
-         if (remove_background)
-             image::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
+        if (remove_background)
+            image2::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
 
-         int pre_corrected_width = current_image.width();
-         int pre_corrected_height = current_image.height();
+        int pre_corrected_width = current_image.width();
+        int pre_corrected_height = current_image.height();
 
-         std::vector<float> corrected_stuff;
-         if (correct_image)
-         {
-             corrected_stuff.resize(current_image.width());
-             bool success = false;
-             image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
-             if (success)
-                 current_image = cor;
-             if (!success)
-                 corrected_stuff.clear();
-         }
+        std::vector<float> corrected_stuff;
+        if (correct_image)
+        {
+            corrected_stuff.resize(current_image.width());
+            bool success = false;
+            image2::Image cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
+            if (success)
+                current_image = cor;
+            if (!success)
+                corrected_stuff.clear();
+        }
+        /*
+        if (overlay_handler.enabled())
+        {
+            // Ensure this is RGB!!
+            if (current_image.channels() < 3)
+                current_image.to_rgb();
+            nlohmann::json proj_cfg = products->get_proj_cfg();
+            proj_cfg["metadata"] = current_proj_metadata;
+            if (products->has_tle())
+                proj_cfg["metadata"]["tle"] = products->get_tle();
+            if (products->has_timestamps)
+                proj_cfg["metadata"]["timestamps"] = current_timestamps;
 
-         if (overlay_handler.enabled())
-         {
-             // Ensure this is RGB!!
-             if (current_image.channels() < 3)
-                 current_image.to_rgb();
-             nlohmann::json proj_cfg = products->get_proj_cfg();
-             proj_cfg["metadata"] = current_proj_metadata;
-             if (products->has_tle())
-                 proj_cfg["metadata"]["tle"] = products->get_tle();
-             if (products->has_timestamps)
-                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
+            bool do_correction = corrected_stuff.size() != 0 && correct_image;
+            if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
+                current_image.width() != last_width || current_image.height() != last_height || last_proj_cfg != proj_cfg)
+            {
+                overlay_handler.clear_cache();
+                proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
+                                                                           pre_corrected_height,
+                                                                           proj_cfg,
+                                                                           !do_correction && rotate_image);
 
-             bool do_correction = corrected_stuff.size() != 0 && correct_image;
-             if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
-                 current_image.width() != last_width || current_image.height() != last_height || last_proj_cfg != proj_cfg)
-             {
-                 overlay_handler.clear_cache();
-                 proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                                                                            pre_corrected_height,
-                                                                            proj_cfg,
-                                                                            !do_correction && rotate_image);
+                if (do_correction)
+                {
+                    int fwidth = current_image.width();
+                    int fheight = current_image.height();
+                    bool rotate = rotate_image;
+                    auto &proj_func = this->proj_func;
 
-                 if (do_correction)
-                 {
-                     int fwidth = current_image.width();
-                     int fheight = current_image.height();
-                     bool rotate = rotate_image;
-                     auto &proj_func = this->proj_func;
+                    std::function<std::pair<int, int>(double, double, int, int)> newfun =
+                        [proj_func, corrected_stuff, fwidth, fheight, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                    {
+                        std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                        if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                        {
+                            ret.first = corrected_stuff[ret.first];
+                            if (rotate)
+                            {
+                                ret.first = (fwidth - 1) - ret.first;
+                                ret.second = (fheight - 1) - ret.second;
+                            }
+                        }
+                        else
+                            ret.second = ret.first = -1;
+                        return ret;
+                    };
+                    proj_func = newfun;
+                }
 
-                     std::function<std::pair<int, int>(double, double, int, int)> newfun =
-                         [proj_func, corrected_stuff, fwidth, fheight, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
-                     {
-                         std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                         if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
-                         {
-                             ret.first = corrected_stuff[ret.first];
-                             if (rotate)
-                             {
-                                 ret.first = (fwidth - 1) - ret.first;
-                                 ret.second = (fheight - 1) - ret.second;
-                             }
-                         }
-                         else
-                             ret.second = ret.first = -1;
-                         return ret;
-                     };
-                     proj_func = newfun;
-                 }
+                last_correct_image = do_correction;
+                last_rotate_image = rotate_image;
+                last_width = current_image.width();
+                last_height = current_image.height();
+                last_proj_cfg = proj_cfg;
+            }
 
-                 last_correct_image = do_correction;
-                 last_rotate_image = rotate_image;
-                 last_width = current_image.width();
-                 last_height = current_image.height();
-                 last_proj_cfg = proj_cfg;
-             }
-
-             overlay_handler.apply(current_image, proj_func);
-         }
-         */
+            overlay_handler.apply(current_image, proj_func);
+        }
+        */
         // TODOIMG
 
-        //        projection_ready = false;
-
         image_view.update(current_image);
-        // current_image.clear();
 
         // Tooltip function
         image_view.mouseCallback = [this](int x, int y)

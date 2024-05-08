@@ -1,5 +1,4 @@
-#include "mersi_histmatch.h"
-#include "common/image/histogram_utils.h"
+#include "mersi_offset_interleaved.h"
 #include "logger.h"
 #include <cstring>
 
@@ -7,15 +6,17 @@ namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_offset_interleaved(image::Image<uint16_t> &img, int /*ndet*/, int shift)
+        void mersi_offset_interleaved(image2::Image &img, int /*ndet*/, int shift)
         {
-            std::vector<uint16_t> line_buffer(img.width());
+            std::vector<int> line_buffer(img.width());
             for (int y = 0; y < (int)img.height(); y += 2)
             {
-                memcpy(line_buffer.data(), &img[y * img.width()], img.width() * sizeof(uint16_t));
+                for (int x = 0; x < (int)img.width(); x++)
+                    line_buffer[x] = img.get(y * img.width() + x);
+
                 for (int x = 0; x < (int)img.width(); x++)
                     if (x + shift >= 0 && x + shift < (int)img.width())
-                        img[y * img.width() + x] = line_buffer[x + shift];
+                        img.set(y * img.width() + x, line_buffer[x + shift]);
             }
         }
     }

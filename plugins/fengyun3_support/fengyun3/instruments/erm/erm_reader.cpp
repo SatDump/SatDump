@@ -37,7 +37,7 @@ namespace fengyun3
             }
         }
 
-        image::Image<uint16_t> ERMReader::getChannel()
+        image2::Image ERMReader::getChannel()
         {
             timestamps.clear();
             std::vector<std::pair<double, std::array<unsigned short, 151>>> imageVector(imageData.begin(), imageData.end());
@@ -50,7 +50,7 @@ namespace fengyun3
                           return el1.first < el2.first;
                       });
 
-            image::Image<uint16_t> img(151, imageVector.size(), 1);
+            image2::Image img(16, 151, imageVector.size(), 1);
 
             if (imageVector.size() > 0)
             {
@@ -59,7 +59,7 @@ namespace fengyun3
                 // Reconstitute the image. Works "OK", not perfect...
                 for (const std::pair<double, std::array<unsigned short, 151>> &lineData : imageVector)
                 {
-                    std::memcpy(&img.data()[line * 151], lineData.second.data(), 2 * 151);
+                    std::memcpy(img.raw_data() + line * 151 * img.typesize(), lineData.second.data(), 2 * 151);
                     line++;
                     timestamps.push_back(lineData.first);
                 }
