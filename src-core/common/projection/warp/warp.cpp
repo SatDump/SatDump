@@ -208,20 +208,20 @@ namespace satdump
                     {
                         if (op.input_image.channels() == 1)
                             for (int c = 0; c < 3; c++)
-                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.get_pixel_bilinear(0, xx, yy);
+                                result.output_image.set(c, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(0, xx, yy));
                         else if (op.input_image.channels() == 3 || op.input_image.channels() == 4)
                             for (int c = 0; c < 3; c++)
-                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.get_pixel_bilinear(c, xx, yy);
+                                result.output_image.set(c, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(c, xx, yy));
 
                         if (op.input_image.channels() == 4)
-                            result.output_image.channel(3)[y * result.output_image.width() + x] = op.input_image.get_pixel_bilinear(3, xx, yy);
+                            result.output_image.set(3, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(3, xx, yy));
                         else
-                            result.output_image.channel(3)[y * result.output_image.width() + x] = 65535;
+                            result.output_image.set(3, y * result.output_image.width() + x, 65535);
                     }
                     else
                     {
                         for (int c = 0; c < op.input_image.channels(); c++)
-                            result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.get_pixel_bilinear(c, xx, yy);
+                            result.output_image.set(c, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(c, xx, yy));
                     }
                 }
             }
@@ -273,8 +273,8 @@ namespace satdump
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
 
                 // Write all of buffers to the GPU
-                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.raw_data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_npoints, true, 0, sizeof(int), &tps->_nof_points, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_x, true, 0, sizeof(double) * tps->_nof_points, tps->x, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_y, true, 0, sizeof(double) * tps->_nof_points, tps->y, 0, NULL, NULL);
@@ -311,7 +311,7 @@ namespace satdump
                     throw satdump_exception("Couldn't clEnqueueNDRangeKernel!");
 
                 // Read image result back from VRAM
-                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
 
                 // Free up everything
                 clReleaseMemObject(buffer_img);
@@ -375,8 +375,8 @@ namespace satdump
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
 
                 // Write all of buffers to the GPU, also converting to FP32
-                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.raw_data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_npoints, true, 0, sizeof(int), &tps->_nof_points, 0, NULL, NULL);
                 std::vector<float> tps_x = double_buffer_to_float(tps->x, tps->_nof_points);
                 std::vector<float> tps_y = double_buffer_to_float(tps->y, tps->_nof_points);
@@ -419,7 +419,7 @@ namespace satdump
                     throw satdump_exception("Couldn't clEnqueueNDRangeKernel!");
 
                 // Read image result back from VRAM
-                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
 
                 // Free up everything
                 clReleaseMemObject(buffer_img);
@@ -453,8 +453,9 @@ namespace satdump
             WarpResult result;
 
             // Prepare the output
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
-                                                         op.output_rgba ? 4 : op.input_image.channels());
+            result.output_image = image2::Image(16, // TODOIMG ALLOW 8-bits
+                                                crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
+                                                op.output_rgba ? 4 : op.input_image.channels());
             result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
             result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
             result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1

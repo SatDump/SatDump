@@ -6,13 +6,13 @@
 #include "resources.h"
 #include "core/style.h"
 #include "main_ui.h"
-#include "common/image/image_utils.h"
+#include "common/image2/image_utils.h"
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
-#include "common/image/image_meta.h"
+#include "common/image2/image_meta.h"
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 
@@ -149,7 +149,7 @@ namespace satdump
                                     {   projections_are_generating = true;
                         logger->info("Saving Projection...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_projection_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog("projection", default_path, "Save Projection", &projected_image_result, &viewer_app->save_type);
+                        std::string saved_at ;//= save_image_dialog("projection", default_path, "Save Projection", &projected_image_result, &viewer_app->save_type); TODOIMG
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -261,30 +261,30 @@ namespace satdump
 
                             if (selected_external_type == 1) // TODO: Move to reprojector backend
                             {
-                                if (!re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
-                                {
-                                    logger->error("Invalid URL for tile map!");
-                                    projections_loading_new_layer = false;
-                                }
+                                /*  if (!re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
+                                  {
+                                      logger->error("Invalid URL for tile map!");
+                                      projections_loading_new_layer = false;
+                                  }
 
-                                logger->info("Generating tile map");
-                                std::stringstream test(mapurl);
-                                std::string segment;
-                                std::vector<std::string> seglist;
-                                while (std::getline(test, segment, '/'))
-                                    seglist.push_back(segment);
-                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
+                                  logger->info("Generating tile map");
+                                  std::stringstream test(mapurl);
+                                  std::string segment;
+                                  std::vector<std::string> seglist;
+                                  while (std::getline(test, segment, '/'))
+                                      seglist.push_back(segment);
+                                  tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
+                                  image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
 
-                                nlohmann::json proj_cfg;
-                                proj_cfg["type"] = "webmerc";
-                                proj_cfg["offset_x"] = -20037508.3427892;
-                                proj_cfg["offset_y"] = 20036051.9193368;
-                                proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
-                                proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
-                                image::set_metadata_proj_cfg(timemap, proj_cfg);
+                                  nlohmann::json proj_cfg;
+                                  proj_cfg["type"] = "webmerc";
+                                  proj_cfg["offset_x"] = -20037508.3427892;
+                                  proj_cfg["offset_y"] = 20036051.9193368;
+                                  proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
+                                  proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
+                                  image::set_metadata_proj_cfg(timemap, proj_cfg);
 
-                                projection_layers.push_front({"Tile Map", timemap});
+                                  projection_layers.push_front({"Tile Map", timemap}); TODOIMG */
                             }
                             else
                             {
@@ -506,7 +506,7 @@ namespace satdump
         general_sum += projection_overlay_handler.enabled();
 
         // Generate all layers
-        std::vector<image::Image<uint16_t>> layers_images =
+        std::vector<image2::Image> layers_images =
             generateAllProjectionLayers(projection_layers, projections_image_width, projections_image_height, cfg, &general_progress);
 
         logger->info("Combining images...");
@@ -514,16 +514,16 @@ namespace satdump
         {
             projected_image_result = layers_images[0];
             for (int i = 1; i < (int)layers_images.size(); i++)
-                projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
+                projected_image_result = image2::blend_images(projected_image_result, layers_images[i]);
         }
         else if (projections_mode_radio == 1) // Overlay
         {
-            projected_image_result = image::Image<uint16_t>(layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
+            projected_image_result = image2::Image(16, layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
             for (int i = 0; i < (int)layers_images.size(); i++)
             {
-                projected_image_result = image::merge_images_opacity(projected_image_result,
-                                                                     layers_images[i],
-                                                                     projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
+                projected_image_result = image2::merge_images_opacity(projected_image_result,
+                                                                      layers_images[i],
+                                                                      projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
             }
         }
 

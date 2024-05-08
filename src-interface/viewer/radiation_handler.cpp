@@ -6,7 +6,7 @@
 #include "common/widgets/themed_widgets.h"
 #include "main_ui.h"
 
-#include "common/image/image_meta.h"
+#include "common/image2/image_meta.h"
 
 namespace satdump
 {
@@ -97,7 +97,7 @@ namespace satdump
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_map", default_path, "Save Map", &map_img, &viewer_app->save_type);
+                        std::string saved_at ;//= save_image_dialog(products->instrument_name + "_map", default_path, "Save Map", &map_img, &viewer_app->save_type); TODOIMG
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -178,7 +178,7 @@ namespace satdump
                 proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(map_img.width());
                 proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(map_img.height());
 
-                image::set_metadata_proj_cfg(map_img, proj_cfg);
+                image2::set_metadata_proj_cfg(map_img, proj_cfg);
 
                 // Create projection title
                 std::string timestring, object_name, instrument_name, composite_name;
@@ -198,7 +198,7 @@ namespace satdump
                 else
                     instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_front({ timestring + object_name + instrument_name + " - " + composite_name, map_img });
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, map_img});
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers.front().img.mirror(true, true);

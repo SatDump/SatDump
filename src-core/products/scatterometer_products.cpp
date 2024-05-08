@@ -29,20 +29,20 @@ namespace satdump
         // scat_data = contents["data"];
     }
 
-    image::Image<uint16_t> make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress)
+    image2::Image make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress)
     {
         if (cfg.channel >= products.get_channel_cnt())
-            return image::Image<uint16_t>();
+            return image2::Image();
 
         auto scat_data = products.get_channel(cfg.channel);
 
         if (scat_data.size() == 0)
-            return image::Image<uint16_t>();
+            return image2::Image();
 
         int img_width = scat_data[0].size();
         int img_height = scat_data.size();
 
-        image::Image<uint16_t> img(img_width, img_height, 1);
+        image2::Image img(16, img_width, img_height, 1);
 
         for (int y = 0; y < img_height; y++)
         {
@@ -56,7 +56,7 @@ namespace satdump
                 if (value < 0)
                     value = 0;
 
-                img[y * img_width + x] = value;
+                img.set(y * img_width + x, value);
             }
 
             if (progress != nullptr)
@@ -66,7 +66,7 @@ namespace satdump
         return img;
     }
 
-    image::Image<uint16_t> make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress, nlohmann::json *proj_cfg)
+    image2::Image make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress, nlohmann::json *proj_cfg)
     {
         if (products.get_scatterometer_type() == products.SCAT_TYPE_ASCAT) // Specific to ASCAT!
         {
@@ -90,7 +90,7 @@ namespace satdump
                 cfg2.channel = 4 - 1;
             }
             else
-                return image::Image<uint16_t>();
+                return image2::Image();
 
             // Warp both
             satdump::warp::WarpResult result1, result2;
@@ -129,7 +129,7 @@ namespace satdump
 
             int final_size_x = result1.output_image.width() + result2.output_image.width();
             int final_size_y = result1.output_image.height() + result2.output_image.height();
-            image::Image<uint16_t> final_img;
+            image2::Image final_img;
 
             { // Reproject both into one...
                 geodetic::projection::EquirectangularProjection projector1, projector2, projector;
@@ -141,7 +141,7 @@ namespace satdump
                                std::max(result1.top_left.lat, result2.top_left.lat),
                                std::max(result1.bottom_right.lon, result2.bottom_right.lon),
                                std::min(result1.bottom_right.lat, result2.bottom_right.lat));
-                final_img.init(final_size_x, final_size_y, 4);
+                final_img.init(16, final_size_x, final_size_y, 4);
 
                 float lon, lat;
                 int x2, y2;
@@ -156,14 +156,14 @@ namespace satdump
                         projector1.forward(lon, lat, x2, y2);
                         if (x2 != -1 || y2 != -1)
                             for (int c = 0; c < result1.output_image.channels(); c++)
-                                if (result1.output_image.channel(3)[y2 * result1.output_image.width() + x2])
-                                    final_img.channel(c)[y * final_img.width() + x] = result1.output_image.channel(c)[y2 * result1.output_image.width() + x2];
+                                if (result1.output_image.get(3, y2 * result1.output_image.width() + x2))
+                                    final_img.set(c, y * final_img.width() + x, result1.output_image.get(c, y2 * result1.output_image.width() + x2));
 
                         projector2.forward(lon, lat, x2, y2);
                         if (x2 != -1 || y2 != -1)
                             for (int c = 0; c < result2.output_image.channels(); c++)
-                                if (result2.output_image.channel(3)[y2 * result2.output_image.width() + x2])
-                                    final_img.channel(c)[y * final_img.width() + x] = result2.output_image.channel(c)[y2 * result2.output_image.width() + x2];
+                                if (result2.output_image.get(3, y2 * result2.output_image.width() + x2))
+                                    final_img.set(c, y * final_img.width() + x, result2.output_image.get(c, y2 * result2.output_image.width() + x2));
                     }
 
                     if (progress != nullptr)
@@ -187,6 +187,6 @@ namespace satdump
             return final_img;
         }
         else
-            return image::Image<uint16_t>();
+            return image2::Image();
     }
 }

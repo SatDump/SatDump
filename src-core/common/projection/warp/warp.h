@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "common/image2/image.h"
 #include "common/projection/thinplatespline.h"
 #include <memory>
 
@@ -16,7 +16,7 @@ namespace satdump
         */
         struct WarpOperation
         {
-            image::Image<uint16_t> input_image;
+            image2::Image input_image;
             std::vector<projection::GCP> ground_control_points;
             int output_width;
             int output_height;
@@ -34,7 +34,7 @@ namespace satdump
         */
         struct WarpResult
         {
-            image::Image<uint16_t> output_image;
+            image2::Image output_image;
             projection::GCP top_left;
             projection::GCP top_right;
             projection::GCP bottom_right;

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace image2
 {
@@ -44,6 +45,8 @@ namespace image2
 
     public:
         void draw_image(int channel, Image image, int x = 0, int y = 0); // Draw a B&W Image onto a channel
+        void draw_pixel(size_t x, size_t y, std::vector<double> color);
+        void draw_line(int x0, int y0, int x1, int y1, std::vector<double> color);
 
     public:
         // Init (empty) image buffer

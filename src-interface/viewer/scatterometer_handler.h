@@ -36,14 +36,14 @@ namespace satdump
         int scat_grayscale_min = 0, scat_grayscale_max = 1e7;
 
         nlohmann::json current_image_proj;
-        image::Image<uint16_t> current_img;
+        image2::Image current_img;
 
         // ASCAT-Only
         int ascat_select_channel_id = 0;
         std::string ascat_select_channel_image_str;
 
         // Projections
-        image::Image<uint16_t> projected_img;
+        image2::Image projected_img;
 
         // GUI
         bool is_updating = false;

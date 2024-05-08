@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "../radiation_products.h"
 #include "core/config.h"
+#include "common/image2/io/io.h"
 
 namespace satdump
 {
@@ -28,11 +29,11 @@ namespace satdump
                 std::replace(initial_name.begin(), initial_name.end(), '/', '_');
 
                 RadiationMapCfg cfg = compo.value().get<RadiationMapCfg>();
-                image::Image<uint16_t> rad_map = satdump::make_radiation_map(*rad_products, cfg);
+                image2::Image rad_map = satdump::make_radiation_map(*rad_products, cfg);
 
                 std::string name = products->instrument_name + "_map_" + initial_name;
 
-                rad_map.save_img(product_path + "/" + name);
+                image2::save_img(rad_map, product_path + "/" + name);
             }
         }
     }

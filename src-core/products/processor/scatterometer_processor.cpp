@@ -9,6 +9,8 @@
 #include "common/projection/reprojector.h"
 #include "common/map/map_drawer.h"
 
+#include "common/image2/io/io.h"
+
 namespace satdump
 {
     void process_scatterometer_products(Products *products, std::string product_path)
@@ -31,10 +33,10 @@ namespace satdump
                 std::replace(initial_name.begin(), initial_name.end(), '/', '_');
 
                 GrayScaleScatCfg cfg = compo.value().get<GrayScaleScatCfg>();
-                image::Image<uint16_t> grayscale = satdump::make_scatterometer_grayscale(*rad_products, cfg);
+                image2::Image grayscale = satdump::make_scatterometer_grayscale(*rad_products, cfg);
 
                 std::string name = products->instrument_name + "_grayscale_" + initial_name;
-                grayscale.save_img(product_path + "/" + name);
+                image2::save_img(grayscale, product_path + "/" + name);
             }
         }
 
@@ -48,7 +50,7 @@ namespace satdump
 
                 GrayScaleScatCfg cfg = compo.value().get<GrayScaleScatCfg>();
                 nlohmann::json proj_cfg;
-                image::Image<uint16_t> grayscale = satdump::make_scatterometer_grayscale_projs(*rad_products, cfg, nullptr, &proj_cfg);
+                image2::Image grayscale = satdump::make_scatterometer_grayscale_projs(*rad_products, cfg, nullptr, &proj_cfg);
 
                 grayscale.to_rgb();
 
@@ -59,15 +61,15 @@ namespace satdump
                         auto proj_func = satdump::reprojection::setupProjectionFunction(grayscale.width(), grayscale.height(), proj_cfg, {});
                         logger->info("Drawing map");
                         unsigned short color[4] = {0, 65535, 0};
-                        map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
-                                                       grayscale,
-                                                       color,
-                                                       proj_func);
+                        //  map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
+                        //                                 grayscale,
+                        //                                 color,
+                        //                                 proj_func); // TODOIMG
                     }
                 }
 
                 std::string name = products->instrument_name + "_grayscale_proj_" + initial_name;
-                grayscale.save_img(product_path + "/" + name);
+                image2::save_img(grayscale, product_path + "/" + name);
             }
         }
     }

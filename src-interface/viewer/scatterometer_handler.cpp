@@ -44,7 +44,7 @@ namespace satdump
         {
         }
 
-        current_img.init_font(resources::getResourcePath("fonts/font.ttf"));
+        //  current_img.init_font(resources::getResourcePath("fonts/font.ttf")); TODOIMG
         update();
     }
 
@@ -148,9 +148,9 @@ namespace satdump
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_" +
+                        std::string saved_at ;/*= save_image_dialog(products->instrument_name + "_" +
                             ((selected_visualization_id == 1 && current_scat_type == SCAT_ASCAT) ? std::to_string(ascat_select_channel_id) : 
-                            std::to_string(select_channel_image_id)), default_path, "Save Image", &current_img, &viewer_app->save_type);
+                            std::to_string(select_channel_image_id)), default_path, "Save Image", &current_img, &viewer_app->save_type); TODOIMG */
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -230,7 +230,7 @@ namespace satdump
             try
             {
                 nlohmann::json proj_cfg = current_image_proj;
-                image::set_metadata_proj_cfg(current_img, proj_cfg);
+                image2::set_metadata_proj_cfg(current_img, proj_cfg);
 
                 // Create projection title
                 std::string timestring, object_name, instrument_name;
@@ -249,7 +249,7 @@ namespace satdump
                 else
                     instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_front({ timestring + object_name + instrument_name, current_img });
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name, current_img});
             }
             catch (std::exception &e)
             {

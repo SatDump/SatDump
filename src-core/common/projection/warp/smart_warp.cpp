@@ -288,8 +288,9 @@ namespace satdump
             logger->trace("Smart Warp using %d %d, full size %d %d", crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, operation_t.output_width, operation_t.output_height);
 
             // Prepare the output
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
-                                                         nchannels);
+            result.output_image = image2::Image(16, // TODOIMG not just 8-bits
+                                                crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
+                                                nchannels);
             result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
             result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
             result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1
@@ -373,15 +374,15 @@ namespace satdump
                         for (int x = 0; x < width; x++)
                             for (int y = 0; y < height; y++)
                                 if (y + y2 >= 0 && x + x2 >= 0)
-                                    if (result2.output_image.channel(3)[y * result2.output_image.width() + x] > 0)
+                                    if (result2.output_image.get(3, y * result2.output_image.width() + x) > 0)
                                     {
                                         for (int ch = 0; ch < 3; ch++)
-                                            result.output_image.channel(ch)[(y + y2) * result.output_image.width() + x + x2] = result2.output_image.channel(ch)[y * result2.output_image.width() + x];
+                                            result.output_image.set(ch, (y + y2) * result.output_image.width() + x + x2, result2.output_image.get(ch, y * result2.output_image.width() + x));
 
                                         if (result2.output_image.channels() == 4)
-                                            result.output_image.channel(3)[(y + y2) * result.output_image.width() + x + x2] = result2.output_image.channel(3)[y * result2.output_image.width() + x];
+                                            result.output_image.set(3, (y + y2) * result.output_image.width() + x + x2, result2.output_image.get(3, y * result2.output_image.width() + x));
                                         else
-                                            result.output_image.channel(3)[(y + y2) * result.output_image.width() + x + x2] = 65535;
+                                            result.output_image.set(3, (y + y2) * result.output_image.width() + x + x2, 65535);
                                     }
                 }
 

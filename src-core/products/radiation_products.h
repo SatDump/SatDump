@@ -1,7 +1,7 @@
 #pragma once
 
 #include "products.h"
-#include "common/image/image.h"
+#include "common/image2/image.h"
 #include "logger.h"
 
 namespace satdump
@@ -36,12 +36,12 @@ namespace satdump
                 {
                     timestamps = contents["timestamps"][channel].get<std::vector<double>>();
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     timestamps = contents["timestamps"].get<std::vector<double>>();
                 }
             }
-            catch (std::exception&)
+            catch (std::exception &)
             {
                 logger->trace("This radiation product has no timestamps!");
             }
@@ -105,5 +105,5 @@ namespace satdump
         v.max = j["max"].get<int>();
     }
 
-    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay = false, float *progress = nullptr);
+    image2::Image make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay = false, float *progress = nullptr);
 }

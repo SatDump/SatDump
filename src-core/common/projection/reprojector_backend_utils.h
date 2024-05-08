@@ -4,12 +4,13 @@
 #include "core/exception.h"
 #include "reprojector.h"
 #include "imgui/imgui_image.h"
-#include "common/image/image_meta.h"
+#include "common/image2/image_meta.h"
+#include "common/image2/image_processing.h"
+#include "common/image2/io/io.h"
 
 #include "common/utils.h"
 #include "core/config.h"
 
-#include "common/image/image_meta.h"
 #include "products/image_products.h"
 #include "products/scatterometer_products.h"
 #include "products/radiation_products.h"
@@ -19,7 +20,7 @@ namespace satdump
     struct ProjectionLayer
     {
         std::string name;
-        image::Image<uint16_t> img;
+        image2::Image img;
         float opacity = 100;
         bool enabled = true;
         float progress = 0;
@@ -33,7 +34,7 @@ namespace satdump
                 preview_texid = makeImageTexture();
                 auto img8 = img.resize_to(100, 100).to8bits();
                 uint32_t *tmp_rgba = new uint32_t[img8.width() * img8.height()];
-                uchar_to_rgba(img8.data(), tmp_rgba, img8.width() * img8.height(), img8.channels());
+                uchar_to_rgba((uint8_t *)img8.raw_data(), tmp_rgba, img8.width() * img8.height(), img8.channels()); // TODOIMG Consolidate
                 updateImageTexture(preview_texid, tmp_rgba, img8.width(), img8.height());
                 delete[] tmp_rgba;
             }
@@ -99,13 +100,13 @@ namespace satdump
         }
     }
 
-    inline std::vector<image::Image<uint16_t>> generateAllProjectionLayers(std::deque<ProjectionLayer> &projection_layers,
-                                                                           int projections_image_width,
-                                                                           int projections_image_height,
-                                                                           nlohmann::json &target_cfg,
-                                                                           float *general_progress = nullptr)
+    inline std::vector<image2::Image> generateAllProjectionLayers(std::deque<ProjectionLayer> &projection_layers,
+                                                                  int projections_image_width,
+                                                                  int projections_image_height,
+                                                                  nlohmann::json &target_cfg,
+                                                                  float *general_progress = nullptr)
     {
-        std::vector<image::Image<uint16_t>> layers_images;
+        std::vector<image2::Image> layers_images;
 
         for (int i = projection_layers.size() - 1; i >= 0; i--)
         {
@@ -124,9 +125,9 @@ namespace satdump
 
             reprojection::ReprojectionOperation op;
 
-            if (!image::has_metadata_proj_cfg(layer.img)) // Just in case...
+            if (!image2::has_metadata_proj_cfg(layer.img)) // Just in case...
                 continue;
-            if (!image::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
+            if (!image2::get_metadata_proj_cfg(layer.img).contains("type")) // Just in case...
                 continue;
 
             op.target_prj_info = target_cfg;
@@ -136,7 +137,7 @@ namespace satdump
 
             op.use_old_algorithm = layer.old_algo;
 
-            image::Image<uint16_t> res = reprojection::reproject(op, &layer.progress);
+            image2::Image res = reprojection::reproject(op, &layer.progress);
             layers_images.push_back(res);
 
             if (general_progress != nullptr)
@@ -223,7 +224,7 @@ namespace satdump
                     proj_cfg["metadata"]["tle"] = products->get_tle();
                 if (products->has_timestamps)
                     proj_cfg["metadata"]["timestamps"] = final_timestamps;
-                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+                image2::set_metadata_proj_cfg(newlayer.img, proj_cfg);
             }
             else if (products_raw->type == "scatterometer")
             {
@@ -232,7 +233,7 @@ namespace satdump
                 satdump::GrayScaleScatCfg _cfg = cfg.raw_cfg;
                 nlohmann::json proj_prm;
                 newlayer.img = make_scatterometer_grayscale_projs(*products, _cfg, nullptr, &proj_prm);
-                image::set_metadata_proj_cfg(newlayer.img, proj_prm);
+                image2::set_metadata_proj_cfg(newlayer.img, proj_prm);
             }
             else if (products_raw->type == "radiation")
             {
@@ -251,12 +252,12 @@ namespace satdump
                 proj_cfg["offset_y"] = tl_lat;
                 proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(newlayer.img.width());
                 proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(newlayer.img.height());
-                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+                image2::set_metadata_proj_cfg(newlayer.img, proj_cfg);
             }
         }
         else if (cfg.type == "equirectangular" || cfg.type == "other")
         {
-            newlayer.img.load_img(cfg.file);
+            image2::load_img(newlayer.img, cfg.file);
             if (newlayer.img.size() > 0)
             {
                 double tl_lon = -180;
@@ -277,19 +278,19 @@ namespace satdump
                     proj_cfg = loadJsonFile(cfg.projfile);
                 }
                 if (cfg.normalize)
-                    newlayer.img.normalize();
-                image::set_metadata_proj_cfg(newlayer.img, proj_cfg);
+                    image2::normalize(newlayer.img);
+                image2::set_metadata_proj_cfg(newlayer.img, proj_cfg);
             }
             else
                 throw satdump_exception("Could not load image file!");
         }
         else if (cfg.type == "geotiff")
         {
-            newlayer.img.load_tiff(cfg.file);
-            if (newlayer.img.size() > 0 && image::has_metadata_proj_cfg(newlayer.img))
+            // newlayer.img.load_tiff(cfg.file); // TODOIMG
+            if (newlayer.img.size() > 0 && image2::has_metadata_proj_cfg(newlayer.img))
             {
                 if (cfg.normalize)
-                    newlayer.img.normalize();
+                    image2::normalize(newlayer.img);
             }
             else
                 throw satdump_exception("Could not load GeoTIFF. This may not be a TIFF file, or the projection settings are unsupported? If you think they should be supported, open an issue on GitHub.");

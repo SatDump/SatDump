@@ -168,7 +168,7 @@ namespace satdump
             if (!success)
                 corrected_stuff.clear();
         }
-        /*
+
         if (overlay_handler.enabled())
         {
             // Ensure this is RGB!!
@@ -227,8 +227,6 @@ namespace satdump
 
             overlay_handler.apply(current_image, proj_func);
         }
-        */
-        // TODOIMG
 
         image_view.update(current_image);
 
@@ -864,62 +862,62 @@ namespace satdump
     }
 
     void ImageViewerHandler::addCurrentToProjections()
-    { /*
-         if (canBeProjected())
-         {
-             try
-             {
-                 // Get projection information
-                 nlohmann::json proj_cfg;
-                 proj_cfg = products->get_proj_cfg();
-                 proj_cfg["metadata"] = current_proj_metadata;
-                 if (products->has_tle())
-                     proj_cfg["metadata"]["tle"] = products->get_tle();
-                 if (products->has_timestamps)
-                     proj_cfg["metadata"]["timestamps"] = current_timestamps;
-                 image::set_metadata_proj_cfg(current_image, proj_cfg);
+    {
+        if (canBeProjected())
+        {
+            try
+            {
+                // Get projection information
+                nlohmann::json proj_cfg;
+                proj_cfg = products->get_proj_cfg();
+                proj_cfg["metadata"] = current_proj_metadata;
+                if (products->has_tle())
+                    proj_cfg["metadata"]["tle"] = products->get_tle();
+                if (products->has_timestamps)
+                    proj_cfg["metadata"]["timestamps"] = current_timestamps;
+                image2::set_metadata_proj_cfg(current_image, proj_cfg);
 
-                 // Create projection title
-                 std::string timestring, object_name, instrument_name, composite_name;
-                 if (current_timestamps.size() > 0)
-                     timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
-                 else
-                     timestring = "";
-                 if (instrument_cfg.contains("name"))
-                     instrument_name = instrument_cfg["name"];
-                 else
-                     instrument_name = products->instrument_name;
-                 if (products->has_tle())
-                     object_name = products->get_tle().name;
-                 else
-                     object_name = "";
-                 if (timestring != "" || object_name != "")
-                     object_name += "\n";
-                 if (active_channel_id >= 0)
-                     composite_name = "Channel " + channel_numbers[active_channel_id];
-                 else if (select_rgb_presets == -1)
-                     composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
-                 else
-                     composite_name = rgb_presets[select_rgb_presets].first;
+                // Create projection title
+                std::string timestring, object_name, instrument_name, composite_name;
+                if (current_timestamps.size() > 0)
+                    timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
+                else
+                    timestring = "";
+                if (instrument_cfg.contains("name"))
+                    instrument_name = instrument_cfg["name"];
+                else
+                    instrument_name = products->instrument_name;
+                if (products->has_tle())
+                    object_name = products->get_tle().name;
+                else
+                    object_name = "";
+                if (timestring != "" || object_name != "")
+                    object_name += "\n";
+                if (active_channel_id >= 0)
+                    composite_name = "Channel " + channel_numbers[active_channel_id];
+                else if (select_rgb_presets == -1)
+                    composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
+                else
+                    composite_name = rgb_presets[select_rgb_presets].first;
 
-                 // Add projection layer and settings
-                 viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
+                // Add projection layer and settings
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
 
-                 if (rotate_image)
-                     viewer_app->projection_layers.front().img.mirror(true, true);
-                 if (projection_use_old_algo)
-                     viewer_app->projection_layers.front().old_algo = true;
+                if (rotate_image)
+                    viewer_app->projection_layers.front().img.mirror(true, true);
+                if (projection_use_old_algo)
+                    viewer_app->projection_layers.front().old_algo = true;
 
-                 proj_notif.set_message(style::theme.green, "Added!");
-             }
-             catch (std::exception &e)
-             {
-                 logger->error("Could not project image! %s", e.what());
-             }
-         }
-         else
-         {
-             logger->error("Current image can't be projected!");
-         } TODIMG */
+                proj_notif.set_message(style::theme.green, "Added!");
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not project image! %s", e.what());
+            }
+        }
+        else
+        {
+            logger->error("Current image can't be projected!");
+        }
     }
 }

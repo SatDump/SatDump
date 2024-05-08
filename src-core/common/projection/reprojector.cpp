@@ -17,13 +17,13 @@
 // #include "reproj/reproj.h"
 
 #include "common/projection/projs2/proj_json.h"
-#include "common/image/image_meta.h"
+#include "common/image2/image_meta.h"
 
 namespace satdump
 {
     namespace reprojection
     {
-        inline void transposePixel(image::Image<uint16_t> &in, image::Image<uint16_t> &out, double ix, double iy, int ox, int oy)
+        inline void transposePixel(image2::Image &in, image2::Image &out, double ix, double iy, int ox, int oy)
         {
             if (ix >= (int)in.width() || iy >= (int)in.height() || ix < 0 || iy < 0)
                 return;
@@ -33,41 +33,42 @@ namespace satdump
             if (in.channels() == 4)
             {
                 for (int c = 0; c < in.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = in.get_pixel_bilinear(c, ix, iy); // in.channel(c)[iy * in.width() + ix];
+                    out.set(c, oy * out.width() + ox, in.get_pixel_bilinear(c, ix, iy)); // in.channel(c)[iy * in.width() + ix];
             }
             else if (in.channels() == 3)
             {
                 for (int c = 0; c < in.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = c == 3 ? 65535 : in.get_pixel_bilinear(c, ix, iy); // in.channel(c)[iy * in.width() + ix];
+                    out.set(c, oy * out.width() + ox, c == 3 ? 65535 : in.get_pixel_bilinear(c, ix, iy)); // in.channel(c)[iy * in.width() + ix];
                 if (out.channels() == 4)
-                    out.channel(3)[oy * out.width() + ox] = 65535;
+                    out.set(3, oy * out.width() + ox, 65535);
             }
             else if (in.channels() == 1) //|| in.channels() == 2)
             {
                 for (int c = 0; c < out.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = in.get_pixel_bilinear(0, ix, iy); // in.channel(0)[iy * in.width() + ix];
+                    out.set(c, oy * out.width() + ox, in.get_pixel_bilinear(0, ix, iy)); // in.channel(0)[iy * in.width() + ix];
                 if (out.channels() == 4)
-                    out.channel(3)[oy * out.width() + ox] = 65535;
+                    out.set(3, oy * out.width() + ox, 65535);
             }
             else
             {
                 for (int c = 0; c < in.channels(); c++)
-                    out.channel(c)[oy * out.width() + ox] = c == 3 ? 65535 : in.get_pixel_bilinear(0, ix, iy); // in.channel(0)[iy * in.width() + ix];
+                    out.set(c, oy * out.width() + ox, c == 3 ? 65535 : in.get_pixel_bilinear(0, ix, iy)); // in.channel(0)[iy * in.width() + ix];
                 if (out.channels() == 4)
-                    out.channel(3)[oy * out.width() + ox] = 65535;
+                    out.set(3, oy * out.width() + ox, 65535);
             }
         }
 
-        image::Image<uint16_t> reproject(ReprojectionOperation &op, float *progress)
+        image2::Image reproject(ReprojectionOperation &op, float *progress)
         {
-            image::Image<uint16_t> result_img;
+            image2::Image result_img;
 
             if (op.img.size() == 0)
                 throw satdump_exception("Can't reproject an empty image!");
-            if (!image::has_metadata_proj_cfg(op.img))
+            if (!image2::has_metadata_proj_cfg(op.img))
                 throw satdump_exception("Can't reproject an image with no proj config!");
 
-            result_img.init(op.output_width, op.output_height, 4);
+            op.img.to16bits(); // TODOIMG for now can only project 16-bits
+            result_img.init(16, op.output_width, op.output_height, 4);
 
             // Attempt to init target proj
             proj::projection_t trg_proj;
@@ -92,7 +93,7 @@ namespace satdump
             bool src_proj_err = false;
             try
             {
-                src_proj = image::get_metadata_proj_cfg(op.img);
+                src_proj = image2::get_metadata_proj_cfg(op.img);
             }
             catch (std::exception &e)
             {
@@ -124,7 +125,7 @@ namespace satdump
                 { // This is garbage, but robust to noise garbage!
                     logger->info("Using old algorithm...!");
 
-                    auto src_proj_cfg = image::get_metadata_proj_cfg(op.img);
+                    auto src_proj_cfg = image2::get_metadata_proj_cfg(op.img);
 
                     // Init
                     std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(result_img.width(),
@@ -179,16 +180,16 @@ namespace satdump
                                 uint16_t color[4] = {0, 0, 0, 0};
                                 if (op.img.channels() >= 3)
                                 {
-                                    color[0] = op.img.channel(0)[currentScan * op.img.width() + int(px)];
-                                    color[1] = op.img.channel(1)[currentScan * op.img.width() + int(px)];
-                                    color[2] = op.img.channel(2)[currentScan * op.img.width() + int(px)];
+                                    color[0] = op.img.get(0, currentScan * op.img.width() + int(px));
+                                    color[1] = op.img.get(1, currentScan * op.img.width() + int(px));
+                                    color[2] = op.img.get(2, currentScan * op.img.width() + int(px));
                                     color[3] = 65535;
                                 }
                                 else
                                 {
-                                    color[0] = op.img[currentScan * op.img.width() + int(px)];
-                                    color[1] = op.img[currentScan * op.img.width() + int(px)];
-                                    color[2] = op.img[currentScan * op.img.width() + int(px)];
+                                    color[0] = op.img.get(currentScan * op.img.width() + int(px));
+                                    color[1] = op.img.get(currentScan * op.img.width() + int(px));
+                                    color[2] = op.img.get(currentScan * op.img.width() + int(px));
                                     color[3] = 65535;
                                 }
 
@@ -206,7 +207,7 @@ namespace satdump
                                     I guess time will tell how reliable that approximation is.
                                     */
                                     double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
-                                    result_img.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
+                                    // TODOIMG no draw_circle yet...    result_img.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
                                 }
 
                                 // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);
@@ -221,7 +222,7 @@ namespace satdump
                 else
                 {
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image2::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
                     operation.input_image = op.img;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
@@ -262,7 +263,7 @@ namespace satdump
                 }
             }
 
-            image::set_metadata_proj_cfg(result_img, trg_proj);
+            image2::set_metadata_proj_cfg(result_img, trg_proj);
 
             proj::projection_free(&trg_proj);
             return result_img;
@@ -295,10 +296,10 @@ namespace satdump
                     double x, y;
                     if (proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
-                    else if(rotate)
-                        return { w - 1 - (int)x, h - 1 - (int)y };
+                    else if (rotate)
+                        return {w - 1 - (int)x, h - 1 - (int)y};
                     else
-                        return { (int)x, (int)y };
+                        return {(int)x, (int)y};
                 };
             }
             else
@@ -315,26 +316,26 @@ namespace satdump
                     if (x < 0 || x >= map_width || y < 0 || y >= map_height)
                         return {-1, -1};
                     else if (rotate)
-                        return { map_width - 1 - x, map_height - 1 - y };
+                        return {map_width - 1 - x, map_height - 1 - y};
                     else
-                        return { x, y };
+                        return {x, y};
                 };
             }
 
             throw satdump_exception("Invalid projection!!!!");
         }
 
-        ProjBounds determineProjectionBounds(image::Image<uint16_t> &img)
+        ProjBounds determineProjectionBounds(image2::Image &img)
         {
-            if (!image::has_metadata(img))
+            if (!image2::has_metadata(img))
                 return {0, 0, 0, 0, false};
 
-            if (!image::get_metadata(img).contains("proj_cfg"))
+            if (!image2::get_metadata(img).contains("proj_cfg"))
                 return {0, 0, 0, 0, false};
 
             try
             {
-                nlohmann::json params = image::get_metadata(img)["proj_cfg"];
+                nlohmann::json params = image2::get_metadata(img)["proj_cfg"];
 
                 proj::projection_t proj;
                 bool proj_err = false;
