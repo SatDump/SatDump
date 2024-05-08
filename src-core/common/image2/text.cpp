@@ -15,6 +15,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "logger.h"
+
 namespace image2
 {
     TextDrawer::~TextDrawer()
@@ -56,7 +58,10 @@ namespace image2
     void TextDrawer::draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int s, std::string text)
     {
         if (!has_font)
+        {
+            logger->error("Tried to draw text without having a font initialized!");
             return;
+        }
         int CP = 0;
         std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
         char *c = cstr.data();

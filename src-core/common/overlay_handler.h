@@ -31,6 +31,8 @@ private:
     GrayscaleOverlayCache cities_cache;
     GrayscaleOverlayCache qth_cache;
 
+    image2::TextDrawer text_drawer;
+
 public:
     // Colors
     ImVec4 color_borders = {0, 1, 0, 1};

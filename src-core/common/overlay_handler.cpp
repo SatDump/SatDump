@@ -129,9 +129,10 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             cities_cache.width = width;
             cities_cache.height = height;
             image2::Image bitmask(8, width, height, 1);
-            //  bitmask.init_font(resources::getResourcePath("fonts/font.ttf")); TODOIMG
+            text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
             map::drawProjectedCitiesGeoJson({resources::getResourcePath("maps/ne_10m_populated_places_simple.json")},
                                             bitmask,
+                                            text_drawer,
                                             {1},
                                             proj_func,
                                             cities_size,
@@ -153,10 +154,10 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
                 img.setf(i, location.first, (((color[i] * location.second) + (((float)img.getf(i, location.first)) * src_alpha * (1.0f - location.second))) / alpha));
 
             if (channels == 4)
-                img.getf(3, location.first, alpha);
+                img.setf(3, location.first, alpha);
             else
                 for (int i = 0; i < channels; i++)
-                    img.getf(i, location.first, (float)img.getf(i, location.first) * alpha);
+                    img.setf(i, location.first, (float)img.getf(i, location.first) * alpha);
         }
 
         if (step_cnt != nullptr)
@@ -175,7 +176,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             qth_cache.height = height;
             last_qth_label = qth_label;
             image2::Image bitmask(8, width, height, 1);
-            // bitmask.init_font(resources::getResourcePath("fonts/font.ttf")); TODOIMG
+            text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
             double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
             double qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
             std::pair<float, float> cc = proj_func(qth_lat, qth_lon, height, width);
@@ -185,7 +186,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
                 bitmask.draw_line(cc.first - cities_size * 0.3, cc.second - cities_size * 0.3, cc.first + cities_size * 0.3, cc.second + cities_size * 0.3, {1});
                 bitmask.draw_line(cc.first + cities_size * 0.3, cc.second - cities_size * 0.3, cc.first - cities_size * 0.3, cc.second + cities_size * 0.3, {1});
                 bitmask.draw_circle(cc.first, cc.second, 0.15 * cities_size, {1}, true);
-                //  bitmask.draw_text(cc.first, cc.second + cities_size * 0.15, color, cities_size, qth_label); TODOIMG
+                text_drawer.draw_text(bitmask, cc.first, cc.second + cities_size * 0.15, {1}, cities_size, qth_label);
             }
 
             for (size_t i = 0; i < bitmask.size(); i++)

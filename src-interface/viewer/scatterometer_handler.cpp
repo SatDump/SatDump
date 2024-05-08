@@ -44,7 +44,6 @@ namespace satdump
         {
         }
 
-        //  current_img.init_font(resources::getResourcePath("fonts/font.ttf")); TODOIMG
         update();
     }
 

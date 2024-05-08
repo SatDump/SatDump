@@ -154,46 +154,46 @@ namespace map
         }
     }
 
-    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image2::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
+    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image2::Image &map_image, image2::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
     {
-        /*  if (!map_image.font_ready())
-              return;
+        if (!text_drawer.font_ready())
+            return;
 
-          for (std::string currentShapeFile : shapeFiles)
-          {
-              nlohmann::json shapeFile;
-              {
-                  std::ifstream istream(currentShapeFile);
-                  istream >> shapeFile;
-                  istream.close();
-              }
+        for (std::string currentShapeFile : shapeFiles)
+        {
+            nlohmann::json shapeFile;
+            {
+                std::ifstream istream(currentShapeFile);
+                istream >> shapeFile;
+                istream.close();
+            }
 
-              for (const nlohmann::json &mapStruct : shapeFile.at("features"))
-              {
-                  if (mapStruct["type"] != "Feature" || mapStruct["geometry"]["type"] != "Point")
-                      continue;
+            for (const nlohmann::json &mapStruct : shapeFile.at("features"))
+            {
+                if (mapStruct["type"] != "Feature" || mapStruct["geometry"]["type"] != "Point")
+                    continue;
 
-                  std::string featurecla = mapStruct["properties"]["featurecla"].get<std::string>();
+                std::string featurecla = mapStruct["properties"]["featurecla"].get<std::string>();
 
-                  if ((cities_type == 0 && featurecla == "Admin-0 capital") || (cities_type == 1 && (featurecla == "Admin-1 capital" || featurecla == "Admin-0 capital")) || (cities_type == 2 && mapStruct["properties"]["scalerank"] <= cities_scale_rank))
-                  {
-                      std::pair<double, double> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<double, double>>();
-                      std::pair<double, double> cc = projectionFunc(coordinates.second, coordinates.first,
-                                                                    map_image.height(), map_image.width());
+                if ((cities_type == 0 && featurecla == "Admin-0 capital") || (cities_type == 1 && (featurecla == "Admin-1 capital" || featurecla == "Admin-0 capital")) || (cities_type == 2 && mapStruct["properties"]["scalerank"] <= cities_scale_rank))
+                {
+                    std::pair<double, double> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<double, double>>();
+                    std::pair<double, double> cc = projectionFunc(coordinates.second, coordinates.first,
+                                                                  map_image.height(), map_image.width());
 
-                      if (cc.first == -1 || cc.second == -1)
-                          continue;
+                    if (cc.first == -1 || cc.second == -1)
+                        continue;
 
-                      map_image.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
-                      map_image.draw_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
-                      map_image.draw_circle(cc.first, cc.second, 0.15 * font_size, color, true);
+                    map_image.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
+                    map_image.draw_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
+                    map_image.draw_circle(cc.first, cc.second, 0.15 * font_size, color, true);
 
-                      std::string name = mapStruct["properties"]["nameascii"];
-                      // map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
-                      map_image.draw_text(cc.first, cc.second + font_size * 0.15, color, font_size, name);
-                  }
-              }
-          } TODOIMG */
+                    std::string name = mapStruct["properties"]["nameascii"];
+                    // map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
+                    text_drawer.draw_text(map_image, cc.first, cc.second + font_size * 0.15, color, font_size, name);
+                }
+            }
+        }
     }
 
     void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image2::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
@@ -285,23 +285,25 @@ namespace map
         }
     }
 
-    void drawProjectedLabels(std::vector<CustomLabel> labels, image2::Image &image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, double ratio)
-    {
-        /*  std::vector<image::Image<uint8_t>> font = image::make_font(50 * ratio);
+    /* void drawProjectedLabels(std::vector<CustomLabel> labels, image2::Image &image, image2::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, double ratio)
+     {
+         if (!text_drawer.font_ready())
+             return;
 
-          for (CustomLabel &currentLabel : labels)
-          {
-              std::pair<double, double> cc = projectionFunc(currentLabel.lat, currentLabel.lon,
-                                                            image.height(), image.width());
+         for (CustomLabel &currentLabel : labels)
+         {
+             std::pair<double, double> cc = projectionFunc(currentLabel.lat, currentLabel.lon,
+                                                           image.height(), image.width());
 
-              if (cc.first == -1 || cc.first == -1)
-                  continue;
+             if (cc.first == -1 || cc.first == -1)
+                 continue;
 
-              image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
-              image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
-              image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
+             image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
+             image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
+             image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
 
-              image.draw_text(cc.first, cc.second + 20 * ratio, color, font, currentLabel.label);
-          } TODOIMG */
-    }
+            text_drawer .draw_text(image,cc.first, cc.second + 20 * ratio, color, font, currentLabel.label);
+            //text_drawer.draw_text(map_image, cc.first, cc.second + font_size * 0.15, color, font_size, name);
+         }
+     } */
 }

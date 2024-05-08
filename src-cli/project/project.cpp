@@ -112,7 +112,6 @@ int main_project(int argc, char *argv[])
     // Setup final image
     image2::Image projected_image_result;
     projected_image_result.init(16, projections_image_width, projections_image_height, 3); // TODOIMG ALLOW MORE THAN 16
-                                                                                           //   projected_image_result.init_font(resources::getResourcePath("fonts/font.ttf")); // TODOIMG NO FONT/TEXT stuff yet
 
     logger->info("Combining images...");
     if (target_cfg.contains("blend_mode") ? target_cfg["blend_mode"].get<bool>() : false) // Blend
