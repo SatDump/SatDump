@@ -1,5 +1,4 @@
 #include "image.h"
-#include <cstring>
 #include <cstdlib>
 #include "core/exception.h"
 #include "image_meta.h"
@@ -139,9 +138,9 @@ namespace image2
             init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy(d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
-            memcpy(d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
-            memcpy(d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
             for (size_t i = 0; i < d_width * d_height; i++)
                 set(3, i, d_maxv);
         }
@@ -151,12 +150,12 @@ namespace image2
             init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy(d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
-            memcpy(d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
-            memcpy(d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
 
             // Copy over RGBA
-            memcpy(d_data + type_size * d_width * d_height * 3, tmp.d_data + d_width * d_height, d_width * d_height * type_size);
+            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 3, (uint8_t*)tmp.d_data + d_width * d_height, d_width * d_height * type_size);
         }
         else if (d_channels == 3)
         {
@@ -218,8 +217,8 @@ namespace image2
         for (int c = 0; c < d_channels; c++)
             for (int x = 0; x < new_width; x++)
                 for (int y = 0; y < new_height; y++)
-                    memcpy(new_data + ((new_width * new_height * c) + y * new_width + x) * type_size,
-                           d_data + (c * d_width * d_height + (y0 + y) * d_width + (x + x0)) * type_size,
+                    memcpy((uint8_t*)new_data + ((new_width * new_height * c) + y * new_width + x) * type_size,
+                           (uint8_t*)d_data + (c * d_width * d_height + (y0 + y) * d_width + (x + x0)) * type_size,
                            type_size);
 
         // Swap out buffer

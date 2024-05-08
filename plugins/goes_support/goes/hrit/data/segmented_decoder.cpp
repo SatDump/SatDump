@@ -29,7 +29,7 @@ namespace goes
         {
             if (segc >= seg_count || segc < 0)
                 return;
-            std::memcpy(image->raw_data() + seg_size * segc, data, this_size); // IMGTODO, maybe check 8-bits?
+            std::memcpy((uint8_t*)image->raw_data() + seg_size * segc, data, this_size); // IMGTODO, maybe check 8-bits?
             segments_done.get()[segc] = true;
         }
 
