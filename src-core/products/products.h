@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "common/image/image.h"
 #include "common/tracking/tle.h"
 
 #define PRODUCTS_LOADER_FUN(TYPE) [](std::string file) -> std::shared_ptr<Products> { std::shared_ptr<TYPE> products = std::make_shared<TYPE>(); products->load(file); return products; }

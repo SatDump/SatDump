@@ -3,51 +3,56 @@
 #include "products/image_products.h"
 #include "resources.h"
 #define DEFINE_COMPOSITE_UTILS 1
-#include "common/image/composite.h"
+#include "common/image2/composite.h"
+#include "core/exception.h"
+#include "common/image2/io/io.h"
 
 namespace goes
 {
-    image::Image<uint16_t> goesFalseColorCompositor(satdump::ImageProducts *img_pro,
-                                                    std::vector<image::Image<uint16_t>> &inputChannels,
-                                                    std::vector<std::string> channelNumbers,
-                                                    std::string cpp_id,
-                                                    nlohmann::json vars,
-                                                    nlohmann::json offsets_cfg,
-                                                    std::vector<double> *final_timestamps = nullptr,
-                                                    float *progress = nullptr)
+    image2::Image goesFalseColorCompositor(satdump::ImageProducts *img_pro,
+                                           std::vector<image2::Image> &inputChannels,
+                                           std::vector<std::string> channelNumbers,
+                                           std::string cpp_id,
+                                           nlohmann::json vars,
+                                           nlohmann::json offsets_cfg,
+                                           std::vector<double> *final_timestamps = nullptr,
+                                           float *progress = nullptr)
     {
-        image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
+        image2::compo_cfg_t f = image2::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         std::string lut_path = vars.contains("lut") ? vars["lut"].get<std::string>() : std::string("goes/abi/wxstar/lut.png");
 
         // Load the lut and curve
-        image::Image<uint8_t> img_lut;
-        image::Image<uint8_t> img_curve;
-        img_lut.load_png(resources::getResourcePath(lut_path));
-        img_curve.load_png(resources::getResourcePath("goes/abi/wxstar/ch2_curve.png"));
+        image2::Image img_lut;
+        image2::Image img_curve;
+        image2::load_png(img_lut, resources::getResourcePath(lut_path));
+        image2::load_png(img_curve, resources::getResourcePath("goes/abi/wxstar/ch2_curve.png"));
         size_t lut_size = img_lut.height() * img_lut.width();
         size_t lut_width = img_lut.width();
 
         if (img_lut.width() != 256 || img_lut.height() != 256 || img_lut.channels() < 3)
             logger->error("Lut " + lut_path + " did not load!");
 
-        // return 3 channels, RGB
-        image::Image<uint16_t> output(f.maxWidth, f.maxHeight, 3);
+        if (f.img_depth != 8)
+            throw satdump_exception("Geo False Color MUST be 8-bits at the moment."); // TODOIMG
 
-        uint16_t *channelVals = new uint16_t[inputChannels.size()];
+        // return 3 channels, RGB
+        image2::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
+
+        int *channelVals = new int[inputChannels.size()];
 
         for (size_t x = 0; x < output.width(); x++)
         {
             for (size_t y = 0; y < output.height(); y++)
             {
                 // get channels from satdump.json
-                image::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
-                int lut_pos = (img_curve[channelVals[0] >> 8] * lut_width) + (channelVals[1] >> 8);
+                image2::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
+                int lut_pos = (img_curve.get(channelVals[0]) * lut_width) + (channelVals[1]);
 
                 // return RGB 0=R 1=G 2=B
-                output.channel(0)[y * output.width() + x] = img_lut[0 * lut_size + lut_pos] << 8;
-                output.channel(1)[y * output.width() + x] = img_lut[1 * lut_size + lut_pos] << 8;
-                output.channel(2)[y * output.width() + x] = img_lut[2 * lut_size + lut_pos] << 8;
+                output.set(0, x, y, img_lut.get(0, lut_pos));
+                output.set(1, x, y, img_lut.get(1, lut_pos));
+                output.set(2, x, y, img_lut.get(2, lut_pos));
             }
 
             // set the progress bar accordingly

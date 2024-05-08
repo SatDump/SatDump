@@ -216,7 +216,7 @@ namespace satdump
                 }
                 std::vector<double> final_timestamps;
                 nlohmann::json final_metadata;
-                newlayer.img = satdump::make_composite_from_product(*products, composite_config, nullptr, &final_timestamps, &final_metadata);
+                newlayer.img; //= satdump::make_composite_from_product(*products, composite_config, nullptr, &final_timestamps, &final_metadata); TODOIMG
                 nlohmann::json proj_cfg = products->get_proj_cfg();
                 proj_cfg["metadata"] = final_metadata;
                 if (products->has_tle())

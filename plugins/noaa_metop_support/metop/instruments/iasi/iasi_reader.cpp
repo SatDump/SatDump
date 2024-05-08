@@ -91,9 +91,9 @@ namespace metop
                 channels[channel].resize((lines + 2) * 60);
         }
 
-        image::Image<uint16_t> IASIReader::getChannel(int channel)
+        image2::Image IASIReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 30 * 2, lines, 1);
+            return image2::Image(channels[channel].data(), 16, 30 * 2, lines, 1);
         }
     } // namespace iasi
 } // namespace metop

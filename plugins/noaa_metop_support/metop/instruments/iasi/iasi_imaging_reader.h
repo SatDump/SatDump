@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/image/image.h"
+#include "common/image2/image.h"
 
 namespace metop
 {
@@ -21,7 +21,7 @@ namespace metop
             IASIIMGReader();
             ~IASIIMGReader();
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getIRChannel();
+            image2::Image getIRChannel();
         };
     } // namespace iasi
 } // namespace metop

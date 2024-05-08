@@ -6,7 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
-#include "common/image/bowtie.h"
+#include "common/image2/bowtie.h"
 #include "common/ccsds/ccsds_weather/demuxer.h"
 #include "products/image_products.h"
 #include "products/radiation_products.h"
@@ -362,9 +362,9 @@ namespace metop
                 if (iasi_reader_img.lines > 0)
                 {
                     logger->info("Channel IR imaging...");
-                    image::Image<uint16_t> iasi_imaging = iasi_reader_img.getIRChannel();
-                    iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                    iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                    image2::Image iasi_imaging = iasi_reader_img.getIRChannel();
+                    iasi_imaging = image2::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
+                  //  iasi_imaging.simple_despeckle(10);                     TODOIMG                                        // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;

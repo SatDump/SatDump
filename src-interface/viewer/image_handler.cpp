@@ -105,126 +105,128 @@ namespace satdump
         if (select_image_id != 0)
             current_timestamps = products->get_timestamps(select_image_id - 1);
 
-        if (median_blur)
-            current_image.median_blur();
+        /* if (median_blur)
+             current_image.median_blur();
 
-        if (despeckle)
-            current_image.kuwahara_filter();
+         if (despeckle)
+             current_image.kuwahara_filter();
 
-        if (rotate_image)
-            current_image.mirror(true, true);
+         if (rotate_image)
+             current_image.mirror(true, true);
 
-        if (equalize_image)
-            current_image.equalize();
+         if (equalize_image)
+             current_image.equalize();
 
-        if (individual_equalize_image)
-            current_image.equalize(true);
+         if (individual_equalize_image)
+             current_image.equalize(true);
 
-        if (white_balance_image)
-            current_image.white_balance();
+         if (white_balance_image)
+             current_image.white_balance();
 
-        if (invert_image)
-            current_image.linear_invert();
+         if (invert_image)
+             current_image.linear_invert();
 
-        if (normalize_image)
-            current_image.normalize();
+         if (normalize_image)
+             current_image.normalize();
 
-        if (manual_brightness_contrast)
-            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast, current_image.channels());
+         if (manual_brightness_contrast)
+             image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast, current_image.channels());
 
-        // TODO : Cleanup?
-        if (using_lut)
-        {
-            if (current_image.channels() < 3)
-                current_image.to_rgb();
-            for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
-            {
-                uint16_t val = current_image[i];
-                val = (float(val) / 65535.0) * lut_image.width();
-                if (val >= lut_image.width())
-                    val = lut_image.width() - 1;
-                current_image.channel(0)[i] = lut_image.channel(0)[val];
-                current_image.channel(1)[i] = lut_image.channel(1)[val];
-                current_image.channel(2)[i] = lut_image.channel(2)[val];
-            }
-        }
+         // TODO : Cleanup?
+         if (using_lut)
+         {
+             if (current_image.channels() < 3)
+                 current_image.to_rgb();
+             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
+             {
+                 uint16_t val = current_image[i];
+                 val = (float(val) / 65535.0) * lut_image.width();
+                 if (val >= lut_image.width())
+                     val = lut_image.width() - 1;
+                 current_image.channel(0)[i] = lut_image.channel(0)[val];
+                 current_image.channel(1)[i] = lut_image.channel(1)[val];
+                 current_image.channel(2)[i] = lut_image.channel(2)[val];
+             }
+         }
 
-        if (remove_background)
-            image::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
+         if (remove_background)
+             image::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
 
-        int pre_corrected_width = current_image.width();
-        int pre_corrected_height = current_image.height();
+         int pre_corrected_width = current_image.width();
+         int pre_corrected_height = current_image.height();
 
-        std::vector<float> corrected_stuff;
-        if (correct_image)
-        {
-            corrected_stuff.resize(current_image.width());
-            bool success = false;
-            image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
-            if (success)
-                current_image = cor;
-            if (!success)
-                corrected_stuff.clear();
-        }
+         std::vector<float> corrected_stuff;
+         if (correct_image)
+         {
+             corrected_stuff.resize(current_image.width());
+             bool success = false;
+             image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
+             if (success)
+                 current_image = cor;
+             if (!success)
+                 corrected_stuff.clear();
+         }
 
-        if (overlay_handler.enabled())
-        {
-            // Ensure this is RGB!!
-            if (current_image.channels() < 3)
-                current_image.to_rgb();
-            nlohmann::json proj_cfg = products->get_proj_cfg();
-            proj_cfg["metadata"] = current_proj_metadata;
-            if (products->has_tle())
-                proj_cfg["metadata"]["tle"] = products->get_tle();
-            if (products->has_timestamps)
-                proj_cfg["metadata"]["timestamps"] = current_timestamps;
+         if (overlay_handler.enabled())
+         {
+             // Ensure this is RGB!!
+             if (current_image.channels() < 3)
+                 current_image.to_rgb();
+             nlohmann::json proj_cfg = products->get_proj_cfg();
+             proj_cfg["metadata"] = current_proj_metadata;
+             if (products->has_tle())
+                 proj_cfg["metadata"]["tle"] = products->get_tle();
+             if (products->has_timestamps)
+                 proj_cfg["metadata"]["timestamps"] = current_timestamps;
 
-            bool do_correction = corrected_stuff.size() != 0 && correct_image;
-            if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
-                current_image.width() != last_width || current_image.height() != last_height || last_proj_cfg != proj_cfg)
-            {
-                overlay_handler.clear_cache();
-                proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                                                                           pre_corrected_height,
-                                                                           proj_cfg,
-                                                                           !do_correction && rotate_image);
+             bool do_correction = corrected_stuff.size() != 0 && correct_image;
+             if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
+                 current_image.width() != last_width || current_image.height() != last_height || last_proj_cfg != proj_cfg)
+             {
+                 overlay_handler.clear_cache();
+                 proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
+                                                                            pre_corrected_height,
+                                                                            proj_cfg,
+                                                                            !do_correction && rotate_image);
 
-                if (do_correction)
-                {
-                    int fwidth = current_image.width();
-                    int fheight = current_image.height();
-                    bool rotate = rotate_image;
-                    auto &proj_func = this->proj_func;
+                 if (do_correction)
+                 {
+                     int fwidth = current_image.width();
+                     int fheight = current_image.height();
+                     bool rotate = rotate_image;
+                     auto &proj_func = this->proj_func;
 
-                    std::function<std::pair<int, int>(double, double, int, int)> newfun =
-                        [proj_func, corrected_stuff, fwidth, fheight, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
-                    {
-                        std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                        if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
-                        {
-                            ret.first = corrected_stuff[ret.first];
-                            if (rotate)
-                            {
-                                ret.first = (fwidth - 1) - ret.first;
-                                ret.second = (fheight - 1) - ret.second;
-                            }
-                        }
-                        else
-                            ret.second = ret.first = -1;
-                        return ret;
-                    };
-                    proj_func = newfun;
-                }
+                     std::function<std::pair<int, int>(double, double, int, int)> newfun =
+                         [proj_func, corrected_stuff, fwidth, fheight, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                     {
+                         std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                         if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                         {
+                             ret.first = corrected_stuff[ret.first];
+                             if (rotate)
+                             {
+                                 ret.first = (fwidth - 1) - ret.first;
+                                 ret.second = (fheight - 1) - ret.second;
+                             }
+                         }
+                         else
+                             ret.second = ret.first = -1;
+                         return ret;
+                     };
+                     proj_func = newfun;
+                 }
 
-                last_correct_image = do_correction;
-                last_rotate_image = rotate_image;
-                last_width = current_image.width();
-                last_height = current_image.height();
-                last_proj_cfg = proj_cfg;
-            }
+                 last_correct_image = do_correction;
+                 last_rotate_image = rotate_image;
+                 last_width = current_image.width();
+                 last_height = current_image.height();
+                 last_proj_cfg = proj_cfg;
+             }
 
-            overlay_handler.apply(current_image, proj_func);
-        }
+             overlay_handler.apply(current_image, proj_func);
+         }
+         */
+        // TODOIMG
 
         //        projection_ready = false;
 
@@ -242,7 +244,7 @@ namespace satdump
                     y = current_image.height() - 1 - y;
                 }
 
-                int raw_value = products->images[active_channel_id].image[y * products->images[active_channel_id].image.width() + (correct_image ? correction_factors[x] : x)] >> (16 - products->bit_depth);
+                int raw_value = products->images[active_channel_id].image.get(0, correct_image ? correction_factors[x] : x, y) >> (products->images[active_channel_id].image.depth() - products->bit_depth);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
@@ -322,7 +324,7 @@ namespace satdump
                     remove_background = rgb_compo_cfg.remove_background;
                     using_lut = rgb_compo_cfg.apply_lut;
 
-                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
+                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
@@ -598,23 +600,23 @@ namespace satdump
             if (save_disabled)
                 style::beginDisabled();
             if (ImGui::Button("Save"))
-            {
-                handler_thread_pool.clear_queue();
-                handler_thread_pool.push([this](int)
-                                         {   async_image_mutex.lock();
-                        is_updating = true;
-                        logger->info("Saving Image...");
-                        std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_" +
-                            (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                            default_path, "Save Image", &current_image, &viewer_app->save_type);
+            { /*
+                 handler_thread_pool.clear_queue();
+                 handler_thread_pool.push([this](int)
+                                          {   async_image_mutex.lock();
+                         is_updating = true;
+                         logger->info("Saving Image...");
+                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+                         std::string saved_at = save_image_dialog(products->instrument_name + "_" +
+                             (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
+                             default_path, "Save Image", &current_image, &viewer_app->save_type);
 
-                        if (saved_at == "")
-                            logger->info("Save cancelled");
-                        else
-                            logger->info("Saved current image at %s", saved_at.c_str());
-                        is_updating = false;
-                        async_image_mutex.unlock(); });
+                         if (saved_at == "")
+                             logger->info("Save cancelled");
+                         else
+                             logger->info("Saved current image at %s", saved_at.c_str());
+                         is_updating = false;
+                         async_image_mutex.unlock(); }); TODOIMG */
             }
             if (save_disabled)
             {
@@ -863,62 +865,62 @@ namespace satdump
     }
 
     void ImageViewerHandler::addCurrentToProjections()
-    {
-        if (canBeProjected())
-        {
-            try
-            {
-                // Get projection information
-                nlohmann::json proj_cfg;
-                proj_cfg = products->get_proj_cfg();
-                proj_cfg["metadata"] = current_proj_metadata;
-                if (products->has_tle())
-                    proj_cfg["metadata"]["tle"] = products->get_tle();
-                if (products->has_timestamps)
-                    proj_cfg["metadata"]["timestamps"] = current_timestamps;
-                image::set_metadata_proj_cfg(current_image, proj_cfg);
+    { /*
+         if (canBeProjected())
+         {
+             try
+             {
+                 // Get projection information
+                 nlohmann::json proj_cfg;
+                 proj_cfg = products->get_proj_cfg();
+                 proj_cfg["metadata"] = current_proj_metadata;
+                 if (products->has_tle())
+                     proj_cfg["metadata"]["tle"] = products->get_tle();
+                 if (products->has_timestamps)
+                     proj_cfg["metadata"]["timestamps"] = current_timestamps;
+                 image::set_metadata_proj_cfg(current_image, proj_cfg);
 
-                // Create projection title
-                std::string timestring, object_name, instrument_name, composite_name;
-                if (current_timestamps.size() > 0)
-                    timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
-                else
-                    timestring = "";
-                if (instrument_cfg.contains("name"))
-                    instrument_name = instrument_cfg["name"];
-                else
-                    instrument_name = products->instrument_name;
-                if (products->has_tle())
-                    object_name = products->get_tle().name;
-                else
-                    object_name = "";
-                if (timestring != "" || object_name != "")
-                    object_name += "\n";
-                if (active_channel_id >= 0)
-                    composite_name = "Channel " + channel_numbers[active_channel_id];
-                else if (select_rgb_presets == -1)
-                    composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
-                else
-                    composite_name = rgb_presets[select_rgb_presets].first;
+                 // Create projection title
+                 std::string timestring, object_name, instrument_name, composite_name;
+                 if (current_timestamps.size() > 0)
+                     timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
+                 else
+                     timestring = "";
+                 if (instrument_cfg.contains("name"))
+                     instrument_name = instrument_cfg["name"];
+                 else
+                     instrument_name = products->instrument_name;
+                 if (products->has_tle())
+                     object_name = products->get_tle().name;
+                 else
+                     object_name = "";
+                 if (timestring != "" || object_name != "")
+                     object_name += "\n";
+                 if (active_channel_id >= 0)
+                     composite_name = "Channel " + channel_numbers[active_channel_id];
+                 else if (select_rgb_presets == -1)
+                     composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
+                 else
+                     composite_name = rgb_presets[select_rgb_presets].first;
 
-                // Add projection layer and settings
-                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
+                 // Add projection layer and settings
+                 viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
 
-                if (rotate_image)
-                    viewer_app->projection_layers.front().img.mirror(true, true);
-                if (projection_use_old_algo)
-                    viewer_app->projection_layers.front().old_algo = true;
+                 if (rotate_image)
+                     viewer_app->projection_layers.front().img.mirror(true, true);
+                 if (projection_use_old_algo)
+                     viewer_app->projection_layers.front().old_algo = true;
 
-                proj_notif.set_message(style::theme.green, "Added!");
-            }
-            catch (std::exception &e)
-            {
-                logger->error("Could not project image! %s", e.what());
-            }
-        }
-        else
-        {
-            logger->error("Current image can't be projected!");
-        }
+                 proj_notif.set_message(style::theme.green, "Added!");
+             }
+             catch (std::exception &e)
+             {
+                 logger->error("Could not project image! %s", e.what());
+             }
+         }
+         else
+         {
+             logger->error("Current image can't be projected!");
+         } TODIMG */
     }
 }

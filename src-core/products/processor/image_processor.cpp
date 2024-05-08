@@ -124,7 +124,7 @@ namespace satdump
 
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
-                    image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+                    image::Image<uint16_t> rgb_image; // = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata); TODOIMG
 
                     if (rgb_image.size() == 0)
                     {
@@ -144,7 +144,7 @@ namespace satdump
                     {
                         corrected_stuff.resize(rgb_image.width());
                         bool success = false;
-                        rgb_image_corr = perform_geometric_correction(*img_products, rgb_image, success, corrected_stuff.data());
+                        //  rgb_image_corr = perform_geometric_correction(*img_products, rgb_image, success, corrected_stuff.data()); // TODOIMG
                         if (!success)
                         {
                             geo_correct = false;
@@ -267,11 +267,11 @@ namespace satdump
                     auto &img = img_products->images[chanid];
 
                     logger->debug("Reprojecting channel %s", img.channel_name.c_str());
-                    image::Image<uint16_t> retimg = projectImg(instrument_viewer_settings["project_channels"],
-                                                               img_products->get_channel_proj_metdata(chanid),
-                                                               img.image,
-                                                               img_products->get_timestamps(chanid),
-                                                               *img_products);
+                    image::Image<uint16_t> retimg; /*=  projectImg(instrument_viewer_settings["project_channels"],
+                                                                img_products->get_channel_proj_metdata(chanid),
+                                                                img.image,
+                                                                img_products->get_timestamps(chanid),
+                                                                *img_products); TODOIMG */
                     std::string fmt = "";
                     if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
                         fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();

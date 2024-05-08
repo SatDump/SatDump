@@ -9,6 +9,8 @@
 #include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"
 
+#include "common/image2/io/io.h"
+
 namespace lrit
 {
     inline std::string getXRITTimestamp(time_t tim)
@@ -407,7 +409,7 @@ namespace lrit
                             if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() == 0)
                             {
                                 logger->trace("Loading image channel " + img.channel_name);
-                                img.image.load_img(pro_path + "/" + img.filename);
+                                image2::load_img(img.image, pro_path + "/" + img.filename);
                             }
                         }
                     }
@@ -417,7 +419,7 @@ namespace lrit
                 if (can_make_composites)
                 {
                     pro->contents["autocomposite_cache_enabled"] = true;
-                    satdump::process_image_products((satdump::Products*)pro, pro_path);
+                    satdump::process_image_products((satdump::Products *)pro, pro_path);
                 }
             }
         }
@@ -587,7 +589,7 @@ namespace lrit
                         contains = true;
 
                 if (!contains)
-                    pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+                    pro->images.push_back({filename, channel, image2::Image()});
 
                 if (!pro->has_proj_cfg())
                 {
@@ -625,7 +627,7 @@ namespace lrit
                     pro->set_proj_cfg(proj_cfg);
                     // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
-                pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+                pro->images.push_back({filename, channel, image2::Image()});
 
                 addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
 

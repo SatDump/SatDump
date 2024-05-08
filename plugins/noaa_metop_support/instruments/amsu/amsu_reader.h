@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "common/image/image.h"
+#include "common/image2/image.h"
 #include "common/ccsds/ccsds.h"
 #include "common/simple_deframer.h"
 #include "nlohmann/json.hpp"
@@ -36,7 +36,7 @@ namespace noaa_metop
             std::vector<uint16_t> temperature_counts_A1[45];
             std::vector<uint16_t> temperature_counts_A2[19];
 
-            //calib stuff
+            // calib stuff
             nlohmann::json calib;
 
         public:
@@ -44,9 +44,9 @@ namespace noaa_metop
             ~AMSUReader();
             void work_noaa(uint8_t *buffer);
             void work_metop(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannel(int channel)
+            image2::Image getChannel(int channel)
             {
-                image::Image<uint16_t> img(channels[channel].data(), 30, (channel < 2 ? linesA2 : linesA1), 1);
+                image2::Image img(channels[channel].data(), 16, 30, (channel < 2 ? linesA2 : linesA1), 1);
                 img.mirror(true, false);
                 return img;
             }
@@ -68,11 +68,15 @@ namespace noaa_metop
                 return false;
             }
 
-            double extrapolate(std::pair<double, double> A, std::pair<double, double> B, std::pair<double, double> C, double x){
-                if (x < B.first){
-                    return (B.second - A.second)/(B.first - A.second) * (x - A.first) + A.second;
-                } else {
-                    return (C.second - B.second)/(C.first - B.second) * (x - B.first) + B.second;
+            double extrapolate(std::pair<double, double> A, std::pair<double, double> B, std::pair<double, double> C, double x)
+            {
+                if (x < B.first)
+                {
+                    return (B.second - A.second) / (B.first - A.second) * (x - A.first) + A.second;
+                }
+                else
+                {
+                    return (C.second - B.second) / (C.first - B.second) * (x - B.first) + B.second;
                 }
             }
         };

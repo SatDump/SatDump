@@ -26,7 +26,7 @@ namespace satdump
         int active_channel_id = 0, select_image_id = 1;
         bool active_channel_calibrated = false;
         std::string select_image_str;
-        image::Image<uint16_t> rgb_image, current_image;
+        image2::Image rgb_image, current_image;
         ImageViewWidget image_view;
 
         // Map projection stuff
