@@ -14,6 +14,8 @@
 
 #include "common/image/image_meta.h"
 
+#include "common/image2/io/io.h"
+
 namespace satdump
 {
     image::Image<uint16_t> projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
@@ -124,7 +126,7 @@ namespace satdump
 
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
-                    image::Image<uint16_t> rgb_image; // = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata); TODOIMG
+                    image2::Image rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
 
                     if (rgb_image.size() == 0)
                     {
@@ -138,7 +140,7 @@ namespace satdump
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
                     std::vector<float> corrected_stuff;
-                    image::Image<uint16_t> rgb_image_corr;
+                    image2::Image rgb_image_corr;
 
                     if (geo_correct)
                     {
@@ -152,11 +154,11 @@ namespace satdump
                         }
                     }
 
-                    rgb_image.save_img(product_path + "/" + name);
+                    image2::save_img(rgb_image, product_path + "/" + name);
                     if (geo_correct)
-                        rgb_image_corr.save_img(product_path + "/" + name + "_corrected");
+                        image2::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
 
-                    overlay_handler.set_config(compo.value());
+                    /*overlay_handler.set_config(compo.value());
                     corrected_overlay_handler.set_config(compo.value());
                     if (overlay_handler.enabled())
                     {
@@ -203,7 +205,7 @@ namespace satdump
                         }
 
                         overlay_handler.apply(rgb_image, proj_func);
-                        rgb_image.save_img(product_path + "/" + name + "_map");
+                        image2::save_img(rgb_image, product_path + "/" + name + "_map");
                         if (geo_correct)
                         {
                             corrected_overlay_handler.apply(rgb_image_corr, corr_proj_func);
@@ -223,7 +225,7 @@ namespace satdump
                         if (compo.value()["project"]["config"].contains("img_format"))
                             fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
                         retimg.save_img(product_path + "/rgb_" + name + "_projected" + fmt);
-                    }
+                    } TODOIMG */
 
                     if (img_products->contents.contains("autocomposite_cache_enabled") && img_products->contents["autocomposite_cache_enabled"].get<bool>())
                         img_products->contents["autocomposite_cache_done"][compo.key()] = true;

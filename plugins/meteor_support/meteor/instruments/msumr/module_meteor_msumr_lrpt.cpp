@@ -148,7 +148,7 @@ namespace meteor
             createMSUMRProduct(msumr_products, norad, msumr_serial_number);
             for (int i = 0; i < 6; i++)
             {
-                image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
+                image2::Image img = msureader.getChannel(i);
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
@@ -175,7 +175,7 @@ namespace meteor
                 createMSUMRProduct(filled_products, norad, msumr_serial_number);
                 for (int i = 0; i < 6; i++)
                 {
-                    image::Image<uint16_t> img = msureader.getChannel(i, max_fill_lines).to16bits();
+                    image2::Image img = msureader.getChannel(i, max_fill_lines);
                     if (img.size() > 0)
                         filled_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
                 }

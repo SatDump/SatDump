@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <vector>
-#include "common/image/image.h"
+#include "common/image2/image.h"
 
 namespace ldcm
 {
@@ -19,7 +19,7 @@ namespace ldcm
             ~TIRSReader();
 
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannel(int channel);
+            image2::Image getChannel(int channel);
 
             int lines = 0;
         };

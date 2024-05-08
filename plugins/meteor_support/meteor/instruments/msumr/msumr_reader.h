@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image/image.h"
+#include <vector>
+#include "common/image2/image.h"
 
 namespace meteor
 {
@@ -17,7 +18,7 @@ namespace meteor
             ~MSUMRReader();
             int lines;
             void work(uint8_t *buffer);
-            image::Image<uint16_t> getChannel(int channel);
+            image2::Image getChannel(int channel);
         };
     } // namespace msumr
 } // namespace meteor

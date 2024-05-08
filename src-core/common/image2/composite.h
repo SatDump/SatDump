@@ -67,8 +67,7 @@ namespace image2
                 maxHeight = inputChannels[i].height();
 
             if (inputChannels[i].depth() >= maxDepth)
-                ;
-            maxDepth = inputChannels[i].depth();
+                maxDepth = inputChannels[i].depth();
         }
 
         std::vector<std::pair<float, float>> image_scales;

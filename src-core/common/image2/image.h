@@ -73,6 +73,11 @@ namespace image2
         Image resize_to(int width, int height);                              // Resize image, to another image
         void resize_bilinear(int width, int height, bool text_mode = false); // Resize image, using a bilinear algorithm
 
+        int get_pixel_bilinear(int channel, double x, double y);
+
+    public:
+        void fill(int val); // Fill image with a single value
+
     public:
         // Standard int set. No bound check!
         inline void set(size_t p, int v)
