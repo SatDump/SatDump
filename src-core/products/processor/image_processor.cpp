@@ -69,11 +69,11 @@ namespace satdump
         OverlayHandler overlay_handler;
         overlay_handler.set_config(proj_settings);
 
-        // if (overlay_handler.enabled() && image2::has_metadata_proj_cfg(retimg))
-        // {
-        //     auto proj_func = satdump::reprojection::setupProjectionFunction(retimg.width(), retimg.height(), image2::get_metadata_proj_cfg(retimg));
-        //     overlay_handler.apply(retimg, proj_func);
-        // } TODOIMG
+        if (overlay_handler.enabled() && image2::has_metadata_proj_cfg(retimg))
+        {
+            auto proj_func = satdump::reprojection::setupProjectionFunction(retimg.width(), retimg.height(), image2::get_metadata_proj_cfg(retimg));
+            overlay_handler.apply(retimg, proj_func);
+        }
 
         retimg.to_rgba();
 
