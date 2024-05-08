@@ -65,19 +65,19 @@ namespace aura
             visibleChannel.resize((lines * 2 + 2) * 60 * 2);
         }
 
-        image::Image<uint16_t> OMIReader::getChannel(int channel)
+        image2::Image OMIReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 65, lines, 1);
+            return image2::Image(channels[channel].data(), 16, 65, lines, 1);
         }
 
-        image::Image<uint16_t> OMIReader::getImageRaw()
+        image2::Image OMIReader::getImageRaw()
         {
-            return image::Image<uint16_t>(channelRaw.data(), 2047 * 28, lines, 1);
+            return image2::Image(channelRaw.data(), 16, 2047 * 28, lines, 1);
         }
 
-        image::Image<uint16_t> OMIReader::getImageVisible()
+        image2::Image OMIReader::getImageVisible()
         {
-            return image::Image<uint16_t>(visibleChannel.data(), 60 * 2, lines, 1);
+            return image2::Image(visibleChannel.data(), 16, 60 * 2, lines, 1);
         }
     } // namespace ceres
 } // namespace aqua

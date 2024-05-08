@@ -3,7 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <cmath>
 #include <vector>
-#include "common/image/image.h"
+#include "common/image2/image.h"
 #include "nlohmann/json.hpp"
 
 namespace eos
@@ -100,9 +100,9 @@ namespace eos
             std::vector<double> timestamps_500;
             std::vector<double> timestamps_250;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImage250m(int channel);
-            image::Image<uint16_t> getImage500m(int channel);
-            image::Image<uint16_t> getImage1000m(int channel);
+            image2::Image getImage250m(int channel);
+            image2::Image getImage500m(int channel);
+            image2::Image getImage1000m(int channel);
             nlohmann::json getCalib();
         };
     } // namespace modis

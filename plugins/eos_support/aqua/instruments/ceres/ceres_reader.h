@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include "common/image/image.h"
+#include "common/image2/image.h"
 
 namespace aqua
 {
@@ -18,7 +18,7 @@ namespace aqua
             ~CERESReader();
             int lines;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImage(int channel);
+            image2::Image getImage(int channel);
         };
     } // namespace ceres
 } // namespace aqua

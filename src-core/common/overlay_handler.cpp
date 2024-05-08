@@ -184,7 +184,7 @@ void OverlayHandler::apply(image2::Image &img, std::function<std::pair<int, int>
             {
                 bitmask.draw_line(cc.first - cities_size * 0.3, cc.second - cities_size * 0.3, cc.first + cities_size * 0.3, cc.second + cities_size * 0.3, {1});
                 bitmask.draw_line(cc.first + cities_size * 0.3, cc.second - cities_size * 0.3, cc.first - cities_size * 0.3, cc.second + cities_size * 0.3, {1});
-                //  bitmask.draw_circle(cc.first, cc.second, 0.15 * cities_size, color, true); TODOIMG
+                bitmask.draw_circle(cc.first, cc.second, 0.15 * cities_size, {1}, true);
                 //  bitmask.draw_text(cc.first, cc.second + cities_size * 0.15, color, cities_size, qth_label); TODOIMG
             }
 

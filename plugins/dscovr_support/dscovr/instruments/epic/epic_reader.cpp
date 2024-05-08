@@ -1,6 +1,7 @@
 #include "epic_reader.h"
 #include "logger.h"
-#include "common/image/jpeg12_utils.h"
+#include "common/image2/jpeg12_utils.h"
+#include "common/image2/io.h"
 
 namespace dscovr
 {
@@ -35,8 +36,8 @@ namespace dscovr
 
                     std::string filename(&wip_payload[126], &wip_payload[126 + 8]);
 
-                    auto img = image::decompress_jpeg12(wip_payload.data() + pos, wip_payload.size() - 140);
-                    img.save_img(directory + "/" + filename);
+                    auto img = image2::decompress_jpeg12(wip_payload.data() + pos, wip_payload.size() - 140);
+                    image2::save_img(img, directory + "/" + filename);
 
                     img_c++;
                 }
