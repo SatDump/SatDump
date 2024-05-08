@@ -10,7 +10,6 @@ namespace image
     {
     protected:
         // Image buffer
-        bool has_data = false;
         size_t data_size = 0;
         size_t type_size = 0;
         void *d_data = nullptr;

@@ -43,8 +43,11 @@ namespace image
 
     Image::~Image()
     {
-        if (has_data)
+        if (d_data != nullptr)
+        {
             free(d_data);
+            d_data = nullptr;
+        }
 
         free_metadata(*this);
     }
@@ -52,8 +55,11 @@ namespace image
     void Image::init(int bit_depth, size_t width, size_t height, int channels)
     {
         // Reset image if we already had one
-        if (has_data)
+        if (d_data != nullptr)
+        {
             free(d_data);
+            d_data = nullptr;
+        }
 
         // Internal params
         if (bit_depth > 8)
@@ -64,6 +70,8 @@ namespace image
         // Init buffer
         data_size = width * height * channels;
         d_data = malloc(type_size * data_size);
+        if (d_data == nullptr)
+            throw satdump_exception("Could not allocate memory for image!");
 
         // Set to 0
         memset(d_data, 0, type_size * data_size);
@@ -74,18 +82,14 @@ namespace image
         d_width = width;
         d_height = height;
         d_channels = channels;
-
-        // We have data now if we didn't already
-        has_data = true;
     }
 
     void Image::clear()
     {
         // Reset image
-        if (has_data && d_data != nullptr)
+        if (d_data != nullptr)
             free(d_data);
         d_data = nullptr;
-        has_data = false;
     }
 
     int Image::clamp(int input)
@@ -138,9 +142,9 @@ namespace image
             init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
             for (size_t i = 0; i < d_width * d_height; i++)
                 set(3, i, d_maxv);
         }
@@ -150,12 +154,12 @@ namespace image
             init(d_depth, d_width, d_height, 4); // Init new image as RGBA
 
             // Copy over all 3 channels
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 0, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 1, tmp.d_data, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 2, tmp.d_data, d_width * d_height * type_size);
 
             // Copy over RGBA
-            memcpy((uint8_t*)d_data + type_size * d_width * d_height * 3, (uint8_t*)tmp.d_data + d_width * d_height, d_width * d_height * type_size);
+            memcpy((uint8_t *)d_data + type_size * d_width * d_height * 3, (uint8_t *)tmp.d_data + d_width * d_height, d_width * d_height * type_size);
         }
         else if (d_channels == 3)
         {
@@ -217,8 +221,8 @@ namespace image
         for (int c = 0; c < d_channels; c++)
             for (int x = 0; x < new_width; x++)
                 for (int y = 0; y < new_height; y++)
-                    memcpy((uint8_t*)new_data + ((new_width * new_height * c) + y * new_width + x) * type_size,
-                           (uint8_t*)d_data + (c * d_width * d_height + (y0 + y) * d_width + (x + x0)) * type_size,
+                    memcpy((uint8_t *)new_data + ((new_width * new_height * c) + y * new_width + x) * type_size,
+                           (uint8_t *)d_data + (c * d_width * d_height + (y0 + y) * d_width + (x + x0)) * type_size,
                            type_size);
 
         // Swap out buffer
