@@ -14,7 +14,7 @@
 
 #include "common/image2/image_meta.h"
 #include "common/image2/image_processing.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace satdump
 {
@@ -273,7 +273,7 @@ namespace satdump
                                                       img_products->get_channel_proj_metdata(chanid),
                                                       img.image,
                                                       img_products->get_timestamps(chanid),
-                                                      *img_products); // TODOIMG
+                                                      *img_products);
                     std::string fmt = "";
                     if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
                         fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();

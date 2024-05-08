@@ -148,9 +148,9 @@ namespace satdump
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at ;/*= save_image_dialog(products->instrument_name + "_" +
+                        std::string saved_at = save_image_dialog(products->instrument_name + "_" +
                             ((selected_visualization_id == 1 && current_scat_type == SCAT_ASCAT) ? std::to_string(ascat_select_channel_id) : 
-                            std::to_string(select_channel_image_id)), default_path, "Save Image", &current_img, &viewer_app->save_type); TODOIMG */
+                            std::to_string(select_channel_image_id)), default_path, "Save Image", &current_img, &viewer_app->save_type);
 
                         if (saved_at == "")
                             logger->info("Save cancelled");

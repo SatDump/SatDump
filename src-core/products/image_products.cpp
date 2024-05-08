@@ -13,8 +13,9 @@
 #include "common/utils.h"
 #include "common/image2/brightness_contrast.h"
 #include "common/image2/image_processing.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 #include "common/image2/image_utils.h"
+#include "common/image2/image_lut.h"
 
 #ifdef __ANDROID__
 #include <android_native_app_glue.h>
@@ -839,21 +840,20 @@ namespace satdump
         if (cfg.manual_brightness != 0 || cfg.manual_contrast != 0)
             image2::brightness_contrast(rgb_composite, cfg.manual_brightness, cfg.manual_contrast);
 
-        /*if (cfg.apply_lut)
+        if (cfg.apply_lut)
         {
-            auto lut_image = image::LUT_jet<uint16_t>();
+            auto lut_image = image2::LUT_jet<uint16_t>();
             rgb_composite.to_rgb();
             for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
             {
-                uint16_t val = rgb_composite[i];
-                val = (float(val) / 65535.0) * lut_image.width();
+                int val = rgb_composite.getf(i) * lut_image.width();
                 if (val >= lut_image.width())
                     val = lut_image.width() - 1;
-                rgb_composite.channel(0)[i] = lut_image.channel(0)[val];
-                rgb_composite.channel(1)[i] = lut_image.channel(1)[val];
-                rgb_composite.channel(2)[i] = lut_image.channel(2)[val];
+                rgb_composite.set(0, i, lut_image.get(0, val));
+                rgb_composite.set(1, i, lut_image.get(1, val));
+                rgb_composite.set(2, i, lut_image.get(2, val));
             }
-        } TODOIMG */
+        }
 
         return rgb_composite;
     }

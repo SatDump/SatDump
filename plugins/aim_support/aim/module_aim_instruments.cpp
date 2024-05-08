@@ -8,7 +8,7 @@
 #include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace aim
 {

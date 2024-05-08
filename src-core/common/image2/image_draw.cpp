@@ -70,4 +70,73 @@ namespace image2
             }
         }
     }
+
+    void Image::draw_circle(int x0, int y0, int radius, std::vector<double> color, bool fill)
+    {
+        if (fill) // Filled circle
+        {
+            int x = radius;
+            int y = 0;
+            int err = 1 - x;
+
+            while (x >= y)
+            {
+                draw_line(-x + x0, y + y0, x + x0, y + y0, color);
+                if (y != 0)
+                    draw_line(-x + x0, -y + y0, x + x0, -y + y0, color);
+
+                y++;
+
+                if (err < 0)
+                    err += 2 * y + 1;
+                else
+                {
+                    if (x >= y)
+                    {
+                        draw_line(-y + 1 + x0, x + y0, y - 1 + x0, x + y0, color);
+                        draw_line(-y + 1 + x0, -x + y0, y - 1 + x0, -x + y0, color);
+                    }
+
+                    x--;
+                    err += 2 * (y - x + 1);
+                }
+            }
+        }
+        else // Hollow circle
+        {
+            int err = 1 - radius;
+            int xx = 0;
+            int yy = -2 * radius;
+            int x = 0;
+            int y = radius;
+
+            draw_pixel(x0, y0 + radius, color);
+            draw_pixel(x0, y0 - radius, color);
+            draw_pixel(x0 + radius, y0, color);
+            draw_pixel(x0 - radius, y0, color);
+
+            while (x < y)
+            {
+                if (err >= 0)
+                {
+                    y--;
+                    yy += 2;
+                    err += yy;
+                }
+
+                x++;
+                xx += 2;
+                err += xx + 1;
+
+                draw_pixel(x0 + x, y0 + y, color);
+                draw_pixel(x0 - x, y0 + y, color);
+                draw_pixel(x0 + x, y0 - y, color);
+                draw_pixel(x0 - x, y0 - y, color);
+                draw_pixel(x0 + y, y0 + x, color);
+                draw_pixel(x0 - y, y0 + x, color);
+                draw_pixel(x0 + y, y0 - x, color);
+                draw_pixel(x0 - y, y0 - x, color);
+            }
+        }
+    }
 }

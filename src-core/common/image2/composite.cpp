@@ -9,7 +9,7 @@
 #include "common/projection/sat_proj/sat_proj.h"
 #include "resources.h"
 
-#include "io/io.h"
+#include "io.h"
 
 namespace image2
 {

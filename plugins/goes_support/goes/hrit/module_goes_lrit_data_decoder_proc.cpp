@@ -5,7 +5,7 @@
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 #ifdef _MSC_VER
 #define timegm _mkgmtime

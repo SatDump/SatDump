@@ -16,7 +16,7 @@
 #include "instruments/mersi_offset_interleaved.h"
 #include "nlohmann/json_utils.h"
 #include "core/exception.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace fengyun3
 {

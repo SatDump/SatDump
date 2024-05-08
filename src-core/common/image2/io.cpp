@@ -10,17 +10,16 @@ namespace image2
         std::ifstream file_sigature_src(file, std::ios::binary);
         uint8_t signature[10];
         file_sigature_src.read((char *)signature, 10);
-        /*     if (signature[0] == 0xFF && signature[1] == 0xD8)
-                 load_jpeg(file);
-             else*/
-        if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
+        if (signature[0] == 0xFF && signature[1] == 0xD8)
+            load_jpeg(img, file);
+        else if (signature[0] == 0x89 && signature[1] == 0x50 && signature[2] == 0x4E && signature[3] == 0x47)
             load_png(img, file);
-        /* else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
-             load_j2k(file);
-         else if (signature[0] == 'P' && (signature[1] == '5' || signature[1] == '6'))
-             load_pbm(file);
-         else if (signature[0] == 'I' && signature[1] == 'I' && signature[2] == '*')
-             load_tiff(file); */
+        else if (signature[0] == 0xff && signature[1] == 0x4f && signature[2] == 0xff && signature[3] == 0x51)
+            load_j2k(img, file);
+        else if (signature[0] == 'P' && (signature[1] == '5' || signature[1] == '6'))
+            load_pbm(img, file);
+        else if (signature[0] == 'I' && signature[1] == 'I' && signature[2] == '*')
+            load_tiff(img, file);
     }
 
     void load_img(Image &img, uint8_t *buffer, int size)
@@ -40,12 +39,12 @@ namespace image2
             save_png(img, file, fast);
         else if (file.find(".jpeg") != std::string::npos || file.find(".jpg") != std::string::npos)
             save_jpeg(img, file);
-        /*  else if (file.find(".j2k") != std::string::npos)
-              save_j2k(file);
-          else if ((file.find(".ppm") != std::string::npos) || (file.find(".pgm") != std::string::npos) || (file.find(".pbm") != std::string::npos))
-              save_pbm(file);
-          else if ((file.find(".tif") != std::string::npos) || (file.find(".gtif") != std::string::npos) || (file.find(".tiff") != std::string::npos))
-              save_tiff(file); */
+        else if (file.find(".j2k") != std::string::npos)
+            save_j2k(img, file);
+        else if ((file.find(".ppm") != std::string::npos) || (file.find(".pgm") != std::string::npos) || (file.find(".pbm") != std::string::npos))
+            save_pbm(img, file);
+        else if ((file.find(".tif") != std::string::npos) || (file.find(".gtif") != std::string::npos) || (file.find(".tiff") != std::string::npos))
+            save_tiff(img, file);
     }
 
     // Append selected file extension

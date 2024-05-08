@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "common/image2/image.h"
+#include "image.h"
 
 namespace image2
 {
@@ -12,6 +12,15 @@ namespace image2
     void load_jpeg(Image &img, std::string file);
     void load_jpeg(Image &img, uint8_t *buffer, int size);
     void save_jpeg(Image &img, std::string file);
+
+    void save_tiff(Image &img, std::string file);
+    void load_tiff(Image &img, std::string file);
+
+    void save_pbm(Image &img, std::string file);
+    void load_pbm(Image &img, std::string file);
+
+    void save_j2k(Image &img, std::string file);
+    void load_j2k(Image &img, std::string file);
 
     void load_img(Image &img, std::string file);
     void load_img(Image &img, uint8_t *buffer, int size);

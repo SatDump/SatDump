@@ -597,10 +597,10 @@ namespace satdump
             if (save_disabled)
                 style::beginDisabled();
             if (ImGui::Button("Save"))
-            { /*
-                 handler_thread_pool.clear_queue();
-                 handler_thread_pool.push([this](int)
-                                          {   async_image_mutex.lock();
+            {
+                handler_thread_pool.clear_queue();
+                handler_thread_pool.push([this](int)
+                                         {   async_image_mutex.lock();
                          is_updating = true;
                          logger->info("Saving Image...");
                          std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
@@ -613,7 +613,7 @@ namespace satdump
                          else
                              logger->info("Saved current image at %s", saved_at.c_str());
                          is_updating = false;
-                         async_image_mutex.unlock(); }); TODOIMG */
+                         async_image_mutex.unlock(); });
             }
             if (save_disabled)
             {

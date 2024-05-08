@@ -1,4 +1,4 @@
-#include "io.h"
+#include "../io.h"
 #include <cstring>
 #include <png.h>
 #include "logger.h"

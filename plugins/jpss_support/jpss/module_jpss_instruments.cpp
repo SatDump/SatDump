@@ -14,7 +14,7 @@
 #include "resources.h"
 #include "common/calibration.h"
 #include "nlohmann/json_utils.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace jpss
 {

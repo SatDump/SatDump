@@ -177,20 +177,20 @@ namespace satdump
                                 std::pair<float, float> map_cc1 = projectionFunction(coords1.lat, coords1.lon, result_img.height(), result_img.width());
                                 std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, result_img.height(), result_img.width());
 
-                                uint16_t color[4] = {0, 0, 0, 0};
+                                std::vector<double> color = {0, 0, 0, 0};
                                 if (op.img.channels() >= 3)
                                 {
-                                    color[0] = op.img.get(0, currentScan * op.img.width() + int(px));
-                                    color[1] = op.img.get(1, currentScan * op.img.width() + int(px));
-                                    color[2] = op.img.get(2, currentScan * op.img.width() + int(px));
-                                    color[3] = 65535;
+                                    color[0] = op.img.getf(0, currentScan * op.img.width() + int(px));
+                                    color[1] = op.img.getf(1, currentScan * op.img.width() + int(px));
+                                    color[2] = op.img.getf(2, currentScan * op.img.width() + int(px));
+                                    color[3] = 1;
                                 }
                                 else
                                 {
-                                    color[0] = op.img.get(currentScan * op.img.width() + int(px));
-                                    color[1] = op.img.get(currentScan * op.img.width() + int(px));
-                                    color[2] = op.img.get(currentScan * op.img.width() + int(px));
-                                    color[3] = 65535;
+                                    color[0] = op.img.getf(currentScan * op.img.width() + int(px));
+                                    color[1] = op.img.getf(currentScan * op.img.width() + int(px));
+                                    color[2] = op.img.getf(currentScan * op.img.width() + int(px));
+                                    color[3] = 1;
                                 }
 
                                 // if (color[0] == 0 && color[1] == 0 && color[2] == 0) // Skip Black
@@ -207,7 +207,7 @@ namespace satdump
                                     I guess time will tell how reliable that approximation is.
                                     */
                                     double circle_radius = sqrt(pow(int(map_cc1.first - map_cc2.first), 2) + pow(int(map_cc1.second - map_cc2.second), 2));
-                                    // TODOIMG no draw_circle yet...    result_img.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
+                                    result_img.draw_circle(map_cc1.first, map_cc1.second + (direction ? (circle_radius * 2.0) : (circle_radius * -2.0)), ceil(circle_radius), color, true); //, 0.4 * opacity);
                                 }
 
                                 // projected_image.draw_point(map_cc1.first, map_cc1.second, color, opacity);

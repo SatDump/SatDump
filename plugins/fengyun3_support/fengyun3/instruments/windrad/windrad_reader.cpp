@@ -1,7 +1,7 @@
 #include "windrad_reader.h"
 #include "logger.h"
 #include <cmath>
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace fengyun3
 {

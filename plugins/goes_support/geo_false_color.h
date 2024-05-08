@@ -5,7 +5,7 @@
 #define DEFINE_COMPOSITE_UTILS 1
 #include "common/image2/composite.h"
 #include "core/exception.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace goes
 {

@@ -13,7 +13,7 @@
 #include "logger.h"
 
 #include "common/image2/image.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 int main(int argc, char *argv[])
 {

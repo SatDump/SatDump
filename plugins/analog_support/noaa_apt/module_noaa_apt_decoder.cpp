@@ -7,7 +7,7 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "nlohmann/json_utils.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 #include "common/image2/image_processing.h"
 
 #include "common/dsp/filter/firdes.h"

@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "../radiation_products.h"
 #include "core/config.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace satdump
 {

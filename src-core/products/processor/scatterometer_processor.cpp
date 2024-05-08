@@ -9,7 +9,7 @@
 #include "common/projection/reprojector.h"
 #include "common/map/map_drawer.h"
 
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 namespace satdump
 {

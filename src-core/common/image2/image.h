@@ -44,9 +44,10 @@ namespace image2
         Image to16bits(); // Convert to 16-bits. Returns the current image if it's already 16-bits
 
     public:
-        void draw_image(int channel, Image image, int x = 0, int y = 0); // Draw a B&W Image onto a channel
-        void draw_pixel(size_t x, size_t y, std::vector<double> color);
-        void draw_line(int x0, int y0, int x1, int y1, std::vector<double> color);
+        void draw_image(int channel, Image image, int x = 0, int y = 0);                            // Draw a B&W Image onto a channel
+        void draw_pixel(size_t x, size_t y, std::vector<double> color);                             // Set a pixel's color
+        void draw_line(int x0, int y0, int x1, int y1, std::vector<double> color);                  // Draw a line with Bresenham's algorithm
+        void draw_circle(int x0, int y0, int radius, std::vector<double> color, bool fill = false); // Draw a circle with Bresenham's Midpoint algorithm
 
     public:
         // Init (empty) image buffer

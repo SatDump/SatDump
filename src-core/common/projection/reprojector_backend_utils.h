@@ -6,7 +6,7 @@
 #include "imgui/imgui_image.h"
 #include "common/image2/image_meta.h"
 #include "common/image2/image_processing.h"
-#include "common/image2/io/io.h"
+#include "common/image2/io.h"
 
 #include "common/utils.h"
 #include "core/config.h"
@@ -217,7 +217,7 @@ namespace satdump
                 }
                 std::vector<double> final_timestamps;
                 nlohmann::json final_metadata;
-                newlayer.img; //= satdump::make_composite_from_product(*products, composite_config, nullptr, &final_timestamps, &final_metadata); TODOIMG
+                newlayer.img = satdump::make_composite_from_product(*products, composite_config, nullptr, &final_timestamps, &final_metadata);
                 nlohmann::json proj_cfg = products->get_proj_cfg();
                 proj_cfg["metadata"] = final_metadata;
                 if (products->has_tle())
@@ -286,7 +286,7 @@ namespace satdump
         }
         else if (cfg.type == "geotiff")
         {
-            // newlayer.img.load_tiff(cfg.file); // TODOIMG
+            image2::load_tiff(newlayer.img, cfg.file);
             if (newlayer.img.size() > 0 && image2::has_metadata_proj_cfg(newlayer.img))
             {
                 if (cfg.normalize)
