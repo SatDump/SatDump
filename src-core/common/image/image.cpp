@@ -211,7 +211,7 @@ namespace image
 
     Image Image::to_depth(int bit_depth)
     {
-        if (bit_depth >= 8)
+        if (bit_depth > 8)
             return to16bits();
         else
             return to8bits();
