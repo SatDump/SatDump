@@ -12,7 +12,7 @@
 
 #include "logger.h"
 
-#include "common/image/image.h"
+#include "common/tile_map/map.h"
 #include "common/image/io.h"
 
 int main(int argc, char *argv[])
@@ -20,10 +20,6 @@ int main(int argc, char *argv[])
     initLogger();
     completeLoggerInit();
 
-    image::Image img;
-    image::load_img(img, argv[1]);
-    logger->info("Bit Depth %d, Size %d", img.depth(), img.size() * img.typesize());
-    img = img.to16bits();
-    logger->info("Bit Depth %d, Size %d", img.depth(), img.size() * img.typesize());
-    image::save_img(img, argv[2]);
+    image::Image img = downloadTileMap("https://tile.openstreetmap.org/{z}/{x}/{y}.png", /*48.7, 1.7, 48.9, 1.9, 17); */ -85.0511, -180, 85.0511, 180, 4);
+    image::save_tiff(img, argv[1]);
 }

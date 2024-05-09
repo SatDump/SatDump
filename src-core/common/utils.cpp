@@ -108,7 +108,7 @@ int perform_http_request(std::string url_str, std::string &result)
 
     if ((rv = nng_aio_result(aio)) != 0)
     {
-        logger->trace("HTTP Request Error!");
+        logger->trace("HTTP Request Error! %s", nng_strerror(rv));
         return_val = 1;
     }
 

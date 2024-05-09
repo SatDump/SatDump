@@ -9,7 +9,6 @@
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
-#include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
 #include "common/image/meta.h"
@@ -18,7 +17,6 @@
 
 namespace satdump
 {
-    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
     int osm_url_regex_len = 0;
     float general_progress = 0;
     float general_sum = 1;
@@ -261,30 +259,18 @@ namespace satdump
 
                             if (selected_external_type == 1) // TODO: Move to reprojector backend
                             {
-                                /*  if (!re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
-                                  {
-                                      logger->error("Invalid URL for tile map!");
-                                      projections_loading_new_layer = false;
-                                  }
+                                try
+                                {
+                                    logger->info("Generating tile map");
+                                    image::Image timemap = downloadTileMap(mapurl, -85.0511, -180, 85.0511, 180, projection_osm_zoom);
 
-                                  logger->info("Generating tile map");
-                                  std::stringstream test(mapurl);
-                                  std::string segment;
-                                  std::vector<std::string> seglist;
-                                  while (std::getline(test, segment, '/'))
-                                      seglist.push_back(segment);
-                                  tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                  image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
-
-                                  nlohmann::json proj_cfg;
-                                  proj_cfg["type"] = "webmerc";
-                                  proj_cfg["offset_x"] = -20037508.3427892;
-                                  proj_cfg["offset_y"] = 20036051.9193368;
-                                  proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
-                                  proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
-                                  image::set_metadata_proj_cfg(timemap, proj_cfg);
-
-                                  projection_layers.push_front({"Tile Map", timemap}); TODOIMG */
+                                    projection_layers.push_front({"Tile Map", timemap});
+                                }
+                                catch (std::exception &e)
+                                {
+                                    logger->error("Could not load tile map! %s", e.what());
+                                    projections_loading_new_layer = false;
+                                }
                             }
                             else
                             {
@@ -522,8 +508,8 @@ namespace satdump
             for (int i = 0; i < (int)layers_images.size(); i++)
             {
                 projected_image_result = image::merge_images_opacity(projected_image_result,
-                                                                      layers_images[i],
-                                                                      projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
+                                                                     layers_images[i],
+                                                                     projection_layers[(projection_layers.size() - 1) - i].opacity / 100.0f);
             }
         }
 

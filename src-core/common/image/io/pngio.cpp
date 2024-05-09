@@ -230,7 +230,7 @@ namespace image
         size_t d_width = png_get_image_width(png, info);
         size_t d_height = png_get_image_height(png, info);
         int color_type = png_get_color_type(png, info);
-        int bit_depth = png_get_bit_depth(png, info);
+        int bit_depth = png_get_bit_depth(png, info) > 8 ? 16 : 8; // TODOIMG check?
 
         int d_channels = 0;
         if (color_type == PNG_COLOR_TYPE_GRAY)
