@@ -32,7 +32,7 @@ namespace satdump
             image::load_jpeg(map, resources::getResourcePath("maps/nasa.jpg").c_str());
         else
             map.init(8, 2048, 1024, 4);
-        image::Image color_lut = image::LUT_jet<uint16_t>(); // TODOIMG
+        image::Image color_lut = image::LUT_jet<uint16_t>();
 
         int img_x = map.width();
         int img_y = map.height();

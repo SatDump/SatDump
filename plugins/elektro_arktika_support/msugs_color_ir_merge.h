@@ -38,7 +38,7 @@ namespace elektro
         // return 3 channels, RGB
         image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
 
-        int *channelVals = new int[inputChannels.size()];
+        double *channelVals = new double[inputChannels.size()];
 
         double timestamp = 0;
         if (img_pro->has_timestamps && img_pro->get_timestamps().size() == 1 && img_pro->timestamp_type == satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE)
@@ -59,7 +59,7 @@ namespace elektro
             for (size_t y = 0; y < output.height(); y++)
             {
                 // get channels from satdump.json
-                image::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
+                image::get_channel_vals(channelVals, inputChannels, f, y, x);
 
                 if (!projFunc->get_position(x, y, coords))
                 {
@@ -68,7 +68,7 @@ namespace elektro
 
                     predict_observe_sun(observer, julian_date, &obs);
 
-                    float val = ((obs.elevation * RAD_TO_DEG) / 10.0);
+                    float val = ((obs.elevation * RAD_TO_DEG) / 20.0);
                     if (val < 0)
                         val = 0;
                     if (val > 1)
@@ -76,24 +76,24 @@ namespace elektro
 
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 
-                    channelVals[3] = 65535 - channelVals[3];
-                    float mcir_v = float(channelVals[3]) / 65535.0;
+                    channelVals[3] = 1.0 - channelVals[3];
+                    float mcir_v = float(channelVals[3]);
                     if (mcir_v > 1)
                         mcir_v = 1;
                     if (mcir_v < 0)
                         mcir_v = 0;
 
-                    int mcir_val0 = 0, mcir_val1 = 0, mcir_val2 = 0;
+                    double mcir_val0 = 0, mcir_val1 = 0, mcir_val2 = 0;
                     if (map_x != -1 && map_y != -1)
                     {
-                        mcir_val0 = channelVals[3] * mcir_v + img_nightmap.get(0, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
-                        mcir_val1 = channelVals[3] * mcir_v + img_nightmap.get(1, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
-                        mcir_val2 = channelVals[3] * mcir_v + img_nightmap.get(2, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
+                        mcir_val0 = channelVals[3] * mcir_v + img_nightmap.getf(0, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
+                        mcir_val1 = channelVals[3] * mcir_v + img_nightmap.getf(1, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
+                        mcir_val2 = channelVals[3] * mcir_v + img_nightmap.getf(2, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);
                     }
 
-                    output.set(0, y * output.width() + x, channelVals[0] * val + mcir_val0 * (1.0 - val));
-                    output.set(1, y * output.width() + x, channelVals[1] * val + mcir_val1 * (1.0 - val));
-                    output.set(2, y * output.width() + x, channelVals[2] * val + mcir_val2 * (1.0 - val));
+                    output.setf(0, y * output.width() + x, channelVals[0] * val + mcir_val0 * (1.0 - val));
+                    output.setf(1, y * output.width() + x, channelVals[1] * val + mcir_val1 * (1.0 - val));
+                    output.setf(2, y * output.width() + x, channelVals[2] * val + mcir_val2 * (1.0 - val));
                 }
                 else
                 {

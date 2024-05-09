@@ -114,7 +114,7 @@ namespace himawari
             }
             else
             {
-                productizer.saveImage(img, img.depth() /*TODOIMG*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, img.depth() /*THIS IS VALID FOR CALIBRATION*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
             }
         }
 
