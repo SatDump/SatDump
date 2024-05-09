@@ -479,4 +479,20 @@ namespace image
             for (size_t i = 0; i < d_width * d_height; i++)
                 set(c, i, val);
     }
+
+    ////////////////////////
+
+    void imemcpy(Image &img1, size_t pos1, Image &img2, size_t pos2, size_t px_size)
+    {
+        if (img1.depth() != img2.depth())
+            throw satdump_exception("image::memcpy both images must be the same bit depth!");
+        if (pos1 + px_size > img1.size())
+            throw satdump_exception("image::memcpy pos1 + px_size exceeds img1 size!");
+        if (pos2 + px_size > img2.size())
+            throw satdump_exception("image::memcpy pos2 + px_size exceeds img2 size!");
+
+        memcpy((uint8_t *)img1.raw_data() + pos1 * img1.typesize(),
+               (uint8_t *)img2.raw_data() + pos2 * img1.typesize(),
+               px_size * img1.typesize());
+    }
 }

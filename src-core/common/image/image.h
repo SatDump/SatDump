@@ -137,4 +137,6 @@ namespace image
         inline void setf(size_t channel, size_t x, size_t y, double v) { setf(channel * d_width * d_height + y * d_width + x, v); }
         inline double getf(size_t channel, size_t x, size_t y) { return getf(channel * d_width * d_height + y * d_width + x); }
     };
+
+    void imemcpy(Image &img1, size_t pos1, Image &img2, size_t pos2, size_t px_size);
 }
