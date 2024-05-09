@@ -41,7 +41,7 @@ namespace elektro
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
                 image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
             else
-                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
+                productizer.saveImage(img, meta.bit_depth, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
         }
 
         void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
@@ -125,7 +125,6 @@ namespace elektro
                         decompressedImage.Read(0, image_ptr, buf_size);
                     }
 
-                    // TODOIMG handle 10-bits to 16?
                     if (out_pixels == image_structure_record.columns_count * image_structure_record.lines_count) // Matches?
                     {
                         // Empty current LRIT file
@@ -133,7 +132,7 @@ namespace elektro
 
                         if (image_structure_record.bit_per_pixel == 10)
                         {
-                            // Fill it back up converting to 8-bits
+                            // Fill it back up converting to 16-bits
                             for (int i = 0; i < buf_size - (buf_size % 5); i += 5)
                             {
                                 uint16_t v1 = (image_ptr[0] << 2) | (image_ptr[1] >> 6);
@@ -141,10 +140,19 @@ namespace elektro
                                 uint16_t v3 = ((image_ptr[2] % 16) << 6) | (image_ptr[3] >> 2);
                                 uint16_t v4 = ((image_ptr[3] % 4) << 8) | image_ptr[4];
 
-                                file.lrit_data.push_back(v1 >> 2);
-                                file.lrit_data.push_back(v2 >> 2);
-                                file.lrit_data.push_back(v3 >> 2);
-                                file.lrit_data.push_back(v4 >> 2);
+                                v1 <<= 6;
+                                v2 <<= 6;
+                                v3 <<= 6;
+                                v4 <<= 6;
+
+                                file.lrit_data.push_back(v1 & 0xFF);
+                                file.lrit_data.push_back(v1 >> 8);
+                                file.lrit_data.push_back(v2 & 0xFF);
+                                file.lrit_data.push_back(v2 >> 8);
+                                file.lrit_data.push_back(v3 & 0xFF);
+                                file.lrit_data.push_back(v3 >> 8);
+                                file.lrit_data.push_back(v4 & 0xFF);
+                                file.lrit_data.push_back(v4 >> 8);
 
                                 image_ptr += 5;
                             }
@@ -195,8 +203,9 @@ namespace elektro
                     GOMSxRITProductMeta lmeta;
                     lmeta.filename = file.filename;
 
-                    // Channel
+                    // Channel / Bit depth
                     lmeta.channel = segment_id_header.channel_id + 1;
+                    lmeta.bit_depth = image_structure_record.bit_per_pixel;
 
                     // Try to parse navigation
                     if (file.hasHeader<::lrit::ImageNavigationRecord>())
@@ -262,7 +271,8 @@ namespace elektro
                             wip_img->imageStatus = RECEIVING;
                         }
 
-                        segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.planned_end_segment,
+                        segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                                                     segment_id_header.planned_end_segment,
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
                                                                      image_id);
@@ -270,7 +280,14 @@ namespace elektro
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
-                    segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], seg_number);
+                    {
+                        image::Image image(&file.lrit_data[primary_header.total_header_length],
+                                           image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                           image_structure_record.columns_count,
+                                           image_structure_record.lines_count,
+                                           1);
+                        segmentedDecoder.pushSegment(image, seg_number);
+                    }
 
                     // If the UI is active, update texture
                     if (wip_img->textureID > 0)
@@ -280,7 +297,7 @@ namespace elektro
                         wip_img->img_width = 1000;
                         image::Image imageScaled = segmentedDecoder.image;
                         imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                        uchar_to_rgba((uint8_t *)imageScaled.raw_data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width); // TODO CONSOLIDATE
+                        image::image_to_rgba(imageScaled, wip_img->textureBuffer);
                         wip_img->hasToUpdate = true;
                     }
 
@@ -297,7 +314,11 @@ namespace elektro
                 else
                 { // Left just in case, should not happen on ELEKTRO-L
                     // Write raw image dats
-                    image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                    image::Image image(&file.lrit_data[primary_header.total_header_length],
+                                       image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                       image_structure_record.columns_count,
+                                       image_structure_record.lines_count,
+                                       1);
                     image::save_img(image, std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
                 }
             }

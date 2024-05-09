@@ -21,7 +21,7 @@ namespace gk2a
             if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
                 image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
             else
-                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, img.depth() /*TODOIMG*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
         }
 
         void GK2ALRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
@@ -195,7 +195,7 @@ namespace gk2a
                             wip_img->img_width = 1000;
                             image::Image imageScaled = segmentedDecoder.image;
                             imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                            image::image_to_rgba(imageScaled, wip_img->textureBuffer);      
+                            image::image_to_rgba(imageScaled, wip_img->textureBuffer);
                             wip_img->hasToUpdate = true;
                         }
 

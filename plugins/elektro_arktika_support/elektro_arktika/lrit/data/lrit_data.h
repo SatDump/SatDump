@@ -17,6 +17,7 @@ namespace elektro
         {
             std::string filename;
 
+            int bit_depth = -1;
             int channel = -1;
             std::string satellite_name;
             std::string satellite_short_name;
@@ -39,10 +40,10 @@ namespace elektro
             int seg_height = 0, seg_width = 0;
 
         public:
-            SegmentedLRITImageDecoder(int max_seg, int segment_width, int segment_height, std::string id);
+            SegmentedLRITImageDecoder(int bit_depth, int max_seg, int segment_width, int segment_height, std::string id);
             SegmentedLRITImageDecoder();
             ~SegmentedLRITImageDecoder();
-            void pushSegment(uint8_t *data, int segc);
+            void pushSegment(image::Image &data, int segc);
             bool isComplete();
             image::Image image;
             std::string image_id = "";

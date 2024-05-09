@@ -501,6 +501,7 @@ namespace lrit
     }
 
     void LRITProductizer::saveImage(image::Image img,
+                                    int bit_depth,
                                     std::string directory,
                                     std::string satellite,
                                     std::string satshort,
@@ -617,7 +618,7 @@ namespace lrit
                 pro->has_timestamps = true;
                 pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
                 pro->set_timestamps({(double)timestamp});
-                pro->bit_depth = img.depth();
+                pro->bit_depth = bit_depth;
                 if (proj_cfg.size() > 0)
                 {
                     pro->set_proj_cfg(proj_cfg);

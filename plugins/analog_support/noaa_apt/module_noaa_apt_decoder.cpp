@@ -230,7 +230,9 @@ namespace noaa_apt
             {
                 float v = ctm->output_stream->readBuf[i];
                 v = (v * 2.0f) * 65535.0f;
-                imagebuf.push_back(wip_apt_image.clamp(v));
+                if (v > 65535)
+                    v = 65535;
+                imagebuf.push_back(v);
                 image_i++;
             }
 

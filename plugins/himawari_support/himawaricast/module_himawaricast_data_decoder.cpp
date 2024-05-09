@@ -114,7 +114,7 @@ namespace himawari
             }
             else
             {
-                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, img.depth() /*TODOIMG*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
             }
         }
 
@@ -286,15 +286,15 @@ namespace himawari
                                                 if (image_structure_record.bit_per_pixel == 8)
                                                 {
                                                     image = image::Image(&lfile.lrit_data[primary_header.total_header_length],
-                                                                          8,
-                                                                          image_structure_record.columns_count,
-                                                                          image_structure_record.lines_count, 1);
+                                                                         8,
+                                                                         image_structure_record.columns_count,
+                                                                         image_structure_record.lines_count, 1);
                                                 }
                                                 else if (image_structure_record.bit_per_pixel == 16)
                                                 {
                                                     image::Image image2(16,
-                                                                         image_structure_record.columns_count,
-                                                                         image_structure_record.lines_count, 1);
+                                                                        image_structure_record.columns_count,
+                                                                        image_structure_record.lines_count, 1);
 
                                                     for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
                                                         image2.set(i, ((&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |

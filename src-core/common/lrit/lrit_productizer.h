@@ -32,6 +32,7 @@ namespace lrit
         ~LRITProductizer();
 
         void saveImage(image::Image img,
+                       int bit_depth,
                        std::string directory,
                        std::string satellite,
                        std::string satshort,

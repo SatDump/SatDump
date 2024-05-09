@@ -81,7 +81,7 @@ namespace goes
                     productizer.setInstrumentID("ahi");
                 else if (meta.is_goesn)
                     productizer.setInstrumentID("goesn_imager");
-                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
                 if (meta.satellite_name == "Himawari" || meta.is_goesn)
                     productizer.setInstrumentID("abi");
             }
