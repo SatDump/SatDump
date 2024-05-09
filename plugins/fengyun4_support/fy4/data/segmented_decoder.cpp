@@ -30,11 +30,11 @@ namespace fy4
         {
         }
 
-        void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, int segc, int height)
+        void SegmentedLRITImageDecoder::pushSegment(image::Image &data, int segc, int height)
         {
             if (segc >= seg_count || segc < 0)
                 return;
-            std::memcpy((uint8_t *)image.raw_data() + (seg_height * seg_width) * segc * image.typesize(), data, height * seg_width);
+            image::imemcpy(image, (seg_height * seg_width) * segc, data, 0, height * seg_width);
             segments_done.get()[segc] = true;
         }
 

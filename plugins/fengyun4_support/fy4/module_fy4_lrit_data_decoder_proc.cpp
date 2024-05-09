@@ -169,7 +169,8 @@ namespace fy4
                                                                          image_id);
                         }
 
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        segmentedDecoder.pushSegment(image, image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
 
                         // If the UI is active, update texture
                         if (wip_img->textureID > 0)

@@ -3,6 +3,7 @@
 #include "lrit_header.h"
 #include <fstream>
 #include "common/image/jpeg_utils.h"
+#include "common/image/jpeg12_utils.h"
 #include "common/image/io.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
@@ -21,7 +22,7 @@ namespace gk2a
             if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
                 image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
             else
-                productizer.saveImage(img, img.depth() /*TODOIMG*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, img.depth() /*this is what the calibration uses!*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
         }
 
         void GK2ALRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
@@ -99,15 +100,21 @@ namespace gk2a
                     if (file.custom_flags[JPG_COMPRESSED] || file.custom_flags[J2K_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
                     {
                         logger->info("Decompressing JPEG...");
-                        image::Image img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length);
-                        if (img.width() < image_structure_record.columns_count || img.height() < image_structure_record.lines_count)
-                            img.init(8, image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
+                        image::Image img;
+                        if (image_structure_record.bit_per_pixel > 8)
+                        {
+                            img = image::decompress_jpeg12(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length);
+                            for (size_t c = 0; c < img.size(); c++)
+                                img.set(c, img.get(c) << 2);
+                        }
+                        else
+                            img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length);
 
-                        if (img.depth() != 8)
-                            logger->error("ELEKTRO xRIT JPEG Depth should be 8!");
+                        if (img.width() < image_structure_record.columns_count || img.height() < image_structure_record.lines_count)
+                            img.init(image_structure_record.bit_per_pixel > 8 ? 16 : 8, image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
 
                         file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
-                        file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.height() * img.width());
+                        file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.size() * img.typesize());
                     }
 
                     std::vector<std::string> header_parts = splitString(current_filename, '_'); // Is this a FD?
@@ -171,7 +178,8 @@ namespace gk2a
                                 wip_img->imageStatus = RECEIVING;
                             }
 
-                            segmentedDecoder = SegmentedLRITImageDecoder(10,
+                            segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                                                         10,
                                                                          image_structure_record.columns_count,
                                                                          image_structure_record.lines_count,
                                                                          image_id);
@@ -185,7 +193,8 @@ namespace gk2a
                             seg_number = std::stoi(header_parts[6].substr(0, header_parts.size() - 4)) - 1;
                         else
                             logger->critical("Could not parse segment number from filename!");
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], seg_number);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], image_structure_record.bit_per_pixel > 8 ? 16 : 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        segmentedDecoder.pushSegment(image, seg_number);
 
                         // If the UI is active, update texture
                         if (wip_img->textureID > 0)
