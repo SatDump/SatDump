@@ -111,8 +111,8 @@ namespace satdump
         if (median_blur)
             image::median_blur(current_image);
 
-        //   if (despeckle)
-        //       current_image.kuwahara_filter(); // TODOIMG
+        if (despeckle)
+            image::kuwahara_filter(current_image);
 
         if (rotate_image)
             current_image.mirror(true, true);

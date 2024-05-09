@@ -1,3 +1,4 @@
+#include <limits>
 #include "image_lut.h"
 
 namespace image

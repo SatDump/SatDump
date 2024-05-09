@@ -819,8 +819,8 @@ namespace satdump
         if (cfg.median_blur)
             image::median_blur(rgb_composite);
 
-        // if (cfg.despeckle)
-        //     rgb_composite.kuwahara_filter(); // TODIMG
+        if (cfg.despeckle)
+            image::kuwahara_filter(rgb_composite);
 
         if (cfg.equalize)
             image::equalize(rgb_composite);

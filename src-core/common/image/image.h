@@ -131,7 +131,7 @@ namespace image
         inline void set(size_t channel, size_t x, size_t y, int v) { set(channel * d_width * d_height + y * d_width + x, v); }
         inline int get(size_t channel, size_t x, size_t y) { return get(channel * d_width * d_height + y * d_width + x); }
 
-        // Easier int setf/getf
+        // Easier double setf/getf
         inline void setf(size_t channel, size_t p, double v) { setf(channel * d_width * d_height + p, v); }
         inline double getf(size_t channel, size_t p) { return getf(channel * d_width * d_height + p); }
         inline void setf(size_t channel, size_t x, size_t y, double v) { setf(channel * d_width * d_height + y * d_width + x, v); }

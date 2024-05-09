@@ -15,6 +15,16 @@ namespace image
             return array[(int)number_percent - 1] + (number_percent - (int)number_percent) * (array[(int)number_percent] - array[(int)number_percent - 1]);
     }
 
+    inline int wraparound(int metric, int attempt)
+    {
+        if (attempt < 0)
+            attempt += metric;
+        if (metric <= attempt)
+            attempt -= metric;
+
+        return attempt;
+    }
+
     void white_balance(Image &img, float percentileValue)
     {
         const float maxVal = img.maxval();
@@ -83,6 +93,79 @@ namespace image
                     std::sort(values.begin(), values.end());
 
                     img.set(c, x * w + y, values[2]);
+                }
+            }
+        }
+    }
+
+    void kuwahara_filter(Image &img)
+    {
+        const int radius = 1;
+        const float num_pixels = (float)((radius + 1) * (radius + 1));
+        const int d_channels = img.channels();
+        const size_t d_width = img.width();
+        const size_t d_height = img.height();
+        Image tmp = img;
+
+        img.init(img.depth(), d_width, d_height, img.channels());
+        for (int c = 0; c < d_channels; c++)
+        {
+#pragma omp parallel for
+            for (int64_t y = 0; y < (int64_t)d_height; y++)
+            {
+                for (size_t x = 0; x < d_width; x++)
+                {
+                    float average[4] = { 0 };
+                    float variance[4] = { 0 };
+
+                    // Calculate values for the four regions
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            average[0] += tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j));
+                    average[0] /= num_pixels;
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            variance[0] += pow(tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j)) - average[0], 2);
+
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            average[1] += tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j));
+                    average[1] /= num_pixels;
+                    for (int j = -radius; j <= 0; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            variance[1] += pow(tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j)) - average[1], 2);
+
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            average[2] += tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j));
+                    average[2] /= num_pixels;
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = 0; i <= radius; ++i)
+                            variance[2] += pow(tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j)) - average[2], 2);
+
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            average[3] += tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j));
+                    average[3] /= num_pixels;
+                    for (int j = 0; j <= radius; ++j)
+                        for (int i = -radius; i <= 0; ++i)
+                            variance[3] += pow(tmp.get(c, wraparound(d_width, x + i), wraparound(d_height, y + j)) - average[3], 2);
+
+                    // Find the region with the smallest variance and use its mean as the new pixel value
+                    float min_sigma2 = FLT_MAX;
+                    for (int k = 0; k < 4; k++)
+                    {
+                        variance[k] /= num_pixels - 1;
+                        // Find Sigma 2
+                        if (variance[k] < 0)
+                            variance[k] = -variance[k];
+
+                        if (variance[k] < min_sigma2)
+                        {
+                            min_sigma2 = variance[k];
+                            img.set(c, x, y, average[k]);
+                        }
+                    }
                 }
             }
         }
