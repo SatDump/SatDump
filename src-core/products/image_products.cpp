@@ -88,7 +88,7 @@ namespace satdump
             int size = ceil(sqrt(images.size()));
             logger->debug("Using size %d", size);
             image::Image image_all = image::make_manyimg_composite(size, size, images.size(), [this](int c)
-                                                                     { return images[c].image; });
+                                                                   { return images[c].image; });
             image::save_img(image_all, directory + "/" + images[0].filename);
             savemtx.lock();
             contents["img_matrix_size"] = size;
@@ -731,9 +731,9 @@ namespace satdump
                 std::vector<image::Image> images_obj_new;
                 for (int i = 0; i < (int)channel_indexes.size(); i++)
                     images_obj_new.push_back(image::Image(product.images[channel_indexes[i]].image.depth(),
-                                                           product.images[channel_indexes[i]].image.width(),
-                                                           (single_line ? 1 : product.get_ifov_y_size(channel_indexes[i])) * common_timestamps.size(),
-                                                           1));
+                                                          product.images[channel_indexes[i]].image.width(),
+                                                          (single_line ? 1 : product.get_ifov_y_size(channel_indexes[i])) * common_timestamps.size(),
+                                                          1));
 
                 // Recompose images to be synced
                 int y_index = 0;
@@ -753,9 +753,12 @@ namespace satdump
                                 // memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
                                 //        &images_obj[i][t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
                                 //        images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
-                                memcpy((uint8_t*)images_obj_new[i].raw_data() + (y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))) * images_obj_new[i].typesize(),
-                                       (uint8_t*)images_obj[i].raw_data() + (t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))) * images_obj[i].typesize(),
-                                       images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * images_obj[i].typesize());
+                                // memcpy((uint8_t*)images_obj_new[i].raw_data() + (y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))) * images_obj_new[i].typesize(),
+                                //        (uint8_t*)images_obj[i].raw_data() + (t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))) * images_obj[i].typesize(),
+                                //        images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * images_obj[i].typesize());
+                                image::imemcpy(images_obj_new[i], y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)),
+                                               images_obj[i], t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)),
+                                               images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)));
                                 break;
                             }
                         }
