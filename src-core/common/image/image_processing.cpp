@@ -1,6 +1,7 @@
 #include "image_utils.h"
 #include <algorithm>
 #include <cmath>
+#include <cfloat>
 
 namespace image
 {

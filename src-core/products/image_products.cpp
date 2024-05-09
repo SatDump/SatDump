@@ -6,7 +6,6 @@
 #include "common/image/earth_curvature.h"
 #include "resources.h"
 #include <filesystem>
-#include <cfloat>
 #include "libs/sol2/sol.hpp"
 #include "common/lua/lua_utils.h"
 #include "common/calibration.h"
