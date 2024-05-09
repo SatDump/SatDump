@@ -13,13 +13,13 @@
 namespace cpp_compos
 {
     image::Image underlay_with_clouds(satdump::ImageProducts *img_pro,
-                                       std::vector<image::Image> &inputChannels,
-                                       std::vector<std::string> channelNumbers,
-                                       std::string cpp_id,
-                                       nlohmann::json vars,
-                                       nlohmann::json offsets_cfg,
-                                       std::vector<double> *final_timestamps = nullptr,
-                                       float *progress = nullptr)
+                                      std::vector<image::Image> &inputChannels,
+                                      std::vector<std::string> channelNumbers,
+                                      std::string cpp_id,
+                                      nlohmann::json vars,
+                                      nlohmann::json offsets_cfg,
+                                      std::vector<double> *final_timestamps = nullptr,
+                                      float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
@@ -31,7 +31,6 @@ namespace cpp_compos
 
         // return 3 channels, RGB
         image::Image rgb_output(f.img_depth, f.maxWidth, f.maxHeight, 3);
-        uint16_t *channelVals = new uint16_t[inputChannels.size()];
 
         geodetic::geodetic_coords_t coords;
         auto proj_cfg = img_pro->get_proj_cfg();
@@ -68,7 +67,7 @@ namespace cpp_compos
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 
                     if (cfg_invert)
-                        val = 1.0 - ((ch_equal.getf(y * width) + x) - cfg_offset) * cfg_scalar;
+                        val = 1.0 - (ch_equal.getf((y * width) + x) - cfg_offset) * cfg_scalar;
                     else
                         val = (ch_equal.getf((y * width) + x) - cfg_offset) * cfg_scalar;
 
@@ -139,8 +138,6 @@ namespace cpp_compos
             if (progress != nullptr)
                 *progress = double(x) / double(rgb_output.width());
         }
-
-        delete[] channelVals;
 
         return rgb_output;
     }
