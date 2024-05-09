@@ -60,7 +60,7 @@ namespace himawari
             {
                 if (segc >= seg_count)
                     return;
-                std::memcpy(image.raw_data() + (seg_height * seg_width) * segc * image.typesize(), (uint8_t *)data.raw_data(), seg_height * seg_width * image.typesize());
+                std::memcpy((uint8_t*)image.raw_data() + (seg_height * seg_width) * segc * image.typesize(), (uint8_t *)data.raw_data(), seg_height * seg_width * image.typesize());
                 segments_done.get()[segc] = true;
             }
 

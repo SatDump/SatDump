@@ -1,14 +1,13 @@
+#pragma once
 #include "image.h"
 
 namespace image
 { // TODOIMG maybe not a template?
     template <typename T>
-    Image create_lut(int channels, int width, int points, std::vector<T> data)
-    {
-        Image out(data.data(), sizeof(T) * 8, points, 1, channels);
-        out.resize_bilinear(width, 1, false);
-        return out;
-    }
+    Image create_lut(int channels, int width, int points, std::vector<T> data);
+
+    template <typename T>
+    Image LUT_jet();
 
     inline Image scale_lut(int width, int x0, int x1, Image in)
     {
@@ -17,25 +16,5 @@ namespace image
         out.fill(0);
         out.draw_image(0, in, x0, 0);
         return out;
-    }
-
-    template <typename T>
-    Image LUT_jet()
-    {
-        return create_lut<T>(3,
-                             256,
-                             4,
-                             {0,
-                              0,
-                              std::numeric_limits<T>::max(),
-                              std::numeric_limits<T>::max(),
-                              0,
-                              std::numeric_limits<T>::max(),
-                              std::numeric_limits<T>::max(),
-                              0,
-                              std::numeric_limits<T>::max(),
-                              std::numeric_limits<T>::max(),
-                              0,
-                              0});
     }
 }

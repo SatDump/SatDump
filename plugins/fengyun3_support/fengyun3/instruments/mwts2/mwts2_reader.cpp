@@ -85,7 +85,7 @@ namespace fengyun3
                 // Reconstitute the image. Works "OK", not perfect...
                 for (const std::pair<double, std::array<std::array<unsigned short, 90>, 18>> &lineData : imageVector)
                 {
-                    std::memcpy(img.raw_data() + line * 90 * img.typesize(), lineData.second[channel].data(), 2 * 90);
+                    std::memcpy((uint8_t*)img.raw_data() + line * 90 * img.typesize(), lineData.second[channel].data(), 2 * 90);
                     line++;
                     timestamps.push_back(lineData.first);
                 }
