@@ -37,10 +37,11 @@ namespace image
         Image &operator=(const Image &img);
 
     public:
-        void to_rgb();    // Convert this image from B&W to RGB (if it is B&W / RGBA)
-        void to_rgba();   // Convert this image from to RGBA (if it is B&W / RGB)
-        Image to8bits();  // Convert to 8-bits. Returns the current image if it's already 8-bits
-        Image to16bits(); // Convert to 16-bits. Returns the current image if it's already 16-bits
+        void to_rgb();                 // Convert this image from B&W to RGB (if it is B&W / RGBA)
+        void to_rgba();                // Convert this image from to RGBA (if it is B&W / RGB)
+        Image to8bits();               // Convert to 8-bits. Returns the current image if it's already 8-bits
+        Image to16bits();              // Convert to 16-bits. Returns the current image if it's already 16-bits
+        Image to_depth(int bit_depth); // Converts to a specific target bit depth
 
     public:
         void draw_image(int channel, Image image, int x = 0, int y = 0);                                  // Draw a B&W Image onto a channel

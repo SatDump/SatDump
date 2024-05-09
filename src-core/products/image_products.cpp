@@ -845,8 +845,9 @@ namespace satdump
 
         if (cfg.apply_lut)
         {
-            auto lut_image = image::LUT_jet<uint16_t>();
+            auto lut_image = image::LUT_jet<uint8_t>();
             rgb_composite.to_rgb();
+            rgb_composite.to_depth(lut_image.depth());
             for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
             {
                 int val = rgb_composite.getf(i) * lut_image.width();

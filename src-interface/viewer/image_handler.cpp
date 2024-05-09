@@ -59,7 +59,7 @@ namespace satdump
         // Setup correction factors.
         updateCorrectionFactors(true);
 
-        lut_image = image::LUT_jet<uint16_t>();
+        lut_image = image::LUT_jet<uint8_t>();
         asyncUpdate();
 
         try
@@ -140,10 +140,10 @@ namespace satdump
         {
             if (current_image.channels() < 3)
                 current_image.to_rgb();
+            current_image.to_depth(lut_image.depth());
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
-                uint16_t val = current_image.get(i);
-                val = (float(val) / 65535.0) * lut_image.width();
+                int val = current_image.getf(i) * lut_image.width();
                 if (val >= lut_image.width())
                     val = lut_image.width() - 1;
                 current_image.set(0, i, lut_image.get(0, val));

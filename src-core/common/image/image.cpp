@@ -209,6 +209,14 @@ namespace image
         throw satdump_exception("Error in to8bits()"); // This should never happen
     }
 
+    Image Image::to_depth(int bit_depth)
+    {
+        if (bit_depth >= 8)
+            return to16bits();
+        else
+            return to8bits();
+    }
+
     void Image::crop(int x0, int y0, int x1, int y1)
     {
         int new_width = x1 - x0;
