@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <cstring>
 #include "common/image/io.h"
+#include "common/image/image_processing.h"
 
 #define IMG_WIDTH 40000
 
@@ -145,7 +146,7 @@ namespace goes
             else
                 img.crop(0, 21072 / 4);
 
-            // img.median_blur(); // TODOIMG
+            image::median_blur(img);
 
             img.resize_bilinear(img.width(), img.height() * 1.75);
 

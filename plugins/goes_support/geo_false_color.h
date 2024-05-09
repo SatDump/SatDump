@@ -10,13 +10,13 @@
 namespace goes
 {
     image::Image goesFalseColorCompositor(satdump::ImageProducts *img_pro,
-                                           std::vector<image::Image> &inputChannels,
-                                           std::vector<std::string> channelNumbers,
-                                           std::string cpp_id,
-                                           nlohmann::json vars,
-                                           nlohmann::json offsets_cfg,
-                                           std::vector<double> *final_timestamps = nullptr,
-                                           float *progress = nullptr)
+                                          std::vector<image::Image> &inputChannels,
+                                          std::vector<std::string> channelNumbers,
+                                          std::string cpp_id,
+                                          nlohmann::json vars,
+                                          nlohmann::json offsets_cfg,
+                                          std::vector<double> *final_timestamps = nullptr,
+                                          float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
@@ -33,21 +33,23 @@ namespace goes
         if (img_lut.width() != 256 || img_lut.height() != 256 || img_lut.channels() < 3)
             logger->error("Lut " + lut_path + " did not load!");
 
-        if (f.img_depth != 8)
-            throw satdump_exception("Geo False Color MUST be 8-bits at the moment."); // TODOIMG
+        if (img_lut.depth() != 8)
+            img_lut = img_lut.to8bits();
+        if (img_curve.depth() != 8)
+            img_curve = img_curve.to8bits();
 
         // return 3 channels, RGB
-        image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
+        image::Image output(8, f.maxWidth, f.maxHeight, 3);
 
-        int *channelVals = new int[inputChannels.size()];
+        double *channelVals = new double[inputChannels.size()];
 
         for (size_t x = 0; x < output.width(); x++)
         {
             for (size_t y = 0; y < output.height(); y++)
             {
                 // get channels from satdump.json
-                image::get_channel_vals_raw(channelVals, inputChannels, f, y, x);
-                int lut_pos = (img_curve.get(channelVals[0]) * lut_width) + (channelVals[1]);
+                image::get_channel_vals(channelVals, inputChannels, f, y, x);
+                int lut_pos = (img_curve.get(channelVals[0] * img_curve.width()) * lut_width) + (channelVals[1] * 255);
 
                 // return RGB 0=R 1=G 2=B
                 output.set(0, x, y, img_lut.get(0, lut_pos));

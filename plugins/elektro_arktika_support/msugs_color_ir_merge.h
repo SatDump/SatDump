@@ -16,13 +16,13 @@
 namespace elektro
 {
     image::Image msuGsFalseColorIRMergeCompositor(satdump::ImageProducts *img_pro,
-                                                   std::vector<image::Image> &inputChannels,
-                                                   std::vector<std::string> channelNumbers,
-                                                   std::string cpp_id,
-                                                   nlohmann::json vars,
-                                                   nlohmann::json offsets_cfg,
-                                                   std::vector<double> *final_timestamps = nullptr,
-                                                   float *progress = nullptr)
+                                                  std::vector<image::Image> &inputChannels,
+                                                  std::vector<std::string> channelNumbers,
+                                                  std::string cpp_id,
+                                                  nlohmann::json vars,
+                                                  nlohmann::json offsets_cfg,
+                                                  std::vector<double> *final_timestamps = nullptr,
+                                                  float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
@@ -32,8 +32,8 @@ namespace elektro
         equp.init(img_nightmap.width(), img_nightmap.height(), -180, 90, 180, -90);
         int map_x, map_y;
 
-        if (f.img_depth != 8)
-            throw satdump_exception("Geo False Color MUST be 8-bits at the moment."); // TODOIMG
+        if (img_nightmap.depth() != f.img_depth)
+            img_nightmap = img_nightmap.to_depth(f.img_depth);
 
         // return 3 channels, RGB
         image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
@@ -83,7 +83,7 @@ namespace elektro
                     if (mcir_v < 0)
                         mcir_v = 0;
 
-                    uint16_t mcir_val0 = 0, mcir_val1 = 0, mcir_val2 = 0;
+                    int mcir_val0 = 0, mcir_val1 = 0, mcir_val2 = 0;
                     if (map_x != -1 && map_y != -1)
                     {
                         mcir_val0 = channelVals[3] * mcir_v + img_nightmap.get(0, map_y * img_nightmap.width() + map_x) * (1.0 - mcir_v);

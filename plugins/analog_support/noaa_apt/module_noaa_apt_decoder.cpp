@@ -250,7 +250,7 @@ namespace noaa_apt
                         preview.set(y * 512 + x, imagebuf[yy * APT_IMG_WIDTH * APT_IMG_OVERS + xx]);
                     }
 
-                ushort_to_rgba((uint16_t *)preview.raw_data(), textureBuffer, preview.size()); // TODOIMG CONSOLIDATE
+                image::image_to_rgba(preview, textureBuffer);
                 has_to_update = true;
                 last_line_cnt = line_cnt;
             }

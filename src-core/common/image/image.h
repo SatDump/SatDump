@@ -139,5 +139,9 @@ namespace image
         inline double getf(size_t channel, size_t x, size_t y) { return getf(channel * d_width * d_height + y * d_width + x); }
     };
 
+    // Copy part of an image over. Safe way to do it with variable bit depths
     void imemcpy(Image &img1, size_t pos1, Image &img2, size_t pos2, size_t px_size);
+
+    // Convert an image to a 8-bit RGBA buffer for OpenGL/etc textures
+    void image_to_rgba(Image &img, uint32_t *output);
 }

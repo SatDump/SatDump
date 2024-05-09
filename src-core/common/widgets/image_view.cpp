@@ -31,10 +31,7 @@ void ImageViewWidget::update(image::Image &image)
         fimg_height = img_chunks[0].img_height = image.height();
 
         img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
-        if (image.typesize() == 2) // TODOIMG Consolidate into one function
-            ushort_to_rgba((uint16_t *)image.raw_data(), img_chunks[0].texture_buffer.data(), img_chunks[0].img_width * img_chunks[0].img_height, image.channels());
-        else if (image.typesize() == 1)
-            uchar_to_rgba((uint8_t *)image.raw_data(), img_chunks[0].texture_buffer.data(), img_chunks[0].img_width * img_chunks[0].img_height, image.channels());
+        image::image_to_rgba(image, img_chunks[0].texture_buffer.data());
     }
     else
     {
@@ -65,10 +62,7 @@ void ImageViewWidget::update(image::Image &image)
 
                 img_chunks[i].texture_buffer.resize(img_chunks[i].img_width * img_chunks[i].img_height);
                 auto crop = image.crop_to(width_start, height_start, width_end, height_end);
-                if (image.typesize() == 2) // TODOIMG Consolidate into one function
-                    ushort_to_rgba((uint16_t *)crop.raw_data(), img_chunks[i].texture_buffer.data(), img_chunks[i].img_width * img_chunks[i].img_height, image.channels());
-                else if (image.typesize() == 1)
-                    uchar_to_rgba((uint8_t *)crop.raw_data(), img_chunks[i].texture_buffer.data(), img_chunks[i].img_width * img_chunks[i].img_height, image.channels());
+                image::image_to_rgba(crop, img_chunks[i].texture_buffer.data());
 
                 img_chunks[i].offset_x = width_start;
                 img_chunks[i].offset_y = fimg_height - height_start;

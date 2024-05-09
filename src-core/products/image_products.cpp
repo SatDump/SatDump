@@ -748,14 +748,6 @@ namespace satdump
 
                             if (time1 == time2)
                             {
-                                // TODOIMG
-                                //  Copy over scanlines
-                                // memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
-                                //        &images_obj[i][t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
-                                //        images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
-                                // memcpy((uint8_t*)images_obj_new[i].raw_data() + (y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))) * images_obj_new[i].typesize(),
-                                //        (uint8_t*)images_obj[i].raw_data() + (t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))) * images_obj[i].typesize(),
-                                //        images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * images_obj[i].typesize());
                                 image::imemcpy(images_obj_new[i], y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)),
                                                images_obj[i], t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)),
                                                images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)));

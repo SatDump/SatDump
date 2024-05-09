@@ -617,7 +617,7 @@ namespace lrit
                 pro->has_timestamps = true;
                 pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
                 pro->set_timestamps({(double)timestamp});
-                pro->bit_depth = img.depth(); // sizeof(T) * 8; TODOIMG check
+                pro->bit_depth = img.depth();
                 if (proj_cfg.size() > 0)
                 {
                     pro->set_proj_cfg(proj_cfg);

@@ -7,6 +7,7 @@
 #include "common/image/image.h"
 #include "common/image/jpeg_utils.h"
 #include "common/image/io.h"
+#include "common/image/image_processing.h"
 #include "resources.h"
 #include "common/ccsds/ccsds_time.h"
 
@@ -113,7 +114,7 @@ namespace proba
                 }
 
                 // Despeckle
-                //  img.simple_despeckle(20); // TODOIMG
+                image::simple_despeckle(img, 20);
                 image::append_ext(img, &extension);
                 if (std::filesystem::exists(output_folder + "/" + filename + extension))
                 {

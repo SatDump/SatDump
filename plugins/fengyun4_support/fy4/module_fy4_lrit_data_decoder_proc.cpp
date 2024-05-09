@@ -179,7 +179,7 @@ namespace fy4
                             wip_img->img_width = 1000;
                             image::Image imageScaled = segmentedDecoder.image;
                             imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                            uchar_to_rgba((uint8_t *)imageScaled.raw_data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width); // TODOIMG consolidate
+                            image::image_to_rgba(imageScaled, wip_img->textureBuffer);
                             wip_img->hasToUpdate = true;
                         }
 

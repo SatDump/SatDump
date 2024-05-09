@@ -116,8 +116,8 @@ namespace image
             {
                 for (size_t x = 0; x < d_width; x++)
                 {
-                    float average[4] = { 0 };
-                    float variance[4] = { 0 };
+                    float average[4] = {0};
+                    float variance[4] = {0};
 
                     // Calculate values for the four regions
                     for (int j = -radius; j <= 0; ++j)
@@ -244,5 +244,32 @@ namespace image
     {
         for (size_t i = 0; i < img.size(); i++)
             img.set(i, img.maxval() - img.get(i));
+    }
+
+    void simple_despeckle(Image &img, int thresold)
+    {
+        for (int c = 0; c < img.channels(); c++)
+        {
+            int h = img.height();
+            int w = img.width();
+
+            for (int x = 0; x < h; x++)
+            {
+                for (int y = 0; y < w; y++)
+                {
+                    unsigned short current = img.get(c, x * w + y);
+
+                    unsigned short below = x + 1 == h ? 0 : img.get(c, (x + 1) * w + y);
+                    unsigned short left = y - 1 == -1 ? 0 : img.get(c, x * w + (y - 1));
+                    unsigned short right = y + 1 == w ? 0 : img.get(c, x * w + (y + 1));
+
+                    if ((current - left > thresold && current - right > thresold) ||
+                        (current - below > thresold && current - right > thresold))
+                    {
+                        img.set(c, x * w + y, (right + left) / 2);
+                    }
+                }
+            }
+        }
     }
 }

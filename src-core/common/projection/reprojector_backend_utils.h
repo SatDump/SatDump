@@ -34,7 +34,7 @@ namespace satdump
                 preview_texid = makeImageTexture();
                 auto img8 = img.resize_to(100, 100).to8bits();
                 uint32_t *tmp_rgba = new uint32_t[img8.width() * img8.height()];
-                uchar_to_rgba((uint8_t *)img8.raw_data(), tmp_rgba, img8.width() * img8.height(), img8.channels()); // TODOIMG Consolidate
+                image::image_to_rgba(img8, tmp_rgba);
                 updateImageTexture(preview_texid, tmp_rgba, img8.width(), img8.height());
                 delete[] tmp_rgba;
             }
@@ -101,10 +101,10 @@ namespace satdump
     }
 
     inline std::vector<image::Image> generateAllProjectionLayers(std::deque<ProjectionLayer> &projection_layers,
-                                                                  int projections_image_width,
-                                                                  int projections_image_height,
-                                                                  nlohmann::json &target_cfg,
-                                                                  float *general_progress = nullptr)
+                                                                 int projections_image_width,
+                                                                 int projections_image_height,
+                                                                 nlohmann::json &target_cfg,
+                                                                 float *general_progress = nullptr)
     {
         std::vector<image::Image> layers_images;
 

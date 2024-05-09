@@ -503,4 +503,53 @@ namespace image
                (uint8_t *)img2.raw_data() + pos2 * img1.typesize(),
                px_size * img1.typesize());
     }
+
+    void image_to_rgba(Image &img, uint32_t *output)
+    {
+        int shift = img.depth() - 8;
+        if (img.channels() == 1)
+        {
+            for (int i = 0; i < img.size(); i++)
+            {
+                uint8_t c;
+                c = img.get(i) >> shift;
+                output[i] = ((uint32_t)255 << 24) | ((uint32_t)c << 16) | ((uint32_t)c << 8) | (uint32_t)c;
+            }
+        }
+        else if (img.channels() == 2)
+        {
+            for (int i = 0; i < img.size(); i++)
+            {
+                uint8_t r, g, b, a;
+                r = img.get(0, i) >> shift;
+                g = img.get(0, i) >> shift;
+                b = img.get(0, i) >> shift;
+                a = img.get(1, i) >> shift;
+                output[i] = ((uint32_t)a << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
+            }
+        }
+        else if (img.channels() == 3)
+        {
+            for (int i = 0; i < img.size(); i++)
+            {
+                uint8_t r, g, b;
+                r = img.get(0, i) >> shift;
+                g = img.get(1, i) >> shift;
+                b = img.get(2, i) >> shift;
+                output[i] = ((uint32_t)255 << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
+            }
+        }
+        else if (img.channels() == 4)
+        {
+            for (int i = 0; i < img.size(); i++)
+            {
+                uint8_t r, g, b, a;
+                r = img.get(0, i) >> shift;
+                g = img.get(1, i) >> shift;
+                b = img.get(2, i) >> shift;
+                a = img.get(3, i) >> shift;
+                output[i] = ((uint32_t)a << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
+            }
+        }
+    }
 }

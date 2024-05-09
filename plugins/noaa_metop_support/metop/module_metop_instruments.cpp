@@ -16,6 +16,7 @@
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/image/io.h"
+#include "common/image/image_processing.h"
 
 namespace metop
 {
@@ -365,7 +366,7 @@ namespace metop
                     logger->info("Channel IR imaging...");
                     image::Image iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                                                                                                                   //  iasi_imaging.simple_despeckle(10);                     TODOIMG                                        // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                    image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;

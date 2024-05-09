@@ -10,4 +10,5 @@ namespace image
     void equalize(Image &img, bool per_channel = false);           // Perform histogram equalization
     void normalize(Image &img);                                    // Normalize the current image data. This takes the current min and max values and extends it to the full bit depth range
     void linear_invert(Image &img);                                // Invert the entire image
+    void simple_despeckle(Image &img, int thresold = 10);          // Very basic despeckle algorithm
 }

@@ -99,9 +99,7 @@ namespace orb
             {
                 auto imageScaled = decoded_imgs[channel].img;
                 imageScaled.resize(1000, 1000);
-                uchar_to_rgba((uint8_t *)imageScaled.raw_data(),
-                              decoded_imgs[channel].textureBuffer,
-                              imageScaled.height() * imageScaled.width()); // TODOIMG Consolidate
+                image::image_to_rgba(imageScaled, decoded_imgs[channel].textureBuffer);
                 decoded_imgs[channel].hasToUpdate = true;
             }
         }
