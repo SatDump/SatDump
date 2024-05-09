@@ -87,7 +87,8 @@ namespace image
         int get_pixel_bilinear(int channel, double x, double y);
 
     public:
-        void fill(int val); // Fill image with a single value
+        void fill(int val);                         // Fill image with a single value
+        void fill_color(std::vector<double> color); // Fill image with a color
 
     public:
         // Standard int set. No bound check!

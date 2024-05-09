@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "../crc.h"
 #include "common/image/io.h"
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 
 namespace proba
 {

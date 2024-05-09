@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <cstring>
 #include "common/image/io.h"
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 
 #define IMG_WIDTH 40000
 

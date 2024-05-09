@@ -16,7 +16,7 @@
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/image/io.h"
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 
 namespace metop
 {

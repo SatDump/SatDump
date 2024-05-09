@@ -12,7 +12,7 @@
 #include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 

@@ -1,7 +1,7 @@
 #include "image.h"
 #include <cstdlib>
 #include "core/exception.h"
-#include "image_meta.h"
+#include "meta.h"
 
 #include <cmath>
 
@@ -486,6 +486,13 @@ namespace image
         for (int c = 0; c < d_channels; c++)
             for (size_t i = 0; i < d_width * d_height; i++)
                 set(c, i, val);
+    }
+
+    void Image::fill_color(std::vector<double> color)
+    {
+        for (size_t x = 0; x < d_width; x++)
+            for (size_t y = 0; y < d_height; y++)
+                draw_pixel(x, y, color);
     }
 
     ////////////////////////

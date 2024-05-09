@@ -1,7 +1,7 @@
 #include "common/projection/projs2/proj_json.h"
 #include "common/projection/geotiff/geotiff.h"
 #include "../io.h"
-#include "../image_meta.h"
+#include "../meta.h"
 #include <cstring>
 #include <fstream>
 #include "logger.h"

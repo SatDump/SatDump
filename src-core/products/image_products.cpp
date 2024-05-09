@@ -12,7 +12,7 @@
 #include "core/plugin.h"
 #include "common/utils.h"
 #include "common/image/brightness_contrast.h"
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 #include "common/image/io.h"
 #include "common/image/image_utils.h"
 #include "common/image/image_lut.h"

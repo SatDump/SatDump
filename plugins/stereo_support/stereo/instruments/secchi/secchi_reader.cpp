@@ -5,7 +5,7 @@
 
 #include "rice_decomp.h"
 
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 #include "common/image/text.h"
 #include "common/image/io.h"
 

@@ -1,6 +1,9 @@
 #include "lua_utils.h"
 
 #include "common/image/image.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
+#include "common/image/image_lut.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/projection/sat_proj/sat_proj.h"
 #include "logger.h"
@@ -49,7 +52,6 @@ namespace lua_utils
 
     void bindImageType(sol::state &lua, std::string name)
     {
-        /*
         sol::usertype<image::Image> image_type = lua.new_usertype<image::Image>(
             name,
             sol::constructors<image::Image(), image::Image(int, size_t, size_t, int)>());
@@ -81,18 +83,18 @@ namespace lua_utils
         image_type["fill_color"] = &image::Image::fill_color;
         image_type["fill"] = &image::Image::fill;
         image_type["mirror"] = &image::Image::mirror;
-        image_type["equalize"] = &image::Image::equalize;
-        image_type["white_balance"] = &image::Image::white_balance;
+        lua["image_equalize"] = &image::equalize;
+        lua["image_white_balance"] = &image::white_balance;
         // CROP / CROP-TO
         image_type["resize"] = &image::Image::resize;
         image_type["resize_to"] = &image::Image::resize_to;
         image_type["resize_bilinear"] = &image::Image::resize_bilinear;
-        image_type["brightness_contrast_old"] = &image::Image::brightness_contrast_old;
-        image_type["linear_invert"] = &image::Image::linear_invert;
-        image_type["equalize"] = &image::Image::equalize;
-        image_type["simple_despeckle"] = &image::Image::simple_despeckle;
-        image_type["median_blur"] = &image::Image::median_blur;
-        image_type["despeckle"] = &image::Image::kuwahara_filter;
+        //        image_type["brightness_contrast_old"] = &image::brightness_contrast_old;
+        lua["image_linear_invert"] = &image::linear_invert;
+        lua["image_equalize"] = &image::equalize;
+        lua["image_simple_despeckle"] = &image::simple_despeckle;
+        lua["image_median_blur"] = &image::median_blur;
+        lua["image_despeckle"] = &image::kuwahara_filter;
 
         image_type["draw_pixel"] = &image::Image::draw_pixel;
         image_type["draw_line"] = &image::Image::draw_line;
@@ -100,19 +102,20 @@ namespace lua_utils
         image_type["draw_image"] = &image::Image::draw_image;
         // image_type["draw_text"] = &image::Image::draw_text;
 
-        image_type["load_png"] = (void(image::Image::*)(std::string, bool))(&image::Image::load_png);
-        image_type["save_png"] = &image::Image::save_png;
-        image_type["load_jpeg"] = (void(image::Image::*)(std::string))(&image::Image::load_jpeg);
-        image_type["save_jpeg"] = &image::Image::save_jpeg;
-        image_type["load_img"] = (void(image::Image::*)(std::string))(&image::Image::load_img);
-        image_type["save_img"] = &image::Image::save_img; TODOIMG */
+        lua["image_load_png"] = (void (*)(image::Image &, std::string, bool))(&image::load_png);
+        lua["image_save_png"] = &image::save_png;
+        lua["image_load_jpeg"] = (void (*)(image::Image &, std::string))(&image::load_jpeg);
+        lua["image_save_jpeg"] = &image::save_jpeg;
+        lua["image_load_img"] = (void (*)(image::Image &, std::string))(&image::load_img);
+        lua["image_save_img"] = &image::save_img;
     }
 
     void bindImageTypes(sol::state &lua)
     {
-        bindImageType(lua, "image");
+        bindImageType(lua, "image_t");
 
-        // lua["image8_lut_jet"] = &image::LUT_jet<uint8_t>; TODOIMG
+        lua["image8_lut_jet"] = &image::LUT_jet<uint8_t>;
+        lua["image16_lut_jet"] = &image::LUT_jet<uint16_t>;
     }
 
     void bindGeoTypes(sol::state &lua)

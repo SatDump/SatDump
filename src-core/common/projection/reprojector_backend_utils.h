@@ -4,8 +4,8 @@
 #include "core/exception.h"
 #include "reprojector.h"
 #include "imgui/imgui_image.h"
-#include "common/image/image_meta.h"
-#include "common/image/image_processing.h"
+#include "common/image/meta.h"
+#include "common/image/processing.h"
 #include "common/image/io.h"
 
 #include "common/utils.h"

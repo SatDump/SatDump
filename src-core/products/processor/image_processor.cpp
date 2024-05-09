@@ -12,8 +12,8 @@
 
 #include "common/overlay_handler.h"
 
-#include "common/image/image_meta.h"
-#include "common/image/image_processing.h"
+#include "common/image/meta.h"
+#include "common/image/processing.h"
 #include "common/image/io.h"
 
 namespace satdump

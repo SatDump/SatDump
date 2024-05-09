@@ -1,4 +1,4 @@
-#include "image_meta.h"
+#include "meta.h"
 
 namespace image
 {

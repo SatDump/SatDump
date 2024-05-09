@@ -7,7 +7,7 @@
 #include "common/image/image.h"
 #include "common/image/jpeg_utils.h"
 #include "common/image/io.h"
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 #include "resources.h"
 #include "common/ccsds/ccsds_time.h"
 

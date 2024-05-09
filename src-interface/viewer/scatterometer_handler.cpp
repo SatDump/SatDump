@@ -6,7 +6,7 @@
 #include "common/widgets/stepped_slider.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "main_ui.h"
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {

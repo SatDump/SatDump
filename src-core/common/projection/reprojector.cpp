@@ -17,7 +17,7 @@
 // #include "reproj/reproj.h"
 
 #include "common/projection/projs2/proj_json.h"
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {

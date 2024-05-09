@@ -6,7 +6,7 @@
 #include "common/widgets/themed_widgets.h"
 #include "main_ui.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {

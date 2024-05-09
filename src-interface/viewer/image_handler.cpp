@@ -16,10 +16,10 @@
 #include "main_ui.h"
 #include "common/image/brightness_contrast.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 #include "common/projection/reprojector.h"
 
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 #include "common/image/image_lut.h"
 
 namespace satdump

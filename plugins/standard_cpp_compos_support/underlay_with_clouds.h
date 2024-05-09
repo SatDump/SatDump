@@ -8,7 +8,7 @@
 #include "common/projection/sat_proj/sat_proj.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/image/io.h"
-#include "common/image/image_processing.h"
+#include "common/image/processing.h"
 
 namespace cpp_compos
 {
