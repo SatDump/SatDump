@@ -82,7 +82,7 @@ namespace satdump
         }
 #else
         path = save_name;
-        image->save_img(save_name);
+        image::save_img(*image, save_name);
 #endif
         return path;
     }
