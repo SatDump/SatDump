@@ -79,7 +79,7 @@ namespace fengyun_svissr
             logger->trace("Loading LUT...");
             image::Image lutImage;
             image::load_png(lutImage, resources::getResourcePath("fy2/svissr/lut.png").c_str());
-            lutImage.to8bits();
+            lutImage = lutImage.to8bits();
             lutImage.resize(256, 256);
 
             image::Image compoImage(8, channel1.width(), channel1.height(), 3);

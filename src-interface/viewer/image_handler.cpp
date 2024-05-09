@@ -140,7 +140,8 @@ namespace satdump
         {
             if (current_image.channels() < 3)
                 current_image.to_rgb();
-            current_image.to_depth(lut_image.depth());
+            if (current_image.depth() != lut_image.depth())
+                current_image = current_image.to_depth(lut_image.depth()); // TODOIMG?
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
                 int val = current_image.getf(i) * lut_image.width();

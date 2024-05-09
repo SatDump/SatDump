@@ -28,7 +28,8 @@ namespace satdump
         else
             image::load_png(image, resources::getResourcePath("icon.png"));
 
-        image.to8bits(); // TODOIMG CHECK?
+        if (image.depth() != 8)
+            image = image.to8bits(); // TODOIMG CHECK?
 
         uint8_t *px = new uint8_t[image.width() * image.height() * 4];
         memset(px, 255, image.width() * image.height() * 4);

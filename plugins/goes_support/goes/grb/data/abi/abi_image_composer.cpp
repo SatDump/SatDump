@@ -120,7 +120,7 @@ namespace goes
                 ch2.clear();
                 ch14.clear();
 
-                saveABICompo(compo.to16bits(), "LUT214");
+                saveABICompo(compo, "LUT214");
             }
         }
     }

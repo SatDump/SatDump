@@ -82,7 +82,8 @@ namespace widgets
 
                 image::Image img;
                 image::load_img(img, resources::getResourcePath(image_path));
-                img.to8bits(); // TODOIMG
+                if (img.depth() != 8)
+                    img = img.to8bits(); // TODOIMG
 
                 unsigned int text_id = makeImageTexture();
                 uint32_t *output_buffer = new uint32_t[img.width() * img.height()];

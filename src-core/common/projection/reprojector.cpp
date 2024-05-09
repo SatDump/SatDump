@@ -67,7 +67,8 @@ namespace satdump
             if (!image::has_metadata_proj_cfg(op.img))
                 throw satdump_exception("Can't reproject an image with no proj config!");
 
-            op.img.to16bits(); // TODOIMG for now can only project 16-bits
+            if (op.img.depth() != 16)
+                op.img = op.img.to16bits(); // TODOIMG for now can only project 16-bits
             result_img.init(16, op.output_width, op.output_height, 4);
 
             // Attempt to init target proj

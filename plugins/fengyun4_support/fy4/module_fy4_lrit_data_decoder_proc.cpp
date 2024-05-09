@@ -76,7 +76,7 @@ namespace fy4
                         }
 
                         image::Image img2 = image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset],
-                                                                            file.lrit_data.size() - primary_header.total_header_length - offset);
+                                                                          file.lrit_data.size() - primary_header.total_header_length - offset);
 
                         // Rely on the background for bit depth,
                         // as apparently nothing else works expected.
@@ -85,7 +85,8 @@ namespace fy4
                             if (img2.get(i) > max_val)
                                 max_val = img2.get(i);
 
-                        img2.to8bits();
+                        if (img2.depth() != 8)
+                            img2 = img2.to8bits();
                         image::Image img = img2;
                         if (max_val == 255) // LRIT, 4-bits
                         {
