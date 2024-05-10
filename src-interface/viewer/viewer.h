@@ -96,6 +96,10 @@ namespace satdump
         void drawProjectionPanel();
 
         int projection_osm_zoom = 3;
+        double projection_osm_lat1 = -85.0511;
+        double projection_osm_lon1 = -180.0;
+        double projection_osm_lat2 = 85.0511;
+        double projection_osm_lon2 = 180.0;
         bool is_opening_layer = false;
 
         std::deque<ProjectionLayer> projection_layers;

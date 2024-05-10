@@ -51,7 +51,7 @@ image::Image downloadTileMap(std::string url_source, double lat0, double lon0, d
     int x_size = bbox[2] - bbox[0]; // xy1.first - xy0.first;
     int y_size = bbox[3] - bbox[1]; // xy1.second - xy0.second;
 
-    logger->trace("Tile map will be of size %dx%d (%d, %d => %d, %d)",
+    logger->trace("Tile map will be of size %dx%d (%f, %f => %f, %f)",
                   x_size, y_size,
                   xy0.first, xy0.second,
                   xy1.first, xy1.second);

@@ -225,6 +225,10 @@ namespace satdump
                     }
                     else if (selected_external_type == 1)
                     {
+                        ImGui::InputDouble("Lat1##osmlat1", &projection_osm_lat1);
+                        ImGui::InputDouble("Lon1##osmlat1", &projection_osm_lon1);
+                        ImGui::InputDouble("Lat2##osmlat1", &projection_osm_lat2);
+                        ImGui::InputDouble("Lon2##osmlat1", &projection_osm_lon2);
                         ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
                         if (!urlgood)
                             ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
@@ -262,7 +266,7 @@ namespace satdump
                                 try
                                 {
                                     logger->info("Generating tile map");
-                                    image::Image timemap = downloadTileMap(mapurl, -85.0511, -180, 85.0511, 180, projection_osm_zoom);
+                                    image::Image timemap = downloadTileMap(mapurl, projection_osm_lat1, projection_osm_lon1, projection_osm_lat2, projection_osm_lon2, projection_osm_zoom);
 
                                     projection_layers.push_front({"Tile Map", timemap});
                                 }
