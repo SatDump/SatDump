@@ -62,9 +62,9 @@ namespace gcom1
                 channels[i].resize((lines + 1) * 243);
         }
 
-        image::Image<uint16_t> AMSR2Reader::getChannel(int c)
+        image::Image AMSR2Reader::getChannel(int c)
         {
-            return image::Image<uint16_t>(channels[c].data(), 243, lines, 1);
+            return image::Image(channels[c].data(), 16, 243, lines, 1);
         }
     } // namespace swap
 } // namespace proba

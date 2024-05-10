@@ -6,6 +6,7 @@
 #include "common/image/jpeg_utils.h"
 #include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
+#include "common/image/io.h"
 
 namespace elektro
 {
@@ -35,12 +36,12 @@ namespace elektro
             return utc_filename;
         }
 
-        void ELEKTROLRITDataDecoderModule::saveImageP(GOMSxRITProductMeta meta, image::Image<uint8_t> img)
+        void ELEKTROLRITDataDecoderModule::saveImageP(GOMSxRITProductMeta meta, image::Image img)
         {
             if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
-                img.save_img(std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
+                image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
             else
-                productizer.saveImage(img, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
+                productizer.saveImage(img, meta.bit_depth, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
         }
 
         void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
@@ -60,9 +61,12 @@ namespace elektro
                 if (file.custom_flags[JPEG_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
                 {
                     logger->info("Decompressing JPEG...");
-                    image::Image<uint8_t> img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length, true);
+                    image::Image img = image::decompress_jpeg(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length, true);
+                    if (img.depth() != 8)
+                        logger->error("ELEKTRO xRIT JPEG Depth should be 8!");
+
                     file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
-                    file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
+                    file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.height() * img.width());
                 }
                 else if (file.custom_flags[WT_COMPRESSED]) // Is this Wavelet-Compressed? Decompress. We know this will always be 10-bits
                 {
@@ -128,7 +132,7 @@ namespace elektro
 
                         if (image_structure_record.bit_per_pixel == 10)
                         {
-                            // Fill it back up converting to 8-bits
+                            // Fill it back up converting to 16-bits
                             for (int i = 0; i < buf_size - (buf_size % 5); i += 5)
                             {
                                 uint16_t v1 = (image_ptr[0] << 2) | (image_ptr[1] >> 6);
@@ -136,10 +140,19 @@ namespace elektro
                                 uint16_t v3 = ((image_ptr[2] % 16) << 6) | (image_ptr[3] >> 2);
                                 uint16_t v4 = ((image_ptr[3] % 4) << 8) | image_ptr[4];
 
-                                file.lrit_data.push_back(v1 >> 2);
-                                file.lrit_data.push_back(v2 >> 2);
-                                file.lrit_data.push_back(v3 >> 2);
-                                file.lrit_data.push_back(v4 >> 2);
+                                v1 <<= 6;
+                                v2 <<= 6;
+                                v3 <<= 6;
+                                v4 <<= 6;
+
+                                file.lrit_data.push_back(v1 & 0xFF);
+                                file.lrit_data.push_back(v1 >> 8);
+                                file.lrit_data.push_back(v2 & 0xFF);
+                                file.lrit_data.push_back(v2 >> 8);
+                                file.lrit_data.push_back(v3 & 0xFF);
+                                file.lrit_data.push_back(v3 >> 8);
+                                file.lrit_data.push_back(v4 & 0xFF);
+                                file.lrit_data.push_back(v4 >> 8);
 
                                 image_ptr += 5;
                             }
@@ -190,8 +203,9 @@ namespace elektro
                     GOMSxRITProductMeta lmeta;
                     lmeta.filename = file.filename;
 
-                    // Channel
+                    // Channel / Bit depth
                     lmeta.channel = segment_id_header.channel_id + 1;
+                    lmeta.bit_depth = image_structure_record.bit_per_pixel;
 
                     // Try to parse navigation
                     if (file.hasHeader<::lrit::ImageNavigationRecord>())
@@ -257,7 +271,8 @@ namespace elektro
                             wip_img->imageStatus = RECEIVING;
                         }
 
-                        segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.planned_end_segment,
+                        segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                                                     segment_id_header.planned_end_segment,
                                                                      image_structure_record.columns_count,
                                                                      image_structure_record.lines_count,
                                                                      image_id);
@@ -265,7 +280,14 @@ namespace elektro
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
-                    segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], seg_number);
+                    {
+                        image::Image image(&file.lrit_data[primary_header.total_header_length],
+                                           image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                           image_structure_record.columns_count,
+                                           image_structure_record.lines_count,
+                                           1);
+                        segmentedDecoder.pushSegment(image, seg_number);
+                    }
 
                     // If the UI is active, update texture
                     if (wip_img->textureID > 0)
@@ -273,9 +295,9 @@ namespace elektro
                         // Downscale image
                         wip_img->img_height = 1000;
                         wip_img->img_width = 1000;
-                        image::Image<uint8_t> imageScaled = segmentedDecoder.image;
+                        image::Image imageScaled = segmentedDecoder.image;
                         imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                        uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                        image::image_to_rgba(imageScaled, wip_img->textureBuffer);
                         wip_img->hasToUpdate = true;
                     }
 
@@ -292,8 +314,12 @@ namespace elektro
                 else
                 { // Left just in case, should not happen on ELEKTRO-L
                     // Write raw image dats
-                    image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                    image.save_img(std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
+                    image::Image image(&file.lrit_data[primary_header.total_header_length],
+                                       image_structure_record.bit_per_pixel > 8 ? 16 : 8,
+                                       image_structure_record.columns_count,
+                                       image_structure_record.lines_count,
+                                       1);
+                    image::save_img(image, std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
                 }
             }
             else

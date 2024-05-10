@@ -62,9 +62,9 @@ namespace meteor
                 channels[channel].resize((lines + 2) * 200);
         }
 
-        image::Image<uint16_t> MTVZAReader::getChannel(int channel)
+        image::Image MTVZAReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 100, lines, 1);
+            return image::Image(channels[channel].data(), 16, 100, lines, 1);
         }
     }
 }

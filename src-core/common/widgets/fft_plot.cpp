@@ -4,6 +4,7 @@
 #include "common/dsp_source_sink/format_notated.h"
 #include "core/module.h"
 #include "resources.h"
+#include "common/image/text.h"
 
 namespace widgets
 {
@@ -133,11 +134,12 @@ namespace widgets
         work_mutex.unlock();
     }
 
-    image::Image<uint8_t> FFTPlot::drawImg(int size_x, int size_y)
+    image::Image FFTPlot::drawImg(int size_x, int size_y)
     {
         work_mutex.lock();
-        image::Image<uint8_t> img(size_x, size_y, 3);
-        img.init_font(resources::getResourcePath("fonts/font.ttf"));
+        image::Image img(8, size_x, size_y, 3);
+        image::TextDrawer text_drawer;
+        text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
         int res_w = size_x;
 
@@ -147,9 +149,9 @@ namespace widgets
         float v0 = values[0];
         ImVec2 tp0 = ImVec2(t0, 1.0f - ImSaturate((v0 - scale_min) * inv_scale));
 
-        uint8_t color_cyan[] = {0, 237, 255};
-        uint8_t color_red[] = {255, 0, 0};
-        uint8_t color_scale[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
+        std::vector<double> color_cyan = {0, 237.0 / 255.0, 1};
+        std::vector<double> color_red = {1, 0, 0};
+        std::vector<double> color_scale = {0.4, 0.4, 0.4};
         // uint8_t color_scale2[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
 
         // Draw lines
@@ -162,7 +164,7 @@ namespace widgets
             ImVec2 pos1 = {(float)(size_x - 1), i};
             img.draw_line(pos0.x, pos0.y, pos1.x, pos1.y, color_scale);
             value += vscale;
-            img.draw_text(pos0.x, pos0.y + 2, color_scale, 10, std::string(std::to_string(int(value)) + " dB").c_str());
+            text_drawer.draw_text(img, pos0.x, pos0.y + 2, color_scale, 10, std::string(std::to_string(int(value)) + " dB").c_str());
         }
 
 #if 0

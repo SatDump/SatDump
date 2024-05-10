@@ -3,6 +3,7 @@
 #include <map>
 #include <mutex>
 #include "common/image/image.h"
+#include "common/image/io.h"
 #include "common/image/j2k_utils.h"
 #include "common/ccsds/ccsds.h"
 #include "common/ccsds/ccsds_time.h"
@@ -17,7 +18,7 @@ namespace orb
     public:
         struct ImgStc
         {
-            image::Image<uint8_t> img;
+            image::Image img;
             uint32_t textureID = 0;
             uint32_t *textureBuffer;
             int imgsize = 0;
@@ -57,7 +58,7 @@ namespace orb
                 return;
             }
 
-            image::Image<uint16_t> imgt = image::decompress_j2k_openjp2(&pkt.payload[17], pkt.payload.size() - 17);
+            image::Image imgt = image::decompress_j2k_openjp2(&pkt.payload[17], pkt.payload.size() - 17);
 
             uint64_t timestamp = (uint64_t)pkt.payload[0] << 56 |
                                  (uint64_t)pkt.payload[1] << 48 |
@@ -73,10 +74,10 @@ namespace orb
             int x_s = pkt.payload[13] << 8 | pkt.payload[14];
             int y_s = pkt.payload[15] << 8 | pkt.payload[16];
 
-            image::Image<uint8_t> img = imgt.to8bits();
+            image::Image img = imgt.to8bits();
 
             for (size_t i = 0; i < img.size(); i++)
-                img[i] = imgt[i];
+                img.set(i, imgt.get(i));
 
             if (decoded_imgs.count(channel) == 0)
                 decoded_imgs.emplace(channel, ImgStc());
@@ -87,7 +88,7 @@ namespace orb
                     saveAll();
 
                 // logger->critical("%d %d %d", width, height, channel);
-                decoded_imgs[channel].img.init(width, height, 1);
+                decoded_imgs[channel].img.init(8, width, height, 1);
                 last_timestamp = timestamp;
             }
 
@@ -98,9 +99,7 @@ namespace orb
             {
                 auto imageScaled = decoded_imgs[channel].img;
                 imageScaled.resize(1000, 1000);
-                uchar_to_rgba(imageScaled.data(),
-                              decoded_imgs[channel].textureBuffer,
-                              imageScaled.height() * imageScaled.width());
+                image::image_to_rgba(imageScaled, decoded_imgs[channel].textureBuffer);
                 decoded_imgs[channel].hasToUpdate = true;
             }
         }
@@ -122,7 +121,7 @@ namespace orb
                                        std::to_string(ch.first);
 
                     if (decoded_imgs[ch.first].is_dling)
-                        decoded_imgs[ch.first].img.save_img(path);
+                        image::save_img(decoded_imgs[ch.first].img, path);
                     decoded_imgs[ch.first].is_dling = false;
                 }
             }
@@ -132,7 +131,7 @@ namespace orb
                                    "/" +
                                    std::to_string(channel);
 
-                decoded_imgs[channel].img.save_img(path);
+                image::save_img(decoded_imgs[channel].img, path);
                 decoded_imgs[channel].is_dling = false;
                 decoded_imgs[channel].img.fill(0);
             }

@@ -17,7 +17,7 @@ namespace goes
             segments_done = std::shared_ptr<bool>(new bool[seg_count], [](bool *p)
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
-            image = std::make_shared<image::Image<uint8_t>>(max_width, max_height, 1);
+            image = std::make_shared<image::Image>(8, max_width, max_height, 1);
             seg_size = int(max_height / max_seg) * max_width;
         }
 
@@ -29,7 +29,7 @@ namespace goes
         {
             if (segc >= seg_count || segc < 0)
                 return;
-            std::memcpy(&(*image)[seg_size * segc], data, this_size);
+            std::memcpy((uint8_t*)image->raw_data() + seg_size * segc, data, this_size); // IMGTODO, maybe check 8-bits?
             segments_done.get()[segc] = true;
         }
 

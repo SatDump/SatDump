@@ -21,7 +21,7 @@ namespace metop
             IASIIMGReader();
             ~IASIIMGReader();
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getIRChannel();
+            image::Image getIRChannel();
         };
     } // namespace iasi
 } // namespace metop

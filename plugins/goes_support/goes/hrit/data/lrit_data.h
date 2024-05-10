@@ -40,7 +40,7 @@ namespace goes
             ~SegmentedLRITImageDecoder();
             void pushSegment(uint8_t *data, size_t this_size, int segc);
             bool isComplete();
-            std::shared_ptr<image::Image<uint8_t>> image;
+            std::shared_ptr<image::Image> image;
             int image_id = -1;
             GOESxRITProductMeta meta;
         };

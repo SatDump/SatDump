@@ -9,6 +9,8 @@
 #include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"
 
+#include "common/image/io.h"
+
 namespace lrit
 {
     inline std::string getXRITTimestamp(time_t tim)
@@ -38,8 +40,7 @@ namespace lrit
                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
     }
 
-    template <typename T>
-    LRITProductizer<T>::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path)
+    LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path)
         : instrument_id(instrument_id), should_sweep_x(sweep_x), compo_cache_path(cache_path)
     {
         if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) &&
@@ -47,11 +48,10 @@ namespace lrit
             can_make_composites = true;
 
         if (can_make_composites)
-            compositeGeneratorThread = std::thread(&LRITProductizer<T>::compositeThreadFunc, this);
+            compositeGeneratorThread = std::thread(&LRITProductizer::compositeThreadFunc, this);
     }
 
-    template <typename T>
-    LRITProductizer<T>::~LRITProductizer()
+    LRITProductizer::~LRITProductizer()
     {
         if (can_make_composites)
         {
@@ -407,7 +407,7 @@ namespace lrit
                             if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() == 0)
                             {
                                 logger->trace("Loading image channel " + img.channel_name);
-                                img.image.load_img(pro_path + "/" + img.filename);
+                                image::load_img(img.image, pro_path + "/" + img.filename);
                             }
                         }
                     }
@@ -417,7 +417,7 @@ namespace lrit
                 if (can_make_composites)
                 {
                     pro->contents["autocomposite_cache_enabled"] = true;
-                    satdump::process_image_products((satdump::Products*)pro, pro_path);
+                    satdump::process_image_products((satdump::Products *)pro, pro_path);
                 }
             }
         }
@@ -431,8 +431,7 @@ namespace lrit
             pro->images[i].image.clear();
     }
 
-    template <typename T>
-    void LRITProductizer<T>::compositeThreadFunc()
+    void LRITProductizer::compositeThreadFunc()
     {
         setLowestThreadPriority();
 
@@ -501,19 +500,19 @@ namespace lrit
         }
     }
 
-    template <typename T>
-    void LRITProductizer<T>::saveImage(image::Image<T> img,
-                                       std::string directory,
-                                       std::string satellite,
-                                       std::string satshort,
-                                       std::string channel,
-                                       time_t timestamp,
-                                       std::string region,
-                                       lrit::ImageNavigationRecord *image_navigation_record,
-                                       ImageDataFunctionRecord *image_data_function_record)
+    void LRITProductizer::saveImage(image::Image img,
+                                    int bit_depth,
+                                    std::string directory,
+                                    std::string satellite,
+                                    std::string satshort,
+                                    std::string channel,
+                                    time_t timestamp,
+                                    std::string region,
+                                    lrit::ImageNavigationRecord *image_navigation_record,
+                                    ImageDataFunctionRecord *image_data_function_record)
     {
         std::string ext;
-        img.append_ext(&ext, true);
+        image::append_ext(img, &ext, true);
         std::string directory_path = region == ""
                                          ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
                                          : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
@@ -565,7 +564,7 @@ namespace lrit
             {
                 filename_new = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + "_" + std::to_string(current_iteration++) + ext;
             } while (std::filesystem::exists(directory_path + filename_new));
-            img.save_img(directory_path + filename_new);
+            image::save_img(img, directory_path + filename_new);
             logger->warn("Image already existed. Written as %s", filename_new.c_str());
         }
         // Otherwise, we can go on as usual and write a proper product.
@@ -587,7 +586,7 @@ namespace lrit
                         contains = true;
 
                 if (!contains)
-                    pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+                    pro->images.push_back({filename, channel, image::Image()});
 
                 if (!pro->has_proj_cfg())
                 {
@@ -619,13 +618,13 @@ namespace lrit
                 pro->has_timestamps = true;
                 pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
                 pro->set_timestamps({(double)timestamp});
-                pro->bit_depth = sizeof(T) * 8;
+                pro->bit_depth = bit_depth;
                 if (proj_cfg.size() > 0)
                 {
                     pro->set_proj_cfg(proj_cfg);
                     // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
-                pro->images.push_back({filename, channel, image::Image<uint16_t>()});
+                pro->images.push_back({filename, channel, image::Image()});
 
                 addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
 
@@ -633,7 +632,7 @@ namespace lrit
             }
         }
 
-        img.save_img(directory_path + filename);
+        image::save_img(img, directory_path + filename);
 
         // Attempt to autogen composites
         if (can_make_composites)
@@ -667,7 +666,4 @@ namespace lrit
                 delete pro;
         }
     }
-
-    template class LRITProductizer<uint8_t>;
-    template class LRITProductizer<uint16_t>;
 }

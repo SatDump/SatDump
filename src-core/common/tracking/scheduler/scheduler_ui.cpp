@@ -7,6 +7,7 @@
 #include "common/utils.h"
 #include "common/widgets/frequency_input.h"
 #include "resources.h"
+#include "common/image/text.h"
 
 namespace satdump
 {
@@ -341,9 +342,9 @@ namespace satdump
             setEngaged(autotrack_engaged, curr_time);
     }
 
-    image::Image<uint8_t> AutoTrackScheduler::getScheduleImage(int width, double curr_time)
+    image::Image AutoTrackScheduler::getScheduleImage(int width, double curr_time)
     {
-        image::Image<uint8_t> img;
+        image::Image img;
 
         float ui_scale = 1;
 
@@ -351,12 +352,13 @@ namespace satdump
             int d_pplot_height = (enabled_satellites.size() * 20) * ui_scale;
             int d_pplot_size = width;
 
-            img.init(width, d_pplot_height, 3);
+            img.init(8, width, d_pplot_height, 3);
             img.fill(0);
-            img.init_font(resources::getResourcePath("fonts/font.ttf"));
+            image::TextDrawer text_drawer;
+            text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
-            uint8_t color_gray[] = {100, 100, 100};
-            uint8_t color_white[] = {255, 255, 255};
+            std::vector<double> color_gray = {100.0 / 255.0, 100.0 / 255.0, 100.0 / 255.0};
+            std::vector<double> color_white = {1, 1, 1};
 
             time_t tttime = curr_time;
             std::tm *timeReadable = gmtime(&tttime);
@@ -365,7 +367,7 @@ namespace satdump
             //              ImGui::Dummy(ImVec2(0, 0));
             for (int i = (timeReadable->tm_min < 30 ? 1 : 0); i < (timeReadable->tm_min < 30 ? 12 : 13); i++)
             {
-                img.draw_text(i * d_pplot_size / 12 - offset, 0, color_gray, 10, svformat("%s%s%s", (curr_hour + i) % 24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00"));
+                text_drawer.draw_text(img, i * d_pplot_size / 12 - offset, 0, color_gray, 10, svformat("%s%s%s", (curr_hour + i) % 24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00"));
             }
             float sat_blk_height = ((float)d_pplot_height / (float)enabled_satellites.size());
             for (int i = 0; i < (int)enabled_satellites.size(); i++)
@@ -396,11 +398,11 @@ namespace satdump
                         hsv_to_rgb(fmod(norad, 10) / 10.0, 1, 1, color);
                         img.draw_rectangle(cpass_xs, thsat_ys,
                                            cpass_xe, thsat_ye,
-                                           color, true);
+                                           {color[0] / 255.0, color[1] / 255.0, color[2] / 255.0}, true);
 
                         if (first_pass)
                         {
-                            img.draw_text(cpass_xe + 5 * ui_scale, thsat_ys + (sat_blk_height / 2) - 6 * ui_scale, color, 10, name);
+                            text_drawer.draw_text(img, cpass_xe + 5 * ui_scale, thsat_ys + (sat_blk_height / 2) - 6 * ui_scale, {color[0] / 255.0, color[1] / 255.0, color[2] / 255.0}, 10, name);
                             first_pass = false;
                         }
                     }

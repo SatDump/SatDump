@@ -6,7 +6,7 @@
 #include "common/widgets/themed_widgets.h"
 #include "main_ui.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {
@@ -97,7 +97,7 @@ namespace satdump
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_map", default_path, "Save Map", &map_img, &viewer_app->save_type);
+                        std::string saved_at = save_image_dialog(products->instrument_name + "_map", default_path, "Save Map", &map_img, &viewer_app->save_type); 
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -198,7 +198,7 @@ namespace satdump
                 else
                     instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_front({ timestring + object_name + instrument_name + " - " + composite_name, map_img });
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, map_img});
 
                 //                if (rotate_image)
                 //                    viewer_app->projection_layers.front().img.mirror(true, true);

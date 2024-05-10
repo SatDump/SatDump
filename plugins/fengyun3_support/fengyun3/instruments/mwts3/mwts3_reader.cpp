@@ -82,9 +82,9 @@ namespace fengyun3
             }
         }
 
-        image::Image<uint16_t> MWTS3Reader::getChannel(int channel)
+        image::Image MWTS3Reader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 98, lines, 1);
+            return image::Image(channels[channel].data(), 16, 98, lines, 1);
         }
     }
 }

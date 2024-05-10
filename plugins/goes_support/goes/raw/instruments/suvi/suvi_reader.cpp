@@ -1,5 +1,6 @@
 #include "suvi_reader.h"
 #include "common/image/image.h"
+#include "common/image/io.h"
 
 namespace goes
 {
@@ -35,11 +36,11 @@ namespace goes
 
                 if (pkt_counter == 422) // End of frame
                 {
-                    image::Image<uint16_t> suvi_img(current_frame + 105, 1330, 1295, 1);
+                    image::Image suvi_img(current_frame + 105, 16, 1330, 1295, 1);
                     suvi_img.crop(0, 3, 0 + 1280, 3 + 1284);
                     for (size_t i = 0; i < suvi_img.size(); i++)
-                        suvi_img[i] = suvi_img.clamp(int(suvi_img[i]) << 5);
-                    suvi_img.save_img(directory + "/SUVI_" + std::to_string(img_cnt++));
+                        suvi_img.set(i, suvi_img.clamp(int(suvi_img.get(i)) << 5));
+                    image::save_img(suvi_img, directory + "/SUVI_" + std::to_string(img_cnt++));
                 }
             }
         }

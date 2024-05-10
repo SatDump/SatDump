@@ -8,6 +8,7 @@
 #include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "common/image/io.h"
 
 #include "resources.h"
 
@@ -18,7 +19,7 @@ namespace stereo
     {
     }
 
-    image::Image<uint16_t> StereoInstrumentsDecoderModule::decompress_icer_tool(uint8_t *data, int dsize, int size)
+    image::Image StereoInstrumentsDecoderModule::decompress_icer_tool(uint8_t *data, int dsize, int size)
     {
         std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
 
@@ -31,7 +32,7 @@ namespace stereo
         if (!std::filesystem::exists(icer_path))
         {
             logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
-            return image::Image<uint16_t>();
+            return image::Image();
         }
 
         int ret = system(cmd.data());
@@ -43,7 +44,7 @@ namespace stereo
             std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
             uint16_t *buffer = new uint16_t[size * size];
             data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
-            image::Image<uint16_t> img(buffer, size, size, 1);
+            image::Image img(buffer, 16, size, size, 1);
             delete[] buffer;
 
             if (std::filesystem::exists("./stereo_secchi_out.tmp"))
@@ -58,7 +59,7 @@ namespace stereo
             if (std::filesystem::exists("./stereo_secchi_out.tmp"))
                 std::filesystem::remove("./stereo_secchi_out.tmp");
 
-            return image::Image<uint16_t>();
+            return image::Image();
         }
     }
 
@@ -165,8 +166,8 @@ namespace stereo
             logger->info("----------- S/WAVES");
             logger->info("Lines : " + std::to_string(s_waves_lines));
 
-            image::Image<uint8_t> image_s_waves(s_waves_data.data(), 162, s_waves_lines, 1);
-            image_s_waves.save_img(directory + "/S_WAVES");
+            image::Image image_s_waves(s_waves_data.data(), 8, 162, s_waves_lines, 1);
+            image::save_img(image_s_waves, directory + "/S_WAVES");
         }
     }
 

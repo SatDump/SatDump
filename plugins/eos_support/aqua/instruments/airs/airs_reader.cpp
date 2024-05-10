@@ -93,14 +93,14 @@ namespace aqua
             }
         }
 
-        image::Image<uint16_t> AIRSReader::getChannel(int channel)
+        image::Image AIRSReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 90, lines, 1);
+            return image::Image(channels[channel].data(), 16, 90, lines, 1);
         }
 
-        image::Image<uint16_t> AIRSReader::getHDChannel(int channel)
+        image::Image AIRSReader::getHDChannel(int channel)
         {
-            return image::Image<uint16_t>(hd_channels[channel].data(), 90 * 8, lines * 9, 1);
+            return image::Image(hd_channels[channel].data(), 16, 90 * 8, lines * 9, 1);
         }
     } // namespace airs
 } // namespace aqua

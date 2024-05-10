@@ -9,11 +9,12 @@
 #include "common/projection/sat_proj/sat_proj.h"
 #include "resources.h"
 
+#include "io.h"
+
 namespace image
 {
     // Generate a composite from channels and an equation
-    template <typename T>
-    Image<T> generate_composite_from_equ(std::vector<Image<T>> &inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
+    Image generate_composite_from_equ(std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
@@ -38,7 +39,7 @@ namespace image
         catch (mu::ParserError &e)
         {
             logger->error(e.GetMsg());
-            return Image<T>();
+            return Image();
         }
 
         size_t img_fullch = f.img_width * f.img_height;
@@ -46,7 +47,7 @@ namespace image
         // Output image
         bool isRgb = outValsCnt == 3;
         bool isRgbA = outValsCnt == 4;
-        Image<T> rgb_output(f.img_width, f.img_height, isRgbA ? 4 : (isRgb ? 3 : 1));
+        Image rgb_output(f.img_depth, f.img_width, f.img_height, isRgbA ? 4 : (isRgb ? 3 : 1));
 
         // Utils
         double R = 0;
@@ -64,46 +65,25 @@ namespace image
                 // Do the math
                 double *rgbOut = rgbParser.Eval(outValsCnt);
 
-                // Get output and scale back
-                R = rgbOut[0] * double(std::numeric_limits<T>::max());
+                // Get output
+                R = rgbOut[0];
                 if (isRgb || isRgbA)
                 {
-                    G = rgbOut[1] * double(std::numeric_limits<T>::max());
-                    B = rgbOut[2] * double(std::numeric_limits<T>::max());
+                    G = rgbOut[1];
+                    B = rgbOut[2];
                 }
                 if (isRgbA)
-                    A = rgbOut[3] * double(std::numeric_limits<T>::max());
-
-                // Clamp
-                if (R < 0)
-                    R = 0;
-
-                if (R > std::numeric_limits<T>::max())
-                    R = std::numeric_limits<T>::max();
-                if (isRgb || isRgbA)
-                {
-                    if (G < 0)
-                        G = 0;
-                    if (G > std::numeric_limits<T>::max())
-                        G = std::numeric_limits<T>::max();
-                    if (B < 0)
-                        B = 0;
-                    if (B > std::numeric_limits<T>::max())
-                        B = std::numeric_limits<T>::max();
-                }
-                if (isRgbA)
-                    if (A > std::numeric_limits<T>::max())
-                        A = std::numeric_limits<T>::max();
+                    A = rgbOut[3];
 
                 // Write output
-                rgb_output[img_fullch * 0 + line * f.img_width + pixel] = R;
+                rgb_output.setf(img_fullch * 0 + line * f.img_width + pixel, rgb_output.clampf(R));
                 if (isRgb || isRgbA)
                 {
-                    rgb_output[img_fullch * 1 + line * f.img_width + pixel] = G;
-                    rgb_output[img_fullch * 2 + line * f.img_width + pixel] = B;
+                    rgb_output.setf(img_fullch * 1 + line * f.img_width + pixel, rgb_output.clampf(G));
+                    rgb_output.setf(img_fullch * 2 + line * f.img_width + pixel, rgb_output.clampf(B));
                 }
                 if (isRgbA)
-                    rgb_output[img_fullch * 3 + line * f.img_width + pixel] = A;
+                    rgb_output.setf(img_fullch * 3 + line * f.img_width + pixel, rgb_output.clampf(A));
             }
 
             if (progress != nullptr)
@@ -115,15 +95,11 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
-
     // Generate a composite from channels and a LUT
-    template <typename T>
-    Image<T> generate_composite_from_lut(std::vector<Image<T>> &inputChannels, std::vector<std::string> channelNumbers, std::string lut_path, nlohmann::json offsets_cfg, float *progress)
+    Image generate_composite_from_lut(std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string lut_path, nlohmann::json offsets_cfg, float *progress)
     {
-        Image<T> lut;
-        lut.load_png(lut_path);
+        Image lut;
+        load_png(lut, lut_path);
 
         compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
@@ -133,7 +109,7 @@ namespace image
             channelValues[i] = 0;
 
         // Output image
-        Image<T> rgb_output(f.img_width, f.img_height, std::min(3, lut.channels()));
+        Image rgb_output(lut.depth(), f.img_width, f.img_height, std::min(3, lut.channels()));
 
         // Run though the entire image
         for (size_t line = 0; line < (size_t)f.img_height; line++)
@@ -151,7 +127,7 @@ namespace image
                         position = (int)lut.width() - 1;
 
                     for (int c = 0; c < std::min(3, lut.channels()); c++)
-                        rgb_output.channel(c)[line * f.img_width + pixel] = lut.channel(c)[position];
+                        rgb_output.set(c, pixel, line, lut.get(c, position));
                 }
                 else if (inputChannels.size() == 2) // 2D Case
                 {
@@ -165,7 +141,7 @@ namespace image
                         position_y = (int)lut.height() - 1;
 
                     for (int c = 0; c < std::min(3, lut.channels()); c++)
-                        rgb_output.channel(c)[line * f.img_width + pixel] = lut.channel(c)[position_y * lut.width() + position_x];
+                        rgb_output.set(c, pixel, line, lut.get(c, position_x, position_y));
 
                     // logger->critical("%d, %d, %d", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
                 }
@@ -179,9 +155,6 @@ namespace image
 
         return rgb_output;
     }
-
-    template Image<uint8_t> generate_composite_from_lut<uint8_t>(std::vector<Image<uint8_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_lut<uint16_t>(std::vector<Image<uint16_t>> &, std::vector<std::string>, std::string, nlohmann::json, float *);
 
     void bindCompoCfgType(sol::state &lua)
     {
@@ -197,8 +170,7 @@ namespace image
     }
 
     // Generate a composite from channels and a Lua script
-    template <typename T>
-    Image<T> generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image<T>> &inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, std::vector<double> *final_timestamps, float *progress)
+    Image generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, std::vector<double> *final_timestamps, float *progress)
     {
         compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
@@ -208,7 +180,7 @@ namespace image
             channelValues[i] = 0;
 
         // Output image
-        Image<T> rgb_output; //(f.img_width, f.img_height, 3);
+        Image rgb_output; //(f.img_width, f.img_height, 3);
 
         try
         {
@@ -239,7 +211,7 @@ namespace image
             if (n_ch == 0)
                 return rgb_output;
 
-            rgb_output.init(f.img_width, f.img_height, n_ch);
+            rgb_output.init(f.img_depth, f.img_width, f.img_height, n_ch);
 
             lua["rgb_output"] = rgb_output;
             lua["compo_cfg"] = f;
@@ -249,7 +221,7 @@ namespace image
                     return;
                 if (x >= rgb_output.width())
                     return;
-                rgb_output.channel(c)[y * rgb_output.width() + x] = rgb_output.clamp(v * double(std::numeric_limits<T>::max()));
+                rgb_output.setf(c, x, y, rgb_output.clampf(v));
             };
             lua["get_channel_value"] = [channelValues](int x)
             { return channelValues[x]; };
@@ -287,7 +259,4 @@ namespace image
 
         return rgb_output;
     }
-
-    template Image<uint8_t> generate_composite_from_lua<uint8_t>(satdump::ImageProducts *, std::vector<Image<uint8_t>> &, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
-    template Image<uint16_t> generate_composite_from_lua<uint16_t>(satdump::ImageProducts *, std::vector<Image<uint16_t>> &, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
 }

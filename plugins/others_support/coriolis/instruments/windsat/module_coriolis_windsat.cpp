@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/image/io.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -71,8 +72,10 @@ namespace coriolis
 
             for (int i = 0; i < 11; i++)
             {
-                WRITE_IMAGE(readers[i]->getImage1(), directory + "/WindSat-" + std::to_string(i + 1));
-                WRITE_IMAGE(readers[i]->getImage2(), directory + "/WindSat-" + std::to_string(i + 12));
+                auto img = readers[i]->getImage1();
+                image::save_img(img, directory + "/WindSat-" + std::to_string(i + 1));
+                img = readers[i]->getImage2();
+                image::save_img(img, directory + "/WindSat-" + std::to_string(i + 12));
             }
 
             data_in.close();

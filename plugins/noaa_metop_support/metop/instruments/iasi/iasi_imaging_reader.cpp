@@ -48,9 +48,9 @@ namespace metop
             ir_channel.resize((lines * 64 + 64) * 64 * 36);
         }
 
-        image::Image<uint16_t> IASIIMGReader::getIRChannel()
+        image::Image IASIIMGReader::getIRChannel()
         {
-            image::Image<uint16_t> img = image::Image<uint16_t>(ir_channel.data(), 36 * 64, lines * 64, 1);
+            image::Image img(ir_channel.data(), 16, 36 * 64, lines * 64, 1);
 
             // Calibrate to remove the noise junk
             int mask[64 * 64];
@@ -60,7 +60,7 @@ namespace metop
                 // Read calibration
                 for (int y = 0; y < 64; y++)
                     for (int x = 0; x < 64; x++)
-                        mask[y * 64 + x] = img[(y2 * 64 + y) * 36 * 64 + (4 * 64) + x];
+                        mask[y * 64 + x] = img.get((y2 * 64 + y) * 36 * 64 + (4 * 64) + x);
 
                 // Apply
                 for (int x2 = 0; x2 < 36; x2++)
@@ -69,10 +69,10 @@ namespace metop
                     {
                         for (int x = 0; x < 64; x++)
                         {
-                            double initial = img[(y2 * 64 + y) * 36 * 64 + (x2 * 64) + x];
+                            double initial = img.get((y2 * 64 + y) * 36 * 64 + (x2 * 64) + x);
                             initial -= mask[y * 64 + x];
                             initial += 20000;
-                            img[(y2 * 64 + y) * 36 * 64 + (x2 * 64) + x] = std::max<double>(initial, 0);
+                            img.set((y2 * 64 + y) * 36 * 64 + (x2 * 64) + x, std::max<double>(initial, 0));
                         }
                     }
                 }

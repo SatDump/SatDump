@@ -6,7 +6,6 @@
 #include "products/image_products.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/image/composite.h"
 #include "core/style.h"
 #include "libs/ctpl/ctpl_stl.h"
 #include "common/widgets/markdown_helper.h"
@@ -26,7 +25,7 @@ namespace satdump
         int active_channel_id = 0, select_image_id = 1;
         bool active_channel_calibrated = false;
         std::string select_image_str;
-        image::Image<uint16_t> rgb_image, current_image;
+        image::Image rgb_image, current_image;
         ImageViewWidget image_view;
 
         // Map projection stuff
@@ -63,12 +62,12 @@ namespace satdump
         // Calibration
         bool is_temp = false;
         bool show_scale = false;
-        image::Image<uint16_t> scale_image; // 512x25
+        image::Image scale_image; // 512x25
         ImageViewWidget scale_view;
 
         // LUT
         bool using_lut = false;
-        image::Image<uint16_t> lut_image;
+        image::Image lut_image;
 
         // Geo-Correction
         std::vector<int> correction_factors;

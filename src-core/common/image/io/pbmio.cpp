@@ -1,4 +1,4 @@
-#include "image.h"
+#include "../io.h"
 #include <cstring>
 #include <fstream>
 #include "logger.h"
@@ -9,10 +9,14 @@
 
 namespace image
 {
-    template <typename T>
-    void Image<T>::save_pbm(std::string file)
+    void save_pbm(Image &img, std::string file)
     {
-        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        auto d_depth = img.depth();
+        auto d_channels = img.channels();
+        auto d_height = img.height();
+        auto d_width = img.width();
+
+        if (img.size() == 0 || d_height == 0) // Make sure we aren't just gonna crash
         {
             logger->trace("Tried to save empty PBM!");
             return;
@@ -46,11 +50,14 @@ namespace image
                 {
                     if (d_channels == 4)
                     {
-                        T write_val = (float)channel(c)[i] * ((float)channel(3)[i] / 255.0f);
-                        fileo.write((char*)&write_val, sizeof(uint8_t));
+                        uint8_t write_val = (float)img.get(c, i) * ((float)img.get(3, i) / 255.0f);
+                        fileo.write((char *)&write_val, sizeof(uint8_t));
                     }
                     else
-                        fileo.write((char*)&channel(c)[i], sizeof(uint8_t));
+                    {
+                        uint8_t write_val = img.get(c, i);
+                        fileo.write((char *)&write_val, sizeof(uint8_t));
+                    }
                 }
             }
         }
@@ -63,9 +70,9 @@ namespace image
             {
                 for (int c = 0; c < channels; c++)
                 {
-                    uint16_t v = channel(c)[i];
-                    if(d_channels == 4)
-                        v = (float)v * (float)channel(3)[i] / 65535.0f;
+                    uint16_t v = img.get(c, i);
+                    if (d_channels == 4)
+                        v = (float)v * (float)img.get(3, i) / 65535.0f;
                     v = INVERT_ENDIAN_16(v);
                     fileo.write((char *)&v, sizeof(uint16_t));
                 }
@@ -75,8 +82,7 @@ namespace image
         fileo.close();
     }
 
-    template <typename T>
-    void Image<T>::load_pbm(std::string file)
+    void load_pbm(Image &img, std::string file)
     {
         if (!std::filesystem::exists(file))
             return;
@@ -97,71 +103,40 @@ namespace image
             else
                 throw satdump_exception("Invalid Magic Number " + signature);
 
-            init(width, height, channels);
+            int d_channels = channels;
+            size_t d_width = width;
+            size_t d_height = height;
+            int d_depth = maxval == 255 ? 8 : 16;
+
+            img.init(d_depth, width, height, channels);
             filei.seekg(1, std::ios_base::cur);
 
             if (d_depth == 8)
             {
-                if (maxval > 255)
+                for (size_t y = 0; y < d_height; y++)
                 {
-                    for (size_t y = 0; y < d_height; y++)
+                    for (size_t x = 0; x < d_width; x++)
                     {
-                        for (size_t x = 0; x < d_width; x++)
+                        for (int c = 0; c < d_channels; c++)
                         {
-                            for (int c = 0; c < d_channels; c++)
-                            {
-                                uint16_t v;
-                                filei.read((char *)&v, sizeof(uint16_t));
-                                channel(c)[y * d_width + x] = INVERT_ENDIAN_16(v) >> 8;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    for (size_t y = 0; y < d_height; y++)
-                    {
-                        for (size_t x = 0; x < d_width; x++)
-                        {
-                            for (int c = 0; c < d_channels; c++)
-                            {
-                                uint8_t v;
-                                filei.read((char *)&v, sizeof(uint8_t));
-                                channel(c)[y * d_width + x] = v;
-                            }
+                            uint8_t v;
+                            filei.read((char *)&v, sizeof(uint8_t));
+                            img.set(c, y * d_width + x, v);
                         }
                     }
                 }
             }
             else if (d_depth == 16)
             {
-                if (maxval > 255)
+                for (size_t y = 0; y < d_height; y++)
                 {
-                    for (size_t y = 0; y < d_height; y++)
+                    for (size_t x = 0; x < d_width; x++)
                     {
-                        for (size_t x = 0; x < d_width; x++)
+                        for (int c = 0; c < d_channels; c++)
                         {
-                            for (int c = 0; c < d_channels; c++)
-                            {
-                                uint16_t v;
-                                filei.read((char *)&v, sizeof(uint16_t));
-                                channel(c)[y * d_width + x] = INVERT_ENDIAN_16(v);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    for (size_t y = 0; y < d_height; y++)
-                    {
-                        for (size_t x = 0; x < d_width; x++)
-                        {
-                            for (int c = 0; c < d_channels; c++)
-                            {
-                                uint8_t v;
-                                filei.read((char *)&v, sizeof(uint8_t));
-                                channel(c)[y * d_width + x] = v << 8;
-                            }
+                            uint16_t v;
+                            filei.read((char *)&v, sizeof(uint16_t));
+                            img.set(c, y * d_width + x, INVERT_ENDIAN_16(v));
                         }
                     }
                 }
@@ -174,8 +149,4 @@ namespace image
             logger->error("Could not open PBM file : %s", e.what());
         }
     }
-
-    // Generate Images for uint16_t and uint8_t
-    template class Image<uint8_t>;
-    template class Image<uint16_t>;
 }

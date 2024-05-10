@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/image.h"
+#include "common/image/io.h"
 
 namespace geoscan
 {
@@ -74,11 +74,11 @@ namespace geoscan
 
         logger->info("Image Payload : Got %d/%d", cpresent, 878);
 
-        image::Image<uint8_t> img;
-        img.load_jpeg(img_vector.data(), img_vector.size());
+        image::Image img;
+        image::load_jpeg(img, img_vector.data(), img_vector.size());
 
         std::string name = "Image";
-        img.save_img(directory + "/" + name);
+        image::save_img(img, directory + "/" + name);
     }
 
     void GEOSCANDataDecoderModule::drawUI(bool window)

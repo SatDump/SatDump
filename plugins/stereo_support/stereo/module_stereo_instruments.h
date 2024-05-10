@@ -17,7 +17,7 @@ namespace stereo
 
         secchi::PayloadAssembler secchi_assembler0, secchi_assembler1, secchi_assembler2, secchi_assembler3;
 
-        image::Image<uint16_t> decompress_icer_tool(uint8_t *data, int dsize, int size);
+        image::Image decompress_icer_tool(uint8_t *data, int dsize, int size);
 
         secchi::SECCHIReader *secchi_reader;
 

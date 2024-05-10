@@ -1,4 +1,4 @@
-#include "image.h"
+#include "../io.h"
 #include "logger.h"
 #include <cstring>
 #include <csetjmp>
@@ -23,8 +23,7 @@ namespace image
         longjmp(((jpeg_error_struct_l *)cinfo->err)->setjmp_buffer, 1);
     }
 
-    template <typename T>
-    void Image<T>::load_jpeg(std::string file)
+    void load_jpeg(Image &img, std::string file)
     {
         if (!std::filesystem::exists(file))
             return;
@@ -73,29 +72,19 @@ namespace image
         jpeg_destroy_decompress(&cinfo);
 
         // Init CImg image
-        init(cinfo.image_width, cinfo.image_height, cinfo.num_components);
+        img.init(8, cinfo.image_width, cinfo.image_height, cinfo.num_components);
 
         // Copy over
-        if (d_depth == 8)
-        {
-            for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-                for (int c = 0; c < cinfo.num_components; c++)
-                    channel(c)[i] = jpeg_decomp[i * cinfo.num_components + c];
-        }
-        else if (d_depth == 16)
-        {
-            for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-                for (int c = 0; c < cinfo.num_components; c++)
-                    channel(c)[i] = jpeg_decomp[i * cinfo.num_components + c] << 8; // Scale up to 16 if required
-        }
+        for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
+            for (int c = 0; c < cinfo.num_components; c++)
+                img.set(c, i, jpeg_decomp[i * cinfo.num_components + c]);
 
         // Free memory
         delete[] jpeg_decomp;
         fclose(fp);
     }
 
-    template <typename T>
-    void Image<T>::load_jpeg(uint8_t *buffer, int size)
+    void load_jpeg(Image &img, uint8_t *buffer, int size)
     {
         // Huge thanks to https://gist.github.com/PhirePhly/3080633
         unsigned char *jpeg_decomp = NULL;
@@ -136,30 +125,25 @@ namespace image
         jpeg_destroy_decompress(&cinfo);
 
         // Init CImg image
-        init(cinfo.image_width, cinfo.image_height, cinfo.num_components);
+        img.init(8, cinfo.image_width, cinfo.image_height, cinfo.num_components);
 
         // Copy over
-        if (d_depth == 8)
-        {
-            for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-                for (int c = 0; c < cinfo.num_components; c++)
-                    channel(c)[i] = jpeg_decomp[i * cinfo.num_components + c];
-        }
-        else if (d_depth == 16)
-        {
-            for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-                for (int c = 0; c < cinfo.num_components; c++)
-                    channel(c)[i] = jpeg_decomp[i * cinfo.num_components + c] << 8; // Scale up to 16 if required
-        }
+        for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
+            for (int c = 0; c < cinfo.num_components; c++)
+                img.set(c, i, jpeg_decomp[i * cinfo.num_components + c]);
 
         // Free memory
         delete[] jpeg_decomp;
     }
 
-    template <typename T>
-    void Image<T>::save_jpeg(std::string file)
+    void save_jpeg(Image &img, std::string file)
     {
-        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        auto d_depth = img.depth();
+        auto d_channels = img.channels();
+        auto d_height = img.height();
+        auto d_width = img.width();
+
+        if (img.size() == 0 || d_height == 0) // Make sure we aren't just gonna crash
         {
             logger->trace("Tried to save empty JPEG!");
             return;
@@ -206,20 +190,20 @@ namespace image
         {
             for (int i = 0; i < (int)d_width * (int)d_height; i++)
                 for (int c = 0; c < cinfo.num_components; c++)
-                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i];
+                    jpeg_decomp[i * cinfo.num_components + c] = img.get(c, i);
         }
         else if (d_depth == 16)
         {
             for (int i = 0; i < (int)d_width * (int)d_height; i++)
                 for (int c = 0; c < cinfo.num_components; c++)
-                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i] >> 8; // Scale down to 8 if required
+                    jpeg_decomp[i * cinfo.num_components + c] = img.get(c, i) >> 8; // Scale down to 8 if required
         }
 
         // Apply transparency, if applicable
         if (d_channels == 4)
             for (int i = 0; i < (int)d_width * (int)d_height; i++)
                 for (int c = 0; c < cinfo.num_components; c++)
-                    jpeg_decomp[i * cinfo.num_components + c] *= (float)channel(3)[i] / std::numeric_limits<T>::max();
+                    jpeg_decomp[i * cinfo.num_components + c] *= (float)img.get(3, i) / img.maxval();
 
         // Compress
         while (cinfo.next_scanline < cinfo.image_height)
@@ -237,6 +221,7 @@ namespace image
         delete[] jpeg_decomp;
     }
 
+    // Declaration is in jpeg_utils.h
     namespace
     {
         std::vector<uint8_t> j_buffer;
@@ -266,11 +251,15 @@ namespace image
         std::mutex jpeg_mem_mtex;
     }
 
-    template <typename T>
-    std::vector<uint8_t> Image<T>::save_jpeg_mem()
+    std::vector<uint8_t> save_jpeg_mem(Image &img)
     {
+        auto d_depth = img.depth();
+        auto d_channels = img.channels();
+        auto d_height = img.height();
+        auto d_width = img.width();
+
         jpeg_mem_mtex.lock();
-        if (data_size == 0 || d_height == 0) // Make sure we aren't just gonna crash
+        if (img.size() == 0 || d_height == 0) // Make sure we aren't just gonna crash
         {
             logger->trace("Tried to save empty JPEG!");
             jpeg_mem_mtex.unlock();
@@ -318,13 +307,13 @@ namespace image
         {
             for (int i = 0; i < (int)d_width * (int)d_height; i++)
                 for (int c = 0; c < cinfo.num_components; c++)
-                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i];
+                    jpeg_decomp[i * cinfo.num_components + c] = img.get(c, i);
         }
         else if (d_depth == 16)
         {
             for (int i = 0; i < (int)d_width * (int)d_height; i++)
                 for (int c = 0; c < cinfo.num_components; c++)
-                    jpeg_decomp[i * cinfo.num_components + c] = channel(c)[i] >> 8; // Scale down to 8 if required
+                    jpeg_decomp[i * cinfo.num_components + c] = img.get(c, i) >> 8; // Scale down to 8 if required
         }
 
         // Compress
@@ -344,8 +333,4 @@ namespace image
         jpeg_mem_mtex.unlock();
         return j_buffer;
     }
-
-    // Generate Images for uint16_t and uint8_t
-    template class Image<uint8_t>;
-    template class Image<uint16_t>;
 }

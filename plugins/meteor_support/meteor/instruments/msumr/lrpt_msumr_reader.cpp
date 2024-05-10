@@ -55,7 +55,7 @@ namespace meteor
                     return;
 
                 Segment newSeg(&packet.payload.data()[0], packet.payload.size(),
-                    packet.payload.size() - 1 != packet.header.packet_length, meteorm2x_mode);
+                               packet.payload.size() - 1 != packet.header.packet_length, meteorm2x_mode);
 
                 if (!newSeg.isValid())
                     return;
@@ -95,7 +95,7 @@ namespace meteor
                 segments[currentChannel][id] = newSeg;
             }
 
-            image::Image<uint8_t> MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
+            image::Image MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
             {
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
@@ -115,11 +115,11 @@ namespace meteor
                 lastSeg_l -= lastSeg_l % 14;
 
                 lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
-                image::Image<uint8_t> ret = image::Image<uint8_t>(1568, lines[channel], 1);
+                image::Image ret(8, 1568, lines[channel], 1);
 
                 std::set<uint32_t> bad_px;
                 uint32_t index = 0;
-                if(lastSeg_l != 0)
+                if (lastSeg_l != 0)
                     timestamps.clear();
                 for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
                 {
@@ -131,9 +131,9 @@ namespace meteor
                             if (segments[channel][x + j].isValid())
                             {
                                 for (int f = 0; f < 14 * 8; f++)
-                                    ret[index + f] = segments[channel][x + j].lines[i][f];
+                                    ret.set(index + f, segments[channel][x + j].lines[i][f]);
 
-                                if(segments[channel][x + j].partial)
+                                if (segments[channel][x + j].partial)
                                     for (uint32_t f = 0; f < 14 * 8; f++)
                                         bad_px.insert(index + f);
 
@@ -146,7 +146,7 @@ namespace meteor
                             {
                                 for (uint32_t f = 0; f < 14 * 8; f++)
                                 {
-                                    ret[index + f] = 0;
+                                    ret.set(index + f, 0);
                                     bad_px.insert(index + f);
                                 }
                             }
@@ -179,12 +179,12 @@ namespace meteor
                                     size_t range = y - last_good;
                                     if (last_good != -1 && range <= max_correct)
                                     {
-                                        uint8_t top_val = ret[last_good * width + x];
-                                        uint8_t bottom_val = ret[y * width + x];
+                                        uint8_t top_val = ret.get(last_good * width + x);
+                                        uint8_t bottom_val = ret.get(y * width + x);
                                         for (size_t fix_y = 1; fix_y < range; fix_y++)
                                         {
                                             float percent = (float)fix_y / (float)range;
-                                            ret[(fix_y + last_good) * width + x] = (1.0f - percent) * (float)top_val + percent * (float)bottom_val;
+                                            ret.set((fix_y + last_good) * width + x, (1.0f - percent) * (float)top_val + percent * (float)bottom_val);
                                         }
                                     }
                                     found_bad = false;

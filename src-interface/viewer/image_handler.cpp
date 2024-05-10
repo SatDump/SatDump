@@ -16,8 +16,11 @@
 #include "main_ui.h"
 #include "common/image/brightness_contrast.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 #include "common/projection/reprojector.h"
+
+#include "common/image/processing.h"
+#include "common/image/image_lut.h"
 
 namespace satdump
 {
@@ -58,7 +61,7 @@ namespace satdump
         // Setup correction factors.
         updateCorrectionFactors(true);
 
-        lut_image = image::LUT_jet<uint16_t>();
+        lut_image = image::LUT_jet<uint8_t>();
         asyncUpdate();
 
         try
@@ -110,46 +113,47 @@ namespace satdump
             current_timestamps = products->get_timestamps(select_image_id - 1);
 
         if (median_blur)
-            current_image.median_blur();
+            image::median_blur(current_image);
 
         if (despeckle)
-            current_image.kuwahara_filter();
+            image::kuwahara_filter(current_image);
 
         if (rotate_image)
             current_image.mirror(true, true);
 
         if (equalize_image)
-            current_image.equalize();
+            image::equalize(current_image);
 
         if (individual_equalize_image)
-            current_image.equalize(true);
+            image::equalize(current_image, true);
 
         if (white_balance_image)
-            current_image.white_balance();
+            image::white_balance(current_image);
 
         if (invert_image)
-            current_image.linear_invert();
+            image::linear_invert(current_image);
 
         if (normalize_image)
-            current_image.normalize();
+            image::normalize(current_image);
 
         if (manual_brightness_contrast)
-            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast, current_image.channels());
+            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
 
         // TODO : Cleanup?
         if (using_lut)
         {
             if (current_image.channels() < 3)
                 current_image.to_rgb();
+            if (current_image.depth() != lut_image.depth())
+                current_image = current_image.to_depth(lut_image.depth());
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
-                uint16_t val = current_image[i];
-                val = (float(val) / 65535.0) * lut_image.width();
+                int val = current_image.getf(i) * lut_image.width();
                 if (val >= lut_image.width())
                     val = lut_image.width() - 1;
-                current_image.channel(0)[i] = lut_image.channel(0)[val];
-                current_image.channel(1)[i] = lut_image.channel(1)[val];
-                current_image.channel(2)[i] = lut_image.channel(2)[val];
+                current_image.set(0, i, lut_image.get(0, val));
+                current_image.set(1, i, lut_image.get(1, val));
+                current_image.set(2, i, lut_image.get(2, val));
             }
         }
 
@@ -164,7 +168,7 @@ namespace satdump
         {
             corrected_stuff.resize(current_image.width());
             bool success = false;
-            image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
+            image::Image cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
             if (success)
                 current_image = cor;
             if (!success)
@@ -230,10 +234,7 @@ namespace satdump
             overlay_handler.apply(current_image, proj_func);
         }
 
-        //        projection_ready = false;
-
         image_view.update(current_image);
-        // current_image.clear();
 
         // Tooltip function
         image_view.mouseCallback = [this](int x, int y)
@@ -246,7 +247,7 @@ namespace satdump
                     y = current_image.height() - 1 - y;
                 }
 
-                int raw_value = products->images[active_channel_id].image[y * products->images[active_channel_id].image.width() + (correct_image ? correction_factors[x] : x)] >> (16 - products->bit_depth);
+                int raw_value = products->images[active_channel_id].image.get(0, correct_image ? correction_factors[x] : x, y) >> (products->images[active_channel_id].image.depth() - products->bit_depth);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
@@ -326,7 +327,7 @@ namespace satdump
                     remove_background = rgb_compo_cfg.remove_background;
                     using_lut = rgb_compo_cfg.apply_lut;
 
-                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
+                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
@@ -595,19 +596,19 @@ namespace satdump
                 handler_thread_pool.clear_queue();
                 handler_thread_pool.push([this](int)
                                          {   async_image_mutex.lock();
-                        is_updating = true;
-                        logger->info("Saving Image...");
-                        std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_" +
-                            (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                            default_path, "Save Image", &current_image, &viewer_app->save_type);
+                         is_updating = true;
+                         logger->info("Saving Image...");
+                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+                         std::string saved_at = save_image_dialog(products->instrument_name + "_" +
+                             (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
+                             default_path, "Save Image", &current_image, &viewer_app->save_type);
 
-                        if (saved_at == "")
-                            logger->info("Save cancelled");
-                        else
-                            logger->info("Saved current image at %s", saved_at.c_str());
-                        is_updating = false;
-                        async_image_mutex.unlock(); });
+                         if (saved_at == "")
+                             logger->info("Save cancelled");
+                         else
+                             logger->info("Saved current image at %s", saved_at.c_str());
+                         is_updating = false;
+                         async_image_mutex.unlock(); });
             }
             if (save_disabled)
             {
@@ -796,22 +797,21 @@ namespace satdump
 
     void ImageViewerHandler::updateScaleImage()
     {
-        scale_image = image::Image<uint16_t>(25, 512, 3);
+        scale_image = image::Image(16, 25, 512, 3);
         for (int i = 0; i < 512; i++)
         {
             for (int x = 0; x < 25; x++)
             {
-                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
+                std::vector<double> color = {double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0};
 
                 if (using_lut)
                 {
-                    uint16_t val = color[0];
-                    val = (float(val) / 65535.0) * lut_image.width();
+                    uint16_t val = color[0] * lut_image.width();
                     if (val >= lut_image.width())
                         val = lut_image.width() - 1;
-                    color[0] = lut_image.channel(0)[val];
-                    color[1] = lut_image.channel(1)[val];
-                    color[2] = lut_image.channel(2)[val];
+                    color[0] = lut_image.getf(0, val);
+                    color[1] = lut_image.getf(1, val);
+                    color[2] = lut_image.getf(2, val);
                 }
 
                 scale_image.draw_pixel(x, i, color);

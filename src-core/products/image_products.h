@@ -15,7 +15,7 @@ namespace satdump
         {
             std::string filename;                                   // Filename & path of the image. Relative to the product file
             std::string channel_name;                               // Name of the channel, this is usually just a number but can be a string
-            image::Image<uint16_t> image;                           // The image itself
+            image::Image image;                                    // The image itself
             std::vector<double> timestamps = std::vector<double>(); // Timestamps of each image segment. What this means can heavily vary
             int ifov_y = -1;                                        // Size of an IFOV (image segment) in height
             int ifov_x = -1;                                        // Size of an IFOV (image segment) in width
@@ -280,7 +280,7 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y, bool temp = false);
 
-        image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
+        image::Image get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
         bool d_no_not_save_images = false;
@@ -291,7 +291,7 @@ namespace satdump
         ~ImageProducts();
 
     private:
-        std::map<int, image::Image<uint16_t>> calibrated_img_cache;
+        std::map<int, image::Image> calibrated_img_cache;
         std::mutex calib_mutex;
         std::shared_ptr<CalibratorBase> calibrator_ptr = nullptr;
         std::vector<calib_type_t> calibration_type_lut;
@@ -412,9 +412,9 @@ namespace satdump
     struct RequestCppCompositeEvent
     {
         std::string id;
-        std::vector<std::function<image::Image<uint16_t>(
+        std::vector<std::function<image::Image(
             satdump::ImageProducts *,
-            std::vector<image::Image<uint16_t>> &,
+            std::vector<image::Image> &,
             std::vector<std::string>,
             std::string,
             nlohmann::json,
@@ -424,8 +424,8 @@ namespace satdump
         satdump::ImageProducts *img_pro;
     };
 
-    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
-    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);
+    image::Image make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
+    image::Image perform_geometric_correction(ImageProducts &product, image::Image img, bool &success, float *foward_table = nullptr);
 
     std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width);
 }

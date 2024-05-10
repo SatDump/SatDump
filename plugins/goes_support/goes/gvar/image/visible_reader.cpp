@@ -1,6 +1,6 @@
 #include "visible_reader.h"
 
-#define WIDTH 20944 //30000//20824
+#define WIDTH 20944 // 30000//20824
 #define HEIGHT (1354 * 8)
 
 namespace goes
@@ -42,7 +42,7 @@ namespace goes
                 byteBufShift[3] = data[pos + 3] << posb | data[pos + 4] >> (8 - posb);
                 byteBufShift[4] = data[pos + 4] << posb | data[pos + 5] >> (8 - posb);
 
-                //data_out.write((char *)&byteBufShift[0], 4);
+                // data_out.write((char *)&byteBufShift[0], 4);
 
                 imageLineBuffer[i] = (byteBufShift[0] << 2) | (byteBufShift[1] >> 6);
                 imageLineBuffer[i + 1] = ((byteBufShift[1] % 64) << 4) | (byteBufShift[2] >> 4);
@@ -60,7 +60,7 @@ namespace goes
             }
         }
 
-        image::Image<uint16_t> VisibleReader::getImage()
+        image::Image VisibleReader::getImage()
         {
             // Fill missing lines by averaging above and below line
             for (int y = 1; y < HEIGHT - 1; y++)
@@ -77,7 +77,7 @@ namespace goes
                 }
             }
 
-            return image::Image<uint16_t>(&imageBuffer[0], WIDTH, HEIGHT, 1);
+            return image::Image(&imageBuffer[0], 16, WIDTH, HEIGHT, 1);
         }
     }
 }

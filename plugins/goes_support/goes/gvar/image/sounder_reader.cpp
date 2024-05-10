@@ -59,9 +59,9 @@ namespace goes
             }
         }
 
-        image::Image<uint16_t> SounderReader::getImage(int channel)
+        image::Image SounderReader::getImage(int channel)
         {
-            return image::Image<uint16_t>(channels[channel], WIDTH, HEIGHT, 1);
+            return image::Image(channels[channel], 16, WIDTH, HEIGHT, 1);
         }
     }
 }

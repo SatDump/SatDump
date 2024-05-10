@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/image/io.h"
 
 #include <thread>
 
@@ -92,7 +93,8 @@ namespace jason3
 
                 for (int i = 0; i < 3; i++)
                 {
-                    WRITE_IMAGE(amr2_reader.getChannel(i), directory + "/AMR2-" + std::to_string(i + 1));
+                    auto img = amr2_reader.getChannel(i);
+                    image::save_img(img, directory + "/AMR2-" + std::to_string(i + 1));
                 }
                 amr2_status = DONE;
             }

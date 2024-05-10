@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include "logger.h"
+#include "io.h"
 
 namespace image
 {
@@ -11,7 +12,7 @@ namespace image
     {
     private:
         std::thread saving_thread;
-        std::vector<std::pair<Image<uint16_t>, std::string>> queue;
+        std::vector<std::pair<Image, std::string>> queue;
         std::mutex queue_mutex;
 
         bool thread_should_run = true;
@@ -32,7 +33,7 @@ namespace image
 
                     // logger->debug("Queue length %d", queue.size());
                     logger->info("Saving " + img.second);
-                    img.first.save_img(img.second);
+                    save_img(img.first, img.second);
                     continue;
                 }
 
@@ -57,7 +58,7 @@ namespace image
                 saving_thread.join();
         }
 
-        void push(Image<uint16_t> &img, std::string path)
+        void push(Image &img, std::string path)
         {
             if (use_thread)
             {
@@ -68,7 +69,7 @@ namespace image
             else
             {
                 logger->info("Saving " + path);
-                img.save_img(path);
+                save_img(img, path);
             }
         }
     };

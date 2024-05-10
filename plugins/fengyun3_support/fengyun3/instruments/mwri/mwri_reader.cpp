@@ -64,9 +64,9 @@ namespace fengyun3
             }
         }
 
-        image::Image<uint16_t> MWRIReader::getChannel(int channel)
+        image::Image MWRIReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].buf, 266, lines, 1);
+            return image::Image(channels[channel].buf, 16, 266, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

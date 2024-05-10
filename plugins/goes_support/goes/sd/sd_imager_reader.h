@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include "common/image/image.h"
+#include <string>
 
 #define FULL_BUF_SZ 200
 
@@ -33,7 +34,7 @@ namespace goes
         public:
             SDImagerReader();
             void work(uint16_t *words);
-            image::Image<uint16_t> getChannel(int c);
+            image::Image getChannel(int c);
             void try_save(std::string directory, bool force = false);
         };
     }

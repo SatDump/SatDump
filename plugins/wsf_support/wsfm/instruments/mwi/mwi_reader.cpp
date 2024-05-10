@@ -63,9 +63,9 @@ namespace wsfm
             }
         }
 
-        image::Image<uint16_t> MWIReader::getChannel(int channel)
+        image::Image MWIReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 571, lines, 1);
+            return image::Image(channels[channel].data(), 16, 571, lines, 1);
         }
     }
 }

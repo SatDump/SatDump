@@ -21,8 +21,8 @@ namespace aqua
             int lines;
             std::vector<std::vector<double>> timestamps_ifov;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannel(int channel);
-            image::Image<uint16_t> getHDChannel(int channel);
+            image::Image getChannel(int channel);
+            image::Image getHDChannel(int channel);
         };
     } // namespace airs
 } // namespace aqua

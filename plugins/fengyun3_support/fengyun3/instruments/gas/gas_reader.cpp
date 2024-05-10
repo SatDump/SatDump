@@ -37,9 +37,9 @@ namespace fengyun3
             lines++;
         }
 
-        image::Image<uint16_t> GASReader::getChannel()
+        image::Image GASReader::getChannel()
         {
-            return image::Image<uint16_t>(imageBuffer, 335202, lines, 1);
+            return image::Image(imageBuffer, 16, 335202, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

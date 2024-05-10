@@ -94,7 +94,7 @@ namespace fengyun3
             MERSIReader();
             ~MERSIReader();
             void work(uint8_t *data, int size);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
         };
 
         class MERSI1Reader : public MERSIReader

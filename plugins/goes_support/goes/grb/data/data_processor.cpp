@@ -65,9 +65,9 @@ namespace goes
             return utc_filename;
         }
 
-        image::Image<uint16_t> GRBDataProcessor::get_image_product(GRBFilePayload &payload)
+        image::Image GRBDataProcessor::get_image_product(GRBFilePayload &payload)
         {
-            image::Image<uint16_t> img;
+            image::Image img;
 
             if (payload.sec_header.grb_payload_variant == IMAGE || payload.sec_header.grb_payload_variant == IMAGE_WITH_DQF)
             {
@@ -75,7 +75,7 @@ namespace goes
                 int size = std::min<int>(image_header.byte_offset_dqf, payload.payload.size() - 34);
 
                 if (image_header.compression_algorithm == NO_COMPRESSION)
-                    img = image::Image<uint16_t>((uint16_t *)&payload.payload[34], image_header.image_block_width, image_header.image_block_height - image_header.row_offset_image_block, 1);
+                    img = image::Image((uint16_t *)&payload.payload[34], 16, image_header.image_block_width, image_header.image_block_height - image_header.row_offset_image_block, 1);
                 else if (image_header.compression_algorithm == JPEG_2000)
                     img = image::decompress_j2k_openjp2(&payload.payload[34], size);
                 else if (image_header.compression_algorithm == SZIP)
@@ -95,7 +95,7 @@ namespace goes
             {
                 // Extract image block and image header
                 GRBImagePayloadHeader image_header(&payload.payload[0]);
-                image::Image<uint16_t> block = get_image_product(payload);
+                image::Image block = get_image_product(payload);
                 abi_image_assemblers[payload.apid]->pushBlock(image_header, block);
             }
             else
@@ -132,7 +132,7 @@ namespace goes
             {
                 // Extract image block and image header
                 GRBImagePayloadHeader image_header(&payload.payload[0]);
-                image::Image<uint16_t> block = get_image_product(payload);
+                image::Image block = get_image_product(payload);
                 suvi_image_assemblers[payload.apid]->pushBlock(image_header, block);
             }
             else

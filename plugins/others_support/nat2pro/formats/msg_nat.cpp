@@ -3,6 +3,7 @@
 #include "products/image_products.h"
 #include "common/repack.h"
 #include "logger.h"
+#include "common/image/io.h"
 
 namespace nat2pro
 {
@@ -103,13 +104,13 @@ namespace nat2pro
         char bandsel[16];
         sscanf(mh_strs[39].c_str(), "%*s : %s", bandsel);
 
-        image::Image<uint16_t> vis_ir_imgs[12];
+        image::Image vis_ir_imgs[12];
         for (int channel = 0; channel < 12; channel++)
         {
             if (bandsel[channel] != 'X')
                 continue;
 
-            vis_ir_imgs[channel].init((channel == 11 ? hrv_x_size : vis_ir_x_size), (channel == 11 ? hrv_y_size : vis_ir_y_size), 1);
+            vis_ir_imgs[channel].init(16, (channel == 11 ? hrv_x_size : vis_ir_x_size), (channel == 11 ? hrv_y_size : vis_ir_y_size), 1);
         }
 
         // Read Trailer
@@ -165,7 +166,7 @@ namespace nat2pro
                     if (channel < 11)
                     {
                         for (int x = 0; x < vis_ir_x_size; x++)
-                            vis_ir_imgs[channel][line * vis_ir_x_size + x] = repacked_line[x] << 6;
+                            vis_ir_imgs[channel].set(line * vis_ir_x_size + x, repacked_line[x] << 6);
                     }
                     else
                     {
@@ -175,13 +176,13 @@ namespace nat2pro
                             {
                                 int xpos = x + UpperEastColumnActual;
                                 if (xpos >= 0 && xpos < hrv_x_size)
-                                    vis_ir_imgs[channel][(line * 3 + i) * hrv_x_size + xpos] = repacked_line[x] << 6;
+                                    vis_ir_imgs[channel].set((line * 3 + i) * hrv_x_size + xpos, repacked_line[x] << 6);
                             }
                             else
                             {
                                 int xpos = x + LowerEastColumnActual;
                                 if (xpos >= 0 && xpos < hrv_x_size)
-                                    vis_ir_imgs[channel][(line * 3 + i) * hrv_x_size + xpos] = repacked_line[x] << 6;
+                                    vis_ir_imgs[channel].set((line * 3 + i) * hrv_x_size + xpos, repacked_line[x] << 6);
                             }
                         }
                     }
@@ -233,13 +234,13 @@ namespace nat2pro
 
         // Write composite
         std::string path = "SEVIRI_321";
-        image::Image<uint16_t> compo_321(vis_ir_x_size, vis_ir_y_size, 3);
+        image::Image compo_321(16, vis_ir_x_size, vis_ir_y_size, 3);
 
         compo_321.draw_image(0, vis_ir_imgs[2]);
         compo_321.draw_image(1, vis_ir_imgs[1]);
         compo_321.draw_image(2, vis_ir_imgs[0]);
 
         logger->info("Saving " + path);
-        compo_321.save_png(path + ".png");
+        image::save_png(compo_321, path + ".png");
     }
 }

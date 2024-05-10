@@ -93,9 +93,9 @@ namespace jpss
             }
         }
 
-        image::Image<uint16_t> OMPSLimbReader::getChannel(int channel)
+        image::Image OMPSLimbReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 6, lines, 1);
+            return image::Image(channels[channel].data(), 16, 6, lines, 1);
         }
     } // namespace atms
 } // namespace jpss

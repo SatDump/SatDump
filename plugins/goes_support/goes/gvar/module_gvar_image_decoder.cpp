@@ -12,6 +12,7 @@
 #include "common/image/hue_saturation.h"
 #include "common/image/brightness_contrast.h"
 #include "common/thread_priority.h"
+#include "common/image/io.h"
 
 #define FRAME_SIZE 32786
 
@@ -50,7 +51,10 @@ namespace goes
             std::string directory_d = directory_snd + "/" + timestamp;
 
             for (int i = 0; i < 19; i++)
-                sounderReader.getImage(i).save_img(directory_d + "/Sounder_" + std::to_string(i + 1));
+            {
+                auto img = sounderReader.getImage(i);
+                image::save_img(img, directory_d + "/Sounder_" + std::to_string(i + 1));
+            }
 
             sounderReader.clear();
         }
@@ -117,11 +121,11 @@ namespace goes
             images.image3.crop(0, 0, ir1_width, ir1_height);
             images.image4.crop(0, 0, ir1_width, ir1_height);
 
-            images.image5.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1")).c_str(), false);
-            images.image1.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2")).c_str());
-            images.image2.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3")).c_str());
-            images.image3.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4")).c_str());
-            images.image4.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5")).c_str());
+            image::save_img(images.image5, std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "1")).c_str(), false);
+            image::save_img(images.image1, std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "2")).c_str());
+            image::save_img(images.image2, std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "3")).c_str());
+            image::save_img(images.image3, std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "4")).c_str());
+            image::save_img(images.image4, std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "5")).c_str());
 
             // Let plugins do something
             satdump::eventBus->fire_event<events::GVARSaveChannelImagesEvent>({images, timeReadable, timevalue, disk_folder});
@@ -135,39 +139,39 @@ namespace goes
             if (resources::resourceExists("goes/gvar/lut.png"))
             {
                 logger->trace("Scale Ch1 to 8-bits...");
-                image::Image<uint8_t> channel1(images.image5.width(), images.image5.height(), 1);
+                image::Image channel1(8, images.image5.width(), images.image5.height(), 1);
                 for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
-                    channel1[i] = images.image5[i] / 255;
+                    channel1.set(i, images.image5.get(i) / 255);
                 images.image5.clear(); // We're done with Ch1. Free up memory
 
                 logger->trace("Scale Ch4 to 8-bits...");
-                image::Image<uint8_t> channel4(images.image3.width(), images.image3.height(), 1);
+                image::Image channel4(8, images.image3.width(), images.image3.height(), 1);
                 for (size_t i = 0; i < channel4.width() * channel4.height(); i++)
-                    channel4[i] = images.image3[i] / 255;
+                    channel4.set(i, images.image3.get(i) / 255);
                 images.image3.clear(); // We're done with Ch4. Free up memory
 
                 logger->trace("Resize images...");
                 channel4.resize(channel1.width(), channel1.height());
 
                 logger->trace("Loading LUT...");
-                image::Image<uint8_t> lutImage;
-                lutImage.load_png(resources::getResourcePath("goes/gvar/lut.png").c_str());
+                image::Image lutImage;
+                image::load_png(lutImage, resources::getResourcePath("goes/gvar/lut.png").c_str());
                 lutImage.resize(256, 256);
 
                 logger->trace("Loading correction curve...");
-                image::Image<uint8_t> curveImage;
-                curveImage.load_png(resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
+                image::Image curveImage;
+                image::load_png(curveImage, resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
 
-                image::Image<uint8_t> compoImage = image::Image<uint8_t>(channel1.width(), channel1.height(), 3);
+                image::Image compoImage(8, channel1.width(), channel1.height(), 3);
 
                 logger->trace("Applying LUT...");
                 for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
                 {
-                    uint8_t x = 255 - curveImage[channel1[i]] / 1.5;
-                    uint8_t y = channel4[i];
+                    uint8_t x = 255 - curveImage.get(channel1.get(i)) / 1.5;
+                    uint8_t y = channel4.get(i);
 
                     for (int c = 0; c < 3; c++)
-                        compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
+                        compoImage.set(c * compoImage.width() * compoImage.height() + i, lutImage.get(c * lutImage.width() * lutImage.height() + x * lutImage.width() + y));
                 }
 
                 logger->trace("Contrast correction...");
@@ -178,7 +182,7 @@ namespace goes
                 hueTuning.hue[image::HUE_RANGE_MAGENTA] = 133.0 / 180.0;
                 hueTuning.overlap = 100.0 / 100.0;
                 image::hue_saturation(compoImage, hueTuning);
-                compoImage.save_img(std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC")).c_str());
+                image::save_img(compoImage, std::string(disk_folder + "/" + getGvarFilename(sat_number, timeReadable, "FC")).c_str());
 
                 // Let plugins do something
                 satdump::eventBus->fire_event<events::GVARSaveFCImageEvent>({compoImage, images.sat_number, timeReadable, timevalue, disk_folder});

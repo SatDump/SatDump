@@ -9,21 +9,21 @@
 #include <direct.h>
 #endif
 
+#include "common/image/io.h"
+
 namespace satdump
 {
-    template <typename T>
-    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image<T> *image, std::string *default_ext)
+    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image *image, std::string *default_ext)
     {
         std::vector<std::string> saveopts = {
             "PNG Files", "*.png",
             "JPEG 2000 Files", "*.j2k",
             "JPEG Files", "*.jpg *.jpeg",
             "PBM Files", "*.pbm *.pgm *.ppm",
-            "TIFF Files", "*.tif *.tiff *.gtif"
-        };
+            "TIFF Files", "*.tif *.tiff *.gtif"};
 
         size_t i = 1;
-        for (auto it = saveopts.begin() + 1 ;; it += 2)
+        for (auto it = saveopts.begin() + 1;; it += 2)
         {
             std::stringstream ss(*it);
             std::string token;
@@ -43,7 +43,7 @@ namespace satdump
                 break;
         }
 
-done_ext:
+    done_ext:
 #ifdef __ANDROID__
         *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
 #endif
@@ -75,18 +75,15 @@ done_ext:
         if (result.result().size() > 0)
         {
             path = result.result();
-            image->save_img(path);
+            image::save_img(*image, path);
             std::string extension = std::filesystem::path(path).extension().string();
             if (extension.size() > 1)
                 *default_ext = extension.substr(1);
         }
 #else
         path = save_name;
-        image->save_img(save_name);
+        image::save_img(*image, save_name);
 #endif
         return path;
     }
-
-    template std::string save_image_dialog<uint8_t>(std::string default_name, std::string default_path, std::string window_title, image::Image<uint8_t> *image, std::string *default_ext);
-    template std::string save_image_dialog<uint16_t>(std::string default_name, std::string default_path, std::string window_title, image::Image<uint16_t> *image, std::string *default_ext);
 }

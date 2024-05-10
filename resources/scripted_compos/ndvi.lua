@@ -2,9 +2,9 @@
 
 function init()
     --create an empty image for the LUT
-    img_lut = image8.new()
+    img_lut = image_t.new()
     --load the LUT
-    img_lut:load_png(get_resource_path("lut/NDVI.png"))
+    image_load_png(img_lut, get_resource_path("lut/NDVI.png"))
     --return 3 channels, RGB
     return 3
 end

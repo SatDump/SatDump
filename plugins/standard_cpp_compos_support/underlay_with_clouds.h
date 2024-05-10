@@ -7,29 +7,30 @@
 
 #include "common/projection/sat_proj/sat_proj.h"
 #include "common/projection/projs/equirectangular.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
 
 namespace cpp_compos
 {
-    image::Image<uint16_t> underlay_with_clouds(satdump::ImageProducts *img_pro,
-                                                std::vector<image::Image<uint16_t>> &inputChannels,
-                                                std::vector<std::string> channelNumbers,
-                                                std::string cpp_id,
-                                                nlohmann::json vars,
-                                                nlohmann::json offsets_cfg,
-                                                std::vector<double> *final_timestamps = nullptr,
-                                                float *progress = nullptr)
+    image::Image underlay_with_clouds(satdump::ImageProducts *img_pro,
+                                      std::vector<image::Image> &inputChannels,
+                                      std::vector<std::string> channelNumbers,
+                                      std::string cpp_id,
+                                      nlohmann::json vars,
+                                      nlohmann::json offsets_cfg,
+                                      std::vector<double> *final_timestamps = nullptr,
+                                      float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
-        image::Image<uint8_t> img_background;
-        img_background.load_img(resources::getResourcePath("maps/nasa_hd.jpg"));
+        image::Image img_background;
+        image::load_img(img_background, resources::getResourcePath("maps/nasa_hd.jpg"));
         geodetic::projection::EquirectangularProjection equp;
         equp.init(img_background.width(), img_background.height(), -180, 90, 180, -90);
         int map_x, map_y;
 
         // return 3 channels, RGB
-        image::Image<uint16_t> rgb_output(f.maxWidth, f.maxHeight, 3);
-        uint16_t *channelVals = new uint16_t[inputChannels.size()];
+        image::Image rgb_output(f.img_depth, f.maxWidth, f.maxHeight, 3);
 
         geodetic::geodetic_coords_t coords;
         auto proj_cfg = img_pro->get_proj_cfg();
@@ -46,7 +47,7 @@ namespace cpp_compos
         size_t background_size = img_background.width() * img_background.height();
 
         auto &ch_equal = inputChannels[0];
-        ch_equal.equalize();
+        image::equalize(ch_equal);
         float val = 0;
 
         float proj_x_scale = 1.0;
@@ -66,9 +67,9 @@ namespace cpp_compos
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 
                     if (cfg_invert)
-                        val = 1.0 - ((ch_equal[(y * width) + x] / 65535.0) - cfg_offset) * cfg_scalar;
+                        val = 1.0 - (ch_equal.getf((y * width) + x) - cfg_offset) * cfg_scalar;
                     else
-                        val = ((ch_equal[(y * width) + x] / 65535.0) - cfg_offset) * cfg_scalar;
+                        val = (ch_equal.getf((y * width) + x) - cfg_offset) * cfg_scalar;
 
                     if (val > 1)
                         val = 1;
@@ -87,9 +88,9 @@ namespace cpp_compos
                     {
                         for (int c = 0; c < 3; c++)
                         {
-                            float mval = img_background[background_size * c + mappos] / 255.0;
+                            float mval = img_background.getf(background_size * c + mappos);
                             float fval = mval * (1.0 - val) + val * val;
-                            rgb_output.channel(c)[y * rgb_output.width() + x] = rgb_output.clamp(fval * 65535);
+                            rgb_output.setf(c, y * rgb_output.width() + x, rgb_output.clampf(fval));
                         }
                     }
                     else
@@ -98,9 +99,9 @@ namespace cpp_compos
                         {
                             for (int c = 0; c < 3; c++)
                             {
-                                float mval = img_background[background_size * c + mappos] / 255.0;
+                                float mval = img_background.getf(background_size * c + mappos);
                                 float fval = mval * 0.4 + val * 0.6;
-                                rgb_output.channel(c)[y * rgb_output.width() + x] = rgb_output.clamp(fval * 65535);
+                                rgb_output.setf(c, y * rgb_output.width() + x, rgb_output.clampf(fval));
                             }
                         }
                         else
@@ -109,17 +110,17 @@ namespace cpp_compos
                             {
                                 for (int c = 0; c < 3; c++)
                                 {
-                                    float fval = img_background[background_size * c + mappos] / 255.0;
-                                    rgb_output.channel(c)[y * rgb_output.width() + x] = rgb_output.clamp(fval * 65535);
+                                    float fval = img_background.getf(background_size * c + mappos);
+                                    rgb_output.setf(c, y * rgb_output.width() + x, rgb_output.clampf(fval));
                                 }
                             }
                             else
                             {
                                 for (int c = 0; c < 3; c++)
                                 {
-                                    float mval = img_background[background_size * c + mappos] / 255.0;
+                                    float mval = img_background.getf(background_size * c + mappos);
                                     float fval = mval * 0.4 + val * 0.6;
-                                    rgb_output.channel(c)[y * rgb_output.width() + x] = rgb_output.clamp(fval * 65535);
+                                    rgb_output.setf(c, y * rgb_output.width() + x, rgb_output.clampf(fval));
                                 }
                             }
                         }
@@ -127,9 +128,9 @@ namespace cpp_compos
                 }
                 else
                 {
-                    rgb_output.channel(0)[y * rgb_output.width() + x] = 0;
-                    rgb_output.channel(1)[y * rgb_output.width() + x] = 0;
-                    rgb_output.channel(2)[y * rgb_output.width() + x] = 0;
+                    rgb_output.setf(0, y * rgb_output.width() + x, 0);
+                    rgb_output.setf(1, y * rgb_output.width() + x, 0);
+                    rgb_output.setf(2, y * rgb_output.width() + x, 0);
                 }
             }
 
@@ -137,8 +138,6 @@ namespace cpp_compos
             if (progress != nullptr)
                 *progress = double(x) / double(rgb_output.width());
         }
-
-        delete[] channelVals;
 
         return rgb_output;
     }

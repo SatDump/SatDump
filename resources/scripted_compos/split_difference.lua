@@ -6,8 +6,8 @@ function init()
     denominator = (lua_vars["maxval"] - lua_vars["minval"]) / lua_vars["input_range"]
 
     --create an empty image for the LUT and load
-    img_lut = image8.new()
-    img_lut:load_png(get_resource_path(lua_vars["lut"]), false)
+    img_lut = image_t.new()
+    image_load_png(img_lut, get_resource_path(lua_vars["lut"]))
 
     --return 3 channels, RGB
     return 3
@@ -37,18 +37,10 @@ function process()
                 lutval = 255
             end
 
-            --don't forget to create a table!
-            local lut_result = {}
-
-            --send the lutval to the LUT, retrieve it back in the table as 3 R,G,B channels
-            lut_result[0] = img_lut:get(0 * img_lut:height() * img_lut:width() + lutval) / 255.0
-            lut_result[1] = img_lut:get(1 * img_lut:height() * img_lut:width() + lutval) / 255.0
-            lut_result[2] = img_lut:get(2 * img_lut:height() * img_lut:width() + lutval) / 255.0
-
             --return RGB 0=R 1=G 2=B
-            set_img_out(0, x, y, lut_result[0])
-            set_img_out(1, x, y, lut_result[1])
-            set_img_out(2, x, y, lut_result[2])
+            set_img_out(0, x, y, img_lut:get(lutval) / 255.0)
+            set_img_out(1, x, y, img_lut:get(1 * img_lut:height() * img_lut:width() + lutval) / 255.0)
+            set_img_out(2, x, y, img_lut:get(2 * img_lut:height() * img_lut:width() + lutval) / 255.0)
 
         end
         --set the progress bar accordingly

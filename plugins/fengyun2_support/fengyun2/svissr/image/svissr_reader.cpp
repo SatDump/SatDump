@@ -141,7 +141,7 @@ namespace fengyun_svissr
         goodLines[counter] = true;
     }
 
-    image::Image<uint16_t> SVISSRReader::getImageIR1()
+    image::Image SVISSRReader::getImageIR1()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -158,10 +158,10 @@ namespace fengyun_svissr
             }
         }
 
-        return image::Image<uint16_t>(&imageBufferIR1[0], WIDTH_IR, MAX_HEIGHT, 1);
+        return image::Image(&imageBufferIR1[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    image::Image<uint16_t> SVISSRReader::getImageIR2()
+    image::Image SVISSRReader::getImageIR2()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -178,10 +178,10 @@ namespace fengyun_svissr
             }
         }
 
-        return image::Image<uint16_t>(&imageBufferIR2[0], WIDTH_IR, MAX_HEIGHT, 1);
+        return image::Image(&imageBufferIR2[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    image::Image<uint16_t> SVISSRReader::getImageIR3()
+    image::Image SVISSRReader::getImageIR3()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -198,10 +198,10 @@ namespace fengyun_svissr
             }
         }
 
-        return image::Image<uint16_t>(&imageBufferIR3[0], WIDTH_IR, MAX_HEIGHT, 1);
+        return image::Image(&imageBufferIR3[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    image::Image<uint16_t> SVISSRReader::getImageIR4()
+    image::Image SVISSRReader::getImageIR4()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -218,10 +218,10 @@ namespace fengyun_svissr
             }
         }
 
-        return image::Image<uint16_t>(&imageBufferIR4[0], WIDTH_IR, MAX_HEIGHT, 1);
+        return image::Image(&imageBufferIR4[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
-    image::Image<uint16_t> SVISSRReader::getImageVIS()
+    image::Image SVISSRReader::getImageVIS()
     {
         // Fill missing lines by averaging above and below line
         for (int y = 1; y < MAX_HEIGHT - 1; y++)
@@ -241,6 +241,6 @@ namespace fengyun_svissr
             }
         }
 
-        return image::Image<uint16_t>(&imageBufferVIS[0], WIDTH_VIS, MAX_HEIGHT * 4, 1);
+        return image::Image(&imageBufferVIS[0], 16, WIDTH_VIS, MAX_HEIGHT * 4, 1);
     }
 }

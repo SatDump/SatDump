@@ -18,7 +18,8 @@ namespace geotiff
 
         if (!(proj->type == proj::ProjType_Equirectangular ||
               proj->type == proj::ProjType_Stereographic ||
-              proj->type == proj::ProjType_UniversalTransverseMercator))
+              proj->type == proj::ProjType_UniversalTransverseMercator ||
+              proj->type == proj::ProjType_WebMerc))
         {
             if (debug)
                 printf("Unsupported projection!\n");

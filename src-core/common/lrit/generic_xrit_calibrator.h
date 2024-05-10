@@ -72,7 +72,7 @@ namespace lrit
                         lut_for_channels.push_back({nullptr, flut});
                     }
                 }
-                catch (std::exception &e)
+                catch (std::exception &)
                 {
                     lut_for_channels.push_back({nullptr, std::map<int, float>()});
                 }
@@ -123,7 +123,7 @@ namespace lrit
                 else
                     return CALIBRATION_INVALID_VALUE;
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
                 return CALIBRATION_INVALID_VALUE;
             }

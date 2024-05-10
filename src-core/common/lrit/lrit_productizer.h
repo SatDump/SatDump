@@ -9,7 +9,6 @@
 
 namespace lrit
 {
-    template <typename T>
     class LRITProductizer
     {
     private:
@@ -32,7 +31,8 @@ namespace lrit
         LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path);
         ~LRITProductizer();
 
-        void saveImage(image::Image<T> img,
+        void saveImage(image::Image img,
+                       int bit_depth,
                        std::string directory,
                        std::string satellite,
                        std::string satshort,

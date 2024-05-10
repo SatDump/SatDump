@@ -6,8 +6,7 @@
 
 namespace image
 {
-	template <typename T>
-	void remove_background(image::Image<T> &img, nlohmann::json proj_cfg, float *progress)
+	void remove_background(Image &img, nlohmann::json proj_cfg, float *progress)
 	{
 		size_t width = img.width();
 		size_t height = img.height();
@@ -18,14 +17,14 @@ namespace image
 		{
 			product_proj = proj_cfg;
 		}
-		catch (std::exception&)
+		catch (std::exception &)
 		{
 			logger->warn("Cannot remove background - Failed to get projection config");
 			return;
 		}
 		if (proj::projection_setup(&product_proj))
 		{
-			//TODO: Support for warp?
+			// TODO: Support for warp?
 			logger->warn("Cannot remove background - Failed to set up projection algorithm");
 			return;
 		}
@@ -38,7 +37,7 @@ namespace image
 			for (size_t x = 0; x < width; x++)
 				if (proj::projection_perform_inv(&product_proj, x, y, &dummy, &dummy))
 					for (int c = 0; c < img.channels(); c++)
-						img.channel(c)[y * width + x] = 0;
+						img.set(c, y * width + x, 0);
 
 			if (progress != nullptr)
 				*progress = (float)y / (float)height;
@@ -46,7 +45,4 @@ namespace image
 
 		proj::projection_free(&product_proj);
 	}
-
-	template void remove_background<uint8_t>(image::Image<uint8_t> &, nlohmann::json, float *);
-	template void remove_background<uint16_t>(image::Image<uint16_t> &, nlohmann::json, float *);
 }

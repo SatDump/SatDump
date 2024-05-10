@@ -35,7 +35,7 @@ namespace jpss
             void work_eng(ccsds::CCSDSPacket &packet);
             void work_hotcal(ccsds::CCSDSPacket &packet);
 
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
             nlohmann::json getCalib();
         };
     } // namespace atms

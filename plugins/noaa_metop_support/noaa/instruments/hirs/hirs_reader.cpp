@@ -42,7 +42,7 @@ namespace noaa
             }
 
             uint16_t enct = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
-            //std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
+            // std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
             if (enct < 56 && (HIRS_data[35] & 0b10) >> 1)
             {
                 sync += ((HIRS_data[3] & 0x40) >> 6);
@@ -86,9 +86,9 @@ namespace noaa
             }
         }
 
-        image::Image<uint16_t> HIRSReader::getChannel(int channel)
+        image::Image HIRSReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 56, line, 1);
+            return image::Image(channels[channel].data(), 16, 56, line, 1);
         }
     } // namespace hirs
 } // namespace noaa

@@ -6,6 +6,6 @@ namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_offset_interleaved(image::Image<uint16_t> &img, int ndet, int shift);
+        void mersi_offset_interleaved(image::Image &img, int ndet, int shift);
     };
 };

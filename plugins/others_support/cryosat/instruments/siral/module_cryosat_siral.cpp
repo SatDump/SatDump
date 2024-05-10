@@ -9,6 +9,7 @@
 #include <fftw3.h>
 
 #include "common/image/image.h"
+#include "common/image/io.h"
 #include "common/resizeable_buffer.h"
 
 // Return filesize
@@ -124,8 +125,8 @@ namespace cryosat
             logger->info("Writing images.... (Can take a while)");
 
             {
-                image::Image<uint8_t> outputImage(fftImage.buf, 243, lines, 1);
-                WRITE_IMAGE(outputImage, directory + "/SIRAL");
+                image::Image outputImage(fftImage.buf, 8, 243, lines, 1);
+                image::save_img(outputImage, directory + "/SIRAL");
             }
 
             fftImage.destroy();

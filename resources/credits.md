@@ -27,7 +27,6 @@ First time here? See the reference documents below to get started using SatDump.
 - [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs), for native files dialogs
 - [RapidXML](http://rapidxml.sourceforge.net/), for XML Parsing
 - [sol2](https://github.com/ThePhD/sol2), C++ Bindings for LUA
-- [tiny-regex-c](https://github.com/kokke/tiny-regex-c), for RegEx parsing
 - [UTF-8 CPP](https://utfcpp.sourceforge.net/), for UTF-8 handling
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 

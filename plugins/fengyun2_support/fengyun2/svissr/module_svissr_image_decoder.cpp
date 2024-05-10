@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "resources.h"
 #include "common/utils.h"
+#include "common/image/io.h"
 
 #define FRAME_SIZE 44356
 
@@ -46,11 +47,11 @@ namespace fengyun_svissr
 
         std::string disk_folder = buffer.directory + "/" + timestamp;
 
-        buffer.image5.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1")).c_str());
-        buffer.image1.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2")).c_str());
-        buffer.image2.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3")).c_str());
-        buffer.image3.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4")).c_str());
-        buffer.image4.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5")).c_str());
+        image::save_img(buffer.image5, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1")).c_str());
+        image::save_img(buffer.image1, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2")).c_str());
+        image::save_img(buffer.image2, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3")).c_str());
+        image::save_img(buffer.image3, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4")).c_str());
+        image::save_img(buffer.image4, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5")).c_str());
 
         // We are done with all channels but 1 and 4. Clear others to free up memory!
         buffer.image1.clear();
@@ -61,38 +62,39 @@ namespace fengyun_svissr
         if (resources::resourceExists("fy2/svissr/lut.png"))
         {
             logger->trace("Scale Ch1 to 8-bits...");
-            image::Image<uint16_t> channel1(buffer.image5.width(), buffer.image5.height(), 1);
+            image::Image channel1(8, buffer.image5.width(), buffer.image5.height(), 1);
             for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
-                channel1[i] = buffer.image5[i] / 255;
+                channel1.set(i, buffer.image5.get(i) / 255);
             buffer.image5.clear(); // We're done with Ch1. Free up memory
 
             logger->trace("Scale Ch4 to 8-bits...");
-            image::Image<uint16_t> channel5(buffer.image4.width(), buffer.image4.height(), 1);
+            image::Image channel5(8, buffer.image4.width(), buffer.image4.height(), 1);
             for (size_t i = 0; i < channel5.width() * channel5.height(); i++)
-                channel5[i] = buffer.image4[i] / 255;
+                channel5.set(i, buffer.image4.get(i) / 255);
             buffer.image4.clear(); // We're done with Ch4. Free up memory
 
             logger->trace("Resize images...");
             channel5.resize(channel1.width(), channel1.height());
 
             logger->trace("Loading LUT...");
-            image::Image<uint16_t> lutImage;
-            lutImage.load_png(resources::getResourcePath("fy2/svissr/lut.png").c_str());
+            image::Image lutImage;
+            image::load_png(lutImage, resources::getResourcePath("fy2/svissr/lut.png").c_str());
+            lutImage = lutImage.to8bits();
             lutImage.resize(256, 256);
 
-            image::Image<uint16_t> compoImage = image::Image<uint16_t>(channel1.width(), channel1.height(), 3);
+            image::Image compoImage(8, channel1.width(), channel1.height(), 3);
 
             logger->trace("Applying LUT...");
             for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
             {
-                uint8_t x = 255 - channel1[i];
-                uint8_t y = channel5[i];
+                uint8_t x = 255 - channel1.get(i);
+                uint8_t y = channel5.get(i);
 
                 for (int c = 0; c < 3; c++)
-                    compoImage[c * compoImage.width() * compoImage.height() + i] = lutImage[c * lutImage.width() * lutImage.height() + x * lutImage.width() + y];
+                    compoImage.set(c * compoImage.width() * compoImage.height() + i, lutImage.get(c * lutImage.width() * lutImage.height() + x * lutImage.width() + y));
             }
 
-            compoImage.save_img(std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC")).c_str());
+            image::save_img(compoImage, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC")).c_str());
         }
         else
         {
