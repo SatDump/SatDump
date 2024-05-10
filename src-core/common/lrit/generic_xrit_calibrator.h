@@ -15,11 +15,11 @@ namespace lrit
     private:
         nlohmann::json calib_cfg;
         std::vector<double> wavenumbers;
-        std::map<int, satdump::ImageProducts::calib_type_t> calib_type_map;
+        std::vector<satdump::ImageProducts::calib_type_t> calib_type_map;
         std::vector<int> new_max_val;
         int product_bit_depth;
 
-        std::vector<std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::map<int, float>>> lut_for_channels;
+        std::vector<std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>> lut_for_channels;
 
     public:
         GenericxRITCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
@@ -28,7 +28,7 @@ namespace lrit
             wavenumbers = calib["wavenumbers"].get<std::vector<double>>();
             for (int i = 0; i < d_products->images.size(); i++)
             {
-                calib_type_map.emplace(i, d_products->get_calibration_type(i));
+                calib_type_map.push_back(d_products->get_calibration_type(i));
 
                 product_bit_depth = pow(2, d_products->bit_depth) - 1;
                 if (!calib_cfg["bits_for_calib"].is_null())
@@ -59,14 +59,14 @@ namespace lrit
 
                         int s = spline->solve();
                         if (s != 3)
-                            lut_for_channels.push_back({nullptr, std::map<int, float>()});
+                            lut_for_channels.push_back({nullptr, std::unordered_map<int, float>()});
                         else
-                            lut_for_channels.push_back({spline, std::map<int, float>()});
+                            lut_for_channels.push_back({spline, std::unordered_map<int, float>()});
                     }
                     else
                     {
                         std::vector<std::pair<int, float>> llut = calib_cfg[d_products->images[i].channel_name];
-                        std::map<int, float> flut;
+                        std::unordered_map<int, float> flut;
                         for (auto &v : llut)
                             flut.emplace(v.first, v.second);
                         lut_for_channels.push_back({nullptr, flut});
@@ -74,7 +74,7 @@ namespace lrit
                 }
                 catch (std::exception &)
                 {
-                    lut_for_channels.push_back({nullptr, std::map<int, float>()});
+                    lut_for_channels.push_back({nullptr, std::unordered_map<int, float>()});
                 }
             }
         }
