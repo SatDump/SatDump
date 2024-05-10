@@ -813,8 +813,7 @@ namespace satdump
 
                 if (using_lut)
                 {
-                    uint16_t val = color[0];
-                    val = (float(val) / 65535.0) * lut_image.width();
+                    uint16_t val = color[0] * lut_image.width();
                     if (val >= lut_image.width())
                         val = lut_image.width() - 1;
                     color[0] = lut_image.getf(0, val);

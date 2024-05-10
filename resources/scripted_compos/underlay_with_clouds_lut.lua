@@ -9,14 +9,14 @@ function init()
     end
 
     sat_proj = get_sat_proj()
-    img_background = image8.new()
-    img_background:load_jpeg(get_resource_path("maps/nasa_hd.jpg"))
+    img_background = image_t.new()
+    image_load_jpeg(img_background, get_resource_path("maps/nasa_hd.jpg"))
 
     equ_proj = EquirectangularProj.new()
     equ_proj:init(img_background:width(), img_background:height(), -180, 90, 180, -90)
 
-    img_rainnolut = image8.new()
-    img_rainnolut:load_png(get_resource_path(lua_vars["lut"]), false)
+    img_rainnolut = image_t.new()
+    image_load_png(img_rainnolut, get_resource_path(lua_vars["lut"]), false)
 
     cfg_offset = lua_vars["minoffset"]
     cfg_scalar = lua_vars["scalar"]
@@ -35,8 +35,8 @@ function process()
 
     ch0_equal = get_channel_image(0)
     ch1_equal = get_channel_image(1)
-    ch0_equal:equalize()
-    ch1_equal:equalize()
+    image_equalize(ch0_equal)
+    image_equalize(ch1_equal)
 
     pos = geodetic_coords_t.new()
     for x = 0, width - 1, 1 do

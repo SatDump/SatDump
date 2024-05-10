@@ -87,7 +87,7 @@ namespace goes
 
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 
-                    float mcir_v = float(channelVals[1]) / 65535.0;
+                    float mcir_v = float(channelVals[1]) / 255.0f;
                     mcir_v = (mcir_v - 0.15) * 3;
                     if (mcir_v > 1)
                         mcir_v = 1;
@@ -112,11 +112,6 @@ namespace goes
                     output.set(1, x, y, 0);
                     output.set(2, x, y, 0);
                 }
-
-                // return RGB 0=R 1=G 2=B
-                //  output.channel(0)[y * output.width() + x] = img_lut[0 * lut_size + lut_pos] << 8;
-                //  output.channel(1)[y * output.width() + x] = img_lut[1 * lut_size + lut_pos] << 8;
-                //  output.channel(2)[y * output.width() + x] = img_lut[2 * lut_size + lut_pos] << 8;
             }
 
             // set the progress bar accordingly

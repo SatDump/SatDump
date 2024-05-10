@@ -707,12 +707,12 @@
                             "cch1": {
                                 "type": "albedo",
                                 "min": 0,
-                                "max": 100
+                                "max": 1
                             },
                             "cch2": {
                                 "type": "albedo",
                                 "min": 0,
-                                "max": 100
+                                "max": 1
                             }
                         },
                         "lua": "scripted_compos/ndvi.lua",
@@ -726,12 +726,12 @@
                             "cch2": {
                                 "type": "albedo",
                                 "min": 0,
-                                "max": 100
+                                "max": 1
                             },
                             "cch3a": {
                                 "type": "albedo",
                                 "min": 0,
-                                "max": 100
+                                "max": 1
                             }
                         },
                         "lua": "scripted_compos/ndwi.lua",
@@ -1644,8 +1644,6 @@
                     },
                     "Day Cloud Convection": {
                         "equation": "cch2^0.58823529411,cch2^0.58823529411,1-cch13",
-                        "equalize": true,
-                        "white_balance": true,
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
@@ -1657,7 +1655,7 @@
                             "cch2": {
                                 "type": "albedo",
                                 "min": 0,
-                                "max": 100
+                                "max": 1
                             },
                             "cch13": {
                                 "type": "temperature",
@@ -1729,8 +1727,6 @@
                     },
                     "Day Cloud Convection": {
                         "equation": "cch3^0.58823529411,cch3^0.58823529411,1-cch13",
-                        "equalize": true,
-                        "white_balance": true,
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
@@ -1742,7 +1738,7 @@
                             "cch3": {
                                 "type": "albedo",
                                 "min": 0,
-                                "max": 100
+                                "max": 1
                             },
                             "cch13": {
                                 "type": "temperature",
