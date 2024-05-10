@@ -221,7 +221,7 @@ namespace image
                     return;
                 if (x >= rgb_output.width())
                     return;
-                rgb_output.set(c, x, y, rgb_output.clampf(v));
+                rgb_output.setf(c, x, y, rgb_output.clampf(v));
             };
             lua["get_channel_value"] = [channelValues](int x)
             { return channelValues[x]; };
