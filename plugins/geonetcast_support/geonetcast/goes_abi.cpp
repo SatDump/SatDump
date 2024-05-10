@@ -17,19 +17,19 @@ namespace geonetcast
         hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
 
         if (file < 0)
-            return image::Image<uint16_t>();
+            return image::Image();
 
         hid_t dataset = H5Dopen2(file, "CMI", H5P_DEFAULT);
 
         if (dataset < 0)
-            return image::Image<uint16_t>();
+            return image::Image();
 
         hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
         int rank = H5Sget_simple_extent_ndims(dataspace);
         /*int status_n =*/H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
 
         if (rank != 2)
-            return image::Image<uint16_t>();
+            return image::Image();
 
         hid_t memspace = H5Screate_simple(2, image_dims, NULL);
 
@@ -38,7 +38,7 @@ namespace geonetcast
         /*status =*/H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)image_out.raw_data());
 
         for (size_t i = 0; i < image_out.size(); i++)
-            image_out.set(i image_out.get(i) << (16 - bit_depth));
+            image_out.set(i, image_out.get(i) << (16 - bit_depth));
 
         H5Dclose(dataset);
         H5Fclose(file);
