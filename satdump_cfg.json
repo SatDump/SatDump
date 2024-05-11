@@ -2455,22 +2455,33 @@
                     "221": {
                         "equation": "ch2, ch2, ch1",
                         "individual_equalize": true,
+                        "description": "descriptions/221.md",
                         "geo_correct": true
                     },
-                    "521": {
+                    "AVHRR 3a21 False Color": {
                         "equation": "ch5, ch2, ch1",
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/3a21.md",
+                        "equalize": true
                     },
                     "Natural Color": {
-                        "equation": "((0.1*max(ch6,min(ch2,ch1)) + 0.5*ch2)+0.3*ch3)*0.5, ch2, ch1",
+                        "equation": "((0.5*max(ch5,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.75, (ch2/0.7)^0.75, (ch1/0.7)^0.75",
                         "individual_equalize": true,
                         "white_balance": true,
+                        "description": "descriptions/NatColor.md",
                         "geo_correct": true
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1-ch8, 1-ch7, 1-ch6",
                         "individual_equalize": true,
+                        "description": "descriptions/543b.md",
                         "geo_correct": true
+                    },
+                    "Day Microphysics": {
+                       "equation": "ch1, ch5^2.5, ch7",
+                       "individual_equalize": true,
+                       "description": "descriptions/DayMicro.md",
+                       "geo_correct": true
                     }
                 }
             },
