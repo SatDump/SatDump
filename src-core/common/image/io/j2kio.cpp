@@ -178,13 +178,13 @@ namespace image
 
         if (depth > 8)
         {
-            for (int c = 0; c < image->numcomps; c++)
+            for (uint32_t c = 0; c < image->numcomps; c++)
                 for (int i = 0; i < int(image->x1 * image->y1); i++)
                     img.set(c, i, image->comps[c].data[i] << (16 - depth));
         }
         else
         {
-            for (int c = 0; c < image->numcomps; c++)
+            for (uint32_t c = 0; c < image->numcomps; c++)
                 for (int i = 0; i < int(image->x1 * image->y1); i++)
                     img.set(c, i, image->comps[c].data[i] << (8 - depth));
         }

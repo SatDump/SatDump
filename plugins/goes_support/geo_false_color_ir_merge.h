@@ -30,7 +30,6 @@ namespace goes
         image::Image img_curve;
         load_png(img_lut, resources::getResourcePath(lut_path));
         load_png(img_curve, resources::getResourcePath("goes/abi/wxstar/ch2_curve.png"));
-        size_t lut_size = img_lut.height() * img_lut.width();
         size_t lut_width = img_lut.width();
 
         if (img_lut.width() != 256 || img_lut.height() != 256 || img_lut.channels() < 3)

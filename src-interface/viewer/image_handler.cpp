@@ -148,7 +148,7 @@ namespace satdump
                 current_image = current_image.to_depth(lut_image.depth());
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
-                int val = current_image.getf(i) * lut_image.width();
+                size_t val = current_image.getf(i) * lut_image.width();
                 if (val >= lut_image.width())
                     val = lut_image.width() - 1;
                 current_image.set(0, i, lut_image.get(0, val));
