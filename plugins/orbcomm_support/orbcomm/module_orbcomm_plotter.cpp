@@ -188,7 +188,7 @@ namespace orbcomm
                         lla.toDegs();
 
                         // Az/El
-                        double az, el, range, range_rate;
+                        double az, el, range;
                         {
                             double pos[3];
                             pos[0] = X * 1000.0;
@@ -240,7 +240,7 @@ namespace orbcomm
                         all_ephem_points.push_back({ephem_time, scid, (float)az, (float)el});
 
                         int contained = -1;
-                        for (int c = 0; c < last_ephems.size(); c++)
+                        for (int c = 0; c < (int)last_ephems.size(); c++)
                             if (last_ephems[c].scid == scid)
                                 contained = c;
 
@@ -422,7 +422,7 @@ namespace orbcomm
                     ImGui::TableSetColumnIndex(2);
                     ImGui::Text("%.2f", ephem.el);
                     ImGui::TableSetColumnIndex(3);
-                    ImGui::Text("%d s", ctime - ephem.time);
+                    ImGui::Text(PRIu64 " s", (uint64_t)(ctime - ephem.time));
                 }
             }
             all_ephem_points_mtx.unlock();

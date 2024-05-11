@@ -188,7 +188,7 @@ namespace image
                 histogram[i] = 0;
 
             // Compute histogram
-            for (int px = 0; px < size; px++)
+            for (size_t px = 0; px < size; px++)
                 histogram[img.get(c, px)]++;
 
             // Cummulative histogram
@@ -203,7 +203,7 @@ namespace image
                 scaling[i] = round(cummulative_histogram[i] * (float(nlevels - 1) / size));
 
             // Apply
-            for (int px = 0; px < size; px++)
+            for (size_t px = 0; px < size; px++)
                 img.set(c, px, img.clamp(scaling[img.get(c, px)]));
 
             // Cleanup

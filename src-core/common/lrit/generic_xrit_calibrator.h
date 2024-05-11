@@ -26,7 +26,7 @@ namespace lrit
         {
             calib_cfg = calib;
             wavenumbers = calib["wavenumbers"].get<std::vector<double>>();
-            for (int i = 0; i < d_products->images.size(); i++)
+            for (size_t i = 0; i < d_products->images.size(); i++)
             {
                 calib_type_map.push_back(d_products->get_calibration_type(i));
 
@@ -37,7 +37,7 @@ namespace lrit
                     new_max_val.push_back(product_bit_depth);
             }
 
-            for (int i = 0; i < d_products->images.size(); i++)
+            for (size_t i = 0; i < d_products->images.size(); i++)
             {
                 try
                 {

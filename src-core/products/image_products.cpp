@@ -226,7 +226,7 @@ namespace satdump
 
         calibration_type_lut.clear();
         calibration_wavenumber_lut.clear();
-        for (int i = 0; i < images.size(); i++)
+        for (size_t i = 0; i < images.size(); i++)
         {
             calibration_type_lut.push_back(get_calibration_type(i));
             calibration_wavenumber_lut.push_back(get_wavenumber(i));
@@ -843,7 +843,7 @@ namespace satdump
             for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
             {
                 int val = rgb_composite.getf(i) * lut_image.width();
-                if (val >= lut_image.width())
+                if (val >= (int)lut_image.width())
                     val = lut_image.width() - 1;
                 rgb_composite.set(0, i, lut_image.get(0, val));
                 rgb_composite.set(1, i, lut_image.get(1, val));

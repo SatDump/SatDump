@@ -26,5 +26,5 @@ namespace image
     void load_img(Image &img, uint8_t *buffer, int size);
     void save_img(Image &img, std::string file, bool fast = true);
 
-    bool append_ext(Image &img, std::string *file, bool prod = false);
+    bool append_ext(std::string *file, bool prod = false);
 }

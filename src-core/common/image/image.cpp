@@ -516,7 +516,7 @@ namespace image
         int shift = img.depth() - 8;
         if (img.channels() == 1)
         {
-            for (int i = 0; i < img.width() * img.height(); i++)
+            for (size_t i = 0; i < img.width() * img.height(); i++)
             {
                 uint8_t c;
                 c = img.get(i) >> shift;
@@ -525,7 +525,7 @@ namespace image
         }
         else if (img.channels() == 2)
         {
-            for (int i = 0; i < img.width() * img.height(); i++)
+            for (size_t i = 0; i < img.width() * img.height(); i++)
             {
                 uint8_t r, g, b, a;
                 r = img.get(0, i) >> shift;
@@ -537,7 +537,7 @@ namespace image
         }
         else if (img.channels() == 3)
         {
-            for (int i = 0; i < img.width() * img.height(); i++)
+            for (size_t i = 0; i < img.width() * img.height(); i++)
             {
                 uint8_t r, g, b;
                 r = img.get(0, i) >> shift;
@@ -548,7 +548,7 @@ namespace image
         }
         else if (img.channels() == 4)
         {
-            for (int i = 0; i < img.width() * img.height(); i++)
+            for (size_t i = 0; i < img.width() * img.height(); i++)
             {
                 uint8_t r, g, b, a;
                 r = img.get(0, i) >> shift;

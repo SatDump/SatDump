@@ -32,7 +32,7 @@ namespace image
 
     void save_img(Image &img, std::string file, bool fast)
     {
-        if (!append_ext(img, &file))
+        if (!append_ext(&file))
             return;
         logger->info("Saving " + file + "...");
         if (file.find(".png") != std::string::npos)
@@ -48,7 +48,7 @@ namespace image
     }
 
     // Append selected file extension
-    bool append_ext(Image &img, std::string *file, bool prod)
+    bool append_ext(std::string *file, bool prod)
     {
         // Do nothing if there's already an extension
         if (file->find(".png") != std::string::npos ||

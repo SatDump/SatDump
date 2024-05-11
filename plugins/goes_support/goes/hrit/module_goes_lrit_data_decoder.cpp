@@ -201,10 +201,10 @@ namespace goes
                             // Fill remaining data with last line
                             uint32_t to_fill = (image_header.lines_count * image_header.columns_count -
                                 (file.lrit_data.size() - file.total_header_length)) / image_header.columns_count;
-                            if (to_fill > 0 && to_fill <= max_fill_lines)
+                            if (to_fill > 0 && to_fill <= (uint32_t)max_fill_lines)
                             {
                                 file.lrit_data.reserve(file.lrit_data.size() + to_fill * image_header.columns_count);
-                                for (int i = 0; i < to_fill; i++)
+                                for (uint32_t i = 0; i < to_fill; i++)
                                     file.lrit_data.insert(file.lrit_data.end(), file.lrit_data.end() - image_header.columns_count, file.lrit_data.end());
                             }
                         }

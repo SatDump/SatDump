@@ -29,7 +29,7 @@ namespace image
 
     void Image::draw_pixel(size_t x, size_t y, std::vector<double> color)
     {
-        if (color.size() < d_channels)
+        if (color.size() < (size_t)d_channels)
             throw satdump_exception("draw_pixel color needs to have at least as many colors as the image!");
 
         for (int c = 0; c < d_channels; c++)

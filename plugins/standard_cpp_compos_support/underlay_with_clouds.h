@@ -42,10 +42,7 @@ namespace cpp_compos
         bool cfg_blend = vars["blend"];
         bool cfg_invert = vars["invert"];
 
-        size_t width = rgb_output.width();
-        size_t height = rgb_output.height();
         size_t background_size = img_background.width() * img_background.height();
-
         auto &ch_equal = inputChannels[0];
         image::equalize(ch_equal);
         float val = 0;
@@ -67,9 +64,9 @@ namespace cpp_compos
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 
                     if (cfg_invert)
-                        val = 1.0 - (ch_equal.getf((y * width) + x) - cfg_offset) * cfg_scalar;
+                        val = 1.0 - (ch_equal.getf((y * rgb_output.width()) + x) - cfg_offset) * cfg_scalar;
                     else
-                        val = (ch_equal.getf((y * width) + x) - cfg_offset) * cfg_scalar;
+                        val = (ch_equal.getf((y * rgb_output.width()) + x) - cfg_offset) * cfg_scalar;
 
                     if (val > 1)
                         val = 1;
@@ -78,7 +75,7 @@ namespace cpp_compos
 
                     int mappos = map_y * img_background.width() + map_x;
 
-                    if (mappos >= background_size)
+                    if (mappos >= (int)background_size)
                         mappos = background_size - 1;
 
                     if (mappos < 0)

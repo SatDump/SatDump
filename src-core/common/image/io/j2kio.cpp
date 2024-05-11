@@ -169,10 +169,6 @@ namespace image
             return;
         }
 
-        int d_channels = image->numcomps;
-        size_t d_width = image->x1;
-        size_t d_height = image->y1;
-
         // Parse into image
         int depth = image->comps[0].prec;
         int d_depth = 8;
@@ -182,13 +178,13 @@ namespace image
 
         if (depth > 8)
         {
-            for (int c = 0; c < d_channels; c++)
+            for (int c = 0; c < image->numcomps; c++)
                 for (int i = 0; i < int(image->x1 * image->y1); i++)
                     img.set(c, i, image->comps[c].data[i] << (16 - depth));
         }
         else
         {
-            for (int c = 0; c < d_channels; c++)
+            for (int c = 0; c < image->numcomps; c++)
                 for (int i = 0; i < int(image->x1 * image->y1); i++)
                     img.set(c, i, image->comps[c].data[i] << (8 - depth));
         }

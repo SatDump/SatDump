@@ -14,7 +14,7 @@
 #define WRITE_IMAGE_LOCAL(img, path)                        \
     {                                                       \
         std::string newPath = path;                         \
-        image::append_ext(img, &newPath);                   \
+        image::append_ext(&newPath);                        \
         image::save_img(img, std::string(newPath).c_str()); \
         all_images.push_back(newPath);                      \
     }
@@ -115,7 +115,7 @@ namespace proba
 
                 // Despeckle
                 image::simple_despeckle(img, 20);
-                image::append_ext(img, &extension);
+                image::append_ext(&extension);
                 if (std::filesystem::exists(output_folder + "/" + filename + extension))
                 {
                     int i = 0;

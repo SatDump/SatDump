@@ -41,7 +41,7 @@ namespace lrit
     }
 
     LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path)
-        : instrument_id(instrument_id), should_sweep_x(sweep_x), compo_cache_path(cache_path)
+        : should_sweep_x(sweep_x), instrument_id(instrument_id), compo_cache_path(cache_path)
     {
         if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) &&
             satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
@@ -223,7 +223,7 @@ namespace lrit
                     if (lines[1] == "_NAME:=toa_lambertian_equivalent_albedo_multiplied_by_cosine_solar_zenith_angle")
                     {
                         std::vector<std::pair<int, float>> lut;
-                        for (int i = 3; i < lines.size(); i++)
+                        for (size_t i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
@@ -242,7 +242,7 @@ namespace lrit
                     else if (lines[1] == "_NAME:=toa_brightness_temperature")
                     {
                         std::vector<std::pair<int, float>> lut;
-                        for (int i = 3; i < lines.size(); i++)
+                        for (size_t i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
@@ -270,7 +270,7 @@ namespace lrit
                     if (lines[2] == "_UNIT:=ALBEDO(%)")
                     {
                         std::vector<std::pair<int, float>> lut;
-                        for (int i = 3; i < lines.size(); i++)
+                        for (size_t i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
@@ -290,7 +290,7 @@ namespace lrit
                     else if (lines[2] == "_UNIT:=KELVIN")
                     {
                         std::vector<std::pair<int, float>> lut;
-                        for (int i = 3; i < lines.size(); i++)
+                        for (size_t i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
@@ -320,7 +320,7 @@ namespace lrit
                     if (lines[2].find("_UNIT:=PERCENT") != std::string::npos || lines[2].find("_UNIT:=ALBEDO(%)") != std::string::npos)
                     {
                         std::vector<std::pair<int, float>> lut;
-                        for (int i = 3; i < lines.size(); i++)
+                        for (size_t i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
@@ -341,7 +341,7 @@ namespace lrit
                     else if (lines[2].find("_UNIT:=KELVIN") != std::string::npos)
                     {
                         std::vector<std::pair<int, float>> lut;
-                        for (int i = 3; i < lines.size(); i++)
+                        for (size_t i = 3; i < lines.size(); i++)
                         {
                             int val;
                             float valo;
@@ -512,7 +512,7 @@ namespace lrit
                                     ImageDataFunctionRecord *image_data_function_record)
     {
         std::string ext;
-        image::append_ext(img, &ext, true);
+        image::append_ext(&ext, true);
         std::string directory_path = region == ""
                                          ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
                                          : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
