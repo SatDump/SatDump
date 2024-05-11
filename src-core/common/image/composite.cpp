@@ -109,28 +109,42 @@ namespace image
             channelValues[i] = 0;
 
         // Output image
-        Image rgb_output(lut.depth(), f.img_width, f.img_height, std::min(3, lut.channels()));
+        int channels = std::min(3, lut.channels());
+        Image rgb_output(lut.depth(), f.img_width, f.img_height, channels);
 
-        // Run though the entire image
-        for (size_t line = 0; line < (size_t)f.img_height; line++)
+        // Run though the entire image - One-channel
+        if (inputChannels.size() == 1)
         {
-            for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
+            for (size_t line = 0; line < (size_t)f.img_height; line++)
             {
-                get_channel_vals(channelValues, inputChannels, f, line, pixel);
-
-                // Apply the LUT
-                if (inputChannels.size() == 1) // 1D Case
+                for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
                 {
-                    int position = channelValues[0] * lut.width();
+                    get_channel_vals(channelValues, inputChannels, f, line, pixel);
 
+                    // Apply the LUT
+                    int position = channelValues[0] * lut.width();
                     if (position >= (int)lut.width())
                         position = (int)lut.width() - 1;
 
-                    for (int c = 0; c < std::min(3, lut.channels()); c++)
+                    for (int c = 0; c < channels; c++)
                         rgb_output.set(c, pixel, line, lut.get(c, position));
                 }
-                else if (inputChannels.size() == 2) // 2D Case
+
+                if (progress != nullptr)
+                    *progress = (float)line / (float)f.img_height;
+            }
+        }
+
+        // Run though the entire image - Two-channel
+        else if (inputChannels.size() == 2)
+        {
+            for (size_t line = 0; line < (size_t)f.img_height; line++)
+            {
+                for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
                 {
+                    get_channel_vals(channelValues, inputChannels, f, line, pixel);
+
+                    // Apply the LUT
                     int position_x = channelValues[0] * lut.width();
                     int position_y = channelValues[1] * lut.height();
 
@@ -140,15 +154,15 @@ namespace image
                     if (position_y >= (int)lut.height())
                         position_y = (int)lut.height() - 1;
 
-                    for (int c = 0; c < std::min(3, lut.channels()); c++)
+                    for (int c = 0; c < channels; c++)
                         rgb_output.set(c, pixel, line, lut.get(c, position_x, position_y));
 
                     // logger->critical("%d, %d, %d", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
                 }
-            }
 
-            if (progress != nullptr)
-                *progress = (float)line / (float)f.img_height;
+                if (progress != nullptr)
+                    *progress = (float)line / (float)f.img_height;
+            }
         }
 
         delete[] channelValues;
