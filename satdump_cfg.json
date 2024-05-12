@@ -140,7 +140,7 @@
                 "pbm",
                 "qoi"
             ],
-            "description": "Image format for raw image products\n\npng: PNG Image (recommended)\n\nj2k: JPEG 2000\n\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)\n\npbm : Really fast, but will result is very big files"
+            "description": "Image format for raw image products\n\npng: PNG Image (recommended)\n\nj2k: JPEG 2000\n\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)\n\npbm : Really fast, but will result is very big files\n\nqoi: A very fast image format with compression"
         },
         "image_format": {
             "type": "options",
