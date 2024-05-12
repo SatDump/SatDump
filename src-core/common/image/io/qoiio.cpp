@@ -40,7 +40,11 @@ namespace image
                     qoi_buffer[i * final_channels + c] = img.get(c, i) >> d_shift;
         }
 
-        qoi_desc desc = {.width = d_width, .height = d_height, .channels = final_channels, .colorspace = QOI_SRGB};
+        qoi_desc desc;
+        desc.width = d_width;
+        desc.height = d_height;
+        desc.channels = final_channels;
+        desc.colorspace = QOI_SRGB;
         qoi_write(file.c_str(), qoi_buffer, &desc);
 
         // Custom marker for single-channel files
