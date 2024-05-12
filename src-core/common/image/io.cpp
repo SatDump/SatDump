@@ -20,6 +20,8 @@ namespace image
             load_pbm(img, file);
         else if (signature[0] == 'I' && signature[1] == 'I' && signature[2] == '*')
             load_tiff(img, file);
+        else if (signature[0] == 'q' && signature[1] == 'o' && signature[2] == 'i' && signature[3] == 'f')
+            load_qoi(img, file);
     }
 
     void load_img(Image &img, uint8_t *buffer, int size)
@@ -45,6 +47,8 @@ namespace image
             save_pbm(img, file);
         else if ((file.find(".tif") != std::string::npos) || (file.find(".gtif") != std::string::npos) || (file.find(".tiff") != std::string::npos))
             save_tiff(img, file);
+        else if (file.find(".qoi") != std::string::npos)
+            save_qoi(img, file);
     }
 
     // Append selected file extension
@@ -60,7 +64,8 @@ namespace image
             file->find(".ppm") != std::string::npos ||
             file->find(".tif") != std::string::npos ||
             file->find(".tiff") != std::string::npos ||
-            file->find(".gtif") != std::string::npos)
+            file->find(".gtif") != std::string::npos ||
+            file->find(".qoi") != std::string::npos)
             return true;
 
         // Otherwise, load the user setting

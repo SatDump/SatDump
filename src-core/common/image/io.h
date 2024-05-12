@@ -22,6 +22,9 @@ namespace image
     void save_j2k(Image &img, std::string file);
     void load_j2k(Image &img, std::string file);
 
+    void save_qoi(Image &img, std::string file);
+    void load_qoi(Image &img, std::string file);
+
     void load_img(Image &img, std::string file);
     void load_img(Image &img, uint8_t *buffer, int size);
     void save_img(Image &img, std::string file, bool fast = true);

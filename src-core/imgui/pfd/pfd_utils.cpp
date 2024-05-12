@@ -20,7 +20,8 @@ namespace satdump
             "JPEG 2000 Files", "*.j2k",
             "JPEG Files", "*.jpg *.jpeg",
             "PBM Files", "*.pbm *.pgm *.ppm",
-            "TIFF Files", "*.tif *.tiff *.gtif"};
+            "TIFF Files", "*.tif *.tiff *.gtif",
+            "QOI Files", "*.qoi"};
 
         size_t i = 1;
         for (auto it = saveopts.begin() + 1;; it += 2)
