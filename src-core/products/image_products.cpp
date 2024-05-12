@@ -58,6 +58,8 @@ namespace satdump
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
                 images[c].filename.find(".j2k") == std::string::npos &&
+                images[c].filename.find(".tiff") == std::string::npos &&
+                images[c].filename.find(".tif") == std::string::npos &&
                 images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
             else if (!d_no_not_save_images)
