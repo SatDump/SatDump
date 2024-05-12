@@ -270,9 +270,9 @@ namespace satdump
             return result_img;
         }
 
-        std::function<std::pair<int, int>(double, double, int, int)> setupProjectionFunction(int width, int height,
-                                                                                             nlohmann::json params,
-                                                                                             bool rotate)
+        std::function<std::pair<double, double>(double, double, double, double)> setupProjectionFunction(double width, double height,
+                                                                                                         nlohmann::json params,
+                                                                                                         bool rotate)
         {
             rescaleProjectionScalarsIfNeeded(params, width, height);
 
@@ -292,15 +292,15 @@ namespace satdump
 
             if (!proj::projection_setup(proj.get()) && !proj_err)
             {
-                return [proj, rotate](double lat, double lon, int h, int w) mutable -> std::pair<int, int>
+                return [proj, rotate](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
                     double x, y;
                     if (proj::projection_perform_fwd(proj.get(), lon, lat, &x, &y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
                     else if (rotate)
-                        return {w - 1 - (int)x, h - 1 - (int)y};
+                        return {w - 1 - x, h - 1 - y};
                     else
-                        return {(int)x, (int)y};
+                        return {x, y};
                 };
             }
             else
@@ -309,7 +309,7 @@ namespace satdump
                 std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
                 if (transform->init(gcps, true, false))
                     throw satdump_exception("Error generating TPS!");
-                return [transform, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                return [transform, rotate](double lat, double lon, double map_height, double map_width) mutable -> std::pair<double, double>
                 {
                     double x, y;
                     transform->forward(lon, lat, x, y);

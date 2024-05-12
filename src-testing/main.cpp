@@ -11,15 +11,23 @@
  **********************************************************************/
 
 #include "logger.h"
-
-#include "common/tile_map/map.h"
-#include "common/image/io.h"
+#include "common/projection/reprojector.h"
+#include "nlohmann/json_utils.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
     completeLoggerInit();
 
-    image::Image img = downloadTileMap("https://tile.openstreetmap.org/{z}/{x}/{y}.png", /*48.7, 1.7, 48.9, 1.9, 17); */ -85.0511, -180, 85.0511, 180, 4);
-    image::save_tiff(img, argv[1]);
+    nlohmann::json proj_cfg = loadJsonFile(argv[1]);
+    int width = std::stoi(argv[2]);
+    int height = std::stoi(argv[3]);
+
+    auto proj_func = satdump::reprojection::setupProjectionFunction(width,
+                                                                    height,
+                                                                    proj_cfg);
+
+    auto p = proj_func(30, -90, width, height);
+
+    logger->trace("%f %f", p.first, p.second);
 }

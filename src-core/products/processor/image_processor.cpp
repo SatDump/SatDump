@@ -217,10 +217,10 @@ namespace satdump
                     {
                         logger->debug("Reprojecting composite %s", name.c_str());
                         image::Image retimg = projectImg(compo.value()["project"],
-                                                          final_metadata,
-                                                          rgb_image,
-                                                          final_timestamps,
-                                                          *img_products);
+                                                         final_metadata,
+                                                         rgb_image,
+                                                         final_timestamps,
+                                                         *img_products);
                         std::string fmt = "";
                         if (compo.value()["project"]["config"].contains("img_format"))
                             fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
@@ -270,10 +270,10 @@ namespace satdump
 
                     logger->debug("Reprojecting channel %s", img.channel_name.c_str());
                     image::Image retimg = projectImg(instrument_viewer_settings["project_channels"],
-                                                      img_products->get_channel_proj_metdata(chanid),
-                                                      img.image,
-                                                      img_products->get_timestamps(chanid),
-                                                      *img_products);
+                                                     img_products->get_channel_proj_metdata(chanid),
+                                                     img.image,
+                                                     img_products->get_timestamps(chanid),
+                                                     *img_products);
                     std::string fmt = "";
                     if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
                         fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();

@@ -20,9 +20,9 @@ namespace satdump
 
         image::Image reproject(ReprojectionOperation &op, float *progress = nullptr);
 
-        std::function<std::pair<int, int>(double, double, int, int)> setupProjectionFunction(int width, int height,
-                                                                                             nlohmann::json params,
-                                                                                             bool rotate = false);
+        std::function<std::pair<double, double>(double, double, double, double)> setupProjectionFunction(double width, double height,
+                                                                                                         nlohmann::json params,
+                                                                                                         bool rotate = false);
 
         struct ProjBounds
         {
