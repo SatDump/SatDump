@@ -44,7 +44,7 @@ namespace image
         desc.width = d_width;
         desc.height = d_height;
         desc.channels = final_channels;
-        desc.colorspace = QOI_SRGB;
+        desc.colorspace = QOI_LINEAR;
         qoi_write(file.c_str(), qoi_buffer, &desc);
 
         // Custom marker for single-channel files
@@ -74,12 +74,12 @@ namespace image
                 {
                     fclose(fin);
                     is_single_channel = lastByte == 0xAA;
-                    logger->info("TRAILER");
+                    // logger->info("TRAILER");
                 }
             }
         }
 
-        logger->critical("isSingle %d", (int)is_single_channel);
+        // logger->critical("isSingle %d", (int)is_single_channel);
 
         qoi_desc desc;
         uint8_t *qoi_buffer = (uint8_t *)qoi_read(file.c_str(), &desc, 4);
@@ -96,7 +96,7 @@ namespace image
             for (size_t i = 0; i < d_width * d_height; i++)
                 img.set(i, qoi_buffer[i * 4 + 0]);
         }
-        else if (d_channels == 3)
+        else if (d_channels >= 3)
         {
             for (size_t i = 0; i < d_width * d_height; i++)
                 for (int c = 0; c < d_channels; c++)
