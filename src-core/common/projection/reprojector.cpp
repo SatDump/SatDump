@@ -5,6 +5,7 @@
 #include "gcp_compute/gcp_compute.h"
 
 #include "sat_proj/sat_proj.h"
+#include "common/geodetic/vincentys_calculations.h"
 
 // #include "projs/equirectangular.h"
 // #include "projs/mercator.h"
@@ -21,6 +22,15 @@
 
 namespace satdump
 {
+    namespace warp
+    {
+        double lon_shift(double lon, double shift);
+        void shift_latlon_by_lat(double *lat, double *lon, double shift);
+
+        void computeGCPCenter(std::vector<satdump::projection::GCP> &gcps, double &lon, double &lat);
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat);
+    }
+
     namespace reprojection
     {
         inline void transposePixel(image::Image &in, image::Image &out, double ix, double iy, int ox, int oy)
@@ -304,15 +314,48 @@ namespace satdump
                 };
             }
             else
-            {
+            { // Not an awesome fix, could be done better, but works
                 auto gcps = gcp_compute::compute_gcps(params, width, height);
-                std::shared_ptr<projection::TPSTransform> transform = std::make_shared<projection::TPSTransform>();
-                if (transform->init(gcps, true, false))
-                    throw satdump_exception("Error generating TPS!");
-                return [transform, rotate](double lat, double lon, double map_height, double map_width) mutable -> std::pair<double, double>
+                int shift_lon = 0, shift_lat = 0;
+
+                // Calculate center, and handle longitude shifting
                 {
-                    double x, y;
-                    transform->forward(lon, lat, x, y);
+                    double center_lat = 0, center_lon = 0;
+                    warp::computeGCPCenter(gcps, center_lon, center_lat);
+                    shift_lon = -center_lon;
+                    shift_lat = 0;
+                }
+
+                // Check for GCPs near the poles. If any is close, it means this segment needs to be handled as a pole!
+                for (auto gcp : gcps)
+                {
+                    auto south_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(-90, 0, 0));
+                    auto north_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(90, 0, 0));
+#define MIN_POLE_DISTANCE 1000 // Maximum distance at which to consider we're working over a pole
+                    if (south_dis.distance < MIN_POLE_DISTANCE)
+                    {
+                        shift_lon = 0;
+                        shift_lat = -90;
+                    }
+                    if (north_dis.distance < MIN_POLE_DISTANCE)
+                    {
+                        shift_lon = 0;
+                        shift_lat = 90;
+                    }
+                }
+
+                //                shift_lat = shift_lon = 0;
+                auto transform = warp::initTPSTransform(gcps, shift_lon, shift_lat);
+
+                return [transform, rotate, shift_lat, shift_lon](double lat, double lon, double map_height, double map_width) mutable -> std::pair<double, double>
+                {
+                    double xy[2];
+
+                    // Perform TPS
+                    warp::shift_latlon_by_lat(&lat, &lon, shift_lat);
+                    transform->get_point(warp::lon_shift(lon, shift_lon), lat, xy);
+                    double x = xy[0];
+                    double y = xy[1];
 
                     if (x < 0 || x >= map_width || y < 0 || y >= map_height)
                         return {-1, -1};
