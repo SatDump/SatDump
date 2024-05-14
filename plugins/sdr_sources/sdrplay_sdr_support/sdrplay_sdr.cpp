@@ -463,7 +463,7 @@ std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()
             results.push_back({"sdrplay", "RSP2 " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSPduo_ID)
             results.push_back({"sdrplay", "RSPDuo " + ss.str(), std::to_string(i)});
-        else if (devices_addresses[i].hwVer == SDRPLAY_RSPdx_ID || sdrplay_dev.hwVer == SDRPLAY_RSPdxR2_ID)
+        else if (devices_addresses[i].hwVer == SDRPLAY_RSPdx_ID || devices_addresses[i].hwVer == SDRPLAY_RSPdxR2_ID)
             results.push_back({"sdrplay", "RSPdx " + ss.str(), std::to_string(i)});
         else
             results.push_back({"sdrplay", "Unknown RSP " + ss.str(), std::to_string(i)});
