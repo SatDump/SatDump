@@ -187,7 +187,7 @@ unzip sdrplay-macos.zip
 cp sdrplay-macos/lib/* ../installed/osx-satdump/lib
 cp sdrplay-macos/include/* ../installed/osx-satdump/include
 cd ../installed/osx-satdump/lib
-ln -s libsdrplay_api.3.14.dylib libsdrplay_api.dylib
+ln -s libsdrplay_api.3.15.dylib libsdrplay_api.dylib
 cd -
 rm -rf sdrplay-macos*
 
