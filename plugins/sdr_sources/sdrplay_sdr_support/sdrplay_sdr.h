@@ -8,7 +8,12 @@
 
 // define HW id for RSP1B if it's not available in older version of SDRPlay API
 #ifndef SDRPLAY_RSP1B_ID
-#define SDRPLAY_RSP1B_ID                      (6)
+#define SDRPLAY_RSP1B_ID (6)
+#endif
+
+// define HW id for RSPDxR2 if it's not available in older version of SDRPlay API
+#ifndef SDRPLAY_RSPdxR2_ID
+#define SDRPLAY_RSPdxR2_ID (7) // TBD
 #endif
 
 class SDRPlaySource : public dsp::DSPSampleSource
