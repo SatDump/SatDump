@@ -5,6 +5,7 @@
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "common/detect_header.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -14,7 +15,7 @@ namespace satdump
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             if (!cfg.value().contains("no_live") || !live_mode)
-                parameters_ui.push_back({ cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value())) });
+                parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
 
         if (config::main_cfg.contains("user"))
         {
@@ -76,23 +77,23 @@ namespace satdump
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> cfg : pipelines[pipeline_id].editable_parameters.items())
         {
             auto it = std::find_if(parameters_ui.begin(),
-                parameters_ui.end(),
-                [&cfg](const std::pair<std::string, satdump::params::EditableParameter> &e)
-                {
-                    return e.first == cfg.key();
-                });
+                                   parameters_ui.end(),
+                                   [&cfg](const std::pair<std::string, satdump::params::EditableParameter> &e)
+                                   {
+                                       return e.first == cfg.key();
+                                   });
 
             if (live_mode)
             {
                 if (it == parameters_ui.end() && cfg.value().contains("type"))
-                    parameters_ui_pipeline.push_back({ cfg.key(), satdump::params::EditableParameter(cfg.value()) });
+                    parameters_ui_pipeline.push_back({cfg.key(), satdump::params::EditableParameter(cfg.value())});
                 else if (!cfg.value().contains("type") && it != parameters_ui.end())
                     it->second.setValue(cfg.value()["value"]);
             }
             else
             {
                 if (it == parameters_ui.end())
-                    parameters_ui_pipeline.push_back({ cfg.key(), satdump::params::EditableParameter(cfg.value()) });
+                    parameters_ui_pipeline.push_back({cfg.key(), satdump::params::EditableParameter(cfg.value())});
                 else
                     it->second.setValue(cfg.value()["value"]);
             }
@@ -141,7 +142,7 @@ namespace satdump
 
         if (ImGui::BeginListBox("##pipelineslistbox"))
         {
-            ImVec4 color = { 0.73, 0.6, 0.15, 1.0 };
+            ImVec4 color = {0.73, 0.6, 0.15, 1.0};
             bool show = !live_mode;
             if (live_mode)
             {
@@ -173,7 +174,7 @@ namespace satdump
                             {
                                 int pos = ImGui::GetItemRectSize().x - 25;
                                 ImGui::SameLine(pos);
-                                ImGui::TextColored({ 0, 0, 0, 0 }, "%s", text.c_str());
+                                ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
                                 if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                                 {
@@ -222,7 +223,7 @@ namespace satdump
                     {
                         int pos = ImGui::GetItemRectSize().x - 25;
                         ImGui::SameLine(pos);
-                        ImGui::TextColored({ 0, 0, 0, 0 }, "%s", text.c_str());
+                        ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
                         if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                         {
@@ -344,13 +345,19 @@ namespace satdump
     void PipelineUISelector::select_pipeline(std::string id)
     {
         pipeline_mtx.lock();
+        bool found = false;
         for (int n = 0; n < (int)pipelines.size(); n++)
         {
             if (id == pipelines[n].name)
+            {
                 pipeline_id = n;
+                found = true;
+            }
         }
-
-        updateSelectedPipeline();
+        if (found)
+            updateSelectedPipeline();
+        else
+            logger->error("Could not find pipeline %s!", id.c_str());
         pipeline_mtx.unlock();
     }
 
