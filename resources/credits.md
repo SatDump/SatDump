@@ -93,6 +93,7 @@ First time here? See the reference documents below to get started using SatDump.
 ### Contributors
 - Arved MØKDS
 - Blobtoe
+- CO2ESP
 - Daniel Ekman (SA2KNG)
 - Digitelektro
 - Felix OK9UWU
