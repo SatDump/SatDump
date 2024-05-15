@@ -43,7 +43,7 @@ namespace satdump
             bool record = false;
             bool live = false;
             std::shared_ptr<PipelineUISelector> pipeline_selector = std::make_shared<PipelineUISelector>(true);
-            std::string baseband_format = "s16";
+            std::string baseband_format = "cs16";
             int baseband_decimation = 1; // VFO ONLY!
         };
         std::vector<Downlink> downlinks = std::vector<Downlink>(1);

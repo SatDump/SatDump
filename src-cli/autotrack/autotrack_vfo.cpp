@@ -17,7 +17,7 @@ void AutoTrackApp::add_vfo_live(std::string id, std::string name, double freq, i
         wipInfo.lpool = std::make_shared<ctpl::thread_pool>(8);
 
         vpipeline_params["samplerate"] = get_samplerate();
-        vpipeline_params["baseband_format"] = "f32";
+        vpipeline_params["baseband_format"] = "cf32";
         vpipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
         vpipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 

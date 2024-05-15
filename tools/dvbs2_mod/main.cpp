@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     if (argc < 3)
     {
-        logger->error(std::string(argv[0]) + " input.ts output.f32 --modcod 11 --baseband_format f32 --rrc_alpha 0.25 [--shortframes] [--pilots]");
+        logger->error(std::string(argv[0]) + " input.ts output.cf32 --modcod 11 --baseband_format f32 --rrc_alpha 0.25 [--shortframes] [--pilots]");
         return 0;
     }
 

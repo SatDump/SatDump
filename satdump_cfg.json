@@ -5,13 +5,13 @@
         "default_offline_parameters": {
             "baseband_format": {
                 "type": "options",
-                "value": "s8",
+                "value": "cs8",
                 "name": "Baseband Format",
                 "options": [
-                    "s8",
-                    "u8",
-                    "s16",
-                    "f32",
+                    "cs8",
+                    "cu8",
+                    "cs16",
+                    "cf32",
                     "ziq"
                 ],
                 "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",

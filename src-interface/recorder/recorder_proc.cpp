@@ -177,9 +177,9 @@ namespace satdump
         if (f == 0)
             file_sink->set_output_sample_type(dsp::CF_32);
         else if (f == 1)
-            file_sink->set_output_sample_type(dsp::IS_16);
+            file_sink->set_output_sample_type(dsp::CS_16);
         else if (f == 2)
-            file_sink->set_output_sample_type(dsp::IS_8);
+            file_sink->set_output_sample_type(dsp::CS_8);
         else if (f == 3)
             file_sink->set_output_sample_type(dsp::WAV_16);
 #ifdef BUILD_ZIQ
@@ -220,7 +220,7 @@ namespace satdump
             logger->trace("Start pipeline...");
             pipeline_params = pipeline_selector.getParameters();
             pipeline_params["samplerate"] = get_samplerate();
-            pipeline_params["baseband_format"] = "f32";
+            pipeline_params["baseband_format"] = "cf32";
             pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             pipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 

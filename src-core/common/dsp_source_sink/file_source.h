@@ -26,7 +26,7 @@ protected:
     widgets::NotatedNum<int> samplerate_input = widgets::NotatedNum("Samplerate", 0, "sps");
 
     int select_sample_format;
-    std::string baseband_type = "f32";
+    std::string baseband_type = "cf32";
     dsp::BasebandType baseband_type_e;
 
     bool should_run = true;

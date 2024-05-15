@@ -223,7 +223,7 @@ int main_live(int argc, char *argv[])
                 }
 
                 std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(vpipeline);
-                vparams["baseband_format"] = "f32";
+                vparams["baseband_format"] = "cf32";
                 vparams["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
                 vparams["start_timestamp"] = (double)time(0);     // Some pipelines need this
                 vparams["samplerate"] = samplerate;
@@ -317,7 +317,7 @@ int main_live(int argc, char *argv[])
             }
 
             // Init pipeline
-            parameters["baseband_format"] = "f32";
+            parameters["baseband_format"] = "cf32";
             parameters["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             parameters["start_timestamp"] = (double)time(0);     // Some pipelines need this
             std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);

@@ -48,7 +48,7 @@ Usage : satdump [pipeline_id] [input_level] [input_file] [output_file_or_directo
 Extra options (examples. Any parameter used in modules can be used here) :
   --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8] --dc_block --iq_swap
 Sample command :
-satdump metop_ahrpt baseband /home/user/metop_baseband.s16 metop_output_directory --samplerate 6e6 --baseband_format s16
+satdump metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format s16
 ```
 
 You can find a list of Satellite pipelines and their parameters [Here](https://docs.satdump.org/pipelines.html).

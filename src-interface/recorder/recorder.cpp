@@ -524,18 +524,18 @@ namespace satdump
                     bool assume_recording = is_recording;
                     if (assume_recording)
                         style::beginDisabled();
-                    if (ImGui::Combo("Format", &select_sample_format, "f32\0"
-                                                                      "s16\0"
-                                                                      "s8\0"
+                    if (ImGui::Combo("Format", &select_sample_format, "cf32\0"
+                                                                      "cs16\0"
+                                                                      "cs8\0"
                                                                       "wav16\0"
 #ifdef BUILD_ZIQ
-                                                                      "ziq s8\0"
-                                                                      "ziq s16\0"
-                                                                      "ziq f32\0"
+                                                                      "ziq cs8\0"
+                                                                      "ziq cs16\0"
+                                                                      "ziq cf32\0"
 #endif
 #ifdef BUILD_ZIQ2
-                                                                      "ziq2 s8 (WIP)\0"
-                                                                      "ziq2 s16 (WIP)\0"
+                                                                      "ziq2 cs8 (WIP)\0"
+                                                                      "ziq2 cs16 (WIP)\0"
 #endif
                                      ))
                         set_output_sample_format();
