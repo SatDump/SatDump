@@ -116,7 +116,7 @@ namespace goes
                 std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
 
                 std::string old_filename = current_filename;
-
+                bool used_ancillary_proj = false;
                 GOESxRITProductMeta lmeta;
                 lmeta.filename = file.filename;
 
@@ -148,6 +148,34 @@ namespace goes
                             if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &lmeta.channel) == 2)
                             {
                                 AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
+
+                                // On GOES-R HRIT, the projection information in the Image Navigation Header is not accurate enough. Use the data
+                                // in the Ancillary record instead
+                                if (ancillary_record.meta.count("perspective_point_height") > 0 &&
+                                    ancillary_record.meta.count("y_add_offset") > 0 && ancillary_record.meta.count("y_scale_factor") > 0)
+                                {
+                                    used_ancillary_proj = true;
+                                    double scale_factor = std::stod(ancillary_record.meta["y_scale_factor"]);
+                                    lmeta.image_navigation_record->line_scalar =
+                                        std::abs(std::stod(ancillary_record.meta["perspective_point_height"]) * scale_factor);
+                                    lmeta.image_navigation_record->line_offset = -std::stod(ancillary_record.meta["y_add_offset"]) / scale_factor;
+
+                                    // Avoid upstream rounding errors on smaller images
+                                    if (image_structure_record.columns_count < 5424)
+                                        lmeta.image_navigation_record->line_offset = std::ceil(lmeta.image_navigation_record->line_offset);
+                                }
+                                if (ancillary_record.meta.count("perspective_point_height") > 0 &&
+                                    ancillary_record.meta.count("x_add_offset") > 0 && ancillary_record.meta.count("x_scale_factor") > 0)
+                                {
+                                    double scale_factor = std::stod(ancillary_record.meta["x_scale_factor"]);
+                                    lmeta.image_navigation_record->column_scalar =
+                                        std::abs(std::stod(ancillary_record.meta["perspective_point_height"]) * scale_factor);
+                                    lmeta.image_navigation_record->column_offset = -std::stod(ancillary_record.meta["x_add_offset"]) / scale_factor;
+
+                                    // Avoid upstream rounding errors on smaller images
+                                    if (image_structure_record.columns_count < 5424)
+                                        lmeta.image_navigation_record->column_offset = std::ceil(lmeta.image_navigation_record->column_offset);
+                                }
 
                                 // Parse Region
                                 if (ancillary_record.meta.count("Region") > 0)
@@ -225,7 +253,7 @@ namespace goes
                             lmeta.scan_time = mktime_utc(&scanTimestamp);
                         }
                     }
-                    // Himawari-8 rebroadcast
+                    // Himawari rebroadcast
                     else if (primary_header.file_type_code == 0 && noaa_header.product_id == ID_HIMAWARI)
                     {
                         lmeta.satellite_name = "Himawari";
@@ -287,7 +315,7 @@ namespace goes
 
                     SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[vcid];
 
-                    if (lmeta.image_navigation_record && noaa_header.product_id != ID_HIMAWARI)
+                    if (lmeta.image_navigation_record && noaa_header.product_id != ID_HIMAWARI && !used_ancillary_proj)
                         lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset +
                                                                      segment_id_header.segment_sequence_number * (segment_id_header.max_row / segment_id_header.max_segment);
 

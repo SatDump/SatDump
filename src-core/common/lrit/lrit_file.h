@@ -71,8 +71,12 @@ namespace lrit
         std::string projection_name;
         int32_t column_scaling_factor;
         int32_t line_scaling_factor;
-        int32_t column_offset;
-        int32_t line_offset;
+        double column_offset;
+        double line_offset;
+
+        // Pre-computed projection information
+        double column_scalar;
+        double line_scalar;
 
         ImageNavigationRecord(uint8_t *data)
         {
@@ -81,12 +85,9 @@ namespace lrit
             projection_name = std::string((char *)&data[3], (char *)&data[3 + 32]);
             column_scaling_factor = data[35] << 24 | data[36] << 16 | data[37] << 8 | data[38];
             line_scaling_factor = data[39] << 24 | data[40] << 16 | data[41] << 8 | data[42];
-            column_offset = data[43] << 24 | data[44] << 16 | data[45] << 8 | data[46];
-            line_offset = data[47] << 24 | data[48] << 16 | data[49] << 8 | data[50];
-            //   column_scaling_factor = __builtin_bswap32(*reinterpret_cast<const uint32_t *>(&data[35]));
-            //   line_scaling_factor = __builtin_bswap32(*reinterpret_cast<const uint32_t *>(&data[39]));
-            //   column_offset = __builtin_bswap32(*reinterpret_cast<const uint32_t *>(&data[43]));
-            //   line_offset = __builtin_bswap32(*reinterpret_cast<const uint32_t *>(&data[47]));
+            column_offset = (int32_t)(data[43] << 24 | data[44] << 16 | data[45] << 8 | data[46]);
+            line_offset = (int32_t)(data[47] << 24 | data[48] << 16 | data[49] << 8 | data[50]);
+            column_scalar = line_scalar = 0.0;
         }
     };
 

@@ -530,13 +530,10 @@ namespace lrit
                 sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
             {
                 constexpr double k = 624597.0334223134;
-                double scalar_x = (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k;
-                double scalar_y = (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k;
-
-                // logger->critical("Column Factor : %d - %f", image_navigation_record->column_scaling_factor, scalar_x);
-                // logger->critical("Line Factor : %d - %f", image_navigation_record->line_scaling_factor, scalar_y);
-                // logger->critical("Column Offset : %d", image_navigation_record->column_offset);
-                // logger->critical("Line Offset : %d", image_navigation_record->line_offset);
+                double scalar_x = image_navigation_record->column_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k :
+                    image_navigation_record->column_scalar;
+                double scalar_y = image_navigation_record->line_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k :
+                    image_navigation_record->line_scalar;
 
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = sat_pos;
