@@ -1695,6 +1695,34 @@
                         },
                         "autogen": false
                     },
+                    "Day Rocket Plume Detection": {
+                        "equation": "cch7,cch8,cch2",
+                        "draw_map_overlay": true,
+                        "remove_background": true,
+                        "borders_color": [
+                            1,
+                            1,
+                            1
+                        ],
+                        "calib_cfg": {
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 0.8
+                            },
+                            "cch7": {
+                                "type": "temperature",
+                                "min": 273,
+                                "max": 338
+                            },
+                            "cch8": {
+                                "type": "temperature",
+                                "min": 233,
+                                "max": 253
+                            }
+                        },
+                        "autogen": false
+                    },
                     "789": {
                         "equation": "ch7,ch8,ch9",
                         "individual_equalize": true,
