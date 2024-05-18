@@ -97,7 +97,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project(SatDump VERSION "1.2.0")
+project(SatDump VERSION "1.2.1")
 
 # Check if the current commit has a tag
 execute_process(

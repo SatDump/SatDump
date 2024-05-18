@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
-include(CheckFunctionExists)
 
-file(GLOB_RECURSE LIBSDR_CPPS *.cpp)
+file(GLOB_RECURSE INTERFACE_CPPS *.cpp)
 
-add_library(satdump_interface STATIC ${LIBSDR_CPPS})
+add_library(satdump_interface SHARED ${INTERFACE_CPPS})
 target_include_directories(satdump_interface PUBLIC . ../src-core)
-set_target_properties(satdump_interface PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
+#set_target_properties(satdump_interface PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
 
 if(BUILD_ZIQ)
     target_compile_definitions(satdump_interface PUBLIC BUILD_ZIQ="1")

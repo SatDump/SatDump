@@ -226,6 +226,7 @@ namespace satdump
 
     public:
         static std::string getID() { return "recorder"; }
+        std::string get_name() { return "Recorder"; }
         static std::shared_ptr<Application> getInstance() { return std::make_shared<RecorderApplication>(); }
     };
 };

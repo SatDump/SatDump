@@ -43,7 +43,6 @@ namespace satdump
         const std::string app_id;
         virtual void drawUI();
 
-        bool dragging_panel = false;
         float panel_ratio = 0.23;
         float last_width = -1.0f;
 
@@ -238,6 +237,7 @@ namespace satdump
 
     public:
         static std::string getID() { return "viewer"; }
+        std::string get_name() { return "Viewer"; }
         static std::shared_ptr<Application> getInstance() { return std::make_shared<ViewerApplication>(); }
     };
 };
