@@ -10,11 +10,11 @@
 
 namespace satdump
 {
-    SATDUMP_DLL extern bool update_ui;
-    SATDUMP_DLL extern ctpl::thread_pool ui_thread_pool;
+    SATDUMP_DLL2 extern bool update_ui;
+    SATDUMP_DLL2 extern ctpl::thread_pool ui_thread_pool;
 
-    SATDUMP_DLL extern std::shared_ptr<RecorderApplication> recorder_app;
-    SATDUMP_DLL extern std::shared_ptr<ViewerApplication> viewer_app;
+    SATDUMP_DLL2 extern std::shared_ptr<RecorderApplication> recorder_app;
+    SATDUMP_DLL2 extern std::shared_ptr<ViewerApplication> viewer_app;
 
     void initMainUI();
     void exitMainUI();
