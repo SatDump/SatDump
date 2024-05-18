@@ -32,7 +32,6 @@ namespace satdump
     std::vector<std::shared_ptr<Application>> other_apps;
 
     SATDUMP_DLL bool update_ui = true;
-    bool in_app = false; // true;
     bool open_recorder;
 
     widgets::MarkdownHelper credits_md;
