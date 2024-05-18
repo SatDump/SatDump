@@ -116,6 +116,8 @@ namespace satdump
                         std::ofstream file_out("/tmp/testdef.bin", std::ios::binary);
                         def::SimpleDeframer def_test(0x1acffc1d, deframer_syncword_size, deframer_syncword_framesize, 0);
 
+                        deframer_current_frames = 0;
+
                         size_t current_ptr = 0;
                         while (current_ptr < size)
                         {
@@ -125,6 +127,7 @@ namespace satdump
 
                             for (auto &f : vf)
                                 file_out.write((char *)f.data(), f.size());
+                            deframer_current_frames += vf.size();
 
                             process_progress = double(current_ptr) / double(size);
                         }
@@ -140,6 +143,7 @@ namespace satdump
                     process_thread = std::thread(func);
                 }
 
+                ImGui::Text("Frames : %d", deframer_current_frames);
                 ImGui::ProgressBar(process_progress);
             }
         }

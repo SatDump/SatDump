@@ -17,6 +17,5 @@ endif()
 # Link against the core
 target_link_libraries(satdump_interface PUBLIC satdump_core)
 
-if(MSVC)
-else()
-endif()
+# Install
+install(TARGETS satdump_core DESTINATION lib)

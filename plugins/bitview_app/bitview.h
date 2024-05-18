@@ -35,6 +35,7 @@ namespace satdump
         std::string deframer_syncword = "0x1acffc1d";
         int deframer_syncword_size = 32;
         int deframer_syncword_framesize = 8192;
+        int deframer_current_frames = 0;
 
     public:
         BitViewApplication();
