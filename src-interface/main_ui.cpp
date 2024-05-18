@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT 1
 #include "main_ui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imgui.h"
@@ -26,11 +27,11 @@ ImageViewWidget ivw;
 
 namespace satdump
 {
-    std::shared_ptr<RecorderApplication> recorder_app;
-    std::shared_ptr<ViewerApplication> viewer_app;
+    SATDUMP_DLL std::shared_ptr<RecorderApplication> recorder_app;
+    SATDUMP_DLL std::shared_ptr<ViewerApplication> viewer_app;
     std::vector<std::shared_ptr<Application>> other_apps;
 
-    bool update_ui = true;
+    SATDUMP_DLL bool update_ui = true;
     bool in_app = false; // true;
     bool open_recorder;
 
@@ -216,5 +217,5 @@ namespace satdump
         backend::endFrame();
     }
 
-    ctpl::thread_pool ui_thread_pool(8);
+    SATDUMP_DLL ctpl::thread_pool ui_thread_pool(8);
 }
