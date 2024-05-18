@@ -14,6 +14,8 @@
 //////
 #include "common/simple_deframer.h"
 
+#include "core/style.h"
+
 namespace satdump
 {
     BitViewApplication::BitViewApplication()
@@ -72,6 +74,8 @@ namespace satdump
 
     void BitViewApplication::drawPanel()
     {
+        if (is_busy)
+            style::beginDisabled();
         if (ImGui::CollapsingHeader("Files##bitview"))
         {
             ImGui::Text("Load File :");
@@ -95,10 +99,14 @@ namespace satdump
                 }
             }
         }
+        if (is_busy)
+            style::endDisabled();
         if (ImGui::CollapsingHeader("Deframer"))
         {
             if (current_bit_container)
             {
+                if (is_busy)
+                    style::beginDisabled();
                 ImGui::InputText("Syncword", &deframer_syncword);
                 ImGui::InputInt("Syncword Size", &deframer_syncword_size);
                 ImGui::InputInt("Frame Size (Bits)", &deframer_syncword_framesize);
@@ -139,9 +147,15 @@ namespace satdump
                         newbitc->init_bitperiod();
 
                         current_bit_container->all_bit_containers.push_back(newbitc);
+
+                        is_busy = false;
                     };
+                    is_busy = true;
                     process_thread = std::thread(func);
                 }
+
+                if (is_busy)
+                    style::endDisabled();
 
                 ImGui::Text("Frames : %d", deframer_current_frames);
                 ImGui::ProgressBar(process_progress);

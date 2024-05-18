@@ -18,6 +18,8 @@ namespace satdump
         float panel_ratio = 0.23;
         float last_width = -1.0f;
 
+        bool is_busy = false;
+
         void drawUI();
         void drawPanel();
         void drawContents();

@@ -18,4 +18,4 @@ endif()
 target_link_libraries(satdump_interface PUBLIC satdump_core)
 
 # Install
-install(TARGETS satdump_core DESTINATION lib)
+install(TARGETS satdump_interface DESTINATION lib)
