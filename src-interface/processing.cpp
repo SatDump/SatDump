@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT2 1
 #include <filesystem>
 #include "processing.h"
 #include "logger.h"
@@ -72,8 +73,8 @@ namespace satdump
             processing_mutex.unlock();
         }
 
-        std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
-        std::shared_ptr<std::mutex> ui_call_list_mutex = std::make_shared<std::mutex>();
-        bool is_processing = false;
+        SATDUMP_DLL2 std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
+        SATDUMP_DLL2 std::shared_ptr<std::mutex> ui_call_list_mutex = std::make_shared<std::mutex>();
+        SATDUMP_DLL2 bool is_processing = false;
     }
 }
