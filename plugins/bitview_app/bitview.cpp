@@ -16,6 +16,7 @@
 #include "tools/deframer.h"
 #include "tools/diff_decode.h"
 #include "tools/soft2hard.h"
+#include "tools/ccsds_vcid_splitter.h"
 
 namespace satdump
 {
@@ -25,6 +26,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<DeframerTool>());
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
+        all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
     }
 
     BitViewApplication::~BitViewApplication()

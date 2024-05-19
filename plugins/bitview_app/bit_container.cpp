@@ -101,7 +101,7 @@ namespace satdump
                                     size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i;
                                     size_t raster_pos = line * d_chunk_size + i;
 
-                                    if (bitstream_pos < d_file_memory_size)
+                                    if (bitstream_pos < d_file_memory_size * 8)
                                     {
                                         if (xoffset + i < d_bitperiod)
                                         {
@@ -134,7 +134,7 @@ namespace satdump
                                     size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i * 8;
                                     size_t raster_pos = line * (d_chunk_size / 8) + i;
 
-                                    if (bitstream_pos < d_file_memory_size)
+                                    if (bitstream_pos < d_file_memory_size * 8)
                                     {
                                         if (xoffset + i * 8 < d_bitperiod)
                                         {
