@@ -5,6 +5,7 @@
 #include <fstream>
 #include "core/style.h"
 #include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_standard/vcdu.h"
 #include <map>
 
 namespace satdump
@@ -12,6 +13,7 @@ namespace satdump
     class CCSDSVcidSplitterTool : public BitViewTool
     {
     private:
+        int cadu_mode = 0;
         int cadu_size = 8192;
 
         bool should_process = false;
@@ -24,7 +26,13 @@ namespace satdump
             if (is_busy)
                 style::beginDisabled();
 
+            if (ImGui::RadioButton("AOS", cadu_mode == 0))
+                cadu_mode = 0;
+            if (ImGui::RadioButton("TM", cadu_mode == 1))
+                cadu_mode = 1;
+
             ImGui::InputInt("CADU Width (bits)", &cadu_size);
+
             if (ImGui::Button("Perform"))
                 should_process = true;
 
@@ -60,7 +68,10 @@ namespace satdump
                 uint8_t *ptr_pos = ptr + current_ptr;
 
                 int vcid = 0;
-                vcid = ccsds::ccsds_weather::parseVCDU(ptr_pos).vcid;
+                if (cadu_mode == 0)
+                    vcid = ccsds::ccsds_weather::parseVCDU(ptr_pos).vcid;
+                else if (cadu_mode == 0)
+                    vcid = ccsds::ccsds_standard::parseVCDU(ptr_pos).vcid;
 
                 if (output_files.count(vcid) == 0)
                 {
