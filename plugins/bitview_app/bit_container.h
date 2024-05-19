@@ -12,6 +12,7 @@ namespace satdump
     {
     private:
         const std::string d_name;
+        const std::string d_filepath;
         const size_t d_chunk_size = 512;
         size_t d_file_memory_size;
         uint8_t *d_file_memory_ptr;
@@ -40,9 +41,12 @@ namespace satdump
 
     public:
         size_t d_bitperiod = 481280; // 256; // 481280
+        int d_display_mode = 0;
 
         uint8_t *get_ptr() { return d_file_memory_ptr; }
         size_t get_ptr_size() { return d_file_memory_size; }
+
+        bool d_is_temporary = false;
 
     public:
         BitContainer(std::string name, std::string file);

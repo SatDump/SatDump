@@ -3,6 +3,7 @@
 #include "imgui/imgui_stdlib.h"
 #include "imgui/implot/implot.h"
 #include <fstream>
+#include "core/style.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -12,15 +13,18 @@
 #include "logger.h"
 
 //////
-#include "common/simple_deframer.h"
-
-#include "core/style.h"
+#include "tools/deframer.h"
+#include "tools/diff_decode.h"
+#include "tools/soft2hard.h"
 
 namespace satdump
 {
     BitViewApplication::BitViewApplication()
         : Application("bitview")
     {
+        all_tools.push_back(std::make_shared<DeframerTool>());
+        all_tools.push_back(std::make_shared<DifferentialTool>());
+        all_tools.push_back(std::make_shared<Soft2HardTool>());
     }
 
     BitViewApplication::~BitViewApplication()
@@ -61,14 +65,39 @@ namespace satdump
         {
             auto &cont = all_bit_containers[i];
 
+            if (!cont)
+                continue;
+
             ImGui::TreeNodeEx(cont->getName().c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | (cont == current_container ? ImGuiTreeNodeFlags_Selected : 0));
             if (ImGui::IsItemClicked())
             {
                 current_container = cont;
             }
             ImGui::TreePush(std::string("##BitViewerTree" + cont->getName()).c_str());
+
+            bool del = false;
+            { // Closing button
+                ImGui::SameLine();
+                ImGui::Text("  ");
+                ImGui::SameLine();
+
+                ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
+                if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + cont->getName()).c_str()))
+                {
+                    logger->info("Closing bit container " + cont->getName());
+                    del = true;
+                }
+                ImGui::PopStyleVar();
+                ImGui::PopStyleColor(2);
+            }
+
             renderBitContainers(cont->all_bit_containers, current_container);
             ImGui::TreePop();
+
+            if (del)
+                cont.reset();
         }
     }
 
@@ -97,67 +126,48 @@ namespace satdump
                     current_bit_container->init_bitperiod();
                     current_bit_container->forceUpdateAll();
                 }
+
+                if (ImGui::RadioButton("Bits", current_bit_container->d_display_mode == 0))
+                {
+                    current_bit_container->d_display_mode = 0;
+                    current_bit_container->forceUpdateAll();
+                }
+                if (ImGui::RadioButton("Bytes", current_bit_container->d_display_mode == 1))
+                {
+                    current_bit_container->d_display_mode = 1;
+                    current_bit_container->forceUpdateAll();
+                }
             }
         }
         if (is_busy)
             style::endDisabled();
-        if (ImGui::CollapsingHeader("Deframer"))
+        if (ImGui::CollapsingHeader("Tools"))
         {
             if (current_bit_container)
             {
-                if (is_busy)
-                    style::beginDisabled();
-                ImGui::InputText("Syncword", &deframer_syncword);
-                ImGui::InputInt("Syncword Size", &deframer_syncword_size);
-                ImGui::InputInt("Frame Size (Bits)", &deframer_syncword_framesize);
-
-                if (ImGui::Button("DeframeTest"))
+                for (auto &tool : all_tools)
                 {
-                    if (process_thread.joinable())
-                        process_thread.join();
+                    ImGui::Separator();
+                    ImGui::Text("%s", tool->getName().c_str());
+                    ImGui::Separator();
 
-                    auto func = [this]()
+                    tool->renderMenu(current_bit_container, is_busy);
+
+                    if (tool->needToProcess())
                     {
-                        uint8_t *ptr = current_bit_container->get_ptr();
-                        size_t size = current_bit_container->get_ptr_size();
-
-                        std::ofstream file_out("/tmp/testdef.bin", std::ios::binary);
-                        def::SimpleDeframer def_test(0x1acffc1d, deframer_syncword_size, deframer_syncword_framesize, 0);
-
-                        deframer_current_frames = 0;
-
-                        size_t current_ptr = 0;
-                        while (current_ptr < size)
+                        tool->setProcessed();
+                        auto func = [this, tool](int)
                         {
-                            size_t csize = std::min<size_t>(8192, size - current_ptr);
-                            auto vf = def_test.work(ptr + current_ptr, csize);
-                            current_ptr += csize;
-
-                            for (auto &f : vf)
-                                file_out.write((char *)f.data(), f.size());
-                            deframer_current_frames += vf.size();
-
-                            process_progress = double(current_ptr) / double(size);
-                        }
-
-                        file_out.close();
-
-                        std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(current_bit_container->getName() + " Deframed", "/tmp/testdef.bin");
-                        newbitc->d_bitperiod = deframer_syncword_framesize;
-                        newbitc->init_bitperiod();
-
-                        current_bit_container->all_bit_containers.push_back(newbitc);
-
-                        is_busy = false;
-                    };
-                    is_busy = true;
-                    process_thread = std::thread(func);
+                            tool->process(current_bit_container, process_progress);
+                            is_busy = false;
+                        };
+                        is_busy = true;
+                        process_threadp.push(func);
+                    }
                 }
 
-                if (is_busy)
-                    style::endDisabled();
+                ImGui::Spacing();
 
-                ImGui::Text("Frames : %d", deframer_current_frames);
                 ImGui::ProgressBar(process_progress);
             }
         }

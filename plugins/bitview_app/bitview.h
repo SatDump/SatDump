@@ -10,6 +10,10 @@
 
 #include "bit_container.h"
 
+#include "libs/ctpl/ctpl_stl.h"
+
+#include "tool.h"
+
 namespace satdump
 {
     class BitViewApplication : public Application
@@ -32,12 +36,9 @@ namespace satdump
 
     private:
         float process_progress = 0;
-        std::thread process_thread;
+        ctpl::thread_pool process_threadp = ctpl::thread_pool(4);
 
-        std::string deframer_syncword = "0x1acffc1d";
-        int deframer_syncword_size = 32;
-        int deframer_syncword_framesize = 8192;
-        int deframer_current_frames = 0;
+        std::vector<std::shared_ptr<BitViewTool>> all_tools;
 
     public:
         BitViewApplication();

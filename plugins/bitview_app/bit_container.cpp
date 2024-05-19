@@ -2,13 +2,14 @@
 #include "common/utils.h"
 #include "imgui/imgui_image.h"
 
+#include <filesystem>
 #include <fcntl.h>
 #include <sys/mman.h>
 
 namespace satdump
 {
     BitContainer::BitContainer(std::string name, std::string file_path)
-        : d_name(name)
+        : d_name(name), d_filepath(file_path)
     {
         // Buffer for creating textures
         wip_texture_buffer = new uint32_t[d_chunk_size * d_chunk_size];
@@ -28,6 +29,9 @@ namespace satdump
     BitContainer::~BitContainer()
     {
         delete[] wip_texture_buffer;
+
+        if (d_is_temporary && std::filesystem::exists(d_filepath))
+            std::filesystem::remove(d_filepath);
     }
 
     void BitContainer::init_bitperiod()
@@ -87,36 +91,72 @@ namespace satdump
                         if (part.image_id == 0)
                             part.image_id = makeImageTexture();
 
-#pragma omp parallel for
-                        for (size_t line = 0; line < d_chunk_size; line++)
+                        if (d_display_mode == 0) // Bit display
                         {
-                            for (size_t i = 0; i < d_chunk_size; i++)
+#pragma omp parallel for
+                            for (size_t line = 0; line < d_chunk_size; line++)
                             {
-                                size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i;
-                                size_t raster_pos = line * d_chunk_size + i;
-
-                                if (bitstream_pos < d_file_memory_size)
+                                for (size_t i = 0; i < d_chunk_size; i++)
                                 {
-                                    if (xoffset + i < d_bitperiod)
+                                    size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i;
+                                    size_t raster_pos = line * d_chunk_size + i;
+
+                                    if (bitstream_pos < d_file_memory_size)
                                     {
-                                        uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
-                                        wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                        if (xoffset + i < d_bitperiod)
+                                        {
+                                            uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
+                                            wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                        }
+                                        else
+                                        {
+                                            wip_texture_buffer[raster_pos] = 0 << 24;
+                                        }
                                     }
                                     else
                                     {
                                         wip_texture_buffer[raster_pos] = 0 << 24;
                                     }
                                 }
-                                else
+                            }
+
+                            printf("CREATE TEXT %d\n", int(ii * img_parts_x + iii));
+
+                            updateImageTexture(part.image_id, wip_texture_buffer, d_chunk_size, d_chunk_size);
+                        }
+                        else if (d_display_mode == 1) // Byte display
+                        {
+#pragma omp parallel for
+                            for (size_t line = 0; line < d_chunk_size; line++)
+                            {
+                                for (size_t i = 0; i < d_chunk_size / 8; i++)
                                 {
-                                    wip_texture_buffer[raster_pos] = 0 << 24;
+                                    size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i * 8;
+                                    size_t raster_pos = line * (d_chunk_size / 8) + i;
+
+                                    if (bitstream_pos < d_file_memory_size)
+                                    {
+                                        if (xoffset + i * 8 < d_bitperiod)
+                                        {
+                                            uint8_t v = d_file_memory_ptr[bitstream_pos / 8];
+                                            wip_texture_buffer[raster_pos] = 255 << 24 | 0 << 16 | v << 8 | 0;
+                                        }
+                                        else
+                                        {
+                                            wip_texture_buffer[raster_pos] = 0 << 24;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wip_texture_buffer[raster_pos] = 0 << 24;
+                                    }
                                 }
                             }
+
+                            printf("CREATE TEXT %d\n", int(ii * img_parts_x + iii));
+
+                            updateImageTexture(part.image_id, wip_texture_buffer, d_chunk_size / 8, d_chunk_size);
                         }
-
-                        printf("CREATE TEXT %d\n", int(ii * img_parts_x + iii));
-
-                        updateImageTexture(part.image_id, wip_texture_buffer, d_chunk_size, d_chunk_size);
                     }
                     else
                     {
