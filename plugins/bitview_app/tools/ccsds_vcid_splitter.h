@@ -70,7 +70,7 @@ namespace satdump
                 int vcid = 0;
                 if (cadu_mode == 0)
                     vcid = ccsds::ccsds_weather::parseVCDU(ptr_pos).vcid;
-                else if (cadu_mode == 0)
+                else if (cadu_mode == 1)
                     vcid = ccsds::ccsds_standard::parseVCDU(ptr_pos).vcid;
 
                 if (output_files.count(vcid) == 0)
