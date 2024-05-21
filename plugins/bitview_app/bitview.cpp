@@ -6,7 +6,6 @@
 #include "core/style.h"
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include "common/utils.h"
 #include <filesystem>
 

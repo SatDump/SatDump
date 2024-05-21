@@ -4,7 +4,12 @@
 
 #include <filesystem>
 #include <fcntl.h>
+
+#ifdef _WIN32
+#include "mmap_windows.h"
+#else
 #include <sys/mman.h>
+#endif
 
 namespace satdump
 {
@@ -94,7 +99,7 @@ namespace satdump
                         if (d_display_mode == 0) // Bit display
                         {
 #pragma omp parallel for
-                            for (size_t line = 0; line < d_chunk_size; line++)
+                            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
                             {
                                 for (size_t i = 0; i < d_chunk_size; i++)
                                 {
@@ -127,7 +132,7 @@ namespace satdump
                         else if (d_display_mode == 1) // Byte display
                         {
 #pragma omp parallel for
-                            for (size_t line = 0; line < d_chunk_size; line++)
+                            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
                             {
                                 for (size_t i = 0; i < d_chunk_size / 8; i++)
                                 {
