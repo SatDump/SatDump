@@ -18,4 +18,8 @@ endif()
 target_link_libraries(satdump_interface PUBLIC satdump_core)
 
 # Install
-install(TARGETS satdump_interface DESTINATION lib)
+if(MSVC OR BUILD_MSVC)
+    install(TARGETS satdump_interface DESTINATION bin)
+else()
+    install(TARGETS satdump_interface DESTINATION lib)
+endif()

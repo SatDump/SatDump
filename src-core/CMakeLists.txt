@@ -186,6 +186,12 @@ if(APPLE)
     target_link_libraries(satdump_core PUBLIC "-framework CoreGraphics")
 endif()
 
-install(TARGETS satdump_core DESTINATION lib)
+# Install
+if(MSVC OR BUILD_MSVC)
+    install(TARGETS satdump_core DESTINATION bin)
+else()
+    install(TARGETS satdump_core DESTINATION lib)
+endif()
+
 install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.hpp")
