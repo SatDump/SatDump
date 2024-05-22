@@ -4,7 +4,7 @@ project(rfnm_sdr_support)
 
 find_library(RFNM_LIBRARY librfnm)
 
-if(RFNM_LIBRARY OR MSVC OR ANDROID)
+if(RFNM_LIBRARY) # OR MSVC
     message("Building with RFNM support")
     file(GLOB_RECURSE rfnm_sdr_support_CPPS *.cpp)
     add_library(rfnm_sdr_support SHARED ${rfnm_sdr_support_CPPS})
