@@ -336,6 +336,12 @@ if(PLUGIN_AARONIA_SDR_SUPPORT)
     add_subdirectory(sdr_sources/aaronia_sdr_support)
 endif()
 
+option(PLUGIN_RFNM_SDR_SUPPORT "Enable RFNM Support plugin" ON)
+
+if(PLUGIN_RFNM_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/rfnm_sdr_support)
+endif()
+
 option(PLUGIN_RTAUDIO_SDR_SUPPORT "Enable RtAudio Source Support plugin" OFF)
 
 if(PLUGIN_RTAUDIO_SDR_SUPPORT)
