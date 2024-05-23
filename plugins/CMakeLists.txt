@@ -408,6 +408,20 @@ if(PLUGIN_STANDARD_CPP_COMPOS OR PLUGINS_ALL)
 endif()
 
 # ######################
+option(PLUGIN_GTK_FILEDIALOG_SUPPORT "Enable GTK File Dialogs Support" ON)
+
+if(PLUGIN_GTK_FILEDIALOG_SUPPORT)
+    add_subdirectory(file_dialogs/gtk_filedialog_support)
+endif()
+
+# ######################
+option(PLUGIN_QT_FILEDIALOG_SUPPORT "Enable QT File Dialogs Support" ON)
+
+if(PLUGIN_QT_FILEDIALOG_SUPPORT)
+    add_subdirectory(file_dialogs/qt_filedialog_support)
+endif()
+
+# ######################
 option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
 
 if(PLUGIN_BITVIEW_APP)

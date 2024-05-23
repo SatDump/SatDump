@@ -11,23 +11,36 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/projection/reprojector.h"
-#include "nlohmann/json_utils.h"
+#include <gtk/gtk.h>
+#include <qt5/QtWidgets/qfiledialog.h>
+#include <qt5/QtWidgets/QApplication>
 
 int main(int argc, char *argv[])
 {
     initLogger();
     completeLoggerInit();
 
-    nlohmann::json proj_cfg = loadJsonFile(argv[1]);
-    int width = std::stoi(argv[2]);
-    int height = std::stoi(argv[3]);
+#if 1
+    int v = 0;
+    QApplication a(v, NULL);
 
-    auto proj_func = satdump::reprojection::setupProjectionFunction(width,
-                                                                    height,
-                                                                    proj_cfg);
+    QString filename = QFileDialog::getOpenFileName(
+        nullptr,
+        QObject::tr("Open Document"),
+        QDir::currentPath(),
+        QObject::tr("All files (*.*)"));
 
-    auto p = proj_func(30, -90, width, height);
+    if (!filename.isNull())
+    {
+        logger->info(filename.toStdString());
+    }
 
-    logger->trace("%f %f", p.first, p.second);
+#else
+    gtk_init();
+
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    // gtk_file_dialog_set_title(dialog, "Title");
+    gtk_file_dialog_open(dialog, NULL, NULL, NULL, NULL);
+    sleep(10);
+#endif
 }
