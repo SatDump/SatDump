@@ -172,7 +172,7 @@ else()
     if(CURL_FOUND)
         target_link_libraries(satdump_core PUBLIC ${CURL_LIBRARIES})
         target_include_directories(satdump_core PUBLIC ${CURL_INCLUDE_DIRS})
-        message("-- Building with Armadillo!")
+        message("-- Building with curl!")
     endif()
 
     # Dynamic linking
