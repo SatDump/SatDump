@@ -94,6 +94,9 @@ elseif(ANDROID)
     # NNG
     target_link_libraries(satdump_core PUBLIC nng mbedtls mbedtlscrypto mbedtlsx509)
 
+    # cURL
+    target_link_libraries(satdump_core PUBLIC curl mbedtls mbedtlscrypto mbedtlsx509)
+
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)
     target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
