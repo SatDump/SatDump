@@ -78,12 +78,12 @@ namespace wsfm
         if (scid == WSFM_1_SCID)
             norad = WSFM_1_NORAD;
 
-        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
-
         // Products dataset
         satdump::ProductDataSet dataset;
         dataset.satellite_name = sat_name;
         dataset.timestamp = get_median(mwi_reader.timestamps);
+
+        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
         // Satellite ID
         {

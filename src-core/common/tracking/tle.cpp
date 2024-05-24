@@ -237,37 +237,6 @@ namespace satdump
             return std::optional<TLE>();
     }
 
-    char *exec(const char *command)
-    {
-        FILE *fp;
-        char *line = NULL;
-        char *result = (char *)calloc(1, 1);
-        size_t len = 0;
-
-        fflush(NULL);
-        fp = popen(command, "r");
-        if (fp == NULL)
-        {
-            printf("Cannot execute command:\n%s\n", command);
-            return NULL;
-        }
-
-        while (getline(&line, &len, fp) != -1)
-        {
-            result = (char *)realloc(result, strlen(result) + strlen(line) + 1);
-            strncpy(result + strlen(result), line, strlen(line) + 1);
-            free(line);
-            line = NULL;
-        }
-
-        fflush(fp);
-        if (pclose(fp) != 0)
-        {
-            perror("Cannot close stream.\n");
-        }
-        return result;
-    }
-
     std::optional<TLE> TLERegistry::get_from_norad_time(int norad, time_t timestamp)
     {
         time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
@@ -306,15 +275,10 @@ namespace satdump
                                        "&password=" + sc_passw +
                                        "&query=https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) +
                                        "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
-            std::string url = /*"http://0.0.0.0:8000/test";/*/ "https://www.space-track.org/ajaxauth/login";
+            std::string url = "https://www.space-track.org/ajaxauth/login";
 
-            printf("%s\n", post_request.c_str());
-
-            // This should be using NNG, but it doesn't work yet
-            //  url = "curl " + url + " -d '" + post_request + "'";
-            std::string result; //= exec(url.c_str());
+            std::string result;
             if (perform_http_request_post(url, result, post_request) != 1)
-            // if (result.size() > 0)
             {
                 printf("___ %s ___\n", result.c_str());
                 nlohmann::json res = nlohmann::json::parse(result)[0];

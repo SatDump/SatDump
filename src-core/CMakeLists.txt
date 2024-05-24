@@ -44,7 +44,7 @@ endif()
 
 # Threads
 find_package(Threads REQUIRED)
-target_link_libraries(satdump_core PUBLIC Threads::Threads curl)
+target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
 # OpenCL if we found it
 if(BUILD_OPENCL AND NOT ANDROID)
@@ -160,6 +160,15 @@ else()
         target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
         target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
         target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+        message("-- Building with Armadillo!")
+    endif()
+
+    # Curl
+    find_package(CURL)
+
+    if(CURL_FOUND)
+        target_link_libraries(satdump_core PUBLIC ${CURL_LIBRARIES})
+        target_include_directories(satdump_core PUBLIC ${CURL_INCLUDE_DIRS})
         message("-- Building with Armadillo!")
     endif()
 

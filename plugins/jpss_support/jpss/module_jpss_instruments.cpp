@@ -161,12 +161,12 @@ namespace jpss
             else if (scid == JPSS4_SCID)
                 norad = JPSS4_NORAD;
 
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
-
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(atms_reader.timestamps);
+
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {
