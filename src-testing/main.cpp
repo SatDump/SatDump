@@ -14,20 +14,20 @@
 #include "common/projection/reprojector.h"
 #include "nlohmann/json_utils.h"
 
+#include "init.h"
+#include "common/tracking/tle.h"
+
 int main(int argc, char *argv[])
 {
     initLogger();
+    // We don't wanna spam with init this time around
+    logger->set_level(slog::LOG_OFF);
+    satdump::initSatdump();
     completeLoggerInit();
+    logger->set_level(slog::LOG_TRACE);
 
-    nlohmann::json proj_cfg = loadJsonFile(argv[1]);
-    int width = std::stoi(argv[2]);
-    int height = std::stoi(argv[3]);
+    auto tle = satdump::general_tle_registry.get_from_norad_time(40069, time(0) - 24 * 3600 * 100);
 
-    auto proj_func = satdump::reprojection::setupProjectionFunction(width,
-                                                                    height,
-                                                                    proj_cfg);
-
-    auto p = proj_func(30, -90, width, height);
-
-    logger->trace("%f %f", p.first, p.second);
+    if (tle.has_value())
+        logger->trace(tle.value().name);
 }

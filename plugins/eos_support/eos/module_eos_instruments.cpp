@@ -166,18 +166,21 @@ namespace eos
             else if (d_satellite == AURA)
                 dataset.satellite_name = "Aura";
 
+            if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
+                dataset.timestamp = get_median(modis_reader.timestamps_1000);
+            else
+                dataset.timestamp = time(0);
+
             std::optional<satdump::TLE> satellite_tle;
             if (d_satellite == AQUA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(27424);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(27424, dataset.timestamp);
             else if (d_satellite == TERRA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(25994);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(25994, dataset.timestamp);
             else if (d_satellite == AURA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(28376);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(28376, dataset.timestamp);
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {
-                dataset.timestamp = get_median(modis_reader.timestamps_1000);
-
                 modis_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MODIS";
 
@@ -419,9 +422,9 @@ namespace eos
                 image::save_img(img, directory + "/OMI-VIS-2");
 
                 image::Image imageAll1 = image::make_manyimg_composite(33, 24, 792, [this](int c)
-                                                                         { return omi_1_reader.getChannel(c); });
+                                                                       { return omi_1_reader.getChannel(c); });
                 image::Image imageAll2 = image::make_manyimg_composite(33, 24, 792, [this](int c)
-                                                                         { return omi_2_reader.getChannel(c); });
+                                                                       { return omi_2_reader.getChannel(c); });
                 image::save_img(imageAll1, directory + "/OMI-ALL-1");
                 image::save_img(imageAll2, directory + "/OMI-ALL-2");
                 omi_status = DONE;

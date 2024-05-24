@@ -41,20 +41,8 @@ namespace satdump
     class TLERegistry : public std::vector<TLE>
     {
     public:
-        std::optional<TLE> get_from_norad(int norad)
-        {
-            std::vector<TLE>::iterator it = std::find_if(begin(),
-                                                         end(),
-                                                         [&norad](const TLE &e)
-                                                         {
-                                                             return e.norad == norad;
-                                                         });
-
-            if (it != end())
-                return std::optional<TLE>(*it);
-            else
-                return std::optional<TLE>();
-        };
+        std::optional<TLE> get_from_norad(int norad);
+        std::optional<TLE> get_from_norad_time(int norad, time_t timestamp);
     };
 
     SATDUMP_DLL extern TLERegistry general_tle_registry;

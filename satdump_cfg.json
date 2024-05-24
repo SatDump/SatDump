@@ -258,6 +258,18 @@
                 "Never"
             ],
             "description": "Frequency to update TLEs. Auto update happens at launch only\n\nWarning: The older your TLEs, the more inaccurate projections\nmay be."
+        },
+        "tle_space_track_login": {
+            "type": "string",
+            "value": "yourloginemail",
+            "name": "Space-Track Login (Optional)",
+            "description": "Optional, Space-Track account for historical TLEs"
+        },
+        "tle_space_track_password": {
+            "type": "string",
+            "value": "yourpassword",
+            "name": "Space-Track Password (Optional)",
+            "description": "Optional, Space-Track password for historical TLEs"
         }
     },
     // Input/Output Directories
@@ -1612,7 +1624,7 @@
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch8": {
-                            "type": "temperature",
+                                "type": "temperature",
                                 "min": 180,
                                 "max": 280
                             }
@@ -1785,7 +1797,7 @@
                         "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch8": {
-                            "type": "temperature",
+                                "type": "temperature",
                                 "min": 180,
                                 "max": 280
                             }
@@ -2508,10 +2520,10 @@
                         "geo_correct": true
                     },
                     "Day Microphysics": {
-                       "equation": "ch1, ch5^2.5, ch7",
-                       "individual_equalize": true,
-                       "description": "descriptions/DayMicro.md",
-                       "geo_correct": true
+                        "equation": "ch1, ch5^2.5, ch7",
+                        "individual_equalize": true,
+                        "description": "descriptions/DayMicro.md",
+                        "geo_correct": true
                     }
                 }
             },

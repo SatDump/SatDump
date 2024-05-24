@@ -469,8 +469,6 @@ namespace fengyun3
             else if (scid == FY3_G_SCID)
                 norad = FY3_G_NORAD;
 
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
-
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
@@ -486,6 +484,8 @@ namespace fengyun3
                 dataset.timestamp = get_median(mersi3_reader.timestamps);
             else if (d_satellite == FY_3G)
                 dataset.timestamp = get_median(mersirm_reader.timestamps);
+
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {
