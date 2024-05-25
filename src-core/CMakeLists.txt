@@ -61,14 +61,14 @@ if(BUILD_ZIQ2)
 endif()
 
 if(MSVC)
-    # Jemalloc
-    # TODO
+    # Jemalloc: TODO
     target_link_libraries(satdump_core PUBLIC shlwapi)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
+    target_link_libraries(satdump_core PUBLIC libcurl.dll)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
