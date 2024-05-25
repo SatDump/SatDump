@@ -266,7 +266,7 @@
             "description": "Optional, Space-Track account for historical TLEs"
         },
         "tle_space_track_password": {
-            "type": "string",
+            "type": "password",
             "value": "yourpassword",
             "name": "Space-Track Password (Optional)",
             "description": "Optional, Space-Track password for historical TLEs"
