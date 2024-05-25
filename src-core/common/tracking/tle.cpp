@@ -243,52 +243,43 @@ namespace satdump
         std::string sc_login = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_login"]["value"], "");
         std::string sc_passw = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_password"]["value"], "");
 
-        if (fabs((double)last_update - (double)timestamp) < 4 * 24 * 3600)
-        { // Close enough in time, use local
-            std::vector<TLE>::iterator it = std::find_if(begin(),
-                                                         end(),
-                                                         [&norad](const TLE &e)
-                                                         {
-                                                             return e.norad == norad;
-                                                         });
+        // Use local time if Space Track credentials are not entered, or time is close to TLE catalog time
+        if (sc_login == "" || sc_passw == "" || sc_login == "yourloginemail" || sc_passw == "yourpassword" ||
+            fabs((double)last_update - (double)timestamp) < 4 * 24 * 3600)
+            return get_from_norad(norad);
 
-            if (it != end())
-                return std::optional<TLE>(*it);
+        // Otherwise, request on Space-Track's archive
+        std::string timestamp_day, timestamp_daytime;
+        {
+            if (timestamp < 0)
+                timestamp = 0;
+            time_t tttime = timestamp;
+            std::tm *timeReadable = gmtime(&tttime);
+            timestamp_day = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0");
+            timestamp_daytime = (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "%3A" +
+                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "%3A" +
+                                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
-        else if (sc_login != "" && sc_passw != "")
-        { // Otherwise, request on Space-Track's archive
-            std::string timestamp_day, timestamp_daytime;
-            {
-                if (timestamp < 0)
-                    timestamp = 0;
-                time_t tttime = timestamp;
-                std::tm *timeReadable = gmtime(&tttime);
-                timestamp_day = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0");
-                timestamp_daytime = (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "%3A" +
-                                    (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "%3A" +
-                                    (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-            }
 
-            std::string post_request = "identity=" + sc_login +
-                                       "&password=" + sc_passw +
-                                       "&query=https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) +
-                                       "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
-            std::string url = "https://www.space-track.org/ajaxauth/login";
+        std::string post_request = "identity=" + sc_login +
+                                   "&password=" + sc_passw +
+                                   "&query=https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) +
+                                   "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
+        std::string url = "https://www.space-track.org/ajaxauth/login";
 
-            std::string result;
-            if (perform_http_request_post(url, result, post_request) != 1)
-            {
-                printf("___ %s ___\n", result.c_str());
-                nlohmann::json res = nlohmann::json::parse(result)[0];
-                TLE tle;
-                tle.norad = norad;
-                tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
-                tle.line1 = res["TLE_LINE1"].get<std::string>();
-                tle.line2 = res["TLE_LINE2"].get<std::string>();
-                return tle;
-            }
+        std::string result;
+        if (perform_http_request_post(url, result, post_request) != 1)
+        {
+            printf("___ %s ___\n", result.c_str());
+            nlohmann::json res = nlohmann::json::parse(result)[0];
+            TLE tle;
+            tle.norad = norad;
+            tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
+            tle.line1 = res["TLE_LINE1"].get<std::string>();
+            tle.line2 = res["TLE_LINE2"].get<std::string>();
+            return tle;
         }
 
         return std::optional<TLE>();

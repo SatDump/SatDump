@@ -16,6 +16,7 @@ namespace satdump
         enum ParameterType
         {
             PARAM_STRING,
+            PARAM_PASSWORD,
             PARAM_INT,
             PARAM_FLOAT,
             PARAM_BOOL,
