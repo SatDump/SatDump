@@ -304,7 +304,12 @@ namespace satdump
     {
         int calib_index = image_index;
         calib_mutex.lock();
-        uint16_t val = images[image_index].image.get(0, x, y) >> (images[image_index].image.depth() - bit_depth);
+        uint16_t val = CALIBRATION_INVALID_VALUE;
+        int diff = images[image_index].image.depth() - bit_depth;
+        if (diff >= 0)
+            val = images[image_index].image.get(0, x, y) >> (diff);
+        else
+            val = images[image_index].image.get(0, x, y) << (-diff);
 
         double val2 = CALIBRATION_INVALID_VALUE;
         if (images[image_index].abs_index == -2)
