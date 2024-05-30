@@ -167,7 +167,7 @@ else()
     endif()
 
     # Curl
-    find_package(CURL)
+    find_package(CURL REQUIRED)
 
     if(CURL_FOUND)
         target_link_libraries(satdump_core PUBLIC ${CURL_LIBRARIES})

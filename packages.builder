@@ -7,6 +7,7 @@ libairspy-dev
 libairspyhf-dev
 libbladerf-dev
 libboost-dev
+libcurl4-openssl-dev
 libfftw3-dev
 libglfw3-dev
 libhackrf-dev
