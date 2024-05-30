@@ -152,8 +152,12 @@ public:
                 fd_set socket_set;
                 FD_ZERO(&socket_set);
                 FD_SET(clientsockfd, &socket_set);
-                if(select(clientsockfd + 1, &socket_set, nullptr, nullptr, &timeout) == 0) //Prevent timeout from hanging loop
+                if (select(clientsockfd + 1, &socket_set, nullptr, nullptr, &timeout) == 0)
+                {
+                    //Prevent timeout from hanging loop
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     continue;
+                }
 
                 int lpkt_size = sread(buffer, 4);
                 if (lpkt_size <= 0)
