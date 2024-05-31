@@ -625,6 +625,21 @@
                         "geo_correct": true,
                         "individual_equalize": true
                     },
+                    "Day Cloud Convection": {
+                        "equation": "cch1^0.58823529411,cch1^0.58823529411,1-cch4",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 203,
+                                "max": 323
+                            }
+                        }
+                    },
                     "Clouds Underlay (Merge)": {
                         "channels": "ch4",
                         "cpp": "underlay_with_clouds",
