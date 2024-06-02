@@ -1,6 +1,7 @@
 #include "fazzt_processor.h"
 #include <cstring>
 #include <ctime>
+#include <algorithm>
 // #include "logger.h"
 
 namespace fazzt

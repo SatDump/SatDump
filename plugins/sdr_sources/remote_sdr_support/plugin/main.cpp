@@ -83,15 +83,17 @@ public:
         ImGui::SameLine();
         if (ImGui::Button("Add###addremotenew"))
         {
+            /* TODOXP
             struct sockaddr_in sa;
             if (inet_pton(AF_INET, address_to_add.c_str(), &(sa.sin_addr)) > 0)
             {
+            */
                 additional_servers.push_back({address_to_add, port_to_add});
                 address_to_add = "";
                 port_to_add = 5656;
-            }
+            /* } //TODOXP
             else
-                logger->warn("Not adding invalid Remote SDR IP %s", address_to_add.c_str());
+                logger->warn("Not adding invalid Remote SDR IP %s", address_to_add.c_str()); */
         }
     }
 

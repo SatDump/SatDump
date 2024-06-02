@@ -145,8 +145,8 @@ uint32_t aec_get_msb_32(struct aec_stream *strm)
 void aec_get_rsi_8(struct aec_stream *strm)
 {
     int i;
-    uint32_t *restrict out = strm->state->data_raw;
-    unsigned const char *restrict in = strm->next_in;
+    uint32_t * __restrict out = strm->state->data_raw;
+    unsigned const char * __restrict in = strm->next_in;
     int rsi = strm->rsi * strm->block_size;
 
     for (i = 0; i < rsi; i++)
@@ -159,8 +159,8 @@ void aec_get_rsi_8(struct aec_stream *strm)
 void aec_get_rsi_lsb_16(struct aec_stream *strm)
 {
     int i;
-    uint32_t *restrict out = strm->state->data_raw;
-    const unsigned char *restrict in = strm->next_in;
+    uint32_t * __restrict out = strm->state->data_raw;
+    const unsigned char * __restrict in = strm->next_in;
     int rsi = strm->rsi * strm->block_size;
 
     for (i = 0; i < rsi; i++)
@@ -173,8 +173,8 @@ void aec_get_rsi_lsb_16(struct aec_stream *strm)
 void aec_get_rsi_msb_16(struct aec_stream *strm)
 {
     int i;
-    uint32_t *restrict out = strm->state->data_raw;
-    const unsigned char *restrict in = strm->next_in;
+    uint32_t * __restrict out = strm->state->data_raw;
+    const unsigned char * __restrict in = strm->next_in;
     int rsi = strm->rsi * strm->block_size;
 
     for (i = 0; i < rsi; i++)
@@ -187,8 +187,8 @@ void aec_get_rsi_msb_16(struct aec_stream *strm)
 void aec_get_rsi_lsb_24(struct aec_stream *strm)
 {
     int i;
-    uint32_t *restrict out = strm->state->data_raw;
-    const unsigned char *restrict in = strm->next_in;
+    uint32_t * __restrict out = strm->state->data_raw;
+    const unsigned char * __restrict in = strm->next_in;
     int rsi = strm->rsi * strm->block_size;
 
     for (i = 0; i < rsi; i++)
@@ -203,8 +203,8 @@ void aec_get_rsi_lsb_24(struct aec_stream *strm)
 void aec_get_rsi_msb_24(struct aec_stream *strm)
 {
     int i;
-    uint32_t *restrict out = strm->state->data_raw;
-    const unsigned char *restrict in = strm->next_in;
+    uint32_t * __restrict out = strm->state->data_raw;
+    const unsigned char * __restrict in = strm->next_in;
     int rsi = strm->rsi * strm->block_size;
 
     for (i = 0; i < rsi; i++)
@@ -250,8 +250,8 @@ AEC_GET_RSI_NATIVE_32(msb);
 void aec_get_rsi_msb_32(struct aec_stream *strm)
 {
     int i;
-    uint32_t *restrict out = strm->state->data_raw;
-    const unsigned char *restrict in = strm->next_in;
+    uint32_t * __restrict out = strm->state->data_raw;
+    const unsigned char * __restrict in = strm->next_in;
     int rsi = strm->rsi * strm->block_size;
 
     strm->next_in += 4 * rsi;

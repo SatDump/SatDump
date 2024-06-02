@@ -1,5 +1,5 @@
 /*
-** $Id: ltests.h $
+** $Id: ltests.h,v 2.50.1.1 2017/04/19 17:20:42 roberto Exp $
 ** Internal Header for Debugging of the Lua Implementation
 ** See Copyright Notice in lua.h
 */
@@ -8,19 +8,29 @@
 #define ltests_h
 
 
-#include <stdio.h>
 #include <stdlib.h>
 
-/* test Lua with compatibility code */
-#define LUA_COMPAT_MATHLIB
-#define LUA_COMPAT_LT_LE
+/* test Lua with no compatibility code */
+#undef LUA_COMPAT_MATHLIB
+#undef LUA_COMPAT_IPAIRS
+#undef LUA_COMPAT_BITLIB
+#undef LUA_COMPAT_APIINTCASTS
+#undef LUA_COMPAT_FLOATSTRING
+#undef LUA_COMPAT_UNPACK
+#undef LUA_COMPAT_LOADERS
+#undef LUA_COMPAT_LOG10
+#undef LUA_COMPAT_LOADSTRING
+#undef LUA_COMPAT_MAXN
+#undef LUA_COMPAT_MODULE
 
 
 #define LUA_DEBUG
 
 
 /* turn on assertions */
-#define LUAI_ASSERT
+#undef NDEBUG
+#include <assert.h>
+#define lua_assert(c)           assert(c)
 
 
 /* to avoid warnings, and to make sure value is really unused */
@@ -36,23 +46,13 @@
 #endif
 
 
-/* get a chance to test code without jump tables */
-#define LUA_USE_JUMPTABLE	0
-
-
-/* use 32-bit integers in random generator */
-#define LUA_RAND32
-
-
 /* memory-allocator control variables */
 typedef struct Memcontrol {
-  int failnext;
   unsigned long numblocks;
   unsigned long total;
   unsigned long maxmem;
   unsigned long memlimit;
-  unsigned long countlimit;
-  unsigned long objcount[LUA_NUMTYPES];
+  unsigned long objcount[LUA_NUMTAGS];
 } Memcontrol;
 
 LUA_API Memcontrol l_memcontrol;
@@ -68,13 +68,7 @@ extern void *l_Trick;
 /*
 ** Function to traverse and check all memory used by Lua
 */
-LUAI_FUNC int lua_checkmemory (lua_State *L);
-
-/*
-** Function to print an object GC-friendly
-*/
-struct GCObject;
-LUAI_FUNC void lua_printobj (lua_State *L, struct GCObject *o);
+int lua_checkmemory (lua_State *L);
 
 
 /* test for lock/unlock */
@@ -116,20 +110,7 @@ LUA_API void *debug_realloc (void *ud, void *block,
 #undef LUAL_BUFFERSIZE
 #define LUAL_BUFFERSIZE		23
 #define MINSTRTABSIZE		2
-#define MAXIWTHABS		3
-
-#define STRCACHE_N	23
-#define STRCACHE_M	5
-
-#undef LUAI_USER_ALIGNMENT_T
-#define LUAI_USER_ALIGNMENT_T   union { char b[sizeof(void*) * 8]; }
-
-
-/*
-** This one is not compatible with tests for opcode optimizations,
-** as it blocks some optimizations
-#define MAXINDEXRK	0
-*/
+#define MAXINDEXRK		1
 
 
 /* make stack-overflow tests run faster */
@@ -137,15 +118,12 @@ LUA_API void *debug_realloc (void *ud, void *block,
 #define LUAI_MAXSTACK   50000
 
 
-/* test mode uses more stack space */
-#undef LUAI_MAXCCALLS
-#define LUAI_MAXCCALLS	180
+#undef LUAI_USER_ALIGNMENT_T
+#define LUAI_USER_ALIGNMENT_T   union { char b[sizeof(void*) * 8]; }
 
 
-/* force Lua to use its own implementations */
-#undef lua_strx2number
-#undef lua_number2strx
-
+#define STRCACHE_N	23
+#define STRCACHE_M	5
 
 #endif
 

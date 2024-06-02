@@ -56,8 +56,9 @@ namespace satdump
             HANDLE test_handle = CreateFile(".", GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
             if (test_handle == INVALID_HANDLE_VALUE)
             {
-                PWSTR documents_wide;
-                SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, NULL, &documents_wide);
+                LPWSTR documents_wide;
+                documents_wide = new WCHAR[128];
+                SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL, 0, documents_wide);
                 std::wstring documents_widestr = std::wstring(documents_wide);
                 int len = WideCharToMultiByte(CP_UTF8, 0, documents_widestr.c_str(), (int)documents_widestr.size(), nullptr, 0, nullptr, nullptr);
                 documents_dir = std::string(len, '\0');

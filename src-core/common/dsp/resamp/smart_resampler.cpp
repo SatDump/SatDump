@@ -1,6 +1,7 @@
 #include "smart_resampler.h"
 #include "logger.h"
 #include <cmath>
+#include <algorithm>
 
 namespace dsp
 {

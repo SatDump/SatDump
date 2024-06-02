@@ -1,5 +1,6 @@
 #include "brightness_contrast.h"
 #include <cmath>
+#include <algorithm>
 
 namespace image
 {

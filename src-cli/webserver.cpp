@@ -5,6 +5,7 @@
 // Webserver for stats
 namespace webserver
 {
+    /*TODOXP
     nng_http_server *http_server;
     nng_url *url;
     nng_http_handler *handler;
@@ -12,6 +13,7 @@ namespace webserver
     nng_http_handler *handler_polarplot;
     nng_http_handler *handler_fft;
     nng_http_handler *handler_schedule;
+    */
 
     bool is_active = false;
 
@@ -33,6 +35,7 @@ namespace webserver
     { return {}; };
 
     // HTTP Handler for stats
+    /*TODOXP
     void http_handle(nng_aio *aio)
     {
         request_mutex.lock();
@@ -47,8 +50,10 @@ namespace webserver
         nng_aio_finish(aio, 0);
         request_mutex.unlock();
     }
+    */
 
     // HTTP Handler for HTML
+    /* TODOXP
     void http_handle_html(nng_aio *aio)
     {
         request_mutex.lock();
@@ -65,10 +70,12 @@ namespace webserver
         nng_aio_finish(aio, 0);
         request_mutex.unlock();
     }
+    */
 
     bool add_polarplot_handler = false;
 
     // HTTP Handler for HTML
+    /*TODOXP
     void http_handle_polarplot(nng_aio *aio)
     {
         request_mutex.lock();
@@ -83,8 +90,10 @@ namespace webserver
         nng_aio_finish(aio, 0);
         request_mutex.unlock();
     }
+    */
 
     // HTTP Handler for HTML
+    /*TODOXP
     void http_handle_fft(nng_aio *aio)
     {
         request_mutex.lock();
@@ -99,8 +108,10 @@ namespace webserver
         nng_aio_finish(aio, 0);
         request_mutex.unlock();
     }
+    */
 
     // HTTP Handler for Schedule
+    /*TODOXP
     void http_handle_schedule(nng_aio *aio)
     {
         request_mutex.lock();
@@ -115,9 +126,11 @@ namespace webserver
         nng_aio_finish(aio, 0);
         request_mutex.unlock();
     }
+    */
 
     void start(std::string http_server_url)
     {
+        /*TODOXP
         http_server_url = "http://" + http_server_url;
         nng_url_parse(&url, http_server_url.c_str());
         nng_http_server_hold(&http_server, url);
@@ -148,6 +161,7 @@ namespace webserver
 
         nng_http_server_start(http_server);
         nng_url_free(url);
+        */
         is_active = true;
     }
 
@@ -155,8 +169,10 @@ namespace webserver
     {
         if (is_active)
         {
+            /*TODOXP
             nng_http_server_stop(http_server);
             nng_http_server_release(http_server);
+            */
         }
     }
 };

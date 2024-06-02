@@ -1,5 +1,6 @@
 #include "hue_saturation.h"
 #include <limits>
+#include <algorithm>
 
 namespace image
 {

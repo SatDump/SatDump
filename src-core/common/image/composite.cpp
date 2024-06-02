@@ -172,15 +172,16 @@ namespace image
 
     void bindCompoCfgType(sol::state &lua)
     {
-        sol::usertype<compo_cfg_t> type = lua.new_usertype<compo_cfg_t>("compo_cfg_t");
-
-        type["hasOffsets"] = &compo_cfg_t::hasOffsets;
-        type["offsets"] = &compo_cfg_t::offsets;
-        type["maxWidth"] = &compo_cfg_t::maxWidth;
-        type["maxHeight"] = &compo_cfg_t::maxHeight;
-        type["image_scales"] = &compo_cfg_t::image_scales;
-        type["img_width"] = &compo_cfg_t::img_width;
-        type["img_height"] = &compo_cfg_t::img_height;
+        //TODOXP
+        /*
+        sol::usertype<compo_cfg_t> type = lua.new_usertype<compo_cfg_t>("compo_cfg_t",
+            "hasOffsets", &compo_cfg_t::hasOffsets,
+            "offsets", &compo_cfg_t::offsets,
+            "maxWidth", &compo_cfg_t::maxWidth,
+            "maxHeight", &compo_cfg_t::maxHeight,
+            "image_scales", &compo_cfg_t::image_scales,
+            "img_width", &compo_cfg_t::img_width,
+            "img_height", &compo_cfg_t::img_height);*/
     }
 
     // Generate a composite from channels and a Lua script

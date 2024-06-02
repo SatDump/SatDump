@@ -20,7 +20,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/deepspace-turbo/*.c
     libs/bzlib/*.c
     libs/tiny-regex-c/*.c
-    libs/lua/onelua.c
+    libs/lua/*.c
 )
 
 find_package(PkgConfig)
@@ -66,7 +66,6 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
-    target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
     target_link_libraries(satdump_core PUBLIC libcurl.dll)
 
@@ -90,9 +89,6 @@ elseif(ANDROID)
 
     # FFTW3
     target_link_libraries(satdump_core PUBLIC fftw)
-
-    # NNG
-    target_link_libraries(satdump_core PUBLIC nng mbedtls mbedtlscrypto mbedtlsx509)
 
     # cURL
     target_link_libraries(satdump_core PUBLIC curl mbedtls mbedtlscrypto mbedtlsx509)
@@ -141,10 +137,6 @@ else()
     # FFTW3
     pkg_check_modules(FFTW3 REQUIRED fftw3f)
     target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-
-    # NNG
-    find_library(NNG_LIBRARY nng REQUIRED)
-    target_link_libraries(satdump_core PUBLIC ${NNG_LIBRARY})
 
     if(BUILD_ZIQ)
         # zstd

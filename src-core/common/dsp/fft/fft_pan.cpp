@@ -1,6 +1,7 @@
 #include "fft_pan.h"
 #include "logger.h"
 #include "common/dsp/window/window.h"
+#include <algorithm>
 
 namespace dsp
 {

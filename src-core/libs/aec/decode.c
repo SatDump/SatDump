@@ -325,15 +325,9 @@ static inline uint32_t direct_get_fs(struct aec_stream *strm)
 #ifndef __has_builtin
 #define __has_builtin(x) 0  /* Compatibility with non-clang compilers. */
 #endif
-#if HAVE_DECL___BUILTIN_CLZLL || __has_builtin(__builtin_clzll)
-    i = 63 - __builtin_clzll(state->acc);
-#elif HAVE_BSR64
-    _BitScanReverse64(&i, state->acc);
-#else
     i = state->bitp - 1;
     while ((state->acc & (UINT64_C(1) << i)) == 0)
         i--;
-#endif
     fs += state->bitp - i - 1;
     state->bitp = i;
     return fs;

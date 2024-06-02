@@ -9,7 +9,7 @@ if(PORTAUDIO_LIBRARY OR MSVC)
     add_library(portaudio_audio_sink SHARED ${portaudio_audio_sink})
 
     if(MSVC)
-        target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio_x64.dll)
+        target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio.dll)
     else()
         target_link_libraries(portaudio_audio_sink PUBLIC satdump_core ${PORTAUDIO_LIBRARY})
     endif()

@@ -1,5 +1,5 @@
 /*
-** $Id: ltablib.c $
+** $Id: ltablib.c,v 1.93.1.1 2017/04/19 17:20:42 roberto Exp $
 ** Library for Table Manipulation
 ** See Copyright Notice in lua.h
 */
@@ -58,10 +58,27 @@ static void checktab (lua_State *L, int arg, int what) {
 }
 
 
+#if defined(LUA_COMPAT_MAXN)
+static int maxn (lua_State *L) {
+  lua_Number max = 0;
+  luaL_checktype(L, 1, LUA_TTABLE);
+  lua_pushnil(L);  /* first key */
+  while (lua_next(L, 1)) {
+    lua_pop(L, 1);  /* remove value */
+    if (lua_type(L, -1) == LUA_TNUMBER) {
+      lua_Number v = lua_tonumber(L, -1);
+      if (v > max) max = v;
+    }
+  }
+  lua_pushnumber(L, max);
+  return 1;
+}
+#endif
+
+
 static int tinsert (lua_State *L) {
+  lua_Integer e = aux_getn(L, 1, TAB_RW) + 1;  /* first empty element */
   lua_Integer pos;  /* where to insert new element */
-  lua_Integer e = aux_getn(L, 1, TAB_RW);
-  e = luaL_intop(+, e, 1);  /* first empty element */
   switch (lua_gettop(L)) {
     case 2: {  /* called with only 2 arguments */
       pos = e;  /* insert new element at the end */
@@ -70,9 +87,7 @@ static int tinsert (lua_State *L) {
     case 3: {
       lua_Integer i;
       pos = luaL_checkinteger(L, 2);  /* 2nd argument is the position */
-      /* check whether 'pos' is in [1, e] */
-      luaL_argcheck(L, (lua_Unsigned)pos - 1u < (lua_Unsigned)e, 2,
-                       "position out of bounds");
+      luaL_argcheck(L, 1 <= pos && pos <= e, 2, "position out of bounds");
       for (i = e; i > pos; i--) {  /* move up elements */
         lua_geti(L, 1, i - 1);
         lua_seti(L, 1, i);  /* t[i] = t[i - 1] */
@@ -92,16 +107,14 @@ static int tremove (lua_State *L) {
   lua_Integer size = aux_getn(L, 1, TAB_RW);
   lua_Integer pos = luaL_optinteger(L, 2, size);
   if (pos != size)  /* validate 'pos' if given */
-    /* check whether 'pos' is in [1, size + 1] */
-    luaL_argcheck(L, (lua_Unsigned)pos - 1u <= (lua_Unsigned)size, 2,
-                     "position out of bounds");
+    luaL_argcheck(L, 1 <= pos && pos <= size + 1, 1, "position out of bounds");
   lua_geti(L, 1, pos);  /* result = t[pos] */
   for ( ; pos < size; pos++) {
     lua_geti(L, 1, pos + 1);
     lua_seti(L, 1, pos);  /* t[pos] = t[pos + 1] */
   }
   lua_pushnil(L);
-  lua_seti(L, 1, pos);  /* remove entry t[pos] */
+  lua_seti(L, 1, pos);  /* t[pos] = nil */
   return 1;
 }
 
@@ -146,9 +159,9 @@ static int tmove (lua_State *L) {
 
 static void addfield (lua_State *L, luaL_Buffer *b, lua_Integer i) {
   lua_geti(L, 1, i);
-  if (l_unlikely(!lua_isstring(L, -1)))
-    luaL_error(L, "invalid value (%s) at index %I in table for 'concat'",
-                  luaL_typename(L, -1), (LUAI_UACINT)i);
+  if (!lua_isstring(L, -1))
+    luaL_error(L, "invalid value (%s) at index %d in table for 'concat'",
+                  luaL_typename(L, -1), i);
   luaL_addvalue(b);
 }
 
@@ -178,7 +191,7 @@ static int tconcat (lua_State *L) {
 ** =======================================================
 */
 
-static int tpack (lua_State *L) {
+static int pack (lua_State *L) {
   int i;
   int n = lua_gettop(L);  /* number of elements to pack */
   lua_createtable(L, n, 1);  /* create result table */
@@ -191,14 +204,13 @@ static int tpack (lua_State *L) {
 }
 
 
-static int tunpack (lua_State *L) {
+static int unpack (lua_State *L) {
   lua_Unsigned n;
   lua_Integer i = luaL_optinteger(L, 2, 1);
   lua_Integer e = luaL_opt(L, luaL_checkinteger, 3, luaL_len(L, 1));
   if (i > e) return 0;  /* empty range */
   n = (lua_Unsigned)e - i;  /* number of elements minus 1 (avoid overflows) */
-  if (l_unlikely(n >= (unsigned int)INT_MAX  ||
-                 !lua_checkstack(L, (int)(++n))))
+  if (n >= (unsigned int)INT_MAX  || !lua_checkstack(L, (int)(++n)))
     return luaL_error(L, "too many results to unpack");
   for (; i < e; i++) {  /* push arg[i..e - 1] (to avoid overflows) */
     lua_geti(L, 1, i);
@@ -301,15 +313,15 @@ static IdxT partition (lua_State *L, IdxT lo, IdxT up) {
   /* loop invariant: a[lo .. i] <= P <= a[j .. up] */
   for (;;) {
     /* next loop: repeat ++i while a[i] < P */
-    while ((void)lua_geti(L, 1, ++i), sort_comp(L, -1, -2)) {
-      if (l_unlikely(i == up - 1))  /* a[i] < P  but a[up - 1] == P  ?? */
+    while (lua_geti(L, 1, ++i), sort_comp(L, -1, -2)) {
+      if (i == up - 1)  /* a[i] < P  but a[up - 1] == P  ?? */
         luaL_error(L, "invalid order function for sorting");
       lua_pop(L, 1);  /* remove a[i] */
     }
     /* after the loop, a[i] >= P and a[lo .. i - 1] < P */
     /* next loop: repeat --j while P < a[j] */
-    while ((void)lua_geti(L, 1, --j), sort_comp(L, -3, -1)) {
-      if (l_unlikely(j < i))  /* j < i  but  a[j] > P ?? */
+    while (lua_geti(L, 1, --j), sort_comp(L, -3, -1)) {
+      if (j < i)  /* j < i  but  a[j] > P ?? */
         luaL_error(L, "invalid order function for sorting");
       lua_pop(L, 1);  /* remove a[j] */
     }
@@ -340,7 +352,7 @@ static IdxT choosePivot (IdxT lo, IdxT up, unsigned int rnd) {
 
 
 /*
-** Quicksort algorithm (recursive function)
+** QuickSort algorithm (recursive function)
 */
 static void auxsort (lua_State *L, IdxT lo, IdxT up,
                                    unsigned int rnd) {
@@ -413,9 +425,12 @@ static int sort (lua_State *L) {
 
 static const luaL_Reg tab_funcs[] = {
   {"concat", tconcat},
+#if defined(LUA_COMPAT_MAXN)
+  {"maxn", maxn},
+#endif
   {"insert", tinsert},
-  {"pack", tpack},
-  {"unpack", tunpack},
+  {"pack", pack},
+  {"unpack", unpack},
   {"remove", tremove},
   {"move", tmove},
   {"sort", sort},
@@ -425,6 +440,11 @@ static const luaL_Reg tab_funcs[] = {
 
 LUAMOD_API int luaopen_table (lua_State *L) {
   luaL_newlib(L, tab_funcs);
+#if defined(LUA_COMPAT_UNPACK)
+  /* _G.unpack = table.unpack */
+  lua_getfield(L, -1, "unpack");
+  lua_setglobal(L, "unpack");
+#endif
   return 1;
 }
 

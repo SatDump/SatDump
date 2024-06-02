@@ -58,9 +58,11 @@ void NetSource::run_thread()
             }
             else if (mode == MODE_NNGSUB)
             {
+                /* TODOXP
                 size_t lpkt_size;
                 nng_recv(n_sock, output_stream->writeBuf, &lpkt_size, (int)0);
                 output_stream->swap(lpkt_size / sizeof(complex_t));
+                */
             }
         }
         else
@@ -78,10 +80,12 @@ void NetSource::start()
     }
     else if (mode == MODE_NNGSUB)
     {
+        /* TODOXP
         logger->info("Opening TCP socket on " + std::string("tcp://" + address + ":" + std::to_string(port)));
         nng_sub0_open_raw(&n_sock);
         nng_dialer_create(&n_dialer, n_sock, std::string("tcp://" + address + ":" + std::to_string(port)).c_str());
         nng_dialer_start(n_dialer, (int)0);
+        */
     }
 
     DSPSampleSource::start();
@@ -104,8 +108,10 @@ void NetSource::stop()
     }
     else if (mode == MODE_NNGSUB)
     {
+        /*TODOXP
         nng_dialer_close(n_dialer);
         nng_close(n_sock);
+        */
     }
 
     output_stream->flush();

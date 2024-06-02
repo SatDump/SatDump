@@ -1,5 +1,6 @@
 #include "image_utils.h"
 #include "core/exception.h"
+#include <algorithm>
 
 namespace image
 {
