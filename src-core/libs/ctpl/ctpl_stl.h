@@ -208,7 +208,6 @@ namespace ctpl {
 
         void set_thread(int i) {
             std::shared_ptr<std::atomic<bool>> flag(this->flags[i]); // a copy of the shared ptr to the flag
-            
             auto f = [this, i, flag/* a copy of the shared ptr to the flag */]() {
                 std::atomic<bool> & _flag = *flag;
                 std::function<void(int id)> * _f;

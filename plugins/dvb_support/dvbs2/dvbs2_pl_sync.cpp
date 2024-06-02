@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "dvbs2_pl_sync.h"
 
 #include "logger.h"

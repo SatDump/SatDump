@@ -1,0 +1,97 @@
+name: Build Windows XP
+
+on: [push]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: write
+
+jobs:
+  build_winxp:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Get Dependencies
+        shell: powershell
+        run: mkdir vcpkg; cd vcpkg; mkdir installed; cd installed; git clone https://github.com/JVital2013/SatDump-WinXP-Deps.git x64-windows
+
+      - name: Clone dependencies
+        run: git clone https://github.com/JVital2013/SatDump-WinXP-Deps.git --depth 1
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake -G "Visual Studio 17 2022" -DBUILD_MSVC=ON -DBUILD_OPENCL=OFF -DPLUGIN_MIRISDR_SDR_SUPPORT=OFF -DPLUGIN_AIRSPY_SDR_SUPPORT=OFF -DPLUGIN_AIRSPYHF_SDR_SUPPORT=OFF -DPLUGIN_HACKRF_SDR_SUPPORT=OFF -DPLUGIN_LIMESDR_SDR_SUPPORT=OFF -DPLUGIN_SDRPLAY_SDR_SUPPORT=OFF -DPLUGIN_PLUTOSDR_SDR_SUPPORT=OFF -DPLUGIN_BLADERF_SDR_SUPPORT=OFF -DPLUGIN_USRP_SDR_SUPPORT=OFF -DPLUGIN_RTLSDR_SDR_SUPPORT=OFF -DPLUGIN_RTLTCP_SUPPORT=OFF -A Win32 -T v141_xp -DCMAKE_FIND_ROOT_PATH="../vcpkg/installed/x64-windows" "$Env:GITHUB_WORKSPACE"
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Build Installer
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cpack -C $BUILD_TYPE
+
+      - name: Copy DLLs
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/*.dll Release
+
+      - name: Copy Resources
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp -r $Env:GITHUB_WORKSPACE/resources Release
+
+      - name: Copy Pipelines
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release;
+
+      - name: Create Plugins Dir
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: mkdir ${{runner.workspace}}/build/Release/plugins;
+
+      - name: Copy Plugins
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp ${{runner.workspace}}/build/plugins/Release/*.dll ${{runner.workspace}}/build/Release/plugins;
+
+      - name: Copy Config
+        working-directory: ${{runner.workspace}}/build
+        shell: powershell
+        run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-WindowsXP_Portable
+          path: ${{runner.workspace}}/build/Release/*
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-WindowsXP_Installer
+          path: ${{runner.workspace}}/build/SatDump-*.exe
+          
+      - name: Upload MSVC Dependencies
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-WindowsXP_Installer
+          path: ${{runner.workspace}}/vcpkg/installed/x64-windows/VC_redist.x86.exe

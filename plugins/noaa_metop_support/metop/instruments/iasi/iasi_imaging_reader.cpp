@@ -1,6 +1,7 @@
 #include "iasi_imaging_reader.h"
 #include "common/repack.h"
 #include "common/ccsds/ccsds_time.h"
+#include <algorithm>
 
 namespace metop
 {

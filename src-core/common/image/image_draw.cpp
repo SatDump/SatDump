@@ -10,8 +10,8 @@ namespace image
             throw satdump_exception("draw_image bit depth must be the same!");
 
         // Get min height and width, mostly for safety
-        int width = std::min(d_width, x0 + image.width()) - x0;
-        int height = std::min(d_height, y0 + image.height()) - y0;
+        int width = std::min<int>(d_width, x0 + image.width()) - x0;
+        int height = std::min<int>(d_height, y0 + image.height()) - y0;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
