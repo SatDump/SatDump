@@ -90,5 +90,5 @@ jobs:
       - name: Upload MSVC Dependencies
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-WindowsXP_Installer
+          name: VC_redist_xp
           path: ${{github.workspace}}/vcpkg/installed/x64-windows/VC_redist.x86.exe
