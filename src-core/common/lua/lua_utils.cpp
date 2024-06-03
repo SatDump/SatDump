@@ -52,9 +52,7 @@ namespace lua_utils
 
     void bindImageType(sol::state &lua, std::string name)
     {
-        //TODOXP
-        /*
-        sol::usertype<image::Image> image_type = lua.new_usertype<image::Image>(
+        lua.new_usertype<image::Image>(
             name,
             sol::constructors<image::Image(), image::Image(int, size_t, size_t, int)>(),
             "clear", &image::Image::clear,
@@ -87,7 +85,6 @@ namespace lua_utils
             "draw_line", &image::Image::draw_line,
             "draw_circle", &image::Image::draw_circle,
             "draw_image", &image::Image::draw_image);
-            */
 
         lua["image_equalize"] = &image::equalize;
         lua["image_white_balance"] = &image::white_balance;
@@ -115,35 +112,28 @@ namespace lua_utils
 
     void bindGeoTypes(sol::state &lua)
     {
-        //TODOXP
-        /*
-        sol::usertype<geodetic::geodetic_coords_t> type = lua.new_usertype<geodetic::geodetic_coords_t>("geodetic_coords_t",
+        lua.new_usertype<geodetic::geodetic_coords_t>("geodetic_coords_t",
             sol::constructors<geodetic::geodetic_coords_t(), geodetic::geodetic_coords_t(double, double, double), geodetic::geodetic_coords_t(double, double, double, bool)>(),
             "toDegs", &geodetic::geodetic_coords_t::toDegs,
             "toRads", &geodetic::geodetic_coords_t::toRads,
             "lat", &geodetic::geodetic_coords_t::lat,
             "lon", &geodetic::geodetic_coords_t::lon,
             "alt", &geodetic::geodetic_coords_t::alt);
-            */
     }
 
     void bindSatProjType(sol::state &lua)
     {
-        //TODOXP
-        /*
-        sol::usertype<satdump::SatelliteProjection> type = lua.new_usertype<satdump::SatelliteProjection>("satproj_t",
+        lua.new_usertype<satdump::SatelliteProjection>("satproj_t",
             "img_size_x", &satdump::SatelliteProjection::img_size_x,
             "img_size_y", &satdump::SatelliteProjection::img_size_y,
             "gcp_spacing_x", &satdump::SatelliteProjection::gcp_spacing_x,
             "gcp_spacing_y", &satdump::SatelliteProjection::gcp_spacing_y,
-            "get_position", &satdump::SatelliteProjection::get_position);*/
+            "get_position", &satdump::SatelliteProjection::get_position);
     }
 
     void bindEquProjType(sol::state &lua)
     {
-        //TODOXP
-        /*
-        sol::usertype<geodetic::projection::EquirectangularProjection> type = lua.new_usertype<geodetic::projection::EquirectangularProjection>("EquirectangularProj",
+        lua.new_usertype<geodetic::projection::EquirectangularProjection>("EquirectangularProj",
             "init", &geodetic::projection::EquirectangularProjection::init,
             "forward", [](geodetic::projection::EquirectangularProjection& equ, double lon, double lat) -> std::pair<int, int>
             {
@@ -156,7 +146,7 @@ namespace lua_utils
                 float lon, lat;
                 equ.reverse(x, y, lon, lat);
                 return { lon, lat };
-            });*/
+            });
     }
 
     void bindLogger(sol::state &lua)
