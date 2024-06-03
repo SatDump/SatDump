@@ -142,5 +142,9 @@ namespace satdump
         logger->error("you probably do not want this. If so, make sure to");
         logger->error("specify -DCMAKE_BUILD_TYPE=Release in CMake.");
 #endif
+
+        logger->error("WARNING! SatDump for Windows XP is a technical experiment!");
+        logger->error("Things may not work, and it has no support. Do not open");
+        logger->error("issues on GitHub for this build of SatDump.");
     }
 }
