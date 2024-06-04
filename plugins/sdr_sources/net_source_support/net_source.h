@@ -8,10 +8,8 @@
 #include "common/net/udp.h"
 #include <thread>
 
-/* TODOXP
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/sub.h>
-*/
 
 class NetSource : public dsp::DSPSampleSource
 {
@@ -30,10 +28,8 @@ protected:
 
     std::shared_ptr<net::UDPServer> udp_server;
 
-    /* TODOXP
     nng_socket n_sock;
     nng_dialer n_dialer;
-    */
 
     widgets::NotatedNum<uint64_t> current_samplerate = widgets::NotatedNum<uint64_t>("Samplerate##net", 0, "sps");
 

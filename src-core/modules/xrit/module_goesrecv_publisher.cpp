@@ -1,10 +1,8 @@
 #include "module_goesrecv_publisher.h"
 #include "logger.h"
 #include "imgui/imgui.h"
-/*TODOXP
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/pub.h>
-*/
 
 #define FRAME_SIZE 1024
 
@@ -37,7 +35,6 @@ namespace xrit
 
     void GOESRecvPublisherModule::process()
     {
-        /*TODOXP
         if (input_data_type == DATA_FILE)
             filesize = getFilesize(d_input_file);
         else
@@ -82,7 +79,6 @@ namespace xrit
 
         if (input_data_type == DATA_FILE)
             data_in.close();
-            */
     }
 
     void GOESRecvPublisherModule::drawUI(bool window)

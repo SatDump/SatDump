@@ -3,10 +3,8 @@
 #include "common/dsp/block.h"
 #include "common/net/udp.h"
 
-/* TODOXP
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/pub.h>
-*/
 
 namespace dsp
 {
@@ -23,10 +21,8 @@ namespace dsp
 
         net::UDPClient *udp_sender = nullptr;
 
-        /* TODOXP
         nng_socket n_sock;
         nng_listener n_listener;
-        */
 
         void work();
 

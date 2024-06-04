@@ -17,12 +17,10 @@ namespace dsp
         }
         else if (mode == MODE_NNG_PUB)
         {
-            /* TODOXP
             logger->info("Opening TCP socket on " + std::string("tcp://" + std::string(address) + ":" + std::to_string(port)));
             nng_pub0_open_raw(&n_sock);
             nng_listener_create(&n_listener, n_sock, std::string("tcp://" + std::string(address) + ":" + std::to_string(port)).c_str());
             nng_listener_start(n_listener, NNG_FLAG_NONBLOCK);
-            */
         }
     }
 
@@ -34,10 +32,8 @@ namespace dsp
         }
         else if (mode == MODE_NNG_PUB)
         {
-            /*TODOXP
             nng_listener_close(n_listener);
             nng_close(n_sock);
-            */
         }
     }
 
@@ -62,9 +58,7 @@ namespace dsp
         }
         else if (mode == MODE_NNG_PUB)
         {
-            /* TODOXP
             nng_send(n_sock, &input_stream->readBuf[0], nsamples * sizeof(complex_t), NNG_FLAG_NONBLOCK);
-            */
         }
 
         input_stream->flush();

@@ -2,10 +2,8 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-/*TODOXP
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/sub.h>
-*/
 #include "common/net/udp.h"
 #include "core/exception.h"
 
@@ -57,7 +55,6 @@ namespace network
     {
         if (mode == "default")
         {
-            /*TODOXP
             nng_socket sock;
             nng_dialer dialer;
 
@@ -79,7 +76,6 @@ namespace network
             }
 
             nng_dialer_close(dialer);
-            */
         }
         else if (mode == "udp_listen")
         {
