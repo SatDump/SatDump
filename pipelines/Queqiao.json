@@ -71,7 +71,7 @@
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
-                    "derandomize": false,
+                    "derandomize": true,
                     "rs_i": 4,
                     "rs_type": "rs223",
                     "rs_usecheck": false
