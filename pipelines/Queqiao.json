@@ -41,5 +41,43 @@
             },
             "products": {}
         }
+    },
+    "queqiao2_science_s_link": {
+        "name": "Queqiao-2 S-Band Science Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 3e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.002
+                }
+            },
+            "frm": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "rs_i": 4,
+                    "rs_type": "rs223",
+                    "rs_usecheck": false
+                }
+            },
+            "products": {}
+        }
     }
 }
