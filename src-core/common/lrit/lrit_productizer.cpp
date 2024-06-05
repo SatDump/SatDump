@@ -451,7 +451,16 @@ namespace lrit
                 compo_queue.erase(compo_queue.begin());
                 compo_queue_mtx.unlock();
 
-                std::string directory_path_rel = std::filesystem::relative(directory_path, compo_cache_path).string();
+                // Windows XP does not support std::filesystem::relative
+                // std::string directory_path_rel = std::filesystem::relative(directory_path, compo_cache_path).string();
+                std::string directory_path_rel = directory_path;
+                std::string::size_type path_pos = directory_path_rel.find(compo_cache_path);
+                if (path_pos != std::string::npos)
+                {
+                    directory_path_rel.erase(path_pos, compo_cache_path.length());
+                    directory_path_rel.erase(directory_path_rel.find_last_not_of('/') + 1);
+                    directory_path_rel.erase(0, directory_path_rel.find_first_not_of('/'));
+                }
 
                 try
                 {
