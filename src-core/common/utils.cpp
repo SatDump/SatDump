@@ -84,6 +84,7 @@ int perform_http_request(std::string url_str, std::string &result)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
         curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false); //TODOXP - XP fails to validate server certificates
 
         res = curl_easy_perform(curl);
 
