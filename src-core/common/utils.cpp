@@ -88,7 +88,7 @@ int perform_http_request(std::string url_str, std::string &result)
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+            logger->error("curl_easy_perform() failed: %s",
                     curl_easy_strerror(res));
 
         curl_easy_cleanup(curl);
