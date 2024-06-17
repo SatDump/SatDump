@@ -37,6 +37,7 @@ namespace satdump
                                 rot_current_req_pos.az = (round(sat_current_pos.az * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                                 rot_current_req_pos.el = (round(sat_current_pos.el * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                             }
+                            rot_current_req_pos.az = correctRotatorAzimuth(rot_current_req_pos.az);
                         }
                         else if (rotator_park_while_idle)
                         {
@@ -44,6 +45,7 @@ namespace satdump
                             {
                                 rot_current_req_pos.az = sat_next_aos_pos.az;
                                 rot_current_req_pos.el = sat_next_aos_pos.el;
+                                rot_current_req_pos.az = correctRotatorAzimuth(sat_next_aos_pos.az);
                             }
                             else
                             {
@@ -79,6 +81,75 @@ namespace satdump
             }
             rotator_handler_mtx.unlock();
         }
+    }
+
+    float ObjectTracker::correctRotatorAzimuth(const float az)
+    {
+        float resultAzimuth = az;
+        if(rotator_az_max - rotator_az_min <= 360) {
+            //Rotator doesn't support more than 360°
+            return resultAzimuth;
+        }
+        if(northbound_cross || southbound_cross)
+        {
+            if(southbound_cross)
+            {
+                if(sat_next_aos_pos.az < 90)
+                {
+                    // Pass start from east
+                    if(resultAzimuth <= 90)
+                    {
+                        // We are currently in the easter region
+                        resultAzimuth += 360;
+                        if(resultAzimuth > rotator_az_max)
+                        {
+                            resultAzimuth = az;
+                        }
+                    }
+                }
+                else
+                {
+                    // Pass start from west
+                    if(resultAzimuth >= 270)
+                    {
+                        // We are currently in the western region
+                        resultAzimuth -= 360;
+                        if(resultAzimuth < rotator_az_min)
+                        {
+                            resultAzimuth =az;
+                        }
+                    }
+                }
+            }
+            if(northbound_cross) {
+                if(sat_next_los_pos.az < 90) {
+                    // Pass end on east
+                    if(az <= 90)
+                    {
+                        // We are currently in the easter region
+                        resultAzimuth += 360;
+                        if(resultAzimuth > rotator_az_max)
+                        {
+                            resultAzimuth = az;
+                        }
+                    }
+                }
+                else
+                {
+                    // Pass end on west
+                    if(resultAzimuth >=270)
+                    {
+                        // We are currently in the western region
+                        resultAzimuth -=360;
+                        if(resultAzimuth < rotator_az_min)
+                        {
+                            resultAzimuth = az;
+                        }
+                    }
+                }
+            }
+        }
+        return resultAzimuth;
     }
 
     void ObjectTracker::renderRotatorStatus()
@@ -117,6 +188,8 @@ namespace satdump
     void ObjectTracker::renderRotatorConfig()
     {
         ImGui::InputDouble("Update Period (s)", &rotator_update_period);
+        ImGui::InputInt("Minimum Azimuth", &rotator_az_min);
+        ImGui::InputInt("Maximum Azimuth", &rotator_az_max);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -167,6 +240,8 @@ namespace satdump
         v["unpark_at_minus"] = rotator_unpark_at_minus;
         v["rounding"] = rotator_rounding;
         v["rounding_decimal_places"] = rotator_decimal_precision;
+        v["rotator_az_min"] = rotator_az_min;
+        v["rotator_az_max"] = rotator_az_max;
         return v;
     }
 
@@ -178,5 +253,7 @@ namespace satdump
         rotator_unpark_at_minus = getValueOrDefault(v["unpark_at_minus"], rotator_unpark_at_minus);
         rotator_rounding = getValueOrDefault(v["rounding"], rotator_rounding);
         rotator_decimal_precision = getValueOrDefault(v["rotator_decimal_places"], rotator_decimal_precision);
+        rotator_az_min = getValueOrDefault(v["rotator_az_min"], rotator_az_min);
+        rotator_az_max = getValueOrDefault(v["rotator_az_max"], rotator_az_max);
     }
 }
