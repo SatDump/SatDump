@@ -6,6 +6,6 @@ namespace fengyun3
 {
     namespace mersi
     {
-        void mersi_match_detector_histograms(image::Image<uint16_t> &img, int ndet);
+        void mersi_match_detector_histograms(image::Image &img, int ndet);
     };
 };

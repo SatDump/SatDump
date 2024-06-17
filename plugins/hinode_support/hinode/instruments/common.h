@@ -102,7 +102,7 @@ namespace hinode
     {
         int apid = -1;
         ScienceHeader sci;
-        image::Image<uint16_t> img;
+        image::Image img;
     };
 
     class HinodeDepacketizer
@@ -158,10 +158,10 @@ namespace hinode
     {
     private:
         int current_main_id = -1;
-        image::Image<uint16_t> full_image;
+        image::Image full_image;
 
     public:
-        int pushSegment(DecodedImage &seg, image::Image<uint16_t> *img)
+        int pushSegment(DecodedImage &seg, image::Image *img)
         {
             if (seg.sci.FullImageSizeX == seg.sci.PartImageSizeX &&
                 seg.sci.FullImageSizeY == seg.sci.PartImageSizeY)
@@ -174,7 +174,7 @@ namespace hinode
                 *img = full_image;
                 ret = current_main_id;
                 current_main_id = seg.sci.MainID;
-                full_image.init(seg.sci.FullImageSizeX, seg.sci.FullImageSizeY, 1);
+                full_image.init(img->depth(), seg.sci.FullImageSizeX, seg.sci.FullImageSizeY, 1);
             }
 
             full_image.draw_image(0, seg.img, seg.sci.BasePointCoorX, seg.sci.BasePointCoorY);
@@ -182,7 +182,7 @@ namespace hinode
             return ret;
         }
 
-        image::Image<uint16_t> &getImage()
+        image::Image &getImage()
         {
             return full_image;
         }

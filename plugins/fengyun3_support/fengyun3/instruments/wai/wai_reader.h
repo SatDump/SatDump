@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include "common/image/image.h"
+#include <string>
+#include <vector>
 
 namespace fengyun3
 {
@@ -10,7 +12,7 @@ namespace fengyun3
         class WAIReader
         {
         private:
-            image::Image<uint16_t> image;
+            image::Image image;
             const std::string directory;
             void writeCurrent();
             int lines;

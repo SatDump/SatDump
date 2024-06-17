@@ -14,18 +14,21 @@ namespace noaa_metop
         class AVHRRReader
         {
         private:
-            struct view_pair{
+            struct view_pair
+            {
                 uint16_t space = 0;
                 uint16_t blackbody = 0;
 
-                view_pair& operator+=(view_pair const &obj){
+                view_pair &operator+=(view_pair const &obj)
+                {
                     this->space += obj.space;
                     this->blackbody += obj.blackbody;
 
                     return *this;
                 };
 
-                view_pair& operator/=(int const n){
+                view_pair &operator/=(int const n)
+                {
                     this->space /= n;
                     this->blackbody /= n;
 
@@ -51,7 +54,7 @@ namespace noaa_metop
             ~AVHRRReader();
             void work_metop(ccsds::CCSDSPacket &packet);
             void work_noaa(uint16_t *buffer);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
             void calibrate(nlohmann::json calib_coefs);
         };
     } // namespace noaa_metop

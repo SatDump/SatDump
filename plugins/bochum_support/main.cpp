@@ -19,6 +19,43 @@
 
 namespace bochum
 {
+    void sendUdpBroadcast(int port, uint8_t *data, int len)
+    {
+#if defined(_WIN32)
+        WSADATA wsa;
+        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+            throw std::runtime_error("Couldn't startup WSA socket!");
+#endif
+
+        struct sockaddr_in send_addr;
+        int fd = -1;
+
+        if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+            throw std::runtime_error("Error creating socket!");
+
+        int val_true = 1;
+        if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (const char *)&val_true, sizeof(val_true)) < 0)
+            throw std::runtime_error("Error setting socket option!");
+
+        memset(&send_addr, 0, sizeof(send_addr));
+        send_addr.sin_family = AF_INET;
+        send_addr.sin_port = htons(port);
+        send_addr.sin_addr.s_addr = INADDR_BROADCAST;
+
+        if (sendto(fd, (const char *)data, len, 0, (struct sockaddr *)&send_addr, sizeof(sockaddr)) < 0)
+            throw std::runtime_error(std::strerror(errno));
+
+#if defined(_WIN32)
+        closesocket(fd);
+        WSACleanup();
+#else
+        close(fd);
+#endif
+    }
+
+    nlohmann::json bochum_cfg;
+    std::thread udprx_th;
+
     void handleBochumPkt(std::string cmd);
     void udpReceiveThread()
     {
@@ -61,6 +98,10 @@ namespace bochum
             try
             {
                 std::string command = (char *)buffer_rx;
+
+                if (bochum_cfg.contains("rebroadcast_port"))
+                    sendUdpBroadcast(bochum_cfg["rebroadcast_port"].get<int>(), buffer_rx, nrecv);
+
                 handleBochumPkt(command);
             }
             catch (std::exception &e)
@@ -76,9 +117,6 @@ namespace bochum
         close(fd);
 #endif
     }
-
-    nlohmann::json bochum_cfg;
-    std::thread udprx_th;
 
     /////////////////////////////////////////////////////////////////
 
@@ -136,9 +174,9 @@ namespace bochum
                 if (final_entry.contains("fft_min"))
                     evt.fft_min = final_entry["fft_min"];
                 if (final_entry.contains("fft_max"))
-                    evt.fft_min = final_entry["fft_max"];
+                    evt.fft_max = final_entry["fft_max"];
                 if (final_entry.contains("fft_avgn"))
-                    evt.fft_avg = final_entry["fft_avgn"];
+                    evt.fft_avgn = final_entry["fft_avgn"];
                 if (final_entry.contains("fft_rate"))
                     evt.fft_rate = final_entry["fft_rate"];
                 if (final_entry.contains("waterfall_rate"))

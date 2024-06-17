@@ -1,5 +1,6 @@
 #include "wai_reader.h"
 #include "logger.h"
+#include "common/image/io.h"
 
 namespace fengyun3
 {
@@ -8,7 +9,7 @@ namespace fengyun3
         WAIReader::WAIReader(std::string directory) : directory(directory)
         {
             lines = 0;
-            image = image::Image<uint16_t>(832, 832, 1);
+            image = image::Image(16, 832, 832, 1);
         }
 
         WAIReader::~WAIReader()
@@ -17,8 +18,8 @@ namespace fengyun3
 
         void WAIReader::writeCurrent()
         {
-            image.save_img(std::string(directory + "/WAI_" + std::to_string(images_count++ + 1)).c_str());
-            image = image::Image<uint16_t>(832, 832, 1);
+            image::save_img(image, std::string(directory + "/WAI_" + std::to_string(images_count++ + 1)).c_str());
+            image = image::Image(16, 832, 832, 1);
 
             lines = 0;
         }
@@ -31,7 +32,7 @@ namespace fengyun3
             {
                 if (lines + 3603 < 832 * 832)
                     for (int i = 0; i < 3603; i++)
-                        image[lines + i] = packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1];
+                        image.set(lines + i, packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1]);
                 lines += 3603;
             }
             else if (marker == 1) // Start
@@ -42,14 +43,14 @@ namespace fengyun3
 
                 if (lines + 32591 < 832 * 832)
                     for (int i = 0; i < 32591; i++)
-                        image[lines + i] = packet[320 + i * 2 + 0] << 8 | packet[320 + i * 2 + 1];
+                        image.set(lines + i, packet[320 + i * 2 + 0] << 8 | packet[320 + i * 2 + 1]);
                 lines += 32591;
             }
             else
             {
                 if (lines + 32737 < 832 * 832)
                     for (int i = 0; i < 32737; i++)
-                        image[lines + i] = packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1];
+                        image.set(lines + i, packet[68 + i * 2 + 0] << 8 | packet[68 + i * 2 + 1]);
                 lines += 32737;
             }
         }

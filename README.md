@@ -48,7 +48,7 @@ Usage : satdump [pipeline_id] [input_level] [input_file] [output_file_or_directo
 Extra options (examples. Any parameter used in modules can be used here) :
   --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8] --dc_block --iq_swap
 Sample command :
-satdump metop_ahrpt baseband /home/user/metop_baseband.s16 metop_output_directory --samplerate 6e6 --baseband_format s16
+satdump metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format s16
 ```
 
 You can find a list of Satellite pipelines and their parameters [Here](https://docs.satdump.org/pipelines.html).
@@ -94,62 +94,30 @@ Dependency-free macOS builds are provided on the [releases page](https://github.
 General build instructions (Brew and XCode command line tools required)
 
 ```bash
-# Install dependencies
-brew install cmake volk jpeg tiff libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio jemalloc
+# Install build tools
+brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
-# Build and install libfftw3 to work around issue with brew version
-wget http://www.fftw.org/fftw-3.3.9.tar.gz
-tar xf fftw-3.3.9.tar.gz
-rm fftw-3.3.9.tar.gz
-cd fftw-3.3.9
-mkdir build && cd build
+# Clone SatDump
+git clone https://github.com/altillimity/satdump.git && cd satdump
 
-# For Intel Macs
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
+# Build dependencies
+./macOS/Configure-vcpkg.sh
 
-# For Apple Silicon Macs
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false ..
-
-make
-sudo make install
-cd ../..
-
-# Build and install nng since the brew version does not support TLS
-git clone -b v1.6.0 https://github.com/nanomsg/nng
-cd nng
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON ..
-make -j$(sysctl -n hw.logicalcpu)
-sudo make install
-cd ../..
-
-# Build and install airspyhf
-git clone https://github.com/airspy/airspyhf.git
-cd airspyhf
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(sysctl -n hw.logicalcpu)
-sudo make install
-cd ../..
-
-# Finally, SatDump
-git clone https://github.com/altillimity/satdump.git
-cd satdump
-mkdir build && cd build
+# Finally, build.
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release ..
+mkdir build && cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=osx-satdump ..
 make -j$(sysctl -n hw.logicalcpu)
 
-# To run without installing
+# To run without bundling
 ln -s ../pipelines .        # Symlink pipelines so it can run
 ln -s ../resources .        # Symlink resources so it can run
 ln -s ../satdump_cfg.json . # Symlink settings so it can run
+./satdump-ui
 
-# To install system-wide
-sudo make install
-
-# Make an app bundle (to add to your /Applications folder)
+# Make an app bundle (to add to your /Applications folder). Saves to build/MacApp, and
+# a .dmg is created as well. 'make install' is not supported.
 ../macOS/bundle.sh
 ```
 
@@ -160,7 +128,7 @@ On Linux, building from source is recommended, but builds are provided for x64-b
 ```bash
 # Install dependencies on Debian-based systems:
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev libtiff-dev libjemalloc-dev   # Core dependencies
-sudo apt install libvolk2-dev                                                                                # If this package is not found, use libvolk-dev or libvolk1-dev
+sudo apt install libvolk2-dev libcurl4-openssl-dev                                                           # If this package is not found, use libvolk-dev or libvolk1-dev
 sudo apt install libnng-dev                                                                                  # If this package is not found, follow build instructions below for NNG
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                   # All libraries required for live processing (optional)
 sudo apt install libglfw3-dev zenity                                                                         # Only if you want to build the GUI Version (optional)
@@ -172,7 +140,7 @@ sudo apt install intel-opencl-icd                                               
 
 # Install dependencies on Red-Hat-based systems:
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel tiff-devel
-sudo dnf install nng-devel
+sudo dnf install nng-devel curl-devel
 sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
 sudo dnf install glfw-devel zenity
 sudo dnf install libzstd-devel
@@ -182,7 +150,7 @@ sudo dnf install ocl-icd                                                        
 sudo dnf install intel-opencl                                                                                 # Optional, enables OpenCL for Intel Integrated Graphics
 
 # Install dependencies on Alpine-based systems:
-sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev jemalloc-dev tiff-dev                 # Adding the testing repository is required for libvolk-dev
+sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev jemalloc-dev tiff-dev curl-dev        # Adding the testing repository is required for libvolk-dev
 # You need to build libnng from source, see below.
 sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev
 sudo apk add glfw-dev zenity
@@ -239,3 +207,18 @@ Supported SDR devices are :
 - AirspyHF
 - LimeSDR Mini
 - HackRF
+
+
+### Docker
+
+Building and running under docker is a nice way to separate the build environment and libraries from the host OS.
+The build process is a multistage build that uses two images, one with the -dev packages and another for the runtime.
+This means that the runtime image can be kept smaller, although the disk space is still needed to complete the build.
+
+```bash
+# Build the images with compose, 8 parallel
+docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
+
+# Launch a shell inside the container/service
+docker compose run --rm -it satdump
+```

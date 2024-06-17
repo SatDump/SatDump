@@ -33,9 +33,9 @@ namespace cloudsat
             lines++;
         }
 
-        image::Image<uint16_t> CPReader::getChannel()
+        image::Image CPReader::getChannel()
         {
-            return image::Image<uint16_t>(image, 126, lines, 1);
+            return image::Image(image, 16, 126, lines, 1);
         }
     } // namespace avhrr
 } // namespace noaa

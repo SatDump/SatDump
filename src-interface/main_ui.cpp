@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT2 1
 #include "main_ui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imgui.h"
@@ -26,11 +27,11 @@ ImageViewWidget ivw;
 
 namespace satdump
 {
-    std::shared_ptr<RecorderApplication> recorder_app;
-    std::shared_ptr<ViewerApplication> viewer_app;
+    SATDUMP_DLL2 std::shared_ptr<RecorderApplication> recorder_app;
+    SATDUMP_DLL2 std::shared_ptr<ViewerApplication> viewer_app;
+    std::vector<std::shared_ptr<Application>> other_apps;
 
-    bool update_ui = true;
-    bool in_app = false; // true;
+    SATDUMP_DLL2 bool update_ui = true;
     bool open_recorder;
 
     widgets::MarkdownHelper credits_md;
@@ -51,12 +52,13 @@ namespace satdump
         std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         credits_md.set_md(credits_markdown);
 
-        registerApplications();
         registerViewerHandlers();
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
         open_recorder = satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("start_recorder_device");
+
+        eventBus->fire_event<AddGUIApplicationEvent>({other_apps});
 
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
@@ -92,30 +94,7 @@ namespace satdump
 
         std::pair<int, int> dims = backend::beginFrame();
         dims.second -= status_logger_sink->draw();
-        // ImGui::ShowDemoWindow();
 
-        /*if (in_app)
-        {
-            ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-            ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
-            current_app->draw();
-            ImGui::End();
-        }*/
-        /*else if (processing::is_processing)
-        {
-            processing::ui_call_list_mutex->lock();
-            float winheight = processing::ui_call_list->size() > 0 ? wheight / processing::ui_call_list->size() : wheight;
-            float currentPos = 0;
-            for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
-            {
-                ImGui::SetNextWindowPos({0, currentPos});
-                currentPos += winheight;
-                ImGui::SetNextWindowSize({(float)wwidth, (float)winheight});
-                module->drawUI(false);
-            }
-            processing::ui_call_list_mutex->unlock();
-        }*/
         // else
         {
             ImGui::SetNextWindowPos({0, 0});
@@ -165,30 +144,14 @@ namespace satdump
                     viewer_app->draw();
                     ImGui::EndTabItem();
                 }
-#if 0
-                if (ImGui::BeginTabItem("Applications"))
+                for (auto &app : other_apps)
                 {
-                    // current_app->draw();
-                    if (in_app)
+                    if (ImGui::BeginTabItem(std::string(app->get_name() + "##appsoption").c_str()))
                     {
-                        // current_app->draw();
+                        app->draw();
+                        ImGui::EndTabItem();
                     }
-                    else
-                    {
-
-                        for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
-                        {
-                            if (ImGui::Button(appEntry.first.c_str()))
-                            {
-                                in_app = true;
-                                // current_app = application_registry[appEntry.first]();
-                            }
-                        }
-                    }
-
-                    ImGui::EndTabItem();
                 }
-#endif
                 if (ImGui::BeginTabItem("Settings"))
                 {
                     ImGui::BeginChild("settings", ImGui::GetContentRegionAvail());
@@ -253,5 +216,5 @@ namespace satdump
         backend::endFrame();
     }
 
-    ctpl::thread_pool ui_thread_pool(8);
+    SATDUMP_DLL2 ctpl::thread_pool ui_thread_pool(8);
 }

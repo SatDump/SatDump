@@ -211,7 +211,7 @@ std::vector<dsp::SourceDescriptor> SDDCSource::getAvailableSources()
 
         const char *name = sddc_get_hw_model_name(device);
 
-        results.push_back({"sddc", std::string(name) + " #" + std::to_string(i), i});
+        results.push_back({"sddc", std::string(name) + " #" + std::to_string(i), std::to_string(i)});
 
         sddc_close(device);
     }

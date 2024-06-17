@@ -17,7 +17,7 @@ ImageViewWidget::~ImageViewWidget()
 {
 }
 
-void ImageViewWidget::update(image::Image<uint16_t> image)
+void ImageViewWidget::update(image::Image &image)
 {
     image_mtx.lock();
     if (image.width() == 0 || image.height() == 0)
@@ -31,7 +31,7 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
         fimg_height = img_chunks[0].img_height = image.height();
 
         img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
-        ushort_to_rgba(image.data(), img_chunks[0].texture_buffer.data(), img_chunks[0].img_width * img_chunks[0].img_height, image.channels());
+        image::image_to_rgba(image, img_chunks[0].texture_buffer.data());
     }
     else
     {
@@ -62,63 +62,7 @@ void ImageViewWidget::update(image::Image<uint16_t> image)
 
                 img_chunks[i].texture_buffer.resize(img_chunks[i].img_width * img_chunks[i].img_height);
                 auto crop = image.crop_to(width_start, height_start, width_end, height_end);
-                ushort_to_rgba(crop.data(), img_chunks[i].texture_buffer.data(), img_chunks[i].img_width * img_chunks[i].img_height, image.channels());
-
-                img_chunks[i].offset_x = width_start;
-                img_chunks[i].offset_y = fimg_height - height_start;
-            }
-        }
-    }
-    has_to_update = true;
-    image_mtx.unlock();
-}
-
-void ImageViewWidget::update(image::Image<uint8_t> image)
-{
-    image_mtx.lock();
-    if (image.width() == 0 || image.height() == 0)
-    {
-        img_chunks.resize(0);
-    }
-    else if (image.width() <= maxTextureSize && image.height() <= maxTextureSize)
-    {
-        img_chunks.resize(1);
-        fimg_width = img_chunks[0].img_width = image.width();
-        fimg_height = img_chunks[0].img_height = image.height();
-
-        img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
-        uchar_to_rgba(image.data(), img_chunks[0].texture_buffer.data(), img_chunks[0].img_width * img_chunks[0].img_height, image.channels());
-    }
-    else
-    {
-        logger->trace("Mouse tooltip might have an issue here! (TODO)");
-        fimg_width = image.width();
-        fimg_height = image.height();
-
-        int chunksx = fimg_width / (maxTextureSize / 2);
-        int chunksy = fimg_height / (maxTextureSize / 2);
-        if (chunksx == 0)
-            chunksx = 1;
-        if (chunksy == 0)
-            chunksy = 1;
-        img_chunks.resize(chunksx * chunksy);
-
-        for (int ix = 0; ix < chunksx; ix++)
-        {
-            for (int iy = 0; iy < chunksy; iy++)
-            {
-                int i = iy * chunksx + ix;
-                int height_start = ((double)iy / (double)chunksy) * (double)fimg_height;
-                int height_end = (((double)iy + 1.0) / (double)chunksy) * (double)fimg_height;
-                int width_start = ((double)ix / (double)chunksx) * (double)fimg_width;
-                int width_end = (((double)ix + 1.0) / (double)chunksx) * (double)fimg_width;
-
-                img_chunks[i].img_width = width_end - width_start;
-                img_chunks[i].img_height = height_end - height_start;
-
-                img_chunks[i].texture_buffer.resize(img_chunks[i].img_width * img_chunks[i].img_height);
-                auto crop = image.crop_to(width_start, height_start, width_end, height_end);
-                uchar_to_rgba(crop.data(), img_chunks[i].texture_buffer.data(), img_chunks[i].img_width * img_chunks[i].img_height, image.channels());
+                image::image_to_rgba(crop, img_chunks[i].texture_buffer.data());
 
                 img_chunks[i].offset_x = width_start;
                 img_chunks[i].offset_y = fimg_height - height_start;

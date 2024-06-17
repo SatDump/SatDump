@@ -21,9 +21,9 @@ namespace aura
             ~OMIReader();
             int lines;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannel(int channel);
-            image::Image<uint16_t> getImageRaw();
-            image::Image<uint16_t> getImageVisible();
+            image::Image getChannel(int channel);
+            image::Image getImageRaw();
+            image::Image getImageVisible();
         };
     } // namespace ceres
 } // namespace aqua

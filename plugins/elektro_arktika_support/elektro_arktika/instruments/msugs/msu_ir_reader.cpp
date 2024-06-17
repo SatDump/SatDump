@@ -77,9 +77,9 @@ namespace elektro_arktika
             }
         }
 
-        image::Image<uint16_t> MSUIRReader::getImage(int channel)
+        image::Image MSUIRReader::getImage(int channel)
         {
-            return image::Image<uint16_t>(&imageBuffer[channel][0], 183 * (36 / 2), 3400, 1);
+            return image::Image(&imageBuffer[channel][0],16, 183 * (36 / 2), 3400, 1);
         }
     } // namespace msugs
 } // namespace elektro_arktika

@@ -18,7 +18,7 @@ namespace cloudsat
             ~CPReader();
             int lines;
             void work(uint8_t *buffer);
-            image::Image<uint16_t> getChannel();
+            image::Image getChannel();
         };
     } // namespace avhrr
 } // namespace noaa

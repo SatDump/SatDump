@@ -155,7 +155,7 @@ std::vector<dsp::SourceDescriptor> SDRPPServerSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"sdrpp_server", "SDR++ Server", 0, false});
+    results.push_back({"sdrpp_server", "SDR++ Server", "0", false});
 
     return results;
 }

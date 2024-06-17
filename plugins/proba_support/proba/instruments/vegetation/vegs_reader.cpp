@@ -39,9 +39,9 @@ namespace proba
             img_data.resize((lines + 1) * line_size);
         }
 
-        image::Image<uint16_t> VegetationS::getImg()
+        image::Image VegetationS::getImg()
         {
-            return image::Image<uint16_t>(img_data.data(), line_size, lines, 1);
+            return image::Image(img_data.data(), 16, line_size, lines, 1);
         }
     } // namespace swap
 } // namespace proba

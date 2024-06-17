@@ -43,7 +43,6 @@ namespace satdump
         const std::string app_id;
         virtual void drawUI();
 
-        bool dragging_panel = false;
         float panel_ratio = 0.23;
         float last_width = -1.0f;
 
@@ -91,11 +90,15 @@ namespace satdump
         OverlayHandler projection_overlay_handler;
 
     public: // Projection UI stuff
-        image::Image<uint16_t> projected_image_result;
+        image::Image projected_image_result;
         ImageViewWidget projection_image_widget;
         void drawProjectionPanel();
 
         int projection_osm_zoom = 3;
+        double projection_osm_lat1 = -85.0511;
+        double projection_osm_lon1 = -180.0;
+        double projection_osm_lat2 = 85.0511;
+        double projection_osm_lon2 = 180.0;
         bool is_opening_layer = false;
 
         std::deque<ProjectionLayer> projection_layers;
@@ -234,6 +237,7 @@ namespace satdump
 
     public:
         static std::string getID() { return "viewer"; }
+        std::string get_name() { return "Viewer"; }
         static std::shared_ptr<Application> getInstance() { return std::make_shared<ViewerApplication>(); }
     };
 };

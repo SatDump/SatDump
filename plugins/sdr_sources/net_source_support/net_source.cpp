@@ -166,7 +166,7 @@ std::vector<dsp::SourceDescriptor> NetSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"net_source", "Network Source", 0, false});
+    results.push_back({"net_source", "Network Source", "0", false});
 
     return results;
 }

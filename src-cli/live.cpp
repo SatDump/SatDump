@@ -37,7 +37,7 @@ int main_live(int argc, char *argv[])
     std::string output_file = argv[3];
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4]);
+    nlohmann::json parameters = parse_common_flags(argc - 4, &argv[4], {{"source_id", typeid(std::string)}});
 
     // Init SatDump
     satdump::tle_file_override = parameters.contains("tle_override") ? parameters["tle_override"].get<std::string>() : "";
@@ -118,7 +118,7 @@ int main_live(int argc, char *argv[])
         uint64_t frequency;
         uint64_t timeout;
         std::string handler_id;
-        uint64_t hdl_dev_id = 0;
+        std::string hdl_dev_id;
 
         try
         {
@@ -127,7 +127,7 @@ int main_live(int argc, char *argv[])
             timeout = parameters.contains("timeout") ? parameters["timeout"].get<uint64_t>() : 0;
             handler_id = parameters["source"].get<std::string>();
             if (parameters.contains("source_id"))
-                hdl_dev_id = parameters["source_id"].get<uint64_t>();
+                hdl_dev_id = parameters["source_id"].get<std::string>();
         }
         catch (std::exception &e)
         {
@@ -155,18 +155,7 @@ int main_live(int argc, char *argv[])
             {
                 if (parameters.contains("source_id"))
                 {
-#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
-                    char cmp_buff1[100];
-                    char cmp_buff2[100];
-
-                    snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
-                    std::string cmp1 = cmp_buff1;
-                    snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
-                    std::string cmp2 = cmp_buff2;
-                    if (cmp1 == cmp2)
-#else
                     if (hdl_dev_id == src.unique_id)
-#endif
                     {
                         selected_src = src;
                         src_found = true;
@@ -234,7 +223,7 @@ int main_live(int argc, char *argv[])
                 }
 
                 std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(vpipeline);
-                vparams["baseband_format"] = "f32";
+                vparams["baseband_format"] = "cf32";
                 vparams["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
                 vparams["start_timestamp"] = (double)time(0);     // Some pipelines need this
                 vparams["samplerate"] = samplerate;
@@ -328,7 +317,7 @@ int main_live(int argc, char *argv[])
             }
 
             // Init pipeline
-            parameters["baseband_format"] = "f32";
+            parameters["baseband_format"] = "cf32";
             parameters["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             parameters["start_timestamp"] = (double)time(0);     // Some pipelines need this
             std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);

@@ -3,6 +3,8 @@
 
 #include "file_source.h"
 
+#include "logger.h"
+
 namespace dsp
 {
     std::map<std::string, RegisteredSource> dsp_sources_registry;
@@ -16,8 +18,15 @@ namespace dsp
             if (remote)
                 if (source.first == "remote")
                     continue;
-            std::vector<SourceDescriptor> devices = source.second.getSources();
-            all_sources.insert(all_sources.end(), devices.begin(), devices.end());
+            try
+            {
+                std::vector<SourceDescriptor> devices = source.second.getSources();
+                all_sources.insert(all_sources.end(), devices.begin(), devices.end());
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error trying to list " + source.first + " sources! %s", e.what());
+            }
         }
 
         return all_sources;

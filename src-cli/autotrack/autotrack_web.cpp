@@ -2,6 +2,7 @@
 #include "../webserver.h"
 #include "logger.h"
 #include "common/utils.h"
+#include "common/image/jpeg_utils.h"
 
 void AutoTrackApp::setup_webserver()
 {
@@ -59,7 +60,8 @@ void AutoTrackApp::setup_webserver()
 
         webserver::handle_callback_polarplot = [this]() -> std::vector<uint8_t>
         {
-            std::vector<uint8_t> vec = object_tracker.getPolarPlotImg().save_jpeg_mem();
+            auto img = object_tracker.getPolarPlotImg();
+            std::vector<uint8_t> vec = image::save_jpeg_mem(img);
             return vec;
         };
 
@@ -73,13 +75,15 @@ void AutoTrackApp::setup_webserver()
                     logger->trace("Enabling FFT");
                 }
                 web_last_fft_access = time(nullptr);
-                std::vector<uint8_t> vec = fft_plot->drawImg(512, 512).save_jpeg_mem();
+                auto img = fft_plot->drawImg(512, 512);
+                std::vector<uint8_t> vec = image::save_jpeg_mem(img);
                 return vec;
             };
 
         webserver::handle_callback_schedule = [this]() -> std::vector<uint8_t>
         {
-            std::vector<uint8_t> vec = auto_scheduler.getScheduleImage(512, getTime()).save_jpeg_mem();
+            auto img = auto_scheduler.getScheduleImage(512, getTime());
+            std::vector<uint8_t> vec = image::save_jpeg_mem(img);
             return vec;
         };
 

@@ -19,7 +19,7 @@ namespace fy4
                                                   { delete[] p; });
             std::fill(segments_done.get(), &segments_done.get()[seg_count], false);
 
-            image = image::Image<uint8_t>(segment_width, segment_height * max_seg, 1);
+            image = image::Image(8, segment_width, segment_height * max_seg, 1);
             seg_height = segment_height;
             seg_width = segment_width;
 
@@ -30,11 +30,11 @@ namespace fy4
         {
         }
 
-        void SegmentedLRITImageDecoder::pushSegment(uint8_t *data, int segc, int height)
+        void SegmentedLRITImageDecoder::pushSegment(image::Image &data, int segc, int height)
         {
-            if (segc >= seg_count)
+            if (segc >= seg_count || segc < 0)
                 return;
-            std::memcpy(&image[(seg_height * seg_width) * segc], data, height * seg_width);
+            image::imemcpy(image, (seg_height * seg_width) * segc, data, 0, height * seg_width);
             segments_done.get()[segc] = true;
         }
 

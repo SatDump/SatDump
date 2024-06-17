@@ -17,7 +17,7 @@ namespace goes
             const std::string suvi_directory;
             const products::SUVI::GRBProductSUVI suvi_product;
             double currentTimeStamp;
-            image::Image<uint16_t> full_image;
+            image::Image full_image;
 
             void save();
             void reset();
@@ -25,7 +25,7 @@ namespace goes
         public:
             GRBSUVIImageAssembler(std::string abi_dir, products::SUVI::GRBProductSUVI config);
             ~GRBSUVIImageAssembler();
-            void pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block);
+            void pushBlock(GRBImagePayloadHeader header, image::Image &block);
 
             image::ImageSavingThread *saving_thread;
         };

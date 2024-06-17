@@ -97,16 +97,16 @@ namespace dmsp
             ir_ch.resize((lines + 1) * width);
         }
 
-        image::Image<uint8_t> OLSRTDReader::getChannelVIS()
+        image::Image OLSRTDReader::getChannelVIS()
         {
-            image::Image<uint8_t> img(vis_ch.data(), width, lines, 1);
+            image::Image img(vis_ch.data(), 8, width, lines, 1);
             img.mirror(true, false);
             return img;
         }
 
-        image::Image<uint8_t> OLSRTDReader::getChannelIR()
+        image::Image OLSRTDReader::getChannelIR()
         {
-            image::Image<uint8_t> img(ir_ch.data(), width, lines, 1);
+            image::Image img(ir_ch.data(), 2, width, lines, 1);
             img.mirror(true, false);
             return img;
         }

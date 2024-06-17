@@ -35,7 +35,7 @@ namespace goes
 
             // Utils
             std::string timestamp_to_string(double timestamp);
-            image::Image<uint16_t> get_image_product(GRBFilePayload &payload);
+            image::Image get_image_product(GRBFilePayload &payload);
 
             // ABI Product processing
             std::map<int, std::shared_ptr<GRBABIImageAssembler>> abi_image_assemblers;

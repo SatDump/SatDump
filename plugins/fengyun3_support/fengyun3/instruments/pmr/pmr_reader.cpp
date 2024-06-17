@@ -1,5 +1,6 @@
 #include "pmr_reader.h"
 #include "logger.h"
+#include "common/image/io.h"
 
 namespace fengyun3
 {
@@ -7,7 +8,7 @@ namespace fengyun3
     {
         PMRReader::PMRReader(std::string directory) : directory(directory)
         {
-            image.init(645, 58 + 1, 1);
+            image.init(16, 645, 58 + 1, 1);
         }
 
         PMRReader::~PMRReader()
@@ -18,7 +19,7 @@ namespace fengyun3
         {
             // image.equalize();
             // image.normalize();
-            image.save_img(std::string(directory + "/PMR_" + std::to_string(images_count++ + 1)).c_str());
+            image::save_img(image, std::string(directory + "/PMR_" + std::to_string(images_count++ + 1)).c_str());
             image.fill(0);
         }
 
@@ -56,7 +57,7 @@ namespace fengyun3
                 if (v > UINT16_MAX)
                     v = UINT16_MAX;
 
-                image[cnt * 645 + i] = v;
+                image.set(cnt * 645 + i, v);
             }
         }
     } // namespace virr

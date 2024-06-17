@@ -4,6 +4,7 @@
 #include "nlohmann/json.hpp"
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/tracking/tracking.h"
+#include "common/projection/projs2/proj_json.h"
 
 namespace satdump
 {
@@ -32,11 +33,22 @@ namespace satdump
         {
             if (cfg.contains("ephemeris") && cfg["ephemeris"].size() > 1)
                 sat_tracker = std::make_shared<satdump::SatelliteTracker>((nlohmann::json)cfg["ephemeris"]);
-            else
+            else if (tle.norad != -1)
                 sat_tracker = std::make_shared<satdump::SatelliteTracker>(tle);
         }
 
         virtual bool get_position(int x, int y, geodetic::geodetic_coords_t &pos) = 0;
+    };
+
+    /* Warning, this does not check for image bounds! */
+    class StandardSatProj : public SatelliteProjection
+    {
+    protected:
+        proj::projection_t p;
+
+    public:
+        StandardSatProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw);
+        bool get_position(int x, int y, geodetic::geodetic_coords_t &pos);
     };
 
     struct RequestSatProjEvent
@@ -48,5 +60,5 @@ namespace satdump
         nlohmann::ordered_json timestamps_raw;
     };
 
-    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw);
+    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw, bool allow_standard = false);
 }

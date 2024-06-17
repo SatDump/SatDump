@@ -7,11 +7,26 @@
 #include <string>
 #include <map>
 #include <memory>
+#include "common/lrit/lrit_file.h"
+#include <string>
 
 namespace goes
 {
     namespace hrit
     {
+        struct GOESxRITProductMeta
+        {
+            std::string filename;
+            bool is_goesn = false;
+            std::string region = "Others";
+            int channel = -1;
+            std::string satellite_name;
+            std::string satellite_short_name;
+            time_t scan_time = 0;
+            std::shared_ptr<::lrit::ImageNavigationRecord> image_navigation_record;
+            std::shared_ptr<::lrit::ImageDataFunctionRecord> image_data_function_record;
+        };
+
         class SegmentedLRITImageDecoder
         {
         private:
@@ -23,11 +38,11 @@ namespace goes
             SegmentedLRITImageDecoder(int max_seg, int max_width, int max_height, uint16_t id);
             SegmentedLRITImageDecoder();
             ~SegmentedLRITImageDecoder();
-            void pushSegment(uint8_t* data, size_t this_size, int segc);
+            void pushSegment(uint8_t *data, size_t this_size, int segc);
             bool isComplete();
-            std::shared_ptr<image::Image<uint8_t>> image;
+            std::shared_ptr<image::Image> image;
             int image_id = -1;
-            std::string filename;
+            GOESxRITProductMeta meta;
         };
 
         enum lrit_image_status
@@ -35,35 +50,6 @@ namespace goes
             RECEIVING,
             SAVING,
             IDLE
-        };
-
-        class GOESRFalseColorComposer
-        {
-        private:
-            image::Image<uint8_t> ch2_curve, fc_lut, falsecolor;
-            std::shared_ptr<image::Image<uint8_t>> ch2, ch13;
-            time_t time2, time13;
-
-            void generateCompo();
-
-        public:
-            GOESRFalseColorComposer();
-            ~GOESRFalseColorComposer();
-
-            bool hasData = false;
-
-            std::string filename, directory;
-
-            void save();
-            void push2(std::shared_ptr<image::Image<uint8_t>> const &img, time_t time);
-            void push13(std::shared_ptr<image::Image<uint8_t>> const &img, time_t time);
-
-        public:
-            // UI Stuff
-            lrit_image_status imageStatus;
-            bool hasToUpdate = false;
-            unsigned int textureID = 0;
-            uint32_t *textureBuffer;
         };
     } // namespace hrit
 } // namespace goes

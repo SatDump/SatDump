@@ -22,7 +22,7 @@ namespace fengyun3
             int lines;
             std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     }
 }

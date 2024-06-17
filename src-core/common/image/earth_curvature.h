@@ -6,7 +6,6 @@ namespace image
 {
     namespace earth_curvature
     {
-        template <typename T>
-        Image<T> correct_earth_curvature(Image<T> &image, float satellite_height, float swath, float resolution_km, float *foward_table = nullptr);
+        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table = nullptr);
     }
 }

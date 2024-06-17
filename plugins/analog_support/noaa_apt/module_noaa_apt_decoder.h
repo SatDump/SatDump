@@ -18,8 +18,8 @@ namespace noaa_apt
     struct APTWedge
     {
         // Info about the wedge
-        int start_line = 0;      // Start line
-        int std_dev[16] = { 0 }; // StdDev in section of wedge (noise est)
+        int start_line = 0;    // Start line
+        int std_dev[16] = {0}; // StdDev in section of wedge (noise est)
 
         // Values
         int ref1 = 0;
@@ -61,7 +61,7 @@ namespace noaa_apt
         std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
         std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 
-        image::Image<uint16_t> wip_apt_image;
+        image::Image wip_apt_image;
 
         // UI Stuff
         instrument_status_t apt_status = DECODING;
@@ -70,10 +70,10 @@ namespace noaa_apt
         uint32_t *textureBuffer = nullptr;
 
         // Functions
-        image::Image<uint16_t> synchronize(int line_cnt);
+        image::Image synchronize(int line_cnt);
 
     protected: // Wedge parsing
-        std::vector<APTWedge> parse_wedge_full(image::Image<uint16_t> &wedge);
+        std::vector<APTWedge> parse_wedge_full(image::Image &wedge);
         void get_calib_values_wedge(std::vector<APTWedge> &wedges, int &new_white, int &new_black);
 
     public:

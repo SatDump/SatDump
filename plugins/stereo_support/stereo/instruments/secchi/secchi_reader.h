@@ -37,8 +37,8 @@ namespace stereo
             std::string last_filename_3 = "";
 
         private:
-            image::Image<uint16_t> decompress_icer_tool(uint8_t *data, int dsize, int size);
-            image::Image<uint16_t> decompress_rice_tool(uint8_t *data, int dsize, int size);
+            image::Image decompress_icer_tool(uint8_t *data, int dsize, int size);
+            image::Image decompress_rice_tool(uint8_t *data, int dsize, int size);
 
         public:
             SECCHIReader(std::string icer_path, std::string output_directory);

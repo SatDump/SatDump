@@ -107,6 +107,12 @@
             "samplerate": {
                 "value": 6e6
             },
+            "fill_missing": {
+                "type": "bool",
+                "value": false,
+                "name": "Fill Missing Data",
+                "description": "Corrects black lines caused by\ninterference or signal drop-outs"
+            },
             "write_dcs": {
                 "type": "bool",
                 "value": false,
@@ -146,6 +152,7 @@
             },
             "products": {
                 "goes_lrit_data_decoder": {
+                    "max_fill_lines": 50,
                     "write_images": true,
                     "write_emwin": true,
                     "write_messages": true,

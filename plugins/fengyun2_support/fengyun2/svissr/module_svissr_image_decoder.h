@@ -33,11 +33,11 @@ namespace fengyun_svissr
 
             double timestamp;
 
-            image::Image<uint16_t> image1;
-            image::Image<uint16_t> image2;
-            image::Image<uint16_t> image3;
-            image::Image<uint16_t> image4;
-            image::Image<uint16_t> image5;
+            image::Image image1;
+            image::Image image2;
+            image::Image image3;
+            image::Image image4;
+            image::Image image5;
 
             std::string directory;
         };

@@ -43,7 +43,7 @@ namespace satdump
             {
                 if (sources[i].source_type == source)
                 {
-                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<uint64_t>() != sources[i].unique_id)
+                    if (cli_settings.contains("source_id") && cli_settings["source_id"].get<std::string>() != sources[i].unique_id)
                         continue;
 
                     try
@@ -200,6 +200,8 @@ namespace satdump
                                                                         fft_plot->scale_min = waterfall_plot->scale_min = evt.fft_min;
                                                                     if (evt.fft_max != -1)
                                                                         fft_plot->scale_max = waterfall_plot->scale_max = evt.fft_max;
+                                                                    if (evt.fft_avgn != -1)
+                                                                        fft->avg_num = evt.fft_avgn;
                                                                     if(evt.fft_size != -1 || evt.fft_rate != -1 || evt.waterfall_rate!=-1) 
                                                                     {
                                                                         if (evt.fft_size != -1)
@@ -522,18 +524,18 @@ namespace satdump
                     bool assume_recording = is_recording;
                     if (assume_recording)
                         style::beginDisabled();
-                    if (ImGui::Combo("Format", &select_sample_format, "f32\0"
-                                                                      "s16\0"
-                                                                      "s8\0"
+                    if (ImGui::Combo("Format", &select_sample_format, "cf32\0"
+                                                                      "cs16\0"
+                                                                      "cs8\0"
                                                                       "wav16\0"
 #ifdef BUILD_ZIQ
-                                                                      "ziq s8\0"
-                                                                      "ziq s16\0"
-                                                                      "ziq f32\0"
+                                                                      "ziq cs8\0"
+                                                                      "ziq cs16\0"
+                                                                      "ziq cf32\0"
 #endif
 #ifdef BUILD_ZIQ2
-                                                                      "ziq2 s8 (WIP)\0"
-                                                                      "ziq2 s16 (WIP)\0"
+                                                                      "ziq2 cs8 (WIP)\0"
+                                                                      "ziq2 cs16 (WIP)\0"
 #endif
                                      ))
                         set_output_sample_format();

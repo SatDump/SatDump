@@ -19,9 +19,9 @@ HeaderInfo try_parse_header(std::string file)
         logger->debug("File is wav!");
         info.samplerate = wav::parseHeaderFromFileWav(file).samplerate;
         if (wav::parseHeaderFromFileWav(file).bits_per_sample == 8)
-            info.type = "u8";
+            info.type = "cu8";
         else if (wav::parseHeaderFromFileWav(file).bits_per_sample == 16)
-            info.type = "s16";
+            info.type = "cs16";
         info.valid = true;
     }
     else if (wav::isValidRF64(wav::parseHeaderFromFileWav(file)))
@@ -29,9 +29,9 @@ HeaderInfo try_parse_header(std::string file)
         logger->debug("File is RF64!");
         info.samplerate = wav::parseHeaderFromFileRF64(file).samplerate;
         if (wav::parseHeaderFromFileRF64(file).bits_per_sample == 8)
-            info.type = "u8";
+            info.type = "cu8";
         else if (wav::parseHeaderFromFileRF64(file).bits_per_sample == 16)
-            info.type = "s16";
+            info.type = "cs16";
         info.valid = true;
     }
 #ifdef BUILD_ZIQ

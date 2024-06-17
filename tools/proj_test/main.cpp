@@ -11,6 +11,7 @@
 #include "common/utils.h"
 #include "init.h"
 #include "common/geodetic/vincentys_calculations.h"
+#include "common/image/io.h"
 
 geodetic::geodetic_coords_t calculate_center_of_points(std::vector<geodetic::geodetic_coords_t> points)
 {
@@ -73,6 +74,7 @@ int main(int /*argc*/, char *argv[])
     std::vector<double> final_tt;
     nlohmann::json final_mtd;
     operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
+    operation_t.input_image = operation_t.input_image.to16bits();
     // operation_t.input_image.median_blur();
     nlohmann::json proj_cfg = /* img_pro.get_proj_cfg(); */ loadJsonFile(argv[2]);
     proj_cfg["metadata"] = final_mtd;
@@ -82,8 +84,8 @@ int main(int /*argc*/, char *argv[])
     operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
                                                                            operation_t.input_image.width(),
                                                                            operation_t.input_image.height());
-    operation_t.output_width = 2048 * 20;  // 10;
-    operation_t.output_height = 1024 * 20; // 10;
+    operation_t.output_width = 2048 * 10;  // 10;
+    operation_t.output_height = 1024 * 10; // 10;
     operation_t.output_rgba = true;
 
     auto warp_result = satdump::warp::performSmartWarp(operation_t);
@@ -93,7 +95,7 @@ int main(int /*argc*/, char *argv[])
     projector_final.init(warp_result.output_image.width(), warp_result.output_image.height(), warp_result.top_left.lon, warp_result.top_left.lat, warp_result.bottom_right.lon, warp_result.bottom_right.lat);
 
     logger->info("Map overlay!");
-    unsigned short color[4] = {0, 65535, 0, 65535};
+    std::vector<double> color = {0, 1, 0, 1};
     map::drawProjectedMapShapefile({resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
                                    warp_result.output_image,
                                    color,
@@ -105,7 +107,7 @@ int main(int /*argc*/, char *argv[])
                                    });
 
     {
-        unsigned short color[4] = {65535, 65535, 0, 65535};
+        std::vector<double> color = {1, 1, 0, 1};
         map::drawProjectedMapShapefile(
             {resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")},
             warp_result.output_image,
@@ -133,5 +135,5 @@ int main(int /*argc*/, char *argv[])
     }
 #endif
 
-    warp_result.output_image.save_img("test");
+    image::save_img(warp_result.output_image, "test");
 }

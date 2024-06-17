@@ -51,7 +51,7 @@ namespace fengyun3
             }
         }
 
-        image::Image<uint16_t> MWHSReader::getChannel(int channel)
+        image::Image MWHSReader::getChannel(int channel)
         {
             timestamps.clear();
             std::vector<std::pair<double, std::array<std::array<unsigned short, 98>, 6>>> imageVector(imageData.begin(), imageData.end());
@@ -64,7 +64,7 @@ namespace fengyun3
                           return el1.first < el2.first;
                       });
 
-            image::Image<uint16_t> img(98, imageVector.size(), 1);
+            image::Image img(16, 98, imageVector.size(), 1);
 
             if (imageVector.size() > 0)
             {
@@ -73,7 +73,7 @@ namespace fengyun3
                 // Reconstitute the image. Works "OK", not perfect...
                 for (const std::pair<double, std::array<std::array<unsigned short, 98>, 6>> &lineData : imageVector)
                 {
-                    std::memcpy(&img.data()[line * 98], lineData.second[channel].data(), 2 * 98);
+                    std::memcpy((uint8_t*)img.raw_data() + line * 98 * img.typesize(), lineData.second[channel].data(), 2 * 98);
                     line++;
                     timestamps.push_back(lineData.first);
                 }

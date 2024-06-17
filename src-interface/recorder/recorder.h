@@ -70,7 +70,7 @@ namespace satdump
         int waterfall_rate = -1;
         float fft_max = -1;
         float fft_min = -1;
-        float fft_avg = -1;
+        float fft_avgn = -1;
     };
 
     class RecorderApplication : public Application
@@ -226,6 +226,7 @@ namespace satdump
 
     public:
         static std::string getID() { return "recorder"; }
+        std::string get_name() { return "Recorder"; }
         static std::shared_ptr<Application> getInstance() { return std::make_shared<RecorderApplication>(); }
     };
 };

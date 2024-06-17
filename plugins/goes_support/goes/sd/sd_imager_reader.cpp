@@ -3,6 +3,8 @@
 #include "common/utils.h"
 #include <filesystem>
 #include <cstring>
+#include "common/image/io.h"
+#include "common/image/processing.h"
 
 #define IMG_WIDTH 40000
 
@@ -124,27 +126,27 @@ namespace goes
             wip_scanline.insert(wip_scanline.end(), &words[0], &words[48]);
         }
 
-        image::Image<uint16_t> SDImagerReader::getChannel(int c)
+        image::Image SDImagerReader::getChannel(int c)
         {
-            image::Image<uint16_t> img;
+            image::Image img;
 
             if (c == 0)
-                img = image::Image<uint16_t>(image_vis.data(), IMG_WIDTH, lines * 8, 1);
+                img = image::Image(image_vis.data(), 16, IMG_WIDTH, lines * 8, 1);
             else if (c == 1)
-                img = image::Image<uint16_t>(image_ir1.data(), IMG_WIDTH, lines * 2, 1);
+                img = image::Image(image_ir1.data(), 16, IMG_WIDTH, lines * 2, 1);
             else if (c == 2)
-                img = image::Image<uint16_t>(image_ir2.data(), IMG_WIDTH, lines * 2, 1);
+                img = image::Image(image_ir2.data(), 16, IMG_WIDTH, lines * 2, 1);
             else if (c == 3)
-                img = image::Image<uint16_t>(image_ir3.data(), IMG_WIDTH, lines * 2, 1);
+                img = image::Image(image_ir3.data(), 16, IMG_WIDTH, lines * 2, 1);
             else if (c == 4)
-                img = image::Image<uint16_t>(image_ir4.data(), IMG_WIDTH, lines * 2, 1);
+                img = image::Image(image_ir4.data(), 16, IMG_WIDTH, lines * 2, 1);
 
             if (c == 0)
                 img.crop(0, 21072);
             else
                 img.crop(0, 21072 / 4);
 
-            img.median_blur();
+            image::median_blur(img);
 
             img.resize_bilinear(img.width(), img.height() * 1.75);
 
@@ -164,11 +166,17 @@ namespace goes
                 if (!std::filesystem::exists(dir))
                     std::filesystem::create_directories(dir);
 
-                getChannel(0).save_img(dir + "/VIS", false);
-                getChannel(1).save_img(dir + "/IR1", false);
-                getChannel(2).save_img(dir + "/IR2", false);
-                getChannel(3).save_img(dir + "/IR3", false);
-                getChannel(4).save_img(dir + "/IR4", false);
+                auto img = getChannel(0);
+                image::save_img(img, dir + "/VIS", false);
+                img = getChannel(1);
+                image::save_img(img, dir + "/IR1", false);
+                img = getChannel(2);
+                image::save_img(img, dir + "/IR2", false);
+                img = getChannel(3);
+                image::save_img(img, dir + "/IR3", false);
+                img = getChannel(4);
+                image::save_img(img, dir + "/IR4", false);
+                img.clear();
 
                 lines = 0;
                 image_vis.clear();

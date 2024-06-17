@@ -23,7 +23,7 @@ void action_sourceStart()
 {
     source_mtx.lock();
     source_stream_mtx.lock();
-    if (!source_is_started)
+    if (!source_is_started && current_sample_source)
     {
         current_sample_source->start();
         source_should_stream = true;
@@ -37,15 +37,12 @@ void action_sourceStart()
 void action_sourceClose()
 {
     source_mtx.lock();
-    if (source_is_open)
+    if (source_is_open && current_sample_source)
     {
-        if (current_sample_source)
-        {
-            current_sample_source->close();
-            current_sample_source.reset();
-            source_is_open = false;
-            logger->info("Source closed!");
-        }
+        current_sample_source->close();
+        current_sample_source.reset();
+        source_is_open = false;
+        logger->info("Source closed!");
     }
     source_mtx.unlock();
 }

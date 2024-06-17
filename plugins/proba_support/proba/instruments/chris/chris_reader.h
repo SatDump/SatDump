@@ -16,8 +16,8 @@ namespace proba
         struct CHRISImagesT
         {
             int mode;
-            image::Image<uint16_t> raw;
-            std::vector<image::Image<uint16_t>> channels;
+            image::Image raw;
+            std::vector<image::Image> channels;
         };
 
         class CHRISImageParser
@@ -51,7 +51,7 @@ namespace proba
             CHRISImagesT half2;
 
             CHRISImagesT recompose();
-            image::Image<uint16_t> interleaveCHRIS(image::Image<uint16_t> img1, image::Image<uint16_t> img2);
+            image::Image interleaveCHRIS(image::Image img1, image::Image img2);
         };
 
         class CHRISReader

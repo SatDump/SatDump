@@ -9,16 +9,14 @@
 #include "common/image/image_utils.h"
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
-#include "libs/tiny-regex-c/re.h"
 #include "imgui/pfd/pfd_utils.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 
 namespace satdump
 {
-    re_t osm_url_regex = re_compile("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,4}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)\\/\\{([xyz])\\}\\/\\{((?!\\3)[xyz])\\}\\/\\{((?!\\3)(?!\\4)[xyz])\\}(\\.png|\\.jpg|\\.jpeg|\\.j2k|)");
     int osm_url_regex_len = 0;
     float general_progress = 0;
     float general_sum = 1;
@@ -227,6 +225,10 @@ namespace satdump
                     }
                     else if (selected_external_type == 1)
                     {
+                        ImGui::InputDouble("Lat1##osmlat1", &projection_osm_lat1);
+                        ImGui::InputDouble("Lon1##osmlat1", &projection_osm_lon1);
+                        ImGui::InputDouble("Lat2##osmlat1", &projection_osm_lat2);
+                        ImGui::InputDouble("Lon2##osmlat1", &projection_osm_lon2);
                         ImGui::SliderInt("Zoom##osmsliderzoom", &projection_osm_zoom, 0, 6);
                         if (!urlgood)
                             ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
@@ -261,30 +263,18 @@ namespace satdump
 
                             if (selected_external_type == 1) // TODO: Move to reprojector backend
                             {
-                                if (!re_matchp(osm_url_regex, mapurl.c_str(), &osm_url_regex_len))
+                                try
                                 {
-                                    logger->error("Invalid URL for tile map!");
+                                    logger->info("Generating tile map");
+                                    image::Image timemap = downloadTileMap(mapurl, projection_osm_lat1, projection_osm_lon1, projection_osm_lat2, projection_osm_lon2, projection_osm_zoom);
+
+                                    projection_layers.push_front({"Tile Map", timemap});
+                                }
+                                catch (std::exception &e)
+                                {
+                                    logger->error("Could not load tile map! %s", e.what());
                                     projections_loading_new_layer = false;
                                 }
-
-                                logger->info("Generating tile map");
-                                std::stringstream test(mapurl);
-                                std::string segment;
-                                std::vector<std::string> seglist;
-                                while (std::getline(test, segment, '/'))
-                                    seglist.push_back(segment);
-                                tileMap tile_map(mapurl, satdump::user_path + "/osm_tiles/" + seglist[2] + "/");
-                                image::Image<uint16_t> timemap = tile_map.getMapImage({-85.06, -180}, {85.06, 180}, projection_osm_zoom, nullptr).to16bits();
-
-                                nlohmann::json proj_cfg;
-                                proj_cfg["type"] = "webmerc";
-                                proj_cfg["offset_x"] = -20037508.3427892;
-                                proj_cfg["offset_y"] = 20036051.9193368;
-                                proj_cfg["scalar_x"] = (20037508.3427892 * 2.0) / double(timemap.width());
-                                proj_cfg["scalar_y"] = -(20036051.9193368 * 2.0) / double(timemap.height());
-                                image::set_metadata_proj_cfg(timemap, proj_cfg);
-
-                                projection_layers.push_front({"Tile Map", timemap});
                             }
                             else
                             {
@@ -506,7 +496,7 @@ namespace satdump
         general_sum += projection_overlay_handler.enabled();
 
         // Generate all layers
-        std::vector<image::Image<uint16_t>> layers_images =
+        std::vector<image::Image> layers_images =
             generateAllProjectionLayers(projection_layers, projections_image_width, projections_image_height, cfg, &general_progress);
 
         logger->info("Combining images...");
@@ -518,7 +508,7 @@ namespace satdump
         }
         else if (projections_mode_radio == 1) // Overlay
         {
-            projected_image_result = image::Image<uint16_t>(layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
+            projected_image_result = image::Image(16, layers_images[0].width(), layers_images[0].height(), layers_images[0].channels());
             for (int i = 0; i < (int)layers_images.size(); i++)
             {
                 projected_image_result = image::merge_images_opacity(projected_image_result,

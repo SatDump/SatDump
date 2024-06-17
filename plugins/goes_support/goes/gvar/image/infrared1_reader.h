@@ -23,8 +23,8 @@ namespace goes
             ~InfraredReader1();
             void startNewFullDisk();
             void pushFrame(uint8_t *data, int counter, int word_cnt);
-            image::Image<uint16_t> getImage1();
-            image::Image<uint16_t> getImage2();
+            image::Image getImage1();
+            image::Image getImage2();
         };
     }
 }

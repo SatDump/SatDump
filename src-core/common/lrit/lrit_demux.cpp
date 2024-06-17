@@ -65,7 +65,7 @@ namespace lrit
                 if (can_continue)
                 {
                     logger->warn("LRIT CRC is invalid, but file can be recovered");
-                    processLRITData(current_file, pkt); //Push anyway - there's probably some good pixels in there
+                    processLRITData(current_file, pkt, true);
                 }
                 else
                 {
@@ -87,6 +87,7 @@ namespace lrit
                 current_file.vcid = vcdu.vcid;
                 current_file.header_parsed = false;
                 current_file.file_in_progress = true;
+                current_file.last_tracked_counter = pkt.header.packet_sequence_count;
             }
             else if (pkt.header.sequence_flag == 0)
             {
@@ -112,6 +113,12 @@ namespace lrit
                 {
                     parseHeader(current_file);
                     current_file.header_parsed = true;
+                    if (pkt.header.sequence_flag == 3)
+                    {
+                        finalizeLRITData(current_file);
+                        current_file.file_in_progress = false;
+                        std::vector<uint8_t>().swap(current_file.lrit_data);
+                    }
                 }
             }
         }
@@ -131,9 +138,9 @@ namespace lrit
         onParseHeader(file);
     }
 
-    void LRITDemux::processLRITData(LRITFile &file, ccsds::CCSDSPacket &pkt)
+    void LRITDemux::processLRITData(LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc)
     {
-        if (onProcessData(file, pkt))
+        if (onProcessData(file, pkt, bad_crc))
             file.lrit_data.insert(file.lrit_data.end(), &pkt.payload.data()[0], &pkt.payload.data()[pkt.payload.size() - 2]);
     }
 

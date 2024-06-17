@@ -105,6 +105,12 @@ if(PLUGIN_AIM OR PLUGINS_ALL)
     add_subdirectory(aim_support)
 endif()
 
+option(PLUGIN_WSF "Enable the WSF (WSF-M) support plugin" OFF)
+
+if(PLUGIN_WSF OR PLUGINS_ALL)
+    add_subdirectory(wsf_support)
+endif()
+
 option(PLUGIN_MATS "Enable the MATS support plugin" OFF)
 
 if(PLUGIN_MATS OR PLUGINS_ALL)
@@ -330,6 +336,12 @@ if(PLUGIN_AARONIA_SDR_SUPPORT)
     add_subdirectory(sdr_sources/aaronia_sdr_support)
 endif()
 
+option(PLUGIN_RFNM_SDR_SUPPORT "Enable RFNM Support plugin" ON)
+
+if(PLUGIN_RFNM_SDR_SUPPORT)
+    add_subdirectory(sdr_sources/rfnm_sdr_support)
+endif()
+
 option(PLUGIN_RTAUDIO_SDR_SUPPORT "Enable RtAudio Source Support plugin" OFF)
 
 if(PLUGIN_RTAUDIO_SDR_SUPPORT)
@@ -386,4 +398,18 @@ option(PLUGIN_BOCHUM_SUPPORT "Enable Bochum-specific plugin" OFF)
 
 if(PLUGIN_BOCHUM_SUPPORT)
     add_subdirectory(bochum_support)
+endif()
+
+# ######################
+option(PLUGIN_STANDARD_CPP_COMPOS "Enable Standard C++ Composites plugin" OFF)
+
+if(PLUGIN_STANDARD_CPP_COMPOS OR PLUGINS_ALL)
+    add_subdirectory(standard_cpp_compos_support)
+endif()
+
+# ######################
+option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
+
+if(PLUGIN_BITVIEW_APP)
+    add_subdirectory(bitview_app)
 endif()

@@ -8,6 +8,8 @@
 #include "core/config.h"
 #include "common/dsp_source_sink/format_notated.h"
 
+#include <curl/curl.h>
+
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples)
 {
     for (int i = 0; i < nsamples; i++)
@@ -49,88 +51,81 @@ bool isStringPresent(std::string searched, std::string keyword)
     return found_it != std::string::npos;
 }
 
-#include <nng/nng.h>
-#include <nng/supplemental/http/http.h>
 #include "logger.h"
 #include "satdump_vars.h"
 
-#if defined(NNG_OPT_TLS_CONFIG)
-#include <nng/supplemental/tls/tls.h>
-#endif
+size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::string *s)
+{
+    size_t newLength = size * nmemb;
+    try
+    {
+        s->append((char *)contents, newLength);
+    }
+    catch (std::bad_alloc &e)
+    {
+        return 0;
+    }
+    return newLength;
+}
 
 int perform_http_request(std::string url_str, std::string &result)
 {
-    nng_http_client *client;
-    nng_url *url;
-    nng_aio *aio;
-    nng_http_req *req;
-    nng_http_res *res;
-    int rv;
+    CURL *curl;
+    CURLcode res;
+    bool ret = 1;
 
-    int return_val = 0;
+    curl_global_init(CURL_GLOBAL_ALL);
 
-    if (((rv = nng_url_parse(&url, url_str.c_str())) != 0) ||
-        ((rv = nng_http_client_alloc(&client, url)) != 0))
+    curl = curl_easy_init();
+    if (curl)
     {
-        if (rv == NNG_ENOTSUP)
-            logger->trace("Protocol not supported!");
-        return 1;
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+            logger->error("curl_easy_perform() failed: %s",
+                    curl_easy_strerror(res));
+
+        curl_easy_cleanup(curl);
+        ret = 0;
     }
+    curl_global_cleanup();
+    return ret;
+}
 
-// HTTPS
-#if defined(NNG_OPT_TLS_CONFIG)
-    nng_tls_config *tls_config;
-    nng_tls_config_alloc(&tls_config, NNG_TLS_MODE_CLIENT);
-    nng_tls_config_auth_mode(tls_config, NNG_TLS_AUTH_MODE_NONE);
-    nng_http_client_set_tls(client, tls_config);
-#endif
+int perform_http_request_post(std::string url_str, std::string &result, std::string post_req)
+{
+    CURL *curl;
+    CURLcode res;
+    bool ret = 1;
 
-    if (((rv = nng_http_req_alloc(&req, url)) != 0) ||
-        ((rv = nng_http_res_alloc(&res)) != 0) ||
-        ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
-        return 1;
+    curl_global_init(CURL_GLOBAL_ALL);
 
-    nng_aio_set_timeout(aio, 30000);
-
-    nng_http_req_add_header(req, "User-Agent", std::string("SatDump/v" + (std::string)SATDUMP_VERSION).c_str());
-
-    // Start operation
-    nng_http_client_transact(client, req, res, aio);
-
-    if (nng_http_res_get_status(res) != NNG_HTTP_STATUS_OK)
+    curl = curl_easy_init();
+    if (curl)
     {
-        logger->trace("HTTP Server Responded: %d %s", nng_http_res_get_status(res), nng_http_res_get_reason(res));
-        return 1;
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                    curl_easy_strerror(res));
+
+        curl_easy_cleanup(curl);
+        ret = 0;
     }
-
-    // Wait for it to complete.
-    nng_aio_wait(aio);
-
-    if ((rv = nng_aio_result(aio)) != 0)
-    {
-        logger->trace("HTTP Request Error!");
-        return_val = 1;
-    }
-
-    // Load result
-    char *data_ptr;
-    size_t data_sz = 0;
-    nng_http_res_get_data(res, (void **)&data_ptr, &data_sz);
-
-    result = std::string(data_ptr, &data_ptr[data_sz]);
-
-    // Free everything
-    nng_url_free(url);
-    nng_http_client_free(client);
-    nng_aio_free(aio);
-    nng_http_res_free(res);
-    nng_http_req_free(req);
-
-#if defined(NNG_OPT_TLS_CONFIG)
-    nng_tls_config_free(tls_config);
-#endif
-
-    return return_val;
+    curl_global_cleanup();
+    return ret;
 }
 
 std::string timestamp_to_string(double timestamp)
@@ -181,11 +176,11 @@ std::wstring s2ws(const std::string &str)
 std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, std::string pipeline_name, std::string folder)
 {
     std::tm *timeReadable = gmtime(&timevalue);
-    if(folder == "")
+    if (folder == "")
     {
         folder = satdump::config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>();
 #ifdef __ANDROID__
-        if(folder == "./live_output")
+        if (folder == "./live_output")
             folder = "/storage/emulated/0/live_output";
 #endif
     }

@@ -142,7 +142,7 @@ namespace satdump
 
     public: // Functions
         nlohmann::json getStatus();
-        image::Image<uint8_t> getPolarPlotImg(int size = 256);
+        image::Image getPolarPlotImg(int size = 256);
 
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setObject(TrackingMode mode, int objid);

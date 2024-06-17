@@ -35,13 +35,38 @@ namespace satdump
         }
     }
 
+    StandardSatProj::StandardSatProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw)
+        : SatelliteProjection(cfg, tle, timestamps_raw)
+    {
+        bool proj_err = false;
+        try
+        {
+            p = cfg;
+        }
+        catch (std::exception &e)
+        {
+            proj_err = true;
+        }
+
+        if (proj::projection_setup(&p) || proj_err)
+        {
+            logger->critical(cfg.dump(4));
+            throw satdump_exception("Invalid standard satellite projection!");
+        }
+    }
+
+    bool StandardSatProj::get_position(int x, int y, geodetic::geodetic_coords_t &pos)
+    {
+        return proj::projection_perform_inv(&p, x, y, &pos.lon, &pos.lat);
+    }
+
 #include "normal_line_proj.h"
 
 #include "normal_per_ifov_proj.h"
 
 #include "manual_line_proj.h"
 
-    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw)
+    std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw, bool allow_standard)
     {
         if (cfg.contains("timefilter"))
             timestamps_raw = timestamp_filtering::filter_timestamps_width_cfg(timestamps_raw, cfg["timefilter"]);
@@ -64,6 +89,10 @@ namespace satdump
         satdump::eventBus->fire_event<RequestSatProjEvent>({cfg["type"].get<std::string>(), projs, cfg, tle, timestamps_raw});
         if (projs.size() > 0)
             return projs[0];
+
+        if (cfg["type"].get<std::string>() == "geos" ||
+            allow_standard)
+            return std::make_shared<StandardSatProj>(cfg, tle, timestamps_raw);
 
         throw satdump_exception("Invalid satellite projection!");
     }

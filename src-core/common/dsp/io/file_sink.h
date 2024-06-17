@@ -59,11 +59,11 @@ namespace dsp
 
             std::string finalt;
             if (d_sample_format == CF_32)
-                finalt = path_without_ext + ".f32";
-            else if (d_sample_format == IS_16)
-                finalt = path_without_ext + ".s16";
-            else if (d_sample_format == IS_8)
-                finalt = path_without_ext + ".s8";
+                finalt = path_without_ext + ".cf32";
+            else if (d_sample_format == CS_16)
+                finalt = path_without_ext + ".cs16";
+            else if (d_sample_format == CS_8)
+                finalt = path_without_ext + ".cs8";
             else if (d_sample_format == WAV_16)
                 finalt = path_without_ext + ".wav";
 #ifdef BUILD_ZIQ

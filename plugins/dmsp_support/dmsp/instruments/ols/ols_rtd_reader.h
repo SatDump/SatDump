@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "common/image/image.h"
+#include <vector>
 
 namespace dmsp
 {
@@ -33,8 +34,8 @@ namespace dmsp
 
             void work(uint8_t *rtd_frame, uint8_t *rtd_words);
 
-            image::Image<uint8_t> getChannelVIS();
-            image::Image<uint8_t> getChannelIR();
+            image::Image getChannelVIS();
+            image::Image getChannelIR();
 
             void set_offsets(int i, int v)
             {

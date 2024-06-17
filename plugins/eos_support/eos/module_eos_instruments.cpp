@@ -17,6 +17,9 @@
 #include "instruments/modis/calibrator/modis_calibrator.h"
 #include "core/exception.h"
 
+#include "common/image/io.h"
+#include "common/image/image_utils.h"
+
 namespace eos
 {
     namespace instruments
@@ -163,18 +166,21 @@ namespace eos
             else if (d_satellite == AURA)
                 dataset.satellite_name = "Aura";
 
+            if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
+                dataset.timestamp = get_median(modis_reader.timestamps_1000);
+            else
+                dataset.timestamp = time(0);
+
             std::optional<satdump::TLE> satellite_tle;
             if (d_satellite == AQUA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(27424);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(27424, dataset.timestamp);
             else if (d_satellite == TERRA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(25994);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(25994, dataset.timestamp);
             else if (d_satellite == AURA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(28376);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(28376, dataset.timestamp);
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {
-                dataset.timestamp = get_median(modis_reader.timestamps_1000);
-
                 modis_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MODIS";
 
@@ -209,7 +215,7 @@ namespace eos
 
                 for (int i = 0; i < 2; i++)
                 {
-                    image::Image<uint16_t> image = modis_reader.getImage250m(i);
+                    image::Image image = modis_reader.getImage250m(i);
                     // modis::modis_match_detector_histograms(image, 1 /*4*/, 40 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
@@ -218,7 +224,7 @@ namespace eos
 
                 for (int i = 0; i < 5; i++)
                 {
-                    image::Image<uint16_t> image = modis_reader.getImage500m(i);
+                    image::Image image = modis_reader.getImage500m(i);
                     // modis::modis_match_detector_histograms(image, 1 /*2*/, 20 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
@@ -228,7 +234,7 @@ namespace eos
                 std::vector<std::vector<int>> bowtie_lut_1km;
                 for (int i = 0; i < 31; i++)
                 {
-                    image::Image<uint16_t> image = modis_reader.getImage1000m(i);
+                    image::Image image = modis_reader.getImage1000m(i);
 
                     // modis::modis_match_detector_histograms(image, 1, 10 * 2);
 
@@ -376,14 +382,20 @@ namespace eos
                 logger->info("Lines (FM3) : " + std::to_string(ceres_fm3_reader.lines));
                 logger->info("Lines (FM4) : " + std::to_string(ceres_fm4_reader.lines));
 
-                WRITE_IMAGE(ceres_fm3_reader.getImage(0), directory + "/CERES1-SHORTWAVE");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(1), directory + "/CERES1-LONGWAVE");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(2), directory + "/CERES1-TOTAL");
+                auto img = ceres_fm3_reader.getImage(0);
+                image::save_img(img, directory + "/CERES1-SHORTWAVE");
+                img = ceres_fm3_reader.getImage(1);
+                image::save_img(img, directory + "/CERES1-LONGWAVE");
+                img = ceres_fm3_reader.getImage(2);
+                image::save_img(img, directory + "/CERES1-TOTAL");
                 ceres_fm3_status = DONE;
 
-                WRITE_IMAGE(ceres_fm4_reader.getImage(0), directory + "/CERES2-SHORTWAVE");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(1), directory + "/CERES2-LONGWAVE");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(2), directory + "/CERES2-TOTAL");
+                img = ceres_fm4_reader.getImage(0);
+                image::save_img(img, directory + "/CERES2-SHORTWAVE");
+                img = ceres_fm4_reader.getImage(1);
+                image::save_img(img, directory + "/CERES2-LONGWAVE");
+                img = ceres_fm4_reader.getImage(2);
+                image::save_img(img, directory + "/CERES2-TOTAL");
                 ceres_fm4_status = DONE;
             }
 
@@ -399,18 +411,22 @@ namespace eos
                 logger->info("Lines (UV) : " + std::to_string(omi_1_reader.lines));
                 logger->info("Lines (VIS) : " + std::to_string(omi_2_reader.lines));
 
-                WRITE_IMAGE(omi_1_reader.getImageRaw(), directory + "/OMI-1");
-                WRITE_IMAGE(omi_2_reader.getImageRaw(), directory + "/OMI-2");
+                auto img = omi_1_reader.getImageRaw();
+                image::save_img(img, directory + "/OMI-1");
+                img = omi_2_reader.getImageRaw();
+                image::save_img(img, directory + "/OMI-2");
 
-                WRITE_IMAGE(omi_1_reader.getImageVisible(), directory + "/OMI-VIS-1");
-                WRITE_IMAGE(omi_2_reader.getImageVisible(), directory + "/OMI-VIS-2");
+                img = omi_1_reader.getImageVisible();
+                image::save_img(img, directory + "/OMI-VIS-1");
+                img = omi_2_reader.getImageVisible();
+                image::save_img(img, directory + "/OMI-VIS-2");
 
-                image::Image<uint16_t> imageAll1 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
-                                                                                           { return omi_1_reader.getChannel(c); });
-                image::Image<uint16_t> imageAll2 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
-                                                                                           { return omi_2_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll1, directory + "/OMI-ALL-1");
-                WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2");
+                image::Image imageAll1 = image::make_manyimg_composite(33, 24, 792, [this](int c)
+                                                                       { return omi_1_reader.getChannel(c); });
+                image::Image imageAll2 = image::make_manyimg_composite(33, 24, 792, [this](int c)
+                                                                       { return omi_2_reader.getChannel(c); });
+                image::save_img(imageAll1, directory + "/OMI-ALL-1");
+                image::save_img(imageAll2, directory + "/OMI-ALL-2");
                 omi_status = DONE;
             }
 

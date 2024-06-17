@@ -11,7 +11,7 @@ namespace satdump
     // Simple struct to hold TLE definitions
     struct TLE
     {
-        int norad;
+        int norad = -1;
         std::string name;
         std::string line1;
         std::string line2;
@@ -41,28 +41,16 @@ namespace satdump
     class TLERegistry : public std::vector<TLE>
     {
     public:
-        std::optional<TLE> get_from_norad(int norad)
-        {
-            std::vector<TLE>::iterator it = std::find_if(begin(),
-                                                         end(),
-                                                         [&norad](const TLE &e)
-                                                         {
-                                                             return e.norad == norad;
-                                                         });
-
-            if (it != end())
-                return std::optional<TLE>(*it);
-            else
-                return std::optional<TLE>();
-        };
+        std::optional<TLE> get_from_norad(int norad);
+        std::optional<TLE> get_from_norad_time(int norad, time_t timestamp);
     };
 
     SATDUMP_DLL extern TLERegistry general_tle_registry;
 
-    int  parseTLEStream(std::istream& inputStream, TLERegistry& new_registry);  //Helper - Takes an input stream and parses out the valid TLEs
-    void updateTLEFile(std::string path);                                       //Updates the TLE file now based on the URLs in the config
-    void autoUpdateTLE(std::string path);                                       //Updates the TLE file if it's old enough, per user setting
-    void loadTLEFileIntoRegistry(std::string path);                             //Loads the TLE file into the general registry
+    int parseTLEStream(std::istream &inputStream, TLERegistry &new_registry); // Helper - Takes an input stream and parses out the valid TLEs
+    void updateTLEFile(std::string path);                                     // Updates the TLE file now based on the URLs in the config
+    void autoUpdateTLE(std::string path);                                     // Updates the TLE file if it's old enough, per user setting
+    void loadTLEFileIntoRegistry(std::string path);                           // Loads the TLE file into the general registry
 
     void fetchTLENow(int norad); // Utils, in case you want to fetch & load a TLE into the regristry right now. Should NOT be used in most cases
 }

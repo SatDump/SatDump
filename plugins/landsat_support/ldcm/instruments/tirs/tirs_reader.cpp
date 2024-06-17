@@ -45,9 +45,9 @@ namespace ldcm
                 channels[i].resize((lines + 1) * 1280);
         }
 
-        image::Image<uint16_t> TIRSReader::getChannel(int channel)
+        image::Image TIRSReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 1280, lines, 1);
+            return image::Image(channels[channel].data(), 16, 1280, lines, 1);
         }
     }
 }

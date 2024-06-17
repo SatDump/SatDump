@@ -5,8 +5,7 @@ namespace goes
 {
     namespace gvar
     {
-        template <typename T>
-        image::Image<T> cropIR(image::Image<T> input)
+        image::Image cropIR(image::Image input)
         {
             if (input.width() == 5206)
                 input.crop(0, 4749);
@@ -21,8 +20,7 @@ namespace goes
             return input;
         }
 
-        template <typename T>
-        image::Image<T> cropVIS(image::Image<T> input)
+        image::Image cropVIS(image::Image input)
         {
             if (input.width() == 20824)
                 input.crop(0, 18990);
@@ -36,11 +34,5 @@ namespace goes
 
             return input;
         }
-
-        template image::Image<uint8_t> cropVIS(image::Image<uint8_t> input);
-        template image::Image<uint16_t> cropVIS(image::Image<uint16_t> input);
-
-        template image::Image<uint8_t> cropIR(image::Image<uint8_t> input);
-        template image::Image<uint16_t> cropIR(image::Image<uint16_t> input);
     };
 };

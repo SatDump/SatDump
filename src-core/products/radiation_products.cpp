@@ -3,6 +3,8 @@
 #include "common/tracking/tracking.h"
 #include "resources.h"
 #include <filesystem>
+#include "common/image/io.h"
+#include "common/image/image_lut.h"
 
 namespace satdump
 {
@@ -23,14 +25,14 @@ namespace satdump
         channel_counts = contents["counts"].get<std::vector<std::vector<int>>>();
     }
 
-    image::Image<uint16_t> make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay, float *progress)
+    image::Image make_radiation_map(RadiationProducts &products, RadiationMapCfg cfg, bool isOverlay, float *progress)
     {
-        image::Image<uint16_t> map;
+        image::Image map;
         if (!isOverlay)
-            map.load_jpeg(resources::getResourcePath("maps/nasa.jpg").c_str());
+            image::load_jpeg(map, resources::getResourcePath("maps/nasa.jpg").c_str());
         else
-            map.init(2048, 1024, 4);
-        image::Image<uint16_t> color_lut = image::LUT_jet<uint16_t>();
+            map.init(8, 2048, 1024, 4);
+        image::Image color_lut = image::LUT_jet<uint16_t>();
 
         int img_x = map.width();
         int img_y = map.height();
@@ -63,7 +65,7 @@ namespace satdump
             int image_y = img_y - ((90.0f + satpos.lat) / 180.0f) * img_y;
             int image_x = (satpos.lon / 360) * img_x + (img_x / 2);
 
-            uint16_t color[] = {color_lut.channel(0)[value], color_lut.channel(1)[value], color_lut.channel(2)[value], 65535};
+            std::vector<double> color = {color_lut.getf(0, value), color_lut.getf(1, value), color_lut.getf(2, value), 1};
 
             map.draw_circle(image_x % img_x, image_y, cfg.radius, color, true);
 

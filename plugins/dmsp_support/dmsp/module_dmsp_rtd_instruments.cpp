@@ -3,7 +3,6 @@
 #include "imgui/imgui.h"
 #include <volk/volk.h>
 #include "common/utils.h"
-#include "common/image/image.h"
 #include "common/repack.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
@@ -40,7 +39,7 @@ namespace dmsp
         {
             sat_num = d_parameters["satellite_number"];
         }
-        catch (std::exception&)
+        catch (std::exception &)
         {
             sat_num = std::stoi(d_parameters["satellite_number"].get<std::string>());
         }
@@ -96,8 +95,8 @@ namespace dmsp
             ols_products.has_timestamps = false;
             ols_products.bit_depth = 8;
 
-            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS().to16bits()});
-            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR().to16bits()});
+            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS()});
+            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR()});
 
             ols_products.save(directory);
             dataset.products_list.push_back("OLS");

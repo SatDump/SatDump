@@ -5,11 +5,11 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 #include "core/exception.h"
+#include "common/image/io.h"
 
 namespace proba
 {
@@ -304,15 +304,20 @@ namespace proba
 
                     std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
 
-                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1");
-                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2");
+                    auto img = vegs_readers[i][0]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1");
+                    img = vegs_readers[i][1]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2");
                     auto img3 = vegs_readers[i][2]->getImg();
                     img3.mirror(true, false);
-                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3");
+                    image::save_img(img3, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3");
                     img3.clear();
-                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4");
-                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5");
-                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6");
+                    img = vegs_readers[i][3]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4");
+                    img = vegs_readers[i][4]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5");
+                    img = vegs_readers[i][5]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6");
 
                     for (int y = 0; y < 6; y++)
                         vegs_status[i][y] = DONE;

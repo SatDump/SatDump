@@ -6,7 +6,7 @@
 #include "common/widgets/stepped_slider.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "main_ui.h"
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {
@@ -44,7 +44,6 @@ namespace satdump
         {
         }
 
-        current_img.init_font(resources::getResourcePath("fonts/font.ttf"));
         update();
     }
 
@@ -249,7 +248,7 @@ namespace satdump
                 else
                     instrument_name = products->instrument_name;
 
-                viewer_app->projection_layers.push_front({ timestring + object_name + instrument_name, current_img });
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name, current_img});
             }
             catch (std::exception &e)
             {

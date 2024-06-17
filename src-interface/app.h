@@ -1,10 +1,8 @@
 #pragma once
 
-#include "dll_export.h"
-#include <map>
 #include <string>
-#include <functional>
 #include <memory>
+#include <vector>
 
 namespace satdump
 {
@@ -26,16 +24,12 @@ namespace satdump
 
     public:
         static std::string getID();
+        virtual std::string get_name() = 0;
         static std::shared_ptr<Application> getInstance();
     };
 
-    SATDUMP_DLL2 extern std::map<std::string, std::function<std::shared_ptr<Application>()>> application_registry;
-
-    // Event where applications are registered, so plugins can load theirs
-    struct RegisterApplicationsEvent
+    struct AddGUIApplicationEvent
     {
-        std::map<std::string, std::function<std::shared_ptr<Application>()>> &application_registry;
+        std::vector<std::shared_ptr<Application>> &applications;
     };
-
-    void registerApplications();
 };

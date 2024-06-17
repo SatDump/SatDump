@@ -15,6 +15,8 @@
 #include "common/tracking/tle.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
 
 namespace metop
 {
@@ -165,14 +167,14 @@ namespace metop
             else if (scid == METOP_C_SCID)
                 norad = METOP_C_NORAD;
 
-            std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
-            if (!satellite_tle.has_value() || ignore_integrated_tle)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
-
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(avhrr_reader.timestamps);
+
+            std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
+            if (!satellite_tle.has_value() || ignore_integrated_tle)
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
             if (write_hpt)
             {
@@ -305,7 +307,7 @@ namespace metop
 
                 // Output a few nice composites as well
                 logger->info("ASCAT Composite...");
-                image::Image<uint16_t> imageAll(256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
+                image::Image imageAll(16, 256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
                 {
                     int height = ascat_reader.getChannelImg(0).height();
 
@@ -332,7 +334,7 @@ namespace metop
                     imageAll.draw_image(0, image1, 256 * 1, height * 2);
                 }
 
-                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL");
+                image::save_img(imageAll, directory + "/ASCAT-ALL");
 
                 ascat_products.save(directory);
                 dataset.products_list.push_back("ASCAT");
@@ -362,9 +364,9 @@ namespace metop
                 if (iasi_reader_img.lines > 0)
                 {
                     logger->info("Channel IR imaging...");
-                    image::Image<uint16_t> iasi_imaging = iasi_reader_img.getIRChannel();
+                    image::Image iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                    iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                    image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;

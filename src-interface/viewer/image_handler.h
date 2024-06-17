@@ -6,7 +6,6 @@
 #include "products/image_products.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/image/composite.h"
 #include "core/style.h"
 #include "libs/ctpl/ctpl_stl.h"
 #include "common/widgets/markdown_helper.h"
@@ -26,8 +25,7 @@ namespace satdump
         int active_channel_id = 0, select_image_id = 1;
         bool active_channel_calibrated = false;
         std::string select_image_str;
-        image::Image<uint16_t> rgb_image, current_image;
-        std::vector<image::Image<uint16_t>> images_obj;
+        image::Image rgb_image, current_image;
         ImageViewWidget image_view;
 
         // Map projection stuff
@@ -39,6 +37,7 @@ namespace satdump
         size_t last_height = 0;
 
         // Other controls
+        bool remove_background = false;
         bool median_blur = false;
         bool despeckle = false;
         bool rotate_image = false;
@@ -48,10 +47,13 @@ namespace satdump
         bool correct_image = false;
         bool normalize_image = false;
         bool white_balance_image = false;
+        bool manual_brightness_contrast = false;
+        float manual_brightness_contrast_brightness = 0.0;
+        float manual_brightness_contrast_constrast = 0.0;
 
         // GUI
         bool range_window = false;
-        std::vector<std::pair<double, double>> disaplay_ranges;
+        std::vector<std::pair<double, double>> temp_ranges, radiance_ranges;
         bool update_needed;
         bool is_updating = false;
 
@@ -60,12 +62,12 @@ namespace satdump
         // Calibration
         bool is_temp = false;
         bool show_scale = false;
-        image::Image<uint16_t> scale_image; // 512x25
+        image::Image scale_image; // 512x25
         ImageViewWidget scale_view;
 
         // LUT
         bool using_lut = false;
-        image::Image<uint16_t> lut_image;
+        image::Image lut_image;
 
         // Geo-Correction
         std::vector<int> correction_factors;

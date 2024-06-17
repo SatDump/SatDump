@@ -38,8 +38,8 @@ namespace satdump
                           "&SITE_COORD='" + (qth_lon >= 0 ? "+" : "") + std::to_string(qth_lon) + "," +
                           (qth_lat >= 0 ? "+" : "") + std::to_string(qth_lat) + "," +
                           std::to_string(qth_alt / 1e3) + "'" +
-                          "&START_TIME='JD " + std::to_string((start_time / 86400.0) + 2440587.5) + "'" +
-                          "&STOP_TIME='JD " + std::to_string((stop_time / 86400.0) + 2440587.5) + "'" +
+                          "&START_TIME='JD%20" + std::to_string((start_time / 86400.0) + 2440587.5) + "'" +
+                          "&STOP_TIME='JD%20" + std::to_string((stop_time / 86400.0) + 2440587.5) + "'" +
                           "&STEP_SIZE='" + std::to_string(num_points) + "'" + // 17280
                           "&QUANTITIES='4,20'";
 

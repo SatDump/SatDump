@@ -5,10 +5,10 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_standard/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "common/image/io.h"
 
 namespace scisat1
 {
@@ -96,11 +96,11 @@ namespace scisat1
                 if (!std::filesystem::exists(fts_directory))
                     std::filesystem::create_directory(fts_directory);
 
-                fts_reader.getImg().save_img(fts_directory + "/FTS");
-
                 auto img = fts_reader.getImg();
+                image::save_img(img, fts_directory + "/FTS");
+
                 img.resize_bilinear(img.width() / 10, img.height() * 10);
-                img.save_img(fts_directory + "/FTS_scaled");
+                image::save_img(img, fts_directory + "/FTS_scaled");
 
                 fts_status = DONE;
             }
@@ -118,8 +118,10 @@ namespace scisat1
                 if (!std::filesystem::exists(maestro_directory))
                     std::filesystem::create_directory(maestro_directory);
 
-                maestro_reader.getImg1().save_img(maestro_directory + "/MAESTRO_1");
-                maestro_reader.getImg2().save_img(maestro_directory + "/MAESTRO_2");
+                auto img = maestro_reader.getImg1();
+                image::save_img(img, maestro_directory + "/MAESTRO_1");
+                img = maestro_reader.getImg2();
+                image::save_img(img, maestro_directory + "/MAESTRO_2");
 
                 maestro_status = DONE;
             }

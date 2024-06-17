@@ -75,7 +75,8 @@ namespace meteor
             KMSS_BPSK_ExtDeframer kmssbpsk_def;
 
             def::SimpleDeframer mtvza_deframer(0x38fb456a, 32, 3040, 0, false);
-            def::SimpleDeframer kmssbpsk_deframer(0xaf5fff50aa5aa0, 56, 481280, 0, false);
+            def::SimpleDeframer kmssbpsk_deframer1(0xaf5fff50aa5aa0, 56, 481280, 0, false);
+            def::SimpleDeframer kmssbpsk_deframer2(0xae5eec61bb7982, 56, 481280, 0, false);
 
             time_t lastTime = 0;
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
@@ -149,9 +150,14 @@ namespace meteor
                         rpktpos += 188;
                     }
 
-                    auto deframed_dat = kmssbpsk_deframer.work(rpkt_buffer, rpktpos);
-                    frame_count += deframed_dat.size();
-                    for (auto &kfrm : deframed_dat)
+                    //   data_out.write((char *)rpkt_buffer, rpktpos);
+
+                    auto deframed_dat1 = kmssbpsk_deframer1.work(rpkt_buffer, rpktpos);
+                    // frame_count += deframed_dat1.size();
+                    auto deframed_dat2 = kmssbpsk_deframer2.work(rpkt_buffer, rpktpos);
+                    frame_count += deframed_dat2.size();
+
+                    for (auto &kfrm : deframed_dat1)
                     {
                         for (int u = 0; u < kfrm.size(); u++)
                             kfrm[u] ^= 0xF0;
@@ -168,6 +174,34 @@ namespace meteor
                                     ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
                                     ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 |
                                     ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
+
+                        // 120320. x4 = 481280 !!
+                        data_out.write((char *)final_frames[0], 15040);
+                        data_out.write((char *)final_frames[1], 15040);
+                        data_out.write((char *)final_frames[2], 15040);
+                        data_out.write((char *)final_frames[3], 15040);
+                    }
+
+                    for (auto &kfrm : deframed_dat2)
+                    {
+                        for (int u = 0; u < kfrm.size(); u++)
+                            kfrm[u] ^= 0xF0;
+
+                        uint8_t final_frames[4][15040];
+                        for (int o = 0; o < 4; o++)
+                            for (int c = 0; c < 15040; c++)
+                                final_frames[o][c] =
+                                    ((kfrm[c * 4 + 0] >> (7 - o)) & 1) << 7 |
+                                    ((kfrm[c * 4 + 0] >> (3 - o)) & 1) << 6 |
+                                    ((kfrm[c * 4 + 1] >> (7 - o)) & 1) << 5 |
+                                    ((kfrm[c * 4 + 1] >> (3 - o)) & 1) << 4 |
+                                    ((kfrm[c * 4 + 2] >> (7 - o)) & 1) << 3 |
+                                    ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
+                                    ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 |
+                                    ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
+
+                        memmove(&final_frames[2][1], &final_frames[2][0], 15040 - 1);
+                        memmove(&final_frames[3][1], &final_frames[3][0], 15040 - 1);
 
                         // 120320. x4 = 481280 !!
                         data_out.write((char *)final_frames[0], 15040);

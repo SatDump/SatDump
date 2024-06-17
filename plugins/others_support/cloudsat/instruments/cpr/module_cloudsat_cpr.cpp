@@ -4,6 +4,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/image/io.h"
+#include "common/image/image_lut.h"
 
 #define BUFFER_SIZE 8192
 
@@ -60,22 +62,22 @@ namespace cloudsat
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            image::Image<uint16_t> image = reader.getChannel();
-            WRITE_IMAGE(image, directory + "/CPR");
+            image::Image image = reader.getChannel();
+            image::save_img(image, directory + "/CPR");
 
-            image::Image<uint8_t> clut = image::scale_lut<uint8_t>(65536, 0, 65536, image::LUT_jet<uint8_t>());
-            image::Image<uint8_t> rain(image.width(), image.height(), 3);
+            image::Image clut = image::scale_lut(65536, 0, 65536, image::LUT_jet<uint16_t>());
+            image::Image rain(16, image.width(), image.height(), 3);
 
             for (unsigned int i = 0; i < image.height() * image.width(); i++)
             {
-                int index = image[i];
-                //logger->info(index);
-                rain.channel(0)[i] = clut.channel(0)[index];
-                rain.channel(1)[i] = clut.channel(1)[index];
-                rain.channel(2)[i] = clut.channel(2)[index];
+                int index = image.get(i);
+                // logger->info(index);
+                rain.set(0, i, clut.get(0, index));
+                rain.set(1, i, clut.get(1, index));
+                rain.set(2, i, clut.get(2, index));
             }
 
-            WRITE_IMAGE(rain, directory + "/CPR-LUT");
+            image::save_img(rain, directory + "/CPR-LUT");
         }
 
         void CloudSatCPRDecoderModule::drawUI(bool window)

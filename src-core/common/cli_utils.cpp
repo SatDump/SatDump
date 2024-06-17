@@ -1,6 +1,6 @@
 #include "cli_utils.h"
 
-nlohmann::json parse_common_flags(int argc, char *argv[])
+nlohmann::json parse_common_flags(int argc, char *argv[], std::map<std::string, std::optional<std::type_index>> strong_types)
 {
     nlohmann::json parameters;
 
@@ -29,6 +29,17 @@ nlohmann::json parse_common_flags(int argc, char *argv[])
                     {
                         parameters[flag] = true;
                         continue;
+                    }
+
+                    // Force specified flags to be parsed as the specified type
+                    if (strong_types.count(flag) > 0)
+                    {
+                        if (strong_types[flag] == typeid(std::string))
+                        {
+                            parameters[flag] = value;
+                            i++;
+                            continue;
+                        }
                     }
 
                     // Is this a boolean?

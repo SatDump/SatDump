@@ -61,7 +61,7 @@ void AirspySource::set_agcs()
 void AirspySource::open_sdr()
 {
 #ifndef __ANDROID__
-    if (airspy_open_sn(&airspy_dev_obj, d_sdr_id) != AIRSPY_SUCCESS)
+    if (airspy_open_sn(&airspy_dev_obj, std::stoull(d_sdr_id)) != AIRSPY_SUCCESS)
         throw satdump_exception("Could not open Airspy device!");
 #else
     int vid, pid;
@@ -260,13 +260,13 @@ std::vector<dsp::SourceDescriptor> AirspySource::getAvailableSources()
     {
         std::stringstream ss;
         ss << std::hex << serials[i];
-        results.push_back({"airspy", "AirSpy One " + ss.str(), serials[i]});
+        results.push_back({"airspy", "AirSpy One " + ss.str(), std::to_string(serials[i])});
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, AIRSPY_USB_VID_PID, path) != -1)
-        results.push_back({"airspy", "AirSpy One USB", 0});
+        results.push_back({"airspy", "AirSpy One USB", "0"});
 #endif
 
     return results;

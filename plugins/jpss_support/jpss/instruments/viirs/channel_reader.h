@@ -74,7 +74,7 @@ namespace jpss
             void differentialDecode(VIIRSReader &channelSource, int decimation);
 
             std::vector<double> timestamps;
-            image::Image<uint16_t> getImage();
+            image::Image getImage();
         };
     } // namespace viirs
 } // namespace jpss

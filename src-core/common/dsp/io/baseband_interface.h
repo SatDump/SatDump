@@ -18,9 +18,9 @@ namespace dsp
     {
         NONE,
         CF_32,
-        IS_16,
-        IS_8,
-        IU_8,
+        CS_16,
+        CS_8,
+        CU_8,
         WAV_16,
 #ifdef BUILD_ZIQ
         ZIQ,
@@ -139,17 +139,17 @@ namespace dsp
                 break;
 
             case WAV_16:
-            case IS_16:
+            case CS_16:
                 input_file.read((char *)buffer_i16, buffer_size * sizeof(int16_t) * 2);
                 volk_16i_s32f_convert_32f_u((float *)output_buffer, (const int16_t *)buffer_i16, 65535, buffer_size * 2);
                 break;
 
-            case IS_8:
+            case CS_8:
                 input_file.read((char *)buffer_i8, buffer_size * sizeof(int8_t) * 2);
                 volk_8i_s32f_convert_32f_u((float *)output_buffer, (const int8_t *)buffer_i8, 127, buffer_size * 2);
                 break;
 
-            case IU_8:
+            case CU_8:
                 input_file.read((char *)buffer_u8, buffer_size * sizeof(uint8_t) * 2);
                 for (int i = 0; i < buffer_size; i++)
                 {
@@ -235,15 +235,15 @@ namespace dsp
                 break;
 
             case WAV_16:
-            case IS_16:
+            case CS_16:
                 samplesize = sizeof(int16_t) * 2;
                 break;
 
-            case IS_8:
+            case CS_8:
                 samplesize = sizeof(int8_t) * 2;
                 break;
 
-            case IU_8:
+            case CU_8:
                 samplesize = sizeof(uint8_t) * 2;
                 break;
 
@@ -326,11 +326,11 @@ namespace dsp
 
             std::string finalt;
             if (d_sample_format == CF_32)
-                finalt = path_without_ext + ".f32";
-            else if (d_sample_format == IS_16)
-                finalt = path_without_ext + ".s16";
-            else if (d_sample_format == IS_8)
-                finalt = path_without_ext + ".s8";
+                finalt = path_without_ext + ".cf32";
+            else if (d_sample_format == CS_16)
+                finalt = path_without_ext + ".cs16";
+            else if (d_sample_format == CS_8)
+                finalt = path_without_ext + ".cs8";
             else if (d_sample_format == WAV_16)
                 finalt = path_without_ext + ".wav";
 #ifdef BUILD_ZIQ
@@ -418,13 +418,13 @@ namespace dsp
                     output_file.write((char *)samples, nsamples * sizeof(complex_t));
                     current_size_out += nsamples * sizeof(complex_t);
                 }
-                else if (d_sample_format == IS_16 || d_sample_format == WAV_16)
+                else if (d_sample_format == CS_16 || d_sample_format == WAV_16)
                 {
                     volk_32f_s32f_convert_16i(buffer_s16, (float *)samples, 65535, nsamples * 2);
                     output_file.write((char *)buffer_s16, nsamples * sizeof(int16_t) * 2);
                     current_size_out += nsamples * sizeof(int16_t) * 2;
                 }
-                else if (d_sample_format == IS_8)
+                else if (d_sample_format == CS_8)
                 {
                     volk_32f_s32f_convert_8i(buffer_s8, (float *)samples, 127, nsamples * 2);
                     output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);

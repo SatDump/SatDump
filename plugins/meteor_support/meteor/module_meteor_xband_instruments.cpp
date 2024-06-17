@@ -49,11 +49,11 @@ namespace meteor
                 return p;
             }
 
-            void processSingleKMSSImage(image::Image<uint16_t> &img, int xo, int yo, double rotate = 0)
+            void processSingleKMSSImage(image::Image &img, int xo, int yo, double rotate = 0)
             {
                 logger->info("Correcting KMSS image channel...");
 
-                image::Image<uint16_t> cimg = img;
+                image::Image cimg = img;
                 img.fill(0);
                 img.draw_image(0, cimg, xo, yo);
 
@@ -72,7 +72,7 @@ namespace meteor
                                 point.x = img.width() - 1;
                             if (point.y > img.height() - 1)
                                 point.y = img.height() - 1;
-                            cimg[y * 8000 + x] = img.get_pixel_bilinear(0, point.x, point.y);
+                            cimg.set(0, x, y, img.get_pixel_bilinear(0, point.x, point.y));
                         }
                     }
 
@@ -80,7 +80,7 @@ namespace meteor
                 }
             }
 
-            void correctKMSSImage(std::string sat_num, int kmss, int channel, image::Image<uint16_t> &img)
+            void correctKMSSImage(std::string sat_num, int kmss, int channel, image::Image &img)
             {
                 if (sat_num == "M2-2")
                 {
@@ -247,7 +247,7 @@ namespace meteor
                     mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")));
 
                     for (int i = 0; i < 46; i++)
-                        mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image<uint16_t>(mtvza_channels[i].data(), 200, mtvza_lines, 1)});
+                        mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mtvza_channels[i].data(), 16, 200, mtvza_lines, 1)});
 
                     mtvza_products.save(directory);
                     dataset.products_list.push_back("MTVZA");
@@ -391,7 +391,7 @@ namespace meteor
 
                     for (int i = 0; i < 3; i++)
                     {
-                        auto img = image::Image<uint16_t>(msu100_1_dat[i].data(), 8000, kmss_lines, 1);
+                        auto img = image::Image(msu100_1_dat[i].data(), 16, 8000, kmss_lines, 1);
                         correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 0, i, img);
                         msu100_1_dat[i].clear();
                         kmss_products.images.push_back({"MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img});
@@ -424,7 +424,7 @@ namespace meteor
 
                     for (int i = 0; i < 3; i++)
                     {
-                        auto img = image::Image<uint16_t>(msu100_2_dat[i].data(), 8000, kmss_lines, 1);
+                        auto img = image::Image(msu100_2_dat[i].data(), 16, 8000, kmss_lines, 1);
                         correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 1, i, img);
                         msu100_2_dat[i].clear();
                         kmss_products.images.push_back({"MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img});

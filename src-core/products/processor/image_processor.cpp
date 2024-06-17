@@ -12,11 +12,13 @@
 
 #include "common/overlay_handler.h"
 
-#include "common/image/image_meta.h"
+#include "common/image/meta.h"
+#include "common/image/processing.h"
+#include "common/image/io.h"
 
 namespace satdump
 {
-    image::Image<uint16_t> projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image<uint16_t> &img, std::vector<double> timestamps, ImageProducts &img_products)
+    image::Image projectImg(nlohmann::json proj_settings, nlohmann::json metadata, image::Image &img, std::vector<double> timestamps, ImageProducts &img_products)
     {
         reprojection::ReprojectionOperation op;
         nlohmann::json proj_cfg;
@@ -49,7 +51,7 @@ namespace satdump
         if (!proj_settings.contains("width") || !proj_settings.contains("height"))
         {
             logger->error("No width or height defined for projection!");
-            return image::Image<uint16_t>();
+            return image::Image();
         }
 
         op.output_width = proj_settings["width"].get<int>();
@@ -60,9 +62,9 @@ namespace satdump
 
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
-                op.img.equalize();
+                image::equalize(op.img);
 
-        image::Image<uint16_t> retimg = reprojection::reproject(op);
+        image::Image retimg = reprojection::reproject(op);
 
         OverlayHandler overlay_handler;
         overlay_handler.set_config(proj_settings);
@@ -107,6 +109,9 @@ namespace satdump
                     if (compo.value().contains("autogen")) // Skip auto-generating if requested
                         if (compo.value()["autogen"].get<bool>() == false)
                             continue;
+                    if (img_products->contents.contains("autocomposite_cache_enabled") && img_products->contents["autocomposite_cache_enabled"].get<bool>())
+                        if (img_products->contents["autocomposite_cache_done"].contains(compo.key()))
+                            continue;
 
                     // rgb_presets.push_back({compo.key(), compo.value().get<ImageCompositeCfg>()});
                     std::string initial_name = compo.key();
@@ -121,7 +126,13 @@ namespace satdump
 
                     std::vector<double> final_timestamps;
                     nlohmann::json final_metadata;
-                    image::Image<uint16_t> rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+                    image::Image rgb_image = satdump::make_composite_from_product(*img_products, cfg, nullptr, &final_timestamps, &final_metadata);
+
+                    if (rgb_image.size() == 0)
+                    {
+                        logger->debug("Empty image, skipping any further processing!");
+                        continue;
+                    }
 
                     std::string name = products->instrument_name +
                                        (rgb_image.channels() == 1 ? "_" : "_rgb_") +
@@ -129,7 +140,7 @@ namespace satdump
 
                     bool geo_correct = compo.value().contains("geo_correct") && compo.value()["geo_correct"].get<bool>();
                     std::vector<float> corrected_stuff;
-                    image::Image<uint16_t> rgb_image_corr;
+                    image::Image rgb_image_corr;
 
                     if (geo_correct)
                     {
@@ -143,9 +154,9 @@ namespace satdump
                         }
                     }
 
-                    rgb_image.save_img(product_path + "/" + name);
+                    image::save_img(rgb_image, product_path + "/" + name);
                     if (geo_correct)
-                        rgb_image_corr.save_img(product_path + "/" + name + "_corrected");
+                        image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
 
                     overlay_handler.set_config(compo.value());
                     corrected_overlay_handler.set_config(compo.value());
@@ -194,27 +205,30 @@ namespace satdump
                         }
 
                         overlay_handler.apply(rgb_image, proj_func);
-                        rgb_image.save_img(product_path + "/" + name + "_map");
+                        image::save_img(rgb_image, product_path + "/" + name + "_map");
                         if (geo_correct)
                         {
                             corrected_overlay_handler.apply(rgb_image_corr, corr_proj_func);
-                            rgb_image_corr.save_img(product_path + "/" + name + "_corrected_map");
+                            image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected_map");
                         }
                     }
 
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
                         logger->debug("Reprojecting composite %s", name.c_str());
-                        image::Image<uint16_t> retimg = projectImg(compo.value()["project"],
-                                                                   final_metadata,
-                                                                   rgb_image,
-                                                                   final_timestamps,
-                                                                   *img_products);
+                        image::Image retimg = projectImg(compo.value()["project"],
+                                                         final_metadata,
+                                                         rgb_image,
+                                                         final_timestamps,
+                                                         *img_products);
                         std::string fmt = "";
                         if (compo.value()["project"]["config"].contains("img_format"))
                             fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
-                        retimg.save_img(product_path + "/rgb_" + name + "_projected" + fmt);
+                        image::save_img(retimg, product_path + "/rgb_" + name + "_projected" + fmt);
                     }
+
+                    if (img_products->contents.contains("autocomposite_cache_enabled") && img_products->contents["autocomposite_cache_enabled"].get<bool>())
+                        img_products->contents["autocomposite_cache_done"][compo.key()] = true;
                 }
                 catch (std::exception &e)
                 {
@@ -255,15 +269,15 @@ namespace satdump
                     auto &img = img_products->images[chanid];
 
                     logger->debug("Reprojecting channel %s", img.channel_name.c_str());
-                    image::Image<uint16_t> retimg = projectImg(instrument_viewer_settings["project_channels"],
-                                                               img_products->get_channel_proj_metdata(chanid),
-                                                               img.image,
-                                                               img_products->get_timestamps(chanid),
-                                                               *img_products);
+                    image::Image retimg = projectImg(instrument_viewer_settings["project_channels"],
+                                                     img_products->get_channel_proj_metdata(chanid),
+                                                     img.image,
+                                                     img_products->get_timestamps(chanid),
+                                                     *img_products);
                     std::string fmt = "";
                     if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
                         fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();
-                    retimg.save_img(product_path + "/channel_" + img.channel_name + "_projected" + fmt);
+                    image::save_img(retimg, product_path + "/channel_" + img.channel_name + "_projected" + fmt);
                 }
                 catch (std::exception &e)
                 {

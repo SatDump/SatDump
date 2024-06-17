@@ -358,7 +358,7 @@ std::vector<dsp::SourceDescriptor> AaroniaSource::getAvailableSources()
     {
         std::stringstream ss;
         ss << std::hex << dinfo.serialNumber;
-        results.push_back({"aaronia", "Spectran V6 " + ss.str(), i});
+        results.push_back({"aaronia", "Spectran V6 " + ss.str(), std::to_string(i)});
     }
 
     AARTSAAPI_Close(&h);

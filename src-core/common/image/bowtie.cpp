@@ -5,8 +5,7 @@ namespace image
 {
     namespace bowtie
     {
-        template <typename T>
-        Image<T> correctGenericBowTie(Image<T> &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta, std::vector<std::vector<int>> *reverse_lut)
+        Image correctGenericBowTie(Image &inputImage, const int channelCount, const long scanHeight, const float alpha, const float beta, std::vector<std::vector<int>> *reverse_lut)
         {
             // Compute everything we'll need
             const long height = inputImage.height();
@@ -15,13 +14,13 @@ namespace image
             const long halfWidth = width / 2;
 
             // Create our output image
-            Image<T> outputImage = Image<T>(width, height, channelCount);
+            Image outputImage = Image(inputImage.depth(), width, height, channelCount);
 
             // Reserve our buffers
-            T *scan_buffer_input = new T[height * width];
-            T *scan_buffer_output = new T[height * width];
-            T *col_buffer_input = new T[scanHeight];
-            T *col_buffer_output = new T[scanHeight];
+            int *scan_buffer_input = new int[height * width];
+            int *scan_buffer_output = new int[height * width];
+            int *col_buffer_input = new int[scanHeight];
+            int *col_buffer_output = new int[scanHeight];
 
             if (reverse_lut != nullptr)
             {
@@ -41,7 +40,7 @@ namespace image
                     {
                         for (int pixelNumber = 0; pixelNumber < width; pixelNumber++)
                         {
-                            scan_buffer_input[lineNumber * width + pixelNumber] = inputImage[(channel * width * height) + ((scanNumber * scanHeight) + lineNumber) * width + pixelNumber];
+                            scan_buffer_input[lineNumber * width + pixelNumber] = inputImage.get((channel * width * height) + ((scanNumber * scanHeight) + lineNumber) * width + pixelNumber);
                         }
                     }
 
@@ -81,7 +80,7 @@ namespace image
                     {
                         for (int pixelNumber = 0; pixelNumber < width; pixelNumber++)
                         {
-                            outputImage[(channel * width * height) + ((scanNumber * scanHeight) + lineNumber) * width + pixelNumber] = scan_buffer_output[lineNumber * width + pixelNumber];
+                            outputImage.set((channel * width * height) + ((scanNumber * scanHeight) + lineNumber) * width + pixelNumber, scan_buffer_output[lineNumber * width + pixelNumber]);
                         }
                     }
                 }
@@ -94,9 +93,6 @@ namespace image
 
             return outputImage;
         }
-
-        template Image<uint8_t> correctGenericBowTie(Image<uint8_t> &, const int, const long, const float, const float, std::vector<std::vector<int>> *);
-        template Image<uint16_t> correctGenericBowTie(Image<uint16_t> &, const int, const long, const float, const float, std::vector<std::vector<int>> *);
 
         /*
         template <typename T>

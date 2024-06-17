@@ -138,9 +138,9 @@ namespace jpss
             }
         }
 
-        image::Image<uint16_t> VIIRSReader::getImage()
+        image::Image VIIRSReader::getImage()
         {
-            image::Image<uint16_t> image(channelSettings.totalWidth, channelSettings.zoneHeight * (segments.size() + 1), 1);
+            image::Image image(16, channelSettings.totalWidth, channelSettings.zoneHeight * (segments.size() + 1), 1);
             timestamps.clear();
 
             // Recompose image
@@ -157,7 +157,7 @@ namespace jpss
                     {
                         // Copy & Scale bit depth
                         for (int i = 0; i < channelSettings.zoneWidth[det_n]; i++)
-                            image[current_line * channelSettings.totalWidth + det_offset + i] = segment.detector_data[seg_line][det_n][i] * channelSettings.scale;
+                            image.set(current_line * channelSettings.totalWidth + det_offset + i, segment.detector_data[seg_line][det_n][i] * channelSettings.scale);
 
                         // Compute next offset
                         det_offset += channelSettings.zoneWidth[det_n];

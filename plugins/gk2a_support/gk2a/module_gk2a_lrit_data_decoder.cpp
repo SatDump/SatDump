@@ -20,7 +20,8 @@ namespace gk2a
         GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                 write_images(parameters["write_images"].get<bool>()),
                                                                                                                                                 write_additional(parameters["write_additional"].get<bool>()),
-                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>()),
+                                                                                                                                                productizer("ami", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
         }
 
@@ -211,6 +212,9 @@ namespace gk2a
                 }
             };
 
+            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
+                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
+
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer
@@ -238,7 +242,7 @@ namespace gk2a
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != "")
-                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.image_id).c_str());
+                    saveImageP(segmentedDecoder.second.meta, segmentedDecoder.second.image);
         }
 
         void GK2ALRITDataDecoderModule::drawUI(bool window)

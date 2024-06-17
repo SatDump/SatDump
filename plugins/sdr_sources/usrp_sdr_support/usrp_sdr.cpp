@@ -12,7 +12,7 @@ void USRPSource::set_gains()
 void USRPSource::open_sdr()
 {
     uhd::device_addrs_t devlist = uhd::device::find(uhd::device_addr_t());
-    usrp_device = uhd::usrp::multi_usrp::make(devlist[d_sdr_id]);
+    usrp_device = uhd::usrp::multi_usrp::make(devlist[std::stoi(d_sdr_id)]);
 
     // uhd::meta_range_t master_clock_range = usrp_device->get_master_clock_rate_range();
     // usrp_device->set_master_clock_rate(master_clock_range.stop());
@@ -86,11 +86,12 @@ void USRPSource::open_channel()
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);
 
-    usrp_antennas = usrp_device->get_rx_antennas();
+    usrp_antennas = usrp_device->get_rx_antennas(channel);
     antenna_option_str = "";
     for (int i = 0; i < (int)usrp_antennas.size(); i++)
     {
         antenna_option_str += usrp_antennas[i] + '\0';
+        logger->trace("USRP has antenna option %s", usrp_antennas[i].c_str());
     }
 }
 
@@ -263,7 +264,7 @@ std::vector<dsp::SourceDescriptor> USRPSource::getAvailableSources()
     for (const uhd::device_addr_t &dev : devlist)
     {
         std::string type = dev.has_key("product") ? dev["product"] : dev["type"];
-        results.push_back({"usrp", "USRP " + type + " " + dev["serial"], i});
+        results.push_back({"usrp", "USRP " + type + " " + dev["serial"], std::to_string(i)});
         i++;
     }
 

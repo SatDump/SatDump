@@ -22,8 +22,8 @@ namespace scisat1
             int lines_2;
 
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImg1();
-            image::Image<uint16_t> getImg2();
+            image::Image getImg1();
+            image::Image getImg2();
         };
     } // namespace swap
 } // namespace proba

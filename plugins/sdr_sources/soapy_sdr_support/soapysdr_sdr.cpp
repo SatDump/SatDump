@@ -268,7 +268,7 @@ std::vector<dsp::SourceDescriptor> SoapySdrSource::getAvailableSources()
     for (auto &dev : devices)
     {
         std::string name = (dev["label"] != "" ? dev["label"] : dev["driver"]) + " [Soapy]";
-        results.push_back({"soapysdr", name, uint64_t(i++)});
+        results.push_back({"soapysdr", name, std::to_string(i++)});
     }
 
     return results;

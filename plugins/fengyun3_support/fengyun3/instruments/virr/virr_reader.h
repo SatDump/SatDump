@@ -22,7 +22,7 @@ namespace fengyun3
             int day_offset = 0;
             std::vector<double> timestamps;
             void work(std::vector<uint8_t> &packet);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace virr
 } // namespace fengyun

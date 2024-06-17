@@ -7,6 +7,8 @@
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "nlohmann/json_utils.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
 
 #include "common/dsp/filter/firdes.h"
 #include "resources.h"
@@ -58,6 +60,12 @@ namespace noaa_apt
         if (vval > 65535)
             vval = 65535;
         valv = vval;
+    }
+
+    inline int scale_val_r(int valv, int &new_black, int &new_white)
+    {
+        scale_val(valv, new_black, new_white);
+        return valv;
     }
 
     void NOAAAPTDecoderModule::process()
@@ -222,7 +230,9 @@ namespace noaa_apt
             {
                 float v = ctm->output_stream->readBuf[i];
                 v = (v * 2.0f) * 65535.0f;
-                imagebuf.push_back(wip_apt_image.clamp(v));
+                if (v > 65535)
+                    v = 65535;
+                imagebuf.push_back(v);
                 image_i++;
             }
 
@@ -233,17 +243,16 @@ namespace noaa_apt
             {
                 int x_scale = (APT_IMG_WIDTH * APT_IMG_OVERS) / 512;
                 int y_scale = ceil((double)line_cnt / 512);
-                image::Image<uint16_t> preview;
-                preview.init(512, 512, 1);
+                image::Image preview(16, 512, 512, 1);
                 for (int x = 0; x < 512; x++)
                     for (int y = 0; y < line_cnt / y_scale; y++)
                     {
                         int xx = floor(double(x) * x_scale);
                         int yy = floor(double(y) * y_scale);
-                        preview[y * 512 + x] = imagebuf[yy * APT_IMG_WIDTH * APT_IMG_OVERS + xx];
+                        preview.set(y * 512 + x, imagebuf[yy * APT_IMG_WIDTH * APT_IMG_OVERS + xx]);
                     }
 
-                ushort_to_rgba(preview.data(), textureBuffer, preview.size());
+                image::image_to_rgba(preview, textureBuffer);
                 has_to_update = true;
                 last_line_cnt = line_cnt;
             }
@@ -273,22 +282,22 @@ namespace noaa_apt
         // Buffer to image
         int line_cnt = image_i / (APT_IMG_WIDTH * APT_IMG_OVERS);
         logger->info("Got %d lines...", line_cnt);
-        wip_apt_image = image::Image<uint16_t>(imagebuf.data(), APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
+        wip_apt_image = image::Image(imagebuf.data(), 16, APT_IMG_WIDTH * APT_IMG_OVERS, line_cnt, 1);
         std::vector<uint16_t>().swap(imagebuf);
 
         // WB
         logger->info("White balance...");
-        wip_apt_image.white_balance();
+        image::white_balance(wip_apt_image);
 
         // Save unsynced
         if (d_save_unsynced)
         {
-            image::Image<uint16_t> wip_apt_image_sized(APT_IMG_WIDTH, line_cnt, 1);
+            image::Image wip_apt_image_sized(16, APT_IMG_WIDTH, line_cnt, 1);
 #pragma omp parallel for
             for (int line = 0; line < line_cnt - 1; line++)
                 for (int i = 0; i < APT_IMG_WIDTH; i++)
-                    wip_apt_image_sized[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + i * APT_IMG_OVERS];
-            wip_apt_image_sized.save_img(main_dir + "/raw_unsync");
+                    wip_apt_image_sized.set(line * APT_IMG_WIDTH + i, wip_apt_image.get(line * APT_IMG_WIDTH * APT_IMG_OVERS + i * APT_IMG_OVERS));
+            image::save_img(wip_apt_image_sized, main_dir + "/raw_unsync");
         }
 
         // Synchronize
@@ -335,9 +344,9 @@ namespace noaa_apt
             new_white = (new_white + new_white1) / 2;
             new_black = (new_black + new_black1) / 2;
 
-            for (int l = 0; l < line_cnt; l++)    // Calib image
+            for (int l = 0; l < line_cnt; l++)          // Calib image
                 for (int x = 0; x < APT_IMG_WIDTH; x++) // for (int x = 86; x < 86 + 909; x++)
-                    scale_val(wip_apt_image[l * APT_IMG_WIDTH + x], new_black, new_white);
+                    wip_apt_image.set(l * APT_IMG_WIDTH + x, scale_val_r(wip_apt_image.get(l * APT_IMG_WIDTH + x), new_black, new_white));
 
             int valid_temp1 = 0, valid_temp2 = 0, valid_temp3 = 0, valid_temp4 = 0, valid_patch = 0,
                 validn1_1 = 0, validn1_0 = 0;
@@ -534,11 +543,11 @@ namespace noaa_apt
                 {
                     double avg = 0;
                     for (size_t i = 0; i < space_a1.width(); i++)
-                        avg += space_a1[y * space_a1.width() + i];
+                        avg += space_a1.get(y * space_a1.width() + i);
                     avg /= space_a1.width();
                     double stddev = 0;
                     for (size_t i = 0; i < space_a1.width(); i++)
-                        stddev += (space_a1[y * space_a1.width() + i] - avg) * (space_a1[y * space_a1.width() + i] - avg);
+                        stddev += (space_a1.get(y * space_a1.width() + i) - avg) * (space_a1.get(y * space_a1.width() + i) - avg);
                     stddev = sqrt(stddev / (space_a1.width() - 1));
                     scale_val(avg, new_black, new_white);
                     if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
@@ -554,11 +563,11 @@ namespace noaa_apt
             {
                 double avg = 0;
                 for (size_t i = 0; i < space_a.width(); i++)
-                    avg += space_a[y * space_a.width() + i];
+                    avg += space_a.get(y * space_a.width() + i);
                 avg /= space_a.width();
                 double stddev = 0;
                 for (size_t i = 0; i < space_a.width(); i++)
-                    stddev += (space_a[y * space_a.width() + i] - avg) * (space_a[y * space_a.width() + i] - avg);
+                    stddev += (space_a.get(y * space_a.width() + i) - avg) * (space_a.get(y * space_a.width() + i) - avg);
                 stddev = sqrt(stddev / (space_a.width() - 1));
                 scale_val(avg, new_black, new_white);
                 if (stddev < MAX_STDDEV_VALID && avg > stddev && avg < 65535.0 - stddev)
@@ -573,11 +582,11 @@ namespace noaa_apt
             {
                 double avg = 0;
                 for (size_t i = 0; i < space_b.width(); i++)
-                    avg += space_b[y * space_b.width() + i];
+                    avg += space_b.get(y * space_b.width() + i);
                 avg /= space_b.width();
                 double stddev = 0;
                 for (size_t i = 0; i < space_b.width(); i++)
-                    stddev += (space_b[y * space_b.width() + i] - avg) * (space_b[y * space_b.width() + i] - avg);
+                    stddev += (space_b.get(y * space_b.width() + i) - avg) * (space_b.get(y * space_b.width() + i) - avg);
                 stddev = sqrt(stddev / (space_b.width() - 1));
                 scale_val(avg, new_black, new_white);
                 // logger->trace("Avg %f, StdDev %f", avg, stddev);
@@ -593,7 +602,7 @@ namespace noaa_apt
                     }
                     else if (avg >= 65535.0 - stddev && wip_timing_line != 0)
                     {
-                        if(y - wip_timing_line > 3 || y - wip_timing_line < 2)
+                        if (y - wip_timing_line > 3 || y - wip_timing_line < 2)
                             wip_timing_line = 0;
                         else if (y - wip_timing_line == 3)
                         {
@@ -601,7 +610,7 @@ namespace noaa_apt
                             wip_timing_line = 0;
                         }
                     }
-                    else //Not a timing mark
+                    else // Not a timing mark
                     {
                         wip_timing_line = 0;
                         space_bv += avg;
@@ -622,7 +631,7 @@ namespace noaa_apt
         int last_valid_line = line_cnt;
 
         // Save RAW before we crop
-        wip_apt_image.save_img(main_dir + "/raw_sync");
+        image::save_img(wip_apt_image, main_dir + "/raw_sync");
 
         if (d_autocrop_wedges)
         {
@@ -635,11 +644,11 @@ namespace noaa_apt
             {
                 double avg = 0;
                 for (size_t x = 0; x < 41; x++)
-                    avg += wedge_1[current_line * 41 + x];
+                    avg += wedge_1.get(current_line * 41 + x);
                 avg /= 41;
                 double variance = 0;
                 for (size_t x = 0; x < 41; x++)
-                    variance += (wedge_1[current_line * 41 + x] - avg) * (wedge_1[current_line * 41 + x] - avg);
+                    variance += (wedge_1.get(current_line * 41 + x) - avg) * (wedge_1.get(current_line * 41 + x) - avg);
                 if (sqrt(variance / 41) < d_max_crop_stddev)
                     first_valid_wedge1 = current_line;
                 current_line++;
@@ -649,11 +658,11 @@ namespace noaa_apt
             {
                 double avg = 0;
                 for (size_t x = 0; x < 41; x++)
-                    avg += wedge_1[current_line * 41 + x];
+                    avg += wedge_1.get(current_line * 41 + x);
                 avg /= 41;
                 double variance = 0;
                 for (size_t x = 0; x < 41; x++)
-                    variance += (wedge_1[current_line * 41 + x] - avg) * (wedge_1[current_line * 41 + x] - avg);
+                    variance += (wedge_1.get(current_line * 41 + x) - avg) * (wedge_1.get(current_line * 41 + x) - avg);
                 if (sqrt(variance / 41) < d_max_crop_stddev)
                     last_valid_wedge1 = current_line;
                 current_line--;
@@ -665,11 +674,11 @@ namespace noaa_apt
             {
                 double avg = 0;
                 for (size_t x = 0; x < 41; x++)
-                    avg += wedge_2[current_line * 41 + x];
+                    avg += wedge_2.get(current_line * 41 + x);
                 avg /= 41;
                 double variance = 0;
                 for (size_t x = 0; x < 41; x++)
-                    variance += (wedge_2[current_line * 41 + x] - avg) * (wedge_2[current_line * 41 + x] - avg);
+                    variance += (wedge_2.get(current_line * 41 + x) - avg) * (wedge_2.get(current_line * 41 + x) - avg);
                 if (sqrt(variance / 41) < d_max_crop_stddev)
                     first_valid_wedge2 = current_line;
                 current_line++;
@@ -679,11 +688,11 @@ namespace noaa_apt
             {
                 double avg = 0;
                 for (size_t x = 0; x < 41; x++)
-                    avg += wedge_2[current_line * 41 + x];
+                    avg += wedge_2.get(current_line * 41 + x);
                 avg /= 41;
                 double variance = 0;
                 for (size_t x = 0; x < 41; x++)
-                    variance += (wedge_2[current_line * 41 + x] - avg) * (wedge_2[current_line * 41 + x] - avg);
+                    variance += (wedge_2.get(current_line * 41 + x) - avg) * (wedge_2.get(current_line * 41 + x) - avg);
                 if (sqrt(variance / 41) < d_max_crop_stddev)
                     last_valid_wedge2 = current_line;
                 current_line--;
@@ -784,7 +793,7 @@ namespace noaa_apt
             avhrr_products.instrument_name = "avhrr_3";
             avhrr_products.bit_depth = 8;
 
-            image::Image<uint16_t> cha, cha1, cha2, chb;
+            image::Image cha, cha1, cha2, chb;
             cha = wip_apt_image.crop_to(86, 86 + 909);
             chb = wip_apt_image.crop_to(1126, 1126 + 909);
 
@@ -792,21 +801,21 @@ namespace noaa_apt
             // TODO: Find a better way to do this...
             for (size_t y = 0; y < cha.height(); y++)
             {
-                cha[y * 909 + 908] = (float)cha[y * 909 + 908] * 0.25f + (float)cha[y * 909 + 907] * 0.75f;
-                chb[y * 909 + 908] = (float)chb[y * 909 + 908] * 0.25f + (float)chb[y * 909 + 907] * 0.75f;
+                cha.set(y * 909 + 908, (float)cha.get(y * 909 + 908) * 0.25f + (float)cha.get(y * 909 + 907) * 0.75f);
+                chb.set(y * 909 + 908, (float)chb.get(y * 909 + 908) * 0.25f + (float)chb.get(y * 909 + 907) * 0.75f);
             }
 
             if (channel_a1 != -1)
             {
-                cha1 = image::Image<uint16_t>(cha);
-                cha2 = image::Image<uint16_t>(cha);
+                cha1 = image::Image(cha);
+                cha2 = image::Image(cha);
                 for (size_t i = switchy; i < cha2.height(); i++)
                     for (size_t x = 0; x < cha2.width(); x++)
-                        cha2[i * cha2.width() + x] = 0;
+                        cha2.set(i * cha2.width() + x, 0);
 
                 for (int i = 0; i < switchy; i++)
                     for (size_t x = 0; x < cha1.width(); x++)
-                        cha1[i * cha1.width() + x] = 0;
+                        cha1.set(i * cha1.width() + x, 0);
             }
 
             // CALIBRATION
@@ -985,7 +994,7 @@ namespace noaa_apt
             if (dataset.timestamp > 0)
             {
                 time_t tttime = dataset.timestamp;
-                std::tm* timeReadable = gmtime(&tttime);
+                std::tm *timeReadable = gmtime(&tttime);
                 if (timeReadable->tm_mday == 13 && timeReadable->tm_mon == 4)
                     logger->critical("Happy birthday NOAA 15! You are now %d years old", timeReadable->tm_year + 1900 - 1998 + 1);
             }
@@ -996,7 +1005,7 @@ namespace noaa_apt
         d_output_files.push_back(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/dataset.json");
     }
 
-    image::Image<uint16_t> NOAAAPTDecoderModule::synchronize(int line_cnt)
+    image::Image NOAAAPTDecoderModule::synchronize(int line_cnt)
     {
         const int sync_a[] = {0, 0, 0,
                               255, 255, 0, 0,
@@ -1014,7 +1023,7 @@ namespace noaa_apt
             for (int f = 0; f < APT_IMG_OVERS; f++)
                 final_sync_a.push_back(sync_a[i]);
 
-        image::Image<uint16_t> wip_apt_image_sync(APT_IMG_WIDTH, line_cnt, 1);
+        image::Image wip_apt_image_sync(16, APT_IMG_WIDTH, line_cnt, 1);
 
 #pragma omp parallel for
         for (int line = 0; line < line_cnt - 1; line++)
@@ -1025,7 +1034,7 @@ namespace noaa_apt
             {
                 int cor = 0;
                 for (int i = 0; i < 39 * APT_IMG_OVERS; i++)
-                    cor += abs(int((wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i] >> 8) - final_sync_a[i]));
+                    cor += abs(int((wip_apt_image.get(line * APT_IMG_WIDTH * APT_IMG_OVERS + pos + i) >> 8) - final_sync_a[i]));
 
                 if (cor < best_cor)
                 {
@@ -1036,13 +1045,13 @@ namespace noaa_apt
 
             // logger->critical("Line %d Pos %d Cor %d", line, best_pos, best_cor);
             for (int i = 0; i < APT_IMG_WIDTH; i++)
-                wip_apt_image_sync[line * APT_IMG_WIDTH + i] = wip_apt_image[line * APT_IMG_WIDTH * APT_IMG_OVERS + best_pos + i * APT_IMG_OVERS];
+                wip_apt_image_sync.set(line * APT_IMG_WIDTH + i, wip_apt_image.get(line * APT_IMG_WIDTH * APT_IMG_OVERS + best_pos + i * APT_IMG_OVERS));
         }
 
         return wip_apt_image_sync;
     }
 
-    std::vector<APTWedge> NOAAAPTDecoderModule::parse_wedge_full(image::Image<uint16_t> &wedge)
+    std::vector<APTWedge> NOAAAPTDecoderModule::parse_wedge_full(image::Image &wedge)
     {
         if (wedge.height() < 128)
             return std::vector<APTWedge>();
@@ -1060,7 +1069,7 @@ namespace noaa_apt
         {
             int val = 0;
             for (int x = 0; x < 41; x++)
-                val += wedge[line * wedge.width() + x];
+                val += wedge.get(line * wedge.width() + x);
             val /= 41;
             wedge_a.push_back(val);
         }
@@ -1124,7 +1133,7 @@ namespace noaa_apt
                 std::vector<double> vals;
                 for (int x = 0; x < 41; x++)
                     for (int y = 0; y < 8; y++)
-                        vals.push_back(wedge[(wed.start_line + c * 8 + y) * wedge.width() + x]);
+                        vals.push_back(wedge.get((wed.start_line + c * 8 + y) * wedge.width() + x));
 
                 double mean = avg_overflowless(vals);
                 double variance = 0;

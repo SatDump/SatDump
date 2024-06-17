@@ -25,9 +25,9 @@ First time here? See the reference documents below to get started using SatDump.
 - [OpenCL C++ Headers](https://github.com/KhronosGroup/OpenCL-CLHPP), for OpenCL support
 - [OpenJP2](https://github.com/uclouvain/openjpeg), for JPEG-2000 support on GOES GRB, FY4, and more
 - [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs), for native files dialogs
+- [QOI](https://github.com/phoboslab/qoi), for qoi image support
 - [RapidXML](http://rapidxml.sourceforge.net/), for XML Parsing
 - [sol2](https://github.com/ThePhD/sol2), C++ Bindings for LUA
-- [tiny-regex-c](https://github.com/kokke/tiny-regex-c), for RegEx parsing
 - [UTF-8 CPP](https://utfcpp.sourceforge.net/), for UTF-8 handling
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 
@@ -93,6 +93,9 @@ First time here? See the reference documents below to get started using SatDump.
 ### Contributors
 - Arved MØKDS
 - Blobtoe
+- CO2ESP
+- Daniel Ekman (SA2KNG)
+- Digitelektro
 - Felix OK9UWU
 - Fred Jansen
 - Jpjonte
@@ -107,7 +110,6 @@ First time here? See the reference documents below to get started using SatDump.
 - Sam (@sam210723)
 - Scott Tilley (VE7TIL)
 - Tomi HA6NAB
-- Digitelektro
 
 ### Special Thanks to
 - microp11 (Paul Maxan), for the reverse-engineering work & Scytale-C

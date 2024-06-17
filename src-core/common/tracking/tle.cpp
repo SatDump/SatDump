@@ -22,7 +22,7 @@ namespace satdump
         {
             this_line.erase(0, this_line.find_first_not_of(" \t\n\r"));
             this_line.erase(this_line.find_last_not_of(" \t\n\r") + 1);
-            if(this_line != "")
+            if (this_line != "")
                 tle_lines.push_back(this_line);
 
             if (tle_lines.size() == 3)
@@ -62,7 +62,7 @@ namespace satdump
                     std::string noradstr = tle_lines[2].substr(2, tle_lines[2].substr(2, tle_lines[2].size() - 1).find(' '));
                     norad = std::stoi(noradstr);
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     tle_lines.pop_front();
                     continue;
@@ -74,10 +74,12 @@ namespace satdump
             }
         }
 
-        //Sort and remove duplicates
-        sort(new_registry.begin(), new_registry.end(), [](TLE& a, TLE& b) { return a.name < b.name; });
-        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE& a, TLE& b) { return a.norad == b.norad; }),
-            new_registry.end());
+        // Sort and remove duplicates
+        sort(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+             { return a.name < b.name; });
+        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+                                       { return a.norad == b.norad; }),
+                           new_registry.end());
 
         return total_lines;
     }
@@ -143,8 +145,11 @@ namespace satdump
         if (success)
         {
             std::ofstream outfile(path, std::ios::trunc);
-            for (TLE& tle : new_registry)
-                outfile << tle.name << std::endl << tle.line1 << std::endl << tle.line2 << std::endl << std::endl;
+            for (TLE &tle : new_registry)
+                outfile << tle.name << std::endl
+                        << tle.line1 << std::endl
+                        << tle.line2 << std::endl
+                        << std::endl;
             outfile.close();
             general_tle_registry = new_registry;
             config::main_cfg["user"]["tles_last_updated"] = time(NULL);
@@ -213,5 +218,70 @@ namespace satdump
         }
 
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    std::optional<TLE> TLERegistry::get_from_norad(int norad)
+    {
+        std::vector<TLE>::iterator it = std::find_if(begin(),
+                                                     end(),
+                                                     [&norad](const TLE &e)
+                                                     {
+                                                         return e.norad == norad;
+                                                     });
+
+        if (it != end())
+            return std::optional<TLE>(*it);
+        else
+            return std::optional<TLE>();
+    }
+
+    std::optional<TLE> TLERegistry::get_from_norad_time(int norad, time_t timestamp)
+    {
+        time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+        std::string sc_login = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_login"]["value"], "");
+        std::string sc_passw = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_password"]["value"], "");
+
+        // Use local time if Space Track credentials are not entered, or time is close to TLE catalog time
+        if (sc_login == "" || sc_passw == "" || sc_login == "yourloginemail" || sc_passw == "yourpassword" ||
+            fabs((double)last_update - (double)timestamp) < 4 * 24 * 3600)
+            return get_from_norad(norad);
+
+        // Otherwise, request on Space-Track's archive
+        std::string timestamp_day, timestamp_daytime;
+        {
+            if (timestamp < 0)
+                timestamp = 0;
+            time_t tttime = timestamp;
+            std::tm *timeReadable = gmtime(&tttime);
+            timestamp_day = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0");
+            timestamp_daytime = (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "%3A" +
+                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "%3A" +
+                                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+        }
+
+        std::string post_request = "identity=" + sc_login +
+                                   "&password=" + sc_passw +
+                                   "&query=https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) +
+                                   "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
+        std::string url = "https://www.space-track.org/ajaxauth/login";
+
+        std::string result;
+        if (perform_http_request_post(url, result, post_request) != 1)
+        {
+            printf("___ %s ___\n", result.c_str());
+            nlohmann::json res = nlohmann::json::parse(result)[0];
+            TLE tle;
+            tle.norad = norad;
+            tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
+            tle.line1 = res["TLE_LINE1"].get<std::string>();
+            tle.line2 = res["TLE_LINE2"].get<std::string>();
+            return tle;
+        }
+
+        return std::optional<TLE>();
     }
 }

@@ -19,7 +19,7 @@ namespace fengyun3
             ~GASReader();
             int lines;
             void work(std::vector<uint8_t> &packet);
-            image::Image<uint16_t> getChannel();
+            image::Image getChannel();
         };
     } // namespace virr
 } // namespace fengyun

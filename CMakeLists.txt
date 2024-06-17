@@ -7,10 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
-endif()
-
 project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
@@ -41,16 +37,8 @@ if(UNIX)
 endif()
 
 if(APPLE)
-    include_directories(/usr/local/include)
-    include_directories(/usr/local/opt/jpeg-turbo/include)
-    include_directories(/usr/local/Cellar/fftw/3.3.9/include)
-    link_directories(/usr/local/lib)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
-        include_directories(/opt/homebrew/include/)
-        link_directories(/opt/homebrew/lib/)
-    endif()
+    link_directories(vcpkg/installed/osx-satdump/lib)
 
     # Jemalloc
     find_package(Jemalloc REQUIRED)
@@ -59,25 +47,17 @@ if(APPLE)
 
 endif()
 
-
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
-
         if(APPLE)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-command-line-argument -Xpreprocessor -fopenmp -I/usr/local/opt/llvm/include")
-            if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib")
-            else()
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/libomp/include -L/usr/local/opt/libomp/lib")
-            endif()
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-command-line-argument -Xpreprocessor")
         endif()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     endif()
 
     find_package(ZSTD)
@@ -117,7 +97,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/x64-windows/lib)
 endif()
 
-project(SatDump VERSION "1.2.0")
+project(SatDump VERSION "1.2.1")
 
 # Check if the current commit has a tag
 execute_process(
@@ -289,7 +269,6 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         endif()
         file(GLOB_RECURSE SATDUMP_WINDOWS_DEPENDENCIES ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/bin/*.dll)
         install(FILES ${SATDUMP_WINDOWS_DEPENDENCIES} DESTINATION bin)
-        install(TARGETS satdump_core DESTINATION bin)
     else()
         set(CPACK_GENERATOR DEB)
         #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)

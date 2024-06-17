@@ -138,7 +138,7 @@ namespace nat2pro
 
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)
-                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], image::Image<uint16_t>(avhrr_data[i].data(), image_width, number_of_lines, 1)});
+                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], image::Image(avhrr_data[i].data(), 16, image_width, number_of_lines, 1)});
 
             // calibration
             nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));

@@ -25,6 +25,14 @@ namespace satdump
                 else
                     p_string = "";
             }
+            else if (type_str == "password")
+            {
+                d_type = PARAM_PASSWORD;
+                if (hasValue)
+                    p_string = p_json["value"].get<std::string>();
+                else
+                    p_string = "";
+            }
             else if (type_str == "int")
             {
                 d_type = PARAM_INT;
@@ -124,6 +132,8 @@ namespace satdump
 
             if (d_type == PARAM_STRING)
                 ImGui::InputText(d_id.c_str(), &p_string);
+            else if (d_type == PARAM_PASSWORD)
+                ImGui::InputText(d_id.c_str(), &p_string, ImGuiInputTextFlags_Password);
             else if (d_type == PARAM_INT)
                 ImGui::InputInt(d_id.c_str(), &p_int, 0);
             else if (d_type == PARAM_FLOAT)
@@ -145,7 +155,7 @@ namespace satdump
         nlohmann::json EditableParameter::getValue()
         {
             nlohmann::json v;
-            if (d_type == PARAM_STRING)
+            if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD)
                 v = std::string(p_string);
             else if (d_type == PARAM_INT)
                 v = p_int;
@@ -168,7 +178,7 @@ namespace satdump
 
         nlohmann::json EditableParameter::setValue(nlohmann::json v)
         {
-            if (d_type == PARAM_STRING)
+            if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD)
                 p_string = v.get<std::string>();
             else if (d_type == PARAM_INT)
                 p_int = v.get<int>();
