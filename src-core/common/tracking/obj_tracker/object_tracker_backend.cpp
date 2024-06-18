@@ -206,6 +206,7 @@ namespace satdump
             sat_next_los_pos.az = next_los.azimuth * RAD_TO_DEG;
             sat_next_los_pos.el = next_los.elevation * RAD_TO_DEG;
 
+            if(meridian_flip_correction)
             {
                 //Determine pass direction
                 predict_position satellite_orbit2;
