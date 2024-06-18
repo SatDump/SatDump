@@ -140,6 +140,7 @@ namespace satdump
         int rotator_decimal_precision = 3;
         SatAzEl rotator_park_position;
         double rotator_unpark_at_minus = 60;
+        bool meridian_flip_correction = false;
         int rotator_az_min = 0;
         int rotator_az_max = 360;
 

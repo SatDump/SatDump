@@ -37,7 +37,8 @@ namespace satdump
                                 rot_current_req_pos.az = (round(sat_current_pos.az * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                                 rot_current_req_pos.el = (round(sat_current_pos.el * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                             }
-                            rot_current_req_pos.az = correctRotatorAzimuth(rot_current_req_pos.az);
+                            if(meridian_flip_correction)
+                                rot_current_req_pos.az = correctRotatorAzimuth(sat_next_aos_pos.az);
                         }
                         else if (rotator_park_while_idle)
                         {
@@ -45,7 +46,8 @@ namespace satdump
                             {
                                 rot_current_req_pos.az = sat_next_aos_pos.az;
                                 rot_current_req_pos.el = sat_next_aos_pos.el;
-                                rot_current_req_pos.az = correctRotatorAzimuth(sat_next_aos_pos.az);
+                                if(meridian_flip_correction)
+                                    rot_current_req_pos.az = correctRotatorAzimuth(sat_next_aos_pos.az);
                             }
                             else
                             {
@@ -188,8 +190,20 @@ namespace satdump
     void ObjectTracker::renderRotatorConfig()
     {
         ImGui::InputDouble("Update Period (s)", &rotator_update_period);
-        ImGui::InputInt("Minimum Azimuth", &rotator_az_min);
-        ImGui::InputInt("Maximum Azimuth", &rotator_az_max);
+        
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Checkbox("Meridian flip correction", &meridian_flip_correction);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("By enabling this setting, you can allow your rotator to go beyond the default 0-360° azimuth range");
+
+        if(meridian_flip_correction)
+        {        
+            ImGui::InputInt("Minimum Azimuth", &rotator_az_min);
+            ImGui::InputInt("Maximum Azimuth", &rotator_az_max);
+        }
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -240,6 +254,7 @@ namespace satdump
         v["unpark_at_minus"] = rotator_unpark_at_minus;
         v["rounding"] = rotator_rounding;
         v["rounding_decimal_places"] = rotator_decimal_precision;
+        v["meridian_flip_correction"] = meridian_flip_correction;
         v["rotator_az_min"] = rotator_az_min;
         v["rotator_az_max"] = rotator_az_max;
         return v;
@@ -253,6 +268,7 @@ namespace satdump
         rotator_unpark_at_minus = getValueOrDefault(v["unpark_at_minus"], rotator_unpark_at_minus);
         rotator_rounding = getValueOrDefault(v["rounding"], rotator_rounding);
         rotator_decimal_precision = getValueOrDefault(v["rotator_decimal_places"], rotator_decimal_precision);
+        meridian_flip_correction = getValueOrDefault(v["meridian_flip_correction"], meridian_flip_correction);
         rotator_az_min = getValueOrDefault(v["rotator_az_min"], rotator_az_min);
         rotator_az_max = getValueOrDefault(v["rotator_az_max"], rotator_az_max);
     }
