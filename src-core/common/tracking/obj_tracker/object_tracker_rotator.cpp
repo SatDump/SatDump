@@ -38,7 +38,7 @@ namespace satdump
                                 rot_current_req_pos.el = (round(sat_current_pos.el * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                             }
                             if(meridian_flip_correction)
-                                rot_current_req_pos.az = correctRotatorAzimuth(sat_next_aos_pos.az);
+                                rot_current_req_pos.az = correctRotatorAzimuth(sat_current_pos.az);
                         }
                         else if (rotator_park_while_idle)
                         {
