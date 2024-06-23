@@ -53,6 +53,7 @@ namespace meteor
             std::vector<uint8_t> msumr_ids;
 
             nlohmann::json msu_mr_telemetry;
+            nlohmann::json msu_mr_telemetry_calib;
 
             // std::ofstream file_out("idk_bism.bin");
 
@@ -85,7 +86,7 @@ namespace meteor
                     mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     msumr_ids.push_back(msumr_frame[12] >> 4);
 
-                    parseMSUMRTelemetry(msu_mr_telemetry, msumr_timestamps.size() - 1, msumr_frame.data());
+                    parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_timestamps.size() - 1, msumr_frame.data());
                 }
 
                 // MTVZA Deframing
@@ -184,6 +185,7 @@ namespace meteor
 
                 satdump::ImageProducts msumr_products;
                 msumr_products.instrument_name = "msu_mr";
+                msumr_products.bit_depth = 10;
                 msumr_products.has_timestamps = true;
                 msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 msumr_products.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp));
@@ -225,6 +227,33 @@ namespace meteor
 
                 for (int i = 0; i < 6; i++)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i)});
+
+                nlohmann::json calib_cfg;
+                calib_cfg["calibrator"] = "meteor_msumr";
+                calib_cfg["vars"]["views"] = msumr_reader.calibration_info;
+                calib_cfg["vars"]["temps"] = msu_mr_telemetry_calib;
+
+                msumr_products.set_calibration(calib_cfg);
+                msumr_products.set_calibration_type(0, satdump::ImageProducts::CALIB_REFLECTANCE);
+                msumr_products.set_calibration_type(1, satdump::ImageProducts::CALIB_REFLECTANCE);
+                msumr_products.set_calibration_type(2, satdump::ImageProducts::CALIB_REFLECTANCE);
+                msumr_products.set_calibration_type(3, satdump::ImageProducts::CALIB_RADIANCE);
+                msumr_products.set_calibration_type(4, satdump::ImageProducts::CALIB_RADIANCE);
+                msumr_products.set_calibration_type(5, satdump::ImageProducts::CALIB_RADIANCE);
+
+                msumr_products.set_wavenumber(0, 0);
+                msumr_products.set_wavenumber(1, 0);
+                msumr_products.set_wavenumber(2, 0);
+                msumr_products.set_wavenumber(3, 2695.9743);
+                msumr_products.set_wavenumber(4, 925.4075);
+                msumr_products.set_wavenumber(5, 839.8979);
+
+                msumr_products.set_calibration_default_radiance_range(0, 0, 1);
+                msumr_products.set_calibration_default_radiance_range(1, 0, 1);
+                msumr_products.set_calibration_default_radiance_range(2, 0, 1);
+                msumr_products.set_calibration_default_radiance_range(3, 0.05, 1);
+                msumr_products.set_calibration_default_radiance_range(4, 30, 120);
+                msumr_products.set_calibration_default_radiance_range(5, 30, 120);
 
                 saveJsonFile(directory + "/telemetry.json", msu_mr_telemetry);
                 msumr_products.save(directory);

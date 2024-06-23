@@ -1347,6 +1347,18 @@
                             0
                         ]
                     },
+                    "NO enhancement (CALIB)": {
+                        "lut": "lut/cal/WXtoImg-NO.png",
+                        "description": "descriptions/NO.md",
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        }
+                    },
                     "MCIR": {
                         "channels": "ch4",
                         "cpp": "underlay_with_clouds",

@@ -67,6 +67,7 @@ namespace meteor
 
             std::vector<uint8_t> msumr_ids;
             nlohmann::json msu_mr_telemetry;
+            nlohmann::json msu_mr_telemetry_calib;
 
             while (!data_in.eof())
             {
@@ -86,7 +87,7 @@ namespace meteor
                             uint8_t msumr_id = pkt.payload[8 + 12] >> 4;
                             msumr_ids.push_back(msumr_id);
 
-                            parseMSUMRTelemetry(msu_mr_telemetry, msumr_ids.size() - 1, &pkt.payload[8]);
+                            parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_ids.size() - 1, &pkt.payload[8]);
                         }
                     }
                 }

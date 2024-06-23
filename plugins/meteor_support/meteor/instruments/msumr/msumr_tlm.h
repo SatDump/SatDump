@@ -7,7 +7,7 @@
 // more of this is figured out for calibration.
 // Translations from Russians are definitely very imperfect,
 // and this will need to be more data-oriented later!
-inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, int linecnt, uint8_t *msumr_frame)
+inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json &msu_mr_telemetry_calib, int linecnt, uint8_t *msumr_frame)
 {
     if ((msumr_frame[12] & 0xF) == 0b0000)
         msu_mr_telemetry[linecnt]["msu_mr_set"] = "primary";
@@ -16,27 +16,28 @@ inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, int linecnt, u
     else
         msu_mr_telemetry[linecnt]["msu_mr_set"] = "Unknown";
 
-    msu_mr_telemetry[linecnt]["msu_mr_id"] = msumr_frame[12] >> 4;
+    int mid = msumr_frame[12] >> 4;
+    msu_mr_telemetry[linecnt]["msu_mr_id"] = mid;
 
     if (msumr_frame[13] == 0b00001111) // Analog TLM
     {
         const char *names[16 + 5] = {
-            "AF temperature of the 5th channel",
-            "AF temperature of the 6th channel",
-            "Temperature ABT-X1",
-            "Temperature ABT-X2",
-            "Temperature AChT-X3",
-            "Temperature AChT-G1",
-            "Temperature AChT-G2",
-            "Temperature AChT-G3",
-            "Lamp current of calibration unit VK1",
-            "Lamp current of calibration unit VK2",
-            "Lamp current of calibration unit VK3",
-            "Temperature of IR lenses of channels 4, 5, 6",
+            "Detector Temperature Channel 5", //"AF temperature of the 5th channel",
+            "Detector Temperature Channel 6", //"AF temperature of the 6th channel",
+            "Hot Body Temperature 1 (313K)",  //"Temperature AChT-G1",
+            "Hot Body Temperature 2 (313K)",  //"Temperature AChT-G2",
+            "Hot Body Temperature 3 (313K)",  //"Temperature AChT-G3",
+            "Cold Body Temperature 1 (258K)", //"Temperature AChT-X1",
+            "Cold Body Temperature 2 (258K)", //"Temperature AChT-X2",
+            "Cold Body Temperature 3 (258K)", //"Temperature AChT-X3",
+            "Lamp Current Channel 1",         //"Lamp current of calibration unit VK1",
+            "Lamp Current Channel 2",         //"Lamp current of calibration unit VK2",
+            "Lamp Current Channel 3",         //"Lamp current of calibration unit VK3",
+            "IR Lenses temperatures",         //"Temperature of IR lenses of channels 4, 5, 6",
             "High voltage control on FP VK1",
             "High voltage control on FP VK2",
-            "FP temperature VK3",
-            "Temperature of control point No. 1",
+            "Detector Temperature Channel 3", //"FP temperature VK3",
+            "Baseplate Temperature",          //    "Temperature of control point No. 1",
             "UKN1",
             "UKN2",
             "UKN3",
@@ -44,7 +45,20 @@ inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, int linecnt, u
             "UKN5",
         };
 
-        for (int i = 0; i < 16 /*+ 5*/; i++)
+        for (int i = 0; i < 8 /*+ 5*/; i++)
+            msu_mr_telemetry[linecnt]["analog_tlm"][names[15 - i]] = ((uint8_t *)msumr_frame)[14 + i];
+
+        for (int i = 8; i < 14 /*+ 5*/; i++)
+            msu_mr_telemetry[linecnt]["analog_tlm"][names[15 - i]] = -int(((int8_t *)msumr_frame)[14 + i]) * 0.5 + 273.15; // Reverse-engineered! Seems good.
+
+        msu_mr_telemetry_calib[linecnt]["analog_tlm"]["cold_temp1"] = msu_mr_telemetry[linecnt]["analog_tlm"]["Cold Body Temperature 1 (258K)"].get<double>() + (mid == 2 ? 40 : 0); // M2-2 patch
+        msu_mr_telemetry_calib[linecnt]["analog_tlm"]["cold_temp2"] = msu_mr_telemetry[linecnt]["analog_tlm"]["Cold Body Temperature 2 (258K)"].get<double>() + (mid == 2 ? 40 : 0);
+        msu_mr_telemetry_calib[linecnt]["analog_tlm"]["cold_temp3"] = msu_mr_telemetry[linecnt]["analog_tlm"]["Cold Body Temperature 3 (258K)"].get<double>() + (mid == 2 ? 40 : 0);
+        msu_mr_telemetry_calib[linecnt]["analog_tlm"]["hot_temp1"] = msu_mr_telemetry[linecnt]["analog_tlm"]["Hot Body Temperature 1 (313K)"];
+        msu_mr_telemetry_calib[linecnt]["analog_tlm"]["hot_temp2"] = msu_mr_telemetry[linecnt]["analog_tlm"]["Hot Body Temperature 2 (313K)"];
+        msu_mr_telemetry_calib[linecnt]["analog_tlm"]["hot_temp3"] = msu_mr_telemetry[linecnt]["analog_tlm"]["Hot Body Temperature 3 (313K)"];
+
+        for (int i = 14; i < 16 /*+ 5*/; i++)
             msu_mr_telemetry[linecnt]["analog_tlm"][names[15 - i]] = ((uint8_t *)msumr_frame)[14 + i];
     }
     else if (msumr_frame[13] == 0b00000000) // Digital TLM

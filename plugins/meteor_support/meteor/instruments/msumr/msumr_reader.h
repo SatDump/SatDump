@@ -14,6 +14,9 @@ namespace meteor
             std::vector<uint16_t> channels[6];
 
         public:
+            std::vector<uint16_t> calibration_info[6][2];
+
+        public:
             MSUMRReader();
             ~MSUMRReader();
             int lines;
