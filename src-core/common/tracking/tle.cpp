@@ -272,8 +272,22 @@ namespace satdump
         std::string result;
         if (perform_http_request_post(url, result, post_request) != 1)
         {
-            printf("___ %s ___\n", result.c_str());
-            nlohmann::json res = nlohmann::json::parse(result)[0];
+            bool parsed = true;
+            nlohmann::json res;
+            try
+            {
+                res = nlohmann::json::parse(result)[0];
+            }
+            catch (std::exception &)
+            {
+                parsed = false;
+            }
+            if (!parsed || !res.contains("TLE_LINE0") || !res.contains("TLE_LINE1") || !res.contains("TLE_LINE2"))
+            {
+                logger->warn("Error pulling TLE from Space-Track! Returned data: %s", result.c_str());
+                return get_from_norad(norad);
+            }
+
             TLE tle;
             tle.norad = norad;
             tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
