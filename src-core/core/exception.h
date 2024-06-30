@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#define satdump_exception(arg) satdump::satdump_exception_t(arg, __FILE__ + SOURCE_PATH_SIZE, __LINE__)
+#define satdump_exception(arg) satdump::satdump_exception_t(arg, __FILE__, __LINE__)
 
 namespace satdump
 {
@@ -14,7 +14,7 @@ namespace satdump
     public:
         satdump_exception_t(const std::string &arg, const char *file, int line) : std::runtime_error(arg)
         {
-            msg = arg + " => " + std::string(file) + ":" + std::to_string(line);
+            msg = arg + " => " + std::string(file).substr(SOURCE_PATH_SIZE) + ":" + std::to_string(line);
         }
 
         ~satdump_exception_t() throw()
