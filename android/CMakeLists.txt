@@ -145,6 +145,8 @@ add_library(android_imgui SHARED
 )
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 
 target_compile_definitions(android_imgui PRIVATE IMGUI_IMPL_OPENGL_ES3)
 
