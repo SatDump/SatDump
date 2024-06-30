@@ -66,7 +66,7 @@ namespace generic_analog
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
         int16_t *output_wav_buffer_resamp = new int16_t[d_buffer_size * 200];
-        int final_data_size = 0;
+        uint64_t final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
         if (output_data_type == DATA_FILE)
             wave_writer.write_header(audio_samplerate, 1);

@@ -75,7 +75,7 @@ namespace noaa_apt
 
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
-        int final_data_size = 0;
+        uint64_t final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
         if (save_wav || output_data_type == DATA_FILE)
             wave_writer.write_header(d_symbolrate, 1);

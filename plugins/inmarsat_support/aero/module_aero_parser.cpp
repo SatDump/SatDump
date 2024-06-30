@@ -257,7 +257,7 @@ namespace inmarsat
             int16_t *audio_out = nullptr;
             std::ofstream *file_wav = nullptr;
             dsp::WavWriter *wav_out = nullptr;
-            size_t final_wav_size = 0;
+            uint64_t final_wav_size = 0;
             if (is_c_channel)
             {
                 voice_data = new uint8_t[300];

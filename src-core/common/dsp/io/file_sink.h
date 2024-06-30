@@ -25,8 +25,8 @@ namespace dsp
 
         std::ofstream output_file;
 
-        size_t current_size_out = 0;
-        size_t current_size_out_raw = 0;
+        uint64_t current_size_out = 0;
+        uint64_t current_size_out_raw = 0;
 
         int8_t *buffer_s8;
         int16_t *buffer_s16;
@@ -118,12 +118,12 @@ namespace dsp
             return finalt;
         }
 
-        size_t get_written()
+        uint64_t get_written()
         {
             return current_size_out;
         }
 
-        size_t get_written_raw()
+        uint64_t get_written_raw()
         {
             return current_size_out_raw;
         }

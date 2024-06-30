@@ -60,22 +60,22 @@ namespace cluster
 
             // Buffers to wav...for all the antennas
             std::ofstream out_antenna_Ez(d_output_file_hint + "_Ez.wav", std::ios::binary);
-            int final_data_size_ant_Ez = 0;
+            uint64_t final_data_size_ant_Ez = 0;
             dsp::WavWriter wave_writer_Ez(out_antenna_Ez);
             wave_writer_Ez.write_header(27443, 1);
 
             std::ofstream out_antenna_Bx(d_output_file_hint + "_Bx.wav", std::ios::binary);
-            int final_data_size_ant_Bx = 0;
+            uint64_t final_data_size_ant_Bx = 0;
             dsp::WavWriter wave_writer_Bx(out_antenna_Bx);
             wave_writer_Bx.write_header(27443, 1);
 
             std::ofstream out_antenna_By(d_output_file_hint + "_By.wav", std::ios::binary);
-            int final_data_size_ant_By = 0;
+            uint64_t final_data_size_ant_By = 0;
             dsp::WavWriter wave_writer_By(out_antenna_By);
             wave_writer_By.write_header(27443, 1);
 
             std::ofstream out_antenna_Ey(d_output_file_hint + "_Ey.wav", std::ios::binary);
-            int final_data_size_ant_Ey = 0;
+            uint64_t final_data_size_ant_Ey = 0;
             dsp::WavWriter wave_writer_Ey(out_antenna_Ey);
             wave_writer_Ey.write_header(27443, 1);
 

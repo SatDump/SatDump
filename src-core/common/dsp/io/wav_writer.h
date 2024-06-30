@@ -17,7 +17,7 @@ namespace dsp
         {
         }
 
-        void write_header(long samplerate, int channels, bool rf64 = false, size_t final_size = 0)
+        void write_header(long samplerate, int channels, bool rf64 = false, uint64_t final_size = 0)
         {
             this->samplerate = samplerate;
             this->channels = channels;
@@ -96,7 +96,7 @@ namespace dsp
             }
         }
 
-        void finish_header(size_t final_size)
+        void finish_header(uint64_t final_size)
         {
             // 4294967259 is max size of standard WAV with minimal headers
             // By adding the JUNK section this becomes 4294967223
