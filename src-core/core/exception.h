@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#define satdump_exception(arg) satdump::satdump_exception_t(arg, __FILE__, __LINE__)
+#define satdump_exception(arg) satdump::satdump_exception_t(arg, __FILE__ + SOURCE_PATH_SIZE, __LINE__)
 
 namespace satdump
 {

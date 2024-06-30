@@ -125,6 +125,10 @@ else()
 endif()
 add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
 
+# Used for error messages
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
+
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
 endif()
