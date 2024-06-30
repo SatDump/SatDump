@@ -182,7 +182,7 @@
             "type": "float",
             "value": 0.0,
             "name": "QTH Altitude",
-            "description": "Altitude (meters) of your station's QTH"
+            "description": "Altitude (meters above sea level) of your station's QTH"
         },
         "default_qth_label": {
             "type": "string",
