@@ -143,7 +143,10 @@ namespace noaa_apt
 
         // Finish up WAV
         if (save_wav || output_data_type == DATA_FILE)
+        {
             wave_writer.finish_header(final_data_size);
+            data_out.close();
+        }
         delete[] output_wav_buffer;
 
         logger->info("Demodulation finished");
@@ -161,9 +164,6 @@ namespace noaa_apt
             nr->stop();
         qua->stop();
         qua->output_stream->stopReader();
-
-        if (save_wav || output_data_type == DATA_FILE)
-            data_out.close();
     }
 
     void NOAAAPTDemodModule::drawUI(bool window)

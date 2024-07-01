@@ -188,7 +188,11 @@ namespace generic_analog
 
         // Finish up WAV
         if (output_data_type == DATA_FILE)
+        {
             wave_writer.finish_header(final_data_size);
+            data_out.close();
+        }
+
         delete[] output_wav_buffer;
         delete[] output_wav_buffer_resamp;
 
@@ -205,9 +209,6 @@ namespace generic_analog
         // res->stop();
         //   qua->stop();
         agc->output_stream->stopReader();
-
-        if (output_data_type == DATA_FILE)
-            data_out.close();
     }
 
     void GenericAnalogDemodModule::drawUI(bool window)

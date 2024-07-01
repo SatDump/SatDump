@@ -161,6 +161,10 @@ namespace cluster
             wave_writer_Bx.finish_header(final_data_size_ant_Bx);
             wave_writer_By.finish_header(final_data_size_ant_By);
             wave_writer_Ey.finish_header(final_data_size_ant_Ey);
+            out_antenna_Ez.close();
+            out_antenna_Bx.close();
+            out_antenna_By.close();
+            out_antenna_Ey.close();
 
             if (input_data_type == DATA_FILE)
                 data_in.close();

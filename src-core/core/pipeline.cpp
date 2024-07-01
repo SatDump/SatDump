@@ -48,10 +48,10 @@ namespace satdump
         user, proceed to run both in parralel saving up on processing
         time.
         */
-        if (steps[1].modules.size() == 1 &&
-            steps[2].modules.size() == 1 &&
-            input_level == "baseband" &&
-            parameters.count("disable_multi_modules") == 0)
+        if (input_level == "baseband" &&
+            parameters.count("disable_multi_modules") == 0 &&
+            steps[1].modules.size() == 1 &&
+            steps[2].modules.size() == 1)
         {
             logger->info("Checking the 2 first modules...");
 
