@@ -126,9 +126,10 @@ namespace goes
                 // Constellation
                 {
                     ImDrawList *draw_list = ImGui::GetWindowDrawList();
-                    draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                             ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                             style::theme.widget_bg);
+                    ImVec2 rect_min = ImGui::GetCursorScreenPos();
+                    ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                    draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
+                    draw_list->PushClipRect(rect_min, rect_max);
 
                     for (int i = 0; i < 2048; i++)
                     {
@@ -138,6 +139,7 @@ namespace goes
                                                    style::theme.constellation);
                     }
 
+                    draw_list->PopClipRect();
                     ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
                 }
             }
