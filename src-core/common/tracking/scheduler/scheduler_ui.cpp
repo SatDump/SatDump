@@ -240,7 +240,10 @@ namespace satdump
                     if (&downlink == &cpass.downlinks[0])
                     {
                         ImGui::SetNextItemWidth(100 * ui_scale);
-                        ImGui::TextColored(color, "%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
+                        std::optional<satdump::TLE> thisTLE = general_tle_registry.get_from_norad(cpass.norad);
+                        ImGui::TextColored(color, "%s", thisTLE.has_value() ? thisTLE->name.c_str() :
+                            std::string("NORAD #" + std::to_string(cpass.norad)).c_str());
+
                         if (ImGui::Button(((std::string) "+##objadddownlink" + std::to_string(cpass.norad)).c_str()))
                         {
                             cpass.downlinks.push_back(satdump::TrackedObject::Downlink());
