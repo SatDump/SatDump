@@ -12,6 +12,7 @@
 
 #include "common/tracking/obj_tracker/object_tracker.h"
 #include "common/tracking/scheduler/scheduler.h"
+#include "common/tracking/sat_finder/sat_finder_ui.h"
 
 namespace satdump
 {
@@ -30,10 +31,13 @@ namespace satdump
         ObjectTracker object_tracker = ObjectTracker(true);
         AutoTrackScheduler auto_scheduler;
 
+        SatFinder sat_finder;
+
         std::shared_ptr<rotator::RotatorHandler> rotator_handler;
         int selected_rotator_handler = 0;
 
         bool config_window_was_asked = false, show_window_config = false;
+        bool satellite_finder_was_asked = false, show_satellite_finder_window = false;
 
     private:
         void saveConfig()
@@ -68,5 +72,6 @@ namespace satdump
 
         void render();
         void renderConfig();
+        void renderSatfinder();
     };
 }

@@ -144,6 +144,9 @@ namespace satdump
         int rotator_az_min = 0;
         int rotator_az_max = 360;
 
+    public: // Handlers
+        std::function<void(double, double)> rotator_target_pos_updated_callback; //Todo: this calls from rotatorth_thread
+
     public: // Functions
         nlohmann::json getStatus();
         image::Image getPolarPlotImg(int size = 256);
