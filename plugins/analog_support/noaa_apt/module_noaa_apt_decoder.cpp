@@ -762,7 +762,10 @@ namespace noaa_apt
                 sat_name = "NOAA-19";
             }
 
-            satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+            if(d_parameters.contains("start_timestamp"))
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, d_parameters["start_timestamp"]);
+            else
+                satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
             // SATELLITE ID
             {
