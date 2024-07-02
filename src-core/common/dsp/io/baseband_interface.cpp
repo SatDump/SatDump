@@ -5,13 +5,13 @@ namespace dsp
 {
     BasebandType basebandTypeFromString(std::string type)
     {
-        if (type == "cs16")
+        if (type == "cs16" || type == "s16")
             return CS_16;
-        else if (type == "cs8")
+        else if (type == "cs8" || type == "s8")
             return CS_8;
-        else if (type == "cf32")
+        else if (type == "cf32" || type == "f32")
             return CF_32;
-        else if (type == "cu8")
+        else if (type == "cu8" || type == "u8")
             return CU_8;
         else if (type == "w16")
             return WAV_16;
