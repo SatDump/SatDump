@@ -4,6 +4,7 @@
 #include "common/repack.h"
 #include "logger.h"
 #include "common/image/io.h"
+#include "common/calibration.h"
 
 namespace nat2pro
 {
@@ -16,6 +17,21 @@ namespace nat2pro
         i4[2] = buff[1];
         i4[3] = buff[0];
         return *((int *)i4);
+    }
+
+    double get_r8(uint8_t *buff)
+    {
+        // if (isbig) return *((real_8 *)buff);
+        unsigned char sw[8];
+        sw[0] = buff[7];
+        sw[1] = buff[6];
+        sw[2] = buff[5];
+        sw[3] = buff[4];
+        sw[4] = buff[3];
+        sw[5] = buff[2];
+        sw[6] = buff[1];
+        sw[7] = buff[0];
+        return *((double *)sw);
     }
 
     void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
@@ -115,11 +131,30 @@ namespace nat2pro
 
         // Read Trailer
         //{
-        uint8_t *trailer_ptr = buf + trailerpos;
+        uint8_t *header_ptr = buf + 38 + headerpos;
+        int hoffset = 1 + 60134 + 700 + 326058 + 101 +
+                      72;
+
+        logger->critical("-------------------------- %d", headerpos);
+
+        double calibration_slope[12];
+        double calibration_offset[12];
+
+        for (int i = 0; i < 12; i++)
+        {
+            calibration_slope[i] = get_r8(&header_ptr[hoffset + (i * 2 + 0) * 8]);
+            calibration_offset[i] = get_r8(&header_ptr[hoffset + (i * 2 + 1) * 8]);
+            logger->trace("Channel %d Calibration Slope %f Offset %f", i + 1, calibration_slope[i], calibration_offset[i]);
+        }
+        //}
+
+        // Read Trailer
+        //{
+        uint8_t *trailer_ptr = buf + 38 + trailerpos;
 
         // int trailer_version = trailer_ptr[0];
 
-        int offset = 38 + 1 + 2 +
+        int offset = 1 + 2 +
                      14 +
                      12 +
                      192 +
@@ -138,7 +173,7 @@ namespace nat2pro
 
         logger->critical("LowerSouthLineActual : %d, LowerNorthLineActual : %d, LowerEastColumnActual : %d, LowerWestColumnActual : %d",
                          LowerSouthLineActual, LowerNorthLineActual, LowerEastColumnActual, LowerWestColumnActual);
-        // }
+        //}
 
         uint16_t repacked_line[81920];
 
@@ -227,6 +262,49 @@ namespace nat2pro
             vis_ir_imgs[channel].mirror(true, true);
             seviri_products.images.push_back({"SEVIRI-" + std::to_string(channel + 1), std::to_string(channel + 1), vis_ir_imgs[channel]});
         }
+
+        nlohmann::json calib_cfg;
+        calib_cfg["calibrator"] = "msg_nat_seviri";
+        for (int i = 0; i < 12; i++)
+        {
+            calib_cfg["vars"]["slope"][i] = calibration_slope[i];
+            calib_cfg["vars"]["offset"][i] = calibration_offset[i];
+        }
+
+        seviri_products.set_calibration(calib_cfg);
+        seviri_products.set_calibration_type(0, satdump::ImageProducts::CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(1, satdump::ImageProducts::CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(2, satdump::ImageProducts::CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(3, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(4, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(5, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(6, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(7, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(8, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(9, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(10, satdump::ImageProducts::CALIB_RADIANCE);
+        seviri_products.set_calibration_type(11, satdump::ImageProducts::CALIB_REFLECTANCE);
+
+        seviri_products.set_calibration_default_radiance_range(9, 30, 120);
+        seviri_products.set_calibration_default_radiance_range(10, 30, 120);
+
+        double wavelength_table[12] = {
+            0.635,
+            0.81,
+            1.64,
+            3.92,
+            6.25,
+            7.35,
+            8.7,
+            9.66,
+            10.8,
+            12,
+            13.40,
+            0.75,
+        };
+
+        for (int i = 0; i < 12; i++)
+            seviri_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (wavelength_table[i] / 1000000.0)));
 
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);
