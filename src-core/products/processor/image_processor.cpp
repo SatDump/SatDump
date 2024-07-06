@@ -87,8 +87,8 @@ namespace satdump
         // Overlay stuff
         OverlayHandler overlay_handler;
         OverlayHandler corrected_overlay_handler;
-        std::function<std::pair<int, int>(double, double, int, int)> proj_func;
-        std::function<std::pair<int, int>(double, double, int, int)> corr_proj_func;
+        std::function<std::pair<int, int>(double, double, double, double)> proj_func;
+        std::function<std::pair<int, int>(double, double, double, double)> corr_proj_func;
         size_t last_width = 0, last_height = 0, last_corr_width = 0, last_corr_height = 0;
         nlohmann::json last_proj_cfg;
 
