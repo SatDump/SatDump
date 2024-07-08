@@ -113,7 +113,10 @@ namespace demod
         pll->start();
         pm_psk->start();
         if (d_resample_after_pll)
+        {
+            resampler->start();
             agc2->start();
+        }
         rrc->start();
         costas->start();
         rec->start();
@@ -183,7 +186,10 @@ namespace demod
         pll->stop();
         pm_psk->stop();
         if (d_resample_after_pll)
+        {
+            resampler->stop();
             agc2->stop();
+        }
         rrc->stop();
         costas->stop();
         rec->stop();
