@@ -43,7 +43,7 @@ namespace deframing
         int bit_of_frame = 0;  // Bit of frame we're at
         uint8_t *frame_buffer; // Current WIP frame buffer
 
-        int d_invalid_asm = 0, d_good_asm = 0; // Lock monitoring
+        int d_invalid_asm, d_good_asm; // Lock monitoring
 
         // Compare 2 32-bits values and return the difference count
         int compare_32(uint32_t v1, uint32_t v2)
