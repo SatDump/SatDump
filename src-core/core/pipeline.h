@@ -65,6 +65,7 @@ namespace satdump
     };
 
     SATDUMP_DLL extern std::vector<Pipeline> pipelines;
+    SATDUMP_DLL extern nlohmann::ordered_json pipelines_system_json, pipelines_json;
 
     void loadPipelines(std::string filepath);
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline);

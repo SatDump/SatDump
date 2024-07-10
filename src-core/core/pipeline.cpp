@@ -7,10 +7,13 @@
 #include <thread>
 #include "core/config.h"
 #include "core/exception.h"
+#include "init.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
     SATDUMP_DLL std::vector<Pipeline> pipelines;
+    SATDUMP_DLL nlohmann::ordered_json pipelines_system_json, pipelines_json;
 
     void Pipeline::run(std::string input_file,
                        std::string output_directory,
@@ -301,10 +304,19 @@ namespace satdump
             // logger->info(pipelineString);
         }
 
-        // Parse it
-        nlohmann::ordered_json jsonObj = nlohmann::ordered_json::parse(pipelineString);
+        try
+        {
+            pipelines_system_json = merge_json_diffs(pipelines_system_json, nlohmann::ordered_json::parse(pipelineString));
+        }
+        catch (std::exception &e)
+        {
+            logger->warn("Error loading system pipeline file: %s", e.what());
+        }
+    }
 
-        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
+    void parsePipelines()
+    {
+        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : pipelines_json.items())
         {
             Pipeline newPipeline;
 
@@ -391,10 +403,9 @@ namespace satdump
             exit(1);
         }
 
-        logger->info("Loading pipelines from " + filepath);
+        logger->info("Loading system pipelines from " + filepath);
 
-        std::vector<std::pair<std::string, std::string>> pipelinesToLoad;
-
+        std::vector<std::string> systemPipelines;
         std::filesystem::recursive_directory_iterator pipelinesIterator(filepath);
         std::error_code iteratorError;
         while (pipelinesIterator != std::filesystem::recursive_directory_iterator())
@@ -405,8 +416,8 @@ namespace satdump
                 {
                     if (pipelinesIterator->path().string().find(".json.inc") == std::string::npos)
                     {
-                        logger->trace("Found pipeline file " + pipelinesIterator->path().string());
-                        pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
+                        logger->trace("Found system pipeline file " + pipelinesIterator->path().string());
+                        systemPipelines.push_back(pipelinesIterator->path().string());
                     }
                 }
             }
@@ -416,9 +427,30 @@ namespace satdump
                 logger->critical(iteratorError.message());
         }
 
-        for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
-            loadPipeline(pipeline.first);
+        for (std::string &pipeline : systemPipelines)
+            loadPipeline(pipeline);
 
+        // Add User Pipelines
+        nlohmann::ordered_json user_pipelines;
+        bool has_user_pipelines = false;
+        if (std::filesystem::exists(user_path + "/pipelines.json"))
+        {
+            logger->trace("Found user pipeline file " + user_path + "/pipelines.json");
+            has_user_pipelines = true;
+            try
+            {
+                pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_path + "/pipelines.json"));
+            }
+            catch (std::exception &e)
+            {
+                logger->warn("Error loading user pipelines: %s", e.what());
+                has_user_pipelines = false;
+            }
+        }
+        if (!has_user_pipelines)
+            pipelines_json = pipelines_system_json;
+
+        parsePipelines();
         std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
                   {
                                                           std::string lname = l.readable_name;
