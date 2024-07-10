@@ -103,6 +103,12 @@
             "value": false,
             "name": "Remember Window Size and Position",
             "description": "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
+        },
+        "advanced_mode": {
+            "type": "bool",
+            "value": false,
+            "name": "Advanced Mode (DANGER)",
+            "description": "Allows full editing of all SatDump options. Use at your own risk!"
         }
     },
     // More generic SatDump settings

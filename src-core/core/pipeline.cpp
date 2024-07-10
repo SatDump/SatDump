@@ -13,7 +13,8 @@
 namespace satdump
 {
     SATDUMP_DLL std::vector<Pipeline> pipelines;
-    SATDUMP_DLL nlohmann::ordered_json pipelines_system_json, pipelines_json;
+    SATDUMP_DLL nlohmann::ordered_json pipelines_json;
+    nlohmann::ordered_json pipelines_system_json;
 
     void Pipeline::run(std::string input_file,
                        std::string output_directory,
@@ -458,6 +459,12 @@ namespace satdump
                                                           std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
                                                           std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
                                                           return lname < rname; });
+    }
+
+    void savePipelines()
+    {
+        nlohmann::ordered_json diff_json = perform_json_diff(pipelines_system_json, pipelines_json);
+        //TODO
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)

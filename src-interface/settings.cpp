@@ -11,6 +11,7 @@
 #include "init.h"
 #include "common/tracking/tle.h"
 #include "common/widgets/timed_message.h"
+#include "common/widgets/json_editor.h"
 
 #include "core/style.h"
 
@@ -37,6 +38,7 @@ namespace satdump
         char tle_last_update[80];
 
         bool show_imgui_demo = false;
+        bool advanced_mode = false;
 
         widgets::TimedMessage saved_message;
 
@@ -83,6 +85,8 @@ namespace satdump
                     selected_theme = theme_id;
                 theme_id++;
             }
+
+            advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
 
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
@@ -204,6 +208,13 @@ namespace satdump
                 }
             }
 
+            if (advanced_mode)
+            {
+                //TODO: Other satdump_cfg.json settings
+                if (ImGui::CollapsingHeader("Pipeline Parameters"))
+                    widgets::JSONEditor(pipelines_json);
+            }
+
             for (auto &plugin_hdl : config::plugin_config_handlers)
             {
                 if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
@@ -233,6 +244,9 @@ namespace satdump
                     plugin_hdl.save();
 
                 config::saveUserConfig();
+                if (advanced_mode)
+                    savePipelines();
+                advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
                 saved_message.set_message(style::theme.green, "Settings saved");
                 satdump::update_ui = true;
             }
