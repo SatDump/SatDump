@@ -7,7 +7,7 @@ namespace widgets
 {
 	void JSONEditor(nlohmann::ordered_json& json)
 	{
-		for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> jsonItem : json.items())
+		for (auto &jsonItem : json.items())
 		{
 			ImGui::PushID(jsonItem.key().c_str());
 			if (jsonItem.value().is_object())
