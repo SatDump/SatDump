@@ -35,10 +35,10 @@ namespace meteor
             mtvza_reader2.endian_mode = true;
 
             // Deframers
-            def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, true);
-            def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, true);
-            def::SimpleDeframer mtvza_deframer2(0x38fb456a, 32, 248 * 8, 0, true);
-            def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, true);
+            def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, false);
+            def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, false);
+            def::SimpleDeframer mtvza_deframer2(0x38fb456a, 32, 248 * 8, 0, false);
+            def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, false);
 
             time_t current_time = d_parameters.contains("start_timestamp")
                                       ? (d_parameters["start_timestamp"].get<double>() != -1
