@@ -10,9 +10,23 @@ namespace widgets
 		for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> jsonItem : json.items())
 		{
 			ImGui::PushID(jsonItem.key().c_str());
-			if (jsonItem.value().is_object() || jsonItem.value().is_array())
+			if (jsonItem.value().is_object())
 			{
-				if (ImGui::TreeNode(jsonItem.key().c_str()))
+				bool nodeOpen = ImGui::TreeNode(jsonItem.key().c_str());
+				ImGui::SameLine();
+				ImGui::TextDisabled("%s", "[Object]");
+				if (nodeOpen)
+				{
+					JSONEditor(jsonItem.value());
+					ImGui::TreePop();
+				}
+			}
+			else if (jsonItem.value().is_array())
+			{
+				bool nodeOpen = ImGui::TreeNode(std::string((json.is_array() ? "##" : "") + jsonItem.key()).c_str());
+				ImGui::SameLine();
+				ImGui::TextDisabled("%s", jsonItem.value().dump().c_str());
+				if (nodeOpen)
 				{
 					JSONEditor(jsonItem.value());
 					ImGui::TreePop();
@@ -20,16 +34,22 @@ namespace widgets
 			}
 			else if (jsonItem.value().is_boolean())
 			{
-				ImGui::BulletText("%s", jsonItem.key().c_str());
-				ImGui::SameLine();
+				if (!json.is_array())
+				{
+					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::SameLine();
+				}
 				bool val = jsonItem.value();
 				if (ImGui::Checkbox(std::string("##" + jsonItem.key()).c_str(), &val))
 					jsonItem.value() = val;
 			}
 			else if (jsonItem.value().is_number_integer() || jsonItem.value().is_number_unsigned())
 			{
-				ImGui::BulletText("%s", jsonItem.key().c_str());
-				ImGui::SameLine();
+				if (!json.is_array())
+				{
+					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::SameLine();
+				}
 				float next_width = (400 * ui_scale) - ImGui::GetCursorPosX();
 				if (next_width > 0)
 					ImGui::SetNextItemWidth(next_width);
@@ -40,8 +60,11 @@ namespace widgets
 			}
 			else if (jsonItem.value().is_number_float())
 			{
-				ImGui::BulletText("%s", jsonItem.key().c_str());
-				ImGui::SameLine();
+				if (!json.is_array())
+				{
+					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::SameLine();
+				}
 				float next_width = (400 * ui_scale) - ImGui::GetCursorPosX();
 				if (next_width > 0)
 					ImGui::SetNextItemWidth(next_width);
@@ -52,14 +75,18 @@ namespace widgets
 			}
 			else if (jsonItem.value().is_string())
 			{
-				ImGui::BulletText("%s", jsonItem.key().c_str());
-				ImGui::SameLine();
+				if (!json.is_array())
+				{
+					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::SameLine();
+				}
 				float next_width = (400 * ui_scale) - ImGui::GetCursorPosX();
 				if (next_width > 0)
 					ImGui::SetNextItemWidth(next_width);
 
 				std::string val = jsonItem.value();
-				if (ImGui::InputText(std::string("##" + jsonItem.key()).c_str(), &val))
+				if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + jsonItem.key()).c_str(), &val) :
+					ImGui::InputTextMultiline(std::string("##" + jsonItem.key()).c_str(), &val))
 					jsonItem.value() = val;
 			}
 

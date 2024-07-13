@@ -15,6 +15,7 @@ namespace satdump
     SATDUMP_DLL std::vector<Pipeline> pipelines;
     SATDUMP_DLL nlohmann::ordered_json pipelines_json;
     nlohmann::ordered_json pipelines_system_json;
+    std::string user_cfg_path;
 
     void Pipeline::run(std::string input_file,
                        std::string output_directory,
@@ -434,20 +435,33 @@ namespace satdump
         // Add User Pipelines
         nlohmann::ordered_json user_pipelines;
         bool has_user_pipelines = false;
-        if (std::filesystem::exists(user_path + "/pipelines.json"))
+        std::string final_path = "";
+
+        if (std::filesystem::exists("pipelines.json")) // First try loading in current folder
+            final_path = "pipelines.json";
+        else if (std::filesystem::exists(user_path + "/pipelines.json"))
+            final_path = user_path + "/pipelines.json";
+
+        if (final_path != "")
         {
-            logger->trace("Found user pipeline file " + user_path + "/pipelines.json");
+            logger->info("Found user pipelines " + final_path);
+            user_cfg_path = final_path;
             has_user_pipelines = true;
             try
             {
                 pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_path + "/pipelines.json"));
             }
-            catch (std::exception &e)
+            catch (std::exception& e)
             {
                 logger->warn("Error loading user pipelines: %s", e.what());
                 has_user_pipelines = false;
             }
         }
+        else
+        {
+            user_cfg_path = user_path + "/pipelines.json";
+        }
+
         if (!has_user_pipelines)
             pipelines_json = pipelines_system_json;
 
@@ -464,7 +478,20 @@ namespace satdump
     void savePipelines()
     {
         nlohmann::ordered_json diff_json = perform_json_diff(pipelines_system_json, pipelines_json);
-        //TODO
+        try
+        {
+            if (!std::filesystem::exists(std::filesystem::path(user_cfg_path).parent_path()) &&
+                std::filesystem::path(user_cfg_path).has_parent_path())
+                std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
+        }
+        catch (std::exception& e)
+        {
+            logger->error("Cannot create directory for user pipelines: %s", e.what());
+            return;
+        }
+
+        logger->info("Saving user pipelines at " + user_cfg_path);
+        saveJsonFile(user_cfg_path, diff_json);
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)

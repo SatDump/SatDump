@@ -60,7 +60,11 @@ nlohmann::ordered_json perform_json_diff(nlohmann::ordered_json master, nlohmann
         if (master[cfg.key()] != cfg.value())
         {
             if (cfg.value().is_object())
-                diff[cfg.key()] = perform_json_diff(master[cfg.key()], cfg.value());
+            {
+                nlohmann::ordered_json objDiff = perform_json_diff(master[cfg.key()], cfg.value());
+                if (!objDiff.is_null())
+                    diff[cfg.key()] = objDiff;
+            }
             else
                 diff[cfg.key()] = cfg.value();
         }
