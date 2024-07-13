@@ -212,7 +212,13 @@ namespace satdump
             {
                 //TODO: Other satdump_cfg.json settings
                 if (ImGui::CollapsingHeader("Pipeline Parameters"))
+                {
                     widgets::JSONEditor(pipelines_json);
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset"))
+                        resetPipelines();
+                    ImGui::SetItemTooltip("%s", "Resets pipeline settings to system defaults");
+                }
             }
 
             for (auto &plugin_hdl : config::plugin_config_handlers)

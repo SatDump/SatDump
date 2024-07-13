@@ -69,6 +69,7 @@ namespace satdump
 
     void loadPipelines(std::string filepath);
     void savePipelines();
+    void resetPipelines();
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline);
 
     namespace events

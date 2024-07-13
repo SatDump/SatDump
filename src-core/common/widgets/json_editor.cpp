@@ -124,10 +124,10 @@ namespace widgets
 					switch (selected)
 					{
 						case 0:
-							json[new_key] = nlohmann::json::object();
+							json[new_key] = nlohmann::ordered_json::object();
 							break;
 						case 1:
-							json[new_key] = nlohmann::json::array();
+							json[new_key] = nlohmann::ordered_json::array();
 							break;
 						case 2:
 							json[new_key] = "";
@@ -147,10 +147,10 @@ namespace widgets
 					switch (selected)
 					{
 						case 0:
-							json.push_back(nlohmann::json::object());
+							json.push_back(nlohmann::ordered_json::object());
 							break;
 						case 1:
-							json.push_back(nlohmann::json::array());
+							json.push_back(nlohmann::ordered_json::array());
 							break;
 						case 2:
 							json.push_back("");

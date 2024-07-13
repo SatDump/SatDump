@@ -318,6 +318,7 @@ namespace satdump
 
     void parsePipelines()
     {
+        pipelines.clear();
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : pipelines_json.items())
         {
             Pipeline newPipeline;
@@ -395,6 +396,14 @@ namespace satdump
             if (hasAllModules)
                 pipelines.push_back(newPipeline);
         }
+
+        std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
+            {
+                                                    std::string lname = l.readable_name;
+                                                    std::string rname = r.readable_name;
+                                                    std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
+                                                    std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
+                                                    return lname < rname; });
     }
 
     void loadPipelines(std::string filepath)
@@ -466,13 +475,6 @@ namespace satdump
             pipelines_json = pipelines_system_json;
 
         parsePipelines();
-        std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
-                  {
-                                                          std::string lname = l.readable_name;
-                                                          std::string rname = r.readable_name;
-                                                          std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
-                                                          std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
-                                                          return lname < rname; });
     }
 
     void savePipelines()
@@ -492,6 +494,14 @@ namespace satdump
 
         logger->info("Saving user pipelines at " + user_cfg_path);
         saveJsonFile(user_cfg_path, diff_json);
+
+        parsePipelines();
+    }
+
+    void resetPipelines()
+    {
+        pipelines_json = pipelines_system_json;
+        savePipelines();
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)
