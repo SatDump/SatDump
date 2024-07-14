@@ -1,10 +1,5 @@
 #pragma once
 
-// Work around an apparent bug in the GitHub CI (as of 2024/7/13)
-#if defined(_WIN32) && !defined(_DLL)
-#define _DLL 1
-#endif
-
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #include <uhd.h>
 #include <uhd/device.hpp>
