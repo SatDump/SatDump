@@ -517,6 +517,10 @@ namespace satdump
             }
         }
 
+        // Copy projection metadata
+        if (image::has_metadata(layers_images[0]) && !image::has_metadata(projected_image_result))
+            image::set_metadata(projected_image_result, image::get_metadata(layers_images[0]));
+
         // Free up memory
         layers_images.clear();
 
