@@ -27,6 +27,7 @@
 #include <filesystem>
 
 image::Image images_idk[11];
+image::Image images_hrv;
 
 int cimage = 0;
 
@@ -57,6 +58,10 @@ void saveImages()
         images_idk[i].fill(0);
     }
 
+    images_hrv.mirror(true, true);
+    image::save_png(images_hrv, directory + "test_hrv" + std::to_string(cimage) + ".png");
+    images_hrv.fill(0);
+
     image::save_png(img321, directory + "test_msg" + std::to_string(cimage) + "_" + "321" + ".png");
 }
 
@@ -80,6 +85,8 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 11; i++)
         images_idk[i] = image::Image(16, 3834, 4482, 1);
 
+    images_hrv = image::Image(16, 5751, 13500, 1);
+
     int cpayload = 0;
 
     double last_time = 0;
@@ -98,21 +105,21 @@ int main(int argc, char *argv[])
             std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid0.work(cadu);
             for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
             {
-                // printf("APID %d\n", pkt.header.apid);
+               // printf("APID %d\n", pkt.header.apid);
 
                 if (pkt.header.apid == 2046)
                 {
                     cpayload = pkt.header.packet_sequence_count % 16;
 
-                    // printf("LEN %d %d\n", pkt.payload.size() + 6, cpayload);
+                    double ltime = ccsds::parseCCSDSTimeFull(pkt, 17720, 65535, 1e100); //- 60 * 3;
+
+                    // printf("LEN %d %d\n", pkt.payload.size() + 6, cpayload);                    
 
                     if (cpayload < 11) //|| cpayload == 1)
                     {
-                        double ltime = ccsds::parseCCSDSTimeFull(pkt, 17720, 65535, 1e100); //- 60 * 3;
-
                         if (cpayload == 0)
                         {
-                            printf("Time %s - %f\n", timestamp_to_string(ltime).c_str(), ltime - last_time);
+                            //printf("Time %s - %f\n", timestamp_to_string(ltime).c_str(), ltime - last_time);
                             last_time = ltime;
 
                             time_t tttime = ltime;
@@ -129,21 +136,52 @@ int main(int argc, char *argv[])
                         lines = fmod(ltime, 15 * 60) / (300 / 1494.0);
 
                         uint16_t tmp_buf[15000];
-                        repackBytesTo10bits(&pkt.payload[3], pkt.payload.size(), tmp_buf); //&image_idk[lines * image_idk.width()]);
+                        repackBytesTo10bits(&pkt.payload[8], pkt.payload.size()-8, tmp_buf); //&image_idk[lines * image_idk.width()]);
                         for (int c = 0; c < 3; c++)
                         {
                             for (int v = 0; v < 3834; v++)
-                                images_idk[cpayload].set(lines * images_idk[cpayload].width() + v, tmp_buf[(c) * 3834 + v]);
-                            for (int i = 0; i < images_idk[cpayload].width(); i++)
-                                images_idk[cpayload].set(lines * images_idk[cpayload].width() + i, images_idk[cpayload].get(lines * images_idk[cpayload].width() + i) << 6);
+                                images_idk[cpayload].set(lines * images_idk[cpayload].width() + v, tmp_buf[(c) * 3834 + v]<< 6);
                             lines++;
                         }
 
                         pkt.payload.resize(14392 - 6);
-                        data_ou.write((char *)pkt.header.raw, 6);
-                        data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
-                    }
+                        //data_ou.write((char *)pkt.header.raw, 6);
+                        //data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
+                    } else if(cpayload < 15) {
+                        uint16_t tmp_buf[15000];
+                        repackBytesTo10bits(&pkt.payload[8], pkt.payload.size()-8, tmp_buf); //&image_idk[lines * image_idk.width()]);
 
+                        lines = fmod(ltime, 15 * 60) /  (100 / 1494.0);
+                        lines+= (cpayload-11) * 2;
+
+                        if(nchannel != lines)
+                        {
+                            printf("bogus line: %d\n", lines - nchannel);
+                        }
+                        
+                        for(int c = 0; c < 2; c++)
+                        {
+                            for (int v = 0; v < 5751; v++)
+                                images_hrv.set(lines * images_hrv.width() + v, tmp_buf[c * 5751 + v] << 6);
+                            lines++;
+                            //printf("Time %s - %f  %f, lines:%d cpayload:%d\n", timestamp_to_string(ltime).c_str(), ltime, last_time, lines, cpayload);
+                        }
+                        nchannel = lines;
+
+                        pkt.payload.resize(14392 - 6);
+                    } else {
+                        uint16_t tmp_buf[15000];
+                        repackBytesTo10bits(&pkt.payload[8], pkt.payload.size()-8, tmp_buf); //&image_idk[lines * image_idk.width()]);
+
+                        lines = fmod(ltime, 15 * 60) / (100 / 1494.0);
+                        lines+= (cpayload-11) * 2;
+
+                        for (int v = 0; v < 5751; v++)
+                            images_hrv.set(lines * images_hrv.width() + v, tmp_buf[v] << 6);
+
+                        lines++;
+                        nchannel = lines;
+                    }
                     cpayload++;
                 }
             }
