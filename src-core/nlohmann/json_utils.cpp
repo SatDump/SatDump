@@ -37,13 +37,10 @@ nlohmann::ordered_json merge_json_diffs(nlohmann::ordered_json master, nlohmann:
 
     for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : diff.items())
     {
-        if (master.contains(cfg.key()))
-        {
-            if (cfg.value().is_object())
-                output[cfg.key()] = merge_json_diffs(master[cfg.key()], cfg.value());
-            else
-                output[cfg.key()] = diff[cfg.key()];
-        }
+        if (master.contains(cfg.key()) && cfg.value().is_null())
+            output.erase(cfg.key());
+        else if (master.contains(cfg.key()) && cfg.value().is_object())
+            output[cfg.key()] = merge_json_diffs(master[cfg.key()], cfg.value());
         else
             output[cfg.key()] = cfg.value();
     }
@@ -55,6 +52,7 @@ nlohmann::ordered_json perform_json_diff(nlohmann::ordered_json master, nlohmann
 {
     nlohmann::ordered_json diff;
 
+    // Look for items that have changed
     for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : modified.items())
     {
         if (master[cfg.key()] != cfg.value())
@@ -69,6 +67,11 @@ nlohmann::ordered_json perform_json_diff(nlohmann::ordered_json master, nlohmann
                 diff[cfg.key()] = cfg.value();
         }
     }
+
+    // Look for items that have been removed
+    for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : master.items())
+        if(!modified.contains(cfg.key()))
+            diff[cfg.key()] = nullptr;
 
     return diff;
 }

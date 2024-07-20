@@ -50,7 +50,7 @@ namespace satdump
 
         Here, we first test modules are compatible with this way
         of doing things, then unless specifically disabled by the
-        user, proceed to run both in parralel saving up on processing
+        user, proceed to run both in parallel saving up on processing
         time.
         */
         if (input_level == "baseband" &&
@@ -458,7 +458,7 @@ namespace satdump
             has_user_pipelines = true;
             try
             {
-                pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_path + "/pipelines.json"));
+                pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_cfg_path));
             }
             catch (std::exception& e)
             {
@@ -479,6 +479,19 @@ namespace satdump
 
     void savePipelines()
     {
+        // Check edited pipelines are valid
+        try
+        {
+            parsePipelines();
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error parsing customized pipelines! Resetting to last good config\n\n%s", e.what());
+            pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_cfg_path));
+            parsePipelines();
+        }
+
+        // Save Pipelines
         nlohmann::ordered_json diff_json = perform_json_diff(pipelines_system_json, pipelines_json);
         try
         {
@@ -494,8 +507,6 @@ namespace satdump
 
         logger->info("Saving user pipelines at " + user_cfg_path);
         saveJsonFile(user_cfg_path, diff_json);
-
-        parsePipelines();
     }
 
     void resetPipelines()

@@ -5,16 +5,39 @@
 
 namespace widgets
 {
+	[[nodiscard]] inline bool DeleteButton()
+	{
+		ImGui::SameLine();
+		ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
+		ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
+		bool ret = ImGui::Button(u8"\uf00d");
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor(2);
+		return ret;
+	}
+
 	void JSONEditor(nlohmann::ordered_json& json)
 	{
-		for (auto &jsonItem : json.items())
+		int array_index = 0;
+		bool delete_item = false;
+
+		for (auto jsonItem = json.begin(); jsonItem != json.end(); )
 		{
-			ImGui::PushID(jsonItem.key().c_str());
+			std::string this_key;
+			if (json.is_array())
+				this_key = std::to_string(array_index++);
+			else
+				this_key = jsonItem.key();
+
+			ImGui::PushID(this_key.c_str());
 			if (jsonItem.value().is_object())
 			{
-				bool nodeOpen = ImGui::TreeNode(jsonItem.key().c_str());
+				bool nodeOpen = ImGui::TreeNode(std::string((json.is_array() ? "##" : "") + this_key).c_str());
 				ImGui::SameLine();
 				ImGui::TextDisabled("%s", "[Object]");
+				delete_item = DeleteButton();
 				if (nodeOpen)
 				{
 					JSONEditor(jsonItem.value());
@@ -23,9 +46,10 @@ namespace widgets
 			}
 			else if (jsonItem.value().is_array())
 			{
-				bool nodeOpen = ImGui::TreeNode(std::string((json.is_array() ? "##" : "") + jsonItem.key()).c_str());
+				bool nodeOpen = ImGui::TreeNode(std::string((json.is_array() ? "##" : "") + this_key).c_str());
 				ImGui::SameLine();
 				ImGui::TextDisabled("%s", jsonItem.value().dump().c_str());
+				delete_item = DeleteButton();
 				if (nodeOpen)
 				{
 					JSONEditor(jsonItem.value());
@@ -36,18 +60,19 @@ namespace widgets
 			{
 				if (!json.is_array())
 				{
-					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::BulletText("%s", this_key.c_str());
 					ImGui::SameLine();
 				}
 				bool val = jsonItem.value();
-				if (ImGui::Checkbox(std::string("##" + jsonItem.key()).c_str(), &val))
+				if (ImGui::Checkbox(std::string("##" + this_key).c_str(), &val))
 					jsonItem.value() = val;
+				delete_item = DeleteButton();
 			}
 			else if (jsonItem.value().is_number_integer() || jsonItem.value().is_number_unsigned())
 			{
 				if (!json.is_array())
 				{
-					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::BulletText("%s", this_key.c_str());
 					ImGui::SameLine();
 				}
 				float next_width = (400 * ui_scale) - ImGui::GetCursorPosX();
@@ -55,14 +80,15 @@ namespace widgets
 					ImGui::SetNextItemWidth(next_width);
 
 				int val = jsonItem.value();
-				if (ImGui::InputInt(std::string("##" + jsonItem.key()).c_str(), &val))
+				if (ImGui::InputInt(std::string("##" + this_key).c_str(), &val))
 					jsonItem.value() = val;
+				delete_item = DeleteButton();
 			}
 			else if (jsonItem.value().is_number_float())
 			{
 				if (!json.is_array())
 				{
-					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::BulletText("%s", this_key.c_str());
 					ImGui::SameLine();
 				}
 				float next_width = (400 * ui_scale) - ImGui::GetCursorPosX();
@@ -70,14 +96,15 @@ namespace widgets
 					ImGui::SetNextItemWidth(next_width);
 
 				double val = jsonItem.value();
-				if (ImGui::InputDouble(std::string("##" + jsonItem.key()).c_str(), &val))
+				if (ImGui::InputDouble(std::string("##" + this_key).c_str(), &val))
 					jsonItem.value() = val;
+				delete_item = DeleteButton();
 			}
 			else if (jsonItem.value().is_string())
 			{
 				if (!json.is_array())
 				{
-					ImGui::BulletText("%s", jsonItem.key().c_str());
+					ImGui::BulletText("%s", this_key.c_str());
 					ImGui::SameLine();
 				}
 				float next_width = (400 * ui_scale) - ImGui::GetCursorPosX();
@@ -85,12 +112,20 @@ namespace widgets
 					ImGui::SetNextItemWidth(next_width);
 
 				std::string val = jsonItem.value();
-				if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + jsonItem.key()).c_str(), &val) :
-					ImGui::InputTextMultiline(std::string("##" + jsonItem.key()).c_str(), &val))
+				if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) :
+					ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
 					jsonItem.value() = val;
+				delete_item = DeleteButton();
 			}
 
 			ImGui::PopID();
+			if (delete_item)
+			{
+				jsonItem = json.erase(jsonItem);
+				delete_item = false;
+			}
+			else
+				jsonItem++;
 		}
 
 		if (ImGui::Button("Add..."))
