@@ -208,19 +208,6 @@ namespace satdump
                 }
             }
 
-            if (advanced_mode)
-            {
-                //TODO: Other satdump_cfg.json settings
-                if (ImGui::CollapsingHeader("Pipeline Parameters"))
-                {
-                    widgets::JSONEditor(pipelines_json);
-                    ImGui::SameLine();
-                    if (ImGui::Button("Reset"))
-                        resetPipelines();
-                    ImGui::SetItemTooltip("%s", "Resets pipeline settings to system defaults");
-                }
-            }
-
             for (auto &plugin_hdl : config::plugin_config_handlers)
             {
                 if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
@@ -229,6 +216,41 @@ namespace satdump
                 }
             }
 
+            if (advanced_mode)
+            {
+                ImVec2 start_pos = ImGui::GetCursorPos();
+                ImGui::SetCursorPos({ start_pos.x + 3 * ui_scale, start_pos.y + 10 * ui_scale });
+                ImGui::TextUnformatted("Advanced Mode Settings");
+                if (ImGui::CollapsingHeader("TLE Settings"))
+                {
+                    widgets::JSONEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
+                    if (ImGui::Button("Reset##tle_settings"))
+                        satdump::config::main_cfg["tle_settings"] = satdump::config::master_cfg["tle_settings"];
+                }
+                if (ImGui::CollapsingHeader("Advanced Settings"))
+                {
+                    widgets::JSONEditor(satdump::config::main_cfg["advanced_settings"], "advanced_settings");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##advanced_settings"))
+                        satdump::config::main_cfg["advanced_settings"] = satdump::config::master_cfg["advanced_settings"];
+                }
+                if (ImGui::CollapsingHeader("Instrument Settings"))
+                {
+                    widgets::JSONEditor(satdump::config::main_cfg["viewer"]["instruments"], "instrument_settings");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##instrument_settings"))
+                        satdump::config::main_cfg["viewer"]["instruments"] = satdump::config::master_cfg["viewer"]["instruments"];
+                }
+                if (ImGui::CollapsingHeader("Pipeline Parameters"))
+                {
+                    widgets::JSONEditor(pipelines_json, "pipelines");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##pipelines"))
+                        pipelines_json = pipelines_system_json;
+                }
+            }
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL

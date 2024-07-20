@@ -14,7 +14,7 @@ namespace satdump
 {
     SATDUMP_DLL std::vector<Pipeline> pipelines;
     SATDUMP_DLL nlohmann::ordered_json pipelines_json;
-    nlohmann::ordered_json pipelines_system_json;
+    SATDUMP_DLL nlohmann::ordered_json pipelines_system_json;
     std::string user_cfg_path;
 
     void Pipeline::run(std::string input_file,
@@ -507,12 +507,6 @@ namespace satdump
 
         logger->info("Saving user pipelines at " + user_cfg_path);
         saveJsonFile(user_cfg_path, diff_json);
-    }
-
-    void resetPipelines()
-    {
-        pipelines_json = pipelines_system_json;
-        savePipelines();
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)

@@ -18,8 +18,9 @@ namespace widgets
 		return ret;
 	}
 
-	void JSONEditor(nlohmann::ordered_json& json)
+	void JSONEditor(nlohmann::ordered_json& json, const char* id, bool allow_add)
 	{
+		ImGui::PushID(id);
 		int array_index = 0;
 		bool delete_item = false;
 
@@ -31,7 +32,9 @@ namespace widgets
 			else
 				this_key = jsonItem.key();
 
-			ImGui::PushID(this_key.c_str());
+			if(!jsonItem.value().is_object() && !jsonItem.value().is_array())
+				ImGui::PushID(this_key.c_str());
+
 			if (jsonItem.value().is_object())
 			{
 				bool nodeOpen = ImGui::TreeNode(std::string((json.is_array() ? "##" : "") + this_key).c_str());
@@ -40,7 +43,7 @@ namespace widgets
 				delete_item = DeleteButton();
 				if (nodeOpen)
 				{
-					JSONEditor(jsonItem.value());
+					JSONEditor(jsonItem.value(), this_key.c_str());
 					ImGui::TreePop();
 				}
 			}
@@ -52,7 +55,7 @@ namespace widgets
 				delete_item = DeleteButton();
 				if (nodeOpen)
 				{
-					JSONEditor(jsonItem.value());
+					JSONEditor(jsonItem.value(), this_key.c_str());
 					ImGui::TreePop();
 				}
 			}
@@ -118,7 +121,9 @@ namespace widgets
 				delete_item = DeleteButton();
 			}
 
-			ImGui::PopID();
+			if (!jsonItem.value().is_object() && !jsonItem.value().is_array())
+				ImGui::PopID();
+
 			if (delete_item)
 			{
 				jsonItem = json.erase(jsonItem);
@@ -128,7 +133,7 @@ namespace widgets
 				jsonItem++;
 		}
 
-		if (ImGui::Button("Add..."))
+		if (allow_add && ImGui::Button("Add..."))
 			ImGui::OpenPopup("Add Item");
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -209,5 +214,7 @@ namespace widgets
 			}
 			ImGui::EndPopup();
 		}
+
+		ImGui::PopID();
 	}
 }
