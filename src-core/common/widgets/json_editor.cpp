@@ -120,9 +120,7 @@ namespace widgets
 			else
 				this_key = jsonItem.key();
 
-			if(!jsonItem.value().is_object() && !jsonItem.value().is_array())
-				ImGui::PushID(this_key.c_str());
-
+			ImGui::PushID(this_key.c_str());
 			if (jsonItem.value().is_object())
 			{
 				bool nodeOpen = ImGui::TreeNode(std::string((json.is_array() ? "##" : "") + this_key).c_str());
@@ -203,9 +201,7 @@ namespace widgets
 				delete_item = DeleteButton();
 			}
 
-			if (!jsonItem.value().is_object() && !jsonItem.value().is_array())
-				ImGui::PopID();
-
+			ImGui::PopID();
 			if (delete_item)
 			{
 				jsonItem = json.erase(jsonItem);
@@ -243,9 +239,7 @@ namespace widgets
 				else
 					this_key = jsonItem.key();
 
-				if (!jsonItem.value().is_object() && !jsonItem.value().is_array())
-					ImGui::PushID(this_key.c_str());
-
+				ImGui::PushID(this_key.c_str());
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
 				if (!json.is_array())
@@ -294,9 +288,7 @@ namespace widgets
 					delete_item = DeleteButton();
 				}
 
-				if (!jsonItem.value().is_object() && !jsonItem.value().is_array())
-					ImGui::PopID();
-
+				ImGui::PopID();
 				if (delete_item)
 				{
 					jsonItem = json.erase(jsonItem);
