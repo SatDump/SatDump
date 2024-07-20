@@ -5,13 +5,17 @@
 #include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "common/detect_header.h"
+#include "common/widgets/json_editor.h"
 #include "logger.h"
+
+#include <algorithm>
 
 namespace satdump
 {
     PipelineUISelector::PipelineUISelector(bool live_mode) : live_mode(live_mode)
     {
         nlohmann::ordered_json params = satdump::config::main_cfg["user_interface"]["default_offline_parameters"];
+        advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"];
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             if (!cfg.value().contains("no_live") || !live_mode)
@@ -74,6 +78,7 @@ namespace satdump
     void PipelineUISelector::updateSelectedPipeline()
     {
         parameters_ui_pipeline.clear();
+        advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"];
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> cfg : pipelines[pipeline_id].editable_parameters.items())
         {
             auto it = std::find_if(parameters_ui.begin(),
@@ -321,6 +326,16 @@ namespace satdump
             for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui_pipeline)
                 p.second.draw();
             ImGui::EndTable();
+        }
+
+        if (advanced_mode)
+        {
+            pipeline_mtx.lock();
+            for (auto& step : pipelines[pipeline_id].steps)
+                for (auto& this_module : step.modules)
+                    if (widgets::JSONTableEditor(this_module.parameters, this_module.module_name.c_str()))
+                        this_module.parameters = pipelines_json[pipelines[pipeline_id].name]["work"][step.level_name][this_module.module_name];
+            pipeline_mtx.unlock();
         }
     }
 

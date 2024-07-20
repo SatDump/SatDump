@@ -30,7 +30,7 @@ namespace satdump
         void getParamsFromInput();
         void try_set_param(std::string name, nlohmann::json v);
 
-        bool live_mode;
+        bool live_mode, advanced_mode;
         std::string text = u8"\uf006";
         std::vector<int> favourite;
         std::mutex pipeline_mtx;

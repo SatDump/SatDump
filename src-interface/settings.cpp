@@ -220,30 +220,30 @@ namespace satdump
             {
                 ImVec2 start_pos = ImGui::GetCursorPos();
                 ImGui::SetCursorPos({ start_pos.x + 3 * ui_scale, start_pos.y + 10 * ui_scale });
-                ImGui::TextUnformatted("Advanced Mode Settings");
+                ImGui::TextUnformatted("Advanced Settings");
                 if (ImGui::CollapsingHeader("TLE Settings"))
                 {
-                    widgets::JSONEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
                     if (ImGui::Button("Reset##tle_settings"))
                         satdump::config::main_cfg["tle_settings"] = satdump::config::master_cfg["tle_settings"];
                 }
                 if (ImGui::CollapsingHeader("Advanced Settings"))
                 {
-                    widgets::JSONEditor(satdump::config::main_cfg["advanced_settings"], "advanced_settings");
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["advanced_settings"], "advanced_settings");
                     ImGui::SameLine();
                     if (ImGui::Button("Reset##advanced_settings"))
                         satdump::config::main_cfg["advanced_settings"] = satdump::config::master_cfg["advanced_settings"];
                 }
-                if (ImGui::CollapsingHeader("Instrument Settings"))
+                if (ImGui::CollapsingHeader("Instrument Config"))
                 {
-                    widgets::JSONEditor(satdump::config::main_cfg["viewer"]["instruments"], "instrument_settings");
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["viewer"]["instruments"], "instrument_settings");
                     ImGui::SameLine();
                     if (ImGui::Button("Reset##instrument_settings"))
                         satdump::config::main_cfg["viewer"]["instruments"] = satdump::config::master_cfg["viewer"]["instruments"];
                 }
                 if (ImGui::CollapsingHeader("Pipeline Parameters"))
                 {
-                    widgets::JSONEditor(pipelines_json, "pipelines");
+                    widgets::JSONTreeEditor(pipelines_json, "pipelines");
                     ImGui::SameLine();
                     if (ImGui::Button("Reset##pipelines"))
                         pipelines_json = pipelines_system_json;

@@ -3,5 +3,8 @@
 
 namespace widgets
 {
-	void JSONEditor(nlohmann::ordered_json &json, const char* id, bool allow_add = true);
+	template <typename T>
+	void JSONTreeEditor(T &json, const char *id, bool allow_add = true);
+
+	bool JSONTableEditor(nlohmann::json &json, const char* id);
 }
