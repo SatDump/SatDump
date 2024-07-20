@@ -1013,6 +1013,21 @@
                             }
                         }
                     },
+                    "Enhanced IR (Transparent)": {
+                        "equation": "cch4, 0, 0, cch4 > 0.99 ? 1 : 0",
+                        "description": "descriptions/EnhancedIR.md",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "apply_lut": true,
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 241
+                            }
+                        }
+                    },
                     "Color general cloud IR": {
                         "channels": "cch4",
                         "description": "descriptions/ColorGeneralIR.md",
@@ -1551,6 +1566,21 @@
                                 "type": "temperature",
                                 "min": 200,
                                 "max": 300
+                            }
+                        }
+                    },
+                    "Enhanced IR (Transparent)": {
+                        "equation": "cch5, 0, 0, cch5 > 0.99 ? 1 : 0",
+                        "description": "descriptions/EnhancedIR.md",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "apply_lut": true,
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 241
                             }
                         }
                     },

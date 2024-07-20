@@ -37,7 +37,7 @@ namespace satdump
                                 rot_current_req_pos.az = (round(sat_current_pos.az * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                                 rot_current_req_pos.el = (round(sat_current_pos.el * rotator_decimal_multiplier)) / rotator_decimal_multiplier;
                             }
-                            if(meridian_flip_correction)
+                            if (meridian_flip_correction)
                                 rot_current_req_pos.az = correctRotatorAzimuth(sat_current_pos.az);
                         }
                         else if (rotator_park_while_idle)
@@ -46,7 +46,7 @@ namespace satdump
                             {
                                 rot_current_req_pos.az = sat_next_aos_pos.az;
                                 rot_current_req_pos.el = sat_next_aos_pos.el;
-                                if(meridian_flip_correction)
+                                if (meridian_flip_correction)
                                     rot_current_req_pos.az = correctRotatorAzimuth(sat_next_aos_pos.az);
                             }
                             else
@@ -88,22 +88,23 @@ namespace satdump
     float ObjectTracker::correctRotatorAzimuth(const float az)
     {
         float resultAzimuth = az;
-        if(rotator_az_max - rotator_az_min <= 360) {
-            //Rotator doesn't support more than 360°
+        if (rotator_az_max - rotator_az_min <= 360)
+        {
+            // Rotator doesn't support more than 360°
             return resultAzimuth;
         }
-        if(northbound_cross || southbound_cross)
+        if (northbound_cross || southbound_cross)
         {
-            if(southbound_cross)
+            if (southbound_cross)
             {
-                if(sat_next_aos_pos.az < 90)
+                if (sat_next_aos_pos.az < 90)
                 {
                     // Pass start from east
-                    if(resultAzimuth <= 90)
+                    if (resultAzimuth <= 90)
                     {
                         // We are currently in the easter region
                         resultAzimuth += 360;
-                        if(resultAzimuth > rotator_az_max)
+                        if (resultAzimuth > rotator_az_max)
                         {
                             resultAzimuth = az;
                         }
@@ -112,25 +113,27 @@ namespace satdump
                 else
                 {
                     // Pass start from west
-                    if(resultAzimuth >= 270)
+                    if (resultAzimuth >= 270)
                     {
                         // We are currently in the western region
                         resultAzimuth -= 360;
-                        if(resultAzimuth < rotator_az_min)
+                        if (resultAzimuth < rotator_az_min)
                         {
-                            resultAzimuth =az;
+                            resultAzimuth = az;
                         }
                     }
                 }
             }
-            if(northbound_cross) {
-                if(sat_next_los_pos.az < 90) {
+            if (northbound_cross)
+            {
+                if (sat_next_los_pos.az < 90)
+                {
                     // Pass end on east
-                    if(az <= 90)
+                    if (az <= 90)
                     {
                         // We are currently in the easter region
                         resultAzimuth += 360;
-                        if(resultAzimuth > rotator_az_max)
+                        if (resultAzimuth > rotator_az_max)
                         {
                             resultAzimuth = az;
                         }
@@ -139,11 +142,11 @@ namespace satdump
                 else
                 {
                     // Pass end on west
-                    if(resultAzimuth >=270)
+                    if (resultAzimuth >= 270)
                     {
                         // We are currently in the western region
-                        resultAzimuth -=360;
-                        if(resultAzimuth < rotator_az_min)
+                        resultAzimuth -= 360;
+                        if (resultAzimuth < rotator_az_min)
                         {
                             resultAzimuth = az;
                         }
@@ -173,6 +176,18 @@ namespace satdump
             ImGui::TableSetColumnIndex(1);
             ImGui::InputFloat("##Rot El", &rot_current_req_pos.el);
 
+            if (rotator_arrowkeys_enable && !rotator_tracking)
+            {
+                if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
+                    rot_current_req_pos.el -= rotator_arrowkeys_increment;
+                if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
+                    rot_current_req_pos.el += rotator_arrowkeys_increment;
+                if (ImGui::IsKeyPressed(ImGuiKey_RightArrow))
+                    rot_current_req_pos.az += rotator_arrowkeys_increment;
+                if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow))
+                    rot_current_req_pos.az -= rotator_arrowkeys_increment;
+            }
+
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("%.3f", rot_current_pos.az);
@@ -190,7 +205,7 @@ namespace satdump
     void ObjectTracker::renderRotatorConfig()
     {
         ImGui::InputDouble("Update Period (s)", &rotator_update_period);
-        
+
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
@@ -199,8 +214,8 @@ namespace satdump
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("By enabling this setting, you can allow your rotator to go beyond the default 0-360° azimuth range");
 
-        if(meridian_flip_correction)
-        {        
+        if (meridian_flip_correction)
+        {
             ImGui::InputInt("Minimum Azimuth", &rotator_az_min);
             ImGui::InputInt("Maximum Azimuth", &rotator_az_max);
         }
@@ -243,6 +258,10 @@ namespace satdump
                 break;
             }
         }
+
+        ImGui::Checkbox("Arrow Keys Control", &rotator_arrowkeys_enable);
+        if (rotator_arrowkeys_enable)
+            ImGui::InputDouble("Arrow Keys Control Increment", &rotator_arrowkeys_increment);
     }
 
     nlohmann::json ObjectTracker::getRotatorConfig()

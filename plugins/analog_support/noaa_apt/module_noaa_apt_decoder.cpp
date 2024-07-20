@@ -1146,7 +1146,7 @@ namespace noaa_apt
             }
 
             /////////////////////////////////////
-            int min_diff = 5000;
+            int min_diff = MAX_STDDEV_VALID;
             int best_wedge = 0;
 
             if (wed.std_dev[15] <= MAX_STDDEV_VALID)
