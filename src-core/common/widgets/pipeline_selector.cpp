@@ -15,7 +15,7 @@ namespace satdump
     PipelineUISelector::PipelineUISelector(bool live_mode) : live_mode(live_mode)
     {
         nlohmann::ordered_json params = satdump::config::main_cfg["user_interface"]["default_offline_parameters"];
-        advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"];
+        advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t*>();
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             if (!cfg.value().contains("no_live") || !live_mode)
@@ -39,6 +39,9 @@ namespace satdump
                 }
             }
         }
+
+        selected_pipeline = pipelines[pipelines_levels_select_id];
+        updateSelectedPipeline();
     }
 
     bool PipelineUISelector::contains(std::vector<int> tm, int n)
@@ -78,8 +81,7 @@ namespace satdump
     void PipelineUISelector::updateSelectedPipeline()
     {
         parameters_ui_pipeline.clear();
-        advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"];
-        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> cfg : pipelines[pipeline_id].editable_parameters.items())
+        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::json>> cfg : selected_pipeline.editable_parameters.items())
         {
             auto it = std::find_if(parameters_ui.begin(),
                                    parameters_ui.end(),
@@ -107,14 +109,11 @@ namespace satdump
         if (!live_mode)
         {
             pipeline_levels_str = "";
-            if (pipeline_id != -1)
-                for (int i = 0; i < (int)pipelines[pipeline_id].steps.size() - 1; i++)
-                    pipeline_levels_str += pipelines[pipeline_id].steps[i].level_name + '\0';
+            if (selected_pipeline.name != "")
+                for (int i = 0; i < (int)selected_pipeline.steps.size() - 1; i++)
+                    pipeline_levels_str += selected_pipeline.steps[i].level_name + '\0';
 
-            if (pipelines_levels_select_id == -1)
-                pipelines_levels_select_id = 0;
-
-            if (pipelines[pipeline_id].editable_parameters.size() != 0)
+            if (selected_pipeline.editable_parameters.size() != 0)
                 getParamsFromInput();
         }
     }
@@ -173,7 +172,7 @@ namespace satdump
 
                         if (show && (!live_mode || pipelines[n].live))
                         {
-                            bool is_selected = (pipeline_id == n);
+                            bool is_selected = (selected_pipeline.name == pipelines[n].name);
                             ImGui::Selectable((pipelines[n].readable_name + "##fav").c_str(), &is_selected);
                             if (ImGui::IsItemHovered())
                             {
@@ -181,7 +180,7 @@ namespace satdump
                                 ImGui::SameLine(pos);
                                 ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
-                                if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
+                                if (is_selected != (selected_pipeline.name == pipelines[n].name) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                                 {
                                     favourite.erase(favourite.begin() + k);
                                     config::main_cfg["user"]["favourite_pipelines"].erase(k);
@@ -192,15 +191,15 @@ namespace satdump
                                 text = u8"\uf005";
                                 ImGui::TextColored(color, "%s", text.c_str());
                                 text = u8"\uf006";
-                                if (is_selected != (pipeline_id == n))
+                                if (is_selected != (selected_pipeline.name == pipelines[n].name))
                                 {
-                                    pipeline_id = n;
+                                    selected_pipeline = pipelines[n];
                                     updateSelectedPipeline();
                                 }
                             }
                             if (is_selected)
                             {
-                                // pipeline_id = n;
+                                // selected_pipeline = pipelines[n];
                                 // updateSelectedPipeline();
                                 ImGui::SetItemDefaultFocus();
                             }
@@ -221,7 +220,7 @@ namespace satdump
 
                 if (show && (!live_mode || pipelines[n].live))
                 {
-                    bool is_selected = (pipeline_id == n);
+                    bool is_selected = (selected_pipeline.name == pipelines[n].name);
                     bool isfav = contains(favourite, n);
                     ImGui::Selectable(pipelines[n].readable_name.c_str(), &is_selected);
                     if (ImGui::IsItemHovered() || isfav)
@@ -230,7 +229,8 @@ namespace satdump
                         ImGui::SameLine(pos);
                         ImGui::TextColored({0, 0, 0, 0}, "%s", text.c_str());
 
-                        if (is_selected != (pipeline_id == n) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
+                        if (is_selected != (selected_pipeline.name == pipelines[n].name) &&
+                            ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                         {
                             if (isfav)
                             {
@@ -260,9 +260,9 @@ namespace satdump
                             text = u8"\uf005";
                         ImGui::TextColored(color, "%s", text.c_str());
                         text = u8"\uf006";
-                        if (is_selected != (pipeline_id == n))
+                        if (is_selected != (selected_pipeline.name == pipelines[n].name))
                         {
-                            pipeline_id = n;
+                            selected_pipeline = pipelines[n];
                             updateSelectedPipeline();
                         }
                     }
@@ -328,16 +328,16 @@ namespace satdump
             ImGui::EndTable();
         }
 
-        if (advanced_mode)
+        if (*advanced_mode)
         {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
             ImGui::SeparatorText("Advanced Parameters");
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5 * ui_scale);
             pipeline_mtx.lock();
-            for (auto& step : pipelines[pipeline_id].steps)
+            for (auto& step : selected_pipeline.steps)
                 for (auto& this_module : step.modules)
                     if (widgets::JSONTableEditor(this_module.parameters, this_module.module_name.c_str()))
-                        this_module.parameters = pipelines_json[pipelines[pipeline_id].name]["work"][step.level_name][this_module.module_name];
+                        this_module.parameters = pipelines_json[selected_pipeline.name]["work"][step.level_name][this_module.module_name];
 
             pipeline_mtx.unlock();
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
@@ -370,7 +370,7 @@ namespace satdump
         {
             if (id == pipelines[n].name)
             {
-                pipeline_id = n;
+                selected_pipeline = pipelines[n];
                 found = true;
             }
         }
@@ -379,10 +379,5 @@ namespace satdump
         else
             logger->error("Could not find pipeline %s!", id.c_str());
         pipeline_mtx.unlock();
-    }
-
-    std::string PipelineUISelector::get_name(int index)
-    {
-        return pipelines[index].readable_name;
     }
 }

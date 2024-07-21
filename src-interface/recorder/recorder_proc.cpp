@@ -226,7 +226,7 @@ namespace satdump
 
             if (automated_live_output_dir)
             {
-                pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipelines[pipeline_selector.pipeline_id].name);
+                pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipeline_selector.selected_pipeline.name);
             }
             else
             {
@@ -235,7 +235,7 @@ namespace satdump
 
             try
             {
-                live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
+                live_pipeline = std::make_unique<LivePipeline>(pipeline_selector.selected_pipeline, pipeline_params, pipeline_output_dir);
                 splitter->reset_output("live");
                 live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
                 splitter->set_enabled("live", true);
@@ -265,12 +265,12 @@ namespace satdump
 
             if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
             {
-                Pipeline pipeline = pipelines[pipeline_selector.pipeline_id];
+                Pipeline pipeline = pipeline_selector.selected_pipeline;
                 std::string input_file = live_pipeline->getOutputFiles()[0];
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                 std::string input_level = pipeline.steps[start_level].level_name;
                 ui_thread_pool.push([=](int)
-                                    { processing::process(pipeline.name, input_level, input_file, pipeline_output_dir, pipeline_params); });
+                                    { processing::process(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params); });
             }
 
             live_pipeline.reset();
@@ -341,7 +341,7 @@ namespace satdump
                             if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                                 name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
-                            add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                            add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
                         }
 
                         if (dl.record)
@@ -380,8 +380,9 @@ namespace satdump
 
                     if (obj.downlinks[0].live)
                     {
-                        pipeline_selector.select_pipeline(pipelines[obj.downlinks[0].pipeline_selector->pipeline_id].name);
+                        pipeline_selector.select_pipeline(obj.downlinks[0].pipeline_selector->selected_pipeline.name);
                         pipeline_selector.setParameters(obj.downlinks[0].pipeline_selector->getParameters());
+                        pipeline_selector.selected_pipeline.steps = obj.downlinks[0].pipeline_selector->selected_pipeline.steps;
                         start_processing();
                     }
 

@@ -7,7 +7,7 @@
 
 namespace satdump
 {
-    void RecorderApplication::add_vfo_live(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params)
+    void RecorderApplication::add_vfo_live(std::string id, std::string name, double freq, satdump::Pipeline vpipeline, nlohmann::json vpipeline_params)
     {
         vfos_mtx.lock();
 
@@ -17,7 +17,7 @@ namespace satdump
             wipInfo.id = id;
             wipInfo.name = name;
             wipInfo.freq = freq;
-            wipInfo.pipeline_id = vpipeline_id;
+            wipInfo.selected_pipeline = vpipeline;
             wipInfo.pipeline_params = vpipeline_params;
             wipInfo.lpool = std::make_shared<ctpl::thread_pool>(8);
 
@@ -26,11 +26,11 @@ namespace satdump
             vpipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             vpipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
-            std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, pipelines[vpipeline_id].name);
+            std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, vpipeline.name);
 
             wipInfo.output_dir = output_dir;
 
-            wipInfo.live_pipeline = std::make_shared<LivePipeline>(pipelines[vpipeline_id], vpipeline_params, output_dir);
+            wipInfo.live_pipeline = std::make_shared<LivePipeline>(vpipeline, vpipeline_params, output_dir);
             splitter->add_vfo(id, get_samplerate(), frequency_hz - freq);
             wipInfo.live_pipeline->start(splitter->get_vfo_output(id), *wipInfo.lpool.get());
             splitter->set_vfo_enabled(id, true);
@@ -107,7 +107,7 @@ namespace satdump
 
             splitter->set_vfo_enabled(it->id, false);
 
-            if (it->pipeline_id != -1)
+            if (it->selected_pipeline.name != "")
                 it->live_pipeline->stop();
 
             if (it->file_sink)
@@ -119,18 +119,18 @@ namespace satdump
 
             splitter->del_vfo(it->id);
 
-            if (it->pipeline_id != -1)
+            if (it->selected_pipeline.name != "")
             {
                 if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && it->live_pipeline->getOutputFiles().size() > 0)
                 {
-                    Pipeline pipeline = pipelines[it->pipeline_id];
+                    Pipeline pipeline = it->selected_pipeline;
                     std::string input_file = it->live_pipeline->getOutputFiles()[0];
                     int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                     std::string input_level = pipeline.steps[start_level].level_name;
                     std::string output_dir = it->output_dir;
                     nlohmann::json pipeline_params = it->pipeline_params;
                     ui_thread_pool.push([=](int)
-                                        { processing::process(pipeline.name, input_level, input_file, output_dir, pipeline_params); });
+                                        { processing::process(pipeline, input_level, input_file, output_dir, pipeline_params); });
                 }
             }
 

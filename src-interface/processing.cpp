@@ -23,39 +23,47 @@ namespace satdump
                      std::string output_file,
                      nlohmann::json parameters)
         {
+            // Get pipeline
+            std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
+            if (!pipeline.has_value())
+            {
+                logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+                return;
+            }
+
+            process(pipeline.value(), input_level, input_file, output_file, parameters);
+        }
+        void process(Pipeline downlink_pipeline,
+                     std::string input_level,
+                     std::string input_file,
+                     std::string output_file,
+                     nlohmann::json parameters)
+        {
             processing_mutex.lock();
             is_processing = true;
 
-            logger->info("Starting processing pipeline " + downlink_pipeline + "...");
+            logger->info("Starting processing pipeline " + downlink_pipeline.name + "...");
             logger->debug("Input file (" + input_level + ") : " + input_file);
             logger->debug("Output file : " + output_file);
 
             if (!std::filesystem::exists(output_file))
                 std::filesystem::create_directories(output_file);
 
-            // Get pipeline
-            std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
-
             ui_call_list_mutex->lock();
             ui_call_list->clear();
             ui_call_list_mutex->unlock();
 
-            if (pipeline.has_value())
+            try
             {
-                try
-                {
-                    pipeline.value().run(input_file, output_file, parameters, input_level, true, ui_call_list, ui_call_list_mutex);
-                }
-                catch (std::exception &e)
-                {
-                    logger->error("Fatal error running pipeline : " + std::string(e.what()));
-                    is_processing = false;
-                    processing_mutex.unlock();
-                    return;
-                }
+                downlink_pipeline.run(input_file, output_file, parameters, input_level, true, ui_call_list, ui_call_list_mutex);
             }
-            else
-                logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+            catch (std::exception &e)
+            {
+                logger->error("Fatal error running pipeline : " + std::string(e.what()));
+                is_processing = false;
+                processing_mutex.unlock();
+                return;
+            }
 
             is_processing = false;
 

@@ -473,21 +473,21 @@ namespace satdump
                         style::endDisabled();
 
                     // Preset Menu
-                    Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
-                    if (selected_pipeline.preset.frequencies.size() > 0)
+                    if (pipeline_selector.selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ?
+                            pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
-                            for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
+                            for (int n = 0; n < (int)pipeline_selector.selected_pipeline.preset.frequencies.size(); n++)
                             {
                                 const bool is_selected = (pipeline_preset_id == n);
-                                if (ImGui::Selectable(selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))
+                                if (ImGui::Selectable(pipeline_selector.selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))
                                 {
                                     pipeline_preset_id = n;
 
-                                    if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
+                                    if (pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
                                     {
-                                        frequency_hz = selected_pipeline.preset.frequencies[pipeline_preset_id].second;
+                                        frequency_hz = pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second;
                                         set_frequency(frequency_hz);
                                     }
                                 }
@@ -606,9 +606,9 @@ namespace satdump
                             ImGui::SeparatorText(vfo.name.c_str());
                             ImGui::PopStyleColor();
                             ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
-                            if (vfo.pipeline_id != -1)
+                            if (vfo.selected_pipeline.name != "")
                             {
-                                ImGui::BulletText("Pipeline: %s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                                ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.readable_name.c_str());
                                 ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
                             }
                             else if (vfo.file_sink)
@@ -738,7 +738,7 @@ namespace satdump
                 {
                     if (ImGui::BeginTabItem(vfo.name.c_str()))
                     {
-                        if (vfo.pipeline_id != -1)
+                        if (vfo.selected_pipeline.name != "")
                         {
                             float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                             float live_width = recorder_size.x + 16 * ui_scale;

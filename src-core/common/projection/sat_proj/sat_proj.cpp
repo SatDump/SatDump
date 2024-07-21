@@ -43,7 +43,7 @@ namespace satdump
         {
             p = cfg;
         }
-        catch (std::exception &e)
+        catch (std::exception &)
         {
             proj_err = true;
         }

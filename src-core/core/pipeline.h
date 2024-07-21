@@ -42,7 +42,7 @@ namespace satdump
             std::vector<PipelineModule> modules;
         };
 
-        std::string name;
+        std::string name = "";
         std::string readable_name;
 
         PipelinePreset preset;

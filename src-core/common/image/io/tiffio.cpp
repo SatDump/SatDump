@@ -85,7 +85,7 @@ namespace image
                         proj::projection_t proj = meta["proj_cfg"];
                         geotiff::try_write_geotiff(tif, &proj);
                     }
-                    catch (std::exception &e)
+                    catch (std::exception &)
                     {
                     }
                 }

@@ -69,7 +69,7 @@ private:
 private:
     std::mutex live_pipeline_mtx;
     std::unique_ptr<satdump::LivePipeline> live_pipeline;
-    int pipeline_id = 0;
+    satdump::Pipeline selected_pipeline;
     nlohmann::json pipeline_params;
     std::string pipeline_output_dir;
 
@@ -97,7 +97,7 @@ private: // VFO Stuff
         double freq;
 
         //// Live
-        int pipeline_id = -1;
+        satdump::Pipeline selected_pipeline;
         nlohmann::json pipeline_params;
         std::string output_dir;
         std::shared_ptr<ctpl::thread_pool> lpool;
@@ -111,7 +111,7 @@ private: // VFO Stuff
     std::mutex vfos_mtx;
     std::vector<VFOInfo> vfo_list;
 
-    void add_vfo_live(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params);
+    void add_vfo_live(std::string id, std::string name, double freq, satdump::Pipeline vpipeline, nlohmann::json vpipeline_params);
     void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
     void del_vfo(std::string id);
 

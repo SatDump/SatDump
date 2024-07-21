@@ -18,19 +18,18 @@ namespace satdump
         nlohmann::json getParameters();
         void setParameters(nlohmann::json params);
         void select_pipeline(std::string id);
-        std::string get_name(int index);
 
         FileSelectWidget inputfileselect = FileSelectWidget("Input File", "Select Input File");
         FileSelectWidget outputdirselect = FileSelectWidget("Output Directory", "Select Output Directory", true);
-        int pipeline_id = 0;
-        int pipelines_levels_select_id = -1;
+        Pipeline selected_pipeline;
+        int pipelines_levels_select_id = 0;
 
     private:
         bool contains(std::vector<int> tm, int n);
         void getParamsFromInput();
         void try_set_param(std::string name, nlohmann::json v);
 
-        bool live_mode, advanced_mode;
+        bool live_mode, *advanced_mode;
         std::string text = u8"\uf006";
         std::vector<int> favourite;
         std::mutex pipeline_mtx;

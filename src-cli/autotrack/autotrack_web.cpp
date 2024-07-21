@@ -33,7 +33,7 @@ void AutoTrackApp::setup_webserver()
                 {
                     auto &pos = p["vfos"][vfo.id];
                     pos["frequency"] = vfo.freq;
-                    if (vfo.pipeline_id != -1)
+                    if (vfo.selected_pipeline.name != "")
                     {
                         vfo.live_pipeline->updateModuleStats();
                         pos["live_pipeline"] = vfo.live_pipeline->stats;
