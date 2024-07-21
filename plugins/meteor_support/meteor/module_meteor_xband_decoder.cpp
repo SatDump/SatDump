@@ -159,7 +159,7 @@ namespace meteor
 
                     for (auto &kfrm : deframed_dat1)
                     {
-                        for (int u = 0; u < kfrm.size(); u++)
+                        for (size_t u = 0; u < kfrm.size(); u++)
                             kfrm[u] ^= 0xF0;
 
                         uint8_t final_frames[4][15040];
@@ -184,7 +184,7 @@ namespace meteor
 
                     for (auto &kfrm : deframed_dat2)
                     {
-                        for (int u = 0; u < kfrm.size(); u++)
+                        for (size_t u = 0; u < kfrm.size(); u++)
                             kfrm[u] ^= 0xF0;
 
                         uint8_t final_frames[4][15040];

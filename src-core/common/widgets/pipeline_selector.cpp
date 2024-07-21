@@ -330,12 +330,17 @@ namespace satdump
 
         if (advanced_mode)
         {
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
+            ImGui::SeparatorText("Advanced Parameters");
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5 * ui_scale);
             pipeline_mtx.lock();
             for (auto& step : pipelines[pipeline_id].steps)
                 for (auto& this_module : step.modules)
                     if (widgets::JSONTableEditor(this_module.parameters, this_module.module_name.c_str()))
                         this_module.parameters = pipelines_json[pipelines[pipeline_id].name]["work"][step.level_name][this_module.module_name];
+
             pipeline_mtx.unlock();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
         }
     }
 

@@ -218,9 +218,8 @@ namespace satdump
 
             if (advanced_mode)
             {
-                ImVec2 start_pos = ImGui::GetCursorPos();
-                ImGui::SetCursorPos({ start_pos.x + 3 * ui_scale, start_pos.y + 10 * ui_scale });
-                ImGui::TextUnformatted("Advanced Settings");
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
+                ImGui::SeparatorText("Advanced Settings");
                 if (ImGui::CollapsingHeader("TLE Settings"))
                 {
                     widgets::JSONTreeEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
@@ -241,7 +240,7 @@ namespace satdump
                     if (ImGui::Button("Reset##instrument_settings"))
                         satdump::config::main_cfg["viewer"]["instruments"] = satdump::config::master_cfg["viewer"]["instruments"];
                 }
-                if (ImGui::CollapsingHeader("Pipeline Parameters"))
+                if (ImGui::CollapsingHeader("Default Pipeline Configs"))
                 {
                     widgets::JSONTreeEditor(pipelines_json, "pipelines");
                     ImGui::SameLine();

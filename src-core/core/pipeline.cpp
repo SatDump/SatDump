@@ -308,7 +308,7 @@ namespace satdump
 
         try
         {
-            pipelines_system_json = merge_json_diffs(pipelines_system_json, nlohmann::ordered_json::parse(pipelineString));
+            pipelines_system_json.update(nlohmann::ordered_json::parse(pipelineString));
         }
         catch (std::exception &e)
         {

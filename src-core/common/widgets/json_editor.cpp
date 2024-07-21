@@ -219,87 +219,93 @@ namespace widgets
 	{
 		ImGui::PushID(id);
 		ImVec2 start_pos = ImGui::GetCursorPos();
-		ImGui::SetCursorPos({ start_pos.x + 3 * ui_scale, start_pos.y + 20 * ui_scale });
+		ImGui::SetCursorPos({ start_pos.x + 3 * ui_scale, start_pos.y + 10 * ui_scale });
+		ImGui::AlignTextToFramePadding();
 		ImGui::TextUnformatted(id);
 		ImGui::SameLine();
 		AddButton<nlohmann::json>(json, true);
 		ImGui::SameLine();
 		bool ret = ImGui::Button(std::string("Reset##" + std::string(id)).c_str());
 
-		if (json.size() > 0 && ImGui::BeginTable(std::string(std::string(id) + "##table").c_str(), 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+		if (json.size() > 0)
 		{
-			int array_index = 0;
-			bool delete_item = false;
-
-			for (auto jsonItem = json.begin(); jsonItem != json.end(); )
+			if (ImGui::BeginTable(std::string(std::string(id) + "##table").c_str(), 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 			{
-				std::string this_key;
-				if (json.is_array())
-					this_key = std::to_string(array_index++);
-				else
-					this_key = jsonItem.key();
+				int array_index = 0;
+				bool delete_item = false;
 
-				ImGui::PushID(this_key.c_str());
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				if (!json.is_array())
-					ImGui::TextUnformatted(this_key.c_str());
+				for (auto jsonItem = json.begin(); jsonItem != json.end(); )
+				{
+					std::string this_key;
+					if (json.is_array())
+						this_key = std::to_string(array_index++);
+					else
+						this_key = jsonItem.key();
 
-				ImGui::TableSetColumnIndex(1);
-				if (jsonItem.value().is_object())
-				{
-					ImGui::TextDisabled("%s", "[Object]");
-					delete_item = DeleteButton();
-					JSONTreeEditor(jsonItem.value(), this_key.c_str());
-				}
-				else if (jsonItem.value().is_array())
-				{
-					ImGui::TextDisabled("%s", jsonItem.value().dump().c_str());
-					delete_item = DeleteButton();
-					JSONTreeEditor(jsonItem.value(), this_key.c_str());
-				}
-				else if (jsonItem.value().is_boolean())
-				{
-					bool val = jsonItem.value();
-					if (ImGui::Checkbox(std::string("##" + this_key).c_str(), &val))
-						jsonItem.value() = val;
-					delete_item = DeleteButton();
-				}
-				else if (jsonItem.value().is_number_integer() || jsonItem.value().is_number_unsigned())
-				{
-					int val = jsonItem.value();
-					if (ImGui::InputInt(std::string("##" + this_key).c_str(), &val))
-						jsonItem.value() = val;
-					delete_item = DeleteButton();
-				}
-				else if (jsonItem.value().is_number_float())
-				{
-					double val = jsonItem.value();
-					if (ImGui::InputDouble(std::string("##" + this_key).c_str(), &val))
-						jsonItem.value() = val;
-					delete_item = DeleteButton();
-				}
-				else if (jsonItem.value().is_string())
-				{
-					std::string val = jsonItem.value();
-					if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) :
-						ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
-						jsonItem.value() = val;
-					delete_item = DeleteButton();
+					ImGui::PushID(this_key.c_str());
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					if (!json.is_array())
+						ImGui::TextUnformatted(this_key.c_str());
+
+					ImGui::TableSetColumnIndex(1);
+					if (jsonItem.value().is_object())
+					{
+						ImGui::TextDisabled("%s", "[Object]");
+						delete_item = DeleteButton();
+						JSONTreeEditor(jsonItem.value(), this_key.c_str());
+					}
+					else if (jsonItem.value().is_array())
+					{
+						ImGui::TextDisabled("%s", jsonItem.value().dump().c_str());
+						delete_item = DeleteButton();
+						JSONTreeEditor(jsonItem.value(), this_key.c_str());
+					}
+					else if (jsonItem.value().is_boolean())
+					{
+						bool val = jsonItem.value();
+						if (ImGui::Checkbox(std::string("##" + this_key).c_str(), &val))
+							jsonItem.value() = val;
+						delete_item = DeleteButton();
+					}
+					else if (jsonItem.value().is_number_integer() || jsonItem.value().is_number_unsigned())
+					{
+						int val = jsonItem.value();
+						if (ImGui::InputInt(std::string("##" + this_key).c_str(), &val))
+							jsonItem.value() = val;
+						delete_item = DeleteButton();
+					}
+					else if (jsonItem.value().is_number_float())
+					{
+						double val = jsonItem.value();
+						if (ImGui::InputDouble(std::string("##" + this_key).c_str(), &val))
+							jsonItem.value() = val;
+						delete_item = DeleteButton();
+					}
+					else if (jsonItem.value().is_string())
+					{
+						std::string val = jsonItem.value();
+						if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) :
+							ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
+							jsonItem.value() = val;
+						delete_item = DeleteButton();
+					}
+
+					ImGui::PopID();
+					if (delete_item)
+					{
+						jsonItem = json.erase(jsonItem);
+						delete_item = false;
+					}
+					else
+						jsonItem++;
 				}
 
-				ImGui::PopID();
-				if (delete_item)
-				{
-					jsonItem = json.erase(jsonItem);
-					delete_item = false;
-				}
-				else
-					jsonItem++;
+				ImGui::EndTable();
 			}
-
-			ImGui::EndTable();
 		}
+		else
+			ImGui::Separator();
 
 		ImGui::PopID();
 		return ret;
