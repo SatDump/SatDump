@@ -147,8 +147,9 @@ namespace satdump
     {
         if (show_window_config)
         {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(800 * ui_scale, 300 * ui_scale), ImVec2(INFINITY, INFINITY));
             ImGui::Begin("Tracking Configuration", &show_window_config);
-            ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
+            ImGui::SetWindowSize(ImVec2(800 * ui_scale, 550 * ui_scale), ImGuiCond_FirstUseEver);
 
             if (ImGui::BeginTabBar("##trackingtabbar"))
             {

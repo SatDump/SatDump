@@ -24,10 +24,8 @@ namespace satdump
 
         ImGuiStyle &imgui_style = ImGui::GetStyle();
         float curpos = ImGui::GetCursorPosY();
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 220 * ui_scale);
         ImGui::SetNextItemWidth(200 * ui_scale);
         ImGui::InputTextWithHint("##trackingavailablesatssearch", u8"\uf422   Search All Satellites", &availablesatssearch);
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 220 * ui_scale);
         ImGui::BeginGroup();
         ImGui::SetNextItemWidth(200 * ui_scale);
         if (ImGui::BeginListBox("##trackingavailablesatsbox"))
@@ -51,7 +49,6 @@ namespace satdump
             ImGui::EndListBox();
         }
         ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 15 * ui_scale);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50 * ui_scale);
         ImGui::BeginGroup();
         if (ImGui::Button(">>>"))
@@ -68,12 +65,13 @@ namespace satdump
             if (it != enabled_satellites.end())
                 enabled_satellites.erase(it);
         }
+
         ImGui::EndGroup();
-        ImGui::SetCursorPosY(curpos);
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + 20 * ui_scale);
+        float selected_offset = 200 * ui_scale + ImGui::GetItemRectSize().x + imgui_style.ItemSpacing.x * 2;
+        ImGui::SetCursorPos({ selected_offset, curpos });
         ImGui::SetNextItemWidth(200 * ui_scale);
         ImGui::InputTextWithHint("##trackingselectedsatssearch", u8"\uf422   Search Selected", &selectedsatssearch);
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + 20 * ui_scale);
+        ImGui::SetCursorPosX(selected_offset);
         ImGui::SetNextItemWidth(200 * ui_scale);
         if (ImGui::BeginListBox("##trackingselectedsatsbox"))
         {
@@ -97,15 +95,19 @@ namespace satdump
             ImGui::EndListBox();
         }
         ImGui::EndGroup();
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+
+        float selected_bottom = ImGui::GetCursorPosY();
+        ImGui::SetCursorPos({ selected_offset + 200 * ui_scale + imgui_style.ItemSpacing.x, curpos });
+        ImGui::BeginGroup();
+        ImGui::SeparatorText("Scheduler Options");
         ImGui::SetNextItemWidth(150 * ui_scale);
         ImGui::InputFloat("Minimum Elevation", &autotrack_cfg.autotrack_min_elevation);
         ImGui::Checkbox("Multi Mode", &autotrack_cfg.multi_mode);
         ImGui::SameLine();
         ImGui::Checkbox("Stop SDR When IDLE", &autotrack_cfg.stop_sdr_when_idle);
-        ImGui::Spacing();
+        ImGui::EndGroup();
+        ImGui::SetCursorPosY(selected_bottom);
+
         ImGui::Separator();
         ImGui::Spacing();
         if (ImGui::Button("Update Passes"))
