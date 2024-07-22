@@ -438,6 +438,7 @@ namespace satdump
                 logger->critical(iteratorError.message());
         }
 
+        std::sort(systemPipelines.begin(), systemPipelines.end());
         for (std::string &pipeline : systemPipelines)
             loadPipeline(pipeline);
 
