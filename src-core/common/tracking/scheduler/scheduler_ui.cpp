@@ -96,17 +96,20 @@ namespace satdump
         }
         ImGui::EndGroup();
 
-        float selected_bottom = ImGui::GetCursorPosY();
-        ImGui::SetCursorPos({ selected_offset + 200 * ui_scale + imgui_style.ItemSpacing.x, curpos });
+        float selection_box_bottom = ImGui::GetCursorPosY();
+        float elev_width = selected_offset + 200 * ui_scale + imgui_style.ItemSpacing.x;
+        ImGui::SetCursorPos({ elev_width, curpos });
         ImGui::BeginGroup();
         ImGui::SeparatorText("Scheduler Options");
-        ImGui::SetNextItemWidth(150 * ui_scale);
-        ImGui::InputFloat("Minimum Elevation", &autotrack_cfg.autotrack_min_elevation);
         ImGui::Checkbox("Multi Mode", &autotrack_cfg.multi_mode);
         ImGui::SameLine();
+        elev_width = ImGui::GetCursorPosX() - elev_width;
         ImGui::Checkbox("Stop SDR When IDLE", &autotrack_cfg.stop_sdr_when_idle);
+        elev_width += ImGui::GetItemRectSize().x - ImGui::CalcTextSize("Minimum Elevation").x - imgui_style.ItemInnerSpacing.x;
+        ImGui::SetNextItemWidth(elev_width);
+        ImGui::InputFloat("Minimum Elevation", &autotrack_cfg.autotrack_min_elevation);
         ImGui::EndGroup();
-        ImGui::SetCursorPosY(selected_bottom);
+        ImGui::SetCursorPosY(selection_box_bottom);
 
         ImGui::Separator();
         ImGui::Spacing();
