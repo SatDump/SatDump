@@ -226,6 +226,7 @@ jobs:
           path: ${{runner.workspace}}/build/*.deb
 
   build_linux_arm64:
+    if: false
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -403,9 +404,9 @@ jobs:
         "build_windows",
         "build_linux",
         "build_macos_intel",
-        "build_macos_silicon",
-        "build_linux_arm64",
-      ] #, "build_android"]
+        "build_macos_silicon"]
+        # "build_linux_arm64",
+        #, "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -417,7 +418,7 @@ jobs:
         run: sudo apt install -y unzip
 
       - name: Copy files
-        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb # && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
+        run: mkdir satdump_out && cp SatDump-Ubuntu-Latest/satdump*.deb satdump_out/satdump_ubuntu_latest_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe # && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb && cp SatDump-debug.apk/app-debug.apk satdump_out/SatDump-debug.apk
 
       - name: Update Nightly
         run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
