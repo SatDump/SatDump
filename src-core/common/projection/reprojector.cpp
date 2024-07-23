@@ -88,7 +88,7 @@ namespace satdump
             {
                 trg_proj = op.target_prj_info;
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
                 trg_proj_err = true;
             }
@@ -106,7 +106,7 @@ namespace satdump
             {
                 src_proj = image::get_metadata_proj_cfg(op.img);
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
                 src_proj_err = true;
             }
@@ -295,7 +295,7 @@ namespace satdump
             {
                 *proj = params;
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
                 proj_err = true;
             }
@@ -387,7 +387,7 @@ namespace satdump
                 {
                     proj = params;
                 }
-                catch (std::exception &e)
+                catch (std::exception &)
                 {
                     proj_err = true;
                 }

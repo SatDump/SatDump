@@ -103,6 +103,12 @@
             "value": false,
             "name": "Remember Window Size and Position",
             "description": "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
+        },
+        "advanced_mode": {
+            "type": "bool",
+            "value": false,
+            "name": "Advanced Mode",
+            "description": "Allows full editing of all SatDump options. Be warned: invalid configurations\nmay result in crashes, corruption of data, and more. Use at your own risk!"
         }
     },
     // More generic SatDump settings
@@ -645,9 +651,9 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/CloudUnderlay.md",
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 1.5,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": false,
                             "invert": false
                         },
@@ -658,7 +664,7 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/CloudUnderlay.md",
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 1.5,
                             "thresold": 0.15,
                             "blend": false,
@@ -671,17 +677,17 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA (channel 1)": {
@@ -690,17 +696,17 @@
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 0.95,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA (channel 2)": {
@@ -709,17 +715,17 @@
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 0.95,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "Snow enhancement": {
@@ -1065,17 +1071,17 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA (Uncalibrated)": {
@@ -1083,17 +1089,17 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/MSA.md",
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 0.95,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MCIR Rain (Uncalibrated)": {
@@ -1102,15 +1108,15 @@
                         "description": "descriptions/MCIR_precip.md",
                         "vars": {
                             "minoffset": 0.21,
-                            "scalar": 1,
+                            "scalar": 1.0,
                             "thresold": 0.8,
                             "lut": "lut/WXtoImg-NO_mod_APT.png"
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "HVC (channel 1)": {
@@ -1121,9 +1127,9 @@
                         "geo_correct": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "HVC (channel 2)": {
@@ -1134,9 +1140,9 @@
                         "geo_correct": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     }
                 },
@@ -1612,17 +1618,17 @@
                         "description": "descriptions/MCIR.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA": {
@@ -1631,17 +1637,17 @@
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "Channel 4 Equalized": {
@@ -1718,9 +1724,9 @@
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1732,9 +1738,9 @@
                             "lut": "goes/abi/usradioguycustomlut.png"
                         },
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": false // Needs to be optimized...
                     },
@@ -1762,9 +1768,9 @@
                         },
                         "lua": "scripted_compos/split_difference.lua",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": false
                     },
@@ -1806,9 +1812,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1826,9 +1832,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1846,9 +1852,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1865,9 +1871,9 @@
                         },
                         "lut": "lut/cal/Dirty_IR_CIRA.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1885,9 +1891,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -1905,9 +1911,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -1924,9 +1930,9 @@
                         },
                         "lut": "lut/cal/abi_ir_7.png",
                         "borders_color": [
-                            0,
-                            0,
-                            0
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -1935,9 +1941,9 @@
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "calib_cfg": {
                             "cch2": {
@@ -1958,9 +1964,9 @@
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            0,
-                            0,
-                            0
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "calib_cfg": {
                             "cch7": {
@@ -1986,9 +1992,9 @@
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "calib_cfg": {
                             "cch2": {
@@ -2036,9 +2042,9 @@
                         "cpp": "goes_abi_false_color",
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Day Cloud Convection": {
@@ -2046,9 +2052,9 @@
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "calib_cfg": {
                             "cch3": {
@@ -2078,9 +2084,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ]
                     },
                     "Clean Longwave IR Window Band": {
@@ -2097,9 +2103,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     }
                 }
@@ -2115,15 +2121,15 @@
                         "vars": {
                             "minoffset": 0.3,
                             "scalar": 1.2,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ],
                         "autogen": false
                     },
@@ -2141,9 +2147,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -2161,9 +2167,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -2180,9 +2186,9 @@
                         },
                         "lut": "lut/cal/Dirty_IR_CIRA.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -2200,9 +2206,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -2644,9 +2650,9 @@
                         "individual_equalize": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     }
                 }
@@ -2747,9 +2753,9 @@
                         "individual_equalize": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "AVHRR 543b IR False Color": {

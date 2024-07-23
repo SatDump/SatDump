@@ -11,6 +11,7 @@
 #include "init.h"
 #include "common/tracking/tle.h"
 #include "common/widgets/timed_message.h"
+#include "common/widgets/json_editor.h"
 
 #include "core/style.h"
 
@@ -37,6 +38,7 @@ namespace satdump
         char tle_last_update[80];
 
         bool show_imgui_demo = false;
+        bool advanced_mode = false;
 
         widgets::TimedMessage saved_message;
 
@@ -83,6 +85,8 @@ namespace satdump
                     selected_theme = theme_id;
                 theme_id++;
             }
+
+            advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
 
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
@@ -212,6 +216,40 @@ namespace satdump
                 }
             }
 
+            if (advanced_mode)
+            {
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
+                ImGui::SeparatorText("Advanced Settings");
+                if (ImGui::CollapsingHeader("TLE Settings"))
+                {
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
+                    if (ImGui::Button("Reset##tle_settings"))
+                        satdump::config::main_cfg["tle_settings"] = satdump::config::master_cfg["tle_settings"];
+                }
+                if (ImGui::CollapsingHeader("Advanced Settings"))
+                {
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["advanced_settings"], "advanced_settings");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##advanced_settings"))
+                        satdump::config::main_cfg["advanced_settings"] = satdump::config::master_cfg["advanced_settings"];
+                }
+                if (ImGui::CollapsingHeader("Instrument Config"))
+                {
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["viewer"]["instruments"], "instrument_settings");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##instrument_settings"))
+                        satdump::config::main_cfg["viewer"]["instruments"] = satdump::config::master_cfg["viewer"]["instruments"];
+                }
+                if (ImGui::CollapsingHeader("Default Pipeline Configs"))
+                {
+                    widgets::JSONTreeEditor(pipelines_json, "pipelines");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##pipelines"))
+                        pipelines_json = pipelines_system_json;
+                }
+            }
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
@@ -233,6 +271,9 @@ namespace satdump
                     plugin_hdl.save();
 
                 config::saveUserConfig();
+                if (advanced_mode)
+                    savePipelines();
+                advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
                 saved_message.set_message(style::theme.green, "Settings saved");
                 satdump::update_ui = true;
             }

@@ -158,7 +158,7 @@ namespace satdump
             double freq;
 
             //// Live
-            int pipeline_id = -1;
+            Pipeline selected_pipeline;
             nlohmann::json pipeline_params;
             std::string output_dir;
             std::shared_ptr<ctpl::thread_pool> lpool;
@@ -172,7 +172,7 @@ namespace satdump
         std::mutex vfos_mtx;
         std::vector<VFOInfo> vfo_list;
 
-        void add_vfo_live(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params);
+        void add_vfo_live(std::string id, std::string name, double freq, Pipeline vpipeline, nlohmann::json vpipeline_params);
         void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
         void del_vfo(std::string id);
 
