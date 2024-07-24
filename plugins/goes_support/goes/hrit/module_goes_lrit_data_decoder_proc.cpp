@@ -7,10 +7,6 @@
 #include <filesystem>
 #include "common/image/io.h"
 
-#ifdef _MSC_VER
-#define timegm _mkgmtime
-#endif
-
 namespace goes
 {
     namespace hrit
@@ -203,7 +199,7 @@ namespace goes
                                 {
                                     std::string scanTime = ancillary_record.meta["Time of frame start"];
                                     strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
-                                    lmeta.scan_time = mktime_utc(&scanTimestamp);
+                                    lmeta.scan_time = timegm(&scanTimestamp);
                                 }
                             }
                         }
@@ -250,7 +246,7 @@ namespace goes
                         {
                             std::string scanTime = ancillary_record.meta["Time of frame start"];
                             strptime(scanTime.c_str(), "%Y-%m-%dT%H:%M:%S", &scanTimestamp);
-                            lmeta.scan_time = mktime_utc(&scanTimestamp);
+                            lmeta.scan_time = timegm(&scanTimestamp);
                         }
                     }
                     // Himawari rebroadcast
@@ -276,7 +272,7 @@ namespace goes
                         if (strParts.size() > 3)
                         {
                             strptime(strParts[2].c_str(), "%Y%m%d%H%M", timeReadable);
-                            lmeta.scan_time = mktime_utc(timeReadable);
+                            lmeta.scan_time = timegm(timeReadable);
                         }
                     }
                     // NWS Images

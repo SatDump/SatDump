@@ -85,7 +85,7 @@ namespace wav
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 md.frequency = freq * 1e3;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
             }
 
             // SDRSharp Audio filename
@@ -98,7 +98,7 @@ namespace wav
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 md.frequency = freq;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
             }
 
             // SDRUno Audio filename
@@ -123,7 +123,7 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
             }
 
             // GQRX Audio filename (UTC)
@@ -136,7 +136,7 @@ namespace wav
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 md.frequency = freq;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
             }
 
             // Simple UTC timestamp (WXtoImg)
@@ -147,7 +147,7 @@ namespace wav
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
             }
 
             // Other filename (NOAA-APT-v2?)
@@ -257,7 +257,7 @@ namespace wav
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 md.frequency = freq;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
 
                 std::string ext = std::filesystem::path(filepath).extension().string();
                 if (ext == ".cf32" || ext == ".cs16" || ext == ".cs8")
@@ -278,7 +278,7 @@ namespace wav
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
                 md.frequency = freq;
-                md.timestamp = mktime_utc(&timeS);
+                md.timestamp = timegm(&timeS);
 
                 std::string ext = std::filesystem::path(filepath).extension().string();
                 if (ext == ".cf32" || ext == ".cs16" || ext == ".cs8")

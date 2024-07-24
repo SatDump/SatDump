@@ -358,7 +358,7 @@ namespace himawari
                                                     std::string scanTime = current_filename.substr(12, 12);
                                                     strptime(scanTime.c_str(), "%Y%m%d%H%M", &scanTimestamp);
                                                     scanTimestamp.tm_sec = 0;
-                                                    lmeta.scan_time = mktime_utc(&scanTimestamp);
+                                                    lmeta.scan_time = timegm(&scanTimestamp);
                                                 }
 
                                                 lmeta.satellite_name = "Himawari";

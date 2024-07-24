@@ -133,7 +133,7 @@ namespace gk2a
                             std::tm scanTimestamp = *gmtime(&tttt);
                             std::string scanTime = header_parts[4] + header_parts[5];
                             strptime(scanTime.c_str(), "%Y%m%d%H%M%S", &scanTimestamp);
-                            lmeta.scan_time = mktime_utc(&scanTimestamp);
+                            lmeta.scan_time = timegm(&scanTimestamp);
                         }
 
                         // Try to parse navigation
