@@ -8,13 +8,6 @@
 
 #define JULIAN_START_OF_DAY 315446400
 
-/**
- * Create time_t in UTC from struct tm.
- *
- * \param timeinfo_utc Broken down time, assumed to be in UTC
- * \return Time in UTC
- **/
-
 predict_julian_date_t predict_to_julian(time_t input_time)
 {
 	//get number of seconds since 1979-12-31 00:00:00 UTC, convert to days
