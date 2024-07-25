@@ -30,7 +30,8 @@
                     "clock_gain_omega": 0.8,
                     "clock_mu": 0.9,
                     "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.0001
+                    "clock_omega_relative_limit": 0.0001,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -114,7 +115,8 @@
                     "clock_gain_omega": 0.8,
                     "clock_mu": 0.9,
                     "clock_gain_mu": 0.037,
-                    "clock_omega_relative_limit": 0.0001
+                    "clock_omega_relative_limit": 0.0001,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {

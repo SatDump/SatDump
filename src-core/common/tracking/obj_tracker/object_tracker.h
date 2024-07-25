@@ -115,13 +115,17 @@ namespace satdump
         std::mutex upcoming_passes_mtx;
         std::vector<SatAzEl> upcoming_pass_points;
         void updateNextPass(double current_time);
+        float correctRotatorAzimuth(const float az);
 
         double next_aos_time = -1, next_los_time = -1;
         SatAzEl sat_next_aos_pos;
+        SatAzEl sat_next_los_pos;
 
     private: // Rotator control
         bool rotator_engaged = false;
         bool rotator_tracking = false;
+        bool northbound_cross = false;
+        bool southbound_cross = false;
         SatAzEl rot_current_pos;
         SatAzEl rot_current_req_pos;
         SatAzEl rot_current_reqlast_pos;
@@ -136,6 +140,12 @@ namespace satdump
         int rotator_decimal_precision = 3;
         SatAzEl rotator_park_position;
         double rotator_unpark_at_minus = 60;
+        bool meridian_flip_correction = false;
+        int rotator_az_min = 0;
+        int rotator_az_max = 360;
+
+        bool rotator_arrowkeys_enable = false;
+        double rotator_arrowkeys_increment = 0.1;
 
     public: // Functions
         nlohmann::json getStatus();

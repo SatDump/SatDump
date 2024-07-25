@@ -14,7 +14,7 @@ namespace satdump
     public:
         satdump_exception_t(const std::string &arg, const char *file, int line) : std::runtime_error(arg)
         {
-            msg = arg + " => " + std::string(file) + ":" + std::to_string(line);
+            msg = arg + " => " + std::string(file).substr(SOURCE_PATH_SIZE) + ":" + std::to_string(line);
         }
 
         ~satdump_exception_t() throw()

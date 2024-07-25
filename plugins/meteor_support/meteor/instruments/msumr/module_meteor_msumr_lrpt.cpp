@@ -67,6 +67,7 @@ namespace meteor
 
             std::vector<uint8_t> msumr_ids;
             nlohmann::json msu_mr_telemetry;
+            nlohmann::json msu_mr_telemetry_calib;
 
             while (!data_in.eof())
             {
@@ -86,7 +87,7 @@ namespace meteor
                             uint8_t msumr_id = pkt.payload[8 + 12] >> 4;
                             msumr_ids.push_back(msumr_id);
 
-                            parseMSUMRTelemetry(msu_mr_telemetry, msumr_ids.size() - 1, &pkt.payload[8]);
+                            parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_ids.size() - 1, &pkt.payload[8]);
                         }
                     }
                 }
@@ -144,14 +145,16 @@ namespace meteor
                 std::filesystem::create_directory(directory);
 
             satdump::ImageProducts msumr_products;
-            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number);
+            std::vector<satdump::ImageProducts::ImageHolder> msumr_images;
             for (int i = 0; i < 6; i++)
             {
                 image::Image img = msureader.getChannel(i);
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
-                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
+                    msumr_images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
+            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number);
+            msumr_products.images.swap(msumr_images);
             msumr_products.save(directory);
 
             // Products dataset

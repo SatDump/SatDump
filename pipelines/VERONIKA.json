@@ -1,0 +1,52 @@
+{
+    "veronika_link": {
+        "name": "VERONIKA UHF Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0 
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                436.680e6
+            ]
+        ],
+        "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "fsk_demod": {
+                    "symbolrate": 9600,
+                    "rrc_alpha": 0.5,
+                    "enable_doppler": true,
+                    "satellite_norad": 58261,
+                    "satellite_frequency": 436.680e6
+                }
+            },
+            "frm":{
+                "ax25_decoder":{
+                    "nrzi": true,
+                    "g3ruh": true,
+                    "min_sz": 10,
+                    "max_sz": 1000
+                }
+            }
+        }
+    }
+}

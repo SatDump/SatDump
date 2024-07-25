@@ -47,8 +47,8 @@ namespace satdump
                     error_message.set_message(style::theme.red, "Output folder is invalid!");
                 else
                     ui_thread_pool.push([&, params2](int)
-                                        { processing::process(pipelines[pipeline_selector->pipeline_id].name,
-                                                              pipelines[pipeline_selector->pipeline_id].steps[pipeline_selector->pipelines_levels_select_id].level_name,
+                                        { processing::process(pipeline_selector->selected_pipeline,
+                                                              pipeline_selector->selected_pipeline.steps[pipeline_selector->pipelines_levels_select_id].level_name,
                                                               pipeline_selector->inputfileselect.getPath(),
                                                               pipeline_selector->outputdirselect.getPath(),
                                                               params2); });

@@ -63,7 +63,7 @@ namespace meteor
                 uint16_t sequence = packet.header.packet_sequence_count;
                 uint32_t mcuNumber = newSeg.MCUN;
 
-                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 10000 && sequence < 1000)
+                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 13926 && sequence < 2458) // 15% threshold at each end
                 {
                     rollover[currentChannel] += 16384;
                 }

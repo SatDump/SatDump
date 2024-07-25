@@ -7,10 +7,15 @@
 #include <thread>
 #include "core/config.h"
 #include "core/exception.h"
+#include "init.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
     SATDUMP_DLL std::vector<Pipeline> pipelines;
+    SATDUMP_DLL nlohmann::ordered_json pipelines_json;
+    SATDUMP_DLL nlohmann::ordered_json pipelines_system_json;
+    std::string user_cfg_path;
 
     void Pipeline::run(std::string input_file,
                        std::string output_directory,
@@ -45,13 +50,13 @@ namespace satdump
 
         Here, we first test modules are compatible with this way
         of doing things, then unless specifically disabled by the
-        user, proceed to run both in parralel saving up on processing
+        user, proceed to run both in parallel saving up on processing
         time.
         */
-        if (steps[1].modules.size() == 1 &&
-            steps[2].modules.size() == 1 &&
-            input_level == "baseband" &&
-            parameters.count("disable_multi_modules") == 0)
+        if (input_level == "baseband" &&
+            parameters.count("disable_multi_modules") == 0 &&
+            steps[1].modules.size() == 1 &&
+            steps[2].modules.size() == 1)
         {
             logger->info("Checking the 2 first modules...");
 
@@ -301,10 +306,20 @@ namespace satdump
             // logger->info(pipelineString);
         }
 
-        // Parse it
-        nlohmann::ordered_json jsonObj = nlohmann::ordered_json::parse(pipelineString);
+        try
+        {
+            pipelines_system_json.update(nlohmann::ordered_json::parse(pipelineString));
+        }
+        catch (std::exception &e)
+        {
+            logger->warn("Error loading system pipeline file: %s", e.what());
+        }
+    }
 
-        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : jsonObj.items())
+    void parsePipelines()
+    {
+        pipelines.clear();
+        for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> pipelineConfig : pipelines_json.items())
         {
             Pipeline newPipeline;
 
@@ -381,6 +396,14 @@ namespace satdump
             if (hasAllModules)
                 pipelines.push_back(newPipeline);
         }
+
+        std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
+            {
+                                                    std::string lname = l.readable_name;
+                                                    std::string rname = r.readable_name;
+                                                    std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
+                                                    std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
+                                                    return lname < rname; });
     }
 
     void loadPipelines(std::string filepath)
@@ -391,10 +414,9 @@ namespace satdump
             exit(1);
         }
 
-        logger->info("Loading pipelines from " + filepath);
+        logger->info("Loading system pipelines from " + filepath);
 
-        std::vector<std::pair<std::string, std::string>> pipelinesToLoad;
-
+        std::vector<std::string> systemPipelines;
         std::filesystem::recursive_directory_iterator pipelinesIterator(filepath);
         std::error_code iteratorError;
         while (pipelinesIterator != std::filesystem::recursive_directory_iterator())
@@ -405,8 +427,8 @@ namespace satdump
                 {
                     if (pipelinesIterator->path().string().find(".json.inc") == std::string::npos)
                     {
-                        logger->trace("Found pipeline file " + pipelinesIterator->path().string());
-                        pipelinesToLoad.push_back({pipelinesIterator->path().string(), pipelinesIterator->path().stem().string()});
+                        logger->trace("Found system pipeline file " + pipelinesIterator->path().string());
+                        systemPipelines.push_back(pipelinesIterator->path().string());
                     }
                 }
             }
@@ -416,16 +438,76 @@ namespace satdump
                 logger->critical(iteratorError.message());
         }
 
-        for (std::pair<std::string, std::string> pipeline : pipelinesToLoad)
-            loadPipeline(pipeline.first);
+        std::sort(systemPipelines.begin(), systemPipelines.end());
+        for (std::string &pipeline : systemPipelines)
+            loadPipeline(pipeline);
 
-        std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
-                  {
-                                                          std::string lname = l.readable_name;
-                                                          std::string rname = r.readable_name;
-                                                          std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
-                                                          std::transform(rname.begin(), rname.end(), rname.begin(), ::tolower);
-                                                          return lname < rname; });
+        // Add User Pipelines
+        nlohmann::ordered_json user_pipelines;
+        bool has_user_pipelines = false;
+        std::string final_path = "";
+
+        if (std::filesystem::exists("pipelines.json")) // First try loading in current folder
+            final_path = "pipelines.json";
+        else if (std::filesystem::exists(user_path + "/pipelines.json"))
+            final_path = user_path + "/pipelines.json";
+
+        if (final_path != "")
+        {
+            logger->info("Found user pipelines " + final_path);
+            user_cfg_path = final_path;
+            has_user_pipelines = true;
+            try
+            {
+                pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_cfg_path));
+            }
+            catch (std::exception& e)
+            {
+                logger->warn("Error loading user pipelines: %s", e.what());
+                has_user_pipelines = false;
+            }
+        }
+        else
+        {
+            user_cfg_path = user_path + "/pipelines.json";
+        }
+
+        if (!has_user_pipelines)
+            pipelines_json = pipelines_system_json;
+
+        parsePipelines();
+    }
+
+    void savePipelines()
+    {
+        // Check edited pipelines are valid
+        try
+        {
+            parsePipelines();
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error parsing customized pipelines! Resetting to last good config\n\n%s", e.what());
+            pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_cfg_path));
+            parsePipelines();
+        }
+
+        // Save Pipelines
+        nlohmann::ordered_json diff_json = perform_json_diff(pipelines_system_json, pipelines_json);
+        try
+        {
+            if (!std::filesystem::exists(std::filesystem::path(user_cfg_path).parent_path()) &&
+                std::filesystem::path(user_cfg_path).has_parent_path())
+                std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
+        }
+        catch (std::exception& e)
+        {
+            logger->error("Cannot create directory for user pipelines: %s", e.what());
+            return;
+        }
+
+        logger->info("Saving user pipelines at " + user_cfg_path);
+        saveJsonFile(user_cfg_path, diff_json);
     }
 
     std::optional<Pipeline> getPipelineFromName(std::string downlink_pipeline)

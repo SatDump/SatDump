@@ -11,6 +11,10 @@
 #include <optional>
 #include <chrono>
 
+#ifdef _MSC_VER
+#define timegm _mkgmtime
+#endif
+
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
 
@@ -142,8 +146,6 @@ inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 }
 
 double get_median(std::vector<double> values);
-
-extern "C" time_t mktime_utc(const struct tm *timeinfo_utc); // Already in libpredict!
 
 template <typename T>
 std::vector<uint8_t> unsigned_to_bitvec(T v)

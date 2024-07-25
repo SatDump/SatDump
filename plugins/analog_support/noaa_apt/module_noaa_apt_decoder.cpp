@@ -762,7 +762,10 @@ namespace noaa_apt
                 sat_name = "NOAA-19";
             }
 
-            satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+            if(d_parameters.contains("start_timestamp"))
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, d_parameters["start_timestamp"]);
+            else
+                satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
 
             // SATELLITE ID
             {
@@ -1143,7 +1146,7 @@ namespace noaa_apt
             }
 
             /////////////////////////////////////
-            int min_diff = 5000;
+            int min_diff = MAX_STDDEV_VALID;
             int best_wedge = 0;
 
             if (wed.std_dev[15] <= MAX_STDDEV_VALID)

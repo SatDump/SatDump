@@ -216,7 +216,7 @@ namespace elektro
                     std::tm scanTimestamp;
                     strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
                     scanTimestamp.tm_sec = 0; // No seconds
-                    lmeta.scan_time = mktime_utc(&scanTimestamp);
+                    lmeta.scan_time = timegm(&scanTimestamp);
 
                     // If we can, use a better filename
                     {

@@ -109,12 +109,16 @@ namespace demod
         }
 
         // PLL
+        float costas_max_offset = d_has_carrier ? 0.2 : 1.0; // The offset in frequency should already be resolved on AM subcarriers
+        if (d_parameters.count("costas_max_offset") > 0)
+            costas_max_offset = dsp::hz_to_rad(d_parameters["costas_max_offset"].get<float>(), final_samplerate);
+
         if (constellation_type == "bpsk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(d_has_carrier ? carrier_dc->output_stream : rrc->output_stream, d_loop_bw, 2);
+            pll = std::make_shared<dsp::CostasLoopBlock>(d_has_carrier ? carrier_dc->output_stream : rrc->output_stream, d_loop_bw, 2, costas_max_offset);
         else if (constellation_type == "qpsk" || constellation_type == "oqpsk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
+            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4, costas_max_offset);
         else if (constellation_type == "8psk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 8);
+            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 8, costas_max_offset);
 
         if (d_post_costas_dc_blocking)
             post_pll_dc = std::make_shared<dsp::CorrectIQBlock<complex_t>>(pll->output_stream);

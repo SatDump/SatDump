@@ -249,7 +249,7 @@ void AutoTrackApp::setup_schedular_callbacks()
                     if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                         name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
-                    add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                    add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
                 }
 
                 if (dl.record)
@@ -289,7 +289,7 @@ void AutoTrackApp::setup_schedular_callbacks()
             if (obj.downlinks[0].live)
             {
                 pipeline_params = obj.downlinks[0].pipeline_selector->getParameters();
-                pipeline_id = obj.downlinks[0].pipeline_selector->pipeline_id;
+                selected_pipeline = obj.downlinks[0].pipeline_selector->selected_pipeline;
                 start_processing();
             }
 

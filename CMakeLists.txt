@@ -81,6 +81,12 @@ if(MSVC OR BUILD_MSVC)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /openmp")
     endif()
 
+    # This should be the default, but sometimes it isn't apparently
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
+
     # Speed up this to object-level, Suppress type conversion warnings, suppress
     # POSIX function warnings, suppress warnings about DLL-exported functions, and
     # Suppress warnings about template methods defined in another C++ file
@@ -124,6 +130,10 @@ else()
     set(SATDUMP_VERSION "${PROJECT_VERSION}")
 endif()
 add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
+
+# Used for error messages
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")

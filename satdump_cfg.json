@@ -103,6 +103,12 @@
             "value": false,
             "name": "Remember Window Size and Position",
             "description": "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
+        },
+        "advanced_mode": {
+            "type": "bool",
+            "value": false,
+            "name": "Advanced Mode",
+            "description": "Allows full editing of all SatDump options. Be warned: invalid configurations\nmay result in crashes, corruption of data, and more. Use at your own risk!"
         }
     },
     // More generic SatDump settings
@@ -182,7 +188,7 @@
             "type": "float",
             "value": 0.0,
             "name": "QTH Altitude",
-            "description": "Altitude (meters) of your station's QTH"
+            "description": "Altitude (meters above sea level) of your station's QTH"
         },
         "default_qth_label": {
             "type": "string",
@@ -645,9 +651,9 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/CloudUnderlay.md",
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 1.5,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": false,
                             "invert": false
                         },
@@ -658,7 +664,7 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/CloudUnderlay.md",
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 1.5,
                             "thresold": 0.15,
                             "blend": false,
@@ -671,17 +677,17 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA (channel 1)": {
@@ -690,17 +696,17 @@
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 0.95,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA (channel 2)": {
@@ -709,17 +715,17 @@
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 0.95,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "Snow enhancement": {
@@ -1007,6 +1013,21 @@
                             }
                         }
                     },
+                    "Enhanced IR (Transparent)": {
+                        "equation": "cch4, 0, 0, cch4 > 0.99 ? 1 : 0",
+                        "description": "descriptions/EnhancedIR.md",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "apply_lut": true,
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 241
+                            }
+                        }
+                    },
                     "Color general cloud IR": {
                         "channels": "cch4",
                         "description": "descriptions/ColorGeneralIR.md",
@@ -1050,17 +1071,17 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/MCIR.md",
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA (Uncalibrated)": {
@@ -1068,17 +1089,17 @@
                         "cpp": "underlay_with_clouds",
                         "description": "descriptions/MSA.md",
                         "vars": {
-                            "minoffset": 0,
+                            "minoffset": 0.0,
                             "scalar": 0.95,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MCIR Rain (Uncalibrated)": {
@@ -1087,15 +1108,15 @@
                         "description": "descriptions/MCIR_precip.md",
                         "vars": {
                             "minoffset": 0.21,
-                            "scalar": 1,
+                            "scalar": 1.0,
                             "thresold": 0.8,
                             "lut": "lut/WXtoImg-NO_mod_APT.png"
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "HVC (channel 1)": {
@@ -1106,9 +1127,9 @@
                         "geo_correct": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "HVC (channel 2)": {
@@ -1119,9 +1140,9 @@
                         "geo_correct": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     }
                 },
@@ -1333,19 +1354,263 @@
                         "geo_correct": true,
                         "autogen": true
                     },
+"Sea Surface Temperature": {
+                        "channels": "cch5",
+                        "description": "descriptions/SST.md",
+                        "lua": "scripted_compos/sst_landmask.lua",
+                        "vars": {
+                            "minval": 0,
+                            "maxval": 1
+                        },
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 270.65,
+                                "max": 307.15
+                            }
+                        },
+                        "autogen": false
+                    },
+                    "Night Time Fire Detection (transparent)": {
+                        "channels": "cch4, cch5",
+                        "description": "descriptions/NightFire.md",
+                        "lua": "scripted_compos/NightFire.lua",
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            },
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            }
+                        },
+                        "autogen": false
+                    },
                     "NO enhancement": {
-                        "lut": "lut/WXtoImg-NO_mod_meteor.png",
-                        "channels": "ch4, ch5",
+                        "lut": "lut/cal/WXtoImg-NO.png",
                         "description": "descriptions/NO.md",
-                        "autogen": true,
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        }
+                    },
+                    "ZA enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "lut": "lut/cal/WXtoImg-ZA.png",
+                        "description": "descriptions/ZA.md",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MB enhancement": {
+                        "lut": "lut/cal/WXtoImg-MB.png",
+                        "description": "descriptions/MB.md",
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MD enhancement": {
+                        "lut": "lut/cal/WXtoImg-MD.png",
+                        "description": "descriptions/MD.md",
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "BD enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/BD.md",
+                        "lut": "lut/cal/WXtoImg-BD.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "CC enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/CC.md",
+                        "lut": "lut/cal/WXtoImg-CC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "EC enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/EC.md",
+                        "lut": "lut/cal/WXtoImg-EC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HE enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HE.md",
+                        "lut": "lut/cal/WXtoImg-HE.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HF enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HF.md",
+                        "lut": "lut/cal/WXtoImg-HF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JF enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JF.md",
+                        "lut": "lut/cal/WXtoImg-JF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JJ enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JJ.md",
+                        "lut": "lut/cal/WXtoImg-JJ.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "TA enhancement": {
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/TA.md",
+                        "lut": "lut/cal/WXtoImg-TA.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "Enhanced IR": {
+                        "channels": "cch5",
+                        "description": "descriptions/EnhancedIR.md",
+                        "lut": "lut/cal/EnhancedIR.png",
+                        "autogen": false,
                         "geo_correct": true,
-                        "individual_equalize": true,
-                        "draw_map_overlay": true,
-                        "borders_color": [
-                            1,
-                            1,
-                            0
-                        ]
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 300
+                            }
+                        }
+                    },
+                    "Enhanced IR (Transparent)": {
+                        "equation": "cch5, 0, 0, cch5 > 0.99 ? 1 : 0",
+                        "description": "descriptions/EnhancedIR.md",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "apply_lut": true,
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 241
+                            }
+                        }
+                    },
+                    "Color general cloud IR": {
+                        "channels": "cch5",
+                        "description": "descriptions/ColorGeneralIR.md",
+                        "lut": "lut/cal/Multispectral.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
+                    },
+                    "Color convection longwave IR": {
+                        "channels": "cch5",
+                        "description": "descriptions/ConvectionLWIR.md",
+                        "lut": "lut/cal/ConvectionLWIR.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
                     },
                     "MCIR": {
                         "channels": "ch4",
@@ -1353,17 +1618,17 @@
                         "description": "descriptions/MCIR.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "MSA": {
@@ -1372,17 +1637,17 @@
                         "description": "descriptions/MSA.md",
                         "geo_correct": true,
                         "vars": {
-                            "minoffset": 0,
-                            "scalar": 1,
-                            "thresold": 0,
+                            "minoffset": 0.0,
+                            "scalar": 1.0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": false
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "Channel 4 Equalized": {
@@ -1459,9 +1724,9 @@
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1473,9 +1738,9 @@
                             "lut": "goes/abi/usradioguycustomlut.png"
                         },
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": false // Needs to be optimized...
                     },
@@ -1503,9 +1768,9 @@
                         },
                         "lua": "scripted_compos/split_difference.lua",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": false
                     },
@@ -1547,9 +1812,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1567,9 +1832,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1587,9 +1852,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1606,9 +1871,9 @@
                         },
                         "lut": "lut/cal/Dirty_IR_CIRA.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1626,9 +1891,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -1646,9 +1911,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -1665,9 +1930,9 @@
                         },
                         "lut": "lut/cal/abi_ir_7.png",
                         "borders_color": [
-                            0,
-                            0,
-                            0
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -1676,9 +1941,9 @@
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "calib_cfg": {
                             "cch2": {
@@ -1699,9 +1964,9 @@
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            0,
-                            0,
-                            0
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "calib_cfg": {
                             "cch7": {
@@ -1727,9 +1992,9 @@
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "calib_cfg": {
                             "cch2": {
@@ -1777,9 +2042,9 @@
                         "cpp": "goes_abi_false_color",
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Day Cloud Convection": {
@@ -1787,9 +2052,9 @@
                         "draw_map_overlay": true,
                         "remove_background": true,
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "calib_cfg": {
                             "cch3": {
@@ -1819,9 +2084,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ]
                     },
                     "Clean Longwave IR Window Band": {
@@ -1838,9 +2103,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     }
                 }
@@ -1856,15 +2121,15 @@
                         "vars": {
                             "minoffset": 0.3,
                             "scalar": 1.2,
-                            "thresold": 0,
+                            "thresold": 0.0,
                             "blend": true,
                             "invert": true
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ],
                         "autogen": false
                     },
@@ -1882,9 +2147,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1902,9 +2167,9 @@
                         },
                         "lut": "lut/cal/abi_ir_11-15.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1921,9 +2186,9 @@
                         },
                         "lut": "lut/cal/Dirty_IR_CIRA.png",
                         "borders_color": [
-                            1,
-                            1,
-                            1
+                            1.0,
+                            1.0,
+                            1.0
                         ],
                         "autogen": true
                     },
@@ -1941,9 +2206,9 @@
                         },
                         "lut": "lut/cal/abi_wv_8-10.png",
                         "borders_color": [
-                            1,
-                            0,
-                            0
+                            1.0,
+                            0.0,
+                            0.0
                         ],
                         "autogen": true
                     },
@@ -2385,9 +2650,9 @@
                         "individual_equalize": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     }
                 }
@@ -2488,9 +2753,9 @@
                         "individual_equalize": true,
                         "draw_map_overlay": true,
                         "borders_color": [
-                            1,
-                            1,
-                            0
+                            1.0,
+                            1.0,
+                            0.0
                         ]
                     },
                     "AVHRR 543b IR False Color": {

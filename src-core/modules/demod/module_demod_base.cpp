@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/config.h"
+#include "common/dsp_source_sink/format_notated.h"
 
 namespace demod
 {
@@ -278,7 +279,7 @@ namespace demod
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz").c_str());
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)

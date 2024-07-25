@@ -93,6 +93,8 @@ namespace satdump
         upcoming_pass_points.clear();
         next_aos_time = 0;
         next_los_time = 0;
+        northbound_cross = false;
+        southbound_cross = false;
 
         if (tracking_mode == TRACKING_HORIZONS)
         {
@@ -201,6 +203,35 @@ namespace satdump
 
             sat_next_aos_pos.az = next_aos.azimuth * RAD_TO_DEG;
             sat_next_aos_pos.el = next_aos.elevation * RAD_TO_DEG;
+            sat_next_los_pos.az = next_los.azimuth * RAD_TO_DEG;
+            sat_next_los_pos.el = next_los.elevation * RAD_TO_DEG;
+
+            if(meridian_flip_correction)
+            {
+                //Determine pass direction
+                predict_position satellite_orbit2;
+                predict_observation observation_pos_cur;
+                predict_observation observation_pos_prev;
+                double currTime = next_aos_time;
+                predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
+                predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_prev);
+                currTime += 1.0;
+                do
+                {
+                    predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
+                    predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_cur);
+
+                    if(std::abs(observation_pos_prev.azimuth - observation_pos_cur.azimuth) > (180 * DEG_TO_RAD)) {
+                        if(next_los.azimuth >  (90 * DEG_TO_RAD) && next_los.azimuth <  (270 * DEG_TO_RAD)) {
+                            southbound_cross = true;
+                        } else {
+                            northbound_cross = true;
+                        }
+                    }
+                    currTime += 1.0;
+                    observation_pos_prev = observation_pos_cur;
+                } while(next_los_time > currTime);
+            }
 
             if (true) //(is_gui)
             {
