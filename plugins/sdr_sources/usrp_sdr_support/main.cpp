@@ -21,9 +21,10 @@ public:
             // Theme Selection
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextUnformatted("Use default UHD Images Path");
+            ImGui::TextUnformatted("Use default UHD firmware images path");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Checkbox("##usrpimagespathcheckbox", &use_default);
+            if (ImGui::Checkbox("##usrpimagespathcheckbox", &use_default) && use_default)
+                file_select->setPath("");
             if (!use_default)
             {
                 ImGui::TableNextRow();
