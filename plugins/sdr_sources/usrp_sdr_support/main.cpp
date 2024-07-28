@@ -5,9 +5,10 @@
 #include "usrp_sdr.h"
 
 #ifdef _WIN32
-#define setenv _putenv_s
-#else
-#include <stdlib.h>
+errno_t setenv(const char* name, const char* value, int)
+{
+    _putenv_s(name, value);
+}
 #endif
 
 std::shared_ptr<FileSelectWidget> file_select;
@@ -41,7 +42,7 @@ public:
 
     static void save()
     {
-        setenv("UHD_IMAGES_DIR", file_select->getPath().c_str());
+        setenv("UHD_IMAGES_DIR", file_select->getPath().c_str(), 1);
         satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"] = nlohmann::json::object();
         if (file_select->getPath() != "")
             satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"] = file_select->getPath();
@@ -64,7 +65,7 @@ public:
             satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"] != "")
         {
             file_select->setPath(satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"]);
-            setenv("UHD_IMAGES_DIR", file_select->getPath().c_str());
+            setenv("UHD_IMAGES_DIR", file_select->getPath().c_str(), 1);
         }
     }
 
