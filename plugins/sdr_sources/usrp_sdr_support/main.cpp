@@ -7,7 +7,7 @@
 #ifdef _WIN32
 errno_t setenv(const char* name, const char* value, int)
 {
-    _putenv_s(name, value);
+    return _putenv_s(name, value);
 }
 #endif
 
