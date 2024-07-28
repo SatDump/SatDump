@@ -6,6 +6,8 @@
 
 #ifdef _WIN32
 #define setenv _putenv_s
+#else
+#include <stdlib.h>
 #endif
 
 std::shared_ptr<FileSelectWidget> file_select;
