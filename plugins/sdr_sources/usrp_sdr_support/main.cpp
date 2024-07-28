@@ -21,7 +21,7 @@ public:
             // Theme Selection
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextUnformatted("Custom UHD Images Path");
+            ImGui::TextUnformatted("Use default UHD Images Path");
             ImGui::TableSetColumnIndex(1);
             ImGui::Checkbox("##usrpimagespathcheckbox", &use_default);
             if (!use_default)
