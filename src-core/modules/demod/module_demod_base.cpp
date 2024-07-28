@@ -279,7 +279,7 @@ namespace demod
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz").c_str());
+                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz", 4).c_str());
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)

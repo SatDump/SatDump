@@ -61,7 +61,7 @@ size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::str
     {
         s->append((char *)contents, newLength);
     }
-    catch (std::bad_alloc &e)
+    catch (std::bad_alloc &)
     {
         return 0;
     }
