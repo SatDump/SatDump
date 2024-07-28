@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -Eeo pipefail
 if [[ -z "$GITHUB_WORKSPACE" ]]
 then
     GITHUB_WORKSPACE=".."
@@ -109,7 +109,7 @@ cd ../../..
 rm -rf airspyhf
 
 echo "Building RTL-SDR..."
-git clone https://github.com/osmocom/rtl-sdr --depth 1 -b v2.0.1
+git clone https://github.com/osmocom/rtl-sdr --depth 1 -b v2.0.2
 cd rtl-sdr
 mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIRS=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
@@ -172,8 +172,10 @@ cd ../../..
 rm -rf bladeRF
 
 echo "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.6.0.0
+git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
 cd uhd/host
+sed -i '' 's/ appropriately or"/");/g' lib/utils/paths.cpp                          #Disable non-applicable help
+sed -i '' '/follow the below instructions to download/{N;d;}' lib/utils/paths.cpp
 mkdir build && cd build
 cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
 make -j$(sysctl -n hw.logicalcpu)
