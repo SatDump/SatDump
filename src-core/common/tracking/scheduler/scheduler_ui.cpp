@@ -106,7 +106,8 @@ namespace satdump
         elev_width = ImGui::GetCursorPosX() - elev_width;
         ImGui::Checkbox("Stop SDR When IDLE", &autotrack_cfg.stop_sdr_when_idle);
         elev_width += ImGui::GetItemRectSize().x - ImGui::CalcTextSize("Minimum Elevation").x - imgui_style.ItemInnerSpacing.x;
-        ImGui::Checkbox("Local Time", &autotrack_cfg.use_localtime);
+        ImGui::Checkbox("Display Local Time", &autotrack_cfg.use_localtime);
+        ImGui::SetItemTooltip("%s", "Displays times as local time throughout the scheduler UI only.\nAll other times are in UTC.");
         ImGui::SetNextItemWidth(elev_width);
         ImGui::InputFloat("Minimum Elevation", &autotrack_cfg.autotrack_min_elevation);
         ImGui::EndGroup();
