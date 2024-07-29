@@ -128,27 +128,10 @@ jobs:
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
   build_android:
-    runs-on: ubuntu-latest
+    runs-on: macos-14 #Much faster than x64 runners
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Add gradle PPA
-        run: sudo add-apt-repository ppa:cwchien/gradle -y
-
-      - name: Update repositories
-        run: sudo apt update
-
-      - name: Install packages
-        run: sudo apt install -y cmake ninja-build openjdk-11-jdk wget unzip gradle build-essential git python3-mako
-
-      # Setup Android SDK, and auto-accept licenses
-      - name: Install Android SDK
-        run: wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip && mkdir android-sdk-linux && unzip -qq android-sdk.zip -d android-sdk-linux && export ANDROID_HOME=./android-sdk-linux && echo y | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --update && (echo y; echo y; echo y; echo y; echo y; echo y; echo y; echo y) | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=android-sdk-linux --licenses
-
-      # Call SDKManager to install the Android NDK
-      - name: Install Android NDK
-        run: $GITHUB_WORKSPACE/android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=$GITHUB_WORKSPACE/android-sdk-linux --install "ndk;25.2.9519653" --channel=3
 
       - name: Get dependency version
         id: android-deps-ver
@@ -164,11 +147,11 @@ jobs:
       - name: Build dependencies
         if: steps.android-deps.outputs.cache-hit != 'true'
         shell: bash
-        run: git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && sh build.sh && rm .git
+        run: python3 -m venv ../venv && source ../venv/bin/activate && pip3 install mako && git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && sh build.sh && rm .git && deactivate
 
       - name: Build
         shell: bash
-        run: unset ANDROID_SDK_ROOT && export ANDROID_HOME=$GITHUB_WORKSPACE/android-sdk-linux && cd $GITHUB_WORKSPACE/android && gradle assembleDebug
+        run: cd $GITHUB_WORKSPACE/android && gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
