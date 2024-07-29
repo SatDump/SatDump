@@ -128,7 +128,7 @@ jobs:
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
   build_android:
-    runs-on: macos-14
+    runs-on: macos-14 #Much faster than x64 runners
 
     steps:
       - uses: actions/checkout@v4
@@ -137,15 +137,15 @@ jobs:
         id: android-deps-ver
         run: commit=$(git -C $GITHUB_WORKSPACE submodule status | grep android) && echo deps_version=${commit:1:6} >> $GITHUB_OUTPUT
 
-#      - name: Cache dependencies
-#        uses: actions/cache@v4
-#        id: android-deps
-#        with:
-#          path: android/deps
-#          key: android-deps-${{steps.android-deps-ver.outputs.deps_version}}
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: android-deps
+        with:
+          path: android/deps
+          key: android-deps-${{steps.android-deps-ver.outputs.deps_version}}
 
       - name: Build dependencies
-#        if: steps.android-deps.outputs.cache-hit != 'true'
+        if: steps.android-deps.outputs.cache-hit != 'true'
         shell: bash
         run: python3 -m venv ../venv && source ../venv/bin/activate && pip3 install mako && git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && sh build.sh && rm .git && deactivate
 
