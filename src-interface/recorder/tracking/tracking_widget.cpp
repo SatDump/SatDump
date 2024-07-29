@@ -103,6 +103,7 @@ namespace satdump
 
             if (rotator_handler->is_connected())
                 style::beginDisabled();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"))
             {
                 if (selected_rotator_handler == 0)

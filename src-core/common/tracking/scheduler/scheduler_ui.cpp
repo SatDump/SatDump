@@ -106,6 +106,7 @@ namespace satdump
         elev_width = ImGui::GetCursorPosX() - elev_width;
         ImGui::Checkbox("Stop SDR When IDLE", &autotrack_cfg.stop_sdr_when_idle);
         elev_width += ImGui::GetItemRectSize().x - ImGui::CalcTextSize("Minimum Elevation").x - imgui_style.ItemInnerSpacing.x;
+        ImGui::Checkbox("Local Time", &autotrack_cfg.use_localtime);
         ImGui::SetNextItemWidth(elev_width);
         ImGui::InputFloat("Minimum Elevation", &autotrack_cfg.autotrack_min_elevation);
         ImGui::EndGroup();
@@ -133,7 +134,7 @@ namespace satdump
                                      style::theme.widget_bg);
 
             time_t tttime = curr_time;
-            std::tm *timeReadable = gmtime(&tttime);
+            std::tm *timeReadable = (autotrack_cfg.use_localtime ? localtime(&tttime) : gmtime(&tttime));
             int curr_hour = timeReadable->tm_hour;
             int offset = d_pplot_size / 12 * (timeReadable->tm_min / 60.0);
             ImGui::Dummy(ImVec2(0, 0));
@@ -185,8 +186,8 @@ namespace satdump
                                                        ImVec2(ImGui::GetCursorScreenPos().x + cpass_xe, ImGui::GetCursorScreenPos().y + thsat_ye)))
                             ImGui::SetTooltip("%s\nAOS : %s\nLOS : %s\nEl : %.2f",
                                               name.c_str(),
-                                              timestamp_to_string(cpass.aos_time).c_str(),
-                                              timestamp_to_string(cpass.los_time).c_str(),
+                                              timestamp_to_string(cpass.aos_time, autotrack_cfg.use_localtime).c_str(),
+                                              timestamp_to_string(cpass.los_time, autotrack_cfg.use_localtime).c_str(),
                                               cpass.max_elevation);
                     }
                 }
@@ -379,7 +380,7 @@ namespace satdump
             std::vector<double> color_white = {1, 1, 1};
 
             time_t tttime = curr_time;
-            std::tm *timeReadable = gmtime(&tttime);
+            std::tm *timeReadable = (autotrack_cfg.use_localtime ? localtime(&tttime) : gmtime(&tttime));
             int curr_hour = timeReadable->tm_hour;
             int offset = d_pplot_size / 12 * (timeReadable->tm_min / 60.0);
             //              ImGui::Dummy(ImVec2(0, 0));

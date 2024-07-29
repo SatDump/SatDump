@@ -13,6 +13,7 @@ namespace satdump
         float autotrack_min_elevation = 0;
         bool stop_sdr_when_idle = false;
         bool multi_mode = false;
+        bool use_localtime = false;
     };
 
     inline void to_json(nlohmann::ordered_json &j, const AutoTrackCfg &v)
@@ -20,6 +21,7 @@ namespace satdump
         j["autotrack_min_elevation"] = v.autotrack_min_elevation;
         j["stop_sdr_when_idle"] = v.stop_sdr_when_idle;
         j["multi_mode"] = v.multi_mode;
+        j["use_localtime"] = v.use_localtime;
     }
 
     inline void from_json(const nlohmann::ordered_json &j, AutoTrackCfg &v)
@@ -30,6 +32,8 @@ namespace satdump
             v.stop_sdr_when_idle = j["stop_sdr_when_idle"];
         if (j.contains("multi_mode"))
             v.multi_mode = j["multi_mode"];
+        if (j.contains("use_localtime"))
+            v.use_localtime = j["use_localtime"];
     }
 
     struct TrackedObject
@@ -123,9 +127,9 @@ namespace satdump
                     if (j["downlinks"][i].contains("baseband_decimation"))
                         v.downlinks[i].baseband_decimation = j["downlinks"][i]["baseband_decimation"];
                     if (j["downlinks"][i].contains("work_params"))
-                        for (auto& step : v.downlinks[i].pipeline_selector->selected_pipeline.steps)
+                        for (auto &step : v.downlinks[i].pipeline_selector->selected_pipeline.steps)
                             if(j["downlinks"][i]["work_params"].contains(step.level_name))
-                                for (auto& this_module : step.modules)
+                                for (auto &this_module : step.modules)
                                     if(j["downlinks"][i]["work_params"][step.level_name].contains(this_module.module_name))
                                         this_module.parameters = merge_json_diffs(this_module.parameters,
                                             j["downlinks"][i]["work_params"][step.level_name][this_module.module_name]);
