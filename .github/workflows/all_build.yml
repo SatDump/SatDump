@@ -144,6 +144,10 @@ jobs:
 #          path: android/deps
 #          key: android-deps-${{steps.android-deps-ver.outputs.deps_version}}
 
+      - name: Install Mako
+#        if: steps.android-deps.outputs.cache-hit != 'true'
+        run: pip3 install mako
+
       - name: Build dependencies
 #        if: steps.android-deps.outputs.cache-hit != 'true'
         shell: bash
