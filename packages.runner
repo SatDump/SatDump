@@ -1,3 +1,4 @@
+intel-opencl-icd
 libad9361-0
 libairspy0
 libairspyhf1
@@ -12,6 +13,7 @@ libnng1
 libomp5-14
 libopengl0
 libpng16-16
+libportaudiocpp0
 librtlsdr0
 libtiff6
 libuhd4.3.0
