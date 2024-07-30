@@ -20,7 +20,8 @@ services:
 #        source: './srv'
 #        target: '/srv'
 #      - type: 'bind'  # for X11 usage
-#        source: '/tmp/.X11-unix'
+#        source: '/tmp/.X11-unix'  # on Linux
+#        source: '/run/desktop/mnt/host/wslg/.X11-unix'  # on Windows WSL2
 #        target: '/tmp/.X11-unix'
       - type: 'volume'  # persistent storage of configs
         source: 'satdump-config'
