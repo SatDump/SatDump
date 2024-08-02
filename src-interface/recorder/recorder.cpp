@@ -475,8 +475,7 @@ namespace satdump
                     // Preset Menu
                     if (pipeline_selector.selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ?
-                            pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
                             for (int n = 0; n < (int)pipeline_selector.selected_pipeline.preset.frequencies.size(); n++)
                             {
@@ -502,15 +501,23 @@ namespace satdump
                     if (!assume_started)
                         style::beginDisabled();
 
+                    bool assume_stopping_processing = is_stopping_processing;
                     if (!assume_processing)
                     {
                         if (ImGui::Button("Start###startprocessing"))
                             start_processing();
                     }
+                    else if (assume_stopping_processing)
+                    {
+                        style::beginDisabled();
+                        ImGui::Button("Stopping...##stoppingprocessing");
+                        style::endDisabled();
+                    }
                     else
                     {
                         if (ImGui::Button("Stop##stopprocessing"))
-                            stop_processing();
+                            ui_thread_pool.push([=](int)
+                                                { stop_processing(); });
                     }
 
                     error.draw();

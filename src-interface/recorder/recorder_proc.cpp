@@ -258,10 +258,11 @@ namespace satdump
     {
         if (is_processing)
         {
+            is_stopping_processing = true;
             logger->trace("Stop pipeline...");
-            is_processing = false;
             splitter->set_enabled("live", false);
             live_pipeline->stop();
+            is_stopping_processing = is_processing = false;
 
             if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
             {
