@@ -98,7 +98,7 @@ General build instructions (Brew and XCode command line tools required)
 brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
 # Clone SatDump
-git clone https://github.com/altillimity/satdump.git && cd satdump
+git clone https://github.com/SatDump/SatDump.git && cd SatDump
 
 # Build dependencies
 ./macOS/Configure-vcpkg.sh
@@ -185,7 +185,7 @@ rm -rf nng
 #### Build SatDump
 ```
 git clone https://github.com/SatDump/SatDump.git
-cd satdump
+cd SatDump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
