@@ -230,7 +230,16 @@ Building and running under docker is a nice way to separate the build environmen
 The build process is a multistage build that uses two images, one with the -dev packages and another for the runtime.
 This means that the runtime image can be kept smaller, although the disk space is still needed to complete the build.
 
+To match the system user for the shared files get the same owner, set these in `.env` before building the image.
+The user inside the container will always be named `satdump`, but the uid and gid will match the system user.
+
 ```bash
+# set the current uid and gid 
+printf "HOST_UID: $(id -u)\nHOST_GID: $(id -g)\n" > .env
+
+# create the shared directory
+mkdir -p srv
+
 # Build the images with compose, 8 parallel
 docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
 
@@ -238,9 +247,15 @@ docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
 docker compose run --rm -it satdump
 ```
 
+The command that is started inside the container can either be specified at the end on the commandline mentioned above, 
+or put in the `.env` with for example `COMMAND: satdump_sdr_server`. If you want to run the sdr server in the background
+and have it start automatically on boot, simply launch the container with `docker compose up -d` and check the logs with
+`docker compose logs -f`
+
 #### X11 under docker
 
 To use the `satdump-ui` under docker you need to make a few changes.
+It is possible to run this on WSL2 as well, change the source to `/run/desktop/mnt/host/wslg/.X11-unix` instead.
 In the [docker-compose.yml](docker-compose.yml) you need to uncomment a few lines and make it looks like this:
 ```yaml
       - type: 'bind'
@@ -248,25 +263,9 @@ In the [docker-compose.yml](docker-compose.yml) you need to uncomment a few line
         target: '/tmp/.X11-unix'
 ```
 
-The user is root in the container, so if you launch a gui as root you will probably get this error message:
+If the user in the container is not authorized for X11, you will probably get this error message:
 `Authorization required, ...`
 This is due to the ACL controlling access to your screen.
 There's several ways to solve this, a few very broad and insecure, but the following should be acceptable on a non-shared system.
 
-On the host, run: `xhost si:localuser:root` , then to start the ui: `docker compose run --rm -it satdump satdump-ui`
-
-#### Shared directory under docker
-
-The files stored in the container are normally removed when it is exited, except the configs (/root/.config/) that is bind-mounted to a persistent volume.
-
-The working dir `/srv` can be bind-mounted to a directory on the host to allow easy storage and access, uncomment the lines in [docker-compose.yml](docker-compose.yml) like this:
-```yaml
-      - type: 'bind'
-        source: './srv'
-        target: '/srv'
-```
-
-Create the directory `mkdir -p srv` before starting the container.
-
-Depending on the docker settings, you might need to change the permissions on this directory to allow writing from the container.
-Note that by default the files created will be owned by root, which is from the container user.
+On the host, run: `xhost +local:docker` , then to start the ui: `docker compose run --rm -it satdump satdump-ui`
