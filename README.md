@@ -237,3 +237,36 @@ docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
 # Launch a shell inside the container/service
 docker compose run --rm -it satdump
 ```
+
+#### X11 under docker
+
+To use the `satdump-ui` under docker you need to make a few changes.
+In the [docker-compose.yml](docker-compose.yml) you need to uncomment a few lines and make it looks like this:
+```yaml
+      - type: 'bind'
+        source: '/tmp/.X11-unix'
+        target: '/tmp/.X11-unix'
+```
+
+The user is root in the container, so if you launch a gui as root you will probably get this error message:
+`Authorization required, ...`
+This is due to the ACL controlling access to your screen.
+There's several ways to solve this, a few very broad and insecure, but the following should be acceptable on a non-shared system.
+
+On the host, run: `xhost si:localuser:root` , then to start the ui: `docker compose run --rm -it satdump satdump-ui`
+
+#### Shared directory under docker
+
+The files stored in the container are normally removed when it is exited, except the configs (/root/.config/) that is bind-mounted to a persistent volume.
+
+The working dir `/srv` can be bind-mounted to a directory on the host to allow easy storage and access, uncomment the lines in [docker-compose.yml](docker-compose.yml) like this:
+```yaml
+      - type: 'bind'
+        source: './srv'
+        target: '/srv'
+```
+
+Create the directory `mkdir -p srv` before starting the container.
+
+Depending on the docker settings, you might need to change the permissions on this directory to allow writing from the container.
+Note that by default the files created will be owned by root, which is from the container user.
