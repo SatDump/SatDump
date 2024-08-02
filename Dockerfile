@@ -35,3 +35,17 @@ RUN apt -y update && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/local/src/satdump/build/satdump_*.deb /usr/local/src/
 RUN apt install /usr/local/src/satdump_*.deb
+
+# Add a user, possibility to map it to a user on the host to get the same uid & gid on files
+ARG HOST_UID=1000
+ARG HOST_GID=1000
+RUN groupadd -r -g ${HOST_GID} satdump && \
+	useradd -r -u ${HOST_UID} \
+            -g satdump \
+            -d /srv \
+            -s /bin/bash \
+            -G audio,dialout,plugdev \
+            -m \
+            satdump
+USER satdump
+WORKDIR /srv

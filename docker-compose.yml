@@ -2,11 +2,15 @@ services:
   satdump:
     build:
       context: .
+      args:
+        # default values, override with .env
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
     image: satdump:latest
-    command: bash
+    command: ${COMMAND:-bash}
     init: true
     network_mode: host
-    working_dir: '/srv'
+    working_dir: ${WORKDIR:-/srv}
     environment:
       - DISPLAY=${DISPLAY:-:0}
     device_cgroup_rules:
@@ -16,18 +20,12 @@ services:
     volumes:
       - type: 'tmpfs'
         target: '/tmp'
-#      - type: 'bind'  # map working dir to host
-#        source: './srv'
-#        target: '/srv'
+      - type: 'bind'  # map working dir to host
+        source: './srv'
+        target: '/srv'
 #      - type: 'bind'  # for X11 usage
 #        source: '/tmp/.X11-unix'  # on Linux
 #        source: '/run/desktop/mnt/host/wslg/.X11-unix'  # on Windows WSL2
 #        target: '/tmp/.X11-unix'
-      - type: 'volume'  # persistent storage of configs
-        source: 'satdump-config'
-        target: '/root/.config/'
     restart: 'unless-stopped'
     stop_grace_period: 3s
-
-volumes:
-  satdump-config:

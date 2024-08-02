@@ -13,3 +13,4 @@ resources/gk2a/EncryptionKeyMessage.bin
 .directory
 vcpkg/
 srv/
+.env
