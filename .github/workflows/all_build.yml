@@ -128,7 +128,7 @@ jobs:
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
   build_android:
-    runs-on: macos-14 #Much faster than x64 runners
+    runs-on: android-release
 
     steps:
       - uses: actions/checkout@v4
@@ -147,7 +147,7 @@ jobs:
       - name: Build dependencies
         if: steps.android-deps.outputs.cache-hit != 'true'
         shell: bash
-        run: python3 -m venv ../venv && source ../venv/bin/activate && pip3 install mako && git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && sh build.sh && rm .git && deactivate
+        run: git submodule update --init && cd $GITHUB_WORKSPACE/android/deps && export ANDROID_HOME=/home/owner/android-sdk-linux && sh build.sh && rm .git && deactivate
 
       - name: Build
         shell: bash
