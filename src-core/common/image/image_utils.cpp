@@ -43,21 +43,16 @@ namespace image
             {
                 for (size_t i = 0; i < height * width; i++)
                 {
-                    if (img1.get(3, i) == 0)
-                    {
+                    float ch1_alpha = img1.getf(3, i);
+                    float ch2_alpha = img2.getf(3, i);
+                    if (c == 3)
+                        img_b.setf(c, i, std::max(ch1_alpha, ch2_alpha));
+                    else if (ch1_alpha == 0)
                         img_b.set(c, i, img2.get(c, i));
-                        img_b.setf(3, i, 1);
-                    }
-                    else if (img2.get(3, i) == 0)
-                    {
+                    else if (ch2_alpha == 0)
                         img_b.set(c, i, img1.get(c, i));
-                        img_b.setf(3, i, 1);
-                    }
                     else
-                    {
-                        img_b.set(c, i, c == 3 ? 65535 : ((size_t(img1.get(c, i)) + size_t(img2.get(c, i))) / 2));
-                        img_b.setf(3, i, 1);
-                    }
+                        img_b.setf(c, i, (img1.getf(c, i) * ch1_alpha + img2.getf(c, i) * ch2_alpha) / 2);
                 }
             }
             else
