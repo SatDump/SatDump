@@ -27,11 +27,11 @@ namespace widgets
 		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
 	}
 
-	inline void digit_helper(int &i, uint64_t *frequency_hz, int64_t &change_by,
+	inline void digit_helper(int &i, uint64_t *wip_val, int64_t &change_by,
 							 ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top, bool allow_mousewheel)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-			change_by = -(*frequency_hz % (uint64_t)pow(10, i + 1));
+			change_by = -(*wip_val % (uint64_t)pow(10, i + 1));
 		ImGuiContext &g = *GImGui;
 		if (allow_mousewheel)
 			if (g.WheelingWindowReleaseTimer == 0.0f)
@@ -40,7 +40,7 @@ namespace widgets
 		{
 			// Handle Enter
 			if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
-				change_by = -(*frequency_hz % (uint64_t)pow(10, i + 1));
+				change_by = -(*wip_val % (uint64_t)pow(10, i + 1));
 
 			// Handle Arrow Keys
 			if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
@@ -58,7 +58,7 @@ namespace widgets
 			{
 				if (this_char >= '0' && this_char <= '9')
 				{
-					change_by = pow(10, i) * (this_char - '0' - (int64_t)(*frequency_hz / (uint64_t)pow(10, i) % 10));
+					change_by = pow(10, i) * (this_char - '0' - (int64_t)(*wip_val / (uint64_t)pow(10, i) % 10));
 					helper_right(i, digit_size, screen_pos, dot_width, top);
 				}
 			}
@@ -75,8 +75,10 @@ namespace widgets
 		}
 	}
 
-	bool FrequencyInput(const char *label, uint64_t *frequency_hz, float scale, bool allow_mousewheel)
+	bool AzElInput(const char *label, float *az_el_val)
 	{
+		uint64_t wip_val = (*az_el_val) * 1e3;
+
 		// Set up
 		ImGuiContext &g = *GImGui;
 		ImGuiStyle style = ImGui::GetStyle();
@@ -107,10 +109,11 @@ namespace widgets
 			ImGui::ItemAdd(total_bb, id, &frame_bb, ImGuiItemFlags_Inputable);
 		}
 
+#if 0
 		// Old-style input field
 		else
 		{
-			double frequency_mhz = *frequency_hz / 1e6;
+			double frequency_mhz = *wip_val / 1e6;
 			if (first_show_temp)
 				ImGui::SetKeyboardFocusHere();
 			bool retval = ImGui::InputDouble("##tempinput", &frequency_mhz);
@@ -122,10 +125,11 @@ namespace widgets
 
 			first_show_temp = false;
 			if (retval)
-				*frequency_hz = frequency_mhz * 1e6;
+				*wip_val = frequency_mhz * 1e6;
 			ImGui::PopID();
 			return retval;
 		}
+#endif
 
 		// Modern input
 		int64_t change_by = 0;
@@ -140,13 +144,13 @@ namespace widgets
 		// Calculate the total size
 		float target_size = digit_size.x * 12 + dot_size.x * 3;
 		float available_size = ImGui::GetContentRegionAvail().x - button_size.x - style.ItemSpacing.x * 2;
-		if (scale != 0.0f || available_size < target_size)
+		if (/*scale != 0.0f ||*/ available_size < target_size)
 		{
 			float freq_scale;
-			if (scale == 0.0f)
-				freq_scale = (available_size < 150.0f * ui_scale ? 150.0f * ui_scale : available_size) / target_size;
-			else
-				freq_scale = scale;
+			// if (scale == 0.0f)
+			freq_scale = (available_size < 150.0f * ui_scale ? 150.0f * ui_scale : available_size) / target_size;
+			//	else
+			//		freq_scale = scale;
 			freq_size *= freq_scale;
 			dot_size.x *= freq_scale;
 			dot_size.y *= freq_scale;
@@ -154,13 +158,13 @@ namespace widgets
 			digit_size.y *= freq_scale;
 		}
 
-		for (int i = 11; i >= 0; i--)
+		for (int i = 5; i >= 0; i--)
 		{
 			// Render the digit
 			ImGui::SetCursorPos(pos);
 			screen_pos = ImGui::GetCursorScreenPos();
 			char place_char[2];
-			int this_place = *frequency_hz / (uint64_t)pow(10, i) % 10;
+			int this_place = wip_val / (uint64_t)pow(10, i) % 10;
 			sprintf(place_char, "%d", this_place);
 			num_started = num_started || this_place != 0;
 			ImU32 font_color;
@@ -184,7 +188,7 @@ namespace widgets
 				else
 					change_by += pow(10, i);
 			}
-			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true, allow_mousewheel);
+			digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true, false);
 
 			// Handle "down" events
 			this_id = "bottombutton" + std::to_string(i);
@@ -200,7 +204,7 @@ namespace widgets
 				else
 					change_by -= pow(10, i);
 			}
-			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false, allow_mousewheel);
+			digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false, false);
 
 			// Add decimal, if needed
 			pos.x += digit_size.x;
@@ -213,21 +217,14 @@ namespace widgets
 			}
 		}
 
-		// Display Label
-		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + 1 * ui_scale + (digit_size.y / 2 - button_size.y / 2)));
-		if (ImGui::Button(display_label.c_str()))
-		{
-			enable_temp_input_on = id;
-			first_show_temp = true;
-		}
-
 		// Finish up
 		ImGui::SetCursorPosY(pos.y + digit_size.y + style.ItemSpacing.y);
 		ImGui::PopID();
-		if ((int64_t)(*frequency_hz) + change_by < 0 || *frequency_hz + change_by > 1e12)
+		if ((int64_t)(wip_val) + change_by < 0 || wip_val + change_by > 1e12)
 			change_by = 0;
 
-		*frequency_hz += change_by;
+		wip_val += change_by;
+		*az_el_val = wip_val / 1e3;
 		return change_by != 0;
 	}
 }
