@@ -116,9 +116,7 @@ int main_project(int argc, char *argv[])
     logger->info("Combining images...");
     if (target_cfg.contains("blend_mode") ? target_cfg["blend_mode"].get<bool>() : false) // Blend
     {
-        projected_image_result = layers_images[0];
-        for (int i = 1; i < (int)layers_images.size(); i++)
-            projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
+        projected_image_result = image::blend_images(layers_images);
     }
     else
     {
