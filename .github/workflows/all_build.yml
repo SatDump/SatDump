@@ -151,7 +151,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cd $GITHUB_WORKSPACE/android && export ANDROID_HOME=/home/owner/android-sdk-linux && gradle assembleDebug
+        run: cd $GITHUB_WORKSPACE/android && export ANDROID_HOME=/home/owner/android-sdk-linux && sh /home/owner/build_release.sh
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
