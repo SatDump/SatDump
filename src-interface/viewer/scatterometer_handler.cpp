@@ -190,11 +190,10 @@ namespace satdump
             if (!canBeProjected())
                 style::endDisabled();
             ImGui::EndGroup();
-            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && selected_visualization_id != 1)
             {
                 ImGui::BeginTooltip();
-                if (selected_visualization_id != 1)
-                    ImGui::TextColored(style::theme.red, "Select projection view first!");
+                ImGui::TextColored(style::theme.red, "Select projection view first!");
                 ImGui::EndTooltip();
             }
         }
