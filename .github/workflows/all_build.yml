@@ -156,8 +156,8 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-debug.apk
-          path: ${{runner.workspace}}/SatDump/android/app/build/outputs/apk/debug/app-debug.apk
+          name: SatDump-release.apk
+          path: ${{runner.workspace}}/SatDump/android/app/build/outputs/apk/release/app-release.apk
 
   build_ubuntu_2204:
     # The CMake configure and build commands are platform agnostic and should work equally
