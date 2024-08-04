@@ -502,9 +502,7 @@ namespace satdump
         logger->info("Combining images...");
         if (projections_mode_radio == 0) // Blend
         {
-            projected_image_result = layers_images[0];
-            for (int i = 1; i < (int)layers_images.size(); i++)
-                projected_image_result = image::blend_images(projected_image_result, layers_images[i]);
+            projected_image_result = image::blend_images(layers_images);
         }
         else if (projections_mode_radio == 1) // Overlay
         {

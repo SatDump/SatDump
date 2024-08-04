@@ -7,6 +7,8 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 
+#include "common/widgets/azel_input.h"
+
 namespace satdump
 {
     void ObjectTracker::rotatorth_run()
@@ -62,8 +64,8 @@ namespace satdump
                         }
                     }
 
-                    if (rot_current_req_pos.el < 0)
-                        rot_current_req_pos.el = 0;
+                    // if (rot_current_req_pos.el < 0)
+                    //     rot_current_req_pos.el = 0;
 
                     if (rot_current_reqlast_pos.az != rot_current_req_pos.az || rot_current_reqlast_pos.el != rot_current_req_pos.el)
                         if (rotator_handler->set_pos(rot_current_req_pos.az, rot_current_req_pos.el) != rotator::ROT_ERROR_OK)
@@ -172,9 +174,9 @@ namespace satdump
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::InputFloat("##Rot Az", &rot_current_req_pos.az);
+            widgets::AzElInput("##az", &rot_current_req_pos.az, !rotator_tracking);
             ImGui::TableSetColumnIndex(1);
-            ImGui::InputFloat("##Rot El", &rot_current_req_pos.el);
+            widgets::AzElInput("##el", &rot_current_req_pos.el, !rotator_tracking);
 
             if (rotator_arrowkeys_enable && !rotator_tracking)
             {
@@ -190,9 +192,9 @@ namespace satdump
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("%.3f", rot_current_pos.az);
+            widgets::AzElInput("##az", &rot_current_pos.az, false);
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.3f", rot_current_pos.el);
+            widgets::AzElInput("##el", &rot_current_pos.el, false);
 
             ImGui::EndTable();
         }

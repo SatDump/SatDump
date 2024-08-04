@@ -66,7 +66,7 @@ static void* mmap(void* start, size_t length, int prot, int flags, int fd, off_t
 	else
 		flProtect = PAGE_READONLY;
 
-	off_t end = length + offset;
+	size_t end = length + offset;
 	HANDLE mmap_fd, h;
 	if (fd == -1)
 		mmap_fd = INVALID_HANDLE_VALUE;

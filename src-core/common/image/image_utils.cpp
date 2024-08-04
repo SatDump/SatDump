@@ -28,36 +28,51 @@ namespace image
         return image_all;
     }
 
-    Image blend_images(Image &img1, Image &img2)
+    Image blend_images(std::vector<Image> &images)
     {
-        if (img1.depth() != img2.depth() || img1.depth() != 16 || img2.depth() != 16)
-            throw satdump_exception("blend_images must be the same bit depth, and 16");
+        if(images.size() == 0)
+            throw satdump_exception("No images passed!");
 
-        size_t width = std::min<int>(img1.width(), img2.width());
-        size_t height = std::min<int>(img1.height(), img2.height());
-        Image img_b(img1.depth(), width, height, img1.channels());
-        bool are_rgba = img1.channels() == 4 && img2.channels() == 4;
+        size_t width = images[0].width();
+        size_t height = images[0].height();
+        int channels = images[0].channels();
+        bool are_rgba = channels == 4;
 
-        for (int c = 0; c < img1.channels(); c++)
+        for (Image &this_img : images)
+        {
+            if(this_img.depth() != 16)
+                throw satdump_exception("blend_images must be the same bit depth, and 16");
+            width = std::min(width, this_img.width());
+            height = std::min(height, this_img.height());
+            are_rgba &= this_img.channels() == 4;
+        }
+
+        Image img_b(16, width, height, channels);
+
+        for (int c = 0; c < channels; c++)
         {
             if (are_rgba)
             {
                 for (size_t i = 0; i < height * width; i++)
                 {
-                    if (img1.get(3, i) == 0)
+                    if (c == 3)
                     {
-                        img_b.set(c, i, img2.get(c, i));
-                        img_b.setf(3, i, 1);
-                    }
-                    else if (img2.get(3, i) == 0)
-                    {
-                        img_b.set(c, i, img1.get(c, i));
-                        img_b.setf(3, i, 1);
+                        double final_alpha = 0.0;
+                        for (Image &this_img : images)
+                            final_alpha = std::max(final_alpha, this_img.getf(3, i));
+                        img_b.setf(c, i, final_alpha);
                     }
                     else
                     {
-                        img_b.set(c, i, c == 3 ? 65535 : ((size_t(img1.get(c, i)) + size_t(img2.get(c, i))) / 2));
-                        img_b.setf(3, i, 1);
+                        float num_layers = 0.0f;
+                        double final_val = 0.0;
+                        for (Image &this_img : images)
+                        {
+                            final_val += this_img.getf(c, i) * this_img.getf(3, i);
+                            num_layers += this_img.getf(3, i);
+                        }
+
+                        img_b.setf(c, i, final_val / num_layers);
                     }
                 }
             }
@@ -65,12 +80,18 @@ namespace image
             {
                 for (size_t i = 0; i < height * width; i++)
                 {
-                    if ((img1.channels() == 3 ? (uint64_t)img1.get(0, i) + (uint64_t)img1.get(1, i) + (uint64_t)img1.get(2, i) : img1.get(c, i)) == 0)
-                        img_b.set(c, i, img2.get(c, i));
-                    else if ((img2.channels() == 3 ? (uint64_t)img2.get(0, i) + (uint64_t)img2.get(1, i) + (uint64_t)img2.get(2, i) : img2.get(c, i)) == 0)
-                        img_b.set(c, i, img1.get(c, i));
-                    else
-                        img_b.set(c, i, (size_t(img1.get(c, i)) + size_t(img2.get(c, i))) / 2);
+                    size_t num_layers = images.size();
+                    double final_val = 0.0f;
+                    for (Image& this_img : images)
+                    {
+                        float layer_val = this_img.getf(c, i);
+                        if (layer_val == 0)
+                            num_layers--;
+                        else
+                            final_val += layer_val;
+                    }
+
+                    img_b.setf(c, i, final_val / num_layers);
                 }
             }
         }

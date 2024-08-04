@@ -1,11 +1,12 @@
 #include "format_notated.h"
 #include <cstdint>
 #include <sstream>
+#include <iomanip>
 #include <vector>
 #include <type_traits>
 
 template <typename T>
-std::string format_notated(T val, std::string units)
+std::string format_notated(T val, std::string units, int num_decimals)
 {
     std::ostringstream render_stream;
     double display_double;
@@ -50,12 +51,15 @@ std::string format_notated(T val, std::string units)
         display_suffix = format_spacing + "P" + units;
     }
 
+    if(num_decimals >= 0)
+        render_stream << std::setprecision(num_decimals) << std::fixed;
+
     render_stream << display_double << display_suffix;
     return render_stream.str();
 }
 
-template std::string format_notated(uint64_t val, std::string units);
-template std::string format_notated(int64_t val, std::string units);
-template std::string format_notated(int val, std::string units);
-template std::string format_notated(float val, std::string units);
-template std::string format_notated(double val, std::string units);
+template std::string format_notated(uint64_t, std::string, int);
+template std::string format_notated(int64_t, std::string, int);
+template std::string format_notated(int, std::string, int);
+template std::string format_notated(float, std::string, int);
+template std::string format_notated(double, std::string, int);

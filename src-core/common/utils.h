@@ -135,7 +135,7 @@ int perform_http_request(std::string url, std::string &result);
 // Perform a HTTP Request on the provided URL and return the result as a string, with POST data
 int perform_http_request_post(std::string url_str, std::string &result, std::string post_req);
 
-std::string timestamp_to_string(double timestamp);
+std::string timestamp_to_string(double timestamp, bool local = false);
 
 inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 {

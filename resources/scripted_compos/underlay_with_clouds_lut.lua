@@ -37,6 +37,8 @@ function process()
     ch1_equal = get_channel_image(1)
     image_equalize(ch0_equal)
     image_equalize(ch1_equal)
+    ch0_scale = 2 ^ ch0_equal:depth()
+    ch1_scale = 2 ^ ch0_equal:depth()
 
     pos = geodetic_coords_t.new()
     for x = 0, width - 1, 1 do
@@ -44,10 +46,9 @@ function process()
 
             if not sat_proj:get_position(x, y, pos) then
                 x2, y2 = equ_proj:forward(pos.lon, pos.lat)
-
-                ch1_val = ch1_equal:get((y * width) + x) / 65535.0
+                ch1_val = ch1_equal:get((y * width) + x) / ch0_scale
                 lut_y = (ch1_val - cfg_offset) * cfg_scalar * lut_height
-                lut_x = ((ch0_equal:get((y * width) + x) / 65535.0) - cfg_offset) * cfg_scalar * lut_width
+                lut_x = ((ch0_equal:get((y * width) + x) / ch1_scale) - cfg_offset) * cfg_scalar * lut_width
 
                 if lut_y >= lut_height then
                     lut_y = lut_height - 1
