@@ -837,6 +837,8 @@ namespace fengyun3
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
+                    if (i == 4 || i == 5)
+                        mersi::mersi_offset_interleaved(image, 40, -2);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi3_products.images.push_back({"MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});
