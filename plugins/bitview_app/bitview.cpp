@@ -74,7 +74,7 @@ namespace satdump
             {
                 current_container = cont;
             }
-            ImGui::TreePush(std::string("##BitViewerTree" + cont->getName()).c_str());
+            ImGui::TreePush(std::string("##BitViewerTree" + cont->getID()).c_str());
 
             bool del = false;
             { // Closing button
@@ -106,11 +106,20 @@ namespace satdump
     {
         if (is_busy)
             style::beginDisabled();
-        if (ImGui::CollapsingHeader("Files##bitview"))
+        if (ImGui::CollapsingHeader("Files##bitview", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Text("Load File :");
             if (select_bitfile_dialog.draw() && select_bitfile_dialog.isValid())
-                all_bit_containers.push_back(std::make_shared<BitContainer>(std::filesystem::path(select_bitfile_dialog.getPath()).stem().string(), select_bitfile_dialog.getPath()));
+            {
+                try
+                {
+                    all_bit_containers.push_back(std::make_shared<BitContainer>(std::filesystem::path(select_bitfile_dialog.getPath()).stem().string(), select_bitfile_dialog.getPath()));
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Could not load file: %s", e.what());
+                }
+            }
 
             ImGui::Separator();
 

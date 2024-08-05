@@ -16,6 +16,8 @@ namespace satdump
         const size_t d_chunk_size = 512;
         size_t d_file_memory_size;
         uint8_t *d_file_memory_ptr;
+        int fd;
+        char unique_id[16] = { 0 };
 
     private:
         struct PartImage
@@ -34,7 +36,7 @@ namespace satdump
         std::vector<PartImage> image_parts;
 
     private:
-        uint32_t *wip_texture_buffer;
+        uint32_t *wip_texture_buffer = nullptr;
 
         bool force_update_all = false;
         bool update = false;
@@ -53,6 +55,7 @@ namespace satdump
         ~BitContainer();
 
         std::string getName() { return d_name; }
+        std::string getID() { return std::string(unique_id); }
 
         void init_bitperiod();
         void forceUpdateAll() { force_update_all = true; }

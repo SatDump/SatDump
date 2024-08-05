@@ -9,7 +9,7 @@ namespace widgets
 {
 	inline void helper_left(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
 	{
-		if (i == 11)
+		if (i == 5)
 			return;
 		float x = screen_pos.x - digit_size.x / 2;
 		if ((i + 1) % 3 == 0)
@@ -69,7 +69,7 @@ namespace widgets
 
 	bool AzElInput(const char *label, float *az_el_val, bool allow_edit)
 	{
-		int64_t wip_val = (*az_el_val) * 1e3;
+		int64_t wip_val = std::round((*az_el_val) * 1e4) / 10;
 
 		// Set up
 		ImGuiContext &g = *GImGui;
@@ -105,19 +105,14 @@ namespace widgets
 		// Old-style input field
 		else
 		{
-			double frequency_mhz = *wip_val / 1e6;
 			if (first_show_temp)
 				ImGui::SetKeyboardFocusHere();
-			bool retval = ImGui::InputDouble("##tempinput", &frequency_mhz);
+			bool retval = ImGui::InputFloat("##tempinput", az_el_val);
 			if (!first_show_temp && !ImGui::IsItemActive())
 				enable_temp_input_on = 0;
 			ImGui::SameLine();
-			if (ImGui::Button(("M" + display_label).c_str()))
-				enable_temp_input_on = 0;
 
 			first_show_temp = false;
-			if (retval)
-				*wip_val = frequency_mhz * 1e6;
 			ImGui::PopID();
 			return retval;
 		}
@@ -234,11 +229,17 @@ namespace widgets
 		// Finish up
 		ImGui::SetCursorPosY(pos.y + digit_size.y + style.ItemSpacing.y);
 		ImGui::PopID();
-		//	if ((int64_t)(wip_val) + change_by < 0 || wip_val + change_by > 1e12)
-		//		change_by = 0;
 
 		wip_val += change_by;
-		*az_el_val = wip_val / 1e3;
-		return change_by != 0;
+		if (std::abs(wip_val) >= 1e6)
+			change_by = 0;
+
+		if (change_by != 0)
+		{
+			*az_el_val = wip_val / 1e3;
+			return true;
+		}
+		else
+			return false;
 	}
 }
