@@ -13,6 +13,7 @@
 #include "mmap_windows.h"
 #else
 #include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 namespace satdump
