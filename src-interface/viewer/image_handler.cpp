@@ -594,21 +594,39 @@ namespace satdump
             if (ImGui::Button("Save"))
             {
                 handler_thread_pool.clear_queue();
-                handler_thread_pool.push([this](int)
-                                         {   async_image_mutex.lock();
-                         is_updating = true;
-                         logger->info("Saving Image...");
-                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                         std::string saved_at = save_image_dialog(products->instrument_name + "_" +
-                             (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                             default_path, "Save Image", &current_image, &viewer_app->save_type);
+                handler_thread_pool.push([this](int) {
+                    async_image_mutex.lock();
+                    is_updating = true;
+                    logger->info("Saving Image...");
 
-                         if (saved_at == "")
-                             logger->info("Save cancelled");
-                         else
-                             logger->info("Saved current image at %s", saved_at.c_str());
-                         is_updating = false;
-                         async_image_mutex.unlock(); });
+                    std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+
+                    const time_t timevalue = time(0);
+                    std::tm *timeReadable = gmtime(&timevalue);
+                    std::string formatted_timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";
+
+
+                    std::string file_name = formatted_timestamp + "_" +products->instrument_name + "_" + 
+                    (select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
+                    (std::string("composite_") + (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first)));
+
+                    // To ensure composites with slashes or spaces don't end up in the filename
+                    std::replace(file_name.begin(), file_name.end(), ' ', '-');
+                    std::replace(file_name.begin(), file_name.end(), '/', '-');
+
+                    std::string saved_at = save_image_dialog(file_name, default_path, "Save Image", &current_image, &viewer_app->save_type);
+
+                    if (saved_at == "")
+                        logger->info("Save cancelled");
+                    else
+                        logger->info("Saved current image at %s", saved_at.c_str());
+                    is_updating = false;
+                    async_image_mutex.unlock(); });
             }
             if (save_disabled)
             {
