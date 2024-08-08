@@ -1,14 +1,19 @@
 #include "bit_container.h"
 #include "common/utils.h"
 #include "imgui/imgui_image.h"
+#include "logger.h"
+#include "core/exception.h"
 
 #include <filesystem>
 #include <fcntl.h>
+#include <random>
 
 #ifdef _WIN32
+#define __USE_FILE_OFFSET64
 #include "mmap_windows.h"
 #else
 #include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 namespace satdump
@@ -16,13 +21,27 @@ namespace satdump
     BitContainer::BitContainer(std::string name, std::string file_path)
         : d_name(name), d_filepath(file_path)
     {
+        // Generate unique ID
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> check(65, 90);
+        for (size_t i = 0; i < 15; i++)
+            unique_id[i] = check(rng);
+
         // Buffer for creating textures
         wip_texture_buffer = new uint32_t[d_chunk_size * d_chunk_size];
 
         // Init mmap pointers
         d_file_memory_size = getFilesize(file_path);
-        int fd = open(file_path.c_str(), O_RDONLY);
+        if(d_file_memory_size == 0)
+            throw satdump_exception("Empty File!");
+        fd = open(file_path.c_str(), O_RDONLY);
         d_file_memory_ptr = (uint8_t *)mmap(0, d_file_memory_size, PROT_READ, MAP_SHARED, fd, 0);
+        if (d_file_memory_ptr == MAP_FAILED)
+        {
+            close(fd);
+            throw satdump_exception("mmap failed!");
+        }
 
         // Default period
         init_bitperiod();
@@ -34,9 +53,20 @@ namespace satdump
     BitContainer::~BitContainer()
     {
         delete[] wip_texture_buffer;
+        munmap(d_file_memory_ptr, d_file_memory_size);
+        close(fd);
 
         if (d_is_temporary && std::filesystem::exists(d_filepath))
-            std::filesystem::remove(d_filepath);
+        {
+            try
+            {
+                std::filesystem::remove(d_filepath);
+            }
+            catch (std::exception &e)
+            {
+                logger->warn("Failed to delete temporary file: %s", e.what());
+            }
+        }
     }
 
     void BitContainer::init_bitperiod()

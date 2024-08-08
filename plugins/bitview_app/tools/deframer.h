@@ -77,8 +77,18 @@ namespace satdump
             }
 
             file_out.close();
+            std::shared_ptr<satdump::BitContainer> newbitc;
 
-            std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " Deframed", tmpfile);
+            try
+            {
+                newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " Deframed", tmpfile);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error loading deframed data: %s", e.what());
+                return;
+            }
+
             newbitc->d_bitperiod = deframer_syncword_framesize;
             newbitc->init_bitperiod();
             newbitc->d_is_temporary = true;

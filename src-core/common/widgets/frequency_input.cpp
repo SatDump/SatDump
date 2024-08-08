@@ -227,7 +227,12 @@ namespace widgets
 		if ((int64_t)(*frequency_hz) + change_by < 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
 
-		*frequency_hz += change_by;
-		return change_by != 0;
+		if (change_by != 0)
+		{
+			*frequency_hz += change_by;
+			return true;
+		}
+		else
+			return false;
 	}
 }

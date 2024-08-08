@@ -9,7 +9,7 @@ namespace widgets
 {
 	inline void helper_left(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
 	{
-		if (i == 11)
+		if (i == 5)
 			return;
 		float x = screen_pos.x - digit_size.x / 2;
 		if ((i + 1) % 3 == 0)
@@ -27,20 +27,17 @@ namespace widgets
 		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
 	}
 
-	inline void digit_helper(int &i, uint64_t *wip_val, int64_t &change_by,
-							 ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top, bool allow_mousewheel)
+	inline void digit_helper(int &i, int64_t *wip_val, int64_t &change_by,
+							 ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-			change_by = -(*wip_val % (uint64_t)pow(10, i + 1));
+			change_by = -(*wip_val % (int64_t)pow(10, i + 1));
 		ImGuiContext &g = *GImGui;
-		if (allow_mousewheel)
-			if (g.WheelingWindowReleaseTimer == 0.0f)
-				ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 		if (ImGui::IsItemHovered())
 		{
 			// Handle Enter
 			if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
-				change_by = -(*wip_val % (uint64_t)pow(10, i + 1));
+				change_by = -(*wip_val % (int64_t)pow(10, i + 1));
 
 			// Handle Arrow Keys
 			if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
@@ -58,15 +55,10 @@ namespace widgets
 			{
 				if (this_char >= '0' && this_char <= '9')
 				{
-					change_by = pow(10, i) * (this_char - '0' - (int64_t)(*wip_val / (uint64_t)pow(10, i) % 10));
+					change_by = pow(10, i) * (this_char - '0' - (int64_t)(*wip_val / (int64_t)pow(10, i) % 10));
 					helper_right(i, digit_size, screen_pos, dot_width, top);
 				}
 			}
-
-			// Handle mouse wheel (can be up or down)
-			if (allow_mousewheel)
-				if (g.WheelingWindowReleaseTimer == 0.0f)
-					change_by += io.MouseWheel * pow(10, i);
 
 			// Draw rect
 			ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -75,9 +67,9 @@ namespace widgets
 		}
 	}
 
-	bool AzElInput(const char *label, float *az_el_val)
+	bool AzElInput(const char *label, float *az_el_val, bool allow_edit)
 	{
-		uint64_t wip_val = (*az_el_val) * 1e3;
+		int64_t wip_val = std::round((*az_el_val) * 1e4) / 10;
 
 		// Set up
 		ImGuiContext &g = *GImGui;
@@ -113,19 +105,14 @@ namespace widgets
 		// Old-style input field
 		else
 		{
-			double frequency_mhz = *wip_val / 1e6;
 			if (first_show_temp)
 				ImGui::SetKeyboardFocusHere();
-			bool retval = ImGui::InputDouble("##tempinput", &frequency_mhz);
+			bool retval = ImGui::InputFloat("##tempinput", az_el_val);
 			if (!first_show_temp && !ImGui::IsItemActive())
 				enable_temp_input_on = 0;
 			ImGui::SameLine();
-			if (ImGui::Button(("M" + display_label).c_str()))
-				enable_temp_input_on = 0;
 
 			first_show_temp = false;
-			if (retval)
-				*wip_val = frequency_mhz * 1e6;
 			ImGui::PopID();
 			return retval;
 		}
@@ -158,15 +145,34 @@ namespace widgets
 			digit_size.y *= freq_scale;
 		}
 
-		for (int i = 5; i >= 0; i--)
+		for (int i = 6; i >= 0; i--)
 		{
 			// Render the digit
 			ImGui::SetCursorPos(pos);
 			screen_pos = ImGui::GetCursorScreenPos();
 			char place_char[2];
-			int this_place = wip_val / (uint64_t)pow(10, i) % 10;
-			sprintf(place_char, "%d", this_place);
+			int this_place = (wip_val < 0) ? (-wip_val / (uint64_t)pow(10, i) % 10) : (wip_val / (uint64_t)pow(10, i) % 10);
+
+			if (i == 6)
+			{
+				if (wip_val < 0)
+				{
+					place_char[0] = '-';
+					place_char[1] = 0;
+				}
+				else
+				{
+					place_char[0] = '+';
+					place_char[1] = 0;
+				}
+			}
+			else
+			{
+				sprintf(place_char, "%d", this_place);
+			}
+
 			num_started = num_started || this_place != 0;
+
 			ImU32 font_color;
 			if (!num_started)
 				font_color = ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_TextDisabled]);
@@ -175,40 +181,43 @@ namespace widgets
 
 			draw_list->AddText(style::bigFont, freq_size, screen_pos, font_color, place_char);
 
-			// Handle "up" events
-			this_id = "topbutton" + std::to_string(i);
-			ImGui::SetCursorPos(pos);
-			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
+			if (i != 6 && allow_edit)
 			{
-				if (ImGui::GetIO().KeyCtrl)
+				// Handle "up" events
+				this_id = "topbutton" + std::to_string(i);
+				ImGui::SetCursorPos(pos);
+				if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
 				{
-					enable_temp_input_on = id;
-					first_show_temp = true;
+					if (ImGui::GetIO().KeyCtrl)
+					{
+						enable_temp_input_on = id;
+						first_show_temp = true;
+					}
+					else
+						change_by += pow(10, i);
 				}
-				else
-					change_by += pow(10, i);
-			}
-			digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true, false);
+				digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true);
 
-			// Handle "down" events
-			this_id = "bottombutton" + std::to_string(i);
-			ImGui::SetCursorPos(ImVec2(pos.x, pos.y + (digit_size.y / 2)));
-			screen_pos = ImGui::GetCursorScreenPos();
-			if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
-			{
-				if (ImGui::GetIO().KeyCtrl)
+				// Handle "down" events
+				this_id = "bottombutton" + std::to_string(i);
+				ImGui::SetCursorPos(ImVec2(pos.x, pos.y + (digit_size.y / 2)));
+				screen_pos = ImGui::GetCursorScreenPos();
+				if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
 				{
-					enable_temp_input_on = id;
-					first_show_temp = true;
+					if (ImGui::GetIO().KeyCtrl)
+					{
+						enable_temp_input_on = id;
+						first_show_temp = true;
+					}
+					else
+						change_by -= pow(10, i);
 				}
-				else
-					change_by -= pow(10, i);
+				digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false);
 			}
-			digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false, false);
 
 			// Add decimal, if needed
 			pos.x += digit_size.x;
-			if (i % 3 == 0 && i != 0)
+			if (i % 3 == 0 && i != 0 && i != 6)
 			{
 				ImGui::SetCursorPos(pos);
 				screen_pos = ImGui::GetCursorScreenPos();
@@ -220,11 +229,17 @@ namespace widgets
 		// Finish up
 		ImGui::SetCursorPosY(pos.y + digit_size.y + style.ItemSpacing.y);
 		ImGui::PopID();
-		if ((int64_t)(wip_val) + change_by < 0 || wip_val + change_by > 1e12)
-			change_by = 0;
 
 		wip_val += change_by;
-		*az_el_val = wip_val / 1e3;
-		return change_by != 0;
+		if (std::abs(wip_val) >= 1e6)
+			change_by = 0;
+
+		if (change_by != 0)
+		{
+			*az_el_val = wip_val / 1e3;
+			return true;
+		}
+		else
+			return false;
 	}
 }

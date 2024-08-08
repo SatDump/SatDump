@@ -174,11 +174,9 @@ namespace satdump
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            widgets::AzElInput("##az", &rot_current_req_pos.az);
-            // ImGui::InputFloat("##Rot Az", &rot_current_req_pos.az);
+            widgets::AzElInput("##reqaz", &rot_current_req_pos.az, !rotator_tracking);
             ImGui::TableSetColumnIndex(1);
-            widgets::AzElInput("##el", &rot_current_req_pos.el);
-            // ImGui::InputFloat("##Rot El", &rot_current_req_pos.el);
+            widgets::AzElInput("##reqel", &rot_current_req_pos.el, !rotator_tracking);
 
             if (rotator_arrowkeys_enable && !rotator_tracking)
             {
@@ -194,9 +192,9 @@ namespace satdump
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("%.3f", rot_current_pos.az);
+            widgets::AzElInput("##curaz", &rot_current_pos.az, false);
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%.3f", rot_current_pos.el);
+            widgets::AzElInput("##curel", &rot_current_pos.el, false);
 
             ImGui::EndTable();
         }
