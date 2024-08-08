@@ -11,200 +11,119 @@
  **********************************************************************/
 
 #include "logger.h"
-#include <fstream>
-#include <cstring>
-#include "common/ccsds/ccsds_standard/demuxer.h"
-#include "common/ccsds/ccsds_standard/vcdu.h"
 
-#include "common/image/image.h"
-#include "common/repack.h"
+#include "common/dsp/complex.h"
+#include "common/ndsp/block.h"
+#include <unistd.h>
 
-#include "common/image/io.h"
+#include <functional>
 
-#include "common/ccsds/ccsds_time.h"
-#include "common/utils.h"
-#include <cmath>
-#include <filesystem>
-
-image::Image images_idk[11];
-image::Image images_hrv;
-
-int cimage = 0;
-
-void saveImages()
+struct FloatBuffer
 {
-    cimage++;
+    uint64_t max;
+    uint64_t cnt;
+    float *dat;
+};
 
-    std::string directory = (std::string) "msg_out/" + "msg_" + std::to_string(cimage) + "/";
-
-    if (!std::filesystem::exists(directory))
-        std::filesystem::create_directories(directory);
-
-    image::Image img321(16, 3834, 4482, 3);
-
-    for (int i = 0; i < 11; i++)
+std::shared_ptr<NaFiFo> create_nafifo_floatbuffer(int size)
+{
+    auto alloc = [size]() -> void *
     {
-        images_idk[i].mirror(true, true);
-        image::save_png(images_idk[i], directory + "test_msg" + std::to_string(cimage) + "_" + std::to_string(i + 1) + ".png");
-        // printf("SAVING %d\n", timeReadable.tm_min);
+        FloatBuffer *ptr = new FloatBuffer;
+        ptr->max = size;
+        ptr->cnt = 0;
+        ptr->dat = new float[size];
+        return ptr;
+    };
 
-        if (i == 2)
-            img321.draw_image(0, images_idk[i], 18, 0);
-        if (i == 1)
-            img321.draw_image(1, images_idk[i], -18, 0);
-        if (i == 0)
-            img321.draw_image(2, images_idk[i], 0, 0);
+    auto dealloc = [](void *p) -> void
+    {
+        FloatBuffer *ptr = (FloatBuffer *)p;
+        delete[] ptr->dat;
+        delete ptr;
+    };
 
-        images_idk[i].fill(0);
+    auto ptr = std::make_shared<NaFiFo>();
+
+    ptr->init(100, sizeof(float), alloc, dealloc);
+
+    return ptr;
+}
+
+class TestBlock : public ndsp::Block
+{
+private:
+    void work()
+    {
+        if (!inputs[0]->read())
+        {
+            FloatBuffer *rbuf = (FloatBuffer *)inputs[0]->read_buf();
+            FloatBuffer *wbuf = (FloatBuffer *)outputs[0]->write_buf();
+
+            for (int i = 0; i < rbuf->cnt; i++)
+                wbuf->dat[i] = rbuf->dat[i] * 100;
+            wbuf->cnt = rbuf->cnt;
+
+            outputs[0]->write();
+            inputs[0]->flush();
+        }
     }
 
-    images_hrv.mirror(true, true);
-    image::save_png(images_hrv, directory + "test_hrv" + std::to_string(cimage) + ".png");
-    images_hrv.fill(0);
+public:
+    TestBlock()
+        : ndsp::Block("test_block", {{sizeof(float)}}, {{sizeof(float)}})
+    {
+    }
 
-    image::save_png(img321, directory + "test_msg" + std::to_string(cimage) + "_" + "321" + ".png");
-}
+    void start()
+    {
+        outputs[0] = create_nafifo_floatbuffer(((FloatBuffer *)inputs[0]->read_buf())->max * 2);
+        ndsp::Block::start();
+    }
+};
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream data_in(argv[1], std::ios::binary);
-    std::ofstream data_ou(argv[2], std::ios::binary);
+    std::shared_ptr<NaFiFo> fifo1 = create_nafifo_floatbuffer(8192);
 
-    int nchannel = std::stoi(argv[3]);
+    TestBlock testBlock1;
 
-    uint8_t cadu[1279];
+    testBlock1.connect_input(0, fifo1);
+    testBlock1.start();
 
-    // Demuxers
-    ccsds::ccsds_standard::Demuxer demuxer_vcid0(1109, false, 0, 0);
-    ccsds::ccsds_standard::Demuxer demuxer_vcid1(1109, false, 0, 0);
+    bool should_run = true;
 
-    int lines = 0, rlines = 0;
-    //
-    for (int i = 0; i < 11; i++)
-        images_idk[i] = image::Image(16, 3834, 4482, 1);
+    std::thread thread_tx([fifo1, &should_run]()
+                          {
+        while(should_run) {
+            ((FloatBuffer*) fifo1->read_buf())->dat[0] = 1;
+             ((FloatBuffer*) fifo1->read_buf())->dat[1] = 2;
+            ((FloatBuffer*) fifo1->read_buf())->cnt = 2;
+            fifo1->write();
+        } });
 
-    images_hrv = image::Image(16, 5751, 13500, 1);
+    std::thread thread_rx([&testBlock1]()
+                          {
+                              while (!testBlock1.outputs[0]->read())
+                              {
+                                  FloatBuffer *wbuf = (FloatBuffer *)testBlock1.outputs[0]->read_buf();
+                                  for (int i = 0; i < wbuf->cnt; i++)
+                                      printf("%f, ", wbuf->dat[i]);
+                                  printf("\n");
+                                  testBlock1.outputs[0]->flush();
+                              } });
 
-    int cpayload = 0;
+    sleep(2);
 
-    double last_time = 0;
+    should_run = false;
+    fifo1->stop();
+    if (thread_tx.joinable())
+        thread_tx.join();
 
-    while (!data_in.eof())
-    {
-        data_in.read((char *)cadu, 1279);
+    testBlock1.stop();
 
-        // Parse this transport frame
-        ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
-
-        // printf("VCID %d\n", vcdu.vcid);
-
-        if (vcdu.vcid == 0)
-        {
-            std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid0.work(cadu);
-            for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-            {
-               // printf("APID %d\n", pkt.header.apid);
-
-                if (pkt.header.apid == 2046)
-                {
-                    cpayload = pkt.header.packet_sequence_count % 16;
-
-                    double ltime = ccsds::parseCCSDSTimeFull(pkt, 17720, 65535, 1e100); //- 60 * 3;
-
-                    // printf("LEN %d %d\n", pkt.payload.size() + 6, cpayload);                    
-
-                    if (cpayload < 11) //|| cpayload == 1)
-                    {
-                        if (cpayload == 0)
-                        {
-                            //printf("Time %s - %f\n", timestamp_to_string(ltime).c_str(), ltime - last_time);
-                            last_time = ltime;
-
-                            time_t tttime = ltime;
-                            std::tm timeReadable = *gmtime(&tttime);
-
-                            if (rlines++ > 500 && (timeReadable.tm_min == 0 || timeReadable.tm_min == 15 || timeReadable.tm_min == 30 || timeReadable.tm_min == 45))
-                            {
-                                rlines = 0;
-                                last_time = ltime;
-                                saveImages();
-                            }
-                        }
-
-                        lines = fmod(ltime, 15 * 60) / (300 / 1494.0);
-
-                        uint16_t tmp_buf[15000];
-                        repackBytesTo10bits(&pkt.payload[8], pkt.payload.size()-8, tmp_buf); //&image_idk[lines * image_idk.width()]);
-                        for (int c = 0; c < 3; c++)
-                        {
-                            for (int v = 0; v < 3834; v++)
-                                images_idk[cpayload].set(lines * images_idk[cpayload].width() + v, tmp_buf[(c) * 3834 + v]<< 6);
-                            lines++;
-                        }
-
-                        pkt.payload.resize(14392 - 6);
-                        //data_ou.write((char *)pkt.header.raw, 6);
-                        //data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
-                    } else if(cpayload < 15) {
-                        uint16_t tmp_buf[15000];
-                        repackBytesTo10bits(&pkt.payload[8], pkt.payload.size()-8, tmp_buf); //&image_idk[lines * image_idk.width()]);
-
-                        lines = fmod(ltime, 15 * 60) /  (100 / 1494.0);
-                        lines+= (cpayload-11) * 2;
-
-                        if(nchannel != lines)
-                        {
-                            printf("bogus line: %d\n", lines - nchannel);
-                        }
-                        
-                        for(int c = 0; c < 2; c++)
-                        {
-                            for (int v = 0; v < 5751; v++)
-                                images_hrv.set(lines * images_hrv.width() + v, tmp_buf[c * 5751 + v] << 6);
-                            lines++;
-                            //printf("Time %s - %f  %f, lines:%d cpayload:%d\n", timestamp_to_string(ltime).c_str(), ltime, last_time, lines, cpayload);
-                        }
-                        nchannel = lines;
-
-                        pkt.payload.resize(14392 - 6);
-                    } else {
-                        uint16_t tmp_buf[15000];
-                        repackBytesTo10bits(&pkt.payload[8], pkt.payload.size()-8, tmp_buf); //&image_idk[lines * image_idk.width()]);
-
-                        lines = fmod(ltime, 15 * 60) / (100 / 1494.0);
-                        lines+= (cpayload-11) * 2;
-
-                        for (int v = 0; v < 5751; v++)
-                            images_hrv.set(lines * images_hrv.width() + v, tmp_buf[v] << 6);
-
-                        lines++;
-                        nchannel = lines;
-                    }
-                    cpayload++;
-                }
-            }
-        }
-
-        /*if (vcdu.vcid == 1)
-        {
-            std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid1.work(cadu);
-            for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-            {
-                printf("APID %d\n", pkt.header.apid);
-
-                if (pkt.header.apid == 2045)
-                {
-                    printf("LEN %d %d\n", pkt.payload.size() + 6, cpayload);
-
-                    pkt.payload.resize(10000 - 6);
-                    data_ou.write((char *)pkt.header.raw, 6);
-                    data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
-                }
-            }
-        }*/
-    }
-
-    saveImages();
+    if (thread_rx.joinable())
+        thread_rx.join();
 }
