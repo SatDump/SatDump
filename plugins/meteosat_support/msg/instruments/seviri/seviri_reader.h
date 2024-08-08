@@ -11,6 +11,8 @@ namespace meteosat
         class SEVIRIReader
         {
         private:
+            bool d_mode_is_rss;
+
             image::Image images_nrm[11];
             image::Image images_hrv;
 
@@ -20,8 +22,6 @@ namespace meteosat
             std::vector<int> all_scids;
 
         public:
-            bool d_mode_is_rss = false;
-
             int lines_since_last_end;
             int not_channels_lines;
 
@@ -34,7 +34,7 @@ namespace meteosat
             bool is_saving = false;
 
         public:
-            SEVIRIReader();
+            SEVIRIReader(bool d_mode_is_rss);
             ~SEVIRIReader();
             void work(int scid, ccsds::CCSDSPacket &pkt);
 

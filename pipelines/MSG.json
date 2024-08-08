@@ -16,6 +16,12 @@
         "parameters": {
             "samplerate": {
                 "value": 6e6
+            },
+            "seviri_rss": {
+                "type": "bool",
+                "value": false,
+                "name": "SEVIRI RSS",
+                "description": "SEVIRI can either scan in 15 or 5 mins intervals. RSS is 5 mins."
             }
         },
         "work": {
@@ -41,7 +47,11 @@
                     "rs_type": "rs223"
                 }
             },
-            "products": {}
+            "products": {
+                "msg_instruments": {
+                    "seviri_rss": false
+                }
+            }
         }
     }
 }
