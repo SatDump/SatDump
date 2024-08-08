@@ -137,6 +137,7 @@ namespace generic_analog
             if (am_demod)
             {
                 volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t *)work_buffer_complex, nout);
+	    }
 
             {
                 
