@@ -108,13 +108,38 @@ namespace generic_analog
                     input_resamp.set_ratio(d_symbolrate, final_samplerate);
                     quad_demod.set_gain(dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
                 }
+
+                switch (e) {
+                    case 0:
+                        nfm_demod = true;
+                        am_demod = false;
+                        break;
+                    case 1:
+                        am_demod = true;
+                        nfm_demod = false;
+                        break;
+                    default:
+                        nfm_demod = true;
+                        am_demod = false;
+                        break;
+                }
+                
                 settings_changed = false;
             }
 
             int nout = input_resamp.process(agc->output_stream->readBuf, dat_size, work_buffer_complex);
-            nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
+            
+            if (nfm_demod)
+            {
+                nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
+            }
+
+            if (am_demod)
+            {
+                volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t *)work_buffer_complex, nout);
 
             {
+                
                 // Into const
                 constellation.pushFloatAndGaussian(work_buffer_float, nout);
 
@@ -229,8 +254,9 @@ namespace generic_analog
             ImGui::SetNextItemWidth(200 * ui_scale);
             ImGui::InputInt("Bandwidth##bandwidthsetting", &upcoming_symbolrate);
 
-            ImGui::RadioButton("NFM##analogoption", true);
+            ImGui::RadioButton("NFM##analogoption", &e, 0);
             ImGui::SameLine();
+            ImGui::RadioButton("AM##analogoption", &e, 1);
             style::beginDisabled();
             ImGui::RadioButton("WFM##analogoption", false);
             // ImGui::SameLine();
@@ -238,7 +264,6 @@ namespace generic_analog
             ImGui::SameLine();
             ImGui::RadioButton("LSB##analogoption", false);
             // ImGui::SameLine();
-            ImGui::RadioButton("AM##analogoption", false);
             ImGui::SameLine();
             ImGui::RadioButton("CW##analogoption", false);
             style::endDisabled();
