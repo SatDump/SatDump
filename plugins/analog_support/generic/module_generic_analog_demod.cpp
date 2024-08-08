@@ -260,9 +260,9 @@ namespace generic_analog
             ImGui::RadioButton("AM##analogoption", &e, 1);
             style::beginDisabled();
             ImGui::RadioButton("WFM##analogoption", false);
-            // ImGui::SameLine();
-            ImGui::RadioButton("USB##analogoption", false);
             ImGui::SameLine();
+            ImGui::RadioButton("USB##analogoption", false);
+            //ImGui::SameLine();
             ImGui::RadioButton("LSB##analogoption", false);
             // ImGui::SameLine();
             ImGui::SameLine();
