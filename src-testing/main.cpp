@@ -31,6 +31,15 @@ image::Image images_hrv;
 
 int cimage = 0;
 
+double parseCCSDSTimeMeteosat(ccsds::CCSDSPacket &pkt, int offset, int ms_scale, double us_of_ms_scale)
+{
+    uint16_t days =  pkt.payload[0] << 8 | pkt.payload[1];
+    uint32_t milliseconds_of_day = pkt.payload[2] << 24 | pkt.payload[3] << 16 | pkt.payload[4] << 8 | pkt.payload[5];
+    uint16_t microseconds_of_millisecond = pkt.payload[6] << 8 | pkt.payload[7];
+
+    return double(offset) * 86400.0 + (days * 18.204444444 * 3600.0) + double(milliseconds_of_day) / double(ms_scale) + double(microseconds_of_millisecond) / us_of_ms_scale;
+}
+
 void saveImages()
 {
     cimage++;
@@ -72,7 +81,8 @@ int main(int argc, char *argv[])
     std::ifstream data_in(argv[1], std::ios::binary);
     std::ofstream data_ou(argv[2], std::ios::binary);
 
-    int nchannel = std::stoi(argv[3]);
+    int prevLine = 0;
+    int shift = std::stoi(argv[3]);
 
     uint8_t cadu[1279];
 
@@ -98,7 +108,7 @@ int main(int argc, char *argv[])
         // Parse this transport frame
         ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
 
-        // printf("VCID %d\n", vcdu.vcid);
+        //printf("VCID %d\n", vcdu.vcid);
 
         if (vcdu.vcid == 0)
         {
@@ -111,7 +121,22 @@ int main(int argc, char *argv[])
                 {
                     cpayload = pkt.header.packet_sequence_count % 16;
 
-                    double ltime = ccsds::parseCCSDSTimeFull(pkt, 17720, 65535, 1e100); //- 60 * 3;
+                    double ltime = 0;
+                    if(vcdu.spacecraft_id == 322) {
+                        // Meteosat 9
+                        ltime = parseCCSDSTimeMeteosat(pkt, 18249 + 1310, 65536, 1e100); //- 60 * 3;
+                        ltime+= 6442;
+                    }
+                    else if(vcdu.spacecraft_id == 323) {
+                        // Meteosat 10
+                        ltime = parseCCSDSTimeMeteosat(pkt, 18249, 65536, 1e100); //- 60 * 3;
+                        ltime+= 34738;
+                    } else if(vcdu.spacecraft_id == 324) {
+                        // Meteosat 11
+                        ltime = parseCCSDSTimeMeteosat(pkt, 18249 + 731, 65536, 1e100); //- 60 * 3;
+                        ltime+= 42207;
+                    }
+                    
 
                     // printf("LEN %d %d\n", pkt.payload.size() + 6, cpayload);                    
 
@@ -119,13 +144,14 @@ int main(int argc, char *argv[])
                     {
                         if (cpayload == 0)
                         {
-                            //printf("Time %s - %f\n", timestamp_to_string(ltime).c_str(), ltime - last_time);
+                            printf("Time %s - %f - %d\n", timestamp_to_string(ltime).c_str(), ltime - last_time, pkt.payload[0] << 8 | pkt.payload[1]);
                             last_time = ltime;
+                            //return 0;
 
                             time_t tttime = ltime;
                             std::tm timeReadable = *gmtime(&tttime);
 
-                            if (rlines++ > 500 && (timeReadable.tm_min == 0 || timeReadable.tm_min == 15 || timeReadable.tm_min == 30 || timeReadable.tm_min == 45))
+                            if (rlines++ > 500 && timeReadable.tm_min % 15 == 0)
                             {
                                 rlines = 0;
                                 last_time = ltime;
@@ -154,9 +180,9 @@ int main(int argc, char *argv[])
                         lines = fmod(ltime, 15 * 60) /  (100 / 1494.0);
                         lines+= (cpayload-11) * 2;
 
-                        if(nchannel != lines)
+                        if(prevLine != lines)
                         {
-                            printf("bogus line: %d\n", lines - nchannel);
+                            printf("bogus line: %d\n", lines - prevLine);
                         }
                         
                         for(int c = 0; c < 2; c++)
@@ -166,7 +192,7 @@ int main(int argc, char *argv[])
                             lines++;
                             //printf("Time %s - %f  %f, lines:%d cpayload:%d\n", timestamp_to_string(ltime).c_str(), ltime, last_time, lines, cpayload);
                         }
-                        nchannel = lines;
+                        prevLine = lines;
 
                         pkt.payload.resize(14392 - 6);
                     } else {
@@ -180,7 +206,7 @@ int main(int argc, char *argv[])
                             images_hrv.set(lines * images_hrv.width() + v, tmp_buf[v] << 6);
 
                         lines++;
-                        nchannel = lines;
+                        prevLine = lines;
                     }
                     cpayload++;
                 }
@@ -192,15 +218,16 @@ int main(int argc, char *argv[])
             std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid1.work(cadu);
             for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
             {
-                printf("APID %d\n", pkt.header.apid);
+                //printf("APID %d\n", pkt.header.apid);
 
                 if (pkt.header.apid == 2045)
                 {
-                    printf("LEN %d %d\n", pkt.payload.size() + 6, cpayload);
+                    double ltime = ccsds::parseCCSDSTimeFull(pkt, 17720, 65535, 1e100); //- 60 * 3;
+                    printf("LEN %d %s\n", pkt.payload.size() + 6, timestamp_to_string(ltime).c_str());
 
-                    pkt.payload.resize(10000 - 6);
-                    data_ou.write((char *)pkt.header.raw, 6);
-                    data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
+                    pkt.payload.resize(14392 - 6);
+                    //data_ou.write((char *)pkt.header.raw, 6);
+                    //data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
                 }
             }
         }*/
