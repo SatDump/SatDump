@@ -147,6 +147,9 @@ namespace satdump
         bool rotator_arrowkeys_enable = false;
         double rotator_arrowkeys_increment = 0.1;
 
+    public: // Handlers
+        std::function<void(double, double)> rotator_target_pos_updated_callback; //Todo: this calls from rotatorth_thread
+
     public: // Functions
         nlohmann::json getStatus();
         image::Image getPolarPlotImg(int size = 256);
