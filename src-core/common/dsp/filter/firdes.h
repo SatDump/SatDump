@@ -88,6 +88,12 @@ namespace dsp
         * @param decimation decimation factor (integer > 0)
         * @param fractional_bw fractional bandwidth in (0, 0.5)  0.4 works well. (float)
         */
+        std::vector<float> high_pass(double gain, double sampling_freq, double cutoff_freq, double transition_width, fft::window::win_type window = fft::window::win_type::WIN_HAMMING, double beta = 6.76);
+
+
+	std::vector<float> band_pass(double gain, double sampling_freq, double low_cutoff_freq, double high_cutoff_freq, double transition_width, fft::window::win_type window = fft::window::win_type::WIN_HAMMING, double beta = 6.76);
+
+
         std::vector<float> design_resampler_filter_float(const unsigned interpolation, const unsigned decimation, const float fractional_bw);
 
         /*!
