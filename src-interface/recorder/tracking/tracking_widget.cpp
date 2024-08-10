@@ -133,7 +133,7 @@ namespace satdump
         float width_available = ImGui::GetContentRegionAvail().x;
         std::string is_engaged = auto_scheduler.getEngaged() ? "YES" : "NO";
         float centered_pos = width_available / 2.0f - ImGui::CalcTextSize(std::string("Autotrack Engaged: " + is_engaged).c_str()).x / 2.0f;
-        if(centered_pos > 0)
+        if (centered_pos > 0)
             ImGui::SetCursorPosX(centered_pos);
         ImGui::TextUnformatted("Autotrack Engaged:");
         ImGui::SameLine();

@@ -206,9 +206,9 @@ namespace satdump
             sat_next_los_pos.az = next_los.azimuth * RAD_TO_DEG;
             sat_next_los_pos.el = next_los.elevation * RAD_TO_DEG;
 
-            if(meridian_flip_correction)
+            if (meridian_flip_correction)
             {
-                //Determine pass direction
+                // Determine pass direction
                 predict_position satellite_orbit2;
                 predict_observation observation_pos_cur;
                 predict_observation observation_pos_prev;
@@ -221,16 +221,16 @@ namespace satdump
                     predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
                     predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_cur);
 
-                    if(std::abs(observation_pos_prev.azimuth - observation_pos_cur.azimuth) > (180 * DEG_TO_RAD)) {
-                        if(next_los.azimuth >  (90 * DEG_TO_RAD) && next_los.azimuth <  (270 * DEG_TO_RAD)) {
+                    if (std::abs(observation_pos_prev.azimuth - observation_pos_cur.azimuth) > (180 * DEG_TO_RAD))
+                    {
+                        if (next_los.azimuth > (90 * DEG_TO_RAD) && next_los.azimuth < (270 * DEG_TO_RAD))
                             southbound_cross = true;
-                        } else {
+                        else
                             northbound_cross = true;
-                        }
                     }
                     currTime += 1.0;
                     observation_pos_prev = observation_pos_cur;
-                } while(next_los_time > currTime);
+                } while (next_los_time > currTime);
             }
 
             if (true) //(is_gui)

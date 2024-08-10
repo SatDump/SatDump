@@ -155,7 +155,7 @@ namespace satdump
                                    (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
                                    (seconds < 10 ? "0" : "") + std::to_string(seconds);
 
-            auto& style = ImGui::GetStyle();
+            auto &style = ImGui::GetStyle();
             ImVec2 cur = ImGui::GetCursorPos();
             ImVec2 curs = ImGui::GetCursorScreenPos();
             std::string obj_name = "None";
