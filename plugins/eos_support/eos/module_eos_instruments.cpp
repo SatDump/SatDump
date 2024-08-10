@@ -311,7 +311,8 @@ namespace eos
                 airs_hd_products.bit_depth = 16;
                 airs_hd_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 airs_hd_products.set_tle(satellite_tle);
-                // airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_hd_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_airs.json")));
 
                 for (int i = 0; i < 4; i++)
                     airs_hd_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getHDChannel(i)});
@@ -324,9 +325,10 @@ namespace eos
                 airs_products.has_timestamps = true;
                 airs_products.bit_depth = 16;
                 airs_products.save_as_matrix = true;
-                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 airs_products.set_tle(satellite_tle);
-                // airs_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_airs.json")));
 
                 for (int i = 0; i < 2666; i++)
                     airs_products.images.push_back({"AIRS-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getChannel(i)});

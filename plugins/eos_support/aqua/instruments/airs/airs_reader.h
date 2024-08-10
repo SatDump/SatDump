@@ -19,7 +19,7 @@ namespace aqua
             AIRSReader();
             ~AIRSReader();
             int lines;
-            std::vector<std::vector<double>> timestamps_ifov;
+            std::vector<double> timestamps_ifov;
             void work(ccsds::CCSDSPacket &packet);
             image::Image getChannel(int channel);
             image::Image getHDChannel(int channel);

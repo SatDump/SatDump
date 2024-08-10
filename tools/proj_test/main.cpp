@@ -58,7 +58,7 @@ int main(int /*argc*/, char *argv[])
     printf("\n%s\n", img_pro.contents.dump(4).c_str());
 
     satdump::ImageCompositeCfg rgb_cfg;
-    rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch7421+ch7422+ch7423+ch7242)/4";
+    rgb_cfg.equation = "ch342,ch342,ch342"; //"(ch7421+ch7422+ch7423+ch7242)/4";
     //    rgb_cfg.equation = "1-ch37";
     // rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
     rgb_cfg.individual_equalize = true;
