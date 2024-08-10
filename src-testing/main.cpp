@@ -16,42 +16,6 @@
 #include "common/ndsp/block.h"
 #include <unistd.h>
 
-#include <functional>
-
-template <typename T>
-struct StandardBuffer
-{
-    uint64_t max;
-    uint64_t cnt;
-    T *dat;
-};
-
-template <typename T>
-std::shared_ptr<NaFiFo> create_nafifo_standardbuffer(int size)
-{
-    auto alloc = [size]() -> void *
-    {
-        StandardBuffer<T> *ptr = new StandardBuffer<T>;
-        ptr->max = size;
-        ptr->cnt = 0;
-        ptr->dat = new T[size];
-        return ptr;
-    };
-
-    auto dealloc = [](void *p) -> void
-    {
-        StandardBuffer<T> *ptr = (StandardBuffer<T> *)p;
-        delete[] ptr->dat;
-        delete ptr;
-    };
-
-    auto ptr = std::make_shared<NaFiFo>();
-
-    ptr->init(100, sizeof(T), alloc, dealloc);
-
-    return ptr;
-}
-
 class TestBlock : public ndsp::Block
 {
 private:
@@ -59,11 +23,11 @@ private:
     {
         if (!inputs[0]->read())
         {
-            StandardBuffer<float> *rbuf = (StandardBuffer<float> *)inputs[0]->read_buf();
-            StandardBuffer<float> *wbuf = (StandardBuffer<float> *)outputs[0]->write_buf();
+            auto *rbuf = (ndsp::buf::StdBuf<float> *)inputs[0]->read_buf();
+            auto *wbuf = (ndsp::buf::StdBuf<float> *)outputs[0]->write_buf();
 
             for (int i = 0; i < rbuf->cnt; i++)
-                wbuf->dat[i] = rbuf->dat[i] * 100;
+                wbuf->dat[i] = rbuf->dat[i] * 10;
             wbuf->cnt = rbuf->cnt;
 
             outputs[0]->write();
@@ -79,7 +43,7 @@ public:
 
     void start()
     {
-        outputs[0] = create_nafifo_standardbuffer<float>(((StandardBuffer<float> *)inputs[0]->read_buf())->max * 2);
+        ndsp::buf::init_nafifo_stdbuf<float>(outputs[0], 2, ((ndsp::buf::StdBuf<float> *)inputs[0]->read_buf())->max * 2);
         ndsp::Block::start();
     }
 };
@@ -88,33 +52,37 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::shared_ptr<NaFiFo> fifo1 = create_nafifo_standardbuffer<float>(8192);
+    std::shared_ptr<NaFiFo> fifo1 = std::make_shared<NaFiFo>();
+    ndsp::buf::init_nafifo_stdbuf<float>(fifo1, 2, 8192);
 
-    TestBlock testBlock1;
+    TestBlock testBlock1, testBlock2;
 
     testBlock1.connect_input(0, fifo1);
     testBlock1.start();
+
+    testBlock2.connect_input(0, testBlock1.outputs[0]);
+    testBlock2.start();
 
     bool should_run = true;
 
     std::thread thread_tx([fifo1, &should_run]()
                           {
         while(should_run) {
-            ((StandardBuffer<float>*) fifo1->read_buf())->dat[0] = 1;
-             ((StandardBuffer<float>*) fifo1->read_buf())->dat[1] = 2;
-            ((StandardBuffer<float>*) fifo1->read_buf())->cnt = 2;
+            ((ndsp::buf::StdBuf<float>*) fifo1->read_buf())->dat[0] = 1;
+             ((ndsp::buf::StdBuf<float>*) fifo1->read_buf())->dat[1] = 2;
+            ((ndsp::buf::StdBuf<float>*) fifo1->read_buf())->cnt = 2;
             fifo1->write();
         } });
 
-    std::thread thread_rx([&testBlock1]()
+    std::thread thread_rx([&testBlock2]()
                           {
-                              while (!testBlock1.outputs[0]->read())
+                              while (!testBlock2.outputs[0]->read())
                               {
-                                  StandardBuffer<float> *wbuf = (StandardBuffer<float> *)testBlock1.outputs[0]->read_buf();
+                                 auto *wbuf = (ndsp::buf::StdBuf<float> *)testBlock2.outputs[0]->read_buf();
                                   for (int i = 0; i < wbuf->cnt; i++)
                                       printf("%f, ", wbuf->dat[i]);
                                   printf("\n");
-                                  testBlock1.outputs[0]->flush();
+                                  testBlock2.outputs[0]->flush();
                               } });
 
     sleep(2);
@@ -124,7 +92,15 @@ int main(int argc, char *argv[])
     if (thread_tx.joinable())
         thread_tx.join();
 
+    logger->info("Stopping blocks!");
+
     testBlock1.stop();
+
+    logger->info("Stopping block 2!");
+
+    testBlock2.stop();
+
+    logger->info("Blocks stopped!");
 
     if (thread_rx.joinable())
         thread_rx.join();

@@ -21,6 +21,8 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/bzlib/*.c
     libs/tiny-regex-c/*.c
     libs/lua/onelua.c
+
+    common/ndsp/nafifo.c
 )
 
 find_package(PkgConfig)
