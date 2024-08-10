@@ -4,8 +4,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "imgui/imgui_image.h"
 
 namespace meteosat
@@ -26,8 +26,8 @@ namespace meteosat
         uint8_t cadu[1279];
 
         // Demuxers
-        ccsds::ccsds_standard::Demuxer demuxer_vcid0(1109, false, 0, 0);
-        ccsds::ccsds_standard::Demuxer demuxer_vcid1(1109, false, 0, 0);
+        ccsds::ccsds_tm::Demuxer demuxer_vcid0(1109, false, 0, 0);
+        ccsds::ccsds_tm::Demuxer demuxer_vcid1(1109, false, 0, 0);
 
         // Setup readers
         seviri_reader = std::make_shared<msg::SEVIRIReader>(d_parameters["seviri_rss"].get<bool>());
@@ -45,7 +45,7 @@ namespace meteosat
                 input_fifo->read((uint8_t *)cadu, 1279);
 
             // Parse this transport frame
-            ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+            ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
             if (vcdu.vcid == 0)
             {

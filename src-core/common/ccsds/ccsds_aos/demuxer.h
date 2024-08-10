@@ -5,7 +5,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_standard
+    namespace ccsds_aos
     {
         /*
         Simple CCSDS demuxer building CCSDS frames from CADUs.
@@ -17,7 +17,6 @@ namespace ccsds
             const int MPDU_DATA_SIZE;
             const bool HAS_INSERT_ZONE;
             const int INSERT_ZONE_SIZE;
-            const int MPDU_INSERT_ZONE;
 
         private:
             CCSDSPacket currentCCSDSPacket;                                                             // Current CCSDS
@@ -32,8 +31,8 @@ namespace ccsds
             int inHeaderBuffer;                                                                         // Used to fill it up properly
 
         public:
-            Demuxer(int mpdu_data_size = 884, bool hasInsertZone = false, int insertZoneSize = 2, int mpdu_insert_zone = 0);
+            Demuxer(int mpdu_data_size = 884, bool hasInsertZone = false, int insertZoneSize = 2);
             std::vector<CCSDSPacket> work(uint8_t *cadu); // Main function
         };
     } // namespace libccsds
-} // namespace proba
+}

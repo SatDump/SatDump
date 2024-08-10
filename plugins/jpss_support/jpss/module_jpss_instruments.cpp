@@ -1,13 +1,13 @@
 #include "module_jpss_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "jpss.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
@@ -40,11 +40,11 @@ namespace jpss
             int insert_zone_size = npp_mode ? 0 : 9;
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
 
             std::vector<uint8_t> jpss_scids;
 
@@ -54,7 +54,7 @@ namespace jpss
                 data_in.read((char *)&cadu, npp_mode ? 1024 : 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == SNPP_SCID ||
                     vcdu.spacecraft_id == JPSS1_SCID ||

@@ -1,7 +1,7 @@
 #include "module_meteor_msumr_lrpt.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include <cstring>
@@ -59,7 +59,7 @@ namespace meteor
 
             uint8_t cadu[1024];
 
-            ccsds::ccsds_weather::Demuxer ccsds_demuxer(882, true);
+            ccsds::ccsds_aos::Demuxer ccsds_demuxer(882, true);
 
             lrpt::MSUMRReader msureader(meteorm2x_mode);
 
@@ -73,7 +73,7 @@ namespace meteor
             {
                 data_in.read((char *)&cadu, 1024);
 
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.vcid == 5)
                 {

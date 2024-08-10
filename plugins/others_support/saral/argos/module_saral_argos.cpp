@@ -1,7 +1,7 @@
 #include "module_saral_argos.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -34,7 +34,7 @@ namespace saral
 
             time_t lastTime = 0;
 
-            ccsds::ccsds_weather::Demuxer ccsdsDemuxer(882, true);
+            ccsds::ccsds_aos::Demuxer ccsdsDemuxer(882, true);
             uint64_t argos_cadu = 0, ccsds = 0, argos_ccsds = 0;
             uint8_t cadu[1024];
 
@@ -50,7 +50,7 @@ namespace saral
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 // Right channel? (VCID 1 is ARGOS)
                 if (vcdu.vcid == 1)

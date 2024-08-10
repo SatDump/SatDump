@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lrit_file.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include <memory>
 #include <functional>
 
@@ -14,7 +14,7 @@ namespace lrit
         const bool d_check_crc;
 
     private:
-        std::map<int, std::unique_ptr<ccsds::ccsds_weather::Demuxer>> demuxers;
+        std::map<int, std::unique_ptr<ccsds::ccsds_aos::Demuxer>> demuxers;
         std::map<int, std::map<int, LRITFile>> wip_files;
 
         std::vector<LRITFile> files;

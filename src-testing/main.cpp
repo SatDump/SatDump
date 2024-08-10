@@ -18,34 +18,36 @@
 
 #include <functional>
 
-struct FloatBuffer
+template <typename T>
+struct StandardBuffer
 {
     uint64_t max;
     uint64_t cnt;
-    float *dat;
+    T *dat;
 };
 
-std::shared_ptr<NaFiFo> create_nafifo_floatbuffer(int size)
+template <typename T>
+std::shared_ptr<NaFiFo> create_nafifo_standardbuffer(int size)
 {
     auto alloc = [size]() -> void *
     {
-        FloatBuffer *ptr = new FloatBuffer;
+        StandardBuffer<T> *ptr = new StandardBuffer<T>;
         ptr->max = size;
         ptr->cnt = 0;
-        ptr->dat = new float[size];
+        ptr->dat = new T[size];
         return ptr;
     };
 
     auto dealloc = [](void *p) -> void
     {
-        FloatBuffer *ptr = (FloatBuffer *)p;
+        StandardBuffer<T> *ptr = (StandardBuffer<T> *)p;
         delete[] ptr->dat;
         delete ptr;
     };
 
     auto ptr = std::make_shared<NaFiFo>();
 
-    ptr->init(100, sizeof(float), alloc, dealloc);
+    ptr->init(100, sizeof(T), alloc, dealloc);
 
     return ptr;
 }
@@ -57,8 +59,8 @@ private:
     {
         if (!inputs[0]->read())
         {
-            FloatBuffer *rbuf = (FloatBuffer *)inputs[0]->read_buf();
-            FloatBuffer *wbuf = (FloatBuffer *)outputs[0]->write_buf();
+            StandardBuffer<float> *rbuf = (StandardBuffer<float> *)inputs[0]->read_buf();
+            StandardBuffer<float> *wbuf = (StandardBuffer<float> *)outputs[0]->write_buf();
 
             for (int i = 0; i < rbuf->cnt; i++)
                 wbuf->dat[i] = rbuf->dat[i] * 100;
@@ -77,7 +79,7 @@ public:
 
     void start()
     {
-        outputs[0] = create_nafifo_floatbuffer(((FloatBuffer *)inputs[0]->read_buf())->max * 2);
+        outputs[0] = create_nafifo_standardbuffer<float>(((StandardBuffer<float> *)inputs[0]->read_buf())->max * 2);
         ndsp::Block::start();
     }
 };
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::shared_ptr<NaFiFo> fifo1 = create_nafifo_floatbuffer(8192);
+    std::shared_ptr<NaFiFo> fifo1 = create_nafifo_standardbuffer<float>(8192);
 
     TestBlock testBlock1;
 
@@ -98,9 +100,9 @@ int main(int argc, char *argv[])
     std::thread thread_tx([fifo1, &should_run]()
                           {
         while(should_run) {
-            ((FloatBuffer*) fifo1->read_buf())->dat[0] = 1;
-             ((FloatBuffer*) fifo1->read_buf())->dat[1] = 2;
-            ((FloatBuffer*) fifo1->read_buf())->cnt = 2;
+            ((StandardBuffer<float>*) fifo1->read_buf())->dat[0] = 1;
+             ((StandardBuffer<float>*) fifo1->read_buf())->dat[1] = 2;
+            ((StandardBuffer<float>*) fifo1->read_buf())->cnt = 2;
             fifo1->write();
         } });
 
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
                           {
                               while (!testBlock1.outputs[0]->read())
                               {
-                                  FloatBuffer *wbuf = (FloatBuffer *)testBlock1.outputs[0]->read_buf();
+                                  StandardBuffer<float> *wbuf = (StandardBuffer<float> *)testBlock1.outputs[0]->read_buf();
                                   for (int i = 0; i < wbuf->cnt; i++)
                                       printf("%f, ", wbuf->dat[i]);
                                   printf("\n");

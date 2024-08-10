@@ -104,20 +104,20 @@ namespace spacex
             }
 
             // Deframe that! (Integrated derand)
-            std::vector<std::array<uint8_t, ccsds::ccsds_standard::CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
+            std::vector<std::array<uint8_t, ccsds::ccsds_tm::CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
 
             // If we found frames, write them out
             if (frameBuffer.size() > 0)
             {
-                for (std::array<uint8_t, ccsds::ccsds_standard::CADU_SIZE> cadu : frameBuffer)
+                for (std::array<uint8_t, ccsds::ccsds_tm::CADU_SIZE> cadu : frameBuffer)
                 {
                     // RS Correction
                     rs.decode_interlaved(&cadu[4], true, 5, errors);
 
-                    derand_ccsds(&cadu[4], ccsds::ccsds_standard::CADU_SIZE - 4);
+                    derand_ccsds(&cadu[4], ccsds::ccsds_tm::CADU_SIZE - 4);
 
                     if (errors[0] > -1 && errors[1] > -1 && errors[2] > -1 && errors[3] > -1 && errors[4] > -1)
-                        data_out.write((char *)&cadu, ccsds::ccsds_standard::CADU_SIZE);
+                        data_out.write((char *)&cadu, ccsds::ccsds_tm::CADU_SIZE);
                 }
             }
 

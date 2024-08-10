@@ -1,11 +1,11 @@
 #include "module_orb_decoder.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "imgui/imgui_image.h"
 
 namespace orb
@@ -26,7 +26,7 @@ namespace orb
         uint8_t cadu[1024];
 
         // Demuxers
-        ccsds::ccsds_weather::Demuxer demuxer_vcid4(882, true, 2);
+        ccsds::ccsds_aos::Demuxer demuxer_vcid4(882, true, 2);
 
         // Setup readers
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
@@ -54,7 +54,7 @@ namespace orb
                 input_fifo->read((uint8_t *)cadu, 1024);
 
             // Parse this transport frame
-            ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+            ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
             if (vcdu.vcid == 4)
             {

@@ -1,11 +1,11 @@
 #include "module_cluster_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 #include "common/simple_deframer.h"
@@ -39,7 +39,7 @@ namespace cluster
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1101, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid1(1101, false);
 
             std::ofstream output(d_output_file_hint + "_wbd.frm", std::ios::binary);
             std::ofstream output_cadu2(d_output_file_hint + "_cadu_bkp.cadu", std::ios::binary);
@@ -91,7 +91,7 @@ namespace cluster
                 output_cadu2.write((char *)cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 if (vcdu.vcid == 5) // Parse WBD VCID
                 {

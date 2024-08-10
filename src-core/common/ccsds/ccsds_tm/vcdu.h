@@ -5,7 +5,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_standard
+    namespace ccsds_tm
     {
         // Struct representing a VCDU
         struct VCDU
