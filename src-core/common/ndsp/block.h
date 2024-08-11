@@ -59,7 +59,7 @@ namespace ndsp
         std::vector<BlockInOutCfg> d_incfg;
         std::vector<BlockInOutCfg> d_oucfg;
 
-    protected:
+    public:
         std::vector<std::shared_ptr<NaFiFo>> inputs;
         std::vector<std::shared_ptr<NaFiFo>> outputs;
 
