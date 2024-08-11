@@ -17,7 +17,14 @@ namespace ndsp
     {
     }
 
-    void Block::connect_input(int in_n, std::shared_ptr<NaFiFo> &out)
+    std::shared_ptr<NaFiFo> Block::get_output(int ou_n)
+    {
+        if (ou_n >= outputs.size())
+            throw satdump_exception("Input index invalid!");
+        return outputs[ou_n];
+    }
+
+    void Block::set_input(int in_n, std::shared_ptr<NaFiFo> out)
     {
         if (in_n >= inputs.size())
             throw satdump_exception("Input index invalid!");
@@ -35,6 +42,8 @@ namespace ndsp
 
     void Block::start()
     {
+        set_params();
+
         d_work_run = true;
         d_work_th = std::thread(&Block::loop, this);
     }

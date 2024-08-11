@@ -57,10 +57,10 @@ int main(int argc, char *argv[])
 
     TestBlock testBlock1, testBlock2;
 
-    testBlock1.connect_input(0, fifo1);
+    testBlock1.set_input(0, fifo1);
     testBlock1.start();
 
-    testBlock2.connect_input(0, testBlock1.outputs[0]);
+    testBlock2.set_input(0, testBlock1.get_output(0));
     testBlock2.start();
 
     bool should_run = true;

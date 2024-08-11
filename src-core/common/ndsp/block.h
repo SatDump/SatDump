@@ -10,6 +10,8 @@
 
 #include <volk/volk.h>
 
+#include "nlohmann/json.hpp"
+
 namespace ndsp
 {
     namespace buf
@@ -57,7 +59,7 @@ namespace ndsp
         std::vector<BlockInOutCfg> d_incfg;
         std::vector<BlockInOutCfg> d_oucfg;
 
-    public:
+    protected:
         std::vector<std::shared_ptr<NaFiFo>> inputs;
         std::vector<std::shared_ptr<NaFiFo>> outputs;
 
@@ -74,7 +76,11 @@ namespace ndsp
         ~Block();
 
         std::string get_id() { return d_id; }
-        void connect_input(int in_n, std::shared_ptr<NaFiFo> &out);
+        std::shared_ptr<NaFiFo> get_output(int ou_n);
+        void set_input(int in_n, std::shared_ptr<NaFiFo> out);
+
+        virtual nlohmann::json get_params() { return {}; }
+        virtual void set_params(nlohmann::json p = {}) {}
 
         virtual void start();
         virtual void stop();
