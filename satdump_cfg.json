@@ -511,7 +511,7 @@
                         "white_balance": true,
                         "individual_equalize": true
                     },
-                    "AVHRR 543b False Color": {
+                    "AVHRR 543b IR False Color": {
                         "equation": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
                         "white_balance": true,
                         "individual_equalize": true
@@ -582,13 +582,13 @@
                         "description": "descriptions/NatColor.md",
                         "geo_correct": true
                     },
-                    "543b": {
+                    "AVHRR 543b IR False Color": {
                         "equation": "ch5, ch4, ch3b",
                         "individual_equalize": true,
                         "description": "descriptions/543b.md",
                         "geo_correct": true
                     },
-                    "3b45": {
+                    "AVHRR 3b45 IR False Color": {
                         "equation": "ch3b, ch4, ch5",
                         "individual_equalize": true,
                         "description": "descriptions/3b45.md",
@@ -1354,7 +1354,7 @@
                         "geo_correct": true,
                         "autogen": true
                     },
-"Sea Surface Temperature": {
+                    "Sea Surface Temperature": {
                         "channels": "cch5",
                         "description": "descriptions/SST.md",
                         "lua": "scripted_compos/sst_landmask.lua",
@@ -2308,6 +2308,16 @@
                     "321": {
                         "equation": "ch3,ch2,ch1",
                         "equalize": true
+                    }
+                }
+            },
+            "airs": {
+                "handler": "image_handler",
+                "name": "AIRS",
+                "rgb_composites": {
+                    "AVHRR 543b IR False Color": {
+                        "equation": "ch4, ch343, ch494",
+                        "individual_equalize": true
                     }
                 }
             },
