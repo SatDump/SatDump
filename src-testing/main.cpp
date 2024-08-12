@@ -12,7 +12,6 @@
 
 #include "logger.h"
 
-<<<<<<< HEAD
 #include "common/dsp/complex.h"
 #include "common/ndsp/block.h"
 #include <unistd.h>
@@ -105,9 +104,4 @@ int main(int argc, char *argv[])
 
     if (thread_rx.joinable())
         thread_rx.join();
-=======
-int main(int argc, char *argv[])
-{
-    initLogger();
->>>>>>> master
 }
