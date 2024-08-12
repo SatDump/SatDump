@@ -5,7 +5,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_weather
+    namespace ccsds_aos
     {
         // Struct representing a VCDU
         struct VCDU

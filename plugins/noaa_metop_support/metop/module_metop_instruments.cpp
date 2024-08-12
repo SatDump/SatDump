@@ -1,13 +1,13 @@
 #include "module_metop_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/image_products.h"
 #include "products/radiation_products.h"
 #include "products/scatterometer_products.h"
@@ -40,13 +40,13 @@ namespace metop
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid3(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid9(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid10(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid15(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid24(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid34(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid3(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid9(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid10(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid12(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid15(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid24(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid34(882, true);
 
             // Setup Admin Message
             {
@@ -70,7 +70,7 @@ namespace metop
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == METOP_A_SCID ||
                     vcdu.spacecraft_id == METOP_B_SCID ||

@@ -26,14 +26,19 @@ namespace meteosat
             return double(offset) * 86400.0 + (days * 18.204444444 * 3600.0) + double(milliseconds_of_day) / double(ms_scale) + double(microseconds_of_millisecond) / us_of_ms_scale;
         }
 
-        SEVIRIReader::SEVIRIReader()
+        SEVIRIReader::SEVIRIReader(bool d_mode_is_rss)
+            : d_mode_is_rss(d_mode_is_rss)
         {
             // Standard resolution channels
             for (int i = 0; i < 11; i++)
-                images_nrm[i] = image::Image(16, 3834, 4482, 1);
+            {
+                images_nrm[i] = image::Image(16, 3834, d_mode_is_rss ? 1494 : 4482, 1);
+                images_nrm[i].fill(0);
+            }
 
             // HRV channel
-            images_hrv = image::Image(16, 5751, 13500, 1);
+            images_hrv = image::Image(16, 5751, d_mode_is_rss ? 4500 : 13500, 1);
+            images_hrv.fill(0);
 
             lines_since_last_end = 0;
             not_channels_lines = 0;
@@ -117,9 +122,9 @@ namespace meteosat
 
             if (scid == METEOSAT_9_SCID)
                 scan_timestamp = parseCCSDSTimeMeteosat(pkt, 18249 + 1310, 65536, 1e100) + 6442;
-            else if (scid == 323)
+            else if (scid == METEOSAT_10_SCID)
                 scan_timestamp = parseCCSDSTimeMeteosat(pkt, 18249, 65536, 1e100) + 34738;
-            else if (scid == 324)
+            else if (scid == METEOSAT_11_SCID)
                 scan_timestamp = parseCCSDSTimeMeteosat(pkt, 18249 + 731, 65536, 1e100) + 42207;
             else
                 return;
@@ -135,14 +140,37 @@ namespace meteosat
                     time_t tttime = scan_timestamp;
                     std::tm timeReadable = *gmtime(&tttime);
 
-                    if (lines_since_last_end++ > 500 && (timeReadable.tm_min == 0 || timeReadable.tm_min == 15 || timeReadable.tm_min == 30 || timeReadable.tm_min == 45))
+                    if (d_mode_is_rss)
                     {
-                        lines_since_last_end = 0;
-                        saveImages();
+                        if (lines_since_last_end++ > 500 && (timeReadable.tm_min == 0 ||
+                                                             timeReadable.tm_min == 5 ||
+                                                             timeReadable.tm_min == 10 ||
+                                                             timeReadable.tm_min == 15 ||
+                                                             timeReadable.tm_min == 20 ||
+                                                             timeReadable.tm_min == 25 ||
+                                                             timeReadable.tm_min == 30 ||
+                                                             timeReadable.tm_min == 35 ||
+                                                             timeReadable.tm_min == 40 ||
+                                                             timeReadable.tm_min == 45 ||
+                                                             timeReadable.tm_min == 50 ||
+                                                             timeReadable.tm_min == 55))
+                        {
+                            lines_since_last_end = 0;
+                            saveImages();
+                        }
+                    }
+                    else
+                    {
+                        if (lines_since_last_end++ > 500 && (timeReadable.tm_min == 0 || timeReadable.tm_min == 15 || timeReadable.tm_min == 30 || timeReadable.tm_min == 45))
+                        {
+                            lines_since_last_end = 0;
+                            saveImages();
+                        }
                     }
                 }
 
-                int lines = fmod(scan_timestamp, 15 * 60) / (300 / 1494.0);
+                int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (300 / 1494.0))
+                                          : (fmod(scan_timestamp, 15 * 60) / (300 / 1494.0));
 
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_linebuf_nrm);
                 for (int c = 0; c < 3; c++)
@@ -154,7 +182,8 @@ namespace meteosat
                                 scan_chunk_number == 9 ||
                                 scan_chunk_number == 10;
                     for (int v = 0; v < 3834; v++)
-                        images_nrm[scan_chunk_number].set(lines * images_nrm[scan_chunk_number].width() + v, tmp_linebuf_nrm[(swap ? (2 - c) : c) * 3834 + v] << 6);
+                        if (lines < images_nrm[scan_chunk_number].height())
+                            images_nrm[scan_chunk_number].set(lines * images_nrm[scan_chunk_number].width() + v, tmp_linebuf_nrm[(swap ? (2 - c) : c) * 3834 + v] << 6);
                     lines++;
                 }
 
@@ -177,7 +206,8 @@ namespace meteosat
                 uint16_t tmp_buf[15000];
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_buf);
 
-                int lines = fmod(scan_timestamp, 15 * 60) / (100 / 1494.0);
+                int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
+                                          : fmod(scan_timestamp, 15 * 60) / (100 / 1494.0);
                 lines += (scan_chunk_number - 11) * 2;
 
                 if (not_channels_lines != lines)
@@ -186,7 +216,8 @@ namespace meteosat
                 for (int c = 0; c < 2; c++)
                 {
                     for (int v = 0; v < 5751; v++)
-                        images_hrv.set(lines * images_hrv.width() + v, tmp_buf[c * 5751 + v] << 6);
+                        if (lines < images_hrv.height())
+                            images_hrv.set(lines * images_hrv.width() + v, tmp_buf[c * 5751 + v] << 6);
                     lines++;
                     // printf("Time %s - %f  %f, lines:%d cpayload:%d\n", timestamp_to_string(ltime).c_str(), ltime, last_time, lines, cpayload);
                 }
@@ -199,11 +230,13 @@ namespace meteosat
                 uint16_t tmp_buf[15000];
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_buf);
 
-                int lines = fmod(scan_timestamp, 15 * 60) / (100 / 1494.0);
+                int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
+                                          : fmod(scan_timestamp, 15 * 60) / (100 / 1494.0);
                 lines += (scan_chunk_number - 11) * 2;
 
                 for (int v = 0; v < 5751; v++)
-                    images_hrv.set(lines * images_hrv.width() + v, tmp_buf[v] << 6);
+                    if (lines < images_hrv.height())
+                        images_hrv.set(lines * images_hrv.width() + v, tmp_buf[v] << 6);
 
                 lines++;
                 not_channels_lines = lines;

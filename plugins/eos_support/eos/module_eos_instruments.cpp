@@ -1,7 +1,7 @@
 #include "module_eos_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -51,15 +51,15 @@ namespace eos
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid3;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid10;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid15;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid20;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid25;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid26;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid30;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid35;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid42;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid3;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid10;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid15;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid20;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid25;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid26;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid30;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid35;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid42;
 
             while (!data_in.eof())
             {
@@ -67,7 +67,7 @@ namespace eos
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (d_satellite == TERRA)
                 {
@@ -311,7 +311,8 @@ namespace eos
                 airs_hd_products.bit_depth = 16;
                 airs_hd_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 airs_hd_products.set_tle(satellite_tle);
-                // airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_hd_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_airs.json")));
 
                 for (int i = 0; i < 4; i++)
                     airs_hd_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getHDChannel(i)});
@@ -324,9 +325,10 @@ namespace eos
                 airs_products.has_timestamps = true;
                 airs_products.bit_depth = 16;
                 airs_products.save_as_matrix = true;
-                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 airs_products.set_tle(satellite_tle);
-                // airs_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_airs.json")));
 
                 for (int i = 0; i < 2666; i++)
                     airs_products.images.push_back({"AIRS-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getChannel(i)});

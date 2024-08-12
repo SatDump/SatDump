@@ -10,7 +10,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_standard
+    namespace ccsds_tm
     {
         /*
     CCSDS Values to use throughout the whole program

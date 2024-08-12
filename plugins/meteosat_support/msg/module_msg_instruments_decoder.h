@@ -12,7 +12,7 @@ namespace meteosat
         std::atomic<uint64_t> filesize;
         std::atomic<uint64_t> progress;
 
-        msg::SEVIRIReader seviri_reader;
+        std::shared_ptr<msg::SEVIRIReader> seviri_reader;
 
     public:
         MSGInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -228,10 +228,10 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
         for (int i = 0; i < devlist->devicecount; i++)
         {
             if (devlist->serial_numbers[i] == nullptr)
-                results.push_back({"hackrf", "HackRF One [In Use]", 0});
+                results.push_back({"hackrf", "HackRF One [In Use]", "0"});
             else
             {
-                results.push_back({"hackrf", "HackRF One " + std::string(devlist->serial_numbers[0]), std::string(devlist->serial_numbers[0])});
+                results.push_back({"hackrf", "HackRF One " + std::string(devlist->serial_numbers[i]), std::string(devlist->serial_numbers[i])});
             }
         }
 

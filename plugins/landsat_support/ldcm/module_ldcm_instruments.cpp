@@ -1,11 +1,11 @@
 #include "module_ldcm_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
 
@@ -34,8 +34,8 @@ namespace ldcm
             uint8_t cadu[1034];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid5(1022, true, 0);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid12(1022, true, 0);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid5(1022, true, 0);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid12(1022, true, 0);
 
             // std::ofstream output("file.ccsds");
 
@@ -47,7 +47,7 @@ namespace ldcm
                 data_in.read((char *)cadu, 1034);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);

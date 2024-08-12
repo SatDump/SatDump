@@ -4,7 +4,7 @@
 
 namespace ccsds
 {
-    namespace ccsds_standard
+    namespace ccsds_tm
     {
         // Parse MPDU from CADU
         MPDU parseMPDU(uint8_t *cadu, bool hasVCDUInsertZone, int insertZoneSize, int mpdu_insert_zone)

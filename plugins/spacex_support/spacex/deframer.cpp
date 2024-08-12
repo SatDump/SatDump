@@ -15,7 +15,7 @@ inline bool getBit(T &data, int &bit)
 
 namespace ccsds
 {
-    namespace ccsds_standard
+    namespace ccsds_tm
     {
         // Compare 2 32-bits values bit per bit
         int checkSyncMarker(uint32_t &marker, uint32_t totest)

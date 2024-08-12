@@ -7,12 +7,11 @@
 
 namespace ccsds
 {
-    namespace ccsds_standard
+    namespace ccsds_aos
     {
-        Demuxer::Demuxer(int mpdu_data_size, bool hasInsertZone, int insertZoneSize, int mpdu_insert_zone) : MPDU_DATA_SIZE(mpdu_data_size),
-                                                                                                             HAS_INSERT_ZONE(hasInsertZone),
-                                                                                                             INSERT_ZONE_SIZE(insertZoneSize),
-                                                                                                             MPDU_INSERT_ZONE(mpdu_insert_zone)
+        Demuxer::Demuxer(int mpdu_data_size, bool hasInsertZone, int insertZoneSize) : MPDU_DATA_SIZE(mpdu_data_size),
+                                                                                       HAS_INSERT_ZONE(hasInsertZone),
+                                                                                       INSERT_ZONE_SIZE(insertZoneSize)
         {
             // Init variables
             currentCCSDSPacket.header.packet_length = 0;
@@ -68,16 +67,10 @@ namespace ccsds
         {
             ccsdsBuffer.clear(); // Clear buffer from previous run
 
-            MPDU mpdu = parseMPDU(cadu, HAS_INSERT_ZONE, INSERT_ZONE_SIZE, MPDU_INSERT_ZONE); // Parse M-PDU Header
+            MPDU mpdu = parseMPDU(cadu, HAS_INSERT_ZONE, INSERT_ZONE_SIZE); // Parse M-PDU Header
 
             // Sanity check, if the first header point points outside the data payload
             if (mpdu.first_header_pointer < 2047 && mpdu.first_header_pointer >= MPDU_DATA_SIZE)
-            {
-                return ccsdsBuffer;
-            }
-
-            // This is idle
-            if (mpdu.first_header_pointer == 2046)
             {
                 return ccsdsBuffer;
             }
@@ -208,4 +201,4 @@ namespace ccsds
             return ccsdsBuffer;
         } // namespace libccsds
     }     // namespace libccsds
-} // namespace proba
+}
