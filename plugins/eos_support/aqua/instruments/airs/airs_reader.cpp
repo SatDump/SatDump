@@ -15,7 +15,7 @@ namespace aqua
                 hd_channels[i].resize(90 * 9 * 8);
 
             lines = 0;
-            timestamps_ifov.push_back(std::vector<double>(90, -1));
+            timestamps_ifov = std::vector<double>(90, -1);
         }
 
         AIRSReader::~AIRSReader()
@@ -78,13 +78,13 @@ namespace aqua
                         hd_channels[channel][(lines * 9 + (8 - y)) * (90 * 8) + (90 * 8 - 1) - ((pix_pos * 8) + i)] = values_hd[/*(y * 8 + i)*/ (i * 9 + y) * 4 + channel] << 4;
 
             // Timestamp
-            timestamps_ifov[lines][pix_pos] = ccsds::parseCCSDSTimeFullRawUnsegmented(&packet.payload[1], -4383, 15.3e-6);
+            timestamps_ifov[lines * 90 + pix_pos] = ccsds::parseCCSDSTimeFullRawUnsegmented(&packet.payload[1], -4383, 15.3e-6);
 
             // Frame counter
             if (counter == 22 || counter == 278 || counter == 534)
             {
                 lines++;
-                timestamps_ifov.push_back(std::vector<double>(90, -1));
+                timestamps_ifov.resize((lines + 1) * 90, -1);
 
                 for (int i = 0; i < 2666; i++)
                     channels[i].resize((lines + 1) * 90);
