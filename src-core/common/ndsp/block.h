@@ -80,7 +80,7 @@ namespace ndsp
         void set_input(int in_n, std::shared_ptr<NaFiFo> out);
 
         virtual nlohmann::json get_params() { return {}; }
-        virtual void set_params(nlohmann::json p = {}) {}
+        virtual void set_params(nlohmann::json = {}) {}
 
         virtual void start();
         virtual void stop();
