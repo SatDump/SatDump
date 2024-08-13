@@ -55,7 +55,7 @@ namespace ndsp
         }
 
         // Init buffer
-        buffer = dsp::create_volk_buffer<T>(2 * ((ndsp::buf::StdBuf<T> *)inputs[0]->read_buf())->max);
+        buffer = dsp::create_volk_buffer<T>(((ndsp::buf::StdBuf<T> *)inputs[0]->read_buf())->max * 2);
     }
 
     template <typename T>
@@ -66,12 +66,13 @@ namespace ndsp
             auto *rbuf = (ndsp::buf::StdBuf<T> *)inputs[0]->read_buf();
             auto *wbuf = (ndsp::buf::StdBuf<T> *)outputs[0]->write_buf();
 
-            memcpy(&buffer[ntaps], rbuf->dat, rbuf->cnt * sizeof(T));
+            int nsamples = rbuf->cnt;
+            memcpy(&buffer[ntaps], rbuf->dat, nsamples * sizeof(T));
             inputs[0]->flush();
 
             if constexpr (std::is_same_v<T, float>)
             {
-                for (int i = 0; i < rbuf->cnt; i++)
+                for (int i = 0; i < nsamples; i++)
                 {
                     // Doing it this way instead of the normal :
                     // volk_32f_x2_dot_prod_32f(&output_stream->writeBuf[i], &buffer[i + 1], taps, ntaps);
@@ -84,7 +85,7 @@ namespace ndsp
             }
             if constexpr (std::is_same_v<T, complex_t>)
             {
-                for (int i = 0; i < rbuf->cnt; i++)
+                for (int i = 0; i < nsamples; i++)
                 {
                     // Doing it this way instead of the normal :
                     // volk_32fc_32f_dot_prod_32fc(&output_stream->writeBuf[i], &buffer[i + 1], taps, ntaps);
@@ -96,9 +97,10 @@ namespace ndsp
                 }
             }
 
-            wbuf->cnt = rbuf->cnt;
-
+            wbuf->cnt = nsamples;
             outputs[0]->write();
+
+            memmove(&buffer[0], &buffer[nsamples], ntaps * sizeof(T));
         }
     }
 

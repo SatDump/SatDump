@@ -32,7 +32,9 @@ namespace ndsp
                 StdBuf<T> *ptr = new StdBuf<T>;
                 ptr->max = size;
                 ptr->cnt = 0;
-                ptr->dat = (T *)volk_malloc(sizeof(T) * size, volk_get_alignment());
+                ptr->dat = (T *)volk_malloc(sizeof(T) * size, volk_get_alignment()); // TODO REPLACE WITH VOLK_CREATE_BUFFER
+                                                                                     //   for (int i = 0; i < size; i++)
+                                                                                     //       ((T *)ptr->dat)[i] = 0;
                 return ptr;
             };
 

@@ -16,76 +16,77 @@
 #include "common/ndsp/block.h"
 #include <unistd.h>
 
-class TestBlock : public ndsp::Block
-{
-private:
-    void work()
-    {
-        if (!inputs[0]->read())
-        {
-            auto *rbuf = (ndsp::buf::StdBuf<float> *)inputs[0]->read_buf();
-            auto *wbuf = (ndsp::buf::StdBuf<float> *)outputs[0]->write_buf();
+#include "common/ndsp/filter/fir.h"
+#include "common/ndsp/pll/costas_loop.h"
+#include "common/ndsp/clock/clock_recovery_mm.h"
 
-            for (int i = 0; i < rbuf->cnt; i++)
-                wbuf->dat[i] = rbuf->dat[i] * 10;
-            wbuf->cnt = rbuf->cnt;
+#include "common/dsp/filter/firdes.h"
 
-            outputs[0]->write();
-            inputs[0]->flush();
-        }
-    }
-
-public:
-    TestBlock()
-        : ndsp::Block("test_block", {{sizeof(float)}}, {{sizeof(float)}})
-    {
-    }
-
-    void start()
-    {
-        ndsp::buf::init_nafifo_stdbuf<float>(outputs[0], 2, ((ndsp::buf::StdBuf<float> *)inputs[0]->read_buf())->max * 2);
-        ndsp::Block::start();
-    }
-};
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
     std::shared_ptr<NaFiFo> fifo1 = std::make_shared<NaFiFo>();
-    ndsp::buf::init_nafifo_stdbuf<float>(fifo1, 2, 8192);
+    ndsp::buf::init_nafifo_stdbuf<complex_t>(fifo1, 2, 8192);
 
-    TestBlock testBlock1, testBlock2;
+    ndsp::FIRFilter<complex_t> rrc_filter;
+    ndsp::CostasLoop costas;
+    ndsp::ClockRecoveryMM<complex_t> clock_reco;
 
-    testBlock1.set_input(0, fifo1);
-    testBlock1.start();
+    rrc_filter.d_taps = dsp::firdes::root_raised_cosine(8.0, 6e6, 2333333, 0.35, 31);
 
-    testBlock2.set_input(0, testBlock1.get_output(0));
-    testBlock2.start();
+    costas.d_order = 4;
+    costas.d_loop_bw = 0.005;
+    costas.d_freq_limit = 1;
+
+    clock_reco.d_omega = 6e6 / 2333333;
+    clock_reco.d_omega_gain = pow(8.7e-3, 2) / 4.0;
+    clock_reco.d_mu = 0.5f;
+    clock_reco.d_mu_gain = 8.7e-3;
+    clock_reco.d_omega_relative_limit = 0.005f;
+
+    rrc_filter.set_input(0, fifo1);
+    costas.set_input(0, rrc_filter.get_output(0));
+    clock_reco.set_input(0, costas.get_output(0));
+
+    rrc_filter.start();
+    costas.start();
+    clock_reco.start();
 
     bool should_run = true;
 
-    std::thread thread_tx([fifo1, &should_run]()
+    std::ifstream data_in(argv[1], std::ios::binary);
+    std::ofstream data_ou(argv[2], std::ios::binary);
+
+    std::thread thread_tx([fifo1, &should_run, &data_in]()
                           {
-        while(should_run) {
-            ((ndsp::buf::StdBuf<float>*) fifo1->read_buf())->dat[0] = 1;
-             ((ndsp::buf::StdBuf<float>*) fifo1->read_buf())->dat[1] = 2;
-            ((ndsp::buf::StdBuf<float>*) fifo1->read_buf())->cnt = 2;
+        while(should_run && !data_in.eof()) {
+            data_in.read((char*) ((ndsp::buf::StdBuf<complex_t>*) fifo1->read_buf())->dat, 4096 * sizeof(complex_t));
+            ((ndsp::buf::StdBuf<complex_t>*) fifo1->read_buf())->cnt = 4096;
             fifo1->write();
         } });
 
-    std::thread thread_rx([&testBlock2]()
+    std::thread thread_rx([&clock_reco, &data_ou]()
                           {
-                              while (!testBlock2.outputs[0]->read())
+                              while (!clock_reco.outputs[0]->read())
                               {
-                                 auto *wbuf = (ndsp::buf::StdBuf<float> *)testBlock2.outputs[0]->read_buf();
-                                  for (int i = 0; i < wbuf->cnt; i++)
-                                      printf("%f, ", wbuf->dat[i]);
-                                  printf("\n");
-                                  testBlock2.outputs[0]->flush();
+                                 auto *wbuf = (ndsp::buf::StdBuf<complex_t> *)clock_reco.outputs[0]->read_buf();
+                                 // for (int i = 0; i < wbuf->cnt; i++)
+                                 //     printf("%f, ", wbuf->dat[i]);
+                                 // printf("\n");
+                                  data_ou.write((char*)wbuf->dat, wbuf->cnt * sizeof(complex_t));
+                                  
+                                  clock_reco.outputs[0]->flush();
                               } });
 
-    sleep(2);
+    // sleep(2);
+    while (!data_in.eof())
+    {
+        sleep(1);
+        printf("%llu \n", data_in.tellg());
+    }
 
     should_run = false;
     fifo1->stop();
@@ -94,11 +95,9 @@ int main(int argc, char *argv[])
 
     logger->info("Stopping blocks!");
 
-    testBlock1.stop();
-
-    logger->info("Stopping block 2!");
-
-    testBlock2.stop();
+    rrc_filter.stop();
+    costas.stop();
+    clock_reco.stop();
 
     logger->info("Blocks stopped!");
 
