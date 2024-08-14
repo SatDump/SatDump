@@ -1,8 +1,13 @@
 #include "module_generic_analog_demod.h"
+#include "common/dsp/block.h"
 #include "common/dsp/filter/firdes.h"
+#include "common/dsp/pll/pll_carrier_tracking.h"
+#include "common/dsp/utils/complex_to_mag.h"
+#include "common/dsp_source_sink/format_notated.h"
 #include "core/config.h"
 #include "logger.h"
 #include "imgui/imgui.h"
+#include <memory>
 #include <volk/volk.h>
 #include "common/dsp/io/wav_writer.h"
 #include "common/audio/audio_sink.h"
@@ -12,7 +17,7 @@ namespace generic_analog
     GenericAnalogDemodModule::GenericAnalogDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         name = "Generic Analog Demodulator (WIP)";
-        show_freq = false;
+        show_freq = true;
         play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
 
         constellation.d_hscale = 1.0; // 80.0 / 100.0;
@@ -29,10 +34,16 @@ namespace generic_analog
         BaseDemodModule::initb();
 
         // Resampler to BW
-        //    res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
+        res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
 
         // Quadrature demod
-        //  qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+        //qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+	
+	// Pll
+	pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(res->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
+
+	// AM demod
+	ctm = std::make_shared<dsp::ComplexToMagBlock>(pll->output_stream);
     }
 
     GenericAnalogDemodModule::~GenericAnalogDemodModule()
@@ -60,8 +71,10 @@ namespace generic_analog
 
         // Start
         BaseDemodModule::start();
-        //    res->start();
-        //    qua->start();
+        res->start();
+        //ctm->start();
+	pll->start();
+	ctm->start();
 
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
@@ -81,22 +94,23 @@ namespace generic_analog
         }
 
         /////////////
-        dsp::RationalResamplerBlock<complex_t> input_resamp(nullptr, d_symbolrate, final_samplerate);
-        dsp::QuadratureDemodBlock quad_demod(nullptr, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+        //dsp::RationalResamplerBlock<complex_t> input_resamp(nullptr, d_symbolrate, final_samplerate);
+        //dsp::QuadratureDemodBlock quad_demod(nullptr, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+	//dsp::PLLCarrierTrackingBlock pll(nullptr, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
         complex_t *work_buffer_complex = dsp::create_volk_buffer<complex_t>(d_buffer_size);
         float *work_buffer_float = dsp::create_volk_buffer<float>(d_buffer_size);
 
         int dat_size = 0;
         while (demod_should_run())
         {
-            dat_size = agc->output_stream->read();
+            dat_size = ctm->output_stream->read();
 
             if (dat_size <= 0)
             {
-                agc->output_stream->flush();
+                ctm->output_stream->flush();
                 continue;
             }
-
+/*
 #if 1
             proc_mtx.lock();
 
@@ -170,18 +184,21 @@ namespace generic_analog
 
             proc_mtx.unlock();
 #else
+	    */
             // Into const
-            constellation.pushFloatAndGaussian(qua->output_stream->readBuf, qua->output_stream->getDataSize());
+            constellation.pushFloatAndGaussian(ctm->output_stream->readBuf, ctm->output_stream->getDataSize());
 
             for (int i = 0; i < dat_size; i++)
             {
-                if (qua->output_stream->readBuf[i] > 1.0f)
-                    qua->output_stream->readBuf[i] = 1.0f;
-                if (qua->output_stream->readBuf[i] < -1.0f)
-                    qua->output_stream->readBuf[i] = -1.0f;
+                if (ctm->output_stream->readBuf[i] > 1.0f)
+                    ctm->output_stream->readBuf[i] = 1.0f;
+                if (ctm->output_stream->readBuf[i] < -1.0f)
+                    ctm->output_stream->readBuf[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 0.68, dat_size);
+	    display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
+
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)ctm->output_stream->readBuf, 65535 * 0.68, dat_size);
 
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
             if (enable_audio && play_audio)
@@ -195,9 +212,9 @@ namespace generic_analog
             {
                 output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
             }
-#endif
+//#endif
 
-            agc->output_stream->flush();
+            ctm->output_stream->flush();
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
@@ -232,9 +249,10 @@ namespace generic_analog
     {
         // Stop
         BaseDemodModule::stop();
-        // res->stop();
-        //   qua->stop();
-        agc->output_stream->stopReader();
+        res->stop();
+	pll->stop();
+        ctm->stop();
+        ctm->output_stream->stopReader();
     }
 
     void GenericAnalogDemodModule::drawUI(bool window)
@@ -274,13 +292,13 @@ namespace generic_analog
             proc_mtx.unlock();
 
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-            /* if (show_freq)
+	    if (show_freq)
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz", 4).c_str());
             }
-            snr_plot.draw(snr, peak_snr); */
+            snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);

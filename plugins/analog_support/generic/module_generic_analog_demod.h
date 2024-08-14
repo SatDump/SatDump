@@ -1,7 +1,11 @@
 #pragma once
 
+#include "common/dsp/demod/pm_to_bpsk.h"
+#include "common/dsp/pll/pll_carrier_tracking.h"
+#include "common/dsp/utils/complex_to_mag.h"
 #include "modules/demod/module_demod_base.h"
 #include "common/dsp/demod/quadrature_demod.h"
+#include <memory>
 
 namespace generic_analog
 {
@@ -10,7 +14,14 @@ namespace generic_analog
     protected:
         std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> res;
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
+	std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
+	std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 
+	float d_pll_bw = 0.002;
+	float d_pll_max_offset = 0.5;
+
+
+	float display_freq = 0;
 
         bool nfm_demod = true;
         bool am_demod = false;
