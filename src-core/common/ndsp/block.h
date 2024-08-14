@@ -69,9 +69,10 @@ namespace ndsp
         std::atomic<bool> d_work_run;
         std::thread d_work_th;
 
-    private:
+    protected:
         void loop();
         virtual void work() = 0;
+        bool is_running() { return d_work_run; }
 
     public:
         Block(std::string id, std::vector<BlockInOutCfg> incfg, std::vector<BlockInOutCfg> oucfg);

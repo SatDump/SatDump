@@ -9,7 +9,7 @@ namespace ndsp
 {
     template <typename T>
     ClockRecoveryMM<T>::ClockRecoveryMM()
-        : ndsp::Block("clock_recovery_mm", {{sizeof(T)}}, {{sizeof(T)}}),
+        : ndsp::Block(std::is_same_v<T, float> ? "clock_recovery_mm_ff" : "clock_recovery_mm_cc", {{sizeof(T)}}, {{sizeof(T)}}),
           p_2T(0),
           p_1T(0),
           p_0T(0),

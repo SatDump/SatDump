@@ -9,7 +9,7 @@ namespace ndsp
         inputs.resize(d_incfg.size());
         outputs.resize(d_oucfg.size());
 
-        for (int i = 0; i < d_incfg.size(); i++)
+        for (int i = 0; i < d_oucfg.size(); i++)
             outputs[i] = std::make_shared<NaFiFo>();
     }
 
@@ -46,6 +46,9 @@ namespace ndsp
 
         d_work_run = true;
         d_work_th = std::thread(&Block::loop, this);
+        // #ifndef _WIN32
+        // pthread_setname_np(/*d_work_th.native_handle()*/ pthread_self(), d_id.c_str());
+        // #endif
     }
 
     void Block::stop()

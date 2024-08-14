@@ -5,7 +5,7 @@ namespace ndsp
 {
     template <typename T>
     FIRFilter<T>::FIRFilter()
-        : ndsp::Block("fir_filter", {{sizeof(T)}}, {{sizeof(T)}})
+        : ndsp::Block(std::is_same_v<T, float> ? "fir_filter_ff" : "fir_filter_cc", {{sizeof(T)}}, {{sizeof(T)}})
     {
     }
 
