@@ -200,7 +200,7 @@ endif()
 
 # Install
 if(MSVC OR BUILD_MSVC)
-    install(TARGETS satdump_core DESTINATION bin)
+    install(TARGETS satdump_core DESTINATION bin RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
     install(TARGETS satdump_core DESTINATION lib)
 endif()
