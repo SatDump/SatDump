@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 $PSDefaultParameterValues['*:ErrorAction']='Stop'
 
-if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false)
+if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false -and $Env:GITHUB_WORKSPACE -eq $null)
 {
     Write-Error "You must run this script within Developer Powershell for Visual Studio"
     exit 1
