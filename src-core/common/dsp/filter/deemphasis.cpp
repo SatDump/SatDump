@@ -8,8 +8,10 @@
 namespace dsp
 {
 	template<typename T>
-	DeEmphasisBlock<T>::DeEmphasisBlock(std::shared_ptr<dsp::stream<T>> input, double samplerate, double tau, int ntaps) : Block<T, T>(input)
+	DeEmphasisBlock<T>::DeEmphasisBlock(std::shared_ptr<dsp::stream<T>> input, double quad_sampl_rate, double tau, int ntaps) : Block<T, T>(input)
 	{
+		float dt = 1.0f / quad_sampl_rate;
+		alpha = dt / (tau + dt);
 	}
 	
 
@@ -37,7 +39,28 @@ namespace dsp
 		{
 			for (int i = 0; i < nsamples; i++)
 			{
+        			// copied from fm_emph.py in gr-analog
+        			double  w_c;    // Digital corner frequency
+        			double  w_ca;   // Prewarped analog corner frequency
+        			double  k, z1, p1, b0;
+        			double  fs = (double)quad_sampl_rate;
 
+        			w_c = 1.0 / tau;
+        			w_ca = 2.0 * fs * tan(w_c / (2.0 * fs));
+
+
+        			// Resulting digital pole, zero, and gain term from the bilinear
+        			// transformation of H(s) = w_ca / (s + w_ca) to
+        			// H(z) = b0 (1 - z1 z^-1)/(1 - p1 z^-1)
+        			k = -w_ca / (2.0 * fs);
+        			z1 = -1.0;
+        			p1 = (1.0 + k) / (1.0 - k);
+        			b0 = -k / (1.0 - k);
+				
+				d_fftaps[0] = 1.0;
+        			d_fftaps[1] = 0.0;
+        			d_fbtaps[0] = 0.0;
+        			d_fbtaps[1] = 0.0;
 
 			}
 		}
@@ -45,6 +68,29 @@ namespace dsp
 		{
 			for (int i = 0; i < nsamples; i++)
 			{
+        			// copied from fm_emph.py in gr-analog
+        			double  w_c;    // Digital corner frequency
+        			double  w_ca;   // Prewarped analog corner frequency
+        			double  k, z1, p1, b0;
+        			double  fs = (double)quad_sampl_rate;
+
+        			w_c = 1.0 / tau;
+        			w_ca = 2.0 * fs * tan(w_c / (2.0 * fs));
+
+
+        			// Resulting digital pole, zero, and gain term from the bilinear
+        			// transformation of H(s) = w_ca / (s + w_ca) to
+        			// H(z) = b0 (1 - z1 z^-1)/(1 - p1 z^-1)
+        			k = -w_ca / (2.0 * fs);
+        			z1 = -1.0;
+        			p1 = (1.0 + k) / (1.0 - k);
+        			b0 = -k / (1.0 - k);
+
+        			d_fftaps[0] = b0;
+        			d_fftaps[1] = -z1 * b0;
+        			d_fbtaps[0] = 1.0;
+        			d_fbtaps[1] = -p1;
+
 
 
 			}
