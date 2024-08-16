@@ -10,11 +10,11 @@ if(RTAUDIO_LIBRARY) # OR MSVC)
 
     if(MSVC)
         target_link_libraries(rtaudio_audio_sink PUBLIC satdump_core rtaudio.dll)
+        install(TARGETS rtaudio_audio_sink DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     else()
         target_link_libraries(rtaudio_audio_sink PUBLIC satdump_core ${RTAUDIO_LIBRARY})
+        install(TARGETS rtaudio_audio_sink DESTINATION lib/satdump/plugins)
     endif()
-
-    install(TARGETS rtaudio_audio_sink DESTINATION lib/satdump/plugins)
 else()
     message("RtAudio Library could not be found! Not building.")
 endif()
