@@ -8,9 +8,9 @@
 cd $BuildPath
 mkdir Release\plugins | Out-Null
 cp plugins\Release\*.dll Release\plugins
-cp -r ..\resources Release
-cp -r ..\pipelines Release
-cp ..\satdump_cfg.json Release
+cp -r $SourcePath\resources Release
+cp -r $SourcePath\pipelines Release
+cp $SourcePath\satdump_cfg.json Release
 cd Release
 
 $input_dlls = Get-ChildItem -Recurse -Filter *.dll
@@ -40,7 +40,6 @@ foreach($input_dll in $input_dlls)
         }
     }
 }
-
 
 $dll_array = $dll_array | select -Unique
 $available_dlls = Get-ChildItem $SourcePath\vcpkg\installed\$platform\bin -Filter *.dll

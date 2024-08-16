@@ -81,7 +81,7 @@ jobs:
 
       - name: Build Portable
         shell: powershell
-        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}/build
+        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
 
       - name: Upload Portable
         uses: actions/upload-artifact@v4
