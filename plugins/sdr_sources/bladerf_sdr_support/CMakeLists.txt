@@ -8,6 +8,7 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
     message("Building with BladeRF support")
     file(GLOB_RECURSE bladerf_sdr_support_CPPS *.cpp)
     add_library(bladerf_sdr_support SHARED ${bladerf_sdr_support_CPPS})
+    target_include_directories(bladerf_sdr_support PUBLIC src)
 
     set(BLADERF_WIDEBAND_TEST_SOURCE
         "
@@ -42,9 +43,11 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
         target_compile_definitions(bladerf_sdr_support PUBLIC BLADERF_HAS_WIDEBAND=1)
     endif()
 
-    target_include_directories(bladerf_sdr_support PUBLIC src)
-
-    install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins)
+    if(MSVC)
+        install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+    else()
+        install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins)
+    endif()
 else()
     message("BladeRF Library could not be found! Not building.")
 endif()

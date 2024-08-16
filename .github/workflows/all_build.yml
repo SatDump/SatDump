@@ -17,36 +17,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get dependency version
-        id: win-deps-ver
-        shell: bash
-        run: commit=$(git ls-remote https://github.com/Aang23/vcpkg HEAD) && echo deps_version=${commit:0:6} >> $GITHUB_OUTPUT
-
       - name: Cache dependencies
         uses: actions/cache@v4
         id: win-deps
         with:
           path: vcpkg
-          key: win-deps-${{steps.win-deps-ver.outputs.deps_version}}
+          key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
 
-      - name: Clone pre-setup VCPKG
+      - name: Set up Python 3.12
         if: steps.win-deps.outputs.cache-hit != 'true'
-        run: git clone https://github.com/Aang23/vcpkg.git --depth 1
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
 
-      - name: Download SDRPlay API
+      - name: Install mako
         if: steps.win-deps.outputs.cache-hit != 'true'
-        shell: powershell
-        run: Invoke-WebRequest -Uri "https://www.satdump.org/SDRPlay.zip" -OutFile ${{runner.workspace}}/sdrplay.zip
+        run: pip install mako
 
-      - name: Install SDRPlay API
-        if: steps.win-deps.outputs.cache-hit != 'true'
-        shell: powershell
-        run: 7z x ${{runner.workspace}}/sdrplay.zip -O"${{runner.workspace}}"
-
-      - name: Copy SDRPlay API Files
+      - name: Configure vcpkg
         if: steps.win-deps.outputs.cache-hit != 'true'
         shell: powershell
-        run: cp -r "${{runner.workspace}}/SDRPlay/API/inc/*" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/include/; cp "${{runner.workspace}}/SDRPlay/API/x64/sdrplay_api.dll" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/sdrplay_api.dll; cp "${{runner.workspace}}/SDRPlay/API/x64/sdrplay_api.lib" $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/lib/sdrplay_api.lib;
+        run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform x64-windows
+
+      - name: Clean up vcpkg
+        if: steps.win-deps.outputs.cache-hit != 'true'
+        run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
 
       - name: Download Aaronia RTSA API
         if: steps.win-deps.outputs.cache-hit != 'true'
@@ -62,70 +57,40 @@ jobs:
         run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
 
       - name: Create Build Environment
-        # Some projects don't allow in-source building, so create a separate build directory
-        # We'll use this as our working directory for all subsequent commands
         run: cmake -E make_directory ${{runner.workspace}}/build
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
-        # Note the current convention is to use the -S and -B options here to specify source
-        # and build directories, but this is only available with CMake 3.13 and higher.
-        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake -G "Visual Studio 16 2019" -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake "$Env:GITHUB_WORKSPACE" -DPLUGIN_AARONIA_SDR_SUPPORT=ON
+        run: cmake -DVCPKG_TARGET_TRIPLET="x64-windows" -DPLUGIN_AARONIA_SDR_SUPPORT=ON -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cmake --build . --config $BUILD_TYPE
 
       - name: Build Installer
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cpack -C $BUILD_TYPE
-
-      - name: Copy DLLs
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: cp $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/*.dll Release
-
-      - name: Copy Resources
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: cp -r $Env:GITHUB_WORKSPACE/resources Release
-
-      - name: Copy Pipelines
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: cp -r $Env:GITHUB_WORKSPACE/pipelines ${{runner.workspace}}/build/Release;
-
-      - name: Create Plugins Dir
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: mkdir ${{runner.workspace}}/build/Release/plugins;
-
-      - name: Copy Plugins
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: cp ${{runner.workspace}}/build/plugins/Release/*.dll ${{runner.workspace}}/build/Release/plugins;
-
-      - name: Copy Config
-        working-directory: ${{runner.workspace}}/build
-        shell: powershell
-        run: cp $Env:GITHUB_WORKSPACE/satdump_cfg.json ${{runner.workspace}}/build/Release;
-
-      - name: Upload ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: SatDump-Windows_x64_Portable
-          path: ${{runner.workspace}}/build/Release/*
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
+
+      - name: Set PATH for dumpbin
+        run: echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
+
+      - name: Build Portable
+        shell: powershell
+        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
+
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_x64_Portable
+          path: ${{runner.workspace}}/build/Release/*
 
   build_android:
     runs-on: android-release

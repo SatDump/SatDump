@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(MSVC OR BUILD_MSVC)
+    set(VCPKG_TARGET_TRIPLET CACHE STRING "x64-windows")
+    set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
+endif()
+
 project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
@@ -99,8 +104,8 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286,4217")
 
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    include_directories(vcpkg/installed/x64-windows/include)
-    link_directories(vcpkg/installed/x64-windows/lib)
+    include_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/include)
+    link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
 project(SatDump VERSION "1.2.1")
@@ -267,7 +272,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         set(CPACK_NSIS_MODIFY_PATH ON)
         set(CPACK_NSIS_BRANDING_TEXT "SatDump - General Purpose Satellite Data Processor")
         set(CPACK_NSIS_MUI_HEADERIMAGE "${PROJECT_SOURCE_DIR}\\\\windows\\\\installer-header.bmp")
-        set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\windows\\\\icon.ico")
+        set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}\\\\windows\\\\icon.ico")
         if(BUILD_GUI)
             set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\satdump-ui.exe")
             set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump-ui" "SatDump")
@@ -277,8 +282,22 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         if(PLUGIN_REMOTE_SDR_SUPPORT)
             set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump_sdr_server" "SatDump SDR Server")
         endif()
-        file(GLOB_RECURSE SATDUMP_WINDOWS_DEPENDENCIES ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/bin/*.dll)
-        install(FILES ${SATDUMP_WINDOWS_DEPENDENCIES} DESTINATION bin)
+
+        install(RUNTIME_DEPENDENCY_SET satdump_deps
+            PRE_EXCLUDE_REGEXES
+                "api-ms-.*"
+                "ext-ms-.*"
+                "^hvsifiletrust\\.dll$"
+                "^pdmutilities\\.dll$"
+                "^vc.*"
+                "^msvcp.*"
+                "^concrt.*"
+                "satdump_core.dll"
+            POST_EXCLUDE_REGEXES
+                ".*system32/.*\\.dll"
+            DIRECTORIES
+                "${PROJECT_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/bin"
+        )
     else()
         set(CPACK_GENERATOR DEB)
         #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
