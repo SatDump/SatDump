@@ -80,7 +80,7 @@ jobs:
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
       - name: Set PATH for dumpbin
-        run: echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
+        run: echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
 
       - name: Build Portable
         shell: powershell
