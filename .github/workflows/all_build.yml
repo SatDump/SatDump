@@ -73,13 +73,21 @@ jobs:
         shell: bash
         run: cpack -C $BUILD_TYPE
 
-        #TODO: Make portable version again
-
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
+
+      - name: Build Portable
+        shell: powershell
+        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}/build
+
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_x64_Portable
+          path: ${{runner.workspace}}/build/Release/*
 
   build_android:
     runs-on: android-release
