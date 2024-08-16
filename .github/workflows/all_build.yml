@@ -79,6 +79,9 @@ jobs:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
+      - name: Install Dumpbin
+        uses: lorenalexm/install-dumpbin-action@v0.1.1
+
       - name: Build Portable
         shell: powershell
         run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
