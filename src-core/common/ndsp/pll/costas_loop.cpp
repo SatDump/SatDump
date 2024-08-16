@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "costas_loop.h"
 
 namespace ndsp

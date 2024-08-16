@@ -81,6 +81,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
     target_link_libraries(satdump_core PUBLIC libcurl.dll)
+    target_link_libraries(satdump_core PUBLIC pthreadVC3.dll)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
