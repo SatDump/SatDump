@@ -34,10 +34,14 @@ jobs:
         if: steps.win-deps.outputs.cache-hit != 'true'
         run: pip install mako
 
-      - name: Configure VCPKG
+      - name: Configure vcpkg
         if: steps.win-deps.outputs.cache-hit != 'true'
         shell: powershell
         run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform x64-windows
+
+      - name: Clean up vcpkg
+        if: steps.win-deps.outputs.cache-hit != 'true'
+        run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
 
       - name: Download Aaronia RTSA API
         if: steps.win-deps.outputs.cache-hit != 'true'
