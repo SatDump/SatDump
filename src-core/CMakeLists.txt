@@ -48,6 +48,16 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads mosquitto)
 
+# Armadillo
+find_package(Armadillo)
+
+if(ARMADILLO_FOUND)
+    target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
+    target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
+    target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+    message("-- Building with Armadillo!")
+endif()
+
 # OpenCL if we found it
 if(BUILD_OPENCL AND NOT ANDROID)
     target_link_libraries(satdump_core PUBLIC ${OpenCL_LIBRARIES})
@@ -71,6 +81,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
     target_link_libraries(satdump_core PUBLIC libcurl.dll)
+    target_link_libraries(satdump_core PUBLIC pthreadVC3.dll)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
@@ -158,16 +169,6 @@ else()
     # Lua
     target_include_directories(satdump_core PUBLIC libs/lua)
 
-    # Armadillo
-    find_package(Armadillo)
-
-    if(ARMADILLO_FOUND)
-        target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
-        target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
-        target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
-        message("-- Building with Armadillo!")
-    endif()
-
     # Curl
     find_package(CURL REQUIRED)
 
@@ -202,7 +203,7 @@ endif()
 
 # Install
 if(MSVC OR BUILD_MSVC)
-    install(TARGETS satdump_core DESTINATION bin)
+    install(TARGETS satdump_core DESTINATION bin RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
     install(TARGETS satdump_core DESTINATION lib)
 endif()
