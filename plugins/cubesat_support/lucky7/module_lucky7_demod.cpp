@@ -116,7 +116,7 @@ namespace lucky7
     void Lucky7DemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
         else
             filesize = 0;
 
@@ -155,7 +155,7 @@ namespace lucky7
             fil->output_stream->flush();
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.position(); // file_source->getPosition();
 
             // Update module stats
             module_stats["snr"] = snr;
@@ -218,7 +218,7 @@ namespace lucky7
 
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_enabled("fft", show_fft);
+                    ; // fft_splitter->set_enabled("fft", show_fft);
         }
         ImGui::EndGroup();
 

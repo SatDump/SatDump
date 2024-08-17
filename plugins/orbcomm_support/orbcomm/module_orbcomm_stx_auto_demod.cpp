@@ -120,7 +120,7 @@ namespace orbcomm
     {
         if (input_data_type == DATA_FILE)
         {
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
             throw satdump_exception("The Orbcomm Auto STX Demodulator is live-only!");
         }
         else
@@ -178,7 +178,7 @@ namespace orbcomm
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.position(); // file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {

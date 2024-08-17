@@ -98,7 +98,7 @@ namespace dvb
     void DVBSDemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
         else
             filesize = 0;
 
@@ -160,7 +160,7 @@ namespace dvb
             module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3] + errors[4] + errors[5] + errors[6] + errors[7]) / 8;
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.position(); // file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
@@ -273,7 +273,7 @@ namespace dvb
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_enabled("fft", show_fft);
+                    ; //                    fft_splitter->set_enabled("fft", show_fft);
         }
         ImGui::EndGroup();
         ImGui::SameLine();

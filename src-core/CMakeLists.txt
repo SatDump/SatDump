@@ -46,7 +46,7 @@ endif()
 
 # Threads
 find_package(Threads REQUIRED)
-target_link_libraries(satdump_core PUBLIC Threads::Threads)
+target_link_libraries(satdump_core PUBLIC Threads::Threads mosquitto)
 
 # OpenCL if we found it
 if(BUILD_OPENCL AND NOT ANDROID)

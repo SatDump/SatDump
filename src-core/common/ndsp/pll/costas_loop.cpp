@@ -15,7 +15,7 @@ namespace ndsp
     void CostasLoop::start()
     {
         set_params();
-        ndsp::buf::init_nafifo_stdbuf<complex_t>(outputs[0], 2, ((ndsp::buf::StdBuf<complex_t> *)inputs[0]->read_buf())->max);
+        ndsp::buf::init_nafifo_stdbuf<complex_t>(outputs[0], 2, ((ndsp::buf::StdBuf<complex_t> *)inputs[0]->write_buf())->max);
         ndsp::Block::start();
     }
 

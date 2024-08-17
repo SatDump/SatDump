@@ -50,7 +50,7 @@ namespace noaa_apt
     void NOAAAPTDemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
         else
             filesize = 0;
 
@@ -121,7 +121,7 @@ namespace noaa_apt
                 data_out.write((char *)output_wav_buffer, dat_size * sizeof(int16_t));
                 final_data_size += dat_size * sizeof(int16_t);
             }
-            if(output_data_type != DATA_FILE)
+            if (output_data_type != DATA_FILE)
             {
                 output_fifo->write((uint8_t *)output_wav_buffer, dat_size * sizeof(int16_t));
             }
@@ -129,7 +129,7 @@ namespace noaa_apt
             qua->output_stream->flush();
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.position(); // file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
@@ -188,7 +188,7 @@ namespace noaa_apt
             snr_plot.draw(snr, peak_snr); */
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_enabled("fft", show_fft);
+                    ; // fft_splitter->set_enabled("fft", show_fft);
             if (enable_audio)
             {
                 const char *btn_icon, *label;

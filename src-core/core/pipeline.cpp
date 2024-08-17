@@ -55,6 +55,7 @@ namespace satdump
         */
         if (input_level == "baseband" &&
             parameters.count("disable_multi_modules") == 0 &&
+            steps.size() >= 3 &&
             steps[1].modules.size() == 1 &&
             steps[2].modules.size() == 1)
         {
@@ -398,7 +399,7 @@ namespace satdump
         }
 
         std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
-            {
+                  {
                                                     std::string lname = l.readable_name;
                                                     std::string rname = r.readable_name;
                                                     std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
@@ -461,7 +462,7 @@ namespace satdump
             {
                 pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_cfg_path));
             }
-            catch (std::exception& e)
+            catch (std::exception &e)
             {
                 logger->warn("Error loading user pipelines: %s", e.what());
                 has_user_pipelines = false;
@@ -500,7 +501,7 @@ namespace satdump
                 std::filesystem::path(user_cfg_path).has_parent_path())
                 std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             logger->error("Cannot create directory for user pipelines: %s", e.what());
             return;

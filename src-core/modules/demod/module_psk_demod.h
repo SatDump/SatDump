@@ -7,18 +7,26 @@
 #include "common/dsp/demod/delay_one_imag.h"
 #include "common/dsp/pll/pll_carrier_tracking.h"
 
+#include "common/ndsp/filter/fir.h"
+#include "common/ndsp/pll/costas_loop.h"
+#include "common/ndsp/clock/clock_recovery_mm.h"
+
 namespace demod
 {
     class PSKDemodModule : public BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
-        std::shared_ptr<dsp::PLLCarrierTrackingBlock> carrier_pll;
-        std::shared_ptr<dsp::CorrectIQBlock<complex_t>> carrier_dc;
-        std::shared_ptr<dsp::CostasLoopBlock> pll;
-        std::shared_ptr<dsp::CorrectIQBlock<complex_t>> post_pll_dc;
-        std::shared_ptr<dsp::DelayOneImagBlock> delay;
-        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
+        ndsp::FIRFilter<complex_t> nrrc;
+        ndsp::CostasLoop npll;
+        ndsp::ClockRecoveryMM<complex_t> nrec;
+
+        // std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
+        // std::shared_ptr<dsp::PLLCarrierTrackingBlock> carrier_pll;
+        // std::shared_ptr<dsp::CorrectIQBlock<complex_t>> carrier_dc;
+        // std::shared_ptr<dsp::CostasLoopBlock> pll;
+        // std::shared_ptr<dsp::CorrectIQBlock<complex_t>> post_pll_dc;
+        // std::shared_ptr<dsp::DelayOneImagBlock> delay;
+        // std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
 
         std::string constellation_type;
         bool is_bpsk, is_oqpsk;

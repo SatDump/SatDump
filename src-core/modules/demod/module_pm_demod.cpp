@@ -68,10 +68,10 @@ namespace demod
 
         if (d_resample_after_pll)
         {
-            resampler = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
+            //            resampler = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
 
             // AGC2
-            agc2 = std::make_shared<dsp::AGCBlock<complex_t>>(resampler->output_stream, 0.001, 1.0, 1.0, 1000.0);
+            //            agc2 = std::make_shared<dsp::AGCBlock<complex_t>>(resampler->output_stream, 0.001, 1.0, 1.0, 1000.0);
         }
 
         // RRC
@@ -92,7 +92,7 @@ namespace demod
     void PMDemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
         else
             filesize = 0;
 
@@ -155,7 +155,7 @@ namespace demod
                 output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.filesize(); // file_source->getPosition();
 
             // Update module stats
             module_stats["snr"] = snr;

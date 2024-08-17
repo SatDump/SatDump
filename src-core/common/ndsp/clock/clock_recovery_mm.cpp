@@ -30,7 +30,7 @@ namespace ndsp
     void ClockRecoveryMM<T>::start()
     {
         set_params();
-        ndsp::buf::init_nafifo_stdbuf<T>(outputs[0], 2, ((ndsp::buf::StdBuf<T> *)inputs[0]->read_buf())->max); // TODO FIX
+        ndsp::buf::init_nafifo_stdbuf<T>(outputs[0], 2, ((ndsp::buf::StdBuf<T> *)inputs[0]->write_buf())->max); // TODO FIX
         ndsp::Block::start();
     }
 
@@ -70,7 +70,7 @@ namespace ndsp
 #if DO_BRANCH
         buffer = create_volk_buffer<T>(pfb.ntaps * 4);
 #else
-        buffer = dsp::create_volk_buffer<T>(((ndsp::buf::StdBuf<T> *)inputs[0]->read_buf())->max * 2);
+        buffer = dsp::create_volk_buffer<T>(((ndsp::buf::StdBuf<T> *)inputs[0]->write_buf())->max * 2);
 #endif
     }
 

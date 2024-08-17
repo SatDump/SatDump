@@ -75,7 +75,7 @@ namespace demod
     void SDPSKDemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
         else
             filesize = 0;
 
@@ -127,7 +127,7 @@ namespace demod
                 output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.filesize(); // file_source->getPosition();
 
             // Update module stats
             module_stats["snr"] = snr;

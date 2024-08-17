@@ -6,6 +6,7 @@
 #include "core/style.h"
 #include "common/imgui_utils.h"
 #include "common/tracking/rotator/rotcl_handler.h"
+#include "common/tracking/rotator/lyra_handler.h"
 
 namespace satdump
 {
@@ -104,11 +105,17 @@ namespace satdump
             if (rotator_handler->is_connected())
                 style::beginDisabled();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"))
+            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"
+                                                                             "Lyra (Aang23)\0"))
             {
                 if (selected_rotator_handler == 0)
                 {
                     rotator_handler = std::make_shared<rotator::RotctlHandler>();
+                    object_tracker.setRotator(rotator_handler);
+                }
+                else if (selected_rotator_handler == 1)
+                {
+                    rotator_handler = std::make_shared<rotator::LyraHandler>();
                     object_tracker.setRotator(rotator_handler);
                 }
 

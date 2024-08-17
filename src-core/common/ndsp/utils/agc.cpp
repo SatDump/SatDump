@@ -18,7 +18,7 @@ namespace ndsp
     void Agc<T>::start()
     {
         set_params();
-        ndsp::buf::init_nafifo_stdbuf<T>(outputs[0], 2, ((ndsp::buf::StdBuf<T> *)inputs[0]->read_buf())->max);
+        ndsp::buf::init_nafifo_stdbuf<T>(outputs[0], 2, ((ndsp::buf::StdBuf<T> *)inputs[0]->write_buf())->max);
         ndsp::Block::start();
     }
 

@@ -19,6 +19,17 @@
 #include "common/dsp/utils/doppler_correct.h"
 #include "common/dsp/io/file_sink.h"
 
+#include "common/ndsp/io/file_source.h"
+#include "common/ndsp/resamp/rational_resampler.h"
+#include "common/ndsp/utils/agc.h"
+
+#include "common/ndsp/path/splitter.h"
+#include "common/ndsp/fft/fft_pan.h"
+#include "common/ndsp/io/file_sink.h"
+
+#include "common/ndsp/utils/correct_iq.h"
+#include "common/ndsp/utils/freq_shift.h"
+
 namespace demod
 {
     /*
@@ -31,13 +42,21 @@ namespace demod
     class BaseDemodModule : public ProcessingModule
     {
     protected:
-        std::shared_ptr<dsp::FileSourceBlock> file_source;
-        std::shared_ptr<dsp::FreqShiftBlock> freq_shift;
-        std::shared_ptr<dsp::DopplerCorrectBlock> doppler_shift;
-        std::shared_ptr<dsp::SplitterBlock> fft_splitter;
-        std::shared_ptr<dsp::FFTPanBlock> fft_proc;
-        std::shared_ptr<dsp::CorrectIQBlock<complex_t>> dc_blocker;
-        std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> resampler;
+        ndsp::FileSource nfile_source;
+        ndsp::FreqShift nfreq_shift;
+        ndsp::Splitter nfft_splitter;
+        ndsp::FFTPan nfft_proc;
+        ndsp::CorrectIQ<complex_t> ndc_blocker;
+        ndsp::RationalResampler<complex_t> nresampler;
+        ndsp::Agc<complex_t> nagc;
+
+        // --------------------------------------- std::shared_ptr<dsp::FileSourceBlock> file_source;
+        // --------------------------------------- std::shared_ptr<dsp::FreqShiftBlock> freq_shift;
+        // std::shared_ptr<dsp::DopplerCorrectBlock> doppler_shift;
+        // --------------------------------------- std::shared_ptr<dsp::SplitterBlock> fft_splitter;
+        // --------------------------------------- std::shared_ptr<dsp::FFTPanBlock> fft_proc;
+        // --------------------------------------- std::shared_ptr<dsp::CorrectIQBlock<complex_t>> dc_blocker;
+        // --------------------------------------- std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> resampler;
         std::shared_ptr<dsp::AGCBlock<complex_t>> agc;
 
         std::string name = "Demodulator";
@@ -55,7 +74,8 @@ namespace demod
         float d_doppler_alpha = 0.01;
 
         std::string d_dump_intermediate = "";
-        std::shared_ptr<dsp::FileSinkBlock> intermediate_file_sink;
+        // --------------------------------------- std::shared_ptr<dsp::FileSinkBlock> intermediate_file_sink;
+        ndsp::FileSink nintermediate_file_sink;
 
         // Computed values
         float final_samplerate;
@@ -80,7 +100,7 @@ namespace demod
         // UI Stuff
         widgets::ConstellationViewer constellation;
         widgets::SNRPlotViewer snr_plot;
-        bool show_fft = false;
+        bool show_fft = true; // TODO FIX
         std::shared_ptr<widgets::FFTPlot> fft_plot;
         std::shared_ptr<widgets::WaterfallPlot> waterfall_plot;
 
@@ -101,7 +121,7 @@ namespace demod
         bool demod_should_stop = false;
         bool demod_should_run()
         {
-            return (input_data_type == DATA_FILE ? !file_source->eof() : input_active.load()) && !demod_should_stop;
+            return (input_data_type == DATA_FILE ? !/*file_source->eof()*/ nfile_source.eof() : input_active.load()) && !demod_should_stop;
         }
         void drawStopButton();
 

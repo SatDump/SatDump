@@ -5,12 +5,13 @@ namespace ndsp
     FileSource::FileSource()
         : ndsp::Block("file_source", {}, {{sizeof(complex_t)}})
     {
+        d_eof = false;
     }
 
     void FileSource::start()
     {
         set_params();
-        ndsp::buf::init_nafifo_stdbuf<complex_t>(outputs[0], 2, d_buffer_size);
+        ndsp::buf::init_nafifo_stdbuf<complex_t>(outputs[0], 2, buffer_size);
         ndsp::Block::start();
     }
 

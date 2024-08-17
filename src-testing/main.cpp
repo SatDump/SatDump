@@ -17,7 +17,7 @@
 #include <unistd.h>
 
 #include "common/ndsp/io/file_source.h"
-#include "common/ndsp/agc/agc.h"
+#include "common/ndsp/utils/agc.h"
 #include "common/ndsp/filter/fir.h"
 #include "common/ndsp/pll/costas_loop.h"
 #include "common/ndsp/clock/clock_recovery_mm.h"

@@ -54,6 +54,7 @@ namespace demod
 
     void BaseDemodModule::initb(bool resample_here)
     {
+#if 0
         if (d_parameters.contains("min_sps"))
             MIN_SPS = d_parameters["min_sps"].get<float>();
         if (d_parameters.contains("max_sps"))
@@ -192,6 +193,166 @@ namespace demod
 
         // AGC
         agc = std::make_shared<dsp::AGCBlock<complex_t>>((resample && resample_here) ? resampler->output_stream : input_data_final_fft, d_agc_rate, 1.0f, 1.0f, 65536);
+#else
+        if (d_parameters.contains("min_sps"))
+            MIN_SPS = d_parameters["min_sps"].get<float>();
+        if (d_parameters.contains("max_sps"))
+            MAX_SPS = d_parameters["max_sps"].get<float>();
+
+        float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
+        resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample
+
+        int range = pow(10, (std::to_string(int(d_symbolrate)).size() - 1)); // Avoid complex resampling
+
+        final_samplerate = d_samplerate;
+
+        if (d_parameters.count("custom_samplerate") > 0)
+            final_samplerate = d_parameters["custom_samplerate"].get<long>();
+        else if (MAX_SPS == MIN_SPS)
+            final_samplerate = d_symbolrate * MAX_SPS;
+        else if (input_sps > MAX_SPS)
+            final_samplerate = resample ? (round(d_symbolrate / range) * range) * MAX_SPS : d_samplerate; // Get the final samplerate we'll be working with
+        else if (input_sps < MIN_SPS)
+            final_samplerate = resample ? d_symbolrate * MIN_SPS : d_samplerate; // Get the final samplerate we'll be working with
+
+        float decimation_factor = d_samplerate / final_samplerate; // Decimation factor to rescale our input buffer
+
+        if (resample)
+            d_buffer_size *= ceil(decimation_factor);
+        if (d_buffer_size > 8192 * 20)
+            d_buffer_size = 8192 * 20;
+
+        final_sps = final_samplerate / (float)d_symbolrate;
+
+        logger->debug("Input SPS : %f", input_sps);
+        logger->debug("Resample : " + std::to_string(resample));
+        logger->debug("Samplerate : %f", final_samplerate);
+        logger->debug("Dec factor : %f", decimation_factor);
+        logger->debug("Final SPS : %f", final_sps);
+
+        if (input_sps < 1.0)
+            throw satdump_exception("SPS is invalid. Must be above 1!");
+
+        // Init DSP Blocks
+        if (input_data_type == DATA_FILE)
+        {
+            nfile_source.d_file = d_input_file;
+            nfile_source.d_type = dsp::basebandTypeFromString(d_parameters["baseband_format"]);
+            nfile_source.d_buffer_size = d_buffer_size;
+            nfile_source.d_iq_swap = d_iq_swap;
+        }
+
+        std::shared_ptr<NaFiFo> next_out = nfile_source.get_output(0);
+
+        if (d_dc_block)
+        {
+            ndc_blocker.set_input(0, /*input_data_type == DATA_DSP_STREAM ? input_stream : */ nfile_source.get_output(0));
+            next_out = ndc_blocker.get_output(0);
+        }
+
+        if (d_frequency_shift != 0)
+        {
+            nfreq_shift.d_samplerate = d_samplerate;
+            nfreq_shift.d_shift = d_frequency_shift;
+            nfreq_shift.set_input(0, next_out);
+            next_out = nfreq_shift.get_output(0);
+        }
+
+        if (d_doppler_enable)
+        {
+            double frequency = -1;
+            if (d_parameters.count("satellite_frequency"))
+                frequency = d_parameters["satellite_frequency"].get<double>();
+            else
+                throw satdump_exception("Satellite Frequency is required for doppler correction!");
+
+            if (d_frequency_shift != 0)
+                frequency += d_frequency_shift;
+
+            int norad = -1;
+            if (d_parameters.count("satellite_norad"))
+                norad = d_parameters["satellite_norad"].get<double>();
+            else
+                throw satdump_exception("Satellite NORAD is required for doppler correction!");
+
+            // QTH, with a way to override it
+            double qth_lon = 0, qth_lat = 0, qth_alt = 0;
+            try
+            {
+                qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
+                qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
+                qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+            }
+            catch (std::exception &)
+            {
+            }
+
+            if (d_parameters.count("qth_lon"))
+                qth_lon = d_parameters["qth_lon"].get<double>();
+            if (d_parameters.count("qth_lat"))
+                qth_lat = d_parameters["qth_lat"].get<double>();
+            if (d_parameters.count("qth_alt"))
+                qth_alt = d_parameters["qth_alt"].get<double>();
+
+            doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data,
+                                                                       d_samplerate, d_doppler_alpha, frequency, norad,
+                                                                       qth_lon, qth_lat, qth_alt);
+            if (input_data_type == DATA_FILE)
+            {
+                if (d_parameters.count("start_timestamp") > 0)
+                    doppler_shift->start_time = d_parameters["start_timestamp"].get<double>();
+                else
+                {
+                    logger->error("Start Timestamp is required for doppler correction! Disabling doppler.");
+                    doppler_shift.reset();
+                    d_doppler_enable = false;
+                }
+            }
+        }
+
+        if (input_data_type == DATA_FILE)
+        {
+            nfft_splitter.set_input(0, next_out);
+            nfft_splitter.add_output("fft");
+            nfft_splitter.set_enabled("fft", show_fft);
+
+            if (d_dump_intermediate != "")
+            {
+                nfft_splitter.add_output("intermediate");
+                nfft_splitter.set_enabled("intermediate", true);
+                nintermediate_file_sink.set_input(0, nfft_splitter.sget_output("intermediate"));
+            }
+
+            nfft_proc.set_input(0, nfft_splitter.sget_output("fft"));
+            nfft_proc.d_size = 8192;
+            nfft_proc.d_samplerate = final_samplerate;
+            nfft_proc.d_rate = 120;
+            nfft_proc.avg_num = 10;
+            fft_plot = std::make_shared<widgets::FFTPlot>(nfft_proc.d_output_buffer, 8192, -10, 20, 10);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 500);
+            waterfall_plot->set_rate(120, 10);
+            nfft_proc.on_fft = [this](float *v)
+            { waterfall_plot->push_fft(v); };
+
+            next_out = nfft_splitter.get_output(0);
+        }
+
+        // Init resampler if required
+        if (resample && resample_here)
+        {
+            nresampler.d_interpolation = final_samplerate;
+            nresampler.d_decimation = d_samplerate;
+            nresampler.set_input(0, next_out);
+        }
+
+        // AGC
+        nagc.d_gain = 1;
+        nagc.d_rate = d_agc_rate;
+        nagc.d_reference = 1;
+        nagc.d_max_gain = 655536;
+
+        nagc.set_input(0, (resample && resample_here) ? nresampler.get_output(0) : (input_data_type == DATA_FILE ? nfft_splitter.get_output(0) : (d_dc_block ? ndc_blocker.get_output(0) : nfile_source.get_output(0))));
+#endif
     }
 
     std::vector<ModuleDataType> BaseDemodModule::getInputTypes()
@@ -212,53 +373,53 @@ namespace demod
     {
         // Start
         if (input_data_type == DATA_FILE)
-            file_source->start();
+            nfile_source.start();
         if (d_dc_block)
-            dc_blocker->start();
+            ndc_blocker.start();
         if (d_frequency_shift != 0)
-            freq_shift->start();
-        if (d_doppler_enable)
-            doppler_shift->start();
+            nfreq_shift.start();
+        // if (d_doppler_enable)
+        // doppler_shift->start();
         if (input_data_type == DATA_FILE)
-            fft_splitter->start();
+            nfft_splitter.start();
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
         {
-            intermediate_file_sink->start();
-            intermediate_file_sink->set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
+            nintermediate_file_sink.start();
+            nintermediate_file_sink.set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
             std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)d_samplerate) + "_intermediate_iq";
             logger->trace("Recording intermediate to " + int_file);
-            intermediate_file_sink->start_recording(int_file, d_samplerate);
+            nintermediate_file_sink.start_recording(int_file, d_samplerate);
         }
         if (input_data_type == DATA_FILE)
-            fft_proc->start();
-        if (resample && resampler)
-            resampler->start();
-        agc->start();
+            nfft_proc.start();
+        if (resample)
+            nresampler.start();
+        nagc.start();
     }
 
     void BaseDemodModule::stop()
     {
         // Stop
         if (input_data_type == DATA_FILE)
-            file_source->stop();
+            nfile_source.stop();
         if (d_dc_block)
-            dc_blocker->stop();
+            ndc_blocker.stop();
         if (d_frequency_shift != 0)
-            freq_shift->stop();
-        if (d_doppler_enable)
-            doppler_shift->stop();
+            nfreq_shift.stop();
+        // if (d_doppler_enable)
+        // doppler_shift->stop();
         if (input_data_type == DATA_FILE)
-            fft_splitter->stop();
+            nfft_splitter.stop();
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
         {
-            intermediate_file_sink->stop_recording();
-            intermediate_file_sink->stop();
+            nintermediate_file_sink.stop_recording();
+            nintermediate_file_sink.stop();
         }
         if (input_data_type == DATA_FILE)
-            fft_proc->stop();
-        if (resample && resampler)
-            resampler->stop();
-        agc->stop();
+            nfft_proc.stop();
+        if (resample)
+            nresampler.stop();
+        nagc.stop();
     }
 
     void BaseDemodModule::drawUI(bool window)
@@ -284,7 +445,7 @@ namespace demod
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
-                    fft_splitter->set_enabled("fft", show_fft);
+                    nfft_splitter.set_enabled("fft", show_fft);
         }
         ImGui::EndGroup();
 
@@ -317,10 +478,10 @@ namespace demod
                 float max = -1000;
                 for (int i = 0; i < 6554; i++) // 8192 * 80% = 6554
                 {
-                    if (fft_proc->output_stream->writeBuf[pos] < min)
-                        min = fft_proc->output_stream->writeBuf[pos];
-                    if (fft_proc->output_stream->writeBuf[pos] > max)
-                        max = fft_proc->output_stream->writeBuf[pos];
+                    if (nfft_proc.d_output_buffer[pos] < min)
+                        min = nfft_proc.d_output_buffer[pos];
+                    if (nfft_proc.d_output_buffer[pos] > max)
+                        max = nfft_proc.d_output_buffer[pos];
                     pos++;
                     if (pos >= 8192)
                         pos = 0;

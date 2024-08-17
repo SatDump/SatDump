@@ -11,6 +11,8 @@ namespace ndsp
 
         for (int i = 0; i < d_oucfg.size(); i++)
             outputs[i] = std::make_shared<NaFiFo>();
+
+        d_work_run = false;
     }
 
     Block::~Block()

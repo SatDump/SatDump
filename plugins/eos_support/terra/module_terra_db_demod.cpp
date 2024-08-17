@@ -37,7 +37,7 @@ namespace terra
     void TerraDBDemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = file_source->getFilesize();
+            filesize = nfile_source.filesize(); // file_source->getFilesize();
         else
             filesize = 0;
 
@@ -94,7 +94,7 @@ namespace terra
                 output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
             if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
+                progress = nfile_source.position(); // file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
