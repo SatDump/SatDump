@@ -21,7 +21,7 @@ namespace dsp
 		double tau;
 		void work();
 
-		//int in_buffer = 0;
+		int in_buffer = 0;
 		//int d_nsamples = 0;
 
 		float alpha;
