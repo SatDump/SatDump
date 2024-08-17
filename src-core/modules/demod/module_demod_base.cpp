@@ -294,20 +294,34 @@ namespace demod
             if (d_parameters.count("qth_alt"))
                 qth_alt = d_parameters["qth_alt"].get<double>();
 
-            doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data,
-                                                                       d_samplerate, d_doppler_alpha, frequency, norad,
-                                                                       qth_lon, qth_lat, qth_alt);
+            // doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data,
+            //                                                            d_samplerate, d_doppler_alpha, frequency, norad,
+            //
+            //                                                            qth_lon, qth_lat, qth_alt);
+
+            ndoppler_correct.d_samplerate = d_samplerate;
+            ndoppler_correct.d_apha = d_doppler_alpha;
+            ndoppler_correct.d_signal_frequency = frequency;
+            ndoppler_correct.d_norad = norad;
+            ndoppler_correct.d_qth_alt = qth_alt;
+            ndoppler_correct.d_qth_lat = qth_lat;
+            ndoppler_correct.d_qth_lon = qth_lon;
+
+            ndoppler_correct.set_input(0, next_out);
+
             if (input_data_type == DATA_FILE)
             {
                 if (d_parameters.count("start_timestamp") > 0)
-                    doppler_shift->start_time = d_parameters["start_timestamp"].get<double>();
+                    ndoppler_correct.d_start_time = d_parameters["start_timestamp"].get<double>();
                 else
                 {
                     logger->error("Start Timestamp is required for doppler correction! Disabling doppler.");
-                    doppler_shift.reset();
+                    // doppler_shift.reset();
                     d_doppler_enable = false;
                 }
             }
+
+            next_out = ndoppler_correct.get_output(0);
         }
 
         if (input_data_type == DATA_FILE)
@@ -378,8 +392,8 @@ namespace demod
             ndc_blocker.start();
         if (d_frequency_shift != 0)
             nfreq_shift.start();
-        // if (d_doppler_enable)
-        // doppler_shift->start();
+        if (d_doppler_enable)
+            ndoppler_correct.start();
         if (input_data_type == DATA_FILE)
             nfft_splitter.start();
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
@@ -406,8 +420,8 @@ namespace demod
             ndc_blocker.stop();
         if (d_frequency_shift != 0)
             nfreq_shift.stop();
-        // if (d_doppler_enable)
-        // doppler_shift->stop();
+        if (d_doppler_enable)
+            ndoppler_correct.stop();
         if (input_data_type == DATA_FILE)
             nfft_splitter.stop();
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
