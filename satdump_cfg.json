@@ -2315,8 +2315,12 @@
                 "handler": "image_handler",
                 "name": "AIRS",
                 "rgb_composites": {
-                    "λ=4.3µm (CO2 absorption 1)": {
+                    "λ=4.3µm (CO2 absorption 1a)": {
                         "equation": "ch366",
+                        "individual_equalize": true
+                    },
+                    "λ=4.4µm (CO2 absorption 1b + H2O line)": {
+                        "equation": "ch420",
                         "individual_equalize": true
                     },
                     "λ=7.7µm (Methane absorption)": {
