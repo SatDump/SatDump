@@ -33,15 +33,17 @@ namespace dsp
     {
     private:
         BasebandTypeEnum type;
-        BasebandType from_string(const std::string &s);
+        void from_string(const std::string &s);
 
     public:
         BasebandType() { type = CF_32; }
         BasebandType(const BasebandTypeEnum &e) { type = e; }
         BasebandType(const std::string &s) { from_string(s); }
+        BasebandType(const char *s) { from_string(std::string(s)); }
         inline operator BasebandTypeEnum() const { return type; }
-        inline BasebandType &operator= (const BasebandTypeEnum &e) { type = e; }
-        inline BasebandType  operator= (const std::string &s) { return from_string(s); }
+        inline BasebandType &operator= (const BasebandTypeEnum& e) { type = e; return *this; }
+        inline BasebandType &operator= (const std::string &s) { from_string(s); return *this; }
+        inline BasebandType &operator= (const char *s) { from_string(std::string(s)); return *this; }
         operator std::string() const;
 
         bool drawPlaybackCombo();

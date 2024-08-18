@@ -38,25 +38,25 @@ namespace dsp
         };
     }
 
-    BasebandType BasebandType::from_string(const std::string &s)
+    void BasebandType::from_string(const std::string &s)
     {
         if (s == "cs16" || s == "s16")
-            return type = CS_16;
+            type = CS_16;
         else if (s == "cs8" || s == "s8")
-            return type = CS_8;
+            type = CS_8;
         else if (s == "cf32" || s == "f32")
-            return type = CF_32;
+            type = CF_32;
         else if (s == "cu8" || s == "u8")
-            return type = CU_8;
+            type = CU_8;
         else if (s == "w16" || s == "wav")
-            return type = WAV_16;
+            type = WAV_16;
 #ifdef BUILD_ZIQ
         else if (s == "ziq")
-            return type = ZIQ;
+            type = ZIQ;
 #endif
 #ifdef BUILD_ZIQ2
         else if (s == "ziq2")
-            return type = ZIQ2;
+            type = ZIQ2;
 #endif
         else
             throw satdump_exception("Unknown baseband type " + s);
