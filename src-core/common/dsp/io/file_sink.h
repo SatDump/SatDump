@@ -58,21 +58,7 @@ namespace dsp
             bit_depth = depth;
 
             std::string finalt;
-            if (d_sample_format == CF_32)
-                finalt = path_without_ext + ".cf32";
-            else if (d_sample_format == CS_16)
-                finalt = path_without_ext + ".cs16";
-            else if (d_sample_format == CS_8)
-                finalt = path_without_ext + ".cs8";
-            else if (d_sample_format == WAV_16)
-                finalt = path_without_ext + ".wav";
-#ifdef BUILD_ZIQ
-            else if (d_sample_format == ZIQ)
-                finalt = path_without_ext + ".ziq";
-#endif
-            else if (d_sample_format == ZIQ2)
-                finalt = path_without_ext + ".ziq";
-
+            finalt = path_without_ext + "." + (std::string)d_sample_format;
             if (override_filename)
                 finalt = path_without_ext;
 

@@ -28,7 +28,7 @@ void FileSource::set_settings(nlohmann::json settings)
     iq_swap = getValueOrDefault(d_settings["iq_swap"], iq_swap);
     buffer_size = getValueOrDefault(d_settings["buffer_size"], buffer_size);
     file_path = getValueOrDefault(d_settings["file_path"], file_path);
-    baseband_type = getValueOrDefault(d_settings["baseband_type"], baseband_type);
+    baseband_type = getValueOrDefault(d_settings["baseband_type"], (std::string)baseband_type);
 }
 
 nlohmann::json FileSource::get_settings()
@@ -105,8 +105,7 @@ void FileSource::start()
     start_time_point = std::chrono::steady_clock::now();
     total_samples = 0;
 
-    baseband_type_e = dsp::basebandTypeFromString(baseband_type);
-    baseband_reader.set_file(file_path, baseband_type_e);
+    baseband_reader.set_file(file_path, baseband_type);
     baseband_reader.should_repeat = true;
 
     logger->debug("Opening %s filesize " PRIu64, file_path.c_str(), baseband_reader.filesize);
@@ -143,73 +142,26 @@ void FileSource::drawControlUI()
     if (is_started)
         style::beginDisabled();
 
-    bool update_format = false;
-
     if (file_input.draw())
     {
         file_path = file_input.getPath();
-
         if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
         {
             nlohmann::json hdr;
             try_get_params_from_input_file(hdr, file_path);
             if (hdr.contains("baseband_format"))
-            {
-                if (hdr["baseband_format"].get<std::string>() == "cu8")
-                    select_sample_format = 3;
-                else if (hdr["baseband_format"].get<std::string>() == "cs8")
-                    select_sample_format = 2;
-                else if (hdr["baseband_format"].get<std::string>() == "cs16")
-                    select_sample_format = 1;
-                else if (hdr["baseband_format"].get<std::string>() == "cf32")
-                    select_sample_format = 0;
-                else if (hdr["baseband_format"].get<std::string>() == "ziq")
-                    select_sample_format = 4;
-                else if (hdr["baseband_format"].get<std::string>() == "ziq2")
-                    select_sample_format = 5;
-                update_format = true;
-            }
+                baseband_type = hdr["baseband_format"].get<std::string>();
 
             if (hdr.contains("samplerate"))
-            {
                 samplerate_input.set(hdr["samplerate"].get<uint64_t>());
-                update_format = true;
-            }
 
             if (hdr.contains("frequency"))
-            {
                 d_frequency = hdr["frequency"].get<uint64_t>();
-            }
         }
     }
 
     samplerate_input.draw();
-    if (ImGui::Combo("Format###basebandplayerformat", &select_sample_format, "cf32\0"
-                                                                             "cs16\0"
-                                                                             "cs8\0"
-                                                                             "cu8\0"
-                                                                             // #ifdef BUILD_ZIQ
-                                                                             "ziq\0"
-                                                                             // #endif
-                                                                             "ziq2\0") ||
-        update_format)
-    {
-        if (select_sample_format == 0)
-            baseband_type = "cf32";
-        else if (select_sample_format == 1)
-            baseband_type = "cs16";
-        else if (select_sample_format == 2)
-            baseband_type = "cs8";
-        else if (select_sample_format == 3)
-            baseband_type = "cu8";
-#ifdef BUILD_ZIQ
-        else if (select_sample_format == 4)
-            baseband_type = "ziq";
-#endif
-        else if (select_sample_format == 5)
-            baseband_type = "ziq2";
-    }
-
+    baseband_type.drawPlaybackCombo();
     ImGui::Checkbox("IQ Swap", &iq_swap);
 
     if (is_started)
@@ -227,7 +179,7 @@ void FileSource::drawControlUI()
     if (!is_started)
         style::endDisabled();
 #ifdef BUILD_ZIQ
-    if (select_sample_format == 4)
+    if (baseband_type == dsp::ZIQ)
         ImGui::TextColored(style::theme.red, "ZIQ seeking may be slow!");
 #endif
 }

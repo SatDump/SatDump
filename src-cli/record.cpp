@@ -183,7 +183,7 @@ int main_record(int argc, char *argv[])
 
     if (parameters.contains("baseband_format"))
     {
-        file_sink->set_output_sample_type(dsp::basebandTypeFromString(parameters["baseband_format"].get<std::string>()));
+        file_sink->set_output_sample_type(parameters["baseband_format"].get<std::string>());
     }
     else
     {

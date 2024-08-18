@@ -352,7 +352,7 @@ namespace satdump
                             if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                                 name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
-                            add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
+                            add_vfo_reco(id, name, dl.frequency, dl.baseband_format, dl.baseband_decimation);
                         }
                     }
                 }
