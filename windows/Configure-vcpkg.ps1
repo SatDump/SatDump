@@ -28,7 +28,7 @@ cd vcpkg
                                     boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
                                     boost-assign boost-dll
 
-#Use an old version of libusb to work around Airspy's bullshit
+#Use an old version of libusb to work around a potential bug in AirSpy code
 if($platform -eq "x64-windows")
 {
     rm .\installed\x64-windows\bin\libusb-1.0.dll
