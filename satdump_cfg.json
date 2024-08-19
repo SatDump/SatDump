@@ -3033,7 +3033,8 @@
                     },
                     "Microwave Airmass": {
                         "equation": "ch11,ch12,ch13",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MicrowaveAirmass.md"
                     }
                 },
                 "project_channels": {
@@ -3188,15 +3189,18 @@
                     },
                     "MHS 221": {
                         "equation": "ch17,ch17,ch16",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MHS221.md"
                     },
                     "MHS 421": {
                         "equation": "ch20,ch17,ch16",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MHS221.md"
                     },
                     "Microwave Airmass": {
                         "equation": "ch18,ch19,ch20",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MicrowaveAirmass.md"
                     },
                     "AMSU Surface Relative Temperature": {
                         "equation": "cos(ln(ch1) + ln(ch2)+0.8)",
@@ -3235,6 +3239,12 @@
                         "equation": "cch3^0.3, 0, 0, cch2 > 0.57 ? (cch3 < 0.5 ? 1 : 0) : 0",
                         "apply_lut": true,
                         "autogen": false
+                    },
+                    "Rainfall (Transparent, MHS-like)": {
+                        "equation": "(((1-cch22-cch20))-0.95)^0.25, 0, 0, (((1-cch22-cch20))-0.95)^0.25 > 0.01 ? 1 : 0",
+                        "apply_lut": true,
+                        "autogen": false,
+                        "description": "descriptions/sounders/RainfallTransparent.md"
                     }
                 }
             },
