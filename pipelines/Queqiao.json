@@ -1,6 +1,6 @@
 {
     "queqiao2_s_link": {
-        "name": "Queqiao-2 S-Band (4.096k BPSK)",
+        "name": "Queqiao-2 S-Band (4.1k BPSK)",
         "live": true,
         "live_cfg": [
             [

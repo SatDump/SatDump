@@ -1,6 +1,6 @@
 {
     "stereo_lr": {
-        "name": "STEREO X-band (3.8k))",
+        "name": "STEREO X-band (3.8k)",
         "live": true,
         "live_cfg": [
             [
