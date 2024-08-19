@@ -161,7 +161,7 @@ void FileSource::drawControlUI()
     }
 
     samplerate_input.draw();
-    baseband_type.drawPlaybackCombo();
+    baseband_type.draw_playback_combo();
     ImGui::Checkbox("IQ Swap", &iq_swap);
 
     if (is_started)

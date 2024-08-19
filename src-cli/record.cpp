@@ -174,25 +174,23 @@ int main_record(int argc, char *argv[])
         webserver_already_set = true;
     }
 
-    int ziq_bit_depth = 8;
-    if (parameters.contains("ziq_depth"))
-        ziq_bit_depth = parameters["ziq_depth"].get<int>();
-
-    if (parameters["baseband_format"].get<std::string>() == "ziq")
-        logger->info("Using ZIQ Depth %d", ziq_bit_depth);
-
-    if (parameters.contains("baseband_format"))
-    {
-        file_sink->set_output_sample_type(parameters["baseband_format"].get<std::string>());
-    }
-    else
+    if (!parameters.contains("baseband_format"))
     {
         logger->error("baseband_format flag is required!");
         return 1;
     }
 
+    dsp::BasebandType baseband_type = parameters["baseband_format"].get<std::string>();
+
+    if (parameters.contains("ziq_depth"))
+        baseband_type.ziq_depth = parameters["ziq_depth"].get<int>();
+
+    if (parameters["baseband_format"].get<std::string>() == "ziq")
+        logger->info("Using ZIQ Depth %d", baseband_type.ziq_depth);
+
+    file_sink->set_output_sample_type(baseband_type);
     file_sink->start();
-    file_sink->start_recording(output_file, samplerate / decimation, ziq_bit_depth);
+    file_sink->start_recording(output_file, samplerate / decimation);
 
     // If requested, boot up webserver
     if (parameters.contains("http_server"))

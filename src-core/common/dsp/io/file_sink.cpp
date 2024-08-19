@@ -56,7 +56,7 @@ namespace dsp
 #ifdef BUILD_ZIQ2
             else if (d_sample_format == ZIQ2)
             {
-                int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, input_stream->readBuf, mag_buffer, nsamples, bit_depth);
+                int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, input_stream->readBuf, mag_buffer, nsamples, d_sample_format.ziq_depth);
                 output_file.write((char *)buffer_s8, sz);
                 current_size_out += sz;
             }

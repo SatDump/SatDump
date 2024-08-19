@@ -41,13 +41,22 @@ namespace dsp
         BasebandType(const std::string &s) { from_string(s); }
         BasebandType(const char *s) { from_string(std::string(s)); }
         inline operator BasebandTypeEnum() const { return type; }
-        inline BasebandType &operator= (const BasebandTypeEnum& e) { type = e; return *this; }
+        inline BasebandType &operator= (const BasebandTypeEnum &e) { type = e; return *this; }
         inline BasebandType &operator= (const std::string &s) { from_string(s); return *this; }
         inline BasebandType &operator= (const char *s) { from_string(std::string(s)); return *this; }
         operator std::string() const;
 
-        bool drawPlaybackCombo();
-        BasebandTypeEnum drawRecordCombo();
+        bool draw_playback_combo();
+        bool draw_record_combo();
+
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+        BasebandType(BasebandTypeEnum e, int d)
+        {
+            type = e;
+            ziq_depth = d;
+        }
+        int ziq_depth = 8;
+#endif
     };
 
     // "Simple" class to wrap all the baseband reading stuff, including sample scaling. All inline for performance

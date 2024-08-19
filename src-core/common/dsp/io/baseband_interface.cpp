@@ -4,6 +4,47 @@
 
 namespace dsp
 {
+    // Helper function
+    static std::map<BasebandType, size_t> reverse_lut(const std::vector<BasebandType> lut)
+    {
+        std::map<BasebandType, size_t> ret;
+        for (size_t i = 0; i < lut.size(); i++)
+            ret[lut[i]] = i;
+        return ret;
+    }
+
+    static const std::vector<BasebandType> play_fwd_lut = {
+        CF_32,
+        CS_16,
+        CS_8,
+        CU_8,
+#ifdef BUILD_ZIQ
+        ZIQ,
+#endif
+#ifdef BUILD_ZIQ2
+        ZIQ2
+#endif
+    };
+
+    static const std::vector<BasebandType> record_fwd_lut = {
+        CF_32,
+        CS_16,
+        CS_8,
+        WAV_16,
+#ifdef BUILD_ZIQ
+        { ZIQ, 32 },
+        { ZIQ, 16 },
+        { ZIQ, 8 },
+#endif
+#ifdef BUILD_ZIQ2
+        { ZIQ2, 16 },
+        { ZIQ2, 8 }
+#endif
+    };
+
+    static const std::map<BasebandType, size_t> record_rev_lut = reverse_lut(record_fwd_lut);
+    static const std::map<BasebandType, size_t> play_rev_lut = reverse_lut(play_fwd_lut);
+
     BasebandType::operator std::string() const
     {
         switch (type)
@@ -30,7 +71,7 @@ namespace dsp
 #endif
 #ifdef BUILD_ZIQ2
         case ZIQ2:
-            return "ziq";
+            return "ziq2";
             break;
 #endif
         default:
@@ -62,12 +103,10 @@ namespace dsp
             throw satdump_exception("Unknown baseband type " + s);
     }
 
-    bool BasebandType::drawPlaybackCombo()
+    bool BasebandType::draw_playback_combo()
     {
-        int select = type;
-        if (select >= WAV_16)
-            select--;
-        bool ret = ImGui::Combo("Format###basebandplayerformat", &select,
+        int selected = play_rev_lut.at(*this);
+        bool ret = ImGui::Combo("Format###basebandplayerformat", &selected,
             "cf32\0"
             "cs16\0"
             "cs8\0"
@@ -80,18 +119,36 @@ namespace dsp
 #endif
             "\0"
         );
+
         if (ret)
-        {
-            if (select >= WAV_16)
-                select++;
-            type = (BasebandTypeEnum)select;
-        }
+            *this = play_fwd_lut[selected];
+
         return ret;
     }
 
-    BasebandTypeEnum BasebandType::drawRecordCombo()
+    bool BasebandType::draw_record_combo()
     {
-        //TODO
-        return type;
+        int selected = record_rev_lut.at(*this);
+        bool ret = ImGui::Combo("Format", &selected,
+            "cf32\0"
+            "cs16\0"
+            "cs8\0"
+            "wav16\0"
+#ifdef BUILD_ZIQ
+            "ziq cf32\0"
+            "ziq cs16\0"
+            "ziq cs8\0"
+#endif
+#ifdef BUILD_ZIQ2
+            "ziq2 cs16 (WIP)\0"
+            "ziq2 cs8 (WIP)\0"
+#endif
+            "\0"
+        );
+
+        if (ret)
+            *this = record_fwd_lut[selected];
+
+        return ret;
     }
 }
