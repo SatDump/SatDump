@@ -1,6 +1,6 @@
 {
     "stereo_lr": {
-        "name": "Stereo-A/B Low Rate",
+        "name": "STEREO X-band (3.8k))",
         "live": true,
         "live_cfg": [
             [
@@ -44,7 +44,7 @@
         }
     },
     "stereo_hr": {
-        "name": "Stereo-A/B High Rate",
+        "name": "STEREO X-band (1.44M)",
         "live": true,
         "live_cfg": [
             [

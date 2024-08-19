@@ -1,6 +1,6 @@
 {
     "sonate2_dump": {
-        "name": "Sonate-2 S-Band Dump",
+        "name": "SONATE-2 S-band",
         "work": {
             "baseband": {},
             "soft": {

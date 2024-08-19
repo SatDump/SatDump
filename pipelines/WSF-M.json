@@ -1,6 +1,6 @@
 {
     "wsf_m_db": {
-        "name": "WSF-M S-Band DB",
+        "name": "WSF-M RTD",
         "live": true,
         "live_cfg": [
             [

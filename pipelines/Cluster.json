@@ -1,6 +1,6 @@
 {
     "cluster_lr_link": {
-        "name": "Cluster-IIFM S-Band Lowrate Link",
+        "name": "Cluster II S-band (43.7k)",
         "live": true,
         "live_cfg": [
             [
@@ -39,7 +39,7 @@
         }
     },
     "cluster_hr_link": {
-        "name": "Cluster-IIFM S-Band Highrate Link",
+        "name": "Cluster II S-band (524.3k)",
         "live": true,
         "live_cfg": [
             [

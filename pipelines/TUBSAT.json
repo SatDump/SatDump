@@ -1,6 +1,6 @@
 {
     "tubin_x_dump": {
-        "name": "TUBIN X-Band Dump",
+        "name": "TUBIN X-Band",
         "live": true,
         "live_cfg": [
             [

@@ -1,6 +1,6 @@
 {
     "bluewalker3_wide": {
-        "name": "BlueWalker-3 S-Band Wide",
+        "name": "BlueWalker 3 S-band (512k)",
         "live": true,
         "live_cfg": [
             [
@@ -40,7 +40,7 @@
         }
     },
     "bluewalker3_narrow": {
-        "name": "BlueWalker-3 S-Band Narrow",
+        "name": "BlueWalker 3 S-band (128k)",
         "live": true,
         "live_cfg": [
             [

@@ -1,6 +1,6 @@
 {
     "noaa_hrpt": {
-        "name": "NOAA HRPT",
+        "name": "NOAA POES HRPT",
         "live": true,
         "live_cfg": [
             [
@@ -62,7 +62,7 @@
         }
     },
     "noaa_gac": {
-        "name": "NOAA GAC",
+        "name": "NOAA POES GAC",
         "live": true,
         "live_cfg": [
             [
@@ -129,7 +129,7 @@
         }
     },
     "noaa_dsb": {
-        "name": "NOAA DSB",
+        "name": "NOAA POES DSB",
         "live": true,
         "live_cfg": [
             [
@@ -187,7 +187,7 @@
         }
     },
     "noaa_apt": {
-        "name": "NOAA APT",
+        "name": "NOAA POES APT",
         "live": true,
         "live_cfg": [
             [

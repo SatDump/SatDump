@@ -1,6 +1,6 @@
 {
     "iris_s_dump": {
-        "name": "IRIS S-Band Dump",
+        "name": "IRIS S-Band",
         "live": true,
         "live_cfg": [
             [
@@ -44,7 +44,7 @@
         }
     },
     "iris_dump": {
-        "name": "IRIS X-Band Dump",
+        "name": "IRIS X-Band",
         "samplerate": 20e6,
         "work": {
             "baseband": {},

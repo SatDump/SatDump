@@ -1,6 +1,6 @@
 {
     "orx_link": {
-        "name": "OSIRIS-REx X-Band Link",
+        "name": "OSIRIS-REx X-Band",
         "live": true,
         "live_cfg": [
             [

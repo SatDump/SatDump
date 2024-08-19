@@ -1,6 +1,6 @@
 {
     "jason3_link": {
-        "name": "Jason-3 S-Band Link",
+        "name": "Jason-3 S-Band",
         "live": true,
         "live_cfg": [
             [

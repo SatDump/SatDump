@@ -1,6 +1,6 @@
 {
     "viasat3_tlm": {
-        "name": "ViaSat-3 TLM",
+        "name": "ViaSat-3 TT&C (11.7 GHz)",
         "live": true,
         "live_cfg": [
             [
@@ -41,7 +41,7 @@
         }
     },
     "viasat3_tlm_12200": {
-        "name": "ViaSat-3 12.2GHz TLM",
+        "name": "ViaSat-3 TT&C (12.2 GHz)",
         "live": true,
         "live_cfg": [
             [

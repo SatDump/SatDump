@@ -1,6 +1,6 @@
 {
     "falcon9_tlm": {
-        "name": "Falcon 9 S-Band TLM",
+        "name": "Falcon 9 (2nd stage) S-band",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -27,7 +27,7 @@
         }
     },
     "starship_tlm": {
-        "name": "Starship S-Band TLM",
+        "name": "Starship S-band",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -53,7 +53,7 @@
         }
     },
     "crew_dragon_tlm": {
-        "name": "Crew Dragon S-Band TLM",
+        "name": "Crew Dragon S-band",
         "live": true,
         "live_cfg": [
             [

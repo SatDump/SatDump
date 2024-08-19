@@ -29,7 +29,7 @@
     },
     ///////////////////////////////////////////////////////////////
     "saral_l_band": {
-        "name": "Saral L-Band",
+        "name": "SARAL ARGOS",
         "live": true,
         "live_cfg": [
             [
@@ -76,7 +76,7 @@
         }
     },
     "angels_l_band": {
-        "name": "ANGELS L-Band",
+        "name": "ANGELS ARGOS",
         "live": true,
         "live_cfg": [
             [
@@ -123,7 +123,7 @@
         }
     },
     "gazelle_l_band": {
-        "name": "OTB-3/Gazelle L-Band",
+        "name": "GAzelle (OTB-3) ARGOS",
         "live": true,
         "live_cfg": [
             [
@@ -168,7 +168,7 @@
         }
     },
     "yunhai_ahrpt": {
-        "name": "Yunhai AHRPT - Encrypted",
+        "name": "Yunhai-1 L-band (encrypted)",
         "live": false,
         "frequencies": [
             [
@@ -197,7 +197,7 @@
         }
     },
     "syracuse3b_tlm": {
-        "name": "Syracuse 3B TLM",
+        "name": "Syracuse 3B TT&C",
         "live": true,
         "live_cfg": [
             [
@@ -221,7 +221,7 @@
         }
     },
     "scisat1_dump": {
-        "name": "SciSat-1 Dump",
+        "name": "SCISAT-1 S-band",
         "live": true,
         "live_cfg": [
             [
@@ -264,7 +264,7 @@
         }
     },
     "CALIPSO": {
-        "name": "Calipso S band Dump",
+        "name": "CALIPSO S-band",
         "live": false,
         "live_cfg": [],
         "frequencies": [
@@ -302,7 +302,7 @@
         }
     },
     "youthsat_dump": {
-        "name": "YouthSat Dump",
+        "name": "Youthsat S-band",
         "live": true,
         "live_cfg": [
             [
@@ -342,7 +342,7 @@
         }
     },
     "pretty_s_dump": {
-        "name": "PRETTY S-Band Dump",
+        "name": "PRETTY S-band",
         "live": true,
         "live_cfg": [
             [

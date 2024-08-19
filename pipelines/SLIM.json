@@ -1,6 +1,6 @@
 {
     "slim_tlm_link": {
-        "name": "SLIM TLM Link",
+        "name": "SLIM S-band",
         "live": true,
         "live_cfg": [
             [

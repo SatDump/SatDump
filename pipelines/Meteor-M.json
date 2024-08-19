@@ -1,6 +1,6 @@
 {
     "meteor_hrpt": {
-        "name": "METEOR HRPT",
+        "name": "Meteor-M HRPT",
         "live": true,
         "live_cfg": [
             [
@@ -48,7 +48,7 @@
         }
     },
     "meteor_m2_lrpt": {
-        "name": "METEOR M2 LRPT 72k",
+        "name": "Meteor-M LRPT (72k QPSK)",
         "live": true,
         "live_cfg": [
             [
@@ -106,7 +106,7 @@
         }
     },
     "meteor_m2-x_lrpt": {
-        "name": "METEOR M2-x LRPT 72k",
+        "name": "Meteor-M LRPT (72k OQPSK)",
         "live": true,
         "live_cfg": [
             [
@@ -181,7 +181,7 @@
         }
     },
     "meteor_m2-x_lrpt_80k": {
-        "name": "METEOR M2-x LRPT 80k",
+        "name": "Meteor-M LRPT (80k OQPSK)",
         "live": true,
         "live_cfg": [
             [
@@ -243,7 +243,7 @@
     },
     // TEST
     "meteor_m_mtvza_dump": {
-        "name": "METEOR-M MTVZA Dump (Narrow BPSK)",
+        "name": "Meteor-M MTVZA",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -288,7 +288,7 @@
         }
     },
     "meteor_m_kmss_qpsk_dump": {
-        "name": "METEOR-M KMSS Dump (Wide QPSK)",
+        "name": "Meteor-M KMSS (Stored data)",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -331,7 +331,7 @@
         }
     },
     "meteor_m_kmss_bpsk_db": {
-        "name": "METEOR-M KMSS DB (Wide BPSK)",
+        "name": "Meteor-M KMSS (Real-time)",
         "live": false,
         "frequencies": [],
         "parameters": {

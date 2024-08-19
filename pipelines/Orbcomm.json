@@ -1,6 +1,6 @@
 {
     "orbcomm_stx": {
-        "name": "Orbcomm STX",
+        "name": "ORBCOMM STX",
         "live": true,
         "live_cfg": [
             [
@@ -24,7 +24,7 @@
         }
     },
     "orbcomm_stx_auto": {
-        "name": "Orbcomm STX Auto",
+        "name": "ORBCOMM STX Auto",
         "live": true,
         "live_cfg": [
             [
@@ -42,7 +42,7 @@
         }
     },
     "orbcomm_stx_auto_plotter": {
-        "name": "Orbcomm STX Auto Plotter",
+        "name": "ORBCOMM STX Auto Plotter",
         "live": true,
         "live_cfg": [
             [

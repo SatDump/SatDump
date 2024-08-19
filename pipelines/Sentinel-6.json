@@ -1,6 +1,6 @@
 {
     "sentinel6_dump": {
-        "name": "Sentinel-6 Dump",
+        "name": "Sentinel-6 X-band",
         "samplerate": 20e6,
         "work": {
             "baseband": {},
@@ -25,7 +25,7 @@
         }
     },
     "sentinel6_tlm": {
-        "name": "Sentinel 6 S-Band TLM",
+        "name": "Sentinel-6 S-Band",
         "live": true,
         "live_cfg": [
             [

@@ -1,6 +1,6 @@
 {
     "dscovr_tlm": {
-        "name": "DSCOVR TLM Link",
+        "name": "DSCOVR S-band (40k)",
         "live": true,
         "live_cfg": [
             [
@@ -45,7 +45,7 @@
         }
     },
     "dscovr_hr": {
-        "name": "DSCOVR High-Rate Link",
+        "name": "DSCOVR S-band (276k)",
         "live": true,
         "live_cfg": [
             [

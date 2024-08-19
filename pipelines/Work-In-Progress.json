@@ -1,6 +1,6 @@
 {
     "aeolus_dump": {
-        "name": "Aeolus Dump",
+        "name": "Aeolus X-band",
         "samplerate": 10e6,
         "work": {
             "baseband": {},
@@ -15,7 +15,7 @@
         }
     },
     "smos_dump": {
-        "name": "SMOS X-Band Dump",
+        "name": "SMOS X-band",
         "samplerate": 20e6,
         "work": {
             "baseband": {},
@@ -34,7 +34,7 @@
         }
     },
     "prisma_dump": {
-        "name": "PRISMA X-Band Dump",
+        "name": "PRISMA X-band",
         "samplerate": 90e6,
         "work": {
             "baseband": {},
@@ -59,7 +59,7 @@
         }
     },
     "smap_s_link": {
-        "name": "SMAP S-Band Link",
+        "name": "SMAP S-band",
         "live": true,
         "live_cfg": [
             [
@@ -105,7 +105,7 @@
         }
     },
     "cheops_link": {
-        "name": "CHEOPS S-Band Dump",
+        "name": "CHEOPS S-band",
         "live": true,
         "live_cfg": [
             [
@@ -146,7 +146,7 @@
         }
     },
     "timed_dump": {
-        "name": "TIMED S-Band Dump",
+        "name": "TIMED S-band",
         "frequencies": [
             [
                 "Main",
@@ -178,7 +178,7 @@
         }
     },
     "grace_fo_link": {
-        "name": "Grace-FO Dump",
+        "name": "GRACE-FO S-band",
         "samplerate": 20e6,
         "live": true,
         "live_cfg": [
@@ -214,7 +214,7 @@
         }
     },
     "cfosat1_dump": {
-        "name": "CFOSAT-1 X-Band Dump",
+        "name": "CFOSAT-1 X-band",
         "samplerate": 40e6,
         "work": {
             "baseband": {},
@@ -238,7 +238,7 @@
         }
     },
     "eumetcast_africa": {
-        "name": "EUMETCAST Africa",
+        "name": "EUMETCast Africa",
         "live": true,
         "live_cfg": [
             [
@@ -263,7 +263,7 @@
         }
     },
     "smos_tlm": {
-        "name": "SMOS TLM",
+        "name": "SMOS S-band",
         "live": true,
         "live_cfg": [
             [
@@ -307,7 +307,7 @@
         }
     },
     "neossat_dump": {
-        "name": "NEOSSAT Dump",
+        "name": "NEOSSat S-band",
         "live": true,
         "live_cfg": [
             [
@@ -346,7 +346,7 @@
         }
     },
     "ops_sat_s_link": {
-        "name": "OPS-SAT S-Band Link",
+        "name": "OPS-SAT S-band",
         "live": true,
         "live_cfg": [
             [
@@ -390,7 +390,7 @@
         }
     },
     "swot_tlm": {
-        "name": "SWOT S-Band TLM",
+        "name": "SWOT S-band",
         "live": true,
         "live_cfg": [
             [
@@ -438,7 +438,7 @@
         }
     },
     "tiahne1_tlm": {
-        "name": "Tiahne-1 TLM",
+        "name": "Tiangong (CSS) S-band",
         "live": true,
         "live_cfg": [
             [
@@ -479,7 +479,7 @@
         }
     },
     "paz_s_tlm": {
-        "name": "PAZ S-band telemetry",
+        "name": "PAZ S-band",
         "live": true,
         "live_cfg": [
             [
@@ -524,7 +524,7 @@
         }
     },
     "gcom_s_band": {
-        "name": "GCOM S-Band link",
+        "name": "GCOM S-band",
         "live": true,
         "live_cfg": [
             [
@@ -570,7 +570,7 @@
         }
     },
     "cosmos_2518_sband": {
-        "name": "Cosmos-2518 S-Band link",
+        "name": "Cosmos 2518 S-band",
         "live": true,
         "live_cfg": [
             [
@@ -598,7 +598,7 @@
         }
     },
     "chinese_spaceplane_sband": {
-        "name": "Chinese Spaceplane S-Band link",
+        "name": "CSSHQ (space plane) S-band",
         "live": true,
         "live_cfg": [
             [

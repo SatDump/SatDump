@@ -1,6 +1,6 @@
 {
     "elektro_rdas": {
-        "name": "ELEKTRO-L RDAS",
+        "name": "Elektro-L RDAS",
         "samplerate": 45e6,
         "work": {
             "baseband": {},
@@ -29,7 +29,7 @@
         }
     },
     "arktika_rdas": {
-        "name": "ARKTIKA-M RDAS",
+        "name": "Arktika-M RDAS",
         "samplerate": 45e6,
         "work": {
             "baseband": {},
@@ -58,7 +58,7 @@
         }
     },
     "elektro_lrit": {
-        "name": "ELEKTRO-L LRIT",
+        "name": "Elektro-L LRIT",
         "live": true,
         "live_cfg": {
             "pkt_size": 10240, // 1024 * 10
@@ -129,7 +129,7 @@
         }
     },
     "elektro_hrit": {
-        "name": "ELEKTRO-L HRIT",
+        "name": "Elektro-L HRIT",
         "live": true,
         "live_cfg": {
             "pkt_size": 10240, // 1024 * 10
@@ -200,7 +200,7 @@
         }
     },
     "elektro_tlm": {
-        "name": "ELEKTRO-L L-Band TLM",
+        "name": "Elektro-L GGAK",
         "live": true,
         "live_cfg": [
             [
@@ -240,7 +240,7 @@
         }
     },
     "arktika_tlm": {
-        "name": "ARKTIKA-M L-Band TLM",
+        "name": "Arktika-M GGAK",
         "live": true,
         "live_cfg": [
             [

@@ -1,6 +1,6 @@
 {
     "proba1_dump": {
-        "name": "Proba-1 Dump",
+        "name": "PROBA-1 S-band",
         "live": true,
         "live_cfg": [
             [
@@ -52,7 +52,7 @@
         }
     },
     "proba2_dump": {
-        "name": "Proba-2 Dump",
+        "name": "PROBA-2 S-band",
         "live": true,
         "live_cfg": [
             [
@@ -104,7 +104,7 @@
         }
     },
     "probav_s_dump": {
-        "name": "Proba-V S-Band Dump",
+        "name": "PROBA-V S-band",
         "live": true,
         "live_cfg": [
             [
@@ -156,7 +156,7 @@
         }
     },
     "probav_x_dump": {
-        "name": "Proba-V X-Band Dump",
+        "name": "PROBA-V X-band",
         "frequencies": [
             [
                 "Main",
@@ -192,7 +192,7 @@
         }
     },
     "pvcc_s_dump": {
-        "name": "Proba-V-CC S-Band Dump",
+        "name": "PROBA-V-CC S-band",
         "live": true,
         "live_cfg": [
             [
@@ -240,7 +240,7 @@
         }
     },
     "pvcc_x_dump": {
-        "name": "Proba-V-CC X-Band Dump",
+        "name": "PROBA-V-CC X-band",
         "frequencies": [],
         "work": {
             "baseband": {},

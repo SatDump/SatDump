@@ -1,6 +1,6 @@
 {
    "formosat7_s_dump": {
-        "name": "FORMOSAT-7/COSMIC-2 S-Band dump",
+        "name": "FORMOSAT-7/COSMIC-2 S-Band",
         "live": true,
         "live_cfg": [
             [
@@ -45,7 +45,7 @@
         }
     },
     "formosat5_s_dump": {
-        "name": "FORMOSAT-5 S-Band dump",
+        "name": "FORMOSAT-5 S-Band",
         "live": true,
         "live_cfg": [
             [

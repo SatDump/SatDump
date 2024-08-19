@@ -1,6 +1,6 @@
 {
     "adityal1_tlm_link": {
-        "name": "Aditya-L1 TLM Link",
+        "name": "Aditya-L1 X-band",
         "live": true,
         "live_cfg": [
             [

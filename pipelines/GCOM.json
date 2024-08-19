@@ -1,6 +1,6 @@
 {
     "gcom_w1_link": {
-        "name": "GCOM-W1 Link",
+        "name": "GCOM-W1 X-band",
         "frequencies": [
             [
                 "Main",
@@ -37,7 +37,7 @@
         }
     },
     "gcom_c1_link": {
-        "name": "GCOM-C1 Link",
+        "name": "GCOM-C1 X-band",
         "samplerate": 20e6,
         "work": {
             "baseband": {},

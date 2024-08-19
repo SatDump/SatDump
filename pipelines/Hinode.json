@@ -1,6 +1,6 @@
 {
     "hinode_s_dump": {
-        "name": "Hinode S-Band dump",
+        "name": "Hinode S-Band (262k)",
         "live": true,
         "live_cfg": [
             [
@@ -48,7 +48,7 @@
         }
     },
     "hinode_s_tlm": {
-        "name": "Hinode S-Band TLM",
+        "name": "Hinode S-Band (65.6k)",
         "live": true,
         "live_cfg": [
             [

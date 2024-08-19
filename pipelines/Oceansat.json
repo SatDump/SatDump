@@ -1,6 +1,6 @@
 {
     "oceansat2_db": {
-        "name": "OceanSat-2 DB",
+        "name": "Oceansat-2 LAC",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -27,7 +27,7 @@
         }
     },
     "oceansat3_argos": {
-        "name": "Oceansat-3 L-Band",
+        "name": "Oceansat-3 ARGOS",
         "live": true,
         "live_cfg": [
             [
@@ -72,7 +72,7 @@
         }
     },
     "oceansat3_dump": {
-        "name": "OceanSat-3 X-Band Dump",
+        "name": "Oceansat-3 X-band",
         "live": false,
         "live_cfg": [],
         "frequencies": [],

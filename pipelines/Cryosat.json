@@ -1,6 +1,6 @@
 {
     "cryosat_dump": {
-        "name": "Cryosat X-Band Dump",
+        "name": "CryoSat X-band",
         "live": false,
         "live_cfg": [],
         "frequencies": [],

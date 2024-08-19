@@ -1,6 +1,6 @@
 {
   "saocom1_ab_tlm_dump": {
-        "name": "SAOCOM 1A/1B TLM Dump",
+        "name": "SAOCOM 1A/1B S-band",
         "live": true,
         "live_cfg": [
             [

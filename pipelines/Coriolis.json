@@ -1,6 +1,6 @@
 {
     "coriolis_db": {
-        "name": "Coriolis S-Band Tactical DB",
+        "name": "Coriolis RTD",
         "live": true,
         "live_cfg": [
             [

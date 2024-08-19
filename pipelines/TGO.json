@@ -1,6 +1,6 @@
 {
     "tgo_link": {
-        "name": "Mars TGO X-Band Link",
+        "name": "Trace Gas Orbiter X-Band",
         "live": true,
         "live_cfg": [
             [

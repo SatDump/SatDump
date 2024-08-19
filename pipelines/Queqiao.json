@@ -1,6 +1,6 @@
 {
     "queqiao2_s_link": {
-        "name": "Queqiao-2 S-Band Link",
+        "name": "Queqiao-2 S-Band (4.096k BPSK)",
         "live": true,
         "live_cfg": [
             [
@@ -43,7 +43,7 @@
         }
     },
     "queqiao2_oqpsk_science_s_link": {
-        "name": "Queqiao-2 QPSK S-Band Science Link",
+        "name": "Queqiao-2 S-Band (3M OQPSK)",
         "live": true,
         "live_cfg": [
             [
@@ -81,7 +81,7 @@
         }
     },
     "queqiao2_bpsk_science_s_link": {
-        "name": "Queqiao-2 BPSK S-Band Science Link",
+        "name": "Queqiao-2 S-Band (1M BPSK)",
         "live": true,
         "live_cfg": [
             [

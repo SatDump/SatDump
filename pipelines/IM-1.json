@@ -1,6 +1,6 @@
 {
     "im1_s_tlm": {
-        "name": "IM-1 S-Band 2.5k TLM",
+        "name": "IM-1 S-Band (2.5k)",
         "live": true,
         "live_cfg": [
             [

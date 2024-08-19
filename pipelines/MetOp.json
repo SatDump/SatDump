@@ -57,7 +57,7 @@
         }
     },
     "metop_dump": {
-        "name": "MetOp X-Band Dump",
+        "name": "MetOp GDS",
         "live": false,
         "live_cfg": [],
         "frequencies": [

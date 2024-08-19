@@ -1,6 +1,6 @@
 {
     "goes_gvar": {
-        "name": "GOES GVAR",
+        "name": "GOES-N GVAR",
         "live": true,
         "live_cfg": {
             "pkt_size": 32786,
@@ -508,7 +508,7 @@
         }
     },
     "goesn_sounder": {
-        "name": "GOES-N Sounder SD",
+        "name": "GOES-N SD (Sounder)",
         "live": true,
         "live_cfg": [
             [
@@ -546,7 +546,7 @@
         }
     },
     "goesn_sd": {
-        "name": "GOES-N Sensor Data",
+        "name": "GOES-N SD (Imager)",
         "live": true,
         "live_cfg": [
             [

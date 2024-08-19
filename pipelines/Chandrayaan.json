@@ -1,6 +1,6 @@
 {
     "chandrayaan3_link_1k": {
-        "name": "Chandrayaan-3 1k Link",
+        "name": "Chandrayaan-3 S-band (1k)",
         "live": true,
         "live_cfg": [
             [
@@ -40,7 +40,7 @@
         }
     },
     "chandrayaan3_link_4k": {
-        "name": "Chandrayaan-3 4k Link",
+        "name": "Chandrayaan-3 S-band (4k)",
         "live": true,
         "live_cfg": [
             [
@@ -80,7 +80,7 @@
         }
     },
     "chandrayaan3_link_2k": {
-        "name": "Chandrayaan-3 2k Link",
+        "name": "Chandrayaan-3 S-band (2k)",
         "live": true,
         "live_cfg": [
             [
@@ -118,7 +118,7 @@
         }
     },
     "chandrayaan3_link_8k": {
-        "name": "Chandrayaan-3 8k Link",
+        "name": "Chandrayaan-3 S-band (8k)",
         "live": true,
         "live_cfg": [
             [

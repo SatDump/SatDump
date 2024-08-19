@@ -1,6 +1,6 @@
 {
     "npp_hrd": {
-        "name": "Suomi NPP / JPSS-1 HRD",
+        "name": "Suomi NPP / NOAA JPSS-1 HRD",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -46,7 +46,7 @@
         }
     },
     "jpss_hrd": {
-        "name": "JPSS-2/3/4 HRD",
+        "name": "NOAA JPSS-2/3/4 HRD",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -92,7 +92,7 @@
         }
     },
     "jpss_tlm": {
-        "name": "JPSS-2/3/4 Telemetry",
+        "name": "NOAA JPSS-2/3/4 TLM",
         "live": true,
         "live_cfg": [
             [

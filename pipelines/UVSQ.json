@@ -1,6 +1,6 @@
 {
     "inspiresat7_tlm": {
-        "name": "INSPIRE-Sat7 TLM",
+        "name": "INSPIRE-Sat7 TM",
         "live": true,
         "live_cfg": [
             [
@@ -47,7 +47,7 @@
         }
     },
     "spino_2400": {
-        "name": "AMSAT-F Spino 2400bps",
+        "name": "AMSAT-F Spino Mode 1",
         "live": true,
         "live_cfg": [
             [

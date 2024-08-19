@@ -1,6 +1,6 @@
 {
     "cloudsat_link": {
-        "name": "CloudSat S-Band Link",
+        "name": "CloudSat S-band",
         "live": true,
         "live_cfg": [
             [

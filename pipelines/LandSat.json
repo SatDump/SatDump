@@ -1,6 +1,6 @@
 {
     "landsat_ldcm_tlm": {
-        "name": "LandSat 8/9 S-band",
+        "name": "Landsat 8/9 S-band",
         "live": false,
         "live_cfg": [],
         "frequencies": [],
@@ -34,7 +34,7 @@
         }
     },
     "landsat_ldcm_link": {
-        "name": "LandSat 8/9 X-band",
+        "name": "Landsat 8/9 X-band",
         "samplerate": 300e6,
         "work": {
             "baseband": {},

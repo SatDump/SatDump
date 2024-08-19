@@ -1,6 +1,6 @@
 {
     "fengyun3_ab_ahrpt": {
-        "name": "FengYun-3 A/B AHRPT",
+        "name": "FengYun-3A/B AHRPT",
         "live": true,
         "live_cfg": [
             [
@@ -54,7 +54,7 @@
         }
     },
     "fengyun3_c_ahrpt": {
-        "name": "FengYun-3 C AHRPT ",
+        "name": "FengYun-3C AHRPT ",
         "live": true,
         "live_cfg": [
             [
@@ -108,7 +108,7 @@
         }
     },
     "fengyun3_abc_mpt": {
-        "name": "FengYun-3 A/B/C MPT",
+        "name": "FengYun-3A/B/C MPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -147,7 +147,7 @@
         }
     },
     "fengyun3_d_ahrpt": {
-        "name": "FengYun-3 D AHRPT",
+        "name": "FengYun-3D AHRPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -186,7 +186,7 @@
         }
     },
     "fengyun3_e_ahrpt": {
-        "name": "FengYun-3 E AHRPT",
+        "name": "FengYun-3E AHRPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -225,7 +225,7 @@
         }
     },
     "fengyun3_f_ahrpt": {
-        "name": "FengYun-3 F AHRPT",
+        "name": "FengYun-3F AHRPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -264,7 +264,7 @@
         }
     },
     "fengyun3_g_ahrpt": {
-        "name": "FengYun-3 G AHRPT",
+        "name": "FengYun-3G AHRPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -310,7 +310,7 @@
         }
     },
     "fengyun3_abc_dpt": {
-        "name": "FengYun-3 A/B/C DPT",
+        "name": "FengYun-3A/B/C DPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -350,7 +350,7 @@
         }
     },
     "fengyun3_d_dpt": {
-        "name": "FengYun-3 D DPT",
+        "name": "FengYun-3D DPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -389,7 +389,7 @@
         }
     },
     "fengyun3_e_dpt": {
-        "name": "FengYun-3 E DPT",
+        "name": "FengYun-3E DPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -430,7 +430,7 @@
         }
     },
     "fengyun3_f_dpt": {
-        "name": "FengYun-3 F DPT",
+        "name": "FengYun-3F DPT",
         "live": false,
         "frequencies": [],
         "parameters": {
@@ -471,7 +471,7 @@
         }
     },
     "fengyun3_tlm_old": {
-        "name": "FengYun-3 TLM (Old) A/B/C/D",
+        "name": "FengYun-3A/B/C/D TLM (Old) ",
         "live": true,
         "live_cfg": [
             [
@@ -511,7 +511,7 @@
         }
     },
     "fengyun3_tlm": {
-        "name": "FengYun-3 TLM E/F",
+        "name": "FengYun-3E/F TLM",
         "live": true,
         "live_cfg": [
             [

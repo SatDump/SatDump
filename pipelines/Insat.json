@@ -1,6 +1,6 @@
 {
     "insat_3d_imager": {
-        "name": "Insat-3D Imager",
+        "name": "INSAT-3D Imager",
         "live": true,
         "live_cfg": [
             [
