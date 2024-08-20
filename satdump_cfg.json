@@ -1013,6 +1013,20 @@
                             }
                         }
                     },
+                    "Cloud Tops Alert": {
+                        "channels": "cch4",
+                        "description": "descriptions/CloudTopsAlert.md",
+                        "lut": "lut/cal/CloudTopsAlert.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
+                    },
                     "Enhanced IR (Transparent)": {
                         "equation": "cch4, 0, 0, cch4 > 0.99 ? 1 : 0",
                         "description": "descriptions/EnhancedIR.md",
