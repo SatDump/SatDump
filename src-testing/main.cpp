@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     source.d_buffer_size = 30000;
     source.d_file = argv[1];
-    source.d_type = dsp::BasebandType::CF_32;
+    source.d_type = dsp::CF_32;
 
     agc.d_gain = 1.0;
     agc.d_max_gain = 65536;

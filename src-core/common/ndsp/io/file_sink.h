@@ -34,8 +34,6 @@ namespace ndsp
         int8_t *buffer_s8;
         int16_t *buffer_s16;
 
-        int bit_depth = 0;
-
 #ifdef BUILD_ZIQ
         ziq::ziq_cfg ziqcfg;
         std::shared_ptr<ziq::ziq_writer> ziqWriter;
@@ -60,28 +58,11 @@ namespace ndsp
             d_sample_format = sample_format;
         }
 
-        std::string start_recording(std::string path_without_ext, uint64_t samplerate, int depth = 0, bool override_filename = false) // Depth is only for compressed non-raw formats
+        std::string start_recording(std::string path_without_ext, uint64_t samplerate, bool override_filename = false)
         {
             rec_mutex.lock();
 
-            bit_depth = depth;
-
-            std::string finalt;
-            if (d_sample_format == dsp::CF_32)
-                finalt = path_without_ext + ".cf32";
-            else if (d_sample_format == dsp::CS_16)
-                finalt = path_without_ext + ".cs16";
-            else if (d_sample_format == dsp::CS_8)
-                finalt = path_without_ext + ".cs8";
-            else if (d_sample_format == dsp::WAV_16)
-                finalt = path_without_ext + ".wav";
-#ifdef BUILD_ZIQ
-            else if (d_sample_format == dsp::ZIQ)
-                finalt = path_without_ext + ".ziq";
-#endif
-            else if (d_sample_format == dsp::ZIQ2)
-                finalt = path_without_ext + ".ziq";
-
+            std::string finalt = path_without_ext + "." + (std::string)d_sample_format;
             if (override_filename)
                 finalt = path_without_ext;
 
@@ -100,7 +81,7 @@ namespace ndsp
             if (d_sample_format == dsp::ZIQ)
             {
                 ziqcfg.is_compressed = true;
-                ziqcfg.bits_per_sample = depth;
+                ziqcfg.bits_per_sample = d_sample_format.ziq_depth;
                 ziqcfg.samplerate = samplerate;
                 ziqcfg.annotation = "";
 

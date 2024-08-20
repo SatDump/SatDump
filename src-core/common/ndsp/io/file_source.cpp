@@ -24,7 +24,7 @@ namespace ndsp
     void FileSource::set_params(nlohmann::json p)
     {
         if (p.contains("type"))
-            d_type = p["type"];
+            d_type = p["type"].get<std::string>();
         if (p.contains("file"))
             d_file = p["file"];
         if (p.contains("buffer_size"))

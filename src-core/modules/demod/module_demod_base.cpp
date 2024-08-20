@@ -237,7 +237,7 @@ namespace demod
         if (input_data_type == DATA_FILE)
         {
             nfile_source.d_file = d_input_file;
-            nfile_source.d_type = dsp::basebandTypeFromString(d_parameters["baseband_format"]);
+            nfile_source.d_type = d_parameters["baseband_format"].get<std::string>();
             nfile_source.d_buffer_size = d_buffer_size;
             nfile_source.d_iq_swap = d_iq_swap;
         }
