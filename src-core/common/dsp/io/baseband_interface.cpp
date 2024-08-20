@@ -2,6 +2,20 @@
 #include "imgui/imgui.h"
 #include "core/exception.h"
 
+// Needed to properly use BasebandType as the key in std::map
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+namespace std
+{
+    template<> struct less<dsp::BasebandType>
+    {
+        bool operator() (const dsp::BasebandType &lhs, const dsp::BasebandType &rhs) const
+        {
+            return lhs.type + lhs.ziq_depth < rhs.type + rhs.ziq_depth;
+        }
+    };
+}
+#endif
+
 namespace dsp
 {
     // Helper function

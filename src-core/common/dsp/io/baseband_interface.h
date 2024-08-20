@@ -50,12 +50,9 @@ namespace dsp
         bool draw_record_combo();
 
 #if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
-        BasebandType(BasebandTypeEnum e, int d)
-        {
-            type = e;
-            ziq_depth = d;
-        }
         int ziq_depth = 8;
+        BasebandType(BasebandTypeEnum e, int d) { type = e; ziq_depth = d; }
+        friend struct std::less<BasebandType>;
 #endif
     };
 
