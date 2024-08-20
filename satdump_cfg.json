@@ -389,7 +389,7 @@
             // 41882, // FENGYUN-4A
             // 48808, // FENGYUN-4B
             // 43823, // GK-2A
-            31304, // AIM
+            // 31304, // AIM
             // 53807, // BlueWalker-3
             // 53323, // COSMOS-2558
             // 42719, // COSMOS-2518
@@ -511,7 +511,7 @@
                         "white_balance": true,
                         "individual_equalize": true
                     },
-                    "AVHRR 543b False Color": {
+                    "AVHRR 543b IR False Color": {
                         "equation": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
                         "white_balance": true,
                         "individual_equalize": true
@@ -582,13 +582,13 @@
                         "description": "descriptions/NatColor.md",
                         "geo_correct": true
                     },
-                    "543b": {
+                    "AVHRR 543b IR False Color": {
                         "equation": "ch5, ch4, ch3b",
                         "individual_equalize": true,
                         "description": "descriptions/543b.md",
                         "geo_correct": true
                     },
-                    "3b45": {
+                    "AVHRR 3b45 IR False Color": {
                         "equation": "ch3b, ch4, ch5",
                         "individual_equalize": true,
                         "description": "descriptions/3b45.md",
@@ -1354,7 +1354,7 @@
                         "geo_correct": true,
                         "autogen": true
                     },
-"Sea Surface Temperature": {
+                    "Sea Surface Temperature": {
                         "channels": "cch5",
                         "description": "descriptions/SST.md",
                         "lua": "scripted_compos/sst_landmask.lua",
@@ -2311,6 +2311,115 @@
                     }
                 }
             },
+            "airs": {
+                "handler": "image_handler",
+                "name": "AIRS",
+                "rgb_composites": {
+                    "λ=4.3µm (CO2 absorption 1a)": {
+                        "equation": "ch366",
+                        "individual_equalize": true
+                    },
+                    "λ=4.4µm (CO2 absorption 1b + H2O line)": {
+                        "equation": "ch420",
+                        "individual_equalize": true
+                    },
+                    "λ=7.7µm (Methane absorption)": {
+                        "equation": "ch980",
+                        "individual_equalize": true
+                    },
+                    "λ=14.9µm (CO2 absorption 2)": {
+                        "equation": "ch2292",
+                        "individual_equalize": true
+                    },
+                    "λ=10.8µm (Window)": {
+                        "equation": "ch1821",
+                        "individual_equalize": true
+                    },
+                    "AVHRR 3b45 IR False Color": {
+                        "equation": "ch4, ch1569, ch1821",
+                        "individual_equalize": true,
+                        "invert": true
+                    },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "ch1821, ch1569, ch4",
+                        "individual_equalize": true,
+                        "invert": true
+                    },
+                    "HIRS False Color": {
+                        "equation": "ch2148, ch2193, ch2239",
+                        "description": "descriptions/sounders/HIRSFalseColor.md",
+                        "individual_equalize": true,
+                        "invert": true
+                    },
+                    "6.2µm Water Vapor RGB": {
+                        "equation": "ch517, ch521, ch527",
+                        "individual_equalize": true,
+                        "invert": true
+                    },
+                    "7.35 µm Water Vapor RGB": {
+                        "equation": "ch845, ch857, ch863",
+                        "individual_equalize": true,
+                        "invert": true
+                    },
+                    "Airmass RGB": {
+                        "equation": "(1-ch515)-(1-ch857),  (1-ch1310)-(1-ch1569), (1-ch515)",
+                        "individual_equalize": true
+                    },
+                    "Clouds Only (N2O Sounding)": {
+                        "equation": "1-ch481, 1-ch570, 1",
+                        "description": "descriptions/sounders/CloudOnlyN2O.md",
+                        "individual_equalize": true
+                    },
+                    "Mid Level Water Vapor": {
+                        "equation": "1-ch868",
+                        "description": "descriptions/sounders/MLWV.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "Mid Stratosphere CO2 Temperature": {
+                        "equation": "ch2256",
+                        "description": "descriptions/sounders/MidStratoCO2T.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "Low Stratosphere CO2 Temperature": {
+                        "equation": "ch2239",
+                        "description": "descriptions/sounders/LowStratoCO2T.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "Top Troposphere CO2 Temperature": {
+                        "equation": "ch2193",
+                        "description": "descriptions/sounders/TopTropoCO2T.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "High Troposphere CO2 Temperature": {
+                        "equation": "ch2148",
+                        "description": "descriptions/sounders/HighTropoCO2T.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "Mid Troposphere CO2/H2O Temperature": {
+                        "equation": "ch2088",
+                        "description": "descriptions/sounders/MidTropoCO2H2OT.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "Low Troposphere CO2/H2O Temperature": {
+                        "equation": "ch2038",
+                        "description": "descriptions/sounders/LowTropoCO2H2OT.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "Cloud Detection Channel": {
+                        "equation": "1-ch236",
+                        "description": "descriptions/sounders/CloudDetection.md",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    }
+                }
+            },
             "modis": {
                 "handler": "image_handler",
                 "name": "MODIS",
@@ -2924,7 +3033,8 @@
                     },
                     "Microwave Airmass": {
                         "equation": "ch11,ch12,ch13",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MicrowaveAirmass.md"
                     }
                 },
                 "project_channels": {
@@ -3079,15 +3189,18 @@
                     },
                     "MHS 221": {
                         "equation": "ch17,ch17,ch16",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MHS221.md"
                     },
                     "MHS 421": {
                         "equation": "ch20,ch17,ch16",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MHS221.md"
                     },
                     "Microwave Airmass": {
                         "equation": "ch18,ch19,ch20",
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/sounders/MicrowaveAirmass.md"
                     },
                     "AMSU Surface Relative Temperature": {
                         "equation": "cos(ln(ch1) + ln(ch2)+0.8)",
@@ -3126,6 +3239,12 @@
                         "equation": "cch3^0.3, 0, 0, cch2 > 0.57 ? (cch3 < 0.5 ? 1 : 0) : 0",
                         "apply_lut": true,
                         "autogen": false
+                    },
+                    "Rainfall (Transparent, MHS-like)": {
+                        "equation": "(((1-cch22-cch20))-0.95)^0.25, 0, 0, (((1-cch22-cch20))-0.95)^0.25 > 0.01 ? 1 : 0",
+                        "apply_lut": true,
+                        "autogen": false,
+                        "description": "descriptions/sounders/RainfallTransparent.md"
                     }
                 }
             },

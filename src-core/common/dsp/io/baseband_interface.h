@@ -14,9 +14,8 @@
 
 namespace dsp
 {
-    enum BasebandType
+    enum BasebandTypeEnum
     {
-        NONE,
         CF_32,
         CS_16,
         CS_8,
@@ -25,10 +24,37 @@ namespace dsp
 #ifdef BUILD_ZIQ
         ZIQ,
 #endif
+#ifdef BUILD_ZIQ2
         ZIQ2,
+#endif
     };
 
-    BasebandType basebandTypeFromString(std::string type);
+    class BasebandType
+    {
+    private:
+        BasebandTypeEnum type;
+        void from_string(const std::string &s);
+
+    public:
+        BasebandType() { type = CF_32; }
+        BasebandType(const BasebandTypeEnum &e) { type = e; }
+        BasebandType(const std::string &s) { from_string(s); }
+        BasebandType(const char *s) { from_string(std::string(s)); }
+        inline operator BasebandTypeEnum() const { return type; }
+        inline BasebandType &operator= (const BasebandTypeEnum &e) { type = e; return *this; }
+        inline BasebandType &operator= (const std::string &s) { from_string(s); return *this; }
+        inline BasebandType &operator= (const char *s) { from_string(std::string(s)); return *this; }
+        operator std::string() const;
+
+        bool draw_playback_combo();
+        bool draw_record_combo();
+
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+        int ziq_depth = 8;
+        BasebandType(BasebandTypeEnum e, int d) { type = e; ziq_depth = d; }
+        friend struct std::less<BasebandType>;
+#endif
+    };
 
     // "Simple" class to wrap all the baseband reading stuff, including sample scaling. All inline for performance
     class BasebandReader
@@ -102,9 +128,10 @@ namespace dsp
             if (format == ZIQ)
                 ziqReader = std::make_shared<ziq::ziq_reader>(input_file);
 #endif
-
+#ifdef BUILD_ZIQ2
             if (format == ZIQ2)
                 input_file.seekg(4);
+#endif
             else if (is_wav)
                 input_file.seekg(sizeof(wav::WavHeader));
             else if (is_rf64)
@@ -205,7 +232,7 @@ namespace dsp
                 return;
             }
 #endif
-
+#ifdef BUILD_ZIQ2
             if (format == ZIQ2)
             {
                 main_mtx.lock();
@@ -223,7 +250,7 @@ namespace dsp
                 main_mtx.unlock();
                 return;
             }
-
+#endif
             main_mtx.lock();
 
             int samplesize = sizeof(complex_t);
@@ -337,9 +364,10 @@ namespace dsp
             else if (d_sample_format == ZIQ)
                 finalt = path_without_ext + ".ziq";
 #endif
+#ifdef BUILD_ZIQ2
             else if (d_sample_format == ZIQ2)
                 finalt = path_without_ext + ".ziq";
-
+#endif
             if (override_filename)
                 finalt = path_without_ext;
 

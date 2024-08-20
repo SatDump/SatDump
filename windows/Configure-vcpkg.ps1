@@ -18,7 +18,6 @@ Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 git clone --depth 1 https://github.com/microsoft/vcpkg
 cd vcpkg
-git checkout 9a6da16845eca8d6ed70be416c1acbd206894c7f
 .\bootstrap-vcpkg.bat
 
 # Core packages. libxml2 is for libiio
@@ -28,6 +27,13 @@ git checkout 9a6da16845eca8d6ed70be416c1acbd206894c7f
 .\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
                                     boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
                                     boost-assign boost-dll
+
+#Use an old version of libusb to work around a potential bug in AirSpy code
+if($platform -eq "x64-windows")
+{
+    rm .\installed\x64-windows\bin\libusb-1.0.dll
+    Invoke-WebRequest https://github.com/Aang23/vcpkg/raw/master/installed/x64-windows/bin/libusb-1.0.dll -OutFile .\installed\x64-windows\bin\libusb-1.0.dll
+}
 
 #Start Building Dependencies
 $null = mkdir build
