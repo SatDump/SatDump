@@ -1013,10 +1013,10 @@
                             }
                         }
                     },
-                    "Cloud Tops Alert": {
+                    "Cloud Top IR": {
                         "channels": "cch4",
-                        "description": "descriptions/CloudTopsAlert.md",
-                        "lut": "lut/cal/CloudTopsAlert.png",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
                         "autogen": true,
                         "geo_correct": true,
                         "calib_cfg": {
@@ -1568,6 +1568,20 @@
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
                         "geo_correct": true
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch5",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
                     },
                     "Enhanced IR": {
                         "channels": "cch5",
@@ -2674,6 +2688,20 @@
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
                         "geo_correct": true
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch31",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
                     },
                     "Enhanced IR": {
                         "channels": "cch31",
