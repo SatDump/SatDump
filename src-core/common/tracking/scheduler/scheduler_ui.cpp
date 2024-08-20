@@ -236,6 +236,8 @@ namespace satdump
             int sat_row = 0, new_hovered = -1;
             bool is_hovered = false;
             ImVec2 min_el_size(ImGui::CalcTextSize("Min El.").x + imgui_style.ItemInnerSpacing.x + (60.0f * ui_scale), 0.0f);
+            float downlink_dd_width = (300 * ui_scale) -
+                ImGui::CalcTextSize("Config").x - imgui_style.FramePadding.x * 2 - imgui_style.ItemSpacing.x;
             for (auto &cpass : enabled_satellites)
             {
                 int dl_pos = 0;
@@ -301,7 +303,7 @@ namespace satdump
                     if (autotrack_cfg.multi_mode)
                         ImGui::SetNextItemWidth(100 * ui_scale);
                     else
-                        ImGui::SetNextItemWidth(300 * ui_scale - ImGui::CalcTextSize("Format").x - imgui_style.ItemInnerSpacing.x);
+                        ImGui::SetNextItemWidth(downlink_dd_width);
                     downlink.baseband_format.draw_record_combo();
                     if (autotrack_cfg.multi_mode)
                     {
@@ -317,8 +319,7 @@ namespace satdump
 
                     if (!downlink.live)
                         ImGui::BeginDisabled();
-                    ImGui::SetNextItemWidth((300 * ui_scale) -
-                        ImGui::CalcTextSize("Config").x - imgui_style.FramePadding.x * 2 - imgui_style.ItemSpacing.x);
+                    ImGui::SetNextItemWidth(downlink_dd_width);
                     if (ImGui::BeginCombo(((std::string) "##pipelinesel" + idpart).c_str(),
                         downlink.pipeline_selector->selected_pipeline.readable_name.c_str(), ImGuiComboFlags_HeightLarge))
                     {
