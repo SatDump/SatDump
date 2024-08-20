@@ -4,6 +4,7 @@
 #include "passes.h"
 #include <functional>
 #include "common/image/image.h"
+#include "common/dsp/io/baseband_interface.h"
 #include "nlohmann/json_utils.h"
 
 namespace satdump
@@ -48,7 +49,7 @@ namespace satdump
             bool record = false;
             bool live = false;
             std::shared_ptr<PipelineUISelector> pipeline_selector = std::make_shared<PipelineUISelector>(true);
-            std::string baseband_format = "cs16";
+            dsp::BasebandType baseband_format = dsp::CS_16;
             int baseband_decimation = 1; // VFO ONLY!
         };
         std::vector<Downlink> downlinks = std::vector<Downlink>(1);
@@ -66,7 +67,7 @@ namespace satdump
             j["downlinks"][i]["live"] = v.downlinks[i].live;
             j["downlinks"][i]["pipeline_name"] = v.downlinks[i].pipeline_selector->selected_pipeline.name;
             j["downlinks"][i]["pipeline_params"] = v.downlinks[i].pipeline_selector->getParameters();
-            j["downlinks"][i]["baseband_format"] = v.downlinks[i].baseband_format;
+            j["downlinks"][i]["baseband_format"] = (std::string)v.downlinks[i].baseband_format;
             j["downlinks"][i]["baseband_decimation"] = v.downlinks[i].baseband_decimation;
 
             nlohmann::ordered_json work_params = nlohmann::ordered_json::object();
@@ -123,7 +124,7 @@ namespace satdump
                     if (j["downlinks"][i].contains("pipeline_params"))
                         v.downlinks[i].pipeline_selector->setParameters(j["downlinks"][i]["pipeline_params"]);
                     if (j["downlinks"][i].contains("baseband_format"))
-                        v.downlinks[i].baseband_format = j["downlinks"][i]["baseband_format"];
+                        v.downlinks[i].baseband_format = j["downlinks"][i]["baseband_format"].get<std::string>();
                     if (j["downlinks"][i].contains("baseband_decimation"))
                         v.downlinks[i].baseband_decimation = j["downlinks"][i]["baseband_decimation"];
                     if (j["downlinks"][i].contains("work_params"))

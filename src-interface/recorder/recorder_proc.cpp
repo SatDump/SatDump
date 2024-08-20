@@ -338,7 +338,7 @@ namespace satdump
 
                     if (obj.downlinks[0].record)
                     {
-                        // file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
+                        file_sink->set_output_sample_type(obj.downlinks[0].baseband_format);
                         start_recording();
                     }
                 }
