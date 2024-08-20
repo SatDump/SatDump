@@ -259,7 +259,7 @@ void AutoTrackApp::setup_schedular_callbacks()
                     if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                         name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
-                    add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
+                    add_vfo_reco(id, name, dl.frequency, dl.baseband_format, dl.baseband_decimation);
                 }
             }
         }
@@ -295,7 +295,7 @@ void AutoTrackApp::setup_schedular_callbacks()
 
             if (obj.downlinks[0].record)
             {
-                file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
+                file_sink->set_output_sample_type(obj.downlinks[0].baseband_format);
                 start_recording();
             }
         }
