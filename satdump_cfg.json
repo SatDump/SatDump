@@ -4,17 +4,10 @@
         // Parameters shown in the default UI table, for everything
         "default_offline_parameters": {
             "baseband_format": {
-                "type": "options",
+                "type": "baseband_type",
                 "value": "cs8",
                 "name": "Baseband Format",
-                "options": [
-                    "cs8",
-                    "cu8",
-                    "cs16",
-                    "cf32",
-                    "ziq"
-                ],
-                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",
+                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are cs16 (SDR#, etc),\ncf32 (GQRX), cu8 (HDSDR), etc",
                 "no_live": true
             },
             "samplerate": {

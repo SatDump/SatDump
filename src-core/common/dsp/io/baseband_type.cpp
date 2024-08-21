@@ -1,4 +1,6 @@
-#include "baseband_interface.h"
+#include <map>
+#include <vector>
+#include "baseband_type.h"
 #include "imgui/imgui.h"
 #include "core/exception.h"
 
@@ -117,10 +119,10 @@ namespace dsp
             throw satdump_exception("Unknown baseband type " + s);
     }
 
-    bool BasebandType::draw_playback_combo()
+    bool BasebandType::draw_playback_combo(const char *label)
     {
         int selected = play_rev_lut.at(*this);
-        bool ret = ImGui::Combo("Format###basebandplayerformat", &selected,
+        bool ret = ImGui::Combo(label, &selected,
             "cf32\0"
             "cs16\0"
             "cs8\0"
@@ -140,10 +142,10 @@ namespace dsp
         return ret;
     }
 
-    bool BasebandType::draw_record_combo()
+    bool BasebandType::draw_record_combo(const char *label)
     {
         int selected = record_rev_lut.at(*this);
-        bool ret = ImGui::Combo("Format", &selected,
+        bool ret = ImGui::Combo(label, &selected,
             "cf32\0"
             "cs16\0"
             "cs8\0"
