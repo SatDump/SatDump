@@ -28,13 +28,6 @@ cd vcpkg
                                     boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
                                     boost-assign boost-dll
 
-#Use an old version of libusb to work around a potential bug in AirSpy code
-if($platform -eq "x64-windows")
-{
-    rm .\installed\x64-windows\bin\libusb-1.0.dll
-    Invoke-WebRequest https://github.com/Aang23/vcpkg/raw/master/installed/x64-windows/bin/libusb-1.0.dll -OutFile .\installed\x64-windows\bin\libusb-1.0.dll
-}
-
 #Start Building Dependencies
 $null = mkdir build
 cd build
@@ -67,7 +60,7 @@ cd ..\..
 rm -recurse -force volk
 
 Write-Output "Building Airspy..."
-git clone https://github.com/airspy/airspyone_host --depth 1 -b v1.0.10
+git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
 cd airspyone_host\libairspy
 $null = mkdir build
 cd build
@@ -78,7 +71,7 @@ cd ..\..\..
 rm -recurse -force airspyone_host
 
 Write-Output "Building Airspy HF..."
-git clone https://github.com/airspy/airspyhf --depth 1 -b 1.6.8
+git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
 cd airspyhf\libairspyhf
 $null = mkdir build
 cd build
