@@ -4,17 +4,10 @@
         // Parameters shown in the default UI table, for everything
         "default_offline_parameters": {
             "baseband_format": {
-                "type": "options",
+                "type": "baseband_type",
                 "value": "cs8",
                 "name": "Baseband Format",
-                "options": [
-                    "cs8",
-                    "cu8",
-                    "cs16",
-                    "cf32",
-                    "ziq"
-                ],
-                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are s16 (SDR#, etc),\nf32 (GQRX), u8 (HDSDR), etc",
+                "description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are cs16 (SDR#, etc),\ncf32 (GQRX), cu8 (HDSDR), etc",
                 "no_live": true
             },
             "samplerate": {
@@ -1013,6 +1006,20 @@
                             }
                         }
                     },
+                    "Cloud Top IR": {
+                        "channels": "cch4",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
+                    },
                     "Enhanced IR (Transparent)": {
                         "equation": "cch4, 0, 0, cch4 > 0.99 ? 1 : 0",
                         "description": "descriptions/EnhancedIR.md",
@@ -1554,6 +1561,20 @@
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
                         "geo_correct": true
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch5",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
                     },
                     "Enhanced IR": {
                         "channels": "cch5",
@@ -2660,6 +2681,20 @@
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
                         "geo_correct": true
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch31",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
                     },
                     "Enhanced IR": {
                         "channels": "cch31",

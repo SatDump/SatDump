@@ -115,6 +115,11 @@ namespace satdump
                 p_color[1] = color[1];
                 p_color[2] = color[2];
             }
+            else if (type_str == "baseband_type")
+            {
+                d_type = PARAM_BASEBAND_TYPE;
+                baseband_type = p_json["value"].get<std::string>();
+            }
             else
             {
                 logger->error("Invalid options on EditableParameter!");
@@ -150,6 +155,8 @@ namespace satdump
                 notated_int->draw();
             else if (d_type == PARAM_COLOR)
                 ImGui::ColorEdit3(d_id.c_str(), (float *)p_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            else if (d_type == PARAM_BASEBAND_TYPE)
+                baseband_type.draw_playback_combo(d_id.c_str());
         }
 
         nlohmann::json EditableParameter::getValue()
@@ -173,6 +180,8 @@ namespace satdump
                 v = notated_int->get();
             else if (d_type == PARAM_COLOR)
                 v = {p_color[0], p_color[1], p_color[2]};
+            else if (d_type == PARAM_BASEBAND_TYPE)
+                v = (std::string)baseband_type;
             return v;
         }
 
@@ -200,13 +209,15 @@ namespace satdump
                 date_time_picker->set(v.get<double>());
             else if (d_type == PARAM_NOTATED_INT)
                 notated_int->set(v.get<uint64_t>());
-            else
+            else if (d_type == PARAM_COLOR)
             {
                 std::vector<float> color = v.get<std::vector<float>>();
                 p_color[0] = color[0];
                 p_color[1] = color[1];
                 p_color[2] = color[2];
             }
+            else if (d_type == PARAM_BASEBAND_TYPE)
+                baseband_type = v.get<std::string>();
             return v;
         }
     }

@@ -4,7 +4,7 @@
 #include "passes.h"
 #include <functional>
 #include "common/image/image.h"
-#include "common/dsp/io/baseband_interface.h"
+#include "common/dsp/io/baseband_type.h"
 #include "nlohmann/json_utils.h"
 
 namespace satdump

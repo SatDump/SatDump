@@ -532,7 +532,7 @@ namespace satdump
                     if (assume_recording)
                         style::beginDisabled();
 
-                    if (baseband_format.draw_record_combo())
+                    if (baseband_format.draw_record_combo("Format##basebandrecordformat"))
                         file_sink->set_output_sample_type(baseband_format);
 
                     if (assume_recording)
