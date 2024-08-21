@@ -1,10 +1,13 @@
 #pragma once
 
 #include "common/dsp/demod/pm_to_bpsk.h"
+#include "common/dsp/filter/fir.h"
 #include "common/dsp/pll/pll_carrier_tracking.h"
 #include "common/dsp/utils/complex_to_mag.h"
+#include "common/dsp/utils/freq_shift.h"
 #include "modules/demod/module_demod_base.h"
 #include "common/dsp/demod/quadrature_demod.h"
+#include <complex.h>
 #include <memory>
 
 namespace generic_analog
@@ -16,6 +19,9 @@ namespace generic_analog
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
 	std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
 	std::shared_ptr<dsp::ComplexToMagBlock> ctm;
+	std::shared_ptr<dsp::FreqShiftBlock> fsb;
+	//std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
+	std::shared_ptr<dsp::FIRBlock<complex_t>> bpf;
 
 	float d_pll_bw = 0.002;
 	float d_pll_max_offset = 0.5;
