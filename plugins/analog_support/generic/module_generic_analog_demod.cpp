@@ -6,6 +6,7 @@
 #include "common/dsp/pll/pll_carrier_tracking.h"
 #include "common/dsp/utils/complex_to_mag.h"
 #include "common/dsp/utils/freq_shift.h"
+#include "common/dsp/utils/real_to_complex.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "core/config.h"
 #include "core/module.h"
@@ -41,29 +42,29 @@ namespace generic_analog
         BaseDemodModule::initb();
 
         // Resampler to BW
-        //res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
+        res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
+ 
+	// Quadrature demod
+	qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
 
-	// Frequency shift - LSB
-	//fsb = std::make_shared<dsp::FreqShiftBlock>(res->output_stream, final_samplerate, -3200);
+	// L + R
+	lpf = std::make_shared<dsp::FIRBlock<float>>(qua->output_stream, dsp::firdes::low_pass(1, d_symbolrate / 2, 15500, 1500));
 
-	// Low pass filter
-	//lpf = std::make_shared<dsp::FIRBlock<complex_t>>(fsb->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, 4000, 1000));
+	// Band Pass Filter
+	bpf = std::make_shared<dsp::FIRBlock<float>>(qua->output_stream, dsp::firdes::band_pass(1, d_symbolrate, 18100, 19900, 1000));
 
+	// Real to Complex
+	rtc = std::make_shared<dsp::RealToComplexBlock>(bpf->output_stream);
+	
+	//// Pll
+	pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(rtc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
 
-        // Quadrature demod
-        //qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+	// Second Real to Complex 
+	rtc2 = std::make_shared<dsp::RealToComplexBlock>(lpf->output_stream);
 
+	// Apply Frequency Shift from pilot PLL
+	fsb2 = std::make_shared<dsp::FreqShiftBlock>(rtc2->output_stream, final_samplerate, pll->getFreq());
 
-	bpf = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::band_pass(1, d_samplerate, 1000, 400000, 2000));
-
-	// Frequency shift
-	//fsb = std::make_shared<dsp::FreqShiftBlock>(res->output_stream, final_samplerate, -3200);
-
-	// Pll
-	//pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(bpf->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
-
-	// AM demod
-	//fsb = std::make_shared<dsp::ComplexToMagBlock>(pll->output_stream);
     }
 
     GenericAnalogDemodModule::~GenericAnalogDemodModule()
@@ -109,29 +110,32 @@ namespace generic_analog
 
         // Start
         BaseDemodModule::start();
-        //res->start();
-	//pll->start();
+        res->start();
+	pll->start();
 	//fsb->start();
-	//fsb->start();
-	//qua->start();
+	fsb2->start();
+	lpf->start();
+	qua->start();
 	bpf->start();
+	rtc->start();
+	rtc2->start();
 
         // Buffers to wav
-        //int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
-        //int16_t *output_wav_buffer_resamp = new int16_t[d_buffer_size * 200];
+        int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
+        int16_t *output_wav_buffer_resamp = new int16_t[d_buffer_size * 200];
         uint64_t final_data_size = 0;
         //dsp::WavWriter wave_writer(data_out);
         //if (output_data_type == DATA_FILE)
         //    wave_writer.write_header(audio_samplerate, 1);
 
-        //std::shared_ptr<audio::AudioSink> audio_sink;
-        //if (input_data_type != DATA_FILE && audio::has_sink())
-        //{
-        //    enable_audio = false;
-        //    audio_sink = audio::get_default_sink();
-        //    audio_sink->set_samplerate(audio_samplerate);
-        //    audio_sink->start();
-        //}
+        std::shared_ptr<audio::AudioSink> audio_sink;
+        if (input_data_type != DATA_FILE && audio::has_sink())
+        {
+            enable_audio = true;
+            audio_sink = audio::get_default_sink();
+            audio_sink->set_samplerate(audio_samplerate);
+            audio_sink->start();
+        }
 
         /////////////
         //dsp::RationalResamplerBlock<complex_t> input_resamp(nullptr, d_symbolrate, final_samplerate);
@@ -139,128 +143,46 @@ namespace generic_analog
 	//dsp::PLLCarrierTrackingBlock pll(nullptr, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
         complex_t *work_buffer_complex = dsp::create_volk_buffer<complex_t>(d_buffer_size);
         float *work_buffer_float = dsp::create_volk_buffer<float>(d_buffer_size);
-        float *work_buffer_float2 = dsp::create_volk_buffer<float>(d_buffer_size);
+        float *work_buffer_float_l_plus_r = dsp::create_volk_buffer<float>(d_buffer_size);
 
         int dat_size = 0;
         while (demod_should_run())
         {
-            dat_size = bpf->output_stream->read();
+            dat_size = fsb2->output_stream->read(); // Start Audio Stream
+	    //dat_size = pll->output_stream->read(); // Start PLL Stream to Get the Pilot Drift
 
             if (dat_size <= 0)
             {
-                bpf->output_stream->flush();
+                fsb2->output_stream->flush();
+		//pll->output_stream->flush();
                 continue;
             }
-/*
-#if 1
-            proc_mtx.lock();
-
-            if (settings_changed)
-            {
-                if (upcoming_symbolrate > 0)
-                {
-                    d_symbolrate = upcoming_symbolrate;
-                    input_resamp.set_ratio(d_symbolrate, final_samplerate);
-                    quad_demod.set_gain(dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
-                }
-
-                switch (e) {
-                    case 0:
-                        nfm_demod = true;
-                        am_demod = false;
-                        break;
-                    case 1:
-                        am_demod = true;
-                        nfm_demod = false;
-                        break;
-                    default:
-                        nfm_demod = true;
-                        am_demod = false;
-                        break;
-                }
-                
-                settings_changed = false;
-            }
-
-            int nout = input_resamp.process(agc->output_stream->readBuf, dat_size, work_buffer_complex);
-            
-            if (nfm_demod)
-            {
-                nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
-            }
-
-            if (am_demod)
-            {
-                volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t *)work_buffer_complex, nout);
-	    }
-
-            {
-                
-                // Into const
-                constellation.pushFloatAndGaussian(work_buffer_float, nout);
-
-                for (int i = 0; i < nout; i++)
-                {
-                    if (work_buffer_float[i] > 1.0f)
-                        work_buffer_float[i] = 1.0f;
-                    if (work_buffer_float[i] < -1.0f)
-                        work_buffer_float[i] = -1.0f;
-                }
-
-                volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, nout);
-
-                int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, nout, 1);
-                if (enable_audio && play_audio)
-                    audio_sink->push_samples(output_wav_buffer_resamp, final_out);
-                if (output_data_type == DATA_FILE)
-                {
-                    data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
-                    final_data_size += final_out * sizeof(int16_t);
-                }
-                else
-                {
-                    output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
-                }
-            }
-
-            proc_mtx.unlock();
-#else
-	    */
             // Into const
-	    constellation.pushComplex(bpf->output_stream->readBuf, bpf->output_stream->getDataSize());
-        
-	    //constellation.pushFloatAndGaussian(bpf->output_stream->readBuf, bpf->output_stream->getDataSize());
-
-            //for (int i = 0; i < dat_size; i++)
-            //{
-            //    if (bpf->output_stream->readBuf[i] > 1.0f)
-            //        bpf->output_stream->readBuf[i] = 1.0f;
-            //    if (bpf->output_stream->readBuf[i] < -1.0f)
-            //        bpf->output_stream->readBuf[i] = -1.0f;
-            //}
+	    constellation.pushComplex(fsb2->output_stream->readBuf, fsb2->output_stream->getDataSize());
 
 	    //display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
 
-	    //volk_32fc_deinterleave_real_32f((float *)work_buffer_float, (lv_32fc_t *)bpf->output_stream->readBuf, dat_size);
+	    volk_32fc_deinterleave_real_32f((float *)work_buffer_float, (lv_32fc_t *)fsb2->output_stream->readBuf, dat_size);
 
 
 
 	    if (output_data_type == DATA_FILE)
 	    {
-		    data_out.write((char *)bpf->output_stream->readBuf, dat_size * sizeof(complex_t));
-		    final_data_size += dat_size * sizeof(complex_t);
+	            data_out.write((char *)fsb2->output_stream->readBuf, dat_size * sizeof(complex_t));
+	            final_data_size += dat_size * sizeof(float);
 	    }
 	    else 
 	    {
-	    output_fifo->write((uint8_t *)bpf->output_stream->readBuf, dat_size * sizeof(complex_t));
+	    output_fifo->write((uint8_t *)fsb2->output_stream->readBuf, dat_size * sizeof(complex_t));
 	    }
 
-	    //////// just to test the raw output
-            ////volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, dat_size);
 
-            ////int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
-            ////if (enable_audio && play_audio)
-            ////    audio_sink->push_samples(output_wav_buffer_resamp, final_out);
+	    //////// just to test the raw output
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, dat_size);
+
+            int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
+            if (enable_audio && play_audio)
+                audio_sink->push_samples(output_wav_buffer_resamp, final_out);
             ////if (output_data_type == DATA_FILE)
             ////{
             ////    data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
@@ -272,9 +194,10 @@ namespace generic_analog
             ////}
 //#endif
 
-            bpf->output_stream->flush();
-
-            if (input_data_type == DATA_FILE)
+            fsb2->output_stream->flush();
+	    //pll->output_stream->flush();
+            
+	    if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -284,8 +207,8 @@ namespace generic_analog
             }
         }
 
-        //if (enable_audio)
-        //    audio_sink->stop();
+        if (enable_audio)
+            audio_sink->stop();
 
         //// Finish up WAV
         //if (output_data_type == DATA_FILE)
@@ -294,8 +217,8 @@ namespace generic_analog
         //    data_out.close();
         //}
 
-        //delete[] output_wav_buffer;
-        //delete[] output_wav_buffer_resamp;
+        delete[] output_wav_buffer;
+        delete[] output_wav_buffer_resamp;
 
         logger->info("Demodulation finished");
 
@@ -307,11 +230,16 @@ namespace generic_analog
     {
         // Stop
         BaseDemodModule::stop();
-        //res->stop();
-	//pll->stop();
-	//qua->stop();
+        res->stop();
+	pll->stop();
+	lpf->stop();
+	qua->stop();
+	fsb2->stop();
 	bpf->stop();
-        bpf->output_stream->stopReader();
+	rtc->stop();
+	rtc2->stop();
+	//pll->output_stream->stopReader();
+	fsb2->output_stream->stopReader();
     }
 
     void GenericAnalogDemodModule::drawUI(bool window)
@@ -361,30 +289,30 @@ namespace generic_analog
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
-            //if (enable_audio)
-            //{
-            //    const char *btn_icon, *label;
-            //    ImVec4 color;
-            //    if (play_audio)
-            //    {
-            //        color = style::theme.green.Value;
-            //        btn_icon = u8"\uF028##aptaudio";
-            //        label = "Audio Playing";
-            //    }
-            //    else
-            //    {
-            //        color = style::theme.red.Value;
-            //        btn_icon = u8"\uF026##aptaudio";
-            //        label = "Audio Muted";
-            //    }
+            if (enable_audio)
+            {
+                const char *btn_icon, *label;
+                ImVec4 color;
+                if (play_audio)
+                {
+                    color = style::theme.green.Value;
+                    btn_icon = u8"\uF028##aptaudio";
+                    label = "Audio Playing";
+                }
+                else
+                {
+                    color = style::theme.red.Value;
+                    btn_icon = u8"\uF026##aptaudio";
+                    label = "Audio Muted";
+                }
 
-            //    ImGui::PushStyleColor(ImGuiCol_Text, color);
-            //    if (ImGui::Button(btn_icon))
-            //        play_audio = !play_audio;
-            //    ImGui::PopStyleColor();
-            //    ImGui::SameLine();
-            //    ImGui::TextUnformatted(label);
-            //}
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                if (ImGui::Button(btn_icon))
+                    play_audio = !play_audio;
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+                ImGui::TextUnformatted(label);
+            }
         }
         ImGui::EndGroup();
 

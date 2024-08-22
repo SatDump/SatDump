@@ -5,6 +5,7 @@
 #include "common/dsp/pll/pll_carrier_tracking.h"
 #include "common/dsp/utils/complex_to_mag.h"
 #include "common/dsp/utils/freq_shift.h"
+#include "common/dsp/utils/real_to_complex.h"
 #include "modules/demod/module_demod_base.h"
 #include "common/dsp/demod/quadrature_demod.h"
 #include <complex.h>
@@ -20,11 +21,18 @@ namespace generic_analog
 	std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
 	std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 	std::shared_ptr<dsp::FreqShiftBlock> fsb;
+	std::shared_ptr<dsp::FreqShiftBlock> fsb2;
 	//std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
-	std::shared_ptr<dsp::FIRBlock<complex_t>> bpf;
+	std::shared_ptr<dsp::FIRBlock<float>> lpf;
+	std::shared_ptr<dsp::FIRBlock<float>> bpf;
 
-	float d_pll_bw = 0.002;
-	float d_pll_max_offset = 0.5;
+	std::shared_ptr<dsp::RealToComplexBlock> rtc;
+	std::shared_ptr<dsp::RealToComplexBlock> rtc2;
+	std::shared_ptr<dsp::FIRBlock<float>> hpf;
+
+
+	float d_pll_bw = 0.003;
+	float d_pll_max_offset = 0.05;
 
 
 	float display_freq = 0;
