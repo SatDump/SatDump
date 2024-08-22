@@ -89,7 +89,7 @@ cd ../..
 rm -rf volk
 
 echo "Building Airspy..."
-git clone https://github.com/airspy/airspyone_host --depth 1 -b v1.0.10
+git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
 cd airspyone_host/libairspy
 mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
@@ -99,7 +99,7 @@ cd ../../..
 rm -rf airspyone_host
 
 echo "Building Airspy HF..."
-git clone https://github.com/airspy/airspyhf --depth 1 -b 1.6.8
+git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
 cd airspyhf/libairspyhf
 mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
