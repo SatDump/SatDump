@@ -1,7 +1,7 @@
 {
   "light": true,
-  "font": "ComicSansMS",
-  "font_size": 16,
+  "font": "GloriaHallelujah-Regular",
+  "font_size": 24,
   "ImGuiStyle": {
     "WindowRounding": 10.0,
     "ChildRounding": 10.0,
@@ -14,7 +14,7 @@
   },
   "ImGuiColors": {
     "Text": "#F93030FF",
-    "TextDisabled": "#54FE57FF",
+    "TextDisabled": "#26A228FF",
     "TextSelectedBg": "#0100814C",
     "Separator": "#222222FF",
     "SeparatorHovered": "#222222FF",
@@ -29,7 +29,7 @@
     "TabActive": "#3D7DC0FF",
     "MenuBarBg": "#A0A0A0FF",
     "TitleBgActive": "#3D7DC0FF",
-    "CheckMark": "#000000FF",
+    "CheckMark": "#1AF2E2FF",
     "SliderGrab": "#010081FF",
     "SliderGrabActive": "#010081FF",
     "Button": "#FFAE0066",
