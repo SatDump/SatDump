@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     if (argc < 3)
     {
-        logger->error(std::string(argv[0]) + " input.ts output.cf32 --modcod 11 --baseband_format f32 --rrc_alpha 0.25 [--shortframes] [--pilots]");
+        logger->error(std::string(argv[0]) + " input.ts output.cf32 --modcod 11 --baseband_format cf32 --rrc_alpha 0.25 [--shortframes] [--pilots]");
         return 0;
     }
 
@@ -170,8 +170,8 @@ int main(int argc, char *argv[])
 
     resampler_blk.start();
     file_sink_blk->start();
-    file_sink_blk->set_output_sample_type(dsp::basebandTypeFromString(baseband_format));
-    file_sink_blk->start_recording(baseband_output_path, 2e6, 0, true);
+    file_sink_blk->set_output_sample_type(baseband_format);
+    file_sink_blk->start_recording(baseband_output_path, 2e6, true);
 
     while (!ts_input.eof())
     {
