@@ -122,84 +122,82 @@ namespace dsp
             return taps;
         }
 
-	std::vector<float> high_pass(double gain, double sampling_freq, double cutoff_freq, double transition_width, fft::window::win_type window_type, double beta) // used only with Kaiser);
-	{
-		double a = fft::window::max_attenuation(static_cast<fft::window::win_type>(window_type), beta);
-            	int ntaps = (int)(a * sampling_freq / (22.0 * transition_width));
-            	if ((ntaps & 1) == 0) // if even...
-		    ntaps++;          // ...make odd
+        std::vector<float> high_pass(double gain, double sampling_freq, double cutoff_freq, double transition_width, fft::window::win_type window_type, double beta) // used only with Kaiser);
+        {
+            double a = fft::window::max_attenuation(static_cast<fft::window::win_type>(window_type), beta);
+            int ntaps = (int)(a * sampling_freq / (22.0 * transition_width));
+            if ((ntaps & 1) == 0) // if even...
+                ntaps++;          // ...make odd
 
-		// construct the truncated ideal impulse response times the window function
+            // construct the truncated ideal impulse response times the window function
 
-		std::vector<float> taps(ntaps);
-		std::vector<float> w = fft::window::build(window_type, ntaps, beta);
+            std::vector<float> taps(ntaps);
+            std::vector<float> w = fft::window::build(window_type, ntaps, beta);
 
-    		int M = (ntaps - 1) / 2;
-    		double fwT0 = 2 * M_PI * cutoff_freq / sampling_freq;
-    		
-    		for (int n = -M; n <= M; n++) {
-    		    if (n == 0)
-    		        taps[n + M] = (1 - (fwT0 / M_PI)) * w[n + M];
-    		    else {
-    		        // a little algebra gets this into the more familiar sin(x)/x form
-    		        taps[n + M] = -sin(n * fwT0) / (n * M_PI) * w[n + M];
-    		    }
-    		}
-    		
-    		// find the factor to normalize the gain, fmax.
-    		// For high-pass, gain @ fs/2 freq = 1.0
-    		
-    		double fmax = taps[0 + M];
-    		for (int n = 1; n <= M; n++)
-    		    fmax += 2 * taps[n + M] * cos(n * M_PI);
-    		
-    		gain /= fmax; // normalize
-    		
-    		for (int i = 0; i < ntaps; i++)
-    		    taps[i] *= gain;
-    		
-    		return taps;
-	}
+            int M = (ntaps - 1) / 2;
+            double fwT0 = 2 * M_PI * cutoff_freq / sampling_freq;
 
-	std::vector<float> band_pass(double gain, double sampling_freq, double low_cutoff_freq, double high_cutoff_freq, double transition_width, fft::window::win_type window_type, double beta) // used only with Kaiser);
-	{
-		double a = fft::window::max_attenuation(static_cast<fft::window::win_type>(window_type), beta);
-            	int ntaps = (int)(a * sampling_freq / (22.0 * transition_width));
-            	if ((ntaps & 1) == 0) // if even...
-		    ntaps++;          // ...make odd
-	
+            for (int n = -M; n <= M; n++)
+            {
+                if (n == 0)
+                    taps[n + M] = (1 - (fwT0 / M_PI)) * w[n + M];
+                else {
+                    // a little algebra gets this into the more familiar sin(x)/x form
+                    taps[n + M] = -sin(n * fwT0) / (n * M_PI) * w[n + M];
+                }
+            }
 
-		std::vector<float> taps(ntaps);
-		std::vector<float> w = fft::window::build(window_type, ntaps, beta);
+            // find the factor to normalize the gain, fmax.
+            // For high-pass, gain @ fs/2 freq = 1.0
 
-    		int M = (ntaps - 1) / 2;
-    		double fwT0 = 2 * M_PI * low_cutoff_freq / sampling_freq;
-    		double fwT1 = 2 * M_PI * high_cutoff_freq / sampling_freq;
+            double fmax = taps[0 + M];
+            for (int n = 1; n <= M; n++)
+                fmax += 2 * taps[n + M] * cos(n * M_PI);
 
-    		for (int n = -M; n <= M; n++) {
-    		    if (n == 0)
-    		        taps[n + M] = (fwT1 - fwT0) / M_PI * w[n + M];
-    		    else {
-    		        taps[n + M] = (sin(n * fwT1) - sin(n * fwT0)) / (n * M_PI) * w[n + M];
-    		    }
-    		}
+            gain /= fmax; // normalize
 
-    		// find the factor to normalize the gain, fmax.
-    		// For band-pass, gain @ center freq = 1.0
+            for (int i = 0; i < ntaps; i++)
+                taps[i] *= gain;
 
-    		double fmax = taps[0 + M];
-    		for (int n = 1; n <= M; n++)
-    		    fmax += 2 * taps[n + M] * cos(n * (fwT0 + fwT1) * 0.5);
+            return taps;
+        }
 
-    		gain /= fmax; // normalize
+        std::vector<float> band_pass(double gain, double sampling_freq, double low_cutoff_freq, double high_cutoff_freq, double transition_width, fft::window::win_type window_type, double beta) // used only with Kaiser);
+        {
+            double a = fft::window::max_attenuation(static_cast<fft::window::win_type>(window_type), beta);
+            int ntaps = (int)(a * sampling_freq / (22.0 * transition_width));
+            if ((ntaps & 1) == 0) // if even...
+                ntaps++;          // ...make odd
 
-    		for (int i = 0; i < ntaps; i++)
-    		    taps[i] *= gain;
+            std::vector<float> taps(ntaps);
+            std::vector<float> w = fft::window::build(window_type, ntaps, beta);
 
-    		return taps;
-	}
+            int M = (ntaps - 1) / 2;
+            double fwT0 = 2 * M_PI * low_cutoff_freq / sampling_freq;
+            double fwT1 = 2 * M_PI * high_cutoff_freq / sampling_freq;
 
+            for (int n = -M; n <= M; n++) {
+                if (n == 0)
+                    taps[n + M] = (fwT1 - fwT0) / M_PI * w[n + M];
+                else {
+                    taps[n + M] = (sin(n * fwT1) - sin(n * fwT0)) / (n * M_PI) * w[n + M];
+                }
+            }
 
+            // find the factor to normalize the gain, fmax.
+            // For band-pass, gain @ center freq = 1.0
+
+            double fmax = taps[0 + M];
+            for (int n = 1; n <= M; n++)
+                fmax += 2 * taps[n + M] * cos(n * (fwT0 + fwT1) * 0.5);
+
+            gain /= fmax; // normalize
+
+            for (int i = 0; i < ntaps; i++)
+                taps[i] *= gain;
+
+            return taps;
+        }
 
         std::vector<float> design_resampler_filter_float(const unsigned interpolation, const unsigned decimation, const float fractional_bw)
         {

@@ -12,6 +12,7 @@
 
 namespace generic_analog
 {
+	// WIP
 	class AMDemod : public dsp::HierBlock<complex_t, float>
 	{
 		private:

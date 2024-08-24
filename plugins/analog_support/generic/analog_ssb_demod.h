@@ -9,6 +9,7 @@
 
 namespace generic_analog
 {
+	// WIP
 	class SSBDemod : public dsp::HierBlock<complex_t, complex_t>
 	{
 		private:
