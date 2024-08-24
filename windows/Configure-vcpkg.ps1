@@ -21,7 +21,7 @@ cd vcpkg
 .\bootstrap-vcpkg.bat
 
 # Core packages. libxml2 is for libiio
-.\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng[mbedtls] zstd armadillo opencl curl[schannel]
+.\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel]
 
 # Entirely for UHD...
 .\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
