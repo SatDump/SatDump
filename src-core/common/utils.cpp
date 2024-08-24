@@ -115,6 +115,7 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
     curl = curl_easy_init();
     if (curl)
     {
+        curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
         curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
         curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
