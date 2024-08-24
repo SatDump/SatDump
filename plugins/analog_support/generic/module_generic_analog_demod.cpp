@@ -1,5 +1,4 @@
 #include "module_generic_analog_demod.h"
-#include "common/dsp/filter/firdes.h"
 #include "core/config.h"
 #include "logger.h"
 #include "imgui/imgui.h"
@@ -108,38 +107,56 @@ namespace generic_analog
                     input_resamp.set_ratio(d_symbolrate, final_samplerate);
                     quad_demod.set_gain(dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
                 }
+
+                switch (e) {
+                case 0:
+                    nfm_demod = true;
+                    am_demod = false;
+                    break;
+                case 1:
+                    am_demod = true;
+                    nfm_demod = false;
+                    break;
+                default:
+                    nfm_demod = true;
+                    am_demod = false;
+                    break;
+                }
+
                 settings_changed = false;
             }
 
             int nout = input_resamp.process(agc->output_stream->readBuf, dat_size, work_buffer_complex);
-            nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
 
+            if (nfm_demod)
+                nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
+            else if (am_demod)
+                volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t*)work_buffer_complex, nout);
+
+            // Into const
+            constellation.pushFloatAndGaussian(work_buffer_float, nout);
+
+            for (int i = 0; i < nout; i++)
             {
-                // Into const
-                constellation.pushFloatAndGaussian(work_buffer_float, nout);
+                if (work_buffer_float[i] > 1.0f)
+                    work_buffer_float[i] = 1.0f;
+                if (work_buffer_float[i] < -1.0f)
+                    work_buffer_float[i] = -1.0f;
+            }
 
-                for (int i = 0; i < nout; i++)
-                {
-                    if (work_buffer_float[i] > 1.0f)
-                        work_buffer_float[i] = 1.0f;
-                    if (work_buffer_float[i] < -1.0f)
-                        work_buffer_float[i] = -1.0f;
-                }
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, nout);
 
-                volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, nout);
-
-                int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, nout, 1);
-                if (enable_audio && play_audio)
-                    audio_sink->push_samples(output_wav_buffer_resamp, final_out);
-                if (output_data_type == DATA_FILE)
-                {
-                    data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
-                    final_data_size += final_out * sizeof(int16_t);
-                }
-                else
-                {
-                    output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
-                }
+            int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, nout, 1);
+            if (enable_audio && play_audio)
+                audio_sink->push_samples(output_wav_buffer_resamp, final_out);
+            if (output_data_type == DATA_FILE)
+            {
+                data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
+                final_data_size += final_out * sizeof(int16_t);
+            }
+            else
+            {
+                output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
             }
 
             proc_mtx.unlock();
@@ -223,14 +240,15 @@ namespace generic_analog
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Settings", {200 * ui_scale, 20 * ui_scale});
+            ImGui::Button("Settings", { 200 * ui_scale, 20 * ui_scale });
 
             proc_mtx.lock();
             ImGui::SetNextItemWidth(200 * ui_scale);
             ImGui::InputInt("Bandwidth##bandwidthsetting", &upcoming_symbolrate);
 
-            ImGui::RadioButton("NFM##analogoption", true);
+            ImGui::RadioButton("NFM##analogoption", &e, 0);
             ImGui::SameLine();
+            ImGui::RadioButton("AM##analogoption", &e, 1);
             style::beginDisabled();
             ImGui::RadioButton("WFM##analogoption", false);
             // ImGui::SameLine();
@@ -238,7 +256,6 @@ namespace generic_analog
             ImGui::SameLine();
             ImGui::RadioButton("LSB##analogoption", false);
             // ImGui::SameLine();
-            ImGui::RadioButton("AM##analogoption", false);
             ImGui::SameLine();
             ImGui::RadioButton("CW##analogoption", false);
             style::endDisabled();
@@ -247,7 +264,7 @@ namespace generic_analog
                 settings_changed = true;
             proc_mtx.unlock();
 
-            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
+            ImGui::Button("Signal", { 200 * ui_scale, 20 * ui_scale });
             /* if (show_freq)
             {
                 ImGui::Text("Freq : ");

@@ -71,8 +71,8 @@ namespace dsp
          *
          * \param gain                overall gain of filter (typically 1.0)
          * \param sampling_freq       sampling freq (Hz)
-         * \param cutoff_freq	        center of transition band (Hz)
-         * \param transition_width	width of transition band (Hz)
+         * \param cutoff_freq         center of transition band (Hz)
+         * \param transition_width    width of transition band (Hz)
          * \param window              one of fft::window::win_type
          * \param beta                parameter for Kaiser window
          */
@@ -88,6 +88,27 @@ namespace dsp
         * @param decimation decimation factor (integer > 0)
         * @param fractional_bw fractional bandwidth in (0, 0.5)  0.4 works well. (float)
         */
+        std::vector<float> high_pass(double gain, double sampling_freq, double cutoff_freq, double transition_width, fft::window::win_type window = fft::window::win_type::WIN_HAMMING, double beta = 6.76);
+
+    /*!
+    * \brief design a high-pass FIR filter.
+    *
+        * \param gain                overall gain of filter (typically 1.0)
+        * \param sampling_freq       sampling freq (Hz)
+        * \param cutoff_freq         center of transition band (Hz)
+        * \param transition_width    width of transition band (Hz).
+        */
+    std::vector<float> band_pass(double gain, double sampling_freq, double low_cutoff_freq, double high_cutoff_freq, double transition_width, fft::window::win_type window = fft::window::win_type::WIN_HAMMING, double beta = 6.76);
+    
+    /*!
+         * \brief design a band-pass FIR filter.
+         *
+         * \param gain                overall gain of filter (typically 1.0)
+         * \param sampling_freq       sampling freq (Hz)
+         * \param low_cutoff_freq     center of transition band (Hz)
+         * \param high_cutoff_freq    center of transition band (Hz)
+         * \param transition_width    width of transition band (Hz).
+         */
         std::vector<float> design_resampler_filter_float(const unsigned interpolation, const unsigned decimation, const float fractional_bw);
 
         /*!
