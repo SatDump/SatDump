@@ -600,24 +600,39 @@ namespace satdump
                     logger->info("Saving Image...");
 
                     std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+                    time_t timevalue = 0;
+                    std::string formatted_timestamp = "";
+                    std::string filename_suffix = "";
+                    int suffix_num = 1;
 
-                    const time_t timevalue = time(0);
-                    std::tm *timeReadable = gmtime(&timevalue);
-                    std::string formatted_timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                    if (products->has_product_timestamp())
+                        timevalue = products->get_product_timestamp();
+                    else if (products->has_timestamps)
+                        timevalue = get_median(products->get_timestamps());
+
+                    if(timevalue != 0)
+                    {
+                        std::tm *timeReadable = gmtime(&timevalue);
+                        formatted_timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                             (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
                             (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
                             (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
-                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";
+                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z_";
+                    }
 
-
-                    std::string file_name = formatted_timestamp + "_" +products->instrument_name + "_" + 
-                    (select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
-                    (std::string("composite_") + (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first)));
+                    std::string file_name = formatted_timestamp + products->instrument_name + "_" +
+                        (select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
+                        (std::string("composite_") + (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first)));
 
                     // To ensure composites with slashes or spaces don't end up in the filename
                     std::replace(file_name.begin(), file_name.end(), ' ', '-');
                     std::replace(file_name.begin(), file_name.end(), '/', '-');
+
+                    // Make sure we never overwrite anything unintentinally
+                    while (std::filesystem::exists(default_path + "/" + file_name + filename_suffix + "." + viewer_app->save_type))
+                        filename_suffix = "_" + std::to_string(++suffix_num);
+                    file_name += filename_suffix;
 
                     std::string saved_at = save_image_dialog(file_name, default_path, "Save Image", &current_image, &viewer_app->save_type);
 
