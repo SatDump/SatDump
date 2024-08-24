@@ -43,28 +43,15 @@ namespace generic_analog
 
         // Resampler to BW
         res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
- 
-	// Quadrature demod
-	qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
-
-	// L + R
-	lpf = std::make_shared<dsp::FIRBlock<float>>(qua->output_stream, dsp::firdes::low_pass(1, d_symbolrate / 2, 15500, 1500));
-
-	// Band Pass Filter
-	bpf = std::make_shared<dsp::FIRBlock<float>>(qua->output_stream, dsp::firdes::band_pass(1, d_symbolrate, 18100, 19900, 1000));
-
-	// Real to Complex
-	rtc = std::make_shared<dsp::RealToComplexBlock>(bpf->output_stream);
 	
-	//// Pll
-	pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(rtc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
+	// Band Pass Filter
+	//bpf = std::make_shared<dsp::FIRBlock<complex_t>>(qua->output_stream, dsp::firdes::band_pass(1, d_symbolrate, 0, 19900, 1200));
+	// AGC2 Block
+	agc2 = std::make_shared<dsp::AGCBlock<complex_t>>(res->output_stream, 1e-1, 2e-2, 1, 15);
 
-	// Second Real to Complex 
-	rtc2 = std::make_shared<dsp::RealToComplexBlock>(lpf->output_stream);
 
-	// Apply Frequency Shift from pilot PLL
-	fsb2 = std::make_shared<dsp::FreqShiftBlock>(rtc2->output_stream, final_samplerate, pll->getFreq());
-
+	// Low Pass Filter
+	lpf = std::make_shared<dsp::FIRBlock<complex_t>>(agc2->output_stream, dsp::firdes::low_pass(1, final_samplerate, 300, 7000));
     }
 
     GenericAnalogDemodModule::~GenericAnalogDemodModule()
@@ -80,53 +67,54 @@ namespace generic_analog
 	else
 		filesize = 0;
 
-	if (output_data_type == DATA_FILE)
-	{
-		data_out = std::ofstream(d_output_file_hint + ".f32", std::ios::binary);
-		d_output_files.push_back(d_output_file_hint + ".f32");
-	}
-	
-	logger->info("Using input baseband" + d_input_file);
-	logger->info("Saving processed to " + d_output_file_hint + ".f32");
-	logger->info("Buffer size : " + std::to_string(d_buffer_size));
+	//if (output_data_type == DATA_FILE)
+	//{
+	//	data_out = std::ofstream(d_output_file_hint + ".f32", std::ios::binary);
+	//	d_output_files.push_back(d_output_file_hint + ".f32");
+	//}
+	//
+	//logger->info("Using input baseband" + d_input_file);
+	//logger->info("Saving processed to " + d_output_file_hint + ".f32");
+	//logger->info("Buffer size : " + std::to_string(d_buffer_size));
 
-	time_t lastTime = 0;
-        //if (input_data_type == DATA_FILE)
-        //    filesize = file_source->getFilesize();
-        //else
-        //    filesize = 0;
+	//time_t lastTime = 0;
+        if (input_data_type == DATA_FILE)
+            filesize = file_source->getFilesize();
+        else
+            filesize = 0;
 
-        //if (output_data_type == DATA_FILE)
-        //{
-        //    data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
-        //    d_output_files.push_back(d_output_file_hint + ".wav");
-        //}
+        if (output_data_type == DATA_FILE)
+        {
+            data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
+            d_output_files.push_back(d_output_file_hint + ".wav");
+        }
 
-        //logger->info("Using input baseband " + d_input_file);
-        //logger->info("Demodulating to " + d_output_file_hint + ".wav");
-        //logger->info("Buffer size : " + std::to_string(d_buffer_size));
+        logger->info("Using input baseband " + d_input_file);
+        logger->info("Demodulating to " + d_output_file_hint + ".wav");
+        logger->info("Buffer size : " + std::to_string(d_buffer_size));
 
-        //time_t lastTime = 0;
+        time_t lastTime = 0;
 
         // Start
         BaseDemodModule::start();
         res->start();
-	pll->start();
+	//pll->start();
 	//fsb->start();
-	fsb2->start();
+	//fsb2->start();
 	lpf->start();
-	qua->start();
-	bpf->start();
-	rtc->start();
-	rtc2->start();
+	agc2->start();
+	//qua->start();
+	//bpf->start();
+	//rtc->start();
+	//rtc2->start();
 
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
         int16_t *output_wav_buffer_resamp = new int16_t[d_buffer_size * 200];
         uint64_t final_data_size = 0;
-        //dsp::WavWriter wave_writer(data_out);
-        //if (output_data_type == DATA_FILE)
-        //    wave_writer.write_header(audio_samplerate, 1);
+        dsp::WavWriter wave_writer(data_out);
+        if (output_data_type == DATA_FILE)
+            wave_writer.write_header(audio_samplerate, 1);
 
         std::shared_ptr<audio::AudioSink> audio_sink;
         if (input_data_type != DATA_FILE && audio::has_sink())
@@ -148,33 +136,33 @@ namespace generic_analog
         int dat_size = 0;
         while (demod_should_run())
         {
-            dat_size = fsb2->output_stream->read(); // Start Audio Stream
+            dat_size = agc2->output_stream->read(); // Start Audio Stream
 	    //dat_size = pll->output_stream->read(); // Start PLL Stream to Get the Pilot Drift
 
             if (dat_size <= 0)
             {
-                fsb2->output_stream->flush();
+                agc2->output_stream->flush();
 		//pll->output_stream->flush();
                 continue;
             }
             // Into const
-	    constellation.pushComplex(fsb2->output_stream->readBuf, fsb2->output_stream->getDataSize());
+	    constellation.pushComplex(agc2->output_stream->readBuf, agc2->output_stream->getDataSize());
 
 	    //display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
 
-	    volk_32fc_deinterleave_real_32f((float *)work_buffer_float, (lv_32fc_t *)fsb2->output_stream->readBuf, dat_size);
+	    volk_32fc_deinterleave_real_32f((float *)work_buffer_float, (lv_32fc_t *)agc2->output_stream->readBuf, dat_size);
 
 
 
-	    if (output_data_type == DATA_FILE)
-	    {
-	            data_out.write((char *)fsb2->output_stream->readBuf, dat_size * sizeof(complex_t));
-	            final_data_size += dat_size * sizeof(float);
-	    }
-	    else 
-	    {
-	    output_fifo->write((uint8_t *)fsb2->output_stream->readBuf, dat_size * sizeof(complex_t));
-	    }
+	    //if (output_data_type == DATA_FILE)
+	    //{
+	    //        data_out.write((char *)agc2->output_stream->readBuf, dat_size * sizeof(complex_t));
+	    //        final_data_size += dat_size * sizeof(complex_t);
+	    //}
+	    //else 
+	    //{
+	    //output_fifo->write((uint8_t *)agc2->output_stream->readBuf, dat_size * sizeof(complex_t));
+	    //}
 
 
 	    //////// just to test the raw output
@@ -183,18 +171,18 @@ namespace generic_analog
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer_resamp, final_out);
-            ////if (output_data_type == DATA_FILE)
-            ////{
-            ////    data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
-            ////    final_data_size += final_out * sizeof(int16_t);
-            ////}
-            ////else
-            ////{
-            ////    output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
-            ////}
+            if (output_data_type == DATA_FILE)
+            {
+                data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
+                final_data_size += final_out * sizeof(int16_t);
+            }
+            else
+            {
+                output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
+            }
 //#endif
 
-            fsb2->output_stream->flush();
+            agc2->output_stream->flush();
 	    //pll->output_stream->flush();
             
 	    if (input_data_type == DATA_FILE)
@@ -210,12 +198,12 @@ namespace generic_analog
         if (enable_audio)
             audio_sink->stop();
 
-        //// Finish up WAV
-        //if (output_data_type == DATA_FILE)
-        //{
-        //    wave_writer.finish_header(final_data_size);
-        //    data_out.close();
-        //}
+        // Finish up WAV
+        if (output_data_type == DATA_FILE)
+        {
+            wave_writer.finish_header(final_data_size);
+            data_out.close();
+        }
 
         delete[] output_wav_buffer;
         delete[] output_wav_buffer_resamp;
@@ -231,15 +219,15 @@ namespace generic_analog
         // Stop
         BaseDemodModule::stop();
         res->stop();
-	pll->stop();
+	//pll->stop();
 	lpf->stop();
-	qua->stop();
-	fsb2->stop();
-	bpf->stop();
-	rtc->stop();
-	rtc2->stop();
+	//qua->stop();
+	//bpf->stop();
+	//rtc->stop();
+	//rtc2->stop();
 	//pll->output_stream->stopReader();
-	fsb2->output_stream->stopReader();
+	agc2->stop();
+	agc2->output_stream->stopReader();
     }
 
     void GenericAnalogDemodModule::drawUI(bool window)

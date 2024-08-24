@@ -3,6 +3,7 @@
 #include "common/dsp/demod/pm_to_bpsk.h"
 #include "common/dsp/filter/fir.h"
 #include "common/dsp/pll/pll_carrier_tracking.h"
+#include "common/dsp/utils/agc2.h"
 #include "common/dsp/utils/complex_to_mag.h"
 #include "common/dsp/utils/freq_shift.h"
 #include "common/dsp/utils/real_to_complex.h"
@@ -22,9 +23,10 @@ namespace generic_analog
 	std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 	std::shared_ptr<dsp::FreqShiftBlock> fsb;
 	std::shared_ptr<dsp::FreqShiftBlock> fsb2;
-	//std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
-	std::shared_ptr<dsp::FIRBlock<float>> lpf;
-	std::shared_ptr<dsp::FIRBlock<float>> bpf;
+	std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
+	//std::shared_ptr<dsp::FIRBlock<float>> lpf;
+	std::shared_ptr<dsp::FIRBlock<complex_t>> bpf;
+	std::shared_ptr<dsp::AGCBlock<complex_t>> agc2;
 
 	std::shared_ptr<dsp::RealToComplexBlock> rtc;
 	std::shared_ptr<dsp::RealToComplexBlock> rtc2;
