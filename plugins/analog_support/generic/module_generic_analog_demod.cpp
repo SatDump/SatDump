@@ -1,22 +1,8 @@
 #include "module_generic_analog_demod.h"
-#include "common/dsp/block.h"
-#include "common/dsp/demod/quadrature_demod.h"
-#include "common/dsp/filter/fir.h"
-#include "common/dsp/filter/firdes.h"
-#include "common/dsp/pll/pll_carrier_tracking.h"
-#include "common/dsp/utils/complex_to_mag.h"
-#include "common/dsp/utils/freq_shift.h"
-#include "common/dsp/utils/real_to_complex.h"
-#include "common/dsp_source_sink/format_notated.h"
 #include "core/config.h"
-#include "core/module.h"
 #include "logger.h"
 #include "imgui/imgui.h"
-#include <complex.h>
-#include <cstdint>
-#include <memory>
 #include <volk/volk.h>
-#include <volk/volk_complex.h>
 #include "common/dsp/io/wav_writer.h"
 #include "common/audio/audio_sink.h"
 
@@ -25,7 +11,7 @@ namespace generic_analog
     GenericAnalogDemodModule::GenericAnalogDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         name = "Generic Analog Demodulator (WIP)";
-        show_freq = true;
+        show_freq = false;
         play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
 
         constellation.d_hscale = 1.0; // 80.0 / 100.0;
@@ -42,16 +28,10 @@ namespace generic_analog
         BaseDemodModule::initb();
 
         // Resampler to BW
-        res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
-	
-	// Band Pass Filter
-	//bpf = std::make_shared<dsp::FIRBlock<complex_t>>(qua->output_stream, dsp::firdes::band_pass(1, d_symbolrate, 0, 19900, 1200));
-	// AGC2 Block
-	agc2 = std::make_shared<dsp::AGCBlock<complex_t>>(res->output_stream, 1e-1, 2e-2, 1, 15);
+        //    res = std::make_shared<dsp::RationalResamplerBlock<complex_t>>(agc->output_stream, d_symbolrate, final_samplerate);
 
-
-	// Low Pass Filter
-	lpf = std::make_shared<dsp::FIRBlock<complex_t>>(agc2->output_stream, dsp::firdes::low_pass(1, final_samplerate, 300, 7000));
+        // Quadrature demod
+        //  qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
     }
 
     GenericAnalogDemodModule::~GenericAnalogDemodModule()
@@ -60,24 +40,6 @@ namespace generic_analog
 
     void GenericAnalogDemodModule::process()
     {
-
-
-	if (input_data_type == DATA_FILE)
-		filesize = file_source->getFilesize();
-	else
-		filesize = 0;
-
-	//if (output_data_type == DATA_FILE)
-	//{
-	//	data_out = std::ofstream(d_output_file_hint + ".f32", std::ios::binary);
-	//	d_output_files.push_back(d_output_file_hint + ".f32");
-	//}
-	//
-	//logger->info("Using input baseband" + d_input_file);
-	//logger->info("Saving processed to " + d_output_file_hint + ".f32");
-	//logger->info("Buffer size : " + std::to_string(d_buffer_size));
-
-	//time_t lastTime = 0;
         if (input_data_type == DATA_FILE)
             filesize = file_source->getFilesize();
         else
@@ -97,16 +59,8 @@ namespace generic_analog
 
         // Start
         BaseDemodModule::start();
-        res->start();
-	//pll->start();
-	//fsb->start();
-	//fsb2->start();
-	lpf->start();
-	agc2->start();
-	//qua->start();
-	//bpf->start();
-	//rtc->start();
-	//rtc2->start();
+        //    res->start();
+        //    qua->start();
 
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
@@ -126,47 +80,107 @@ namespace generic_analog
         }
 
         /////////////
-        //dsp::RationalResamplerBlock<complex_t> input_resamp(nullptr, d_symbolrate, final_samplerate);
-        //dsp::QuadratureDemodBlock quad_demod(nullptr, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
-	//dsp::PLLCarrierTrackingBlock pll(nullptr, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
+        dsp::RationalResamplerBlock<complex_t> input_resamp(nullptr, d_symbolrate, final_samplerate);
+        dsp::QuadratureDemodBlock quad_demod(nullptr, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
         complex_t *work_buffer_complex = dsp::create_volk_buffer<complex_t>(d_buffer_size);
         float *work_buffer_float = dsp::create_volk_buffer<float>(d_buffer_size);
-        float *work_buffer_float_l_plus_r = dsp::create_volk_buffer<float>(d_buffer_size);
 
         int dat_size = 0;
         while (demod_should_run())
         {
-            dat_size = agc2->output_stream->read(); // Start Audio Stream
-	    //dat_size = pll->output_stream->read(); // Start PLL Stream to Get the Pilot Drift
+            dat_size = agc->output_stream->read();
 
             if (dat_size <= 0)
             {
-                agc2->output_stream->flush();
-		//pll->output_stream->flush();
+                agc->output_stream->flush();
                 continue;
             }
+
+#if 1
+            proc_mtx.lock();
+
+            if (settings_changed)
+            {
+                if (upcoming_symbolrate > 0)
+                {
+                    d_symbolrate = upcoming_symbolrate;
+                    input_resamp.set_ratio(d_symbolrate, final_samplerate);
+                    quad_demod.set_gain(dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
+                }
+
+                switch (e) {
+                    case 0:
+                        nfm_demod = true;
+                        am_demod = false;
+                        break;
+                    case 1:
+                        am_demod = true;
+                        nfm_demod = false;
+                        break;
+                    default:
+                        nfm_demod = true;
+                        am_demod = false;
+                        break;
+                }
+                
+                settings_changed = false;
+            }
+
+            int nout = input_resamp.process(agc->output_stream->readBuf, dat_size, work_buffer_complex);
+            
+            if (nfm_demod)
+            {
+                nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
+            }
+
+            if (am_demod)
+            {
+                volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t *)work_buffer_complex, nout);
+	    }
+
+            {
+                
+                // Into const
+                constellation.pushFloatAndGaussian(work_buffer_float, nout);
+
+                for (int i = 0; i < nout; i++)
+                {
+                    if (work_buffer_float[i] > 1.0f)
+                        work_buffer_float[i] = 1.0f;
+                    if (work_buffer_float[i] < -1.0f)
+                        work_buffer_float[i] = -1.0f;
+                }
+
+                volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, nout);
+
+                int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, nout, 1);
+                if (enable_audio && play_audio)
+                    audio_sink->push_samples(output_wav_buffer_resamp, final_out);
+                if (output_data_type == DATA_FILE)
+                {
+                    data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
+                    final_data_size += final_out * sizeof(int16_t);
+                }
+                else
+                {
+                    output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
+                }
+            }
+
+            proc_mtx.unlock();
+#else
             // Into const
-	    constellation.pushComplex(agc2->output_stream->readBuf, agc2->output_stream->getDataSize());
+            constellation.pushFloatAndGaussian(qua->output_stream->readBuf, qua->output_stream->getDataSize());
 
-	    //display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
+            for (int i = 0; i < dat_size; i++)
+            {
+                if (qua->output_stream->readBuf[i] > 1.0f)
+                    qua->output_stream->readBuf[i] = 1.0f;
+                if (qua->output_stream->readBuf[i] < -1.0f)
+                    qua->output_stream->readBuf[i] = -1.0f;
+            }
 
-	    volk_32fc_deinterleave_real_32f((float *)work_buffer_float, (lv_32fc_t *)agc2->output_stream->readBuf, dat_size);
-
-
-
-	    //if (output_data_type == DATA_FILE)
-	    //{
-	    //        data_out.write((char *)agc2->output_stream->readBuf, dat_size * sizeof(complex_t));
-	    //        final_data_size += dat_size * sizeof(complex_t);
-	    //}
-	    //else 
-	    //{
-	    //output_fifo->write((uint8_t *)agc2->output_stream->readBuf, dat_size * sizeof(complex_t));
-	    //}
-
-
-	    //////// just to test the raw output
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 0.68, dat_size);
 
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
             if (enable_audio && play_audio)
@@ -180,12 +194,11 @@ namespace generic_analog
             {
                 output_fifo->write((uint8_t *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
             }
-//#endif
+#endif
 
-            agc2->output_stream->flush();
-	    //pll->output_stream->flush();
-            
-	    if (input_data_type == DATA_FILE)
+            agc->output_stream->flush();
+
+            if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -218,16 +231,9 @@ namespace generic_analog
     {
         // Stop
         BaseDemodModule::stop();
-        res->stop();
-	//pll->stop();
-	lpf->stop();
-	//qua->stop();
-	//bpf->stop();
-	//rtc->stop();
-	//rtc2->stop();
-	//pll->output_stream->stopReader();
-	agc2->stop();
-	agc2->output_stream->stopReader();
+        // res->stop();
+        //   qua->stop();
+        agc->output_stream->stopReader();
     }
 
     void GenericAnalogDemodModule::drawUI(bool window)
@@ -253,9 +259,9 @@ namespace generic_analog
             ImGui::RadioButton("AM##analogoption", &e, 1);
             style::beginDisabled();
             ImGui::RadioButton("WFM##analogoption", false);
-            ImGui::SameLine();
+            // ImGui::SameLine();
             ImGui::RadioButton("USB##analogoption", false);
-            //ImGui::SameLine();
+            ImGui::SameLine();
             ImGui::RadioButton("LSB##analogoption", false);
             // ImGui::SameLine();
             ImGui::SameLine();
@@ -267,13 +273,13 @@ namespace generic_analog
             proc_mtx.unlock();
 
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
-	    if (show_freq)
+            /* if (show_freq)
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz", 4).c_str());
+                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
-            snr_plot.draw(snr, peak_snr);
+            snr_plot.draw(snr, peak_snr); */
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
