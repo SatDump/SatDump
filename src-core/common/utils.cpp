@@ -72,27 +72,32 @@ int perform_http_request(std::string url_str, std::string &result)
 {
     CURL *curl;
     CURLcode res;
-    bool ret = 1;
-
-    curl_global_init(CURL_GLOBAL_ALL);
+    bool ret = true;
+    char error_buffer[CURL_ERROR_SIZE] = { 0 };
 
     curl = curl_easy_init();
     if (curl)
     {
+        curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
         curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
         curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
         curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
 
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK)
-            logger->error("curl_easy_perform() failed: %s",
-                    curl_easy_strerror(res));
+        {
+            if(strlen(error_buffer))
+                logger->error("curl_easy_perform() failed: %s", error_buffer);
+            else
+                logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        }
 
         curl_easy_cleanup(curl);
-        ret = 0;
+        ret = false;
     }
     curl_global_cleanup();
     return ret;
@@ -102,7 +107,8 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
 {
     CURL *curl;
     CURLcode res;
-    bool ret = 1;
+    bool ret = true;
+    char error_buffer[CURL_ERROR_SIZE] = { 0 };
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -114,12 +120,17 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
 
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                    curl_easy_strerror(res));
+        {
+            if(strlen(error_buffer))
+                logger->error("curl_easy_perform() failed: %s", error_buffer);
+            else
+                logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        }
 
         curl_easy_cleanup(curl);
         ret = 0;

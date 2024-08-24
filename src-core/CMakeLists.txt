@@ -102,10 +102,10 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC fftw)
 
     # NNG
-    target_link_libraries(satdump_core PUBLIC nng mbedtls mbedtlscrypto mbedtlsx509)
+    target_link_libraries(satdump_core PUBLIC nng)
 
     # cURL
-    target_link_libraries(satdump_core PUBLIC curl mbedtls mbedtlscrypto mbedtlsx509)
+    target_link_libraries(satdump_core PUBLIC curl wolfssl)
 
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)
