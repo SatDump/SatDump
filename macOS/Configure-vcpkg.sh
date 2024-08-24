@@ -26,7 +26,7 @@ fi
 echo "Installing vcpkg packages..."
 
 # Core packages. libxml2 is for libiio
-./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng[mbedtls] zstd armadillo
+./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng zstd armadillo
 
 # Entirely for UHD...
 ./vcpkg install --triplet osx-satdump boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread \
@@ -89,7 +89,7 @@ cd ../..
 rm -rf volk
 
 echo "Building Airspy..."
-git clone https://github.com/airspy/airspyone_host --depth 1 -b v1.0.10
+git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
 cd airspyone_host/libairspy
 mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
@@ -99,7 +99,7 @@ cd ../../..
 rm -rf airspyone_host
 
 echo "Building Airspy HF..."
-git clone https://github.com/airspy/airspyhf --depth 1 -b 1.6.8
+git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
 cd airspyhf/libairspyhf
 mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..

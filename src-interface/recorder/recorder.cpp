@@ -145,7 +145,7 @@ namespace satdump
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
 
-        set_output_sample_format();
+        file_sink->set_output_sample_type(baseband_format);
         fft_plot->set_size(fft_size);
         waterfall_plot->set_size(fft_size);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
@@ -531,21 +531,9 @@ namespace satdump
                     bool assume_recording = is_recording;
                     if (assume_recording)
                         style::beginDisabled();
-                    if (ImGui::Combo("Format", &select_sample_format, "cf32\0"
-                                                                      "cs16\0"
-                                                                      "cs8\0"
-                                                                      "wav16\0"
-#ifdef BUILD_ZIQ
-                                                                      "ziq cs8\0"
-                                                                      "ziq cs16\0"
-                                                                      "ziq cf32\0"
-#endif
-#ifdef BUILD_ZIQ2
-                                                                      "ziq2 cs8 (WIP)\0"
-                                                                      "ziq2 cs16 (WIP)\0"
-#endif
-                                     ))
-                        set_output_sample_format();
+
+                    if (baseband_format.draw_record_combo("Format##basebandrecordformat"))
+                        file_sink->set_output_sample_type(baseband_format);
 
                     if (assume_recording)
                         style::endDisabled();
@@ -556,7 +544,7 @@ namespace satdump
                         ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
 
 #ifdef BUILD_ZIQ
-                    if (select_sample_format == 4 || select_sample_format == 5 || select_sample_format == 6)
+                    if (baseband_format == dsp::ZIQ)
                     {
                         if (file_sink->get_written_raw() < 1e9)
                             ImGui::Text("Size (raw) : %.2f MB", file_sink->get_written_raw() / 1e6);
