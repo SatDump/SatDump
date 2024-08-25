@@ -72,8 +72,10 @@ int perform_http_request(std::string url_str, std::string &result)
 {
     CURL *curl;
     CURLcode res;
-    bool ret = true;
+    bool ret = 1;
     char error_buffer[CURL_ERROR_SIZE] = { 0 };
+
+    curl_global_init(CURL_GLOBAL_ALL);
 
     curl = curl_easy_init();
     if (curl)
@@ -97,7 +99,7 @@ int perform_http_request(std::string url_str, std::string &result)
         }
 
         curl_easy_cleanup(curl);
-        ret = false;
+        ret = 0;
     }
     curl_global_cleanup();
     return ret;
@@ -107,7 +109,7 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
 {
     CURL *curl;
     CURLcode res;
-    bool ret = true;
+    bool ret = 1;
     char error_buffer[CURL_ERROR_SIZE] = { 0 };
 
     curl_global_init(CURL_GLOBAL_ALL);
