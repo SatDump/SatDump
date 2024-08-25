@@ -45,7 +45,7 @@ namespace dmsp
                 }
 
             }
-            if (alarm_match > 88)
+            if (alarm_match > 70)
             {
                 current_direction = (rtd_words[15] >> 2) & 1;
                 line_sync_code = (rtd_words[13] & 0b11111100) | rtd_words[14] >> 6;
@@ -59,8 +59,16 @@ namespace dmsp
             else
             {
                 // Get current channels configuration
-                bool tag_bit = (rtd_frame[1] >> 2) & 1;
-                // bool tag_bit = false;
+                bool tag_bit = true;
+                switch (tag_bit_override)
+                {
+                    case 0: tag_bit = (rtd_frame[1] >> 2) & 1;
+                        break;
+                    case 1: tag_bit = false;
+                        break;
+                    case 2: tag_bit = true;
+                        break;
+                }
 
                 // Extract fine pixel data
                 for (int i = 0; i < 15; i++)
