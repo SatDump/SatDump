@@ -469,7 +469,7 @@ jobs:
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
     needs: [
-        "build_windows",
+        "build_windows_x64",
         "build_ubuntu_2204",
         "build_ubuntu_2404",
         "build_macos_intel",
