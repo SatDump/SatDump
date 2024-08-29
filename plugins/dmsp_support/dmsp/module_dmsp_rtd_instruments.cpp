@@ -49,6 +49,20 @@ namespace dmsp
         else if (sat_num == 18)
             ols_reader.set_offsets(0, 14);
 
+        std::string fs_config = d_parameters["tag_bit_override"].get<std::string>();
+
+        if (fs_config == "VIS/IR")
+        {
+            ols_reader.set_tag_bit(1);
+        }
+        else if (fs_config == "IR/VIS")
+        {
+            ols_reader.set_tag_bit(2);
+        } else
+        {
+            ols_reader.set_tag_bit(0);
+        }
+
         uint8_t rtd_words[19];
 
         time_t lastTime = 0;
