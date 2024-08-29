@@ -17,34 +17,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-#      - name: Cache dependencies
-#        uses: actions/cache@v4
-#        id: win-deps
-#        with:
-#          path: vcpkg
-#          key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: win-deps-x64
+        with:
+          path: vcpkg
+          key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
 
       - name: Set up Python 3.12
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
       - name: Install mako
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         run: pip install mako
 
       - name: Configure vcpkg
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
         run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform x64-windows
 
       - name: Clean up vcpkg
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
 
       - name: Download Aaronia RTSA API
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps.outputs.cache-hit != 'true'
         shell: powershell
         run: Invoke-WebRequest -Uri "https://www.satdump.org/Aaronia_RTSA_Suite_PRO_2.2.0.12821_Setup_64bit.exe" -OutFile $Env:GITHUB_WORKSPACE/vcpkg/rtsa.exe
 
@@ -98,30 +98,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-#      - name: Cache dependencies
-#        uses: actions/cache@v4
-#        id: win-deps
-#        with:
-#          path: vcpkg
-#          key: win-deps-arm64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: win-deps-arm64
+        with:
+          path: vcpkg
+          key: win-deps-arm64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
 
       - name: Set up Python 3.12
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
       - name: Install mako
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         run: pip install mako
 
       - name: Configure vcpkg
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         shell: powershell
         run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform arm64-windows
 
       - name: Clean up vcpkg
-#        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
 
       - name: Add support to NSIS for long PATHs
@@ -133,7 +133,7 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
-        run: cmake -A ARM64 -DVCPKG_TARGET_TRIPLET="arm64-windows" -DPLUGIN_LIMESDR_SDR_SUPPORT=OFF -DPLUGIN_USRP_SDR_SUPPORT=OFF -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
+        run: cmake -A ARM64 -DVCPKG_TARGET_TRIPLET="arm64-windows" -DCMAKE_SYSTEM_VERSION=10.0.22621.0 -DPLUGIN_LIMESDR_SDR_SUPPORT=OFF -DPLUGIN_USRP_SDR_SUPPORT=OFF -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
