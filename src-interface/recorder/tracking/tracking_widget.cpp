@@ -24,7 +24,11 @@ namespace satdump
 
         logger->trace("Using QTH %f %f Alt %f", qth_lon, qth_lat, qth_alt);
 
-        rotator_handler = std::make_shared<rotator::RotctlHandler>();
+        rotator_options = rotator::getRotatorHandlerOptions();
+        for (auto &st : rotator_options)
+            rotator_options_str += st.name + '\0';
+
+        rotator_handler = rotator_options[selected_rotator_handler].construct();
 
         if (rotator_handler)
         {
@@ -104,13 +108,10 @@ namespace satdump
             if (rotator_handler->is_connected())
                 style::beginDisabled();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"))
+            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, rotator_options_str.c_str()))
             {
-                if (selected_rotator_handler == 0)
-                {
-                    rotator_handler = std::make_shared<rotator::RotctlHandler>();
-                    object_tracker.setRotator(rotator_handler);
-                }
+                rotator_handler = rotator_options[selected_rotator_handler].construct();
+                object_tracker.setRotator(rotator_handler);
 
                 try
                 {
