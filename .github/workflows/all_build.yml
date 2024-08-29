@@ -152,11 +152,11 @@ jobs:
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
       - name: Set PATH for dumpbin
-        run: echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
+        run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
 
       - name: Build Portable
         shell: powershell
-        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
+        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform arm64-windows -BuildPath ${{runner.workspace}}\build
 
       - name: Upload Portable
         uses: actions/upload-artifact@v4
