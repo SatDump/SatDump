@@ -29,6 +29,7 @@
 
 #include "common/ndsp/utils/correct_iq.h"
 #include "common/ndsp/utils/freq_shift.h"
+#include "common/ndsp/utils/doppler_correct.h"
 
 namespace demod
 {
@@ -44,6 +45,7 @@ namespace demod
     protected:
         ndsp::FileSource nfile_source;
         ndsp::FreqShift nfreq_shift;
+        ndsp::DopplerCorrect ndoppler_correct;
         ndsp::Splitter nfft_splitter;
         ndsp::FFTPan nfft_proc;
         ndsp::CorrectIQ<complex_t> ndc_blocker;

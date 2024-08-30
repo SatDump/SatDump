@@ -6,7 +6,6 @@
 #include "core/style.h"
 #include "common/imgui_utils.h"
 #include "common/tracking/rotator/rotcl_handler.h"
-#include "common/tracking/rotator/lyra_handler.h"
 
 namespace satdump
 {
