@@ -18,11 +18,10 @@ Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 git clone --depth 1 https://github.com/microsoft/vcpkg
 cd vcpkg
-git checkout 9a6da16845eca8d6ed70be416c1acbd206894c7f
 .\bootstrap-vcpkg.bat
 
 # Core packages. libxml2 is for libiio
-.\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng[mbedtls] zstd armadillo opencl curl[schannel]
+.\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel]
 
 # Entirely for UHD...
 .\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
@@ -61,7 +60,7 @@ cd ..\..
 rm -recurse -force volk
 
 Write-Output "Building Airspy..."
-git clone https://github.com/airspy/airspyone_host --depth 1 -b v1.0.10
+git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
 cd airspyone_host\libairspy
 $null = mkdir build
 cd build
@@ -72,7 +71,7 @@ cd ..\..\..
 rm -recurse -force airspyone_host
 
 Write-Output "Building Airspy HF..."
-git clone https://github.com/airspy/airspyhf --depth 1 -b 1.6.8
+git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
 cd airspyhf\libairspyhf
 $null = mkdir build
 cd build

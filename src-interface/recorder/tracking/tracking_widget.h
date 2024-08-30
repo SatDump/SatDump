@@ -31,6 +31,8 @@ namespace satdump
         AutoTrackScheduler auto_scheduler;
 
         std::shared_ptr<rotator::RotatorHandler> rotator_handler;
+        std::vector<rotator::RotatorHandlerOption> rotator_options;
+        std::string rotator_options_str;
         int selected_rotator_handler = 0;
 
         bool config_window_was_asked = false, show_window_config = false;

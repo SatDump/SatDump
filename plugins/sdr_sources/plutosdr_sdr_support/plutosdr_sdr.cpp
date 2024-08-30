@@ -177,7 +177,7 @@ void PlutoSDRSource::sdr_startup()
     if (is_usb)
     {
         logger->trace("Using PlutoSDR Device at " + d_sdr_id);
-        ctx = iio_create_context_from_uri(std::string("usb:" + d_sdr_id).c_str());
+        ctx = iio_create_context_from_uri(d_sdr_id.c_str());
     }
     else
     {

@@ -69,7 +69,7 @@ namespace satdump
                 wipInfo.decim_ptr->start();
             wipInfo.file_sink->start();
 
-            wipInfo.file_sink->start_recording(config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() + "/" + prepareBasebandFileName(getTime(), get_samplerate() / decimation, freq), get_samplerate() / decimation, 8);
+            wipInfo.file_sink->start_recording(config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() + "/" + prepareBasebandFileName(getTime(), get_samplerate() / decimation, freq), get_samplerate() / decimation);
 
             splitter->set_vfo_enabled(id, true);
 

@@ -96,7 +96,7 @@ namespace demod
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
-            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, d_parameters["baseband_format"].get<std::string>(), d_buffer_size, d_iq_swap);
 
         if (d_dc_block)
             dc_blocker = std::make_shared<dsp::CorrectIQBlock<complex_t>>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
@@ -237,7 +237,7 @@ namespace demod
         if (input_data_type == DATA_FILE)
         {
             nfile_source.d_file = d_input_file;
-            nfile_source.d_type = dsp::basebandTypeFromString(d_parameters["baseband_format"]);
+            nfile_source.d_type = d_parameters["baseband_format"].get<std::string>();
             nfile_source.d_buffer_size = d_buffer_size;
             nfile_source.d_iq_swap = d_iq_swap;
         }
@@ -385,7 +385,7 @@ namespace demod
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
         {
             nintermediate_file_sink.start();
-            nintermediate_file_sink.set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
+            nintermediate_file_sink.set_output_sample_type(d_dump_intermediate);
             std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)d_samplerate) + "_intermediate_iq";
             logger->trace("Recording intermediate to " + int_file);
             nintermediate_file_sink.start_recording(int_file, d_samplerate);

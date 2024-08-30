@@ -157,6 +157,7 @@ void AirspySource::start()
     set_bias();
     set_agcs();
 
+    airspy_set_packing(airspy_dev_obj, 1);
     airspy_start_rx(airspy_dev_obj, &_rx_callback, &output_stream);
 }
 

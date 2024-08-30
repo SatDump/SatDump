@@ -19,6 +19,17 @@
             ]
         ],
         "parameters": {
+            "tag_bit_override": {
+                "type": "options",
+                "value": "VIS/IR",
+                "name": "Fine/Smooth channel configuration",
+                "options": [
+                    "VIS/IR",
+                    "IR/VIS",
+                    "Auto"
+                ],
+                "description": "Manual channel config setting.\nAuto detection can introduce\nextra errors."
+            },
             "satellite_number": {
                 "type": "options",
                 "value": "18",
