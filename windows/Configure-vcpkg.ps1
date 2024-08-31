@@ -70,7 +70,8 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 }
 
 Write-Output "Building cpu_features..."
-git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
+#git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
+git clone https://github.com/JVital2013/cpu_features --depth 1 -b win-arm64 #Patches to fix NEON support on Windows
 cd cpu_features
 $null = mkdir build
 cd build
@@ -81,7 +82,8 @@ cd ..\..
 rm -recurse -force cpu_features
 
 Write-Output "Building Volk..."
-git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.2
+#git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.2
+git clone https://github.com/JVital2013/volk --depth 1 -b win-arm64 #Patches to fix NEON support on Windows
 cd volk
 $null = mkdir build
 cd build
