@@ -138,14 +138,24 @@ sudo apt install libglfw3-dev zenity                                            
 sudo apt install portaudio19-dev                                                  # Only if you want audio output
 sudo apt install libzstd-dev                                                      # Only if you want to build with ZIQ Recording compression
 sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev        # All libraries required for live processing
+sudo apt install libad9361-dev libiio-dev                                         # For ADALM-Pluto, PlutoPlus, AntSDR and other SDRs based on Analog AD9361
+sudo apt install libbladerf-dev                                                   # For BladeRF
 sudo apt install libomp-dev                                                       # Shouldn't be required in general, but in case you have errors with OMP
 sudo apt install ocl-icd-opencl-dev                                               # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 sudo apt install intel-opencl-icd                                                 # Enables OpenCL for Intel Integrated Graphics
+sudo apt install mesa-opencl-icd                                                  # For AMD Radeon cards *BEFORE series 5000* (e.g. RX480/580...). For newer cards, please install the official AMD drivers.
 
+# One-liner to install all dependencies:
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
+                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev libvolk-dev libnng-dev \
+                 libglfw3-dev zenity portaudio19-dev libzstd-dev librtlsdr-dev libhackrf-dev \
+                 libairspy-dev libairspyhf-dev libad9361-dev libiio-dev libbladerf-dev libomp-dev \
+                 ocl-icd-opencl-dev intel-opencl-icd mesa-opencl-icd
+                
 
 # Install dependencies on Red-Hat-based systems:
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel \
-                 tiff-devel nng-devel curl-devel
+                 libtiff-devel nng-devel curl-devel
 
 # (Optional)
 sudo dnf install glfw-devel zenity                                                # Only if you want to build the GUI Version
@@ -155,6 +165,13 @@ sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel                
 sudo dnf install libomp-devel                                                     # Shouldn't be required in general, but in case you have errors with OMP
 sudo dnf install ocl-icd                                                          # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
 sudo dnf install intel-opencl                                                     # Enables OpenCL for Intel Integrated Graphics
+
+# One-liner to install all dependencies:
+
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel \
+                 libtiff-devel nng-devel curl-devel glfw-devel zenity portaudio-devel \
+                 libzstd-devel rtl-sdr-devel hackrf-devel airspyone_host-devel libomp-devel \
+                 ocl-icd intel-opencl
 
 
 # Install dependencies on Alpine-based systems.
