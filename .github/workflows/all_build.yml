@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  build_windows:
+  build_windows_x64:
     runs-on: windows-2019
 
     steps:
@@ -19,28 +19,28 @@ jobs:
 
       - name: Cache dependencies
         uses: actions/cache@v4
-        id: win-deps
+        id: win-deps-x64
         with:
           path: vcpkg
           key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
 
       - name: Set up Python 3.12
-        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
       - name: Install mako
-        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         run: pip install mako
 
       - name: Configure vcpkg
-        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
         run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform x64-windows
 
       - name: Clean up vcpkg
-        if: steps.win-deps.outputs.cache-hit != 'true'
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
         run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
 
       - name: Download Aaronia RTSA API
@@ -90,6 +90,78 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_x64_Portable
+          path: ${{runner.workspace}}/build/Release/*
+
+  build_windows_arm64:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: win-deps-arm64
+        with:
+          path: vcpkg
+          key: win-deps-arm64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
+
+      - name: Set up Python 3.12
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install mako
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
+        run: pip install mako
+
+      - name: Configure vcpkg
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
+        shell: powershell
+        run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform arm64-windows
+
+      - name: Clean up vcpkg
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
+        run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
+
+      - name: Add support to NSIS for long PATHs
+        shell: powershell
+        run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        run: cmake -A ARM64 -DVCPKG_TARGET_TRIPLET="arm64-windows" -DCMAKE_SYSTEM_VERSION="10.0.22621.0" -DPLUGIN_LIMESDR_SDR_SUPPORT=OFF -DPLUGIN_USRP_SDR_SUPPORT=OFF -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Build Installer
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cpack -C $BUILD_TYPE
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_arm64_Installer
+          path: ${{runner.workspace}}/build/SatDump-*.exe
+
+      - name: Set PATH for dumpbin
+        run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
+
+      - name: Build Portable
+        shell: powershell
+        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform arm64-windows -BuildPath ${{runner.workspace}}\build
+
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_arm64_Portable
           path: ${{runner.workspace}}/build/Release/*
 
   build_android:
@@ -397,7 +469,7 @@ jobs:
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
     needs: [
-        "build_windows",
+        "build_windows_x64",
         "build_ubuntu_2204",
         "build_ubuntu_2404",
         "build_macos_intel",
