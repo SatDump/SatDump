@@ -13,6 +13,30 @@ if(Test-Path "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..\vcpkg" -Erro
     exit 1
 }
 
+if($platform -eq "x64-windows")
+{
+    $generator = "x64"
+    $arch = "AMD64"
+    $sdrplay_arch = "x64"
+}
+elseif($platform -eq "x86-windows")
+{
+    $generator = "Win32"
+    $arch = "X86"
+    $sdrplay_arch = "x86"
+}
+elseif($platform -eq "arm64-windows")
+{
+    $generator = "ARM64"
+    $arch = "ARM64"
+    $sdrplay_arch = "arm64"
+}
+else
+{
+    Write-Error "Unsupported platform: $platform"
+    exit 1
+}
+
 #Setup vcpkg
 Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
@@ -23,22 +47,31 @@ cd vcpkg
 # Core packages. libxml2 is for libiio
 .\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel]
 
+
 # Entirely for UHD...
-.\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
-                                    boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
-                                    boost-assign boost-dll
+if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
+{
+    .\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
+                                        boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
+                                        boost-assign boost-dll
+}
 
 #Start Building Dependencies
 $null = mkdir build
 cd build
-$build_args="-DCMAKE_TOOLCHAIN_FILE=$($(Get-Item ..\scripts\buildsystems\vcpkg.cmake).FullName)", "-DVCPKG_TARGET_TRIPLET=$platform", "-DCMAKE_INSTALL_PREFIX=$($(Get-Item ..\installed\$platform).FullName)", "-DCMAKE_BUILD_TYPE=Release"
+$build_args="-DCMAKE_TOOLCHAIN_FILE=$($(Get-Item ..\scripts\buildsystems\vcpkg.cmake).FullName)", "-DVCPKG_TARGET_TRIPLET=$platform", "-DCMAKE_INSTALL_PREFIX=$($(Get-Item ..\installed\$platform).FullName)", "-DCMAKE_BUILD_TYPE=Release", "-A", $generator
 $standard_include=$(Get-Item ..\installed\$platform\include).FullName
 $pthread_lib=$(Get-Item ..\installed\$platform\lib\pthreadVC3.lib).FullName
 $libusb_include=$(Get-Item ..\installed\$platform\include\libusb-1.0).FullName
 $libusb_lib=$(Get-Item ..\installed\$platform\lib\libusb-1.0.lib).FullName
+if($env:PROCESSOR_ARCHITECTURE -ne $arch)
+{
+    $build_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON"
+}
 
 Write-Output "Building cpu_features..."
-git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
+#git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
+git clone https://github.com/JVital2013/cpu_features --depth 1 -b win-arm64 #Patches to fix NEON support on Windows
 cd cpu_features
 $null = mkdir build
 cd build
@@ -49,7 +82,8 @@ cd ..\..
 rm -recurse -force cpu_features
 
 Write-Output "Building Volk..."
-git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.2
+#git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.2
+git clone https://github.com/JVital2013/volk --depth 1 -b win-arm64 #Patches to fix NEON support on Windows
 cd volk
 $null = mkdir build
 cd build
@@ -103,23 +137,28 @@ cmake --install .
 cd ..\..\..\..
 rm -recurse -force hackrf
 
-Write-Output "Building LimeSuite..."
-git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
-cd LimeSuite
-$null = mkdir build-dir
-cd build-dir
-cmake $build_args -DENABLE_GUI=OFF ..
-cmake --build . --config Release
-cmake --install .
-cd ..\..
-rm -recurse -force LimeSuite
+# Not compatible with ARM at this time
+if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
+{
+    Write-Output "Building LimeSuite..."
+    git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
+    cd LimeSuite
+    $null = mkdir build-dir
+    cd build-dir
+    cmake $build_args -DENABLE_GUI=OFF ..
+    cmake --build . --config Release
+    cmake --install .
+    cd ..\..
+    rm -recurse -force LimeSuite
+}
 
 Write-Output "Building libiio..."
 git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.25
 cd libiio
+(Get-Content -raw CMakeLists.txt) -replace "check_symbol_exists\(libusb_get_version libusb.h HAS_LIBUSB_GETVERSION\)", "" | Set-Content -Encoding ASCII CMakeLists.txt #Needed for cross-compilation only
 $null = mkdir build
 cd build
-cmake $build_args -DWITH_IIOD=OFF -DWITH_TESTS=OFF -DWITH_ZSTD=ON ..
+cmake $build_args -DWITH_IIOD=OFF -DWITH_TESTS=OFF -DWITH_ZSTD=ON -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" ..
 cmake --build . --config Release
 cmake --install .
 cd ..\..
@@ -150,15 +189,22 @@ cmake --install .
 cd ..\..\..
 rm -recurse -force bladeRF
 
-Write-Output "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
-cd uhd\host
-$null = mkdir build
-cd build
-cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
-cmake --build . --config Release
-cmake --install .
-cd ..\..\..\..
+# Not compatible with ARM at this time
+if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
+{
+    Write-Output "Building UHD..."
+    git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
+    cd uhd\host
+    $null = mkdir build
+    cd build
+    cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
+    cmake --build . --config Release
+    cmake --install .
+    cd ..\..\..
+    rm -recurse -force uhd
+}
+
+cd ..
 rm -recurse -force build
 
 #Install SDRPlay API
@@ -166,8 +212,8 @@ Invoke-WebRequest -Uri "https://www.satdump.org/SDRPlay.zip" -OutFile sdrplay.zi
 mkdir sdrplay | Out-Null
 Expand-Archive sdrplay.zip .
 cp sdrplay\API\inc\*.h installed\$platform\include
-cp sdrplay\API\x64\sdrplay_api.dll installed\$platform\bin
-cp sdrplay\API\x64\sdrplay_api.lib installed\$platform\lib
+cp sdrplay\API\$sdrplay_arch\sdrplay_api.dll installed\$platform\bin
+cp sdrplay\API\$sdrplay_arch\sdrplay_api.lib installed\$platform\lib
 Remove-Item sdrplay -Force -Recurse -ErrorAction SilentlyContinue
 Remove-Item sdrplay.zip
 

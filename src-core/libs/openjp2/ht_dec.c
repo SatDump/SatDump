@@ -55,6 +55,16 @@
 #define OPJ_COMPILER_GNUC
 #endif
 
+#if defined(OPJ_COMPILER_MSVC) && defined(_M_ARM64) \
+    && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#define MSVC_NEON_INTRINSICS
+#endif
+
+#ifdef MSVC_NEON_INTRINSICS
+#include <arm64_neon.h>
+#endif
+
 //************************************************************************/
 /** @brief Displays the error message for disabling the decoding of SPP and
   * MRP passes
@@ -69,8 +79,11 @@ static OPJ_BOOL only_cleanup_pass_is_decoded = OPJ_FALSE;
 static INLINE
 OPJ_UINT32 population_count(OPJ_UINT32 val)
 {
-#ifdef OPJ_COMPILER_MSVC
+#if defined(OPJ_COMPILER_MSVC) && (defined(_M_IX86) || defined(_M_AMD64))
     return (OPJ_UINT32)__popcnt(val);
+#elif defined(OPJ_COMPILER_MSVC) && defined(MSVC_NEON_INTRINSICS)
+    const __n64 temp = neon_cnt(__uint64ToN64_v(val));
+    return neon_addv8(temp).n8_i8[0];
 #elif (defined OPJ_COMPILER_GNUC)
     return (OPJ_UINT32)__builtin_popcount(val);
 #else
