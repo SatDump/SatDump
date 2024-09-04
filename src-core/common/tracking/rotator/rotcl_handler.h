@@ -15,6 +15,8 @@ namespace rotator
 
         const int MAX_CORRUPTED_CMD = 3;
         int corrupted_cmd_count = 0;
+        float azLimits[2] = {0, 360.0};
+        float elLimits[2] = {0, 90.0};
 
     private:
         std::string command(std::string cmd, int *ret_sz);

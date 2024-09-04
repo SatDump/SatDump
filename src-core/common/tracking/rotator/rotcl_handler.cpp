@@ -118,6 +118,11 @@ namespace rotator
         if (client == nullptr)
             return ROT_ERROR_CON;
 
+        if (az < azLimits[0] || az > azLimits[1] || el < elLimits[0] || el > elLimits[1]) {
+          return ROT_ERROR_INV_ARG;
+          logger->error("Invalid azimuth or elevation value");
+        }
+
         char command_out[30];
         sprintf(command_out, "P %.2f %.2f\x0a", az, el);
         int ret_sz = 0;
@@ -148,6 +153,9 @@ namespace rotator
     {
         if (client != nullptr)
             style::beginDisabled();
+
+        ImGui::InputFloat2("Azimuth Limits", azLimits);
+        ImGui::InputFloat2("Elevation Limits", elLimits);
         ImGui::InputText("Address##rotctladdress", input_address, 100);
         ImGui::InputInt("Port##rotctlport", &input_port);
         if (client != nullptr)
