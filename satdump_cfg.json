@@ -1230,7 +1230,7 @@
                             }
                         }
                     },
-                    "4 individual_equalized": {
+                    "Thermal Channel": {
                         "equation": "ch4",
                         "individual_equalize": true,
                         "geo_correct": true,
@@ -2819,7 +2819,7 @@
                         "equation": "ch17, ch19, ch18",
                         "geo_correct": true
                     },
-                    "9.12.11": {
+                    "MERSI Airmass": {
                         "equation": "ch9, ch12, ch11",
                         "individual_equalize": true,
                         "geo_correct": true
@@ -2865,9 +2865,22 @@
                 "handler": "image_handler",
                 "name": "MERSI-LL",
                 "rgb_composites": {
-                    "338": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch3, ch3, ch8",
                         "white_balance": true,
+                        "geo_correct": true,
+                        "description": "descriptions/221.md"
+
+                    },
+                    "AVHRR 124 False Color": {
+                        "equation": "ch3, ch8, 1-ch1",
+                        "individual_equalize": true,
+                        "description": "descriptions/124.md",
+                        "geo_correct": true
+                    },
+                    "MERSI-LL Airmass": {
+                        "equation": "ch8, ch6, ch4",
+                        "individual_equalize": true,
                         "geo_correct": true
                     },
                     "IR/DNB Mix": {
