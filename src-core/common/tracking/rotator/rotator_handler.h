@@ -8,9 +8,10 @@ namespace rotator
 {
     enum rotator_status_t
     {
-        ROT_ERROR_OK = 0,  // No error
-        ROT_ERROR_CMD = 1, // Command error
-        ROT_ERROR_CON = 2, // Connection error
+        ROT_ERROR_OK = 0,       // No error
+        ROT_ERROR_CMD = 1,      // Command error
+        ROT_ERROR_CON = 2,      // Connection error
+        ROT_ERROR_INV_ARG = 3,  // Invalid argument
     };
 
     class RotatorHandler
