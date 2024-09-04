@@ -25,5 +25,7 @@ namespace ndsp
 
         void set_params(nlohmann::json p = {});
         void start();
+
+        float getFreq() { return freq; }
     };
 }

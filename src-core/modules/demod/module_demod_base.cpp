@@ -217,6 +217,7 @@ namespace demod
             nresampler.d_interpolation = final_samplerate;
             nresampler.d_decimation = d_samplerate;
             nresampler.set_input(0, next_out);
+            next_out = nresampler.get_output(0);
         }
 
         // AGC
@@ -225,7 +226,7 @@ namespace demod
         nagc.d_reference = 1;
         nagc.d_max_gain = 655536;
 
-        nagc.set_input(0, (resample && resample_here) ? nresampler.get_output(0) : (input_data_type == DATA_FILE ? nfft_splitter.get_output(0) : (d_dc_block ? ndc_blocker.get_output(0) : nfile_source.get_output(0))));
+        nagc.set_input(0, next_out);
     }
 
     std::vector<ModuleDataType> BaseDemodModule::getInputTypes()

@@ -59,29 +59,61 @@ namespace demod
         BaseDemodModule::initb(!d_resample_after_pll);
 
         // PLL
-        pll = std::make_shared<dsp::PLLCarrierTrackingBlock>(agc->output_stream, d_pll_bw, d_pll_max_offset, -d_pll_max_offset);
+        npll.d_loop_bw = d_pll_bw;
+        npll.d_max_freq = d_pll_max_offset;
+        npll.d_min_freq = -d_pll_max_offset;
+
+        npll.set_input(0, nagc.get_output(0));
+
+        std::shared_ptr<NaFiFo> next_out = npll.get_output(0);
 
         // Domain conversion
-        pm_psk = std::make_shared<dsp::PMToBPSK>(pll->output_stream,
-                                                 d_resample_after_pll ? d_samplerate : final_samplerate,
-                                                 d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset);
+        pm_psk.d_samplerate = d_resample_after_pll ? d_samplerate : final_samplerate;
+        pm_psk.d_symbolrate = d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset;
+
+        pm_psk.set_input(0, next_out);
+        next_out = pm_psk.get_output(0);
 
         if (d_resample_after_pll)
         {
-            //            resampler = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
+            nresampler.d_interpolation = final_samplerate;
+            nresampler.d_decimation = d_samplerate;
+
+            nresampler.set_input(0, next_out);
+            next_out = nresampler.get_output(0);
 
             // AGC2
-            //            agc2 = std::make_shared<dsp::AGCBlock<complex_t>>(resampler->output_stream, 0.001, 1.0, 1.0, 1000.0);
+            nagc2.d_rate = 0.001;
+            nagc2.d_reference = 1.0;
+            nagc2.d_gain = 1.0;
+            nagc2.d_max_gain = 1000;
+
+            nagc2.set_input(0, next_out);
+            next_out = nagc2.get_output(0);
         }
 
         // RRC
-        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(d_resample_after_pll ? agc2->output_stream : pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+        nrrc.d_taps = dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps);
+
+        nrrc.set_input(0, next_out);
+        next_out = nrrc.get_output(0);
 
         // Costas
-        costas = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
+        ncostas.d_loop_bw = d_loop_bw;
+        ncostas.d_order = 2;
+        ncostas.d_freq_limit = 1;
+
+        ncostas.set_input(0, next_out);
+        next_out = ncostas.get_output(0);
 
         // Clock recovery
-        rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(costas->output_stream, final_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+        nrec.d_omega = final_sps;
+        nrec.d_omega_gain = d_clock_gain_omega;
+        nrec.d_mu = d_clock_mu;
+        nrec.d_mu_gain = d_clock_gain_mu;
+        nrec.d_omega_relative_limit = d_clock_omega_relative_limit;
+
+        nrec.set_input(0, next_out);
     }
 
     PMDemodModule::~PMDemodModule()
@@ -91,11 +123,6 @@ namespace demod
 
     void PMDemodModule::process()
     {
-        if (input_data_type == DATA_FILE)
-            filesize = nfile_source.filesize(); // file_source->getFilesize();
-        else
-            filesize = 0;
-
         if (output_data_type == DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
@@ -110,62 +137,73 @@ namespace demod
 
         // Start
         BaseDemodModule::start();
-        pll->start();
-        pm_psk->start();
+
+        // TODO FIGURE OUT
+        if (input_data_type == DATA_FILE)
+            filesize = nfile_source.filesize();
+        else
+            filesize = 0;
+
+        npll.start();
+        pm_psk.start();
         if (d_resample_after_pll)
-            agc2->start();
-        rrc->start();
-        costas->start();
-        rec->start();
+            nagc2.start();
+        nrrc.start();
+        ncostas.start();
+        nrec.start();
 
         int dat_size = 0;
         while (demod_should_run())
         {
-            dat_size = rec->output_stream->read();
-
-            if (dat_size <= 0)
+            if (!nrec.outputs[0]->read())
             {
-                rec->output_stream->flush();
-                continue;
-            }
+                auto *rbuf = (ndsp::buf::StdBuf<complex_t> *)nrec.outputs[0]->read_buf();
+                dat_size = rbuf->cnt;
 
-            // Push into constellation
-            constellation.pushComplex(rec->output_stream->readBuf, dat_size);
+                if (dat_size <= 0)
+                {
+                    nrec.outputs[0]->flush();
+                    continue;
+                }
 
-            // Estimate SNR
-            snr_estimator.update(rec->output_stream->readBuf, dat_size);
-            snr = snr_estimator.snr();
+                // Push into constellation
+                constellation.pushComplex(rbuf->dat, dat_size);
 
-            if (snr > peak_snr)
-                peak_snr = snr;
+                // Estimate SNR
+                snr_estimator.update(rbuf->dat, dat_size);
+                snr = snr_estimator.snr();
 
-            // Update freq
-            display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
+                if (snr > peak_snr)
+                    peak_snr = snr;
 
-            for (int i = 0; i < dat_size; i++)
-            {
-                sym_buffer[i] = clamp(rec->output_stream->readBuf[i].real * 100);
-            }
+                // Update freq
+                display_freq = dsp::rad_to_hz(npll.getFreq(), final_samplerate);
 
-            rec->output_stream->flush();
+                for (int i = 0; i < dat_size; i++)
+                {
+                    sym_buffer[i] = clamp(rbuf->dat[i].real * 100);
+                }
 
-            if (output_data_type == DATA_FILE)
-                data_out.write((char *)sym_buffer, dat_size);
-            else
-                output_fifo->write((uint8_t *)sym_buffer, dat_size);
+                nrec.outputs[0]->flush();
 
-            if (input_data_type == DATA_FILE)
-                progress = nfile_source.filesize(); // file_source->getPosition();
+                if (output_data_type == DATA_FILE)
+                    data_out.write((char *)sym_buffer, dat_size);
+                else
+                    output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
-            // Update module stats
-            module_stats["snr"] = snr;
-            module_stats["peak_snr"] = peak_snr;
-            module_stats["freq"] = display_freq;
+                if (input_data_type == DATA_FILE)
+                    progress = nfile_source.position();
 
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                // Update module stats
+                module_stats["snr"] = snr;
+                module_stats["peak_snr"] = peak_snr;
+                module_stats["freq"] = display_freq;
+
+                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                {
+                    lastTime = time(NULL);
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                }
             }
         }
 
@@ -180,14 +218,13 @@ namespace demod
         // Stop
         BaseDemodModule::stop();
 
-        pll->stop();
-        pm_psk->stop();
+        npll.stop();
+        pm_psk.stop();
         if (d_resample_after_pll)
-            agc2->stop();
-        rrc->stop();
-        costas->stop();
-        rec->stop();
-        rec->output_stream->stopReader();
+            nagc2.stop();
+        nrrc.stop();
+        ncostas.stop();
+        nrec.stop();
 
         if (output_data_type == DATA_FILE)
             data_out.close();

@@ -135,6 +135,36 @@ namespace demod
         nrrc.d_taps = dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps);
         nrrc.set_input(0, nagc.get_output(0));
 
+        std::shared_ptr<NaFiFo> next_out = nrrc.get_output(0);
+
+        if (d_has_carrier)
+        {
+            if (constellation_type != "bpsk")
+                throw satdump_exception("For carrier mode, constellation must be BPSK!");
+
+            float d_carrier_pll_bw;
+            if (d_parameters.count("carrier_pll_bw") > 0)
+                d_carrier_pll_bw = d_parameters["carrier_pll_bw"].get<float>();
+            else
+                throw satdump_exception("Carrier PLL Bw parameter must be present!");
+
+            float d_carrier_pll_max_offset = 3.14;
+            if (d_parameters.count("carrier_pll_max_offset") > 0)
+                d_carrier_pll_max_offset = d_parameters["carrier_pll_max_offset"].get<float>();
+
+            // PLL
+            ncarrier_pll.d_loop_bw = d_carrier_pll_bw;
+            ncarrier_pll.d_max_freq = d_carrier_pll_max_offset;
+            ncarrier_pll.d_min_freq = -d_carrier_pll_max_offset;
+
+            ncarrier_pll.set_input(0, next_out);
+            next_out = ncarrier_pll.get_output(0);
+
+            // DC
+            ncarrier_dc.set_input(0, next_out);
+            next_out = ncarrier_dc.get_output(0);
+        }
+
         // PLL
         float costas_max_offset = d_has_carrier ? 0.2 : 1.0; // The offset in frequency should already be resolved on AM subcarriers
         if (d_parameters.count("costas_max_offset") > 0)
@@ -149,7 +179,20 @@ namespace demod
         else if (constellation_type == "8psk")
             npll.d_order = 8;
 
-        npll.set_input(0, nrrc.get_output(0));
+        npll.set_input(0, next_out);
+        next_out = npll.get_output(0);
+
+        if (d_post_costas_dc_blocking)
+        {
+            npost_pll_dc.set_input(0, next_out);
+            next_out = npost_pll_dc.get_output(0);
+        }
+
+        if (is_oqpsk)
+        {
+            ndelay.set_input(0, next_out);
+            next_out = ndelay.get_output(0);
+        }
 
         // Clock recovery
         nrec.d_omega = final_sps;
@@ -158,7 +201,7 @@ namespace demod
         nrec.d_mu_gain = d_clock_gain_mu;
         nrec.d_omega_relative_limit = d_clock_omega_relative_limit;
 
-        nrec.set_input(0, npll.get_output(0));
+        nrec.set_input(0, next_out);
 #endif
     }
 
@@ -170,7 +213,7 @@ namespace demod
     void PSKDemodModule::process()
     {
         if (input_data_type == DATA_FILE)
-            filesize = nfile_source.filesize(); // file_source->getFilesize();
+            filesize = nfile_source.filesize();
         else
             filesize = 0;
 
@@ -192,22 +235,22 @@ namespace demod
 
         // TODO FIGURE IT OUT
         if (input_data_type == DATA_FILE)
-            filesize = nfile_source.filesize(); // file_source->getFilesize();
+            filesize = nfile_source.filesize();
         else
             filesize = 0;
 
-        nrrc.start(); // rrc->start();
-        // if (d_has_carrier)
-        // {
-        //     carrier_pll->start();
-        //     carrier_dc->start();
-        // }
-        npll.start(); // pll->start();
-        // if (d_post_costas_dc_blocking)
-        //     post_pll_dc->start();
-        // if (is_oqpsk)
-        //    delay->start();
-        nrec.start(); // rec->start();
+        nrrc.start();
+        if (d_has_carrier)
+        {
+            ncarrier_pll.start();
+            ncarrier_dc.start();
+        }
+        npll.start();
+        if (d_post_costas_dc_blocking)
+            npost_pll_dc.start();
+        if (is_oqpsk)
+            ndelay.start();
+        nrec.start();
 
         int dat_size = 0;
         while (demod_should_run())
@@ -215,44 +258,44 @@ namespace demod
             if (!nrec.outputs[0]->read())
             {
                 auto *rbuf = (ndsp::buf::StdBuf<complex_t> *)nrec.outputs[0]->read_buf();
-                dat_size = rbuf->cnt; // rec->output_stream->read();
+                dat_size = rbuf->cnt;
 
                 if (dat_size <= 0)
                 {
-                    nrec.outputs[0]->flush(); // rec->output_stream->flush();
+                    nrec.outputs[0]->flush();
                     continue;
                 }
 
                 // Push into constellation
-                constellation.pushComplex(/*rec->output_stream->readBuf*/ rbuf->dat, dat_size);
+                constellation.pushComplex(rbuf->dat, dat_size);
 
                 // Estimate SNR
-                snr_estimator.update(/*rec->output_stream->readBuf*/ rbuf->dat, dat_size);
+                snr_estimator.update(rbuf->dat, dat_size);
                 snr = snr_estimator.snr();
 
                 if (snr > peak_snr)
                     peak_snr = snr;
 
                 // Update freq
-                //            display_freq = dsp::rad_to_hz(pll->getFreq(), final_samplerate);
+                display_freq = dsp::rad_to_hz(npll.getFreq(), final_samplerate);
 
                 if (is_bpsk) // BPSK Only uses the Q branch... So don't output useless data
                 {
                     for (int i = 0; i < dat_size; i++)
                     {
-                        sym_buffer[i] = clamp(/*rec->output_stream->readBuf*/ rbuf->dat[i].real * 50);
+                        sym_buffer[i] = clamp(rbuf->dat[i].real * 50);
                     }
                 }
                 else // Otherwise, for all other consts, we need both
                 {
                     for (int i = 0; i < dat_size; i++)
                     {
-                        sym_buffer[i * 2] = clamp(/*rec->output_stream->readBuf*/ rbuf->dat[i].real * 100);
-                        sym_buffer[i * 2 + 1] = clamp(/*rec->output_stream->readBuf*/ rbuf->dat[i].imag * 100);
+                        sym_buffer[i * 2] = clamp(rbuf->dat[i].real * 100);
+                        sym_buffer[i * 2 + 1] = clamp(rbuf->dat[i].imag * 100);
                     }
                 }
 
-                nrec.outputs[0]->flush(); // rec->output_stream->flush();
+                nrec.outputs[0]->flush();
 
                 if (output_data_type == DATA_FILE)
                     data_out.write((char *)sym_buffer, is_bpsk ? dat_size : dat_size * 2);
@@ -265,7 +308,7 @@ namespace demod
                 module_stats["freq"] = display_freq;
 
                 if (input_data_type == DATA_FILE)
-                    progress = nfile_source.position(); // file_source->getPosition();
+                    progress = nfile_source.position();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
                     lastTime = time(NULL);
@@ -285,19 +328,17 @@ namespace demod
         // Stop
         BaseDemodModule::stop();
 
-        nrrc.stop(); // rrc->stop();
-        // if (d_has_carrier)
-        // {
-        //     carrier_pll->stop();
-        //     carrier_dc->stop();
-        // }
-        npll.stop(); // pll->stop();
-                     // if (d_post_costas_dc_blocking)
-                     //     post_pll_dc->stop();
-                     // if (is_oqpsk)
-                     //     delay->stop();
-                     // rec->stop();
-                     // rec->output_stream->stopReader();
+        nrrc.stop();
+        if (d_has_carrier)
+        {
+            ncarrier_pll.stop();
+            ncarrier_dc.stop();
+        }
+        npll.stop();
+        if (d_post_costas_dc_blocking)
+            npost_pll_dc.stop();
+        if (is_oqpsk)
+            ndelay.stop();
         nrec.stop();
 
         if (output_data_type == DATA_FILE)

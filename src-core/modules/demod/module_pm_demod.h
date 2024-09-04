@@ -7,17 +7,30 @@
 #include "common/dsp/pll/pll_carrier_tracking.h"
 #include "common/dsp/demod/pm_to_bpsk.h"
 
+#include "common/ndsp/filter/fir.h"
+#include "common/ndsp/pll/pll_carrier_tracking.h"
+#include "common/ndsp/pll/costas_loop.h"
+#include "common/ndsp/clock/clock_recovery_mm.h"
+#include "common/ndsp/demod/pm_to_bpsk.h"
+
 namespace demod
 {
     class PMDemodModule : public BaseDemodModule
     {
     protected:
-        std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
-        std::shared_ptr<dsp::PMToBPSK> pm_psk;
-        std::shared_ptr<dsp::AGCBlock<complex_t>> agc2;
-        std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
-        std::shared_ptr<dsp::CostasLoopBlock> costas;
-        std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
+        //  std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
+        //  std::shared_ptr<dsp::PMToBPSK> pm_psk;
+        //  std::shared_ptr<dsp::AGCBlock<complex_t>> agc2;
+        //  std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
+        //  std::shared_ptr<dsp::CostasLoopBlock> costas;
+        //  std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;
+
+        ndsp::PLLCarrierTracking npll;
+        ndsp::PMToBPSK pm_psk;
+        ndsp::Agc<complex_t> nagc2;
+        ndsp::FIRFilter<complex_t> nrrc;
+        ndsp::CostasLoop ncostas;
+        ndsp::ClockRecoveryMM<complex_t> nrec;
 
         bool d_resample_after_pll = false;
 

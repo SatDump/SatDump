@@ -30,9 +30,15 @@ namespace ndsp
         max_freq = d_max_freq;
         min_freq = d_min_freq;
         damping = 0;
-        loop_bw = loop_bw;
+        loop_bw = d_loop_bw;
         phase = 0;
         freq = 0;
+
+        damping = sqrtf(2.0f) / 2.0f;
+
+        float denom = (1.0 + 2.0 * damping * loop_bw + loop_bw * loop_bw);
+        alpha = (4 * damping * loop_bw) / denom;
+        beta = (4 * loop_bw * loop_bw) / denom;
     }
 
     void PLLCarrierTracking::work()

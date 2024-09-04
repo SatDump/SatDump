@@ -10,6 +10,8 @@
 #include "common/ndsp/filter/fir.h"
 #include "common/ndsp/pll/costas_loop.h"
 #include "common/ndsp/clock/clock_recovery_mm.h"
+#include "common/ndsp/demod/delay_one_imag.h"
+#include "common/ndsp/pll/pll_carrier_tracking.h"
 
 namespace demod
 {
@@ -17,7 +19,11 @@ namespace demod
     {
     protected:
         ndsp::FIRFilter<complex_t> nrrc;
+        ndsp::PLLCarrierTracking ncarrier_pll;
+        ndsp::CorrectIQ<complex_t> ncarrier_dc;
         ndsp::CostasLoop npll;
+        ndsp::CorrectIQ<complex_t> npost_pll_dc;
+        ndsp::DelayOneImag ndelay;
         ndsp::ClockRecoveryMM<complex_t> nrec;
 
         // std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
