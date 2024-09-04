@@ -75,6 +75,11 @@ namespace rotator
         std::string vaddress = getValueOrDefault(settings["address"], std::string(input_address));
         memcpy(input_address, vaddress.data(), vaddress.size());
         input_port = getValueOrDefault(settings["port"], input_port);
+
+        azLimits[0] = getValueOrDefault(settings["az_min"], 0);
+        azLimits[1] = getValueOrDefault(settings["az_max"], 360);
+        elLimits[0] = getValueOrDefault(settings["el_min"], 0);
+        elLimits[1] = getValueOrDefault(settings["el_max"], 90);
     }
 
     nlohmann::json RotctlHandler::get_settings()
@@ -82,6 +87,10 @@ namespace rotator
         nlohmann::json v;
         v["address"] = std::string(input_address);
         v["port"] = input_port;
+        v["az_min"] = azLimits[0];
+        v["az_max"] = azLimits[1];
+        v["el_min"] = elLimits[0];
+        v["el_max"] = elLimits[1];
         return v;
     }
 
