@@ -328,6 +328,7 @@ void OverlayHandler::set_config(nlohmann::json in, bool status)
         setValueIfExists(in["draw_shores_overlay"], draw_shores_overlay);
         setValueIfExists(in["draw_cities_overlay"], draw_cities_overlay);
         setValueIfExists(in["draw_latlon_overlay"], draw_latlon_overlay);
+        setValueIfExists(in["draw_qth_overlay"], draw_qth_overlay);
     }
     setValueIfExists(in["cities_scale"], cities_size);
 }
