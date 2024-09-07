@@ -346,11 +346,11 @@ namespace demod
         {
             ImGuiStyle &style = ImGui::GetStyle();
             ImVec2 cur_pos = ImGui::GetCursorPos();
-            cur_pos.x = ImGui::GetWindowSize().x - ImGui::CalcTextSize("Abort").x - style.FramePadding.x * 2.0f - style.WindowPadding.x;
+            cur_pos.x = ImGui::GetContentRegionMax().x - ImGui::CalcTextSize("Abort").x - style.FramePadding.x * 2.0f;
             cur_pos.y -= 20.0f * ui_scale + style.ItemSpacing.y;
             ImGui::SetCursorPos(cur_pos);
             ImGui::PushStyleColor(ImGuiCol_Button, style::theme.red.Value);
-            if (ImGui::Button("Abort##demodstop", ImVec2(0, 20)))
+            if (ImGui::Button("Abort##demodstop", ImVec2(0.0f, 20.0f * ui_scale)))
                 demod_should_stop = true;
             ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())
