@@ -40,8 +40,9 @@ else
 #Setup vcpkg
 Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
-git clone --depth 1 https://github.com/microsoft/vcpkg
+git clone https://github.com/microsoft/vcpkg
 cd vcpkg
+git checkout 68d3499
 .\bootstrap-vcpkg.bat
 
 # Core packages. libxml2 is for libiio
@@ -70,9 +71,9 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 }
 
 Write-Output "Building cpu_features..."
-#git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
-git clone https://github.com/JVital2013/cpu_features --depth 1 -b win-arm64 #Patches to fix NEON support on Windows
+git clone https://github.com/google/cpu_features
 cd cpu_features
+git checkout 6aecde5
 $null = mkdir build
 cd build
 cmake $build_args -DBUILD_TESTING=OFF -DBUILD_EXECUTABLE=OFF ..
