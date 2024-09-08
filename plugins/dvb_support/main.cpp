@@ -1,6 +1,7 @@
 #include "core/plugin.h"
 #include "logger.h"
 #include "core/module.h"
+#include "common/cpu_features.h"
 
 #include "dvbs/module_dvbs_demod.h"
 #include "dvbs2/module_dvbs2_demod.h"
@@ -16,6 +17,13 @@ public:
 
     void init()
     {
+#ifdef DVB_HAS_SSE41
+        if (!cpu_features::get_cpu_features().CPU_X86_SSE41)
+        {
+            logger->error("CPU Does not support SSE4_1. Extension plugin NOT loading!");
+            return;
+        }
+#endif
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
     }
 

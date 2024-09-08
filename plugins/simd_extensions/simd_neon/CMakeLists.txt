@@ -40,5 +40,5 @@ if(NEON_FOUND)
 
     install(TARGETS simd_neon DESTINATION lib/satdump/plugins)
 else()
-    message("NEON Features not found! This is only an error on x86 CPUs that should support NEON")
+    message("NEON Features not found! This is only an error on ARM CPUs that should support NEON")
 endif()
