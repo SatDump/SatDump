@@ -42,11 +42,11 @@
     "TableRowBgAlt": "#EEEEEEFF",
     "TableHeaderBg": "#FFB0001D",
     "PlotHistogram": "010081FF",
-    "PlotLines": "00FF00FF"
+    "PlotLines": "000000FF"
   },
   "SatDumpColors": {
     "red": "#BF0000FF",
-    "green": "#0F8000FF",
+    "green": "#000000FF",
     "blue": "#000080FF",
     "yellow": "#8C4512FF",
     "orange": "#BF800DFF",
@@ -56,12 +56,12 @@
     "lavender": "#505080FF",
     "light_green": "#338033FF",
     "light_cyan": "#008080FF",
-    "constellation": "#00FF00FF",
-    "widget_bg": "#000000FF",
+    "constellation": "#000000FF",
+    "widget_bg": "#FFFFFFFF",
     "frame_bg": "#FFFFFFFF",
     "overlay_bg": "#FFFFFFB5",
     "freq_highlight": "#98BAE1BF",
-    "plot_bg": "#000000FF",
-    "fft_graduations": "#D0D0D0FF"
+    "plot_bg": "#FFFFFFFF",
+    "fft_graduations": "#888888FF"
   }
 }
