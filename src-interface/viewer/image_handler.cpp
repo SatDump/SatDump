@@ -84,6 +84,7 @@ namespace satdump
 
         config::main_cfg["user"]["viewer_state"]["products_handler"][products->instrument_name]["overlay_cfg"] = overlay_handler.get_config();
         config::saveUserConfig();
+        delete[] scale_buffer;
     }
 
     void ImageViewerHandler::updateImage()
@@ -473,22 +474,53 @@ namespace satdump
 
                 if (show_scale && active_channel_calibrated && products->get_calibration_type(active_channel_id))
                 {
+                    if(scale_has_update)
+                        updateImageTexture(scale_texture_id, scale_buffer, 25, 512);
+
                     int w = ImGui::GetWindowSize()[0];
-                    ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-                    ImGui::SetWindowSize(ImVec2(100 * ui_scale, 520 * ui_scale));
-                    ImGui::SetWindowPos(ImVec2(w + 20 * ui_scale, 50 * ui_scale), ImGuiCond_Once);
-                    scale_view.draw(ImVec2(22 * ui_scale, 460 * ui_scale));
-                    ImGui::SameLine();
-                    ImGui::BeginGroup();
-                    int y = ImGui::GetCursorPosY();
-                    std::pair<double, double> actual_ranges = is_temp ? temp_ranges[active_channel_id] : radiance_ranges[active_channel_id];
-                    for (int i = 0; i < 10; i++)
+                    if(ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
                     {
-                        ImGui::SetCursorPosY(y + i * 49 * ui_scale);
-                        ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second) / 9.0);
+                        ImGui::SetWindowSize(ImVec2(100 * ui_scale, 520 * ui_scale));
+                        ImGui::SetWindowPos(ImVec2(w + 20 * ui_scale, 50 * ui_scale), ImGuiCond_Once);
+
+                        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+                        float num_height = ImGui::CalcTextSize("0").y;
+                        float scale_height = (460 * ui_scale) - num_height;
+                        float start_y = ImGui::GetCursorPosY();
+                        float graduation_start_y = ImGui::GetCursorScreenPos().y + (num_height / 2);
+                        float graduation_start_x = ImGui::GetCursorScreenPos().x + (22 * ui_scale);
+                        float graduation_length = ImGui::GetStyle().ItemSpacing.x * 0.75f;
+
+                        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + num_height / 2);
+                        ImGui::Image((void *)(intptr_t)scale_texture_id, ImVec2(22 * ui_scale, scale_height));
+                        ImGui::SameLine();
+                        ImGui::SetCursorPosY(start_y);
+                        ImGui::BeginGroup();
+
+                        std::pair<double, double> actual_ranges = is_temp ? temp_ranges[active_channel_id] : radiance_ranges[active_channel_id];
+                        float step_difference = std::abs(actual_ranges.first - actual_ranges.second) / 9;
+                        float step_height = (scale_height - 1) / 9;
+                        float start_step;
+                        if (invert_image)
+                        {
+                            start_step = actual_ranges.first;
+                            step_difference = 0.0f - step_difference;
+                        }
+                        else
+                            start_step = actual_ranges.second;
+
+                        for (int i = 0; i < 10; i++)
+                        {
+                            ImGui::SetCursorPosY(start_y + i * step_height);
+                            ImGui::Text("%.3f", start_step - i * step_difference);
+                            draw_list->AddLine(ImVec2(graduation_start_x, graduation_start_y + i * step_height),
+                                ImVec2(graduation_start_x + graduation_length, graduation_start_y + i * step_height),
+                                style::theme.fft_graduations, 1.0 * ui_scale);
+                        }
+
+                        ImGui::EndGroup();
+                        ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
                     }
-                    ImGui::EndGroup();
-                    ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
                     ImGui::End();
                 }
 
@@ -831,31 +863,34 @@ namespace satdump
     void ImageViewerHandler::updateScaleImage()
     {
         scale_image = image::Image(16, 25, 512, 3);
-        for (int i = 0; i < 512; i++)
+        for (size_t i = 0; i < 512; i++)
         {
-            for (int x = 0; x < 25; x++)
+            std::vector<double> color = { double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0 };
+            if (using_lut)
             {
-                std::vector<double> color = {double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0};
-
-                if (using_lut)
-                {
-                    uint16_t val = color[0] * lut_image.width();
-                    if (val >= lut_image.width())
-                        val = lut_image.width() - 1;
-                    color[0] = lut_image.getf(0, val);
-                    color[1] = lut_image.getf(1, val);
-                    color[2] = lut_image.getf(2, val);
-                }
-
-                scale_image.draw_pixel(x, i, color);
+                uint16_t val = color[0] * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                color[0] = lut_image.getf(0, val);
+                color[1] = lut_image.getf(1, val);
+                color[2] = lut_image.getf(2, val);
             }
+
+            for (int x = 0; x < 25; x++)
+                scale_image.draw_pixel(x, i, color);
         }
 
         if (invert_image)
             scale_image.mirror(false, true);
 
-        scale_view.update(scale_image);
-        scale_view.allow_zoom_and_move = false;
+        if (scale_texture_id == 0)
+        {
+            scale_texture_id = makeImageTexture();
+            scale_buffer = new uint32_t[25 * 512];
+        }
+
+        image::image_to_rgba(scale_image, scale_buffer);
+        scale_has_update = true;
     }
 
     void ImageViewerHandler::updateCorrectionFactors(bool first)

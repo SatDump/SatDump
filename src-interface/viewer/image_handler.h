@@ -63,7 +63,9 @@ namespace satdump
         bool is_temp = false;
         bool show_scale = false;
         image::Image scale_image; // 512x25
-        ImageViewWidget scale_view;
+        unsigned int scale_texture_id = 0;
+        uint32_t *scale_buffer = nullptr;
+        bool scale_has_update = false;
 
         // LUT
         bool using_lut = false;
