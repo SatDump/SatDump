@@ -500,19 +500,11 @@ namespace satdump
                         std::pair<double, double> actual_ranges = is_temp ? temp_ranges[active_channel_id] : radiance_ranges[active_channel_id];
                         float step_difference = std::abs(actual_ranges.first - actual_ranges.second) / 9;
                         float step_height = (scale_height - 1) / 9;
-                        float start_step;
-                        if (invert_image)
-                        {
-                            start_step = actual_ranges.first;
-                            step_difference = 0.0f - step_difference;
-                        }
-                        else
-                            start_step = actual_ranges.second;
 
                         for (int i = 0; i < 10; i++)
                         {
                             ImGui::SetCursorPosY(start_y + i * step_height);
-                            ImGui::Text("%.3f", start_step - i * step_difference);
+                            ImGui::Text("%.3f", actual_ranges.second - i * step_difference);
                             draw_list->AddLine(ImVec2(graduation_start_x, graduation_start_y + i * step_height),
                                 ImVec2(graduation_start_x + graduation_length, graduation_start_y + i * step_height),
                                 style::theme.fft_graduations, 1.0 * ui_scale);
