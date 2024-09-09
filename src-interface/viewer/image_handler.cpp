@@ -400,13 +400,13 @@ namespace satdump
 
             if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
-                ImVec4 *colors = ImGui::GetStyle().Colors;
+                ImGuiStyle &imgui_style = ImGui::GetStyle();
                 int to_pop = 0;
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, colors[ImGuiCol_TabActive]);
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[ImGuiCol_TabHovered]);
+                    ImGui::PushStyleColor(ImGuiCol_Button, imgui_style.Colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, imgui_style.Colors[ImGuiCol_TabHovered]);
                     to_pop += 2;
                 }
                 if (!active_channel_calibrated)
@@ -420,8 +420,8 @@ namespace satdump
 
                 if (show_scale && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, colors[ImGuiCol_TabActive]);
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[ImGuiCol_TabHovered]);
+                    ImGui::PushStyleColor(ImGuiCol_Button, imgui_style.Colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, imgui_style.Colors[ImGuiCol_TabHovered]);
                     to_pop += 2;
                 }
                 if (!products->get_calibration_type(active_channel_id))
@@ -489,7 +489,7 @@ namespace satdump
                         float start_y = ImGui::GetCursorPosY();
                         float graduation_start_y = ImGui::GetCursorScreenPos().y + (num_height / 2);
                         float graduation_start_x = ImGui::GetCursorScreenPos().x + (22 * ui_scale);
-                        float graduation_length = ImGui::GetStyle().ItemSpacing.x * 0.75f;
+                        float graduation_length = imgui_style.ItemSpacing.x * 0.75f;
 
                         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + num_height / 2);
                         ImGui::Image((void *)(intptr_t)scale_texture_id, ImVec2(22 * ui_scale, scale_height));
@@ -507,7 +507,7 @@ namespace satdump
                             ImGui::Text("%.3f", actual_ranges.second - i * step_difference);
                             draw_list->AddLine(ImVec2(graduation_start_x, graduation_start_y + i * step_height),
                                 ImVec2(graduation_start_x + graduation_length, graduation_start_y + i * step_height),
-                                style::theme.fft_graduations, 1.0 * ui_scale);
+                                ImGui::ColorConvertFloat4ToU32(imgui_style.Colors[ImGuiCol_TextDisabled]), 1.0 * ui_scale);
                         }
 
                         ImGui::EndGroup();

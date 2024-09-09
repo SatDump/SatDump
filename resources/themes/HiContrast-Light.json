@@ -59,6 +59,7 @@
     "constellation": "#000000FF",
     "widget_bg": "#FFFFFFFF",
     "frame_bg": "#FFFFFFFF",
+    "notification_bg": "#D4D4D4C8",
     "overlay_bg": "#FFFFFFB5",
     "freq_highlight": "#98BAE1BF",
     "plot_bg": "#FFFFFFFF",

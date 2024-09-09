@@ -7,7 +7,6 @@ namespace style
 {
     struct Theme
     {
-        bool light_mode = false;
         std::string font = "Roboto-Medium";
         float font_size = 16.0f;
 
@@ -28,6 +27,7 @@ namespace style
         ImColor fft_graduations;
         ImColor widget_bg;
         ImColor frame_bg;
+        ImColor notification_bg;
         ImColor overlay_bg;
         ImColor freq_highlight;
     };

@@ -55,6 +55,7 @@
     "widget_bg": "#000000FF",
     "plot_bg": "#130F00FF",
     "fft_graduations": "#FFCC0066",
+    "notification_bg": "#2A2A2A64",
     "frame_bg": "#111111FF",
     "overlay_bg": "#000000B5",
     "freq_highlight": "#FFCC004C"

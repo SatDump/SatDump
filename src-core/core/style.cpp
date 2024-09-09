@@ -232,6 +232,7 @@ namespace style
                 {"widget_bg", &Theme::widget_bg},
                 {"frame_bg", &Theme::frame_bg},
                 {"overlay_bg", &Theme::overlay_bg},
+                {"notification_bg", &Theme::notification_bg},
                 {"freq_highlight", &Theme::freq_highlight}
             };
 
