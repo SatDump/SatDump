@@ -86,9 +86,6 @@ namespace satdump
 
     void updateTLEFile(std::string path)
     {
-        std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
-        std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
-
         try
         {
             if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
@@ -100,23 +97,15 @@ namespace satdump
             return;
         }
 
+        std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
+        std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
         bool success = true;
         TLERegistry new_registry;
 
-        for (int norad : norads_to_fetch)
-        {
-            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
-            while (url_str.find("%NORAD%") != std::string::npos)
-                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
-            urls_to_fetch.push_back(url_str);
-        }
-
         for (auto &url_str : urls_to_fetch)
         {
-
             logger->info(url_str);
             std::string result;
-
             int http_res = 1, trials = 0;
             while (http_res == 1 && trials < 10)
             {
@@ -142,23 +131,63 @@ namespace satdump
             }
         }
 
-        if (success)
+        if (!success)
         {
-            std::ofstream outfile(path, std::ios::trunc);
-            for (TLE &tle : new_registry)
-                outfile << tle.name << std::endl
-                        << tle.line1 << std::endl
-                        << tle.line2 << std::endl
-                        << std::endl;
-            outfile.close();
-            general_tle_registry = new_registry;
-            config::main_cfg["user"]["tles_last_updated"] = time(NULL);
-            config::saveUserConfig();
-            logger->info("%zu TLEs loaded!", new_registry.size());
-            eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
-        }
-        else
             logger->error("Error updating TLEs. Not updated.");
+            return;
+        }
+
+        for (int norad : norads_to_fetch)
+        {
+            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
+            while (url_str.find("%NORAD%") != std::string::npos)
+                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
+
+            logger->info(url_str);
+            std::string result;
+            int http_res = 1, trials = 0;
+            while (http_res == 1 && trials < 10)
+            {
+                if ((http_res = perform_http_request(url_str, result)) != 1)
+                {
+                    std::istringstream tle_stream(result);
+                    success = parseTLEStream(tle_stream, new_registry) > 0;
+                }
+                else
+                    success = false;
+                trials++;
+                if (!success)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    logger->info("Failed getting TLEs. Retrying...");
+                }
+            }
+
+            if (!success)
+            {
+                std::optional<TLE> old_tle = general_tle_registry.get_from_norad(norad);
+                if (old_tle.has_value())
+                {
+                    logger->warn("Error updating TLE for %d. Using old record", norad);
+                    new_registry.push_back(old_tle.value());
+                }
+                else
+                    logger->error("Error updating TLE for %d. Ignoring!", norad);
+            }
+        }
+
+        std::ofstream outfile(path, std::ios::trunc);
+        for (TLE &tle : new_registry)
+            outfile << tle.name << std::endl
+                    << tle.line1 << std::endl
+                    << tle.line2 << std::endl
+                    << std::endl;
+        outfile.close();
+        general_tle_registry = new_registry;
+        config::main_cfg["user"]["tles_last_updated"] = time(NULL);
+        config::saveUserConfig();
+        logger->info("%zu TLEs loaded!", new_registry.size());
+        eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
     void autoUpdateTLE(std::string path)
