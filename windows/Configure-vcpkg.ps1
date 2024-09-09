@@ -142,15 +142,17 @@ rm -recurse -force hackrf
 if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
 {
     Write-Output "Building LimeSuite..."
+    Invoke-WebRequest -Uri "https://www.satdump.org/FX3-SDK.zip" -OutFile FX3-SDK.zip
+    Expand-Archive FX3-SDK.zip .
     git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
     cd LimeSuite
     $null = mkdir build-dir
     cd build-dir
-    cmake $build_args -DENABLE_GUI=OFF ..
+    cmake $build_args -DENABLE_GUI=OFF -DFX3_SDK_PATH="$($(Get-Item ..\..\FX3-SDK).FullName)" ..
     cmake --build . --config Release
     cmake --install .
     cd ..\..
-    rm -recurse -force LimeSuite
+    rm -recurse -force LimeSuite, FX3-SDK, FX3-SDK.zip
 }
 
 Write-Output "Building libiio..."
