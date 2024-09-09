@@ -26,6 +26,9 @@ namespace rotator
         virtual bool is_connected() = 0;
         virtual void connect() = 0;
         virtual void disconnect() = 0;
+    public:
+      std::array<float, 2> azLimits = {0, 360.0};
+      std::array<float, 2> elLimits = {0, 90.0};
     };
 
     struct RotatorHandlerOption

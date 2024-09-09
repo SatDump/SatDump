@@ -163,8 +163,8 @@ namespace rotator
         if (client != nullptr)
             style::beginDisabled();
 
-        ImGui::InputFloat2("Azimuth Limits", azLimits);
-        ImGui::InputFloat2("Elevation Limits", elLimits);
+        ImGui::InputFloat2("Azimuth Limits", azLimits.data());
+        ImGui::InputFloat2("Elevation Limits", elLimits.data());
         ImGui::InputText("Address##rotctladdress", input_address, 100);
         ImGui::InputInt("Port##rotctlport", &input_port);
         if (client != nullptr)
