@@ -7,6 +7,7 @@
 #include "core/pipeline.h"
 #include "common/widgets/stepped_slider.h"
 #include "common/widgets/frequency_input.h"
+#include <math.h>
 
 #include "main_ui.h"
 
@@ -15,6 +16,8 @@
 #include "processing.h"
 
 #include "resources.h"
+
+#include "sys/statvfs.h"
 
 namespace satdump
 {
@@ -542,6 +545,42 @@ namespace satdump
                         ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
                     else
                         ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
+#ifdef __linux__;
+                    int ret = statvfs("/", &buffer);
+                    available = (double)(buffer.f_bfree * buffer.f_frsize);
+                    ImGui::Text("Free Space: %.2f GB", available / pow(1024,3));
+#endif      
+                    switch(baseband_format)
+                    {   
+                        case dsp::CF_32:
+                            timeleft = available / (8*get_samplerate());
+                            break;
+                        case dsp::CS_16:
+                            timeleft = available / (4*get_samplerate());
+                            break;
+                        case dsp::WAV_16:
+                            timeleft = available / (4*get_samplerate());
+                            break;
+                        case dsp::CS_8:
+                            timeleft = available / (2*get_samplerate());
+                            break;
+                        case dsp::CU_8:
+                            timeleft = available / (2*get_samplerate());
+                            break;
+                    }
+
+                    day = timeleft / (24 * 3600); 
+  
+                    timeleft = timeleft % (24 * 3600); 
+                    hour = timeleft / 3600; 
+
+                    timeleft %= 3600; 
+                    minutes = timeleft / 60 ; 
+
+                    timeleft %= 60; 
+                    seconds = timeleft; 
+                    ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
+
 
 #ifdef BUILD_ZIQ
                     if (baseband_format == dsp::ZIQ)

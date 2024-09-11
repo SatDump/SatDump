@@ -19,6 +19,7 @@
 #include "core/live_pipeline.h"
 
 #include "tracking/tracking_widget.h"
+#include "sys/statvfs.h"
 
 namespace satdump
 {
@@ -140,6 +141,14 @@ namespace satdump
         TrackingWidget *tracking_widget = nullptr;
         bool show_tracking = false;
         bool tracking_started_cli = false;
+
+        struct statvfs buffer;
+        double available;
+        int timeleft;
+        int day = 0;
+        int hour = 0;
+        int minutes = 0;
+        int seconds = 0;
 
         // Debug
         widgets::ConstellationViewer *constellation_debug = nullptr;
