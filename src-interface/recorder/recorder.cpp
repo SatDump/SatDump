@@ -549,7 +549,7 @@ namespace satdump
                     int ret = statvfs("/", &buffer);
                     available = (double)(buffer.f_bfree * buffer.f_frsize);
                     ImGui::Text("Free Space: %.2f GB", available / pow(1024,3));
-#endif      
+      
                     switch(baseband_format)
                     {   
                         case dsp::CF_32:
@@ -580,7 +580,7 @@ namespace satdump
                     timeleft %= 60; 
                     seconds = timeleft; 
                     ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
-
+#endif
 
 #ifdef BUILD_ZIQ
                     if (baseband_format == dsp::ZIQ)
