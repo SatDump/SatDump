@@ -1,6 +1,6 @@
 {
     "integral_s_link": {
-        "name": "Integral S-band donwlink",
+        "name": "Integral S-band downlink",
         "live": true,
         "live_cfg": [
             [
