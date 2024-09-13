@@ -90,8 +90,9 @@ namespace dsp
 #ifdef BUILD_ZIQ2
             if (format == ZIQ2)
                 input_file.seekg(4);
+            else
 #endif
-            else if (is_wav)
+            if (is_wav)
                 input_file.seekg(sizeof(wav::WavHeader));
             else if (is_rf64)
                 input_file.seekg(sizeof(wav::RF64Header));
