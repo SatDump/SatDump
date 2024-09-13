@@ -86,6 +86,7 @@ namespace dsp
 #ifdef BUILD_ZIQ
             if (format == ZIQ)
                 ziqReader = std::make_shared<ziq::ziq_reader>(input_file);
+            else
 #endif
 #ifdef BUILD_ZIQ2
             if (format == ZIQ2)
