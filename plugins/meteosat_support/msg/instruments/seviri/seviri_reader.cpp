@@ -8,6 +8,10 @@
 #include "../../msg.h"
 #include "common/utils.h"
 
+#include "core/config.h"
+#include "common/thread_priority.h"
+#include "products/processor/image_processor.h"
+
 namespace lrit
 {
     std::string timestamp_to_string2(double timestamp);
@@ -42,12 +46,36 @@ namespace meteosat
 
             lines_since_last_end = 0;
             not_channels_lines = 0;
+
+            // Automatic composite generation
+            if (satdump::config::main_cfg["viewer"]["instruments"].contains("seviri") &&
+                satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+                can_make_composites = true;
+
+            if (can_make_composites)
+                compositeGeneratorThread = std::thread(&SEVIRIReader::compositeThreadFunc, this);
         }
 
         SEVIRIReader::~SEVIRIReader()
         {
             if (textureID > 0)
                 delete[] textureBuffer;
+
+            if (can_make_composites)
+            {
+                int queue_size;
+                do
+                {
+                    compo_queue_mtx.lock();
+                    queue_size = compo_queue.size();
+                    compo_queue_mtx.unlock();
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                } while (queue_size > 0);
+
+                composite_th_should_run = false;
+                if (compositeGeneratorThread.joinable())
+                    compositeGeneratorThread.join();
+            }
         }
 
         void SEVIRIReader::saveImages()
@@ -59,24 +87,24 @@ namespace meteosat
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directories(directory);
 
-            satdump::ImageProducts seviri_products;
+            satdump::ImageProducts *seviri_products = new satdump::ImageProducts();
 
-            seviri_products.set_product_timestamp(last_timestamp);
+            seviri_products->set_product_timestamp(last_timestamp);
 
             int scid = most_common(all_scids.begin(), all_scids.end(), 0);
 
             if (scid == METEOSAT_8_SCID)
-                seviri_products.set_product_source("MSG-1");
+                seviri_products->set_product_source("MSG-1");
             else if (scid == METEOSAT_9_SCID)
-                seviri_products.set_product_source("MSG-2");
+                seviri_products->set_product_source("MSG-2");
             else if (scid == METEOSAT_10_SCID)
-                seviri_products.set_product_source("MSG-3");
+                seviri_products->set_product_source("MSG-3");
             else if (scid == METEOSAT_11_SCID)
-                seviri_products.set_product_source("MSG-4");
+                seviri_products->set_product_source("MSG-4");
 
-            seviri_products.instrument_name = "seviri";
-            seviri_products.has_timestamps = false;
-            seviri_products.bit_depth = 10;
+            seviri_products->instrument_name = "seviri";
+            seviri_products->has_timestamps = false;
+            seviri_products->bit_depth = 10;
 
             int ch_offsets[12] = {
                 0,
@@ -96,7 +124,7 @@ namespace meteosat
             for (int i = 0; i < 11; i++)
             {
                 images_nrm[i].mirror(true, true);
-                seviri_products.images.push_back({"SEVIRI-" + std::to_string(i + 1),
+                seviri_products->images.push_back({"SEVIRI-" + std::to_string(i + 1),
                                                   std::to_string(i + 1),
                                                   images_nrm[i],
                                                   {},
@@ -107,15 +135,72 @@ namespace meteosat
             }
 
             images_hrv.mirror(true, true);
-            seviri_products.images.push_back({"SEVIRI-12", "12", images_hrv, {}, -1, -1, ch_offsets[11]});
+            seviri_products->images.push_back({"SEVIRI-12", "12", images_hrv, {}, -1, -1, ch_offsets[11]});
             images_hrv.fill(0);
 
-            seviri_products.save(directory);
+            seviri_products->save(directory);
+            if (can_make_composites)
+            {
+                // We do NOT want to overload our queue and run out of RAM...
+                {
+                    int queue_size;
+                    do
+                    {
+                        compo_queue_mtx.lock();
+                        queue_size = compo_queue.size();
+                        compo_queue_mtx.unlock();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    } while (queue_size > 50);
+                }
+
+                compo_queue_mtx.lock();
+                compo_queue.push_back({ seviri_products, directory });
+                compo_queue_mtx.unlock();
+            }
+            else
+            {
+                delete seviri_products;
+            }
 
             is_saving = false;
         }
 
-        void SEVIRIReader::work(int scid, ccsds::CCSDSPacket &pkt)
+        void SEVIRIReader::compositeThreadFunc()
+        {
+            setLowestThreadPriority();
+            while (composite_th_should_run)
+            {
+                compo_queue_mtx.lock();
+                int queue_size = compo_queue.size();
+                compo_queue_mtx.unlock();
+
+                if (queue_size == 0)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    continue;
+                }
+
+                compo_queue_mtx.lock();
+                satdump::ImageProducts* pro = (satdump::ImageProducts*)compo_queue[0].first;
+                std::string pro_path = compo_queue[0].second;
+                compo_queue.erase(compo_queue.begin());
+                compo_queue_mtx.unlock();
+
+                try
+                {
+                    satdump::process_image_products((satdump::Products*)pro, pro_path);
+                    delete pro;
+                    pro = nullptr;
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Error trying to autogen MSG composites! : %s", e.what());
+                    delete pro;
+                }
+            }
+        }
+
+        void SEVIRIReader::work(int scid, ccsds::CCSDSPacket& pkt)
         {
             int scan_chunk_number = pkt.header.packet_sequence_count % 16;
             double scan_timestamp = 0;
@@ -203,7 +288,7 @@ namespace meteosat
             }
             else if (scan_chunk_number < 15)
             {
-                uint16_t tmp_buf[15000];
+                uint16_t *tmp_buf = new uint16_t[15000];
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_buf);
 
                 int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
@@ -224,10 +309,11 @@ namespace meteosat
                 not_channels_lines = lines;
 
                 pkt.payload.resize(14392 - 6);
+                delete[] tmp_buf;
             }
             else
             {
-                uint16_t tmp_buf[15000];
+                uint16_t *tmp_buf = new uint16_t[15000];
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_buf);
 
                 int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
@@ -240,6 +326,7 @@ namespace meteosat
 
                 lines++;
                 not_channels_lines = lines;
+                delete[] tmp_buf;
             }
         }
     }

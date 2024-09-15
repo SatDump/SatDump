@@ -3,6 +3,8 @@
 #include "common/ccsds/ccsds.h"
 #include "common/image/image.h"
 #include <string>
+#include <thread>
+#include <mutex>
 
 namespace meteosat
 {
@@ -20,6 +22,15 @@ namespace meteosat
 
             double last_timestamp = 0;
             std::vector<int> all_scids;
+
+        private:
+            std::thread compositeGeneratorThread;
+            bool can_make_composites;
+            bool composite_th_should_run = true;
+            void compositeThreadFunc();
+
+            std::mutex compo_queue_mtx;
+            std::vector<std::pair<void*, std::string>> compo_queue;
 
         public:
             int lines_since_last_end;

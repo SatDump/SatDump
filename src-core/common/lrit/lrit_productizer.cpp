@@ -486,11 +486,13 @@ namespace lrit
                             saveJsonFile(file_for_cache, filecache);
 
                         delete pro;
+                        pro = nullptr;
                     }
                 }
                 catch (std::exception &e)
                 {
                     logger->error("Error trying to autogen composites! %s", e.what());
+                    delete pro;
                 }
             }
             else
