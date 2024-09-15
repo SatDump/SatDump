@@ -30,7 +30,7 @@ function Parse-DumpBin($binary_path)
     return $return_val
 }
 
-cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..\out\build\x64-Debug"
+cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..\out\build\$($platform.Split("-")[0])-Debug"
 
 #Remove old dirs
 if(Test-Path Debug\resources -ErrorAction SilentlyContinue) {rm -Recurse Debug\resources}
@@ -90,15 +90,15 @@ foreach($dll_to_copy in $dlls_to_copy)
 }
 
 #Overwrite debug DLLs
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\libpng16d.dll Debug\libpng16.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\fftw3f.dll Debug\fftw3f.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\glfw3.dll Debug\glfw3.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\jpeg62.dll Debug\jpeg62.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\tiffd.dll Debug\tiff.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\liblzma.dll Debug\liblzma.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\libcurl-d.dll Debug\libcurl.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\libusb-1.0.dll Debug\libusb-1.0.dll
-cp -force ..\..\..\vcpkg\installed\x64-windows\debug\bin\pthreadVC3d.dll Debug\pthreadVC3.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libpng16d.dll Debug\libpng16.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\fftw3f.dll Debug\fftw3f.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\glfw3.dll Debug\glfw3.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\jpeg62.dll Debug\jpeg62.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\tiffd.dll Debug\tiff.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\liblzma.dll Debug\liblzma.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libcurl-d.dll Debug\libcurl.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libusb-1.0.dll Debug\libusb-1.0.dll
+cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\pthreadVC3d.dll Debug\pthreadVC3.dll
 
 #Remove stray DLLs from plugin folder, if they're there
 rm Debug\plugins\fftw3f.dll | Out-Null
