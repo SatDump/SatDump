@@ -116,6 +116,12 @@ if(PLUGIN_WSF OR PLUGINS_ALL)
   add_subdirectory(wsf_support)
 endif()
 
+option(PLUGIN_AWS "Enable the AWS (Sterna) support plugin" OFF)
+
+if(PLUGIN_AWS OR PLUGINS_ALL)
+  add_subdirectory(aws_support)
+endif()
+
 option(PLUGIN_MATS "Enable the MATS support plugin" OFF)
 
 if(PLUGIN_MATS OR PLUGINS_ALL)

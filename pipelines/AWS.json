@@ -41,7 +41,9 @@
                     "rs_i": 5
                 }
             },
-            "products": {}
+            "products": {
+                "aws_instruments": {}
+            }
         }
     }
 }
