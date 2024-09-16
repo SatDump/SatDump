@@ -106,13 +106,13 @@
         "disk_space_warning": {
             "type": "bool",
             "value": false,
-            "name": "Remaining disk space warning",
+            "name": "Recorder: Remaining disk space warning",
             "description": "Warn user in case of low remaining disk space during baseband recording"
         },
         "remaining_disk_space_time": {
             "type": "int",
-            "value": 1,
-            "name": "Time for disk space warning (in seconds)",
+            "value": 30,
+            "name": "Recorder: Time for disk space warning (in seconds)",
             "description": "Defines the time when should the user be warned about not enough disk space"
         }
     },

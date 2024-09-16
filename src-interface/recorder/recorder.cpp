@@ -17,20 +17,24 @@
 
 #include "resources.h"
 
-#include "sys/statvfs.h"
+#ifdef _MSC_VER
+#include <fileapi.h>
+#else
+#include <sys/statvfs.h>
+#endif
 
 namespace satdump
 {
     RecorderApplication::RecorderApplication()
         : Application("recorder"), pipeline_selector(true)
     {
-        dsp::registerAllSources();
-
         automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
         hdd_warning = config::main_cfg["user_interface"]["disk_space_warning"]["value"].get<bool>();
-        remaining_disk_space_time = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<int>();
+        remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
+        load_recording_path();
+        dsp::registerAllSources();
         sources = dsp::getAllAvailableSources();
 
         for (dsp::SourceDescriptor src : sources)
@@ -547,12 +551,19 @@ namespace satdump
                         ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
                     else
                         ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
-#ifdef __linux__
-                    const char *rec_path = recording_path.c_str();
-                    statvfs(rec_path, &buffer);
-                    available = (double)(buffer.f_bfree * buffer.f_frsize);
+
+#ifdef _MSC_VER
+                    ULARGE_INTEGER bytes_available;
+                    GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL);
+                    double available = bytes_available.QuadPart;
+#else
+                    struct statvfs buffer = statvfs(recording_path.c_str(), &buffer);
+                    double available = (double)(buffer.f_bfree * buffer.f_frsize);
+#endif
+
                     ImGui::Text("Free Space: %.2f GB", available / pow(1024, 3));
 
+                    unsigned int timeleft;
                     switch (baseband_format)
                     {
                     case dsp::CF_32:
@@ -570,23 +581,22 @@ namespace satdump
                     case dsp::CU_8:
                         timeleft = available / (2 * get_samplerate());
                         break;
-                    case dsp::ZIQ:
-                        // TODO
-                        break;
+
+                        //TODO: ZIQ, ZIQ2
                     }
                     //ImGui::Text("Seconds left: %08d" ,timeleft);
                     if (baseband_format != dsp::ZIQ)
                     {
-                        day = timeleft / (24 * 3600);
+                        int day = timeleft / (24 * 3600);
 
                         timeleft = timeleft % (24 * 3600);
-                        hour = timeleft / 3600;
+                        int hour = timeleft / 3600;
 
                         timeleft %= 3600;
-                        minutes = timeleft / 60;
+                        int minutes = timeleft / 60;
 
                         timeleft %= 60;
-                        seconds = timeleft;
+                        int seconds = timeleft;
                         ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
                     }
                     if (hdd_warning && (remaining_disk_space_time > timeleft) && !been_warned && is_recording)
@@ -594,7 +604,6 @@ namespace satdump
                         logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
                         been_warned = true;
                     }
-#endif
 
 #ifdef BUILD_ZIQ
                     if (baseband_format == dsp::ZIQ)

@@ -230,19 +230,7 @@ namespace satdump
     void RecorderApplication::start_recording()
     {
         splitter->set_enabled("record", true);
-
-        //std::string 
-        recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
-#if defined(_MSC_VER)
-        recording_path += "\\";
-#elif defined(__ANDROID__)
-        if (recording_path == ".")
-            recording_path = "/storage/emulated/0";
-        recording_path += "/";
-#else
-        recording_path += "/";
-#endif
-
+        load_recording_path();
         std::string filename = recording_path + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
         recorder_filename = file_sink->start_recording(filename, get_samplerate());
         logger->info("Recording to " + recorder_filename);
@@ -258,6 +246,20 @@ namespace satdump
             recorder_filename = "";
             is_recording = false;
         }
+    }
+
+    void RecorderApplication::load_recording_path()
+    {
+        recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+#if defined(_MSC_VER)
+        recording_path += "\\";
+#elif defined(__ANDROID__)
+        if (recording_path == ".")
+            recording_path = "/storage/emulated/0";
+        recording_path += "/";
+#else
+        recording_path += "/";
+#endif
     }
 
     void RecorderApplication::try_init_tracking_widget()
