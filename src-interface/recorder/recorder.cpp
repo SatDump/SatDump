@@ -574,7 +574,7 @@ namespace satdump
                         // TODO
                         break;
                     }
-                    ImGui::Text("Seconds left: %08d" ,timeleft);
+                    //ImGui::Text("Seconds left: %08d" ,timeleft);
                     if (baseband_format != dsp::ZIQ)
                     {
                         day = timeleft / (24 * 3600);
