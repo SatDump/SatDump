@@ -545,46 +545,45 @@ namespace satdump
                         ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
                     else
                         ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
-#ifdef __linux__;   
-                    const char* rec_path = recording_path.c_str();
+#ifdef __linux__;
+                    const char *rec_path = recording_path.c_str();
                     statvfs(rec_path, &buffer);
                     available = (double)(buffer.f_bfree * buffer.f_frsize);
-                    ImGui::Text("Free Space: %.2f GB", available / pow(1024,3));
+                    ImGui::Text("Free Space: %.2f GB", available / pow(1024, 3));
 
-                    switch(baseband_format)
-                    {   
-                        case dsp::CF_32:
-                            timeleft = available / (8*get_samplerate());
-                            break;
-                        case dsp::CS_16:
-                            timeleft = available / (4*get_samplerate());
-                            break;
-                        case dsp::WAV_16:
-                            timeleft = available / (4*get_samplerate());
-                            break;
-                        case dsp::CS_8:
-                            timeleft = available / (2*get_samplerate());
-                            break;
-                        case dsp::CU_8:
-                            timeleft = available / (2*get_samplerate());
-                            break;
-                        case dsp::ZIQ:
-                            //TODO
-                            break;
-
+                    switch (baseband_format)
+                    {
+                    case dsp::CF_32:
+                        timeleft = available / (8 * get_samplerate());
+                        break;
+                    case dsp::CS_16:
+                        timeleft = available / (4 * get_samplerate());
+                        break;
+                    case dsp::WAV_16:
+                        timeleft = available / (4 * get_samplerate());
+                        break;
+                    case dsp::CS_8:
+                        timeleft = available / (2 * get_samplerate());
+                        break;
+                    case dsp::CU_8:
+                        timeleft = available / (2 * get_samplerate());
+                        break;
+                    case dsp::ZIQ:
+                        // TODO
+                        break;
                     }
                     if (baseband_format != dsp::ZIQ)
                     {
-                        day = timeleft / (24 * 3600); 
-    
-                        timeleft = timeleft % (24 * 3600); 
-                        hour = timeleft / 3600; 
+                        day = timeleft / (24 * 3600);
 
-                        timeleft %= 3600; 
-                        minutes = timeleft / 60 ; 
+                        timeleft = timeleft % (24 * 3600);
+                        hour = timeleft / 3600;
 
-                        timeleft %= 60; 
-                        seconds = timeleft; 
+                        timeleft %= 3600;
+                        minutes = timeleft / 60;
+
+                        timeleft %= 60;
+                        seconds = timeleft;
                         ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
                     }
 #endif
