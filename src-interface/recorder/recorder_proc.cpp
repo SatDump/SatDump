@@ -231,7 +231,8 @@ namespace satdump
     {
         splitter->set_enabled("record", true);
 
-        std::string recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+        //std::string 
+        recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
 #if defined(_MSC_VER)
         recording_path += "\\";
 #elif defined(__ANDROID__)

@@ -102,6 +102,7 @@ namespace satdump
         float panel_ratio = 0.2;
         float last_width = -1.0f;
 
+        std::string recording_path;
         std::string recorder_filename;
         dsp::BasebandType baseband_format;
 
@@ -143,8 +144,8 @@ namespace satdump
         bool tracking_started_cli = false;
 
         struct statvfs buffer;
-        double available;
-        int timeleft;
+        double available = 0;
+        int timeleft = 0;
         int day = 0;
         int hour = 0;
         int minutes = 0;
