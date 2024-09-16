@@ -50,7 +50,8 @@ namespace aws
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                    sterna_reader.work(pkt);
+                    if(pkt.header.apid == 100)
+                        sterna_reader.work(pkt);
             }
 
             progress = data_in.tellg();
