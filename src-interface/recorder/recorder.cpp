@@ -30,7 +30,6 @@ namespace satdump
     {
         automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
-        hdd_warning = config::main_cfg["user_interface"]["disk_space_warning"]["value"].get<bool>();
         remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
         load_recording_path();
@@ -554,55 +553,65 @@ namespace satdump
 
 #ifdef _MSC_VER
                     ULARGE_INTEGER bytes_available;
-                    GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL);
-                    double available = bytes_available.QuadPart;
+                    if(GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
+                    {
+                        double available = bytes_available.QuadPart;
 #else
-                    struct statvfs buffer = statvfs(recording_path.c_str(), &buffer);
-                    double available = (double)(buffer.f_bfree * buffer.f_frsize);
+                    struct statvfs stat_buffer;
+                    if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
+                    {
+                        double available = (double)(stat_buffer.f_bfree * stat_buffer.f_frsize);
 #endif
 
-                    ImGui::Text("Free Space: %.2f GB", available / pow(1024, 3));
+                        ImGui::Text("Free Space: %.2f GB", available / pow(1024, 3));
 
-                    unsigned int timeleft;
-                    switch (baseband_format)
-                    {
-                    case dsp::CF_32:
-                        timeleft = available / (8 * get_samplerate());
-                        break;
-                    case dsp::CS_16:
-                        timeleft = available / (4 * get_samplerate());
-                        break;
-                    case dsp::WAV_16:
-                        timeleft = available / (4 * get_samplerate());
-                        break;
-                    case dsp::CS_8:
-                        timeleft = available / (2 * get_samplerate());
-                        break;
-                    case dsp::CU_8:
-                        timeleft = available / (2 * get_samplerate());
-                        break;
+                        unsigned int timeleft;
+                        switch (baseband_format)
+                        {
+                        case dsp::CF_32:
+                            timeleft = available / (8 * get_samplerate());
+                            break;
+                        case dsp::CS_16:
+                            timeleft = available / (4 * get_samplerate());
+                            break;
+                        case dsp::WAV_16:
+                            timeleft = available / (4 * get_samplerate());
+                            break;
+                        case dsp::CS_8:
+                            timeleft = available / (2 * get_samplerate());
+                            break;
+                        case dsp::CU_8:
+                            timeleft = available / (2 * get_samplerate());
+                            break;
+                        }
 
-                        //TODO: ZIQ, ZIQ2
-                    }
-                    //ImGui::Text("Seconds left: %08d" ,timeleft);
-                    if (baseband_format != dsp::ZIQ)
-                    {
-                        int day = timeleft / (24 * 3600);
+#ifdef BUILD_ZIQ
+                        if (baseband_format != dsp::ZIQ)
+#endif
+                        {
+#ifdef BUILD_ZIQ2
+                            if (baseband_format != dsp::ZIQ2)
+#endif
+                            {
+                                int day = timeleft / (24 * 3600);
 
-                        timeleft = timeleft % (24 * 3600);
-                        int hour = timeleft / 3600;
+                                timeleft = timeleft % (24 * 3600);
+                                int hour = timeleft / 3600;
 
-                        timeleft %= 3600;
-                        int minutes = timeleft / 60;
+                                timeleft %= 3600;
+                                int minutes = timeleft / 60;
 
-                        timeleft %= 60;
-                        int seconds = timeleft;
-                        ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
-                    }
-                    if (hdd_warning && (remaining_disk_space_time > timeleft) && !been_warned && is_recording)
-                    {
-                        logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
-                        been_warned = true;
+                                timeleft %= 60;
+                                int seconds = timeleft;
+                                ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
+
+                                if (remaining_disk_space_time > timeleft && !been_warned && is_recording)
+                                {
+                                    logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
+                                    been_warned = true;
+                                }
+                            }
+                        }
                     }
 
 #ifdef BUILD_ZIQ

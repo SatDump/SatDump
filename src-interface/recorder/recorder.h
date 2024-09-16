@@ -122,7 +122,6 @@ namespace satdump
         std::string sdr_select_string;
 
         bool processing_modules_floating_windows = false;
-        bool hdd_warning = false;
         int remaining_disk_space_time = 0;
         bool been_warned = false;
 
