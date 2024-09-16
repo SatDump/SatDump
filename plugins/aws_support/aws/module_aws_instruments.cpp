@@ -112,7 +112,7 @@ namespace aws
             sterna_products.set_timestamps(sterna_reader.timestamps);
             sterna_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json")));
 
-            for (int i = 0; i < 17; i++)
+            for (int i = 0; i < 19; i++)
                 sterna_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), sterna_reader.getChannel(i)});
 
             sterna_products.save(directory);
