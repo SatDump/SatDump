@@ -3706,6 +3706,24 @@
                         "individual_equalize": true
                     }
                 }
+            },
+            "sterna": {
+                "handler": "image_handler",
+                "name": "EPS Sterna Radiometer",
+                "rgb_composites": {
+                    "AMSU False Color": {
+                        "equation": "ch4, ch2, ch1",
+                        "individual_equalize": true
+                    },
+                    "Sterna Microwave Airmass": {
+                        "equation": "ch15,ch14,ch13",
+                        "individual_equalize": true
+                    },
+                    "Sterna 325 GHz Airmass": {
+                        "equation": "ch19,ch18,ch17",
+                        "individual_equalize": true
+                    }
+                }
             }
         }
     }
