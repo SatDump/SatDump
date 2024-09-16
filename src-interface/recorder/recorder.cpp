@@ -183,6 +183,24 @@ namespace satdump
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        disk_mon_thr = std::thread([this]() {
+            while (run_disk_mon)
+            {
+#ifdef _MSC_VER
+                ULARGE_INTEGER bytes_available;
+                if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
+                    disk_available = bytes_available.QuadPart;
+#else
+                struct statvfs stat_buffer;
+                if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
+                    disk_available = stat_buffer.f_bfree * stat_buffer.f_frsize
+#endif
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            }
+        });
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
         eventBus->register_handler<RecorderSetFrequencyEvent>([this](const RecorderSetFrequencyEvent &evt)
                                                               { set_frequency(evt.frequency); });
 
@@ -250,6 +268,10 @@ namespace satdump
             delete tracking_widget;
         if (constellation_debug != nullptr)
             delete constellation_debug;
+
+        run_disk_mon = false;
+        if (disk_mon_thr.joinable())
+            disk_mon_thr.join();
     }
 
     void RecorderApplication::drawUI()
@@ -551,66 +573,51 @@ namespace satdump
                     else
                         ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
 
-#ifdef _MSC_VER
-                    ULARGE_INTEGER bytes_available;
-                    if(GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
+                    ImGui::Text("Free Space: %.2f GB", disk_available / pow(1024, 3));
+                    unsigned int timeleft;
+                    switch (baseband_format)
                     {
-                        double available = bytes_available.QuadPart;
-#else
-                    struct statvfs stat_buffer;
-                    if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
-                    {
-                        double available = (double)(stat_buffer.f_bfree * stat_buffer.f_frsize);
-#endif
-
-                        ImGui::Text("Free Space: %.2f GB", available / pow(1024, 3));
-
-                        unsigned int timeleft;
-                        switch (baseband_format)
-                        {
-                        case dsp::CF_32:
-                            timeleft = available / (8 * get_samplerate());
-                            break;
-                        case dsp::CS_16:
-                            timeleft = available / (4 * get_samplerate());
-                            break;
-                        case dsp::WAV_16:
-                            timeleft = available / (4 * get_samplerate());
-                            break;
-                        case dsp::CS_8:
-                            timeleft = available / (2 * get_samplerate());
-                            break;
-                        case dsp::CU_8:
-                            timeleft = available / (2 * get_samplerate());
-                            break;
-                        }
-
+                    case dsp::CF_32:
+                        timeleft = disk_available / (8 * get_samplerate());
+                        break;
+                    case dsp::CS_16:
+                        timeleft = disk_available / (4 * get_samplerate());
+                        break;
+                    case dsp::WAV_16:
+                        timeleft = disk_available / (4 * get_samplerate());
+                        break;
+                    case dsp::CS_8:
+                        timeleft = disk_available / (2 * get_samplerate());
+                        break;
+                    case dsp::CU_8:
+                        timeleft = disk_available / (2 * get_samplerate());
+                        break;
+                    }
 #ifdef BUILD_ZIQ
-                        if (baseband_format != dsp::ZIQ)
+                    if (baseband_format != dsp::ZIQ)
+#endif
+                    {
+#ifdef BUILD_ZIQ2
+                        if (baseband_format != dsp::ZIQ2)
 #endif
                         {
-#ifdef BUILD_ZIQ2
-                            if (baseband_format != dsp::ZIQ2)
-#endif
+                            if (is_recording && remaining_disk_space_time > timeleft && !been_warned)
                             {
-                                int day = timeleft / (24 * 3600);
-
-                                timeleft = timeleft % (24 * 3600);
-                                int hour = timeleft / 3600;
-
-                                timeleft %= 3600;
-                                int minutes = timeleft / 60;
-
-                                timeleft %= 60;
-                                int seconds = timeleft;
-                                ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
-
-                                if (remaining_disk_space_time > timeleft && !been_warned && is_recording)
-                                {
-                                    logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
-                                    been_warned = true;
-                                }
+                                logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
+                                been_warned = true;
                             }
+
+                            int day = timeleft / (24 * 3600);
+
+                            timeleft = timeleft % (24 * 3600);
+                            int hour = timeleft / 3600;
+
+                            timeleft %= 3600;
+                            int minutes = timeleft / 60;
+
+                            timeleft %= 60;
+                            int seconds = timeleft;
+                            ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
                         }
                     }
 

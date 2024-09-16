@@ -123,7 +123,10 @@ namespace satdump
 
         bool processing_modules_floating_windows = false;
         int remaining_disk_space_time = 0;
+        std::atomic<uint64_t> disk_available = 0;
         bool been_warned = false;
+        bool run_disk_mon = true;
+        std::thread disk_mon_thr;
 
         bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
