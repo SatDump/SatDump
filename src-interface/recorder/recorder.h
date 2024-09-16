@@ -101,6 +101,7 @@ namespace satdump
         float panel_ratio = 0.2;
         float last_width = -1.0f;
 
+        std::string recording_path;
         std::string recorder_filename;
         dsp::BasebandType baseband_format;
 
@@ -121,6 +122,11 @@ namespace satdump
         std::string sdr_select_string;
 
         bool processing_modules_floating_windows = false;
+        int remaining_disk_space_time = 0;
+        std::atomic<uint64_t> disk_available = 0;
+        bool been_warned = false;
+        bool run_disk_mon = true;
+        std::thread disk_mon_thr;
 
         bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
@@ -180,6 +186,7 @@ namespace satdump
 
         void start_recording();
         void stop_recording();
+        void load_recording_path();
 
         void try_init_tracking_widget();
 

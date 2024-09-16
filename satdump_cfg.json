@@ -102,6 +102,12 @@
             "value": false,
             "name": "Advanced Mode",
             "description": "Allows full editing of all SatDump options. Be warned: invalid configurations\nmay result in crashes, corruption of data, and more. Use at your own risk!"
+        },
+        "remaining_disk_space_time": {
+            "type": "int",
+            "value": 30,
+            "name": "Recorder: Time for disk space warning (in seconds)",
+            "description": "Defines the time when should the user be warned about not enough disk space.\nSet to 0 to disable"
         }
     },
     // More generic SatDump settings

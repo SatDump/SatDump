@@ -1,0 +1,24 @@
+{
+    "ace_s_link": {
+        "name": "ACE S-band downlink",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 175.3e3,
+                    "pll_bw": 0.002,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001
+                }
+            }
+        }
+    }
+}   
