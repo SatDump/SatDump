@@ -574,7 +574,7 @@ namespace satdump
                         ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
 
                     ImGui::Text("Free Space: %.2f GB", disk_available / pow(1024, 3));
-                    unsigned int timeleft;
+                    int timeleft;
                     switch (baseband_format)
                     {
                     case dsp::CF_32:
@@ -591,6 +591,10 @@ namespace satdump
                         break;
                     case dsp::CU_8:
                         timeleft = disk_available / (2 * get_samplerate());
+                        break;
+                    default:
+                        // Silence GCC warns
+                        timeleft = 0;
                         break;
                     }
 #ifdef BUILD_ZIQ
