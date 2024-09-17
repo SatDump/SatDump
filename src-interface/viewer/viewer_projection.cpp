@@ -120,11 +120,21 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
             {
-                ui_thread_pool.push([this](int)
-                                    { 
+                auto fun = [this](int)
+                {
                     logger->info("Update projection...");
-                    generateProjectionImage();
-                    logger->info("Done"); });
+                    try
+                    {
+                        generateProjectionImage();
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Lego should be happy!\n%s", e.what());
+                        projections_are_generating = false;
+                    }
+                    logger->info("Done");
+                };
+                ui_thread_pool.push(fun);
             }
             if (projections_are_generating)
             {
