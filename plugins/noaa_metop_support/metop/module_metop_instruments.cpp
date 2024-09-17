@@ -465,6 +465,8 @@ namespace metop
                 gome_products.has_timestamps = true;
                 gome_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 gome_products.set_timestamps(gome_reader.timestamps);
+                gome_products.set_tle(satellite_tle);
+                gome_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json")));
                 gome_products.save_as_matrix = true;
 
                 for (int i = 0; i < 6144; i++)

@@ -15,6 +15,8 @@
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 
+#include "common/widgets/json_editor.h"
+
 namespace satdump
 {
     int osm_url_regex_len = 0;
@@ -386,6 +388,13 @@ namespace satdump
                             style::endDisabled();
                         }
                         ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
+
+                        ImGui::Separator();
+                        auto js = image::get_metadata_proj_cfg(layer.img);
+                        widgets::JSONTableEditor(js, "THEJSONEDITOR");
+                        image::set_metadata_proj_cfg(layer.img, js);
+                        ImGui::Separator();
+
                         ImGui::EndGroup();
                     }
                     ImGui::EndGroup();
