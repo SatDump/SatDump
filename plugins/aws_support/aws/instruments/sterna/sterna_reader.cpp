@@ -2,7 +2,7 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 
-#include "common/utils.h"
+#include <cstdio>
 
 namespace aws
 {
@@ -74,7 +74,10 @@ namespace aws
                     double timestamp = parseCUC(wip_full_pkt.data() + 191);
                     timestamps.push_back(timestamp);
 
-                    printf("%s\n", timestamp_to_string(timestamp).c_str());
+                    //                    printf("%d - ", int(wip_full_pkt[44] << 8 | wip_full_pkt[45]));
+                    //                    printf("%d - ", int(wip_full_pkt[46] << 8 | wip_full_pkt[47]));
+                    //                    printf("%d - ", int(wip_full_pkt[48] << 8 | wip_full_pkt[49]));
+                    //                    printf("%d\n", int(wip_full_pkt[50] << 8 | wip_full_pkt[51]));
                 }
                 wip_full_pkt.clear();
             }

@@ -7,8 +7,15 @@
 #include "libs/sol2/sol.hpp"
 #include "init.h"
 
+#include "core/config.h"
+
+bool scription_plugin_trigger_pipeline_done_processing = true;
+
 void pipeline_done_processing_callback(const satdump::events::PipelineDoneProcessingEvent &evt)
 {
+    if (!scription_plugin_trigger_pipeline_done_processing)
+        return;
+
     std::string script_path = satdump::user_path + "/scripts/pipeline_done_processing.lua";
 
     if (std::filesystem::exists(script_path))
@@ -48,6 +55,21 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<satdump::events::PipelineDoneProcessingEvent>(pipeline_done_processing_callback);
+        satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
+    }
+
+    static void renderConfig()
+    {
+        ImGui::Checkbox("Trigger Pipeline Done Processing", &scription_plugin_trigger_pipeline_done_processing);
+    }
+
+    static void save()
+    {
+    }
+
+    static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
+    {
+        evt.plugin_config_handlers.push_back({"Scripting Plugin", ScriptingSupport::renderConfig, ScriptingSupport::save});
     }
 };
 
