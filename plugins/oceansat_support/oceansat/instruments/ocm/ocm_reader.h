@@ -18,7 +18,7 @@ namespace oceansat
             ~OCMReader();
             int lines;
             void work(uint8_t *buffer);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace avhrr
 } // namespace noaa

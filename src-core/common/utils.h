@@ -11,12 +11,19 @@
 #include <optional>
 #include <chrono>
 
+#ifdef _MSC_VER
+#define timegm _mkgmtime
+#endif
+
 void char_array_to_uchar(int8_t *in, uint8_t *out, int nsamples);
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples);
 
 template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
-T most_common(InputIt begin, InputIt end)
+T most_common(InputIt begin, InputIt end, T def)
 {
+    if (begin == end)
+        return def;
+
     std::map<T, int> counts;
     for (InputIt it = begin; it != end; ++it)
     {
@@ -125,8 +132,10 @@ uint64_t getFilesize(std::string filepath);
 
 // Perform a HTTP Request on the provided URL and return the result as a string
 int perform_http_request(std::string url, std::string &result);
+// Perform a HTTP Request on the provided URL and return the result as a string, with POST data
+int perform_http_request_post(std::string url_str, std::string &result, std::string post_req);
 
-std::string timestamp_to_string(double timestamp);
+std::string timestamp_to_string(double timestamp, bool local = false);
 
 inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 {
@@ -137,8 +146,6 @@ inline std::vector<float> double_buffer_to_float(double *ptr, int size)
 }
 
 double get_median(std::vector<double> values);
-
-extern "C" time_t mktime_utc(const struct tm *timeinfo_utc); // Already in libpredict!
 
 template <typename T>
 std::vector<uint8_t> unsigned_to_bitvec(T v)
@@ -202,3 +209,15 @@ inline double getTime()
 std::string loadFileToString(std::string path);
 std::string ws2s(const std::wstring &wstr);
 std::wstring s2ws(const std::string &str);
+
+std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, std::string pipeline_name, std::string folder = "");
+std::string prepareBasebandFileName(double timeValue_precise, uint64_t samplerate, uint64_t frequency);
+
+void hsv_to_rgb(float h, float s, float v, uint8_t *rgb);
+
+inline int ensureIs2Multiple(int v)
+{
+    if (v % 2 == 1)
+        v++;
+    return v;
+}

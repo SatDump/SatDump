@@ -12,7 +12,7 @@ void USRPSource::set_gains()
 void USRPSource::open_sdr()
 {
     uhd::device_addrs_t devlist = uhd::device::find(uhd::device_addr_t());
-    usrp_device = uhd::usrp::multi_usrp::make(devlist[d_sdr_id]);
+    usrp_device = uhd::usrp::multi_usrp::make(devlist[std::stoi(d_sdr_id)]);
 
     // uhd::meta_range_t master_clock_range = usrp_device->get_master_clock_rate_range();
     // usrp_device->set_master_clock_rate(master_clock_range.stop());
@@ -29,7 +29,7 @@ void USRPSource::open_sdr()
 void USRPSource::open_channel()
 {
     if (channel >= (int)usrp_device->get_rx_num_channels())
-        throw std::runtime_error("Channel " + std::to_string(channel) + " is invalid!");
+        throw satdump_exception("Channel " + std::to_string(channel) + " is invalid!");
 
     logger->info("Using USRP channel %d", channel);
 
@@ -86,11 +86,12 @@ void USRPSource::open_channel()
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);
 
-    usrp_antennas = usrp_device->get_rx_antennas();
+    usrp_antennas = usrp_device->get_rx_antennas(channel);
     antenna_option_str = "";
     for (int i = 0; i < (int)usrp_antennas.size(); i++)
     {
         antenna_option_str += usrp_antennas[i] + '\0';
+        logger->trace("USRP has antenna option %s", usrp_antennas[i].c_str());
     }
 }
 
@@ -148,7 +149,7 @@ void USRPSource::start()
     usrp_device->set_rx_bandwidth(current_samplerate, channel);
 
     if (antenna >= (int)usrp_device->get_rx_antennas(channel).size())
-        throw std::runtime_error("Antenna " + std::to_string(antenna) + " is invalid!");
+        throw satdump_exception("Antenna " + std::to_string(antenna) + " is invalid!");
 
     usrp_device->set_rx_antenna(usrp_antennas[antenna], channel);
 
@@ -168,10 +169,11 @@ void USRPSource::start()
         sargs.otw_format = "sc16";
 
     usrp_streamer = usrp_device->get_rx_stream(sargs);
-    usrp_streamer->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
 
     thread_should_run = true;
     work_thread = std::thread(&USRPSource::mainThread, this);
+
+    usrp_streamer->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
 }
 
 void USRPSource::stop()
@@ -244,7 +246,7 @@ void USRPSource::drawControlUI()
 void USRPSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 0))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t USRPSource::get_samplerate()
@@ -262,7 +264,7 @@ std::vector<dsp::SourceDescriptor> USRPSource::getAvailableSources()
     for (const uhd::device_addr_t &dev : devlist)
     {
         std::string type = dev.has_key("product") ? dev["product"] : dev["type"];
-        results.push_back({"usrp", "USRP " + type + " " + dev["serial"], i});
+        results.push_back({"usrp", "USRP " + type + " " + dev["serial"], std::to_string(i)});
         i++;
     }
 

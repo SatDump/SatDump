@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/image.h"
+#include "common/image/io.h"
 
 namespace geoscan
 {
@@ -41,9 +41,9 @@ namespace geoscan
             }
             else if (frame_buffer[4] == 0x02 || frame_buffer[4] == 0x01) // Imagery
             {
-                uint16_t hdr = frame_buffer[4 + 1] << 8 | frame_buffer[4 + 0];
-                uint8_t data_size = frame_buffer[4 + 2];
-                uint16_t msg_type = frame_buffer[4 + 4] << 8 | frame_buffer[4 + 3];
+                // uint16_t hdr = frame_buffer[4 + 1] << 8 | frame_buffer[4 + 0];
+                // uint8_t data_size = frame_buffer[4 + 2];
+                // uint16_t msg_type = frame_buffer[4 + 4] << 8 | frame_buffer[4 + 3];
                 uint16_t pkt_offset = frame_buffer[4 + 6] << 8 | frame_buffer[4 + 5];
 
                 if (pkt_offset <= 49112)
@@ -74,11 +74,11 @@ namespace geoscan
 
         logger->info("Image Payload : Got %d/%d", cpresent, 878);
 
-        image::Image<uint8_t> img;
-        img.load_jpeg(img_vector.data(), img_vector.size());
+        image::Image img;
+        image::load_jpeg(img, img_vector.data(), img_vector.size());
 
         std::string name = "Image";
-        img.save_img(directory + "/" + name);
+        image::save_img(img, directory + "/" + name);
     }
 
     void GEOSCANDataDecoderModule::drawUI(bool window)
@@ -86,7 +86,7 @@ namespace geoscan
         ImGui::Begin("Geoscan Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

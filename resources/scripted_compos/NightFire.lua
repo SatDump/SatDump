@@ -10,13 +10,13 @@ function process()
     for y = 0, rgb_output:height() -1, 1 do
 
       -- set variables for each calibrated channel with their respective names
+      get_channel_values(x, y)
+      local cch3b = get_channel_value(0)
+      local cch4 = get_channel_value(1)
       
-      local cch3b = get_calibrated_value(3, x, y, true)
-      local cch4 = get_calibrated_value(4, x, y, true)
-      
-      if cch3b > 305 then
-        if cch4 > 280 then
-          if (cch3b-cch4) > 10 then
+      if cch3b > 0.305 then
+        if cch4 > 0.280 then
+          if (cch3b-cch4) > 0.01 then
             -- output as red and 100% opaque if the pixel passes the thresholds
             set_img_out(0, x, y, 1)
             set_img_out(3, x, y, 1)

@@ -15,18 +15,18 @@ namespace goes
             const products::ABI::ABIScanType abi_product_type;
 
             double current_timestamp;
-            image::Image<uint16_t> channel_images[16]; // ABI has 16 channels
+            image::Image channel_images[16]; // ABI has 16 channels
             bool has_channels[16];
 
             void reset();
             bool has_data();
             void save();
-            void saveABICompo(image::Image<uint16_t> img, std::string name);
+            void saveABICompo(image::Image img, std::string name);
 
         public:
             ABIComposer(std::string dir, products::ABI::ABIScanType abi_type);
             ~ABIComposer();
-            void feed_channel(double timestamp, int ch, image::Image<uint16_t> &img);
+            void feed_channel(double timestamp, int ch, image::Image &img);
 
             image::ImageSavingThread *saving_thread;
         };

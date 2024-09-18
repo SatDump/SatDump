@@ -1,6 +1,8 @@
 #include "hrc_reader.h"
 #include "logger.h"
 #include "../crc.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
 
 namespace proba
 {
@@ -75,11 +77,11 @@ namespace proba
         {
             for (auto &imgh : hrc_images)
             {
-                image::Image<uint16_t> img = imgh.second->getImg();
-                img.save_img(output_folder + "/HRC-" + std::to_string(imgh.first));
-                img.normalize();
-                img.equalize();
-                img.save_img(output_folder + "/HRC-" + std::to_string(imgh.first) + "-EQU");
+                image::Image img = imgh.second->getImg();
+                image::save_img(img, output_folder + "/HRC-" + std::to_string(imgh.first));
+                image::normalize(img);
+                image::equalize(img);
+                image::save_img(img, output_folder + "/HRC-" + std::to_string(imgh.first) + "-EQU");
             }
         }
     } // namespace hrc

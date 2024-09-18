@@ -28,7 +28,7 @@ void FileSource::set_settings(nlohmann::json settings)
     iq_swap = getValueOrDefault(d_settings["iq_swap"], iq_swap);
     buffer_size = getValueOrDefault(d_settings["buffer_size"], buffer_size);
     file_path = getValueOrDefault(d_settings["file_path"], file_path);
-    baseband_type = getValueOrDefault(d_settings["baseband_type"], baseband_type);
+    baseband_type = getValueOrDefault(d_settings["baseband_type"], (std::string)baseband_type);
 }
 
 nlohmann::json FileSource::get_settings()
@@ -94,9 +94,9 @@ void FileSource::start()
 
     // Sanity Checks
     if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
-        throw std::runtime_error("Invalid file path " + file_path);
+        throw satdump_exception("Invalid file path " + file_path);
     if (samplerate_input.get() <= 0)
-        throw std::runtime_error("Invalid samplerate " + std::to_string(samplerate_input.get()));
+        throw satdump_exception("Invalid samplerate " + std::to_string(samplerate_input.get()));
 
     buffer_size = std::min<int>(dsp::STREAM_BUFFER_SIZE, std::max<int>(8192 + 1, samplerate_input.get() / 200));
 
@@ -105,8 +105,7 @@ void FileSource::start()
     start_time_point = std::chrono::steady_clock::now();
     total_samples = 0;
 
-    baseband_type_e = dsp::basebandTypeFromString(baseband_type);
-    baseband_reader.set_file(file_path, baseband_type_e);
+    baseband_reader.set_file(file_path, baseband_type);
     baseband_reader.should_repeat = true;
 
     logger->debug("Opening %s filesize " PRIu64, file_path.c_str(), baseband_reader.filesize);
@@ -143,73 +142,26 @@ void FileSource::drawControlUI()
     if (is_started)
         style::beginDisabled();
 
-    bool update_format = false;
-
     if (file_input.draw())
     {
         file_path = file_input.getPath();
-
         if (std::filesystem::exists(file_path) && !std::filesystem::is_directory(file_path))
         {
             nlohmann::json hdr;
             try_get_params_from_input_file(hdr, file_path);
             if (hdr.contains("baseband_format"))
-            {
-                if (hdr["baseband_format"].get<std::string>() == "u8")
-                    select_sample_format = 3;
-                else if (hdr["baseband_format"].get<std::string>() == "s8")
-                    select_sample_format = 2;
-                else if (hdr["baseband_format"].get<std::string>() == "s16")
-                    select_sample_format = 1;
-                else if (hdr["baseband_format"].get<std::string>() == "f32")
-                    select_sample_format = 0;
-                else if (hdr["baseband_format"].get<std::string>() == "ziq")
-                    select_sample_format = 4;
-                else if (hdr["baseband_format"].get<std::string>() == "ziq2")
-                    select_sample_format = 5;
-                update_format = true;
-            }
+                baseband_type = hdr["baseband_format"].get<std::string>();
 
             if (hdr.contains("samplerate"))
-            {
                 samplerate_input.set(hdr["samplerate"].get<uint64_t>());
-                update_format = true;
-            }
 
             if (hdr.contains("frequency"))
-            {
                 d_frequency = hdr["frequency"].get<uint64_t>();
-            }
         }
     }
 
     samplerate_input.draw();
-    if (ImGui::Combo("Format###basebandplayerformat", &select_sample_format, "f32\0"
-                                                                             "s16\0"
-                                                                             "s8\0"
-                                                                             "u8\0"
-                                                                             // #ifdef BUILD_ZIQ
-                                                                             "ziq\0"
-                                                                             // #endif
-                                                                             "ziq2\0") ||
-        update_format)
-    {
-        if (select_sample_format == 0)
-            baseband_type = "f32";
-        else if (select_sample_format == 1)
-            baseband_type = "s16";
-        else if (select_sample_format == 2)
-            baseband_type = "s8";
-        else if (select_sample_format == 3)
-            baseband_type = "u8";
-#ifdef BUILD_ZIQ
-        else if (select_sample_format == 4)
-            baseband_type = "ziq";
-#endif
-        else if (select_sample_format == 5)
-            baseband_type = "ziq2";
-    }
-
+    baseband_type.draw_playback_combo();
     ImGui::Checkbox("IQ Swap", &iq_swap);
 
     if (is_started)
@@ -227,8 +179,8 @@ void FileSource::drawControlUI()
     if (!is_started)
         style::endDisabled();
 #ifdef BUILD_ZIQ
-    if (select_sample_format == 4)
-        ImGui::TextColored(ImColor(255, 0, 0), "ZIQ seeking may be slow!");
+    if (baseband_type == dsp::ZIQ)
+        ImGui::TextColored(style::theme.red, "ZIQ seeking may be slow!");
 #endif
 }
 
@@ -246,7 +198,7 @@ std::vector<dsp::SourceDescriptor> FileSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"file", "File Source", 0, false});
+    results.push_back({"file", "File Source", "0", false});
 
     return results;
 }

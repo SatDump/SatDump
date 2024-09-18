@@ -58,16 +58,11 @@ void BladeRFSink::open()
 
         for (int i = 0; i < devs_cnt; i++)
         {
-            std::stringstream ss;
-            uint64_t id = 0;
-            ss << devs_list[i].serial;
-            id = std::hash<std::string>{}(ss.str());
-
-            if (id == d_sdr_id)
+            if (std::string(devs_list[i].serial) == d_sdr_id)
             {
                 selected_dev_id = i;
                 if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-                    throw std::runtime_error("Could not open BladeRF device!");
+                    throw satdump_exception("Could not open BladeRF device!");
             }
         }
     }
@@ -99,7 +94,7 @@ void BladeRFSink::open()
         available_samplerates.push_back(i);
     }
     available_samplerates.push_back(bladerf_range_samplerate->max);
-  
+
     // Init UI stuff
     samplerate_option_str = "";
     for (uint64_t samplerate : available_samplerates)
@@ -114,7 +109,7 @@ void BladeRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
     DSPSampleSink::start(stream);
 
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-        throw std::runtime_error("Could not open BladeRF device!");
+        throw satdump_exception("Could not open BladeRF device!");
 
 #ifdef BLADERF_HAS_WIDEBAND
     if (current_samplerate > 61.44e6)
@@ -242,7 +237,7 @@ void BladeRFSink::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t BladeRFSink::get_samplerate()
@@ -254,19 +249,15 @@ std::vector<dsp::SinkDescriptor> BladeRFSink::getAvailableSinks()
 {
     std::vector<dsp::SinkDescriptor> results;
 
-    bladerf_devinfo *devs_list;
+    bladerf_devinfo *devs_list = nullptr;
     int devs_cnt = bladerf_get_device_list(&devs_list);
 
     for (int i = 0; i < devs_cnt; i++)
     {
-        std::stringstream ss;
-        uint64_t id = 0;
-        ss << devs_list[i].serial;
-        id = std::hash<std::string>{}(ss.str());
-        results.push_back({"bladerf", "BladeRF " + ss.str(), id});
+        results.push_back({"bladerf", "BladeRF " + std::string(devs_list[i].serial), std::string(devs_list[i].serial)});
     }
 
-    if (devs_list != NULL && devs_cnt > 0)
+    if (devs_list != nullptr && devs_cnt > 0)
         bladerf_free_device_list(devs_list);
 
     return results;

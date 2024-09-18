@@ -1,9 +1,10 @@
 #include "module_ccsds_ldpc_decoder.h"
 #include "logger.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
+#include "core/exception.h"
 
 namespace ccsds
 {
@@ -32,7 +33,7 @@ namespace ccsds
         else if (d_constellation_str == "oqpsk")
             d_constellation = dsp::OQPSK;
         else
-            throw std::runtime_error("CCSDS LDPC Decoder : invalid constellation type!");
+            throw satdump_exception("CCSDS LDPC Decoder : invalid constellation type!");
 
         // Parse LDPC settings
         d_ldpc_rate = codings::ldpc::ldpc_rate_from_string(d_ldpc_rate_str);
@@ -273,40 +274,35 @@ namespace ccsds
         if (!streamingInput)
         {
             // Constellation
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            ImVec2 rect_min = ImGui::GetCursorScreenPos();
+            ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+            draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
+            draw_list->PushClipRect(rect_min, rect_max);
+
             if (d_constellation == dsp::BPSK)
             {
-                ImDrawList *draw_list = ImGui::GetWindowDrawList();
-                draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         ImColor::HSV(0, 0, 0));
-
                 for (int i = 0; i < 2048; i++)
                 {
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                                               style::theme.constellation);
                 }
-
-                ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
             else
             {
-                ImDrawList *draw_list = ImGui::GetWindowDrawList();
-                draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         ImColor::HSV(0, 0, 0));
-
                 for (int i = 0; i < 2048; i++)
                 {
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                                               style::theme.constellation);
                 }
-
-                ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
+
+            draw_list->PopClipRect();
+            ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
         }
         ImGui::EndGroup();
 
@@ -318,27 +314,30 @@ namespace ccsds
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(correlator_locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(correlator_cor));
+                ImGui::TextColored(correlator_locked ? style::theme.green : style::theme.orange, UITO_C_STR(correlator_cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = correlator_cor;
 
                 if (d_ldpc_asm_size == 32)
-                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 15.0f, 35.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 15.0f, 35.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
                 else
-                    ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 70.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 70.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Button("LDPC", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("Diff  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(ldpc_corr > 10 ? IMCOLOR_SYNCING : IMCOLOR_SYNCED, UITO_C_STR(ldpc_corr));
+                ImGui::TextColored(ldpc_corr > 10 ? style::theme.orange : style::theme.green, UITO_C_STR(ldpc_corr));
 
                 std::memmove(&ldpc_history[0], &ldpc_history[1], (200 - 1) * sizeof(float));
                 ldpc_history[200 - 1] = ldpc_corr;
 
-                ImGui::PlotLines("", ldpc_history, IM_ARRAYSIZE(ldpc_history), 0, "", 0.0f, d_ldpc_codeword_size / 20, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ldpc_history, IM_ARRAYSIZE(ldpc_history), 0, "", 0.0f, d_ldpc_codeword_size / 20,
+                    ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             if (d_internal_stream)
@@ -352,18 +351,18 @@ namespace ccsds
                     ImGui::SameLine();
 
                     if (deframer->getState() == deframer->STATE_NOSYNC)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                        ImGui::TextColored(style::theme.red, "NOSYNC");
                     else if (deframer->getState() == deframer->STATE_SYNCING)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                        ImGui::TextColored(style::theme.orange, "SYNCING");
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                        ImGui::TextColored(style::theme.green, "SYNCED");
                 }
             }
         }
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

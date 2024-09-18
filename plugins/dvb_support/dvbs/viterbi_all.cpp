@@ -25,11 +25,17 @@ namespace viterbi
           cc_decoder_ber_78(TEST_BITS_LENGTH * 1.75 / 2, 7, 2, {79, 109}),
           cc_encoder_ber_78(TEST_BITS_LENGTH * 1.75 / 2, 7, 2, {79, 109}),
 
+          vit_bufsize_23(ensureIs2Multiple(buffer_size * 1.33)),
+          vit_bufsize_56(ensureIs2Multiple(buffer_size * 1.66)),
+
           cc_decoder_12(buffer_size / 2, 7, 2, {79, 109}),
-          cc_decoder_23(10924 / 2, 7, 2, {79, 109}),
+          cc_decoder_23(vit_bufsize_23 / 2, 7, 2, {79, 109}),
           cc_decoder_34(buffer_size * 1.5 / 2, 7, 2, {79, 109}),
-          cc_decoder_56(buffer_size * 1.66 / 2, 7, 2, {79, 109}),
-          cc_decoder_78(buffer_size * 1.75 / 2, 7, 2, {79, 109})
+          cc_decoder_56(vit_bufsize_56 / 2, 7, 2, {79, 109}),
+          cc_decoder_78(buffer_size * 1.75 / 2, 7, 2, {79, 109}),
+
+          vit_buffer_23(vit_bufsize_23 * 4),
+          vit_buffer_56(vit_bufsize_56 * 4)
 
     {
         soft_buffer = new uint8_t[d_buffer_size * 4];
@@ -107,7 +113,7 @@ namespace viterbi
                 // Rate 2/3
                 for (int shift = 0; shift < 6; shift++) // Test 3 puncturing shifts
                 {
-                    depunc_32.depunc_static(ber_soft_buffer, ber_depunc_buffer, TEST_BITS_LENGTH, shift); // Depuncture
+                    depunc_23.depunc_static(ber_soft_buffer, ber_depunc_buffer, TEST_BITS_LENGTH, shift); // Depuncture
 
                     cc_decoder_ber_23.work(ber_depunc_buffer, ber_decoded_buffer);  // Decode....
                     cc_encoder_ber_23.work(ber_decoded_buffer, ber_encoded_buffer); // ....then reencode for comparison
@@ -122,7 +128,7 @@ namespace viterbi
                         d_shift = shift;                 // Set current puncturing shift
                         d_invalid = 0;                   // Reset invalid BER count
                         d_rate = RATE_2_3;               // Set rate
-                        depunc_32.set_shift(d_shift);
+                        depunc_23.set_shift(d_shift);
 
                         memset(soft_buffer, 128, d_buffer_size * 4);
                         memset(depunc_buffer, 128, d_buffer_size * 4);
@@ -221,13 +227,28 @@ namespace viterbi
             }
             else if (d_rate == RATE_2_3)
             {
-                int sz = depunc_32.depunc_cont(soft_buffer, depunc_buffer, size); // Depuncturing
-
+                int sz = depunc_23.depunc_cont(soft_buffer, depunc_buffer, size); // Depuncturing
+#if 0
                 cc_decoder_23.work(depunc_buffer, output, sz); // Decode entire buffer
                 out_n = sz / 2;
 
                 cc_encoder_ber_23.work(output, ber_encoded_buffer);                               // Re-encoded for a BER check
                 d_ber = get_ber(depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.25, 3.5); // Compute BER
+#else
+                vit_buffer_23.add(depunc_buffer, sz);
+
+                out_n = 0;
+                while (vit_buffer_23.in_buffer > vit_bufsize_23)
+                {
+                    cc_decoder_23.work(vit_buffer_23.buffer_ptr, output + out_n); // Decode entire buffer
+
+                    cc_encoder_ber_23.work(output + out_n, ber_encoded_buffer);                                  // Re-encoded for a BER check
+                    d_ber = get_ber(vit_buffer_23.buffer_ptr, ber_encoded_buffer, TEST_BITS_LENGTH * 1.25, 3.5); // Compute BER
+
+                    out_n += vit_bufsize_23 / 2;
+                    vit_buffer_23.del(vit_bufsize_23);
+                }
+#endif
             }
             else if (d_rate == RATE_3_4)
             {
@@ -242,12 +263,27 @@ namespace viterbi
             else if (d_rate == RATE_5_6)
             {
                 int sz = depunc_56.depunc_cont(soft_buffer, depunc_buffer, size); // Depuncturing
-
+#if 0
                 cc_decoder_56.work(depunc_buffer, output, sz); // Decode entire buffer
                 out_n = sz / 2;
 
                 cc_encoder_ber_56.work(output, ber_encoded_buffer);                             // Re-encoded for a BER check
                 d_ber = get_ber(depunc_buffer, ber_encoded_buffer, TEST_BITS_LENGTH * 1.66, 8); // Compute BER
+#else
+                vit_buffer_56.add(depunc_buffer, sz);
+
+                out_n = 0;
+                while (vit_buffer_56.in_buffer > vit_bufsize_56)
+                {
+                    cc_decoder_56.work(vit_buffer_56.buffer_ptr, output + out_n); // Decode entire buffer
+
+                    cc_encoder_ber_56.work(output + out_n, ber_encoded_buffer);                                // Re-encoded for a BER check
+                    d_ber = get_ber(vit_buffer_56.buffer_ptr, ber_encoded_buffer, TEST_BITS_LENGTH * 1.66, 8); // Compute BER
+
+                    out_n += vit_bufsize_56 / 2;
+                    vit_buffer_56.del(vit_bufsize_56);
+                }
+#endif
             }
             else if (d_rate == RATE_7_8)
             {

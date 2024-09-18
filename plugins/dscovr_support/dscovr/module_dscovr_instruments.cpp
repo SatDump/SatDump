@@ -1,11 +1,11 @@
 #include "module_dscovr_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 
@@ -41,7 +41,7 @@ namespace dscovr
                 data_in.read((char *)&cadu, 1264);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 uint8_t *payload = &cadu[18];
 
@@ -109,7 +109,7 @@ namespace dscovr
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("EPIC %d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", epic_reader.img_c);
+                    ImGui::TextColored(style::theme.green, "%d", epic_reader.img_c);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(epic_status);
                 }
@@ -117,7 +117,7 @@ namespace dscovr
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

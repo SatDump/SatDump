@@ -13,7 +13,7 @@ namespace fengyun3
         {
         private:
             const std::string directory;
-            image::Image<uint16_t> image;
+            image::Image image;
 
         public:
             XEUVIReader(std::string directory);

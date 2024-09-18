@@ -24,10 +24,7 @@ protected:
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
     widgets::NotatedNum<int> samplerate_input = widgets::NotatedNum("Samplerate", 0, "sps");
-
-    int select_sample_format;
-    std::string baseband_type = "f32";
-    dsp::BasebandType baseband_type_e;
+    dsp::BasebandType baseband_type = "cf32";
 
     bool should_run = true;
     std::thread work_thread;

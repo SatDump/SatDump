@@ -6,10 +6,8 @@ namespace goes
 {
     namespace gvar
     {
-        template <typename T>
-        image::Image<T> cropIR(image::Image<T> input);
+        image::Image cropIR(image::Image input);
 
-        template <typename T>
-        image::Image<T> cropVIS(image::Image<T> input);
+        image::Image cropVIS(image::Image input);
     };
 };

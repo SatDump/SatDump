@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.12)
 
 project(ImGuiExample)
 
@@ -53,23 +53,28 @@ set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/de
 # include_directories(deps/jpeg/jni)
 
 # MBed-TLS
-add_library(mbedtls STATIC IMPORTED)
-set_target_properties(mbedtls PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedtls.a)
-add_library(mbedtlscrypto STATIC IMPORTED)
-set_target_properties(mbedtlscrypto PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedcrypto.a)
-add_library(mbedtlsx509 STATIC IMPORTED)
-set_target_properties(mbedtlsx509 PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedx509.a)
-
+add_library(wolfssl STATIC IMPORTED)
+set_target_properties(wolfssl PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libwolfssl.a)
 
 # NNG
 add_library(nng STATIC IMPORTED)
 set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libnng.a)
 # include_directories(deps/nng/jni/)
 
+# cURL
+add_library(curl STATIC IMPORTED)
+set_target_properties(curl PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libcurl.a)
+# include_directories(deps/curl/jni/)
+
 # ZSTD
 add_library(zstd STATIC IMPORTED)
 set_target_properties(zstd PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libzstd.a)
 # include_directories(deps/zstd/jni/)
+
+# TIFF
+add_library(tiff STATIC IMPORTED)
+set_target_properties(tiff PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libtiff.a)
+# include_directories(deps/tiff/jni/)
 
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
@@ -136,6 +141,8 @@ add_library(android_imgui SHARED
 )
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 
 target_compile_definitions(android_imgui PRIVATE IMGUI_IMPL_OPENGL_ES3)
 

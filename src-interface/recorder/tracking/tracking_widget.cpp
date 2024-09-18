@@ -24,7 +24,11 @@ namespace satdump
 
         logger->trace("Using QTH %f %f Alt %f", qth_lon, qth_lat, qth_alt);
 
-        rotator_handler = std::make_shared<rotator::RotctlHandler>();
+        rotator_options = rotator::getRotatorHandlerOptions();
+        for (auto &st : rotator_options)
+            rotator_options_str += st.name + '\0';
+
+        rotator_handler = rotator_options[selected_rotator_handler].construct();
 
         if (rotator_handler)
         {
@@ -32,7 +36,7 @@ namespace satdump
             {
                 rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
             }
         }
@@ -43,19 +47,19 @@ namespace satdump
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
 
         // Init scheduler
-        auto_scheduler.eng_callback = [this](SatellitePass, TrackedObject obj)
+        auto_scheduler.eng_callback = [this](AutoTrackCfg, SatellitePass, TrackedObject obj)
         {
             object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
             saveConfig();
         };
-        auto_scheduler.aos_callback = [this](SatellitePass pass, TrackedObject obj)
+        auto_scheduler.aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass pass, TrackedObject obj)
         {
-            this->aos_callback(pass, obj);
+            this->aos_callback(autotrack_cfg, pass, obj);
             object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
         };
-        auto_scheduler.los_callback = [this](SatellitePass pass, TrackedObject obj)
+        auto_scheduler.los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass pass, TrackedObject obj)
         {
-            this->los_callback(pass, obj);
+            this->los_callback(autotrack_cfg, pass, obj);
         };
 
         auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);
@@ -85,7 +89,7 @@ namespace satdump
 
     void TrackingWidget::render()
     {
-        object_tracker.renderPolarPlot(light_theme);
+        object_tracker.renderPolarPlot();
 
         ImGui::Separator();
 
@@ -103,19 +107,17 @@ namespace satdump
 
             if (rotator_handler->is_connected())
                 style::beginDisabled();
-            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"))
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, rotator_options_str.c_str()))
             {
-                if (selected_rotator_handler == 0)
-                {
-                    rotator_handler = std::make_shared<rotator::RotctlHandler>();
-                    object_tracker.setRotator(rotator_handler);
-                }
+                rotator_handler = rotator_options[selected_rotator_handler].construct();
+                object_tracker.setRotator(rotator_handler);
 
                 try
                 {
                     rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
                 }
-                catch (std::exception &e)
+                catch (std::exception &)
                 {
                 }
             }
@@ -129,9 +131,17 @@ namespace satdump
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Schedule and Config"))
+        float width_available = ImGui::GetContentRegionAvail().x;
+        std::string is_engaged = auto_scheduler.getEngaged() ? "YES" : "NO";
+        float centered_pos = width_available / 2.0f - ImGui::CalcTextSize(std::string("Autotrack Engaged: " + is_engaged).c_str()).x / 2.0f;
+        if (centered_pos > 0)
+            ImGui::SetCursorPosX(centered_pos);
+        ImGui::TextUnformatted("Autotrack Engaged:");
+        ImGui::SameLine();
+        ImGui::TextColored(auto_scheduler.getEngaged() ? style::theme.green : style::theme.red, "%s", is_engaged.c_str());
+        if (ImGui::Button("Schedule and Config", ImVec2(width_available, 0.0f)))
             config_window_was_asked = show_window_config = true;
-
+        ImGui::Spacing();
         renderConfig();
     }
 
@@ -139,15 +149,16 @@ namespace satdump
     {
         if (show_window_config)
         {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(800 * ui_scale, 300 * ui_scale), ImVec2(INFINITY, INFINITY));
             ImGui::Begin("Tracking Configuration", &show_window_config);
-            ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
+            ImGui::SetWindowSize(ImVec2(800 * ui_scale, 550 * ui_scale), ImGuiCond_FirstUseEver);
 
             if (ImGui::BeginTabBar("##trackingtabbar"))
             {
                 if (ImGui::BeginTabItem("Scheduling"))
                 {
                     ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
-                    auto_scheduler.renderAutotrackConfig(light_theme, getTime());
+                    auto_scheduler.renderAutotrackConfig(getTime());
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }

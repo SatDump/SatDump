@@ -11,6 +11,7 @@
 #include "init.h"
 #include "common/tracking/tle.h"
 #include "common/widgets/timed_message.h"
+#include "common/widgets/json_editor.h"
 
 #include "core/style.h"
 
@@ -29,12 +30,17 @@ namespace satdump
         std::vector<opencl::OCLDevice> opencl_devices_enum;
 #endif
 
+        int selected_theme = 0;
+        std::vector<std::string> themes;
+        std::string themes_str = "";
+
         bool tles_are_update = false;
         char tle_last_update[80];
 
         bool show_imgui_demo = false;
+        bool advanced_mode = false;
 
-        widgets::TimedMessage saved_message(ImColor(0, 255, 0), 4);
+        widgets::TimedMessage saved_message;
 
         void setup()
         {
@@ -65,22 +71,38 @@ namespace satdump
                     settings_output_directories.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
 
+            int theme_id = 0;
+            std::string current_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"].get<std::string>();
+            for (const auto& entry : std::filesystem::directory_iterator(resources::getResourcePath("themes")))
+            {
+                if (entry.path().filename().extension() != ".json")
+                    continue;
+                std::string this_name = entry.path().filename().stem().string();
+                themes.push_back(this_name);
+                themes_str += this_name;
+                themes_str.push_back('\0');
+                if (this_name == current_theme)
+                    selected_theme = theme_id;
+                theme_id++;
+            }
+
+            advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
+
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
+            opencl_devices_enum.push_back({ -1, -1, "None (Use CPU)" });
             int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
             int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
             int dev_id = 0;
             opencl_devices_str = "";
             for (opencl::OCLDevice &dev : opencl_devices_enum)
             {
-                if (dev_id == (int)opencl_devices_enum.size() - 1)
-                    opencl_devices_str += dev.name;
-                else
-                    opencl_devices_str += dev.name + " \0";
+                opencl_devices_str += dev.name;
                 if (dev.platform_id == p && dev.device_id == d)
                     opencl_devices_id = dev_id;
                 dev_id++;
             }
+            opencl_devices_str.push_back('\0');
 #endif
         }
 
@@ -90,9 +112,20 @@ namespace satdump
             {
                 if (ImGui::BeginTable("##satdumpuisettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                 {
+                    // Theme Selection
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Theme");
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("Set the style and color of SatDump");
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Combo("##themeselection", &selected_theme, themes_str.c_str());
+
+                    // Standard user interface settings
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
                         p.second.draw();
 
+                    // ImGui Demo
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Show ImGui Demo");
@@ -183,14 +216,46 @@ namespace satdump
                 }
             }
 
+            if (advanced_mode)
+            {
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
+                ImGui::SeparatorText("Advanced Settings");
+                if (ImGui::CollapsingHeader("TLE Settings"))
+                {
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
+                    if (ImGui::Button("Reset##tle_settings"))
+                        satdump::config::main_cfg["tle_settings"] = satdump::config::master_cfg["tle_settings"];
+                }
+                if (ImGui::CollapsingHeader("Advanced Settings"))
+                {
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["advanced_settings"], "advanced_settings");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##advanced_settings"))
+                        satdump::config::main_cfg["advanced_settings"] = satdump::config::master_cfg["advanced_settings"];
+                }
+                if (ImGui::CollapsingHeader("Instrument Config"))
+                {
+                    widgets::JSONTreeEditor(satdump::config::main_cfg["viewer"]["instruments"], "instrument_settings");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##instrument_settings"))
+                        satdump::config::main_cfg["viewer"]["instruments"] = satdump::config::master_cfg["viewer"]["instruments"];
+                }
+                if (ImGui::CollapsingHeader("Default Pipeline Configs"))
+                {
+                    widgets::JSONTreeEditor(pipelines_json, "pipelines");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Reset##pipelines"))
+                        pipelines_json = pipelines_system_json;
+                }
+            }
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
-                if (opencl_devices_enum.size() > 0)
-                {
-                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
-                    satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
-                }
+                satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
+                satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
+                opencl::resetOCLContext();
 #endif
 
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
@@ -200,15 +265,21 @@ namespace satdump
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
                     satdump::config::main_cfg["satdump_directories"][p.first]["value"] = p.second.getValue();
 
+                satdump::config::main_cfg["user_interface"]["theme"]["value"] = themes[selected_theme];
+
                 for (auto &plugin_hdl : config::plugin_config_handlers)
                     plugin_hdl.save();
 
                 config::saveUserConfig();
-                saved_message.set_message("Settings saved");
+                if (advanced_mode)
+                    savePipelines();
+                advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
+                saved_message.set_message(style::theme.green, "Settings saved");
+                satdump::update_ui = true;
             }
 
             saved_message.draw();
-            ImGui::TextColored(ImColor(255, 255, 0), "Note : Some settings will require SatDump to be restarted\nto take effect!");
+            ImGui::TextColored(style::theme.yellow, "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
     }
 }

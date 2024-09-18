@@ -1,19 +1,20 @@
 #include "module_meteor_msumr_lrpt.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include <cstring>
 #include "lrpt_msumr_reader.h"
 #include "imgui/imgui.h"
-#include "common/image/earth_curvature.h"
 #include "../../meteor.h"
 #include "products/image_products.h"
 #include <ctime>
 #include "products/dataset.h"
 #include "resources.h"
 #include "common/utils.h"
+#include "nlohmann/json_utils.h"
+#include "msumr_tlm.h"
 
 #define BUFFER_SIZE 8192
 
@@ -21,6 +22,23 @@ namespace meteor
 {
     namespace msumr
     {
+        void createMSUMRProduct(satdump::ImageProducts &product, double timestamp, int norad, int msumr_serial_number)
+        {
+            product.instrument_name = "msu_mr";
+            product.has_timestamps = true;
+            product.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
+            product.needs_correlation = true;
+            product.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, timestamp));
+            if (msumr_serial_number == 0) // M2
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+            else if (msumr_serial_number == 3) // M2-3
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
+            else if (msumr_serial_number == 4) // M2-4
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr_lrpt.json")));
+            else // Default to M2
+                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+        }
+
         METEORMSUMRLRPTDecoderModule::METEORMSUMRLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
@@ -41,19 +59,21 @@ namespace meteor
 
             uint8_t cadu[1024];
 
-            ccsds::ccsds_weather::Demuxer ccsds_demuxer(882, true);
+            ccsds::ccsds_aos::Demuxer ccsds_demuxer(882, true);
 
             lrpt::MSUMRReader msureader(meteorm2x_mode);
 
             logger->info("Demultiplexing and deframing...");
 
             std::vector<uint8_t> msumr_ids;
+            nlohmann::json msu_mr_telemetry;
+            nlohmann::json msu_mr_telemetry_calib;
 
             while (!data_in.eof())
             {
                 data_in.read((char *)&cadu, 1024);
 
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.vcid == 5)
                 {
@@ -66,6 +86,8 @@ namespace meteor
                         {
                             uint8_t msumr_id = pkt.payload[8 + 12] >> 4;
                             msumr_ids.push_back(msumr_id);
+
+                            parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_ids.size() - 1, &pkt.payload[8]);
                         }
                     }
                 }
@@ -80,18 +102,10 @@ namespace meteor
             }
 
             data_in.close();
-
-            logger->info("MSU-MR Channel 1 Lines  : " + std::to_string(msureader.getChannel(0).height()));
-            logger->info("MSU-MR Channel 2 Lines  : " + std::to_string(msureader.getChannel(1).height()));
-            logger->info("MSU-MR Channel 3 Lines  : " + std::to_string(msureader.getChannel(2).height()));
-            logger->info("MSU-MR Channel 4 Lines  : " + std::to_string(msureader.getChannel(3).height()));
-            logger->info("MSU-MR Channel 5 Lines  : " + std::to_string(msureader.getChannel(4).height()));
-            logger->info("MSU-MR Channel 6 Lines  : " + std::to_string(msureader.getChannel(5).height()));
-
             logger->info("Writing images.... (Can take a while)");
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
+            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
             msumr_ids.clear();
 
             logger->trace("MSU-MR ID %d", msumr_serial_number);
@@ -105,6 +119,8 @@ namespace meteor
                 sat_name = "METEOR-M2-2";
             else if (msumr_serial_number == 3)
                 sat_name = "METEOR-M2-3";
+            else if (msumr_serial_number == 4)
+                sat_name = "METEOR-M2-4";
 
             int norad = 0;
             if (msumr_serial_number == 0)
@@ -115,11 +131,8 @@ namespace meteor
                 norad = 44387; // M2-2
             else if (msumr_serial_number == 3)
                 norad = 57166; // M2-3
-
-            // Products dataset
-            satdump::ProductDataSet dataset;
-            dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(msureader.timestamps);
+            else if (msumr_serial_number == 4)
+                norad = 59051; // M2-4
 
             // Satellite ID
             {
@@ -132,28 +145,47 @@ namespace meteor
                 std::filesystem::create_directory(directory);
 
             satdump::ImageProducts msumr_products;
-            msumr_products.instrument_name = "msu_mr";
-            msumr_products.has_timestamps = true;
-            msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-            msumr_products.needs_correlation = true;
-            msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-            if (msumr_serial_number == 0) // M2
-                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
-            else if (msumr_serial_number == 3) // M2-3
-                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
-            else // Default to M2
-                msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
-
+            std::vector<satdump::ImageProducts::ImageHolder> msumr_images;
             for (int i = 0; i < 6; i++)
             {
-                image::Image<uint16_t> img = msureader.getChannel(i).to16bits();
+                image::Image img = msureader.getChannel(i);
+                logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
-                    msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
+                    msumr_images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
             }
-
+            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number);
+            msumr_products.images.swap(msumr_images);
             msumr_products.save(directory);
+
+            // Products dataset
+            satdump::ProductDataSet dataset;
+            dataset.satellite_name = sat_name;
+            dataset.timestamp = get_median(msureader.timestamps);
             dataset.products_list.push_back("MSU-MR");
 
+            if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
+            {
+                std::string fill_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSU-MR (Filled)";
+                if (!std::filesystem::exists(fill_directory))
+                    std::filesystem::create_directory(fill_directory);
+
+                size_t max_fill_lines = 50;
+                if (d_parameters.contains("max_fill_lines"))
+                    max_fill_lines = d_parameters["max_fill_lines"];
+
+                satdump::ImageProducts filled_products;
+                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number);
+                for (int i = 0; i < 6; i++)
+                {
+                    image::Image img = msureader.getChannel(i, max_fill_lines);
+                    if (img.size() > 0)
+                        filled_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
+                }
+                filled_products.save(fill_directory);
+                dataset.products_list.push_back("MSU-MR (Filled)");
+            }
+
+            saveJsonFile(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/telemetry.json", msu_mr_telemetry);
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
@@ -161,7 +193,7 @@ namespace meteor
         {
             ImGui::Begin("METEOR MSU-MR LRPT Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

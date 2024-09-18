@@ -40,7 +40,7 @@ void SDRPlaySource::set_bias()
     if (!is_started)
         return;
 
-    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
+    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID) // RSP1A or RSP1B
     {
         channel_params->rsp1aTunerParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp1a_BiasTControl, sdrplay_api_Update_Ext1_None);
@@ -52,7 +52,7 @@ void SDRPlaySource::set_bias()
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_Rsp2_BiasTControl, sdrplay_api_Update_Ext1_None);
         logger->debug("Set SDRPlay bias to %d", (int)bias);
     }
-    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID || sdrplay_dev.hwVer == SDRPLAY_RSPdxR2_ID) // RSPdx
     {
         dev_params->devParams->rspDxParams.biasTEnable = bias;
         sdrplay_api_Update(sdrplay_dev.dev, sdrplay_dev.tuner, sdrplay_api_Update_None, sdrplay_api_Update_RspDx_BiasTControl);
@@ -83,7 +83,7 @@ void SDRPlaySource::set_others()
     if (!is_started)
         return;
 
-    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
+    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID) // RSP1A or RSP1B
     {
         dev_params->devParams->rsp1aParams.rfNotchEnable = fm_notch;
         dev_params->devParams->rsp1aParams.rfDabNotchEnable = dab_notch;
@@ -118,7 +118,7 @@ void SDRPlaySource::set_others()
         logger->debug("Set SDRPlay DAB Notch to %d", (int)dab_notch);
         logger->debug("Set SDRPlay Antenna to %d", antenna_input);
     }
-    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID || sdrplay_dev.hwVer == SDRPLAY_RSPdxR2_ID) // RSPdx
     {
         dev_params->devParams->rspDxParams.rfNotchEnable = fm_notch;
         dev_params->devParams->rspDxParams.rfDabNotchEnable = dab_notch;
@@ -185,7 +185,7 @@ nlohmann::json SDRPlaySource::get_settings()
 
 void SDRPlaySource::open()
 {
-    sdrplay_dev = devices_addresses[d_sdr_id];
+    sdrplay_dev = devices_addresses[std::stoi(d_sdr_id)];
 
     sdrplay_dev.tuner = sdrplay_api_Tuner_A;
     sdrplay_dev.rspDuoMode = sdrplay_api_RspDuoMode_Single_Tuner;
@@ -213,13 +213,13 @@ void SDRPlaySource::open()
     // Set max gain
     if (sdrplay_dev.hwVer == SDRPLAY_RSP1_ID) // RSP1
         max_gain = 4;
-    else if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID) // RSP1A
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID) // RSP1A or RSP1B
         max_gain = 10;
     else if (sdrplay_dev.hwVer == SDRPLAY_RSP2_ID) // RSP2
         max_gain = 9;
     else if (sdrplay_dev.hwVer == SDRPLAY_RSPduo_ID) // RSPDuo
         max_gain = 10;
-    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID) // RSPdx
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID || sdrplay_dev.hwVer == SDRPLAY_RSPdxR2_ID) // RSPdx
         max_gain = 28;
     sdrplay_api_ReleaseDevice(&sdrplay_dev);
 }
@@ -246,7 +246,7 @@ void SDRPlaySource::start()
     callback_funcs.StreamBCbFn = stream_callback;
 
     if (sdrplay_api_GetDeviceParams(sdrplay_dev.dev, &dev_params) != sdrplay_api_Success)
-        throw std::runtime_error("Error getting SDRPlay device params!");
+        throw satdump_exception("Error getting SDRPlay device params!");
 
     // Get channel params
     channel_params = dev_params->rxChannelA;
@@ -254,7 +254,7 @@ void SDRPlaySource::start()
         set_duo_channel();
 
     if (sdrplay_api_Init(sdrplay_dev.dev, &callback_funcs, &output_stream) != sdrplay_api_Success)
-        throw std::runtime_error("Error starting SDRPlay device!");
+        throw satdump_exception("Error starting SDRPlay device!");
 
     // Initial freq
     channel_params->tunerParams.rfFreq.rfHz = d_frequency;
@@ -359,7 +359,7 @@ void SDRPlaySource::drawControlUI()
         set_agcs();
 
     // RSP1A-specific settings
-    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID)
+    if (sdrplay_dev.hwVer == SDRPLAY_RSP1A_ID || sdrplay_dev.hwVer == SDRPLAY_RSP1B_ID)
     {
         if (RImGui::Checkbox("FM Notch", &fm_notch))
             set_others();
@@ -405,7 +405,7 @@ void SDRPlaySource::drawControlUI()
             set_bias();
     }
     // RSPDx-specific settings
-    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID)
+    else if (sdrplay_dev.hwVer == SDRPLAY_RSPdx_ID || sdrplay_dev.hwVer == SDRPLAY_RSPdxR2_ID)
     {
         if (RImGui::Combo("Antenna", &antenna_input, "Antenna A\0"
                                                      "Atenna B\0"
@@ -420,7 +420,7 @@ void SDRPlaySource::drawControlUI()
     }
     else
     {
-        RImGui::Text("This device is not supported yet,\n or perhaps a clone!");
+        RImGui::Text("%s", "This device is not supported yet,\n or perhaps a clone!");
     }
     if (!is_started)
         RImGui::endDisabled();
@@ -429,7 +429,7 @@ void SDRPlaySource::drawControlUI()
 void SDRPlaySource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 10e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t SDRPlaySource::get_samplerate()
@@ -454,17 +454,19 @@ std::vector<dsp::SourceDescriptor> SDRPlaySource::getAvailableSources()
 
         // Handle all versions
         if (devices_addresses[i].hwVer == SDRPLAY_RSP1_ID)
-            results.push_back({"sdrplay", "RSP1 " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP1 " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP1A_ID)
-            results.push_back({"sdrplay", "RSP1A " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP1A " + ss.str(), std::to_string(i)});
+        else if (devices_addresses[i].hwVer == SDRPLAY_RSP1B_ID)
+            results.push_back({"sdrplay", "RSP1B " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSP2_ID)
-            results.push_back({"sdrplay", "RSP2 " + ss.str(), i});
+            results.push_back({"sdrplay", "RSP2 " + ss.str(), std::to_string(i)});
         else if (devices_addresses[i].hwVer == SDRPLAY_RSPduo_ID)
-            results.push_back({"sdrplay", "RSPDuo " + ss.str(), i});
-        else if (devices_addresses[i].hwVer == SDRPLAY_RSPdx_ID)
-            results.push_back({"sdrplay", "RSPdx " + ss.str(), i});
+            results.push_back({"sdrplay", "RSPDuo " + ss.str(), std::to_string(i)});
+        else if (devices_addresses[i].hwVer == SDRPLAY_RSPdx_ID || devices_addresses[i].hwVer == SDRPLAY_RSPdxR2_ID)
+            results.push_back({"sdrplay", "RSPdx " + ss.str(), std::to_string(i)});
         else
-            results.push_back({"sdrplay", "Unknown RSP " + ss.str(), i});
+            results.push_back({"sdrplay", "Unknown RSP " + ss.str(), std::to_string(i)});
     }
 
     return results;

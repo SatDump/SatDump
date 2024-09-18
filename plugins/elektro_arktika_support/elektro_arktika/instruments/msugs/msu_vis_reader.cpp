@@ -45,9 +45,9 @@ namespace elektro_arktika
             frames++;
         }
 
-        image::Image<uint16_t> MSUVISReader::getImage()
+        image::Image MSUVISReader::getImage()
         {
-            return image::Image<uint16_t>(&imageBuffer[0], 12008, 17200, 1);
+            return image::Image(&imageBuffer[0], 16, 12008, 17200, 1);
         }
     } // namespace msugs
 } // namespace elektro_arktika

@@ -3,6 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <vector>
 #include "common/image/image.h"
+#include <string>
 
 namespace mats
 {
@@ -15,7 +16,7 @@ namespace mats
             std::vector<uint8_t> wip_payload;
 
             std::vector<uint16_t> nadir_image;
-            void process_nadir_imager(image::Image<uint16_t> &img);
+            void process_nadir_imager(image::Image &img);
 
         public:
             MATSReader();
@@ -27,7 +28,7 @@ namespace mats
 
             int nadir_lines = 0;
             std::vector<double> nadir_timestamps;
-            image::Image<uint16_t> getNadirImage();
+            image::Image getNadirImage();
         };
 
         static std::string channel_names[7] = {"UV1-short",

@@ -77,7 +77,8 @@ namespace dsp
         {
             uint8_t type = (int)pkt_type;
             payload.insert(payload.begin(), &type, &type + 1);
-            tcp->swrite(payload.data(), payload.size());
+            if (tcp->swrite(payload.data(), payload.size()) <= 0)
+                tcp->closeconn();
         }
     }
 }

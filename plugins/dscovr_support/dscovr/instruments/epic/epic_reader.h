@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include "common/image/image.h"
+#include <string>
 
 namespace dscovr
 {

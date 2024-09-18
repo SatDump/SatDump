@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 include(CheckLibraryExists)
 include(CheckIncludeFileCXX)
 include(CheckCSourceCompiles)
@@ -46,8 +46,18 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
 
+# Armadillo
+find_package(Armadillo)
+
+if(ARMADILLO_FOUND)
+    target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
+    target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
+    target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+    message("-- Building with Armadillo!")
+endif()
+
 # OpenCL if we found it
-if(BUILD_OPENCL)
+if(BUILD_OPENCL AND NOT ANDROID)
     target_link_libraries(satdump_core PUBLIC ${OpenCL_LIBRARIES})
 endif()
 
@@ -61,11 +71,14 @@ if(BUILD_ZIQ2)
 endif()
 
 if(MSVC)
+    # Jemalloc: TODO
     target_link_libraries(satdump_core PUBLIC shlwapi)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     target_link_libraries(satdump_core PUBLIC nng.dll)
+    target_link_libraries(satdump_core PUBLIC tiff.dll)
+    target_link_libraries(satdump_core PUBLIC libcurl.dll)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
@@ -75,6 +88,9 @@ if(MSVC)
     target_include_directories(satdump_core PUBLIC libs/lua)
     target_link_libraries(satdump_core PUBLIC ws2_32)
 elseif(ANDROID)
+    # Jemalloc
+    # TODO
+
     # VOLK
     target_link_libraries(satdump_core PUBLIC volk cpufeatures m log dl)
     target_include_directories(satdump_core PUBLIC ../volk_includes)
@@ -86,14 +102,29 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC fftw)
 
     # NNG
-    target_link_libraries(satdump_core PUBLIC nng mbedtls mbedtlscrypto mbedtlsx509)
+    target_link_libraries(satdump_core PUBLIC nng)
+
+    # cURL
+    target_link_libraries(satdump_core PUBLIC curl wolfssl)
 
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)
     target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ="1")
 
+    # Tiff
+    target_link_libraries(satdump_core PUBLIC tiff)
+
     target_include_directories(satdump_core PUBLIC libs/lua)
 else()
+    if(NOT APPLE)
+        target_link_libraries(satdump_core PUBLIC stdc++fs)
+
+        # Jemalloc
+        find_package(Jemalloc REQUIRED)
+        target_include_directories(satdump_core PUBLIC ${JEMALLOC_INCLUDE_DIR})
+        target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARY})
+    endif()
+
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
     check_cxx_source_compiles("#include <volk/volk_alloc.hh>\n int main() { return 0; }" VOLK_HAS_ALLOC)
@@ -118,16 +149,8 @@ else()
     target_link_libraries(satdump_core PUBLIC PNG::PNG)
 
     # FFTW3
-    if(APPLE)
-        set(FFTW3f_DIR /usr/local/lib/cmake/fftw3f)
-        find_package(FFTW3f CONFIG REQUIRED)
-        target_link_libraries(satdump_core PUBLIC FFTW3::fftw3f)
-    else()
-        pkg_check_modules(FFTW3 REQUIRED fftw3f)
-        target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
-
-        target_link_libraries(satdump_core PUBLIC stdc++fs)
-    endif()
+    pkg_check_modules(FFTW3 REQUIRED fftw3f)
+    target_link_libraries(satdump_core PUBLIC ${FFTW3_LIBRARIES})
 
     # NNG
     find_library(NNG_LIBRARY nng REQUIRED)
@@ -143,18 +166,21 @@ else()
     # Lua
     target_include_directories(satdump_core PUBLIC libs/lua)
 
-    # Armadillo
-    find_package(Armadillo)
+    # Curl
+    find_package(CURL REQUIRED)
 
-    if(ARMADILLO_FOUND)
-        target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
-        target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
-        target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
-        message("-- Building with Armadillo!")
+    if(CURL_FOUND)
+        target_link_libraries(satdump_core PUBLIC ${CURL_LIBRARIES})
+        target_include_directories(satdump_core PUBLIC ${CURL_INCLUDE_DIRS})
+        message("-- Building with curl!")
     endif()
 
     # Dynamic linking
     target_link_libraries(satdump_core PUBLIC dl)
+
+    # Tiff
+    find_library(TIFF_LIBRARY tiff REQUIRED)
+    target_link_libraries(satdump_core PUBLIC ${TIFF_LIBRARY})
 
     include(CheckCXXSourceCompiles)
 
@@ -172,6 +198,12 @@ if(APPLE)
     target_link_libraries(satdump_core PUBLIC "-framework CoreGraphics")
 endif()
 
-install(TARGETS satdump_core DESTINATION lib)
+# Install
+if(MSVC OR BUILD_MSVC)
+    install(TARGETS satdump_core DESTINATION bin RUNTIME_DEPENDENCY_SET satdump_deps)
+else()
+    install(TARGETS satdump_core DESTINATION lib)
+endif()
+
 install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.hpp")

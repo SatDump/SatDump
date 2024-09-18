@@ -16,6 +16,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [libaec](https://gitlab.dkrz.de/k202009/libaec), with OpenSatelliteProject's path
 - [libcorrect](https://github.com/quiet/libcorrect), for Reed-Solomon decoding
 - [libjpeg](https://ijg.org/), from the Independent JPEG Group
+- [libOpenCL-loader](https://github.com/robertwgh/libOpenCL-loader), for OpenCL on Android
 - [libpredict](https://github.com/la1k/libpredict), used for orbit prediction
 - [Lua](https://www.lua.org/), used for complex image composites
 - [miniz](https://github.com/richgel999/miniz), used to decompress ZIP files in some decoders
@@ -24,9 +25,9 @@ First time here? See the reference documents below to get started using SatDump.
 - [OpenCL C++ Headers](https://github.com/KhronosGroup/OpenCL-CLHPP), for OpenCL support
 - [OpenJP2](https://github.com/uclouvain/openjpeg), for JPEG-2000 support on GOES GRB, FY4, and more
 - [Portable File Dialogs](https://github.com/samhocevar/portable-file-dialogs), for native files dialogs
+- [QOI](https://github.com/phoboslab/qoi), for qoi image support
 - [RapidXML](http://rapidxml.sourceforge.net/), for XML Parsing
 - [sol2](https://github.com/ThePhD/sol2), C++ Bindings for LUA
-- [tiny-regex-c](https://github.com/kokke/tiny-regex-c), for RegEx parsing
 - [UTF-8 CPP](https://utfcpp.sourceforge.net/), for UTF-8 handling
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 
@@ -48,6 +49,7 @@ First time here? See the reference documents below to get started using SatDump.
 
 ### Libraries linked against
 - [fftw3](http://fftw.org/), used for all FFT operations
+- [jemalloc](https://jemalloc.net/), for memory allocation optimization on Linux and macOS
 - [libpng](https://github.com/glennrp/libpng), for PNG image loading/saving
 - [nng](https://github.com/nanomsg/nng), for network stuff
 - [PortAudio](https://www.portaudio.com/), used for audio output for NOAA APT
@@ -73,9 +75,11 @@ First time here? See the reference documents below to get started using SatDump.
 - [gl3w](https://github.com/skaslev/gl3w) and [glfw3](https://www.glfw.org/), for OpenGL on Desktop
 
 ### Fonts
-- [Roboto](https://fonts.google.com/specimen/Roboto), for text
-- [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols  
-*Both fonts were merged into a single font.ttf*
+- [Roboto](https://fonts.google.com/specimen/Roboto), for default font
+- [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
+- [Perfect DOS VGA 437](https://www.dafont.com/perfect-dos-vga-437.font), for Phosphor theme
+- [PX Sans Nouveaux](https://www.dafont.com/px-sans-nouveaux.font), for Windows 98 theme
+*3270 Nerd Font and Roboto have been merged into a single font.ttf*
 
 # Developers
 **Lead Developer:** Aang23 (F4LAU)
@@ -89,6 +93,9 @@ First time here? See the reference documents below to get started using SatDump.
 ### Contributors
 - Arved MØKDS
 - Blobtoe
+- CO2ESP
+- Daniel Ekman (SA2KNG)
+- Digitelektro
 - Felix OK9UWU
 - Fred Jansen
 - Jpjonte

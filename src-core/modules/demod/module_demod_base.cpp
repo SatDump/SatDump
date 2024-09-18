@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/config.h"
+#include "common/dsp_source_sink/format_notated.h"
 
 namespace demod
 {
@@ -12,7 +13,7 @@ namespace demod
         if (parameters.count("samplerate") > 0)
             d_samplerate = parameters["samplerate"].get<long>();
         else
-            throw std::runtime_error("Samplerate parameter must be present!");
+            throw satdump_exception("Samplerate parameter must be present!");
 
         if (parameters.count("buffer_size") > 0)
             d_buffer_size = parameters["buffer_size"].get<long>();
@@ -53,6 +54,11 @@ namespace demod
 
     void BaseDemodModule::initb(bool resample_here)
     {
+        if (d_parameters.contains("min_sps"))
+            MIN_SPS = d_parameters["min_sps"].get<float>();
+        if (d_parameters.contains("max_sps"))
+            MAX_SPS = d_parameters["max_sps"].get<float>();
+
         float input_sps = (float)d_samplerate / (float)d_symbolrate; // Compute input SPS
         resample = input_sps > MAX_SPS || input_sps < MIN_SPS;       // If SPS is out of allowed range, we resample
 
@@ -85,11 +91,11 @@ namespace demod
         logger->debug("Final SPS : %f", final_sps);
 
         if (input_sps < 1.0)
-            throw std::runtime_error("SPS is invalid. Must be above 1!");
+            throw satdump_exception("SPS is invalid. Must be above 1!");
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
-            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, d_parameters["baseband_format"].get<std::string>(), d_buffer_size, d_iq_swap);
 
         if (d_dc_block)
             dc_blocker = std::make_shared<dsp::CorrectIQBlock<complex_t>>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
@@ -106,7 +112,7 @@ namespace demod
             if (d_parameters.count("satellite_frequency"))
                 frequency = d_parameters["satellite_frequency"].get<double>();
             else
-                throw std::runtime_error("Satellite Frequency is required for doppler correction!");
+                throw satdump_exception("Satellite Frequency is required for doppler correction!");
 
             if (d_frequency_shift != 0)
                 frequency += d_frequency_shift;
@@ -115,7 +121,7 @@ namespace demod
             if (d_parameters.count("satellite_norad"))
                 norad = d_parameters["satellite_norad"].get<double>();
             else
-                throw std::runtime_error("Satellite NORAD is required for doppler correction!");
+                throw satdump_exception("Satellite NORAD is required for doppler correction!");
 
             // QTH, with a way to override it
             double qth_lon = 0, qth_lat = 0, qth_alt = 0;
@@ -125,7 +131,7 @@ namespace demod
                 qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
                 qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
             }
-            catch (std::exception &e)
+            catch (std::exception &)
             {
             }
 
@@ -218,7 +224,7 @@ namespace demod
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
         {
             intermediate_file_sink->start();
-            intermediate_file_sink->set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
+            intermediate_file_sink->set_output_sample_type(d_dump_intermediate);
             std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)d_samplerate) + "_intermediate_iq";
             logger->trace("Recording intermediate to " + int_file);
             intermediate_file_sink->start_recording(int_file, d_samplerate);
@@ -273,7 +279,7 @@ namespace demod
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz", 4).c_str());
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
@@ -283,7 +289,7 @@ namespace demod
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
 
@@ -338,10 +344,13 @@ namespace demod
 
         if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
         {
-            ImGui::SetCursorPos({ImGui::GetCursorPos().x + ImGui::GetWindowWidth() - 55 * ui_scale,
-                                 ImGui::GetCursorPos().y - 25 * ui_scale});
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(255, 0, 0, 255));
-            if (ImGui::Button("Abort##demodstop"))
+            ImGuiStyle &style = ImGui::GetStyle();
+            ImVec2 cur_pos = ImGui::GetCursorPos();
+            cur_pos.x = ImGui::GetContentRegionMax().x - ImGui::CalcTextSize("Abort").x - style.FramePadding.x * 2.0f;
+            cur_pos.y -= 20.0f * ui_scale + style.ItemSpacing.y;
+            ImGui::SetCursorPos(cur_pos);
+            ImGui::PushStyleColor(ImGuiCol_Button, style::theme.red.Value);
+            if (ImGui::Button("Abort##demodstop", ImVec2(0.0f, 20.0f * ui_scale)))
                 demod_should_stop = true;
             ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())

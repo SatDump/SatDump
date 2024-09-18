@@ -43,14 +43,18 @@ protected:
         work_thread_mtx.lock();
 
     restart:
-        int blockSize = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
+        int blockSize = std::min<int>(samplerate_widget.get_value() / 30, dsp::STREAM_BUFFER_SIZE);
 
+        int kernel_buffer_cnt = 4;
         struct iio_channel *rx0_i, *rx0_q;
         struct iio_buffer *rxbuf;
 
         rx0_i = iio_device_find_channel(dev, "voltage0", 0);
         rx0_q = iio_device_find_channel(dev, "voltage1", 0);
 
+        iio_device_set_kernel_buffers_count(dev, kernel_buffer_cnt);
+
+        logger->trace("PlutoSDR stream with %d buffers of size %d", kernel_buffer_cnt, blockSize);
         iio_channel_enable(rx0_i);
         iio_channel_enable(rx0_q);
 
@@ -61,10 +65,19 @@ protected:
             return;
         }
 
+        uint32_t val = 0;
         while (thread_should_run)
         {
             if (iio_buffer_refill(rxbuf) < 0)
                 break;
+
+            iio_device_reg_read(dev, 0x80000088, &val);
+            if (val & 4)
+            {
+                logger->warn("PlutoSDR underflow!");
+                iio_device_reg_write(dev, 0x80000088, val);
+            }
+
             int16_t *buf = (int16_t *)iio_buffer_first(rxbuf, rx0_i);
             volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, buf, 32768.0f, blockSize * 2);
             output_stream->swap(blockSize);

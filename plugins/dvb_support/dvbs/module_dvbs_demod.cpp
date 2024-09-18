@@ -1,7 +1,7 @@
 #include "module_dvbs_demod.h"
 #include "common/dsp/filter/firdes.h"
 #include "logger.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 #include "dvbs/dvbs_interleaving.h"
 #include "dvbs/dvbs_reedsolomon.h"
 #include "dvbs/dvbs_scrambling.h"
@@ -11,7 +11,7 @@ namespace dvb
 {
     DVBSDemodModule::DVBSDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : BaseDemodModule(input_file, output_file_hint, parameters),
-          viterbi(0.15, 20, VIT_BUF_SIZE, {PHASE_0, PHASE_90})
+          viterbi(0.19, 50, VIT_BUF_SIZE, {PHASE_0, PHASE_90})
     {
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
@@ -22,7 +22,7 @@ namespace dvb
         if (parameters.count("pll_bw") > 0)
             d_loop_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL BW parameter must be present!");
+            throw satdump_exception("PLL BW parameter must be present!");
 
         if (parameters.count("clock_alpha") > 0)
         {
@@ -87,6 +87,8 @@ namespace dvb
         // Deframer
         def = std::make_shared<dvbs::DVBSDefra>(vit->output_stream);
         def->ts_deframer = &ts_deframer;
+        if (d_parameters.contains("fast_tssync"))
+            def->d_fast_deframer = d_parameters["fast_tssync"];
     }
 
     DVBSDemodModule::~DVBSDemodModule()
@@ -127,6 +129,8 @@ namespace dvb
         dvbs::DVBSReedSolomon reed_solomon;
         dvbs::DVBSScrambling scrambler;
 
+        int failed_rs_nums = 0;
+
         int dat_size = 0;
         while (demod_should_run())
         {
@@ -151,6 +155,8 @@ namespace dvb
             module_stats["viterbi_ber"] = viterbi.ber();
             module_stats["viterbi_lock"] = viterbi.getState();
             module_stats["viterbi_rate"] = rate;
+            if (def->d_fast_deframer)
+                module_stats["deframer_synced"] = def->isSynced();
             module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3] + errors[4] + errors[5] + errors[6] + errors[7]) / 8;
 
             if (input_data_type == DATA_FILE)
@@ -160,7 +166,7 @@ namespace dvb
                 lastTime = time(NULL);
 
                 std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l + ", Deframer Sync : " + std::to_string(def->isSynced()) + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
 
             // Read data
@@ -181,17 +187,34 @@ namespace dvb
 
                 dvb_interleaving.deinterleave(current_frame, deinterleaved_frame);
 
-                for (int i = 0; i < 8; i++)
-                    errors[i] = reed_solomon.decode(&deinterleaved_frame[204 * i]);
+                for (int ii = 0; ii < 8; ii++)
+                    errors[ii] = reed_solomon.decode(&deinterleaved_frame[204 * ii]);
 
                 scrambler.descramble(deinterleaved_frame);
 
-                for (int i = 0; i < 8; i++)
+                bool rs_entirely_failed = true;
+                for (int ii = 0; ii < 8; ii++)
                 {
-                    if (output_data_type == DATA_FILE)
-                        data_out.write((char *)&deinterleaved_frame[204 * i], 188);
+                    if (errors[ii] == -1)
+                        deinterleaved_frame[204 * ii + 1] |= 0b10000000;
                     else
-                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * i], 188);
+                        rs_entirely_failed = false;
+
+                    if (output_data_type == DATA_FILE)
+                        data_out.write((char *)&deinterleaved_frame[204 * ii], 188);
+                    else
+                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * ii], 188);
+                }
+
+                if (rs_entirely_failed)
+                {
+                    failed_rs_nums++;
+                    if (failed_rs_nums == 20)
+                    {
+                        viterbi.reset();
+                        def->reset();
+                        failed_rs_nums = 0;
+                    }
                 }
             }
 
@@ -245,15 +268,17 @@ namespace dvb
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
-
-            ImGui::Spacing();
-
+        }
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        {
             ImGui::Button("Viterbi", {200 * ui_scale, 20 * ui_scale});
             {
                 float ber = viterbi.ber();
@@ -275,18 +300,33 @@ namespace dvb
                     rate = "7/8";
 
                 if (viterbi.getState() == 0)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED %s", rate.c_str());
+                    ImGui::TextColored(style::theme.green, "SYNCED %s", rate.c_str());
 
                 ImGui::Text("BER   : ");
                 ImGui::SameLine();
-                ImGui::TextColored(viterbi.getState() == 0 ? IMCOLOR_NOSYNC : IMCOLOR_SYNCED, UITO_C_STR(ber));
+                ImGui::TextColored(viterbi.getState() == 0 ? style::theme.red : style::theme.green, UITO_C_STR(ber));
 
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
-                ImGui::PlotLines("", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
+                                         ImVec2(200 * ui_scale, 50 * ui_scale));
+            }
+
+            if (def->d_fast_deframer)
+            {
+                ImGui::Button("Deframer", {200 * ui_scale, 20 * ui_scale});
+
+                ImGui::Spacing();
+
+                ImGui::Text("State : ");
+                ImGui::SameLine();
+                if (def->isSynced())
+                    ImGui::TextColored(style::theme.green, "SYNCED");
+                else
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
             }
 
             ImGui::Spacing();
@@ -299,18 +339,18 @@ namespace dvb
                     ImGui::SameLine();
 
                     if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
+                        ImGui::TextColored(style::theme.red, "%i ", i);
                     else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
+                        ImGui::TextColored(style::theme.orange, "%i ", i);
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
+                        ImGui::TextColored(style::theme.green, "%i ", i);
                 }
             }
         }
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
 

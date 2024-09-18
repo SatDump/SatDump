@@ -16,6 +16,10 @@
 
 #include "orb/module_orb_decoder.h"
 
+#include "nat2pro/module_nat2pro.h"
+#include "nat2pro/mhs_nat_calibrator.h"
+#include "nat2pro/msg_nat_calibrator.h"
+
 class OthersSupport : public satdump::Plugin
 {
 public:
@@ -27,6 +31,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -42,8 +47,18 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, cloudsat::cpr::CloudSatCPRDecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, scisat1::instruments::SciSat1InstrumentsDecoderModule);
- 
+
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, orb::ORBDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, nat2pro::Nat2ProModule);
+    }
+
+    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    {
+        if (evt.id == "metop_mhs_nat")
+            evt.calibrators.push_back(std::make_shared<nat2pro::MHSNatCalibrator>(evt.calib, evt.products));
+        else if (evt.id == "msg_nat_seviri")
+            evt.calibrators.push_back(std::make_shared<nat2pro::MSGNatCalibrator>(evt.calib, evt.products));
     }
 };
 

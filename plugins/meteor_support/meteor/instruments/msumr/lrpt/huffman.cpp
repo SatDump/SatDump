@@ -1,3 +1,4 @@
+#include <cstring>
 #include "huffman.h"
 #include "tables.h"
 
@@ -27,14 +28,6 @@ namespace meteor
                 return table;
             }
 
-            bool fastEqual(bool *a, std::vector<bool> b, int length)
-            {
-                for (int i = 0; i < length; i++)
-                    if (a[i] != b[i])
-                        return false;
-                return true;
-            }
-
             int64_t getValue(bool *dat, int len)
             {
                 int64_t result = 0;
@@ -61,33 +54,26 @@ namespace meteor
 
                 //std::cout << "DC_BUFL " << bufl << std::endl;
 
-                for (dc_t m : dcCategories)
+                for (const dc_t &m : dcCategories)
                 {
-                    int klen = m.code.size(); // := len(m.code)
-                    if (bufl < klen)
-                    {
+                    if (bufl < m.klen)
                         continue;
-                    }
 
-                    //std::cout << "DC_KLEN " << klen << std::endl;
+                    //std::cout << "DC_KLEN " <<  m.klen << std::endl;
 
-                    if (fastEqual(&buf[0], m.code, klen))
+                    if (std::memcmp(buf, m.code, m.klen * sizeof(bool)) == 0)
                     {
                         // std::cout << "DC_EQUAL" << std::endl;
-                        if (bufl < klen + m.len)
-                        {
+                        if (bufl < m.klen + m.len)
                             break;
-                        }
 
-                        dat = &buf[klen + m.len];
-                        length -= klen + m.len;
-                        //std::cout << "DC_MINUSLEN " << klen + m.len << std::endl;
+                        dat = &buf[m.klen + m.len];
+                        length -= m.klen + m.len;
+                        //std::cout << "DC_MINUSLEN " <<  m.klen + m.len << std::endl;
                         if (m.len == 0)
-                        {
                             return 0;
-                        }
 
-                        return getValue(&buf[klen], m.len);
+                        return getValue(&buf[m.klen], m.len);
                     }
                 }
 
@@ -103,23 +89,20 @@ namespace meteor
             {
                 int bufl = length; // := len(*dat)
                 //std::cout << "AC_BUFL = " << bufl << std::endl;
-                for (ac_t m : acCategories)
+                for (const ac_t &m : acCategories)
                 {
-                    int klen = m.code.size(); // := len(m.code)
-                    if (bufl < klen)
-                    {
+                    if (bufl < m.klen)
                         continue;
-                    }
 
-                    //std::cout << "AC_KLEN " << klen << std::endl;
+                    //std::cout << "AC_KLEN " <<  m.klen << std::endl;
 
-                    if (fastEqual(&dat[0], m.code, klen))
+                    if (std::memcmp(dat, m.code, m.klen * sizeof(bool)) == 0)
                     {
                         if (m.clen == 0 && m.zlen == 0)
                         {
-                            dat = &dat[klen];
-                            length -= klen;
-                            // std::cout << "AC_MINUSLEN0 " << klen  << std::endl;
+                            dat = &dat[m.klen];
+                            length -= m.klen;
+                            // std::cout << "AC_MINUSLEN0 " <<  m.klen  << std::endl;
                             return {EOB[0]};
                         }
 
@@ -127,16 +110,15 @@ namespace meteor
                         std::vector<int64_t> vals(m.zlen + 1);
                         if (!(m.zlen == 15 && m.clen == 0))
                         {
-                            if (bufl < klen + m.clen)
-                            {
+                            if (bufl < m.klen + m.clen)
                                 break;
-                            }
-                            vals[m.zlen] = getValue(&dat[klen], m.clen);
+
+                            vals[m.zlen] = getValue(&dat[m.klen], m.clen);
                             // std::cout << "AC_ZLEN " << m.clen << " VAL " << vals[m.zlen] << std::endl;
                         }
-                        dat = &dat[klen + m.clen];
-                        length -= klen + m.clen;
-                        // std::cout << "AC_MINUSLEN " << klen + m.clen << std::endl;
+                        dat = &dat[m.klen + m.clen];
+                        length -= m.klen + m.clen;
+                        // std::cout << "AC_MINUSLEN " <<  m.klen + m.clen << std::endl;
                         return vals;
                     }
                 }

@@ -15,6 +15,7 @@ namespace noaa_apt
         std::shared_ptr<dsp::AptNoiseReductionBlock> nr;
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
         bool play_audio;
+        bool save_wav = false;
         bool sdrpp_noise_reduction = true;
 
     public:

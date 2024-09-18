@@ -1,14 +1,15 @@
 #include "module_proba_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "core/exception.h"
+#include "common/image/io.h"
 
 namespace proba
 {
@@ -24,7 +25,7 @@ namespace proba
             else if (parameters["satellite"] == "probaV")
                 d_satellite = PROBA_V;
             else
-                throw std::runtime_error("Proba Instruments Decoder : Proba satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+                throw satdump_exception("Proba Instruments Decoder : Proba satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
         }
 
         void PROBAInstrumentsDecoderModule::process()
@@ -38,10 +39,10 @@ namespace proba
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1103, false);
-            ccsds::ccsds_standard::Demuxer demuxer_vcid2(1103, false);
-            ccsds::ccsds_standard::Demuxer demuxer_vcid3(1103, false);
-            ccsds::ccsds_standard::Demuxer demuxer_vcid4(1103, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid1(1103, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid2(1103, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid3(1103, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid4(1103, false);
 
             // std::ofstream output("file.ccsds");
 
@@ -107,7 +108,7 @@ namespace proba
                 data_in.read((char *)&cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);
@@ -303,15 +304,20 @@ namespace proba
 
                     std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation";
 
-                    vegs_readers[i][0]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1");
-                    vegs_readers[i][1]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2");
+                    auto img = vegs_readers[i][0]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_1");
+                    img = vegs_readers[i][1]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_2");
                     auto img3 = vegs_readers[i][2]->getImg();
                     img3.mirror(true, false);
-                    img3.save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3");
+                    image::save_img(img3, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_3");
                     img3.clear();
-                    vegs_readers[i][3]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4");
-                    vegs_readers[i][4]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5");
-                    vegs_readers[i][5]->getImg().save_img(vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6");
+                    img = vegs_readers[i][3]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_4");
+                    img = vegs_readers[i][4]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_5");
+                    img = vegs_readers[i][5]->getImg();
+                    image::save_img(img, vegs_directory + "/Vegetation" + std::to_string(i + 1) + "_6");
 
                     for (int y = 0; y < 6; y++)
                         vegs_status[i][y] = DONE;
@@ -342,7 +348,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CHRIS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", chris_reader->cnt());
+                    ImGui::TextColored(style::theme.green, "%d", chris_reader->cnt());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(chris_status);
 
@@ -350,7 +356,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("HRC");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", hrc_reader->getCount());
+                    ImGui::TextColored(style::theme.green, "%d", hrc_reader->getCount());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(hrc_status);
                 }
@@ -361,7 +367,7 @@ namespace proba
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("SWAP");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", swap_reader->count);
+                    ImGui::TextColored(style::theme.green, "%d", swap_reader->count);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(swap_status);
                 }
@@ -374,7 +380,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch1", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][0]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][0]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][0]);
 
@@ -382,7 +388,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch2", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][1]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][1]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][1]);
 
@@ -390,7 +396,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch2", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][2]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][2]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][2]);
 
@@ -398,7 +404,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch4", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][3]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][3]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][3]);
 
@@ -406,7 +412,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch5", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][4]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][4]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][4]);
 
@@ -414,7 +420,7 @@ namespace proba
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Vegetation %d Ch6", i + 1);
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::TextColored(ImColor(0, 255, 0), "%d", vegs_readers[i][5]->lines);
+                        ImGui::TextColored(style::theme.green, "%d", vegs_readers[i][5]->lines);
                         ImGui::TableSetColumnIndex(2);
                         drawStatus(vegs_status[i][5]);
                     }
@@ -423,7 +429,7 @@ namespace proba
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

@@ -19,7 +19,8 @@ namespace meteor
                               // day_time == 0 && us_time == 0;
             }
 
-            Segment::Segment(uint8_t *data, int length, bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode)
+            Segment::Segment(uint8_t* data, int length, bool partial, bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode),
+                                                                                             partial(partial)
             {
                 // buffer = new bool[length * 8];
                 buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p)
@@ -49,13 +50,13 @@ namespace meteor
 
                     // printf("MCUN %d\n", MCUN);
 
-                    decode(&data[14], length - 14);
-
                     valid = true;
+                    decode(&data[14], length - 14);
                 }
             }
 
-            Segment::Segment() : meteorm2x_mode(false) // We don't care if invalid
+            Segment::Segment() : meteorm2x_mode(false), // We don't care if invalid
+                                 partial(true)
             {
                 valid = false;
             }
@@ -94,7 +95,10 @@ namespace meteor
 
                     if (val == CFC[0])
                     {
-                        valid = false;
+                        if (i == 0)
+                            valid = false;
+                        else
+                            partial = true;
                         // Invalid
                         // std::cout << "INVALID DC" << std::endl;
                         return;
@@ -114,7 +118,10 @@ namespace meteor
                         {
                             // Invalid
                             //  std::cout << "INVALID AC" << std::endl;
-                            valid = false;
+                            if (i == 0)
+                                valid = false;
+                            else
+                                partial = true;
                             return;
                         }
 

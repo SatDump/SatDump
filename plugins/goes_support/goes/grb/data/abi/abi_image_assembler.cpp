@@ -63,12 +63,12 @@ namespace goes
                 image_height = double(ABI_MESO_MODE_HEIGHT) / products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].resolution;
             }
 
-            full_image = image::Image<uint16_t>(image_width, image_height, 1);
+            full_image = image::Image(16, image_width, image_height, 1);
             full_image.fill(0);
             hasImage = false;
         }
 
-        void GRBABIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block)
+        void GRBABIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image &block)
         {
             // Check this is the same image
             if (currentTimeStamp != header.utc_time)
@@ -82,7 +82,8 @@ namespace goes
             }
 
             // Scale image to full bit depth
-            block <<= 16 - products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].bit_depth;
+            for (size_t i = 0; i < block.size(); i++)
+                block.set(i, block.get(i) << 16 - products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].bit_depth);
 
             // Fill
             full_image.draw_image(0, block, header.left_x_coord, header.left_y_coord + header.row_offset_image_block);

@@ -44,12 +44,12 @@ namespace goes
             int image_width = suvi_product.width;
             int image_height = suvi_product.height;
 
-            full_image = image::Image<uint16_t>(image_width, image_height, 1);
+            full_image = image::Image(16, image_width, image_height, 1);
             full_image.fill(0);
             hasImage = false;
         }
 
-        void GRBSUVIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image<uint16_t> &block)
+        void GRBSUVIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image &block)
         {
             // Check this is the same image
             if (currentTimeStamp != header.utc_time)

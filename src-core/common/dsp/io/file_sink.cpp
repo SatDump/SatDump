@@ -34,13 +34,13 @@ namespace dsp
                 output_file.write((char *)input_stream->readBuf, nsamples * sizeof(complex_t));
                 current_size_out += nsamples * sizeof(complex_t);
             }
-            else if (d_sample_format == IS_16 || d_sample_format == WAV_16)
+            else if (d_sample_format == CS_16 || d_sample_format == WAV_16)
             {
                 volk_32f_s32f_convert_16i(buffer_s16, (float *)input_stream->readBuf, 65535, nsamples * 2);
                 output_file.write((char *)buffer_s16, nsamples * sizeof(int16_t) * 2);
                 current_size_out += nsamples * sizeof(int16_t) * 2;
             }
-            else if (d_sample_format == IS_8)
+            else if (d_sample_format == CS_8)
             {
                 volk_32f_s32f_convert_8i(buffer_s8, (float *)input_stream->readBuf, 127, nsamples * 2);
                 output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);
@@ -56,7 +56,7 @@ namespace dsp
 #ifdef BUILD_ZIQ2
             else if (d_sample_format == ZIQ2)
             {
-                int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, input_stream->readBuf, mag_buffer, nsamples, bit_depth);
+                int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, input_stream->readBuf, mag_buffer, nsamples, d_sample_format.ziq_depth);
                 output_file.write((char *)buffer_s8, sz);
                 current_size_out += sz;
             }

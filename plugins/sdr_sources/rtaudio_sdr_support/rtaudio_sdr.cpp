@@ -1,6 +1,6 @@
 #include "rtaudio_sdr.h"
 
-int RtAudioSource::callback_stereo(void */*outputBuffer*/, void *inputBuffer, unsigned int nBufferFrames, double /*streamTime*/, RtAudioStreamStatus /*status*/, void *userData)
+int RtAudioSource::callback_stereo(void * /*outputBuffer*/, void *inputBuffer, unsigned int nBufferFrames, double /*streamTime*/, RtAudioStreamStatus /*status*/, void *userData)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)userData);
     int16_t *buffer = (int16_t *)inputBuffer;
@@ -10,7 +10,7 @@ int RtAudioSource::callback_stereo(void */*outputBuffer*/, void *inputBuffer, un
     return 0;
 }
 
-int RtAudioSource::callback_mono(void */*outputBuffer*/, void *inputBuffer, unsigned int nBufferFrames, double /*streamTime*/, RtAudioStreamStatus /*status*/, void *userData)
+int RtAudioSource::callback_mono(void * /*outputBuffer*/, void *inputBuffer, unsigned int nBufferFrames, double /*streamTime*/, RtAudioStreamStatus /*status*/, void *userData)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)userData);
     int16_t *buffer = (int16_t *)inputBuffer;
@@ -63,9 +63,9 @@ void RtAudioSource::start()
     DSPSampleSource::start();
 
     if (adc_dev.getDeviceCount() < 1)
-        throw std::runtime_error("No audio devices found!");
+        throw satdump_exception("No audio devices found!");
 
-    adc_prm.deviceId = d_sdr_id;
+    adc_prm.deviceId = std::stoi(d_sdr_id);
     adc_prm.nChannels = channel_mode;
     adc_prm.firstChannel = 0;
 
@@ -138,7 +138,7 @@ void RtAudioSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+    throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t RtAudioSource::get_samplerate()
@@ -157,7 +157,7 @@ std::vector<dsp::SourceDescriptor> RtAudioSource::getAvailableSources()
     {
         info = adc_dev.getDeviceInfo(i);
         if (info.probed == true)
-            results.push_back({"rtaudio", "RtAudio - " + info.name, i});
+            results.push_back({"rtaudio", "RtAudio - " + info.name, std::to_string(i)});
     }
 
     return results;

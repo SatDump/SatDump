@@ -24,7 +24,8 @@ namespace terra
     {
         BaseDemodModule::initb();
         rrc = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate * 2, 0.5f, 31));
-        pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.004, 2);
+        float max_offset = dsp::hz_to_rad(1e6, final_samplerate);
+        pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, 0.004, 2, max_offset);
         rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(pll->output_stream, ((float)final_samplerate / (float)d_symbolrate) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.0001f);
     }
 

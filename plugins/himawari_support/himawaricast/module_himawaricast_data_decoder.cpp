@@ -11,12 +11,14 @@
 #include "lrit_header.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/bzlib/bzlib.h"
+#include "common/image/io.h"
 
 namespace himawari
 {
     namespace himawaricast
     {
-        HimawariCastDataDecoderModule::HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        HimawariCastDataDecoderModule::HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
+                                                                                                                                                        productizer("ahi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
         }
 
@@ -36,10 +38,7 @@ namespace himawari
             {
                 std::string channel_name = dec.first;
                 std::string current_filename = segmented_decoders_filenames[channel_name];
-                segmented_decoders[channel_name].image.normalize();
-                if (!std::filesystem::exists(directory + "/" + channel_name))
-                    std::filesystem::create_directory(directory + "/" + channel_name);
-                segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
+                saveImageP(segmented_decoders[channel_name].meta, segmented_decoders[channel_name].image);
                 // segmented_decoders[channel_name].image.clear();
                 // segmented_decoders.erase(channel_name);
                 // segmented_decoders_filenames.erase(channel_name);
@@ -107,6 +106,18 @@ namespace himawari
             return ret;
         }
 
+        void HimawariCastDataDecoderModule::saveImageP(HIMxRITProductMeta meta, image::Image &img)
+        {
+            if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
+            {
+                image::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
+            }
+            else
+            {
+                productizer.saveImage(img, img.depth() /*THIS IS VALID FOR CALIBRATION*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+            }
+        }
+
         void HimawariCastDataDecoderModule::process()
         {
             std::ifstream data_in;
@@ -139,6 +150,9 @@ namespace himawari
             uint8_t mpeg_ts_all[188 * 1000];
             mpeg_ts::TSDemux ts_demux;
             fazzt::FazztProcessor fazzt_processor(1411);
+
+            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
+                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -229,31 +243,19 @@ namespace himawari
 
                                     if (file.name.find("IMG_") != std::string::npos)
                                     {
-                                        auto lrit_data = file.data;
-                                        PrimaryHeader primary_header(&lrit_data[0]);
+                                        ::lrit::LRITFile lfile;
+                                        lfile.lrit_data = file.data;
+                                        lfile.parseHeaders();
 
-                                        if (lrit_data.size() != (primary_header.data_field_length / 8) + primary_header.total_header_length)
+                                        ::lrit::PrimaryHeader primary_header = lfile.getHeader<::lrit::PrimaryHeader>();
+
+                                        if (lfile.lrit_data.size() != (primary_header.data_field_length / 8) + primary_header.total_header_length)
                                             continue;
 
-                                        // Get all other headers
-                                        std::map<int, int> all_headers;
-                                        for (uint32_t i = 0; i < primary_header.total_header_length;)
-                                        {
-                                            uint8_t type = lrit_data[i];
-                                            uint16_t record_length = lrit_data[i + 1] << 8 | lrit_data[i + 2];
-
-                                            if (record_length == 0)
-                                                break;
-
-                                            all_headers.emplace(std::pair<int, int>(type, i));
-
-                                            i += record_length;
-                                        }
-
                                         // Check if this has a filename
-                                        if (all_headers.count(AnnotationRecord::TYPE) > 0)
+                                        if (lfile.hasHeader<::lrit::AnnotationRecord>())
                                         {
-                                            AnnotationRecord annotation_record(&lrit_data[all_headers[AnnotationRecord::TYPE]]);
+                                            ::lrit::AnnotationRecord annotation_record = lfile.getHeader<::lrit::AnnotationRecord>();
 
                                             std::string current_filename = std::string(annotation_record.annotation_text.data());
 
@@ -263,30 +265,46 @@ namespace himawari
                                             logger->info("New xRIT file : " + current_filename);
 
                                             // Check if this is image data
-                                            if (all_headers.count(ImageStructureRecord::TYPE) > 0)
+                                            if (lfile.hasHeader<::lrit::ImageStructureRecord>())
                                             {
-                                                ImageStructureRecord image_structure_record(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                                                ::lrit::ImageStructureRecord image_structure_record = lfile.getHeader<::lrit::ImageStructureRecord>();
                                                 logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
-                                                image::Image<uint16_t> image;
+                                                HIMxRITProductMeta lmeta;
+                                                lmeta.filename = file.name;
 
+                                                // Try to parse navigation
+                                                if (lfile.hasHeader<::lrit::ImageNavigationRecord>())
+                                                    lmeta.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(lfile.getHeader<::lrit::ImageNavigationRecord>());
+
+                                                // Try to parse calibration
+                                                if (lfile.hasHeader<::lrit::ImageDataFunctionRecord>())
+                                                    lmeta.image_data_function_record = std::make_shared<::lrit::ImageDataFunctionRecord>(lfile.getHeader<::lrit::ImageDataFunctionRecord>());
+
+                                                // Parse image
+                                                image::Image image;
                                                 if (image_structure_record.bit_per_pixel == 8)
                                                 {
-                                                    image = image::Image<uint8_t>(&lrit_data[primary_header.total_header_length],
-                                                                                  image_structure_record.columns_count,
-                                                                                  image_structure_record.lines_count, 1)
-                                                                .to16bits();
+                                                    image = image::Image(&lfile.lrit_data[primary_header.total_header_length],
+                                                                         8,
+                                                                         image_structure_record.columns_count,
+                                                                         image_structure_record.lines_count, 1);
                                                 }
                                                 else if (image_structure_record.bit_per_pixel == 16)
                                                 {
-                                                    image::Image<uint16_t> image2(image_structure_record.columns_count,
-                                                                                  image_structure_record.lines_count, 1);
+                                                    image::Image image2(16,
+                                                                        image_structure_record.columns_count,
+                                                                        image_structure_record.lines_count, 1);
 
                                                     for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                                        image2[i] = ((&lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
-                                                                     (&lrit_data[primary_header.total_header_length])[i * 2 + 1]);
+                                                        image2.set(i, ((&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
+                                                                       (&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 1]));
 
                                                     image = image2;
+
+                                                    // Needs to be shifted up by 4
+                                                    for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
+                                                        image.set(i, image.get(i) << 6);
                                                 }
 
                                                 std::string channel_name = current_filename.substr(4, 7);
@@ -295,12 +313,60 @@ namespace himawari
 
                                                 logger->debug("Channel %s segment %d id %d", channel_name.c_str(), segment, id);
 
-                                                if (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete())
+                                                // Parse channel number
+                                                if (channel_name == "DK01VIS")
+                                                    lmeta.channel = 3;
+                                                else if (channel_name == "DK01IR4")
+                                                    lmeta.channel = 7;
+                                                else if (channel_name == "DK01IR3")
+                                                    lmeta.channel = 8;
+                                                else if (channel_name == "DK01IR1")
+                                                    lmeta.channel = 13;
+                                                else if (channel_name == "DK01IR2")
+                                                    lmeta.channel = 15;
+                                                else if (channel_name == "DK01B04")
+                                                    lmeta.channel = 4;
+                                                else if (channel_name == "DK01B05")
+                                                    lmeta.channel = 5;
+                                                else if (channel_name == "DK01B06")
+                                                    lmeta.channel = 6;
+                                                else if (channel_name == "DK01B07")
+                                                    lmeta.channel = 7;
+                                                else if (channel_name == "DK01B08")
+                                                    lmeta.channel = 8;
+                                                else if (channel_name == "DK01B09")
+                                                    lmeta.channel = 9;
+                                                else if (channel_name == "DK01B10")
+                                                    lmeta.channel = 10;
+                                                else if (channel_name == "DK01B11")
+                                                    lmeta.channel = 11;
+                                                else if (channel_name == "DK01B12")
+                                                    lmeta.channel = 12;
+                                                else if (channel_name == "DK01B13")
+                                                    lmeta.channel = 13;
+                                                else if (channel_name == "DK01B14")
+                                                    lmeta.channel = 14;
+                                                else if (channel_name == "DK01B15")
+                                                    lmeta.channel = 15;
+                                                else if (channel_name == "DK01B16")
+                                                    lmeta.channel = 16;
+
+                                                // Scan timestamp
                                                 {
-                                                    segmented_decoders[channel_name].image.normalize();
-                                                    if (!std::filesystem::exists(directory + "/" + channel_name))
-                                                        std::filesystem::create_directory(directory + "/" + channel_name);
-                                                    segmented_decoders[channel_name].image.save_img(directory + "/" + channel_name + "/" + current_filename.substr(0, current_filename.size() - 4));
+                                                    time_t tttt = time(0);
+                                                    std::tm scanTimestamp = *gmtime(&tttt);
+                                                    std::string scanTime = current_filename.substr(12, 12);
+                                                    strptime(scanTime.c_str(), "%Y%m%d%H%M", &scanTimestamp);
+                                                    scanTimestamp.tm_sec = 0;
+                                                    lmeta.scan_time = timegm(&scanTimestamp);
+                                                }
+
+                                                lmeta.satellite_name = "Himawari";
+                                                lmeta.satellite_short_name = "HIM";
+
+                                                if (segmented_decoders.count(channel_name) != 0 && (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete()))
+                                                {
+                                                    saveImageP(segmented_decoders[channel_name].meta, segmented_decoders[channel_name].image);
                                                     segmented_decoders[channel_name].image.clear();
                                                     segmented_decoders.erase(channel_name);
                                                     segmented_decoders_filenames.erase(channel_name);
@@ -308,19 +374,34 @@ namespace himawari
 
                                                 if (segmented_decoders.count(channel_name) == 0)
                                                 {
-                                                    segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
+                                                    segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(image.depth(), 10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
                                                     segmented_decoders_filenames.insert({channel_name, current_filename});
+                                                    segmented_decoders[channel_name].meta = lmeta;
                                                 }
 
-                                                segmented_decoders[channel_name].pushSegment(image.data(), segment);
+                                                segmented_decoders[channel_name].pushSegment(image, segment);
                                             }
+                                        }
+                                        else
+                                        {
+                                            logger->debug("Saving " + file.name + " size " + std::to_string(file.size));
+
+                                            if (!std::filesystem::exists(directory + "/LRIT"))
+                                                std::filesystem::create_directories(directory + "/LRIT");
+
+                                            std::ofstream output_himawari_file(directory + "/LRIT/" + file.name);
+                                            output_himawari_file.write((char *)file.data.data(), file.data.size());
+                                            output_himawari_file.close();
                                         }
                                     }
                                     else
                                     {
                                         logger->debug("Saving " + file.name + " size " + std::to_string(file.size));
 
-                                        std::ofstream output_himawari_file(directory + "/" + file.name);
+                                        if (!std::filesystem::exists(directory + "/ADD"))
+                                            std::filesystem::create_directories(directory + "/ADD");
+
+                                        std::ofstream output_himawari_file(directory + "/ADD/" + file.name);
                                         output_himawari_file.write((char *)file.data.data(), file.data.size());
                                         output_himawari_file.close();
                                     }
@@ -352,7 +433,7 @@ namespace himawari
             ImGui::Begin("HimawariCast Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
             if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

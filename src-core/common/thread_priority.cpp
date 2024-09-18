@@ -40,3 +40,24 @@ void setLowestThreadPriority(std::thread &th)
         logger->error("Could not set thread priority!");
 #endif
 }
+
+void setLowestThreadPriority()
+{
+#ifdef _WIN32
+    if (SetThreadPriority(GetCurrentThread(), -2) == 0)
+        logger->error("Could not set thread priority!");
+#elif defined(__APPLE__)
+    sched_param sch_params;
+    int policy = 0;
+    pthread_getschedparam(pthread_self(), &policy, &sch_params);
+    sch_params.sched_priority = PRIORITY_LOWEST;
+    if (pthread_setschedparam(pthread_self(), SCHED_RR, &sch_params))
+        logger->error("Could not set thread priority!");
+#else
+    sched_param sch_params;
+    int policy = 0;
+    pthread_getschedparam(pthread_self(), &policy, &sch_params);
+    if (pthread_setschedparam(pthread_self(), SCHED_IDLE, &sch_params))
+        logger->error("Could not set thread priority!");
+#endif
+}

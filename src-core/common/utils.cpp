@@ -5,6 +5,11 @@
 #include <locale>
 #include <codecvt>
 
+#include "core/config.h"
+#include "common/dsp_source_sink/format_notated.h"
+
+#include <curl/curl.h>
+
 void signed_soft_to_unsigned(int8_t *in, uint8_t *out, int nsamples)
 {
     for (int i = 0; i < nsamples; i++)
@@ -46,101 +51,143 @@ bool isStringPresent(std::string searched, std::string keyword)
     return found_it != std::string::npos;
 }
 
-#include <nng/nng.h>
-#include <nng/supplemental/http/http.h>
 #include "logger.h"
 #include "satdump_vars.h"
 
-#if defined(NNG_OPT_TLS_CONFIG)
-#include <nng/supplemental/tls/tls.h>
-#endif
+size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::string *s)
+{
+    size_t newLength = size * nmemb;
+    try
+    {
+        s->append((char *)contents, newLength);
+    }
+    catch (std::bad_alloc &)
+    {
+        return 0;
+    }
+    return newLength;
+}
 
 int perform_http_request(std::string url_str, std::string &result)
 {
-    nng_http_client *client;
-    nng_url *url;
-    nng_aio *aio;
-    nng_http_req *req;
-    nng_http_res *res;
-    int rv;
+    CURL *curl;
+    CURLcode res;
+    bool ret = 1;
+    char error_buffer[CURL_ERROR_SIZE] = { 0 };
 
-    int return_val = 0;
+    curl_global_init(CURL_GLOBAL_ALL);
 
-    if (((rv = nng_url_parse(&url, url_str.c_str())) != 0) ||
-        ((rv = nng_http_client_alloc(&client, url)) != 0))
+    curl = curl_easy_init();
+    if (curl)
     {
-        if (rv == NNG_ENOTSUP)
-            logger->trace("Protocol not supported!");
-        return 1;
+        curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+        {
+            if(strlen(error_buffer))
+                logger->error("curl_easy_perform() failed: %s", error_buffer);
+            else
+                logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        }
+
+        curl_easy_cleanup(curl);
+        ret = 0;
     }
-
-// HTTPS
-#if defined(NNG_OPT_TLS_CONFIG)
-    nng_tls_config *tls_config;
-    nng_tls_config_alloc(&tls_config, NNG_TLS_MODE_CLIENT);
-    nng_tls_config_auth_mode(tls_config, NNG_TLS_AUTH_MODE_NONE);
-    nng_http_client_set_tls(client, tls_config);
-#endif
-
-    if (((rv = nng_http_req_alloc(&req, url)) != 0) ||
-        ((rv = nng_http_res_alloc(&res)) != 0) ||
-        ((rv = nng_aio_alloc(&aio, NULL, NULL)) != 0))
-        return 1;
-
-    nng_aio_set_timeout(aio, 30000);
-
-    nng_http_req_add_header(req, "User-Agent", std::string("SatDump/v" + (std::string)SATDUMP_VERSION).c_str());
-
-    // Start operation
-    nng_http_client_transact(client, req, res, aio);
-
-    if (nng_http_res_get_status(res) != NNG_HTTP_STATUS_OK)
-    {
-        logger->trace("HTTP Server Responded: %d %s", nng_http_res_get_status(res), nng_http_res_get_reason(res));
-        return 1;
-    }
-
-    // Wait for it to complete.
-    nng_aio_wait(aio);
-
-    if ((rv = nng_aio_result(aio)) != 0)
-    {
-        logger->trace("HTTP Request Error!");
-        return_val = 1;
-    }
-
-    // Load result
-    char *data_ptr;
-    size_t data_sz = 0;
-    nng_http_res_get_data(res, (void **)&data_ptr, &data_sz);
-
-    result = std::string(data_ptr, &data_ptr[data_sz]);
-
-    // Free everything
-    nng_http_client_free(client);
-    nng_aio_free(aio);
-    nng_http_res_free(res);
-    nng_http_req_free(req);
-
-#if defined(NNG_OPT_TLS_CONFIG)
-    nng_tls_config_free(tls_config);
-#endif
-
-    return return_val;
+    curl_global_cleanup();
+    return ret;
 }
 
-std::string timestamp_to_string(double timestamp)
+int perform_http_request_post(std::string url_str, std::string &result, std::string post_req)
+{
+    CURL *curl;
+    CURLcode res;
+    bool ret = 1;
+    char error_buffer[CURL_ERROR_SIZE] = { 0 };
+
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    curl = curl_easy_init();
+    if (curl)
+    {
+        curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error_buffer);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+        {
+            if(strlen(error_buffer))
+                logger->error("curl_easy_perform() failed: %s", error_buffer);
+            else
+                logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        }
+
+        curl_easy_cleanup(curl);
+        ret = 0;
+    }
+    curl_global_cleanup();
+    return ret;
+}
+
+std::string timestamp_to_string(double timestamp, bool local)
 {
     if (timestamp < 0)
         timestamp = 0;
+
     time_t tttime = timestamp;
-    std::tm *timeReadable = gmtime(&tttime);
-    return std::to_string(timeReadable->tm_year + 1900) + "/" +
-           (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "/" +
-           (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + " " +
-           (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + ":" +
-           (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + ":" +
-           (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+    std::tm *timeReadable = (local ? localtime(&tttime) : gmtime(&tttime));
+    std::stringstream timestamp_string;
+    std::string timezone_string = "";
+
+    if (local)
+    {
+#ifdef _WIN32
+        size_t tznameSize = 0;
+        char* tznameBuffer = NULL;
+        timezone_string = " ";
+        _get_tzname(&tznameSize, NULL, 0, timeReadable->tm_isdst);
+        if (tznameSize > 0)
+        {
+            if (nullptr != (tznameBuffer = (char*)(malloc(tznameSize))))
+            {
+                if (_get_tzname(&tznameSize, tznameBuffer, tznameSize, timeReadable->tm_isdst) == 0)
+                    for (size_t i = 0; i < tznameSize; i++)
+                        if (std::isupper(tznameBuffer[i]))
+                            timezone_string += tznameBuffer[i];
+
+                free(tznameBuffer);
+            }
+        }
+        if (timezone_string == " ")
+            timezone_string = " Local";
+#else
+        timezone_string = " " + std::string(timeReadable->tm_zone);
+#endif
+    }
+
+    timestamp_string << std::setfill('0')
+        << timeReadable->tm_year + 1900 << "/"
+        << std::setw(2) << timeReadable->tm_mon + 1 << "/"
+        << std::setw(2) << timeReadable->tm_mday << " "
+        << std::setw(2) << timeReadable->tm_hour << ":"
+        << std::setw(2) << timeReadable->tm_min << ":"
+        << std::setw(2) << timeReadable->tm_sec
+        << timezone_string;
+
+    return timestamp_string.str();
 }
 
 double get_median(std::vector<double> values)
@@ -172,4 +219,112 @@ std::wstring s2ws(const std::string &str)
     using convert_typeX = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_typeX, wchar_t> converterX;
     return converterX.from_bytes(str);
+}
+
+std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, std::string pipeline_name, std::string folder)
+{
+    std::tm *timeReadable = gmtime(&timevalue);
+    if (folder == "")
+    {
+        folder = satdump::config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>();
+#ifdef __ANDROID__
+        if (folder == "./live_output")
+            folder = "/storage/emulated/0/live_output";
+#endif
+    }
+    std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+    std::string output_dir = folder + "/" + timestamp + "_" + pipeline_name + "_" + format_notated(frequency, "Hz");
+    std::filesystem::create_directories(output_dir);
+    logger->info("Generated folder name : " + output_dir);
+    return output_dir;
+}
+
+std::string prepareBasebandFileName(double timeValue_precise, uint64_t samplerate, uint64_t frequency)
+{
+    const time_t timevalue = timeValue_precise;
+    std::tm *timeReadable = gmtime(&timevalue);
+    std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+
+    if (satdump::config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
+    {
+        std::ostringstream ss;
+
+        double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
+        ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0') << ms_val;
+        timestamp += ss.str();
+    }
+
+    return timestamp + "_" + std::to_string(samplerate) + "SPS_" + std::to_string(frequency) + "Hz";
+}
+
+void hsv_to_rgb(float h, float s, float v, uint8_t *rgb)
+{
+    float out_r, out_g, out_b;
+
+    if (s == 0.0f)
+    {
+        // gray
+        out_r = out_g = out_b = v;
+
+        rgb[0] = out_r * 255;
+        rgb[1] = out_g * 255;
+        rgb[2] = out_b * 255;
+
+        return;
+    }
+
+    h = fmod(h, 1.0f) / (60.0f / 360.0f);
+    int i = (int)h;
+    float f = h - (float)i;
+    float p = v * (1.0f - s);
+    float q = v * (1.0f - s * f);
+    float t = v * (1.0f - s * (1.0f - f));
+
+    switch (i)
+    {
+    case 0:
+        out_r = v;
+        out_g = t;
+        out_b = p;
+        break;
+    case 1:
+        out_r = q;
+        out_g = v;
+        out_b = p;
+        break;
+    case 2:
+        out_r = p;
+        out_g = v;
+        out_b = t;
+        break;
+    case 3:
+        out_r = p;
+        out_g = q;
+        out_b = v;
+        break;
+    case 4:
+        out_r = t;
+        out_g = p;
+        out_b = v;
+        break;
+    case 5:
+    default:
+        out_r = v;
+        out_g = p;
+        out_b = q;
+        break;
+    }
+
+    rgb[0] = out_r * 255;
+    rgb[1] = out_g * 255;
+    rgb[2] = out_b * 255;
 }

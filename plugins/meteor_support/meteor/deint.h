@@ -29,7 +29,7 @@ namespace meteor
         static int autocorrelate(phase_t *rotation, int period, uint8_t *hard, int len);
 
     private: // Deinterleaver
-        int8_t _deint[INTER_BRANCH_COUNT * INTER_BRANCH_COUNT * INTER_BRANCH_DELAY];
+        int8_t _deint[INTER_BRANCH_COUNT * INTER_BRANCH_COUNT * INTER_BRANCH_DELAY] = { 0 };
         int _cur_branch = 0;
         int _offset = 0;
 
@@ -38,8 +38,8 @@ namespace meteor
         int deinterleave_expected_sync_offset();
 
     private: // Utils
-        int offset;
-        int8_t from_prev[INTER_MARKER_STRIDE];
+        int offset = 0;
+        int8_t from_prev[INTER_MARKER_STRIDE] = { 0 };
         phase_t rotation;
 
     public:

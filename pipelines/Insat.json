@@ -1,7 +1,13 @@
 {
     "insat_3d_imager": {
         "name": "Insat-3D Imager",
-        "live": false,
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
         "frequencies": [],
         "parameters": {
             "samplerate": {

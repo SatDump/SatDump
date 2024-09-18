@@ -3,8 +3,10 @@
 #include "resources.h"
 #include "core/module.h"
 #include "core/style.h"
-#include "common/projection/reprojector.h"
+#include "common/widgets/themed_widgets.h"
 #include "main_ui.h"
+
+#include "common/image/meta.h"
 
 namespace satdump
 {
@@ -34,7 +36,7 @@ namespace satdump
         {
             handler_thread_pool.clear_queue();
             handler_thread_pool.push([this](int)
-                            {   async_image_mutex.lock();
+                                     {   async_image_mutex.lock();
                                     is_updating = true;
                                     logger->info("Update map...");
 
@@ -49,7 +51,6 @@ namespace satdump
                                     logger->info("Done");
                                     is_updating = false;
                                     async_image_mutex.unlock(); });
-
         }
         else if (selected_visualization_id == 1)
         {
@@ -92,11 +93,11 @@ namespace satdump
             if (ImGui::Button("Save"))
             {
                 handler_thread_pool.push([this](int)
-                    {   async_image_mutex.lock();
+                                         {   async_image_mutex.lock();
                         is_updating = true;
                         logger->info("Saving Image...");
                         std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_map", default_path, "Save Map", &map_img, &viewer_app->save_type);
+                        std::string saved_at = save_image_dialog(products->instrument_name + "_map", default_path, "Save Map", &map_img, &viewer_app->save_type); 
 
                         if (saved_at == "")
                             logger->info("Save cancelled");
@@ -110,7 +111,10 @@ namespace satdump
 
             if (!canBeProjected())
                 style::beginDisabled();
-            ImGui::Checkbox("Project", &should_project);
+            if (ImGui::Button("Add to Projections"))
+                addCurrentToProjections();
+            ImGui::SameLine();
+            proj_notif.draw();
             if (!canBeProjected())
                 style::endDisabled();
         }
@@ -128,7 +132,8 @@ namespace satdump
             for (int i = 0; i < (int)products->channel_counts.size(); i++)
             {
                 ImGui::BeginChild(("RadiationPlotChild##" + std::to_string(i)).c_str(), ImVec2(ImGui::GetWindowWidth(), 50 * ui_scale));
-                ImGui::PlotLines(products->get_channel_name(i).c_str(), graph_values[i].data(), graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth() - 100 * ui_scale, 30 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, products->get_channel_name(i).c_str(), graph_values[i].data(),
+                                         graph_values[i].size(), 0, NULL, 0, 255, ImVec2(ImGui::GetWindowWidth() - 100 * ui_scale, 30 * ui_scale));
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
@@ -148,47 +153,65 @@ namespace satdump
         return selected_visualization_id == 0;
     }
 
-    bool RadiationViewerHandler::hasProjection()
-    {
-        return projection_ready && should_project;
-    }
-
-    bool RadiationViewerHandler::shouldProject()
-    {
-        return should_project;
-    }
-
-    void RadiationViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+    void RadiationViewerHandler::addCurrentToProjections()
     {
         if (canBeProjected())
         {
-            RadiationMapCfg cfg;
-            cfg.channel = select_channel_image_id + 1;
-            cfg.radius = 5;
-            cfg.min = map_min;
-            cfg.max = map_max;
-            auto map_img = make_radiation_map(*products, cfg, true);
+            try
+            {
+                RadiationMapCfg cfg;
+                cfg.channel = select_channel_image_id + 1;
+                cfg.radius = 5;
+                cfg.min = map_min;
+                cfg.max = map_max;
+                auto map_img = make_radiation_map(*products, cfg, true);
 
-            reprojection::ReprojectionOperation op;
-            op.source_prj_info = nlohmann::json::parse("{\"type\":\"equirectangular\",\"tl_lon\":-180,\"tl_lat\":90,\"br_lon\":180,\"br_lat\":-90}");
-            op.target_prj_info = settings;
-            op.img = map_img;
+                double tl_lon = -180;
+                double tl_lat = 90;
+                double br_lon = 180;
+                double br_lat = -90;
 
-            op.output_width = width;
-            op.output_height = height;
+                nlohmann::json proj_cfg;
+                proj_cfg["type"] = "equirec";
+                proj_cfg["offset_x"] = tl_lon;
+                proj_cfg["offset_y"] = tl_lat;
+                proj_cfg["scalar_x"] = (br_lon - tl_lon) / double(map_img.width());
+                proj_cfg["scalar_y"] = (br_lat - tl_lat) / double(map_img.height());
 
-            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-            projected_img = res.img;
-            projection_ready = true;
+                image::set_metadata_proj_cfg(map_img, proj_cfg);
+
+                // Create projection title
+                std::string timestring, object_name, instrument_name, composite_name;
+                composite_name = "Channel " + std::to_string(select_channel_image_id);
+                if (products->has_timestamps(select_channel_image_id))
+                    timestring = "[" + timestamp_to_string(get_median(products->get_timestamps(select_channel_image_id))) + "] ";
+                else
+                    timestring = "";
+                if (products->has_tle())
+                    object_name = products->get_tle().name;
+                else
+                    object_name = "";
+                if (timestring != "" || object_name != "")
+                    object_name += "\n";
+                if (instrument_cfg.contains("name"))
+                    instrument_name = instrument_cfg["name"];
+                else
+                    instrument_name = products->instrument_name;
+
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, map_img});
+
+                //                if (rotate_image)
+                //                    viewer_app->projection_layers.front().img.mirror(true, true);
+                proj_notif.set_message(style::theme.green, "Added!");
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not project image! %s", e.what());
+            }
         }
         else
         {
             logger->error("Current image can't be projected!");
         }
-    }
-
-    image::Image<uint16_t> &RadiationViewerHandler::getProjection()
-    {
-        return projected_img;
     }
 }

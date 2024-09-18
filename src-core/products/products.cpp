@@ -9,6 +9,8 @@
 #include "processor/image_processor.h"
 #include "processor/radiation_processor.h"
 #include "processor/scatterometer_processor.h"
+#include "common/utils.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -32,15 +34,26 @@ namespace satdump
         logger->info(file);
         // Read file
         std::vector<uint8_t> cbor_data;
-        std::ifstream in_file(file, std::ios::binary);
-        while (!in_file.eof())
+        if (file.find("http") == 0)
         {
-            uint8_t b;
-            in_file.read((char *)&b, 1);
-            cbor_data.push_back(b);
+            std::string res;
+            if (perform_http_request(file, res))
+                throw satdump_exception("Could not download from : " + file);
+            for (auto &v : res)
+                cbor_data.push_back(*((uint8_t *)&v));
         }
-        in_file.close();
-        cbor_data.pop_back();
+        else
+        {
+            std::ifstream in_file(file, std::ios::binary);
+            while (!in_file.eof())
+            {
+                uint8_t b;
+                in_file.read((char *)&b, 1);
+                cbor_data.push_back(b);
+            }
+            in_file.close();
+            cbor_data.pop_back();
+        }
         contents = nlohmann::json::from_cbor(cbor_data);
 
         instrument_name = contents["instrument"].get<std::string>();
@@ -56,7 +69,8 @@ namespace satdump
         std::shared_ptr<Products> final_products;
         Products raw_products;
 
-        if (std::filesystem::is_directory(path))
+        if (std::filesystem::is_directory(path) ||
+            (path.find("http") == 0 && path.find(".cbor") == std::string::npos))
             path = path + "/product.cbor";
 
         raw_products.load(path);

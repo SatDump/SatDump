@@ -3,6 +3,8 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 
+#include "common/codings/differential/nrzm.h"
+
 namespace generic
 {
     Soft2HardModule::Soft2HardModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -42,10 +44,12 @@ namespace generic
         logger->info("Using input frames " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".frm");
 
-        uint8_t byte_shifter;
+        uint8_t byte_shifter = 0;
         int bitshift_in_byte = 0;
         uint8_t byte_buffer[256];
         int bytes_in_buf = 0;
+
+        diff::NRZMDiff diff;
 
         time_t lastTime = 0;
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
@@ -72,6 +76,7 @@ namespace generic
 
                     if (bytes_in_buf == 256)
                     {
+                         diff.decode(byte_buffer, 256);
                         if (output_data_type == DATA_FILE)
                             data_out.write((char *)byte_buffer, 256);
                         else
@@ -101,7 +106,7 @@ namespace generic
         ImGui::Begin("Soft To Hard", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

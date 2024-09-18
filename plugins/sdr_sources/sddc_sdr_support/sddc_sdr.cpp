@@ -67,7 +67,7 @@ void SDDCSource::open()
     {
         sddc_dev_obj = sddc_open(d_sdr_id, resources::getResourcePath("sddc/SDDC_FX3.img").c_str());
         if (sddc_dev_obj == NULL)
-            throw std::runtime_error("Could not open SDDC device!");
+            throw satdump_exception("Could not open SDDC device!");
     }
     is_open = true;
 
@@ -189,7 +189,7 @@ void SDDCSource::set_samplerate(uint64_t samplerate)
         }
     }
 
-    throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate * 2) + "!");
+    throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate * 2) + "!");
 }
 
 uint64_t SDDCSource::get_samplerate()
@@ -211,7 +211,7 @@ std::vector<dsp::SourceDescriptor> SDDCSource::getAvailableSources()
 
         const char *name = sddc_get_hw_model_name(device);
 
-        results.push_back({"sddc", std::string(name) + " #" + std::to_string(i), i});
+        results.push_back({"sddc", std::string(name) + " #" + std::to_string(i), std::to_string(i)});
 
         sddc_close(device);
     }

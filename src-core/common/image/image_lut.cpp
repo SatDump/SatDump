@@ -7,7 +7,7 @@
 namespace image
 {
     template <typename T>
-    Image<T> legacy_create_lut(int channels, int width, int points, std::vector<T> data)
+    Image legacy_create_lut(int channels, int width, int points, std::vector<T> data)
     {
         Image<T> out(data.data(), points, 1, channels);
         out.resize_bilinear(width, 1, false);
@@ -15,7 +15,7 @@ namespace image
     }
 
     template <typename T>
-    Image<T> scale_lut(int width, int x0, int x1, Image<T> in)
+    Image scale_lut(int width, int x0, int x1, Image in)
     {
         in.resize(x1 - x0, 1);
         image::Image<T> out(width, 1, 3);
@@ -25,7 +25,7 @@ namespace image
     }
 
     template <typename T>
-    Image<T> LUT_jet()
+    Image LUT_jet()
     {
         return legacy_create_lut<T>(3,
                                     256,
@@ -44,14 +44,14 @@ namespace image
                                      0});
     }
 
-    template Image<uint8_t> legacy_create_lut(int, int, int, std::vector<uint8_t>);
-    template Image<uint16_t> legacy_create_lut(int, int, int, std::vector<uint16_t>);
+    template Image legacy_create_lut<uint8_t>(int, int, int, std::vector<uint8_t>);
+    template Image legacy_create_lut<uint16_t>(int, int, int, std::vector<uint16_t>);
 
-    template Image<uint8_t> scale_lut(int, int, int, Image<uint8_t>);
-    template Image<uint16_t> scale_lut(int, int, int, Image<uint16_t>);
+    template Image scale_lut<uint8_t>(int, int, int, Image);
+    template Image scale_lut<uint16_t>(int, int, int, Image);
 
-    template Image<uint8_t> LUT_jet();
-    template Image<uint16_t> LUT_jet();
+    template Image LUT_jet<uint8_t>();
+    template Image LUT_jet<uint16_t>();
 
     // END LEGACY
 
@@ -117,7 +117,7 @@ namespace image
     }
 
     template <typename T>
-    Image<T> generate_lut(int width, std::vector<lut_point> p)
+    Image generate_lut(int width, std::vector<lut_point> p)
     {
         Image<T> out(width, 1, 3);
         for (int x = 0; x < width; x++)
@@ -132,6 +132,6 @@ namespace image
         return out;
     }
 
-    template Image<uint8_t> generate_lut(int width, std::vector<lut_point> p);
-    template Image<uint16_t> generate_lut(int width, std::vector<lut_point> p);
+    template Image generate_lut<uint8_t>(int width, std::vector<lut_point> p);
+    template Image generate_lut<uint16_t>(int width, std::vector<lut_point> p);
 } // namespace image

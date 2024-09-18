@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/image/image.h"
+#include "common/image/text.h"
 #include <functional>
 #include <vector>
 #include <string>
@@ -8,22 +9,41 @@
 
 namespace map
 {
-    template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength = 2147483647);
-    template <typename T>
-    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int font_size = 50, int cities_type = 0, int cities_scale_rank = 10);
-    template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
-    template <typename T>
-    void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc);
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles,
+                                 image::Image &image,
+                                 std::vector<double> color,
+                                 std::function<std::pair<int, int>(double, double, int, int)> projectionFunc,
+                                 int maxLength = 2147483647);
 
-    struct CustomLabel
-    {
-        std::string label;
-        double lat;
-        double lon;
-    };
+    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles,
+                                    image::Image &image,
+                                    image::TextDrawer &text_drawer,
+                                    std::vector<double> color,
+                                    std::function<std::pair<int, int>(double, double, int, int)> projectionFunc,
+                                    int font_size = 50,
+                                    int cities_type = 0,
+                                    int cities_scale_rank = 10);
 
-    template <typename T>
-    void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio = 1);
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles,
+                                   image::Image &image,
+                                   std::vector<double> color,
+                                   std::function<std::pair<int, int>(double, double, int, int)> projectionFunc);
+
+    void drawProjectedMapLatLonGrid(image::Image &image,
+                                    std::vector<double> color,
+                                    std::function<std::pair<int, int>(double, double, int, int)> projectionFunc);
+
+    /*  struct CustomLabel
+      {
+          std::string label;
+          double lat;
+          double lon;
+      };
+
+      void drawProjectedLabels(std::vector<CustomLabel> labels,
+                               image::Image &image,
+                               image::TextDrawer &text_drawer,
+                               std::vector<double> color,
+                               std::function<std::pair<int, int>(double, double, int, int)> projectionFunc,
+                               double ratio = 1); */
 }

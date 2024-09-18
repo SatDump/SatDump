@@ -561,7 +561,7 @@ namespace SmGui {
     }
     
     void LeftLabel(const char *text) {
-        if (!serverMode) { ImGui::Text(text); ImGui::SameLine(); return; } // LeftLabel?
+        if (!serverMode) { ImGui::TextUnformatted(text); ImGui::SameLine(); return; } // LeftLabel?
         if (rdl) {
             rdl->pushStep(DRAW_STEP_LEFT_LABEL, forceSyncForNext);
             rdl->pushString(text);

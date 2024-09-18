@@ -16,13 +16,13 @@ namespace goes
                                                                                                                                                 write_images(parameters["write_images"].get<bool>()),
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
-                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>())
+                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>()),
+                                                                                                                                                max_fill_lines(parameters["max_fill_lines"].get<int>()),
+                                                                                                                                                productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
+            fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
             write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
-            goes_r_fc_composer_full_disk = std::make_shared<GOESRFalseColorComposer>();
-            goes_r_fc_composer_meso1 = std::make_shared<GOESRFalseColorComposer>();
-            goes_r_fc_composer_meso2 = std::make_shared<GOESRFalseColorComposer>();
         }
 
         std::vector<ModuleDataType> GOESLRITDataDecoderModule::getInputTypes()
@@ -46,13 +46,6 @@ namespace goes
                     delete[] dec->textureBuffer;
                 }
             }
-
-            if (goes_r_fc_composer_full_disk->textureID > 0)
-                delete[] goes_r_fc_composer_full_disk->textureBuffer;
-            if (goes_r_fc_composer_meso1->textureID > 0)
-                delete[] goes_r_fc_composer_meso1->textureBuffer;
-            if (goes_r_fc_composer_meso2->textureID > 0)
-                delete[] goes_r_fc_composer_meso2->textureBuffer;
         }
 
         void GOESLRITDataDecoderModule::process()
@@ -67,7 +60,6 @@ namespace goes
                 data_in = std::ifstream(d_input_file, std::ios::binary);
 
             directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
-            goes_r_fc_composer_full_disk->directory = goes_r_fc_composer_meso1->directory = goes_r_fc_composer_meso2->directory = directory;
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
@@ -131,10 +123,13 @@ namespace goes
             };
 
             lrit_demux.onProcessData =
-                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt) -> bool
+                [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
             {
                 if (file.custom_flags[RICE_COMPRESSED])
                 {
+                    if (fill_missing && bad_crc)
+                        return false;
+
                     SZ_com_t &rice_parameters = rice_parameters_all[file.filename];
 
                     if (rice_parameters.bits_per_pixel == 0)
@@ -145,7 +140,38 @@ namespace goes
                     size_t output_size = decompression_buffer.size();
                     int r = SZ_BufftoBuffDecompress(decompression_buffer.data(), &output_size, pkt.payload.data(), pkt.payload.size() - 2, &rice_parameters);
                     if (r == AEC_OK)
+                    {
+                        // Check to see if there are missing lines
+                        uint16_t diff;
+                        if (file.last_tracked_counter < pkt.header.packet_sequence_count)
+                            diff = pkt.header.packet_sequence_count - file.last_tracked_counter;
+                        else
+                            diff = 16384 - file.last_tracked_counter + pkt.header.packet_sequence_count;
+
+                        // There are missing lines
+                        if (diff > 1)
+                        {
+                            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                            size_t to_fill = rice_parameters.pixels_per_scanline * (diff - 1);
+                            size_t max_fill = image_structure_record.columns_count * image_structure_record.lines_count + file.total_header_length -
+                                (file.lrit_data.size() + output_size);
+
+                            // Repeat next line if the user selected the fill missing option and it is below the threshold; otherwise fill with black
+                            if (to_fill <= max_fill)
+                            {
+                                if (fill_missing && diff <= max_fill_lines)
+                                {
+                                    for(uint16_t i = 0; i < diff - 1; i++)
+                                        file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                                }
+                                else
+                                    file.lrit_data.insert(file.lrit_data.end(), to_fill, 0);
+                            }
+                        }
+
                         file.lrit_data.insert(file.lrit_data.end(), &decompression_buffer.data()[0], &decompression_buffer.data()[output_size]);
+                        file.last_tracked_counter = pkt.header.packet_sequence_count;
+                    }
                     else
                         logger->warn("Rice decompression failed. This may be an issue!");
 
@@ -158,9 +184,9 @@ namespace goes
             };
 
             lrit_demux.onFinalizeData =
-                [this](::lrit::LRITFile& file) -> void
+                [this](::lrit::LRITFile &file) -> void
             {
-                //On image data, make sure buffer contains the right amount of data
+                // On image data, make sure buffer contains the right amount of data
                 if (file.hasHeader<::lrit::ImageStructureRecord>() && file.hasHeader<::lrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
                 {
                     ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
@@ -170,12 +196,28 @@ namespace goes
                     if (primary_header.file_type_code == 0 &&
                         (image_header.compression_flag == 0 || (image_header.compression_flag == 1 && noaa_header.noaa_specific_compression == 1)))
                     {
+                        if (fill_missing && file.lrit_data.size() > primary_header.total_header_length + image_header.columns_count)
+                        {
+                            // Fill remaining data with last line
+                            uint32_t to_fill = (image_header.lines_count * image_header.columns_count -
+                                (file.lrit_data.size() - file.total_header_length)) / image_header.columns_count;
+                            if (to_fill > 0 && to_fill <= (uint32_t)max_fill_lines)
+                            {
+                                file.lrit_data.reserve(file.lrit_data.size() + to_fill * image_header.columns_count);
+                                for (uint32_t i = 0; i < to_fill; i++)
+                                    file.lrit_data.insert(file.lrit_data.end(), file.lrit_data.end() - image_header.columns_count, file.lrit_data.end());
+                            }
+                        }
+
                         uint32_t target_size = image_header.lines_count * image_header.columns_count + primary_header.total_header_length;
                         if (file.lrit_data.size() != target_size)
                             file.lrit_data.resize(target_size, 0);
                     }
                 }
             };
+
+            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
+                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -190,7 +232,7 @@ namespace goes
                 for (auto &file : files)
                 {
                     processLRITFile(file);
-                    if(write_lrit)
+                    if (write_lrit)
                         saveLRITFile(file, directory + "/LRIT");
                 }
 
@@ -207,17 +249,8 @@ namespace goes
             data_in.close();
 
             for (auto &segmentedDecoder : segmentedDecoders)
-            {
-                if (segmentedDecoder.second.image.size())
-                    segmentedDecoder.second.image.save_img(std::string(directory + "/IMAGES/" + segmentedDecoder.second.filename).c_str());
-            }
-
-            if (goes_r_fc_composer_full_disk->hasData)
-                goes_r_fc_composer_full_disk->save();
-            if (goes_r_fc_composer_meso1->hasData)
-                goes_r_fc_composer_meso1->save();
-            if (goes_r_fc_composer_meso2->hasData)
-                goes_r_fc_composer_meso2->save();
+                if (segmentedDecoder.second.image_id != -1)
+                    saveImageP(segmentedDecoder.second.meta, *segmentedDecoder.second.image);
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
@@ -249,139 +282,20 @@ namespace goes
                         }
 
                         hasImage = true;
+                        int vcid = decMap.first > 63 ? 60 : decMap.first; // Himawari images use VCID > 63 internally
 
-                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(decMap.first)).c_str()))
+                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(vcid)).c_str()))
                         {
                             ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
                             ImGui::SameLine();
                             ImGui::BeginGroup();
                             ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                             if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                                ImGui::TextColored(style::theme.green, "Writing image...");
                             else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                                ImGui::TextColored(style::theme.orange, "Receiving...");
                             else
-                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                // Full disk FC
-                {
-                    if (goes_r_fc_composer_full_disk->textureID == 0)
-                    {
-                        goes_r_fc_composer_full_disk->textureID = makeImageTexture();
-                        goes_r_fc_composer_full_disk->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(goes_r_fc_composer_full_disk->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        goes_r_fc_composer_full_disk->hasToUpdate = true;
-                    }
-
-                    if (goes_r_fc_composer_full_disk->imageStatus != IDLE)
-                    {
-                        if (goes_r_fc_composer_full_disk->hasToUpdate)
-                        {
-                            goes_r_fc_composer_full_disk->hasToUpdate = false;
-                            updateImageTexture(goes_r_fc_composer_full_disk->textureID,
-                                               goes_r_fc_composer_full_disk->textureBuffer,
-                                               1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem("FD Color"))
-                        {
-                            ImGui::Image((void *)(intptr_t)goes_r_fc_composer_full_disk->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (goes_r_fc_composer_full_disk->imageStatus == SAVING)
-                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
-                            else if (goes_r_fc_composer_full_disk->imageStatus == RECEIVING)
-                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
-                            else
-                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                // Meso 1 FC
-                {
-                    if (goes_r_fc_composer_meso1->textureID == 0)
-                    {
-                        goes_r_fc_composer_meso1->textureID = makeImageTexture();
-                        goes_r_fc_composer_meso1->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(goes_r_fc_composer_meso1->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        goes_r_fc_composer_meso1->hasToUpdate = true;
-                    }
-
-                    if (goes_r_fc_composer_meso1->imageStatus != IDLE)
-                    {
-                        if (goes_r_fc_composer_meso1->hasToUpdate)
-                        {
-                            goes_r_fc_composer_meso1->hasToUpdate = false;
-                            updateImageTexture(goes_r_fc_composer_meso1->textureID,
-                                               goes_r_fc_composer_meso1->textureBuffer,
-                                               1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem("Meso 1 Color"))
-                        {
-                            ImGui::Image((void *)(intptr_t)goes_r_fc_composer_meso1->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (goes_r_fc_composer_meso1->imageStatus == SAVING)
-                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
-                            else if (goes_r_fc_composer_meso1->imageStatus == RECEIVING)
-                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
-                            else
-                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                // Meso 2 FC
-                {
-                    if (goes_r_fc_composer_meso2->textureID == 0)
-                    {
-                        goes_r_fc_composer_meso2->textureID = makeImageTexture();
-                        goes_r_fc_composer_meso2->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(goes_r_fc_composer_meso2->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        goes_r_fc_composer_meso2->hasToUpdate = true;
-                    }
-
-                    if (goes_r_fc_composer_meso2->imageStatus != IDLE)
-                    {
-                        if (goes_r_fc_composer_meso2->hasToUpdate)
-                        {
-                            goes_r_fc_composer_meso2->hasToUpdate = false;
-                            updateImageTexture(goes_r_fc_composer_meso2->textureID,
-                                               goes_r_fc_composer_meso2->textureBuffer,
-                                               1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem("Meso 2 Color"))
-                        {
-                            ImGui::Image((void *)(intptr_t)goes_r_fc_composer_meso2->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (goes_r_fc_composer_meso2->imageStatus == SAVING)
-                                ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
-                            else if (goes_r_fc_composer_meso2->imageStatus == RECEIVING)
-                                ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
-                            else
-                                ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
                             ImGui::EndGroup();
                             ImGui::EndTabItem();
                         }
@@ -396,7 +310,7 @@ namespace goes
                         ImGui::SameLine();
                         ImGui::BeginGroup();
                         ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                        ImGui::TextColored(style::theme.red, "Idle (Image)...");
                         ImGui::EndGroup();
                         ImGui::EndTabItem();
                     }
@@ -405,7 +319,7 @@ namespace goes
             ImGui::EndTabBar();
 
             if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

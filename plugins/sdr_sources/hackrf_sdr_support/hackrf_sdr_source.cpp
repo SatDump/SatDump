@@ -110,8 +110,7 @@ void HackRFSource::open()
         15000000,
         20000000,
         24000000,
-        28000000
-    };
+        28000000};
     bandwidth_widget.set_list(available_bandwidths, false, "Hz");
 }
 
@@ -120,16 +119,14 @@ void HackRFSource::start()
     DSPSampleSource::start();
 
 #ifndef __ANDROID__
-    std::stringstream ss;
-    ss << std::hex << d_sdr_id;
-    if (hackrf_open_by_serial(ss.str().c_str(), &hackrf_dev_obj) != 0)
-        throw std::runtime_error("Could not open HackRF device!");
+    if (hackrf_open_by_serial(d_sdr_id.c_str(), &hackrf_dev_obj) != 0)
+        throw satdump_exception("Could not open HackRF device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
     if (hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
-        throw std::runtime_error("Could not open HackRF device!");
+        throw satdump_exception("Could not open HackRF device!");
 #endif
 
     uint64_t current_samplerate = samplerate_widget.get_value();
@@ -178,7 +175,7 @@ void HackRFSource::set_frequency(uint64_t frequency)
 
 void HackRFSource::drawControlUI()
 {
-    //Samplerate
+    // Samplerate
     if (is_started)
         RImGui::beginDisabled();
 
@@ -199,7 +196,7 @@ void HackRFSource::drawControlUI()
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 
-    //Bandwidth Filter
+    // Bandwidth Filter
     bool bw_update = RImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
     if (manual_bandwidth)
         bw_update = bw_update || bandwidth_widget.render();
@@ -211,7 +208,7 @@ void HackRFSource::drawControlUI()
 void HackRFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 40e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t HackRFSource::get_samplerate()
@@ -226,25 +223,25 @@ std::vector<dsp::SourceDescriptor> HackRFSource::getAvailableSources()
 #ifndef __ANDROID__
     hackrf_device_list_t *devlist = hackrf_device_list();
 
-    for (int i = 0; i < devlist->devicecount; i++)
+    if (devlist != nullptr)
     {
-        if (devlist->serial_numbers[i] == nullptr)
-            results.push_back({"hackrf", "HackRF One [In Use]", 0});
-        else
+        for (int i = 0; i < devlist->devicecount; i++)
         {
-            std::stringstream ss;
-            uint64_t id = 0;
-            ss << devlist->serial_numbers[i];
-            ss >> std::hex >> id;
-            ss << devlist->serial_numbers[i];
-            results.push_back({"hackrf", "HackRF One " + ss.str().substr(16, 16), id});
+            if (devlist->serial_numbers[i] == nullptr)
+                results.push_back({"hackrf", "HackRF One [In Use]", "0"});
+            else
+            {
+                results.push_back({"hackrf", "HackRF One " + std::string(devlist->serial_numbers[i]), std::string(devlist->serial_numbers[i])});
+            }
         }
+
+        hackrf_device_list_free(devlist);
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path) != -1)
-        results.push_back({"hackrf", "HackRF One USB", 0});
+        results.push_back({"hackrf", "HackRF One USB", "0"});
 #endif
 
     return results;

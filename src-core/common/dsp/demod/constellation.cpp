@@ -9,6 +9,7 @@
 #endif
 
 #include "logger.h"
+#include "core/exception.h"
 
 namespace dsp
 {
@@ -159,7 +160,7 @@ namespace dsp
         }
         else
         {
-            throw std::runtime_error("Undefined constellation type!");
+            throw satdump_exception("Undefined constellation type!");
         }
     }
 

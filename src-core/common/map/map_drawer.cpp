@@ -6,8 +6,7 @@
 
 namespace map
 {
-    template <typename T>
-    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int maxLength)
+    void drawProjectedMapGeoJson(std::vector<std::string> shapeFiles, image::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int maxLength)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -27,16 +26,16 @@ namespace map
 
                 if (geometryType == "Polygon")
                 {
-                    std::vector<std::vector<std::pair<float, float>>> all_coordinates = mapStruct["geometry"]["coordinates"].get<std::vector<std::vector<std::pair<float, float>>>>();
+                    std::vector<std::vector<std::pair<double, double>>> all_coordinates = mapStruct["geometry"]["coordinates"].get<std::vector<std::vector<std::pair<double, double>>>>();
 
-                    for (std::vector<std::pair<float, float>> coordinates : all_coordinates)
+                    for (std::vector<std::pair<double, double>> coordinates : all_coordinates)
                     {
                         for (int i = 0; i < (int)coordinates.size() - 1; i++)
                         {
-                            std::pair<float, float> start = projectionFunc(coordinates[i].second, coordinates[i].first,
+                            std::pair<double, double> start = projectionFunc(coordinates[i].second, coordinates[i].first,
+                                                                             map_image.height(), map_image.width());
+                            std::pair<double, double> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
                                                                            map_image.height(), map_image.width());
-                            std::pair<float, float> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
-                                                                         map_image.height(), map_image.width());
 
                             if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
                                 continue;
@@ -48,10 +47,10 @@ namespace map
                         }
 
                         {
-                            std::pair<float, float> start = projectionFunc(coordinates[0].second, coordinates[0].first,
+                            std::pair<double, double> start = projectionFunc(coordinates[0].second, coordinates[0].first,
+                                                                             map_image.height(), map_image.width());
+                            std::pair<double, double> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
                                                                            map_image.height(), map_image.width());
-                            std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
-                                                                         map_image.height(), map_image.width());
 
                             if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
                                 continue;
@@ -65,18 +64,18 @@ namespace map
                 }
                 else if (geometryType == "MultiPolygon")
                 {
-                    std::vector<std::vector<std::vector<std::pair<float, float>>>> all_all_coordinates = mapStruct["geometry"]["coordinates"].get<std::vector<std::vector<std::vector<std::pair<float, float>>>>>();
+                    std::vector<std::vector<std::vector<std::pair<double, double>>>> all_all_coordinates = mapStruct["geometry"]["coordinates"].get<std::vector<std::vector<std::vector<std::pair<double, double>>>>>();
 
-                    for (std::vector<std::vector<std::pair<float, float>>> all_coordinates : all_all_coordinates)
+                    for (std::vector<std::vector<std::pair<double, double>>> all_coordinates : all_all_coordinates)
                     {
-                        for (std::vector<std::pair<float, float>> coordinates : all_coordinates)
+                        for (std::vector<std::pair<double, double>> coordinates : all_coordinates)
                         {
                             for (int i = 0; i < (int)coordinates.size() - 1; i++)
                             {
-                                std::pair<float, float> start = projectionFunc(coordinates[i].second, coordinates[i].first,
+                                std::pair<double, double> start = projectionFunc(coordinates[i].second, coordinates[i].first,
+                                                                                 map_image.height(), map_image.width());
+                                std::pair<double, double> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
                                                                                map_image.height(), map_image.width());
-                                std::pair<float, float> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
-                                                                             map_image.height(), map_image.width());
 
                                 if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
                                     continue;
@@ -88,12 +87,12 @@ namespace map
                             }
 
                             {
-                                std::pair<float, float> start = projectionFunc(coordinates[0].second, coordinates[0].first,
-                                                                               map_image.height(), map_image.width());
+                                std::pair<double, double> start = projectionFunc(coordinates[0].second, coordinates[0].first,
+                                                                                 map_image.height(), map_image.width());
 
-                                std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
-                                                                             map_image.height(),
-                                                                             map_image.width());
+                                std::pair<double, double> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
+                                                                               map_image.height(),
+                                                                               map_image.width());
                                 if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
                                     continue;
 
@@ -107,14 +106,14 @@ namespace map
                 }
                 else if (geometryType == "LineString")
                 {
-                    std::vector<std::pair<float, float>> coordinates = mapStruct["geometry"]["coordinates"].get<std::vector<std::pair<float, float>>>();
+                    std::vector<std::pair<double, double>> coordinates = mapStruct["geometry"]["coordinates"].get<std::vector<std::pair<double, double>>>();
 
                     for (int i = 0; i < (int)coordinates.size() - 1; i++)
                     {
-                        std::pair<float, float> start = projectionFunc(coordinates[i].second, coordinates[i].first,
+                        std::pair<double, double> start = projectionFunc(coordinates[i].second, coordinates[i].first,
+                                                                         map_image.height(), map_image.width());
+                        std::pair<double, double> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
                                                                        map_image.height(), map_image.width());
-                        std::pair<float, float> end = projectionFunc(coordinates[i + 1].second, coordinates[i + 1].first,
-                                                                     map_image.height(), map_image.width());
 
                         if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
                             continue;
@@ -126,10 +125,10 @@ namespace map
                     }
 
                     {
-                        std::pair<float, float> start = projectionFunc(coordinates[0].second, coordinates[0].first,
+                        std::pair<double, double> start = projectionFunc(coordinates[0].second, coordinates[0].first,
+                                                                         map_image.height(), map_image.width());
+                        std::pair<double, double> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
                                                                        map_image.height(), map_image.width());
-                        std::pair<float, float> end = projectionFunc(coordinates[coordinates.size() - 1].second, coordinates[coordinates.size() - 1].first,
-                                                                     map_image.height(), map_image.width());
 
                         if (sqrt(pow(start.first - end.first, 2) + pow(start.second - end.second, 2)) >= maxLength)
                             continue;
@@ -142,9 +141,9 @@ namespace map
                 }
                 else if (geometryType == "Point")
                 {
-                    std::pair<float, float> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<float, float>>();
-                    std::pair<float, float> cc = projectionFunc(coordinates.second, coordinates.first,
-                                                                map_image.height(), map_image.width());
+                    std::pair<double, double> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<double, double>>();
+                    std::pair<double, double> cc = projectionFunc(coordinates.second, coordinates.first,
+                                                                  map_image.height(), map_image.width());
 
                     if (cc.first == -1 || cc.first == -1)
                         continue;
@@ -155,13 +154,9 @@ namespace map
         }
     }
 
-    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>, int);
-    template void drawProjectedMapGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>, int);
-
-    template <typename T>
-    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
+    void drawProjectedCitiesGeoJson(std::vector<std::string> shapeFiles, image::Image &map_image, image::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, int font_size, int cities_type, int cities_scale_rank)
     {
-        if (!map_image.font_ready())
+        if (!text_drawer.font_ready())
             return;
 
         for (std::string currentShapeFile : shapeFiles)
@@ -182,9 +177,9 @@ namespace map
 
                 if ((cities_type == 0 && featurecla == "Admin-0 capital") || (cities_type == 1 && (featurecla == "Admin-1 capital" || featurecla == "Admin-0 capital")) || (cities_type == 2 && mapStruct["properties"]["scalerank"] <= cities_scale_rank))
                 {
-                    std::pair<float, float> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<float, float>>();
-                    std::pair<float, float> cc = projectionFunc(coordinates.second, coordinates.first,
-                                                                map_image.height(), map_image.width());
+                    std::pair<double, double> coordinates = mapStruct["geometry"]["coordinates"].get<std::pair<double, double>>();
+                    std::pair<double, double> cc = projectionFunc(coordinates.second, coordinates.first,
+                                                                  map_image.height(), map_image.width());
 
                     if (cc.first == -1 || cc.second == -1)
                         continue;
@@ -195,17 +190,13 @@ namespace map
 
                     std::string name = mapStruct["properties"]["nameascii"];
                     // map_image.draw_text(cc.first, cc.second + 20 * ratio, color, font, name);
-                    map_image.draw_text(cc.first, cc.second + font_size * 0.15, color, font_size, name);
+                    text_drawer.draw_text(map_image, cc.first, cc.second + font_size * 0.15, color, font_size, name);
                 }
             }
         }
     }
 
-    template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
-    template void drawProjectedCitiesGeoJson(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>, int, int, int);
-
-    template <typename T>
-    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image<T> &map_image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapShapefile(std::vector<std::string> shapeFiles, image::Image &map_image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
     {
         for (std::string currentShapeFile : shapeFiles)
         {
@@ -214,64 +205,60 @@ namespace map
 
             std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, &map_image, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
             {
+                int width = map_image.width();
+                int height = map_image.height();
+
                 for (std::vector<shapefile::point_t> coordinates : parts)
                 {
-                    for (int i = 0; i < (int)coordinates.size() - 1; i++)
+                    std::pair<double, double> start = projectionFunc(coordinates[0].y, coordinates[0].x, height, width);
+                    for (int i = 1; i < (int)coordinates.size() - 1; i++)
                     {
-                        std::pair<float, float> start = projectionFunc(coordinates[i].y, coordinates[i].x,
-                                                                       map_image.height(), map_image.width());
-                        std::pair<float, float> end = projectionFunc(coordinates[i + 1].y, coordinates[i + 1].x,
-                                                                     map_image.height(), map_image.width());
+                        std::pair<double, double> end = projectionFunc(coordinates[i].y, coordinates[i].x, height, width);
+                        if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
+                            map_image.draw_line(start.first, start.second, end.first, end.second, color);
 
-                        if (start.first == -1 || end.first == -1)
-                            continue;
-
-                        map_image.draw_line(start.first, start.second, end.first, end.second, color);
+                        start = end;
                     }
                 }
             };
 
             std::function<void(shapefile::point_t)> pointDraw = [color, &map_image, &projectionFunc](shapefile::point_t coordinates)
             {
-                std::pair<float, float> cc = projectionFunc(coordinates.y, coordinates.x,
-                                                            map_image.height(), map_image.width());
+                std::pair<double, double> cc = projectionFunc(coordinates.y, coordinates.x,
+                                                              map_image.height(), map_image.width());
 
-                if (cc.first == -1 || cc.first == -1)
+                if (cc.first == -1 || cc.second == -1)
                     return;
 
                 map_image.draw_pixel(cc.first, cc.second, color);
             };
 
-            for (shapefile::PolyLineRecord polylineRecord : shape_file.polyline_records)
+            for (shapefile::PolyLineRecord &polylineRecord : shape_file.polyline_records)
                 polylineDraw(polylineRecord.parts_points);
 
-            for (shapefile::PolygonRecord polygonRecord : shape_file.polygon_records)
+            for (shapefile::PolygonRecord &polygonRecord : shape_file.polygon_records)
                 polylineDraw(polygonRecord.parts_points);
 
-            for (shapefile::PointRecord pointRecord : shape_file.point_records)
+            for (shapefile::PointRecord &pointRecord : shape_file.point_records)
                 pointDraw(pointRecord.point);
 
-            for (shapefile::MultiPointRecord multipointRecord : shape_file.multipoint_records)
+            for (shapefile::MultiPointRecord &multipointRecord : shape_file.multipoint_records)
                 for (shapefile::point_t p : multipointRecord.points)
                     pointDraw(p);
         }
     }
 
-    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapShapefile(std::vector<std::string>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>);
-
-    template <typename T>
-    void drawProjectedMapLatLonGrid(image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc)
+    void drawProjectedMapLatLonGrid(image::Image &image, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc)
     {
         for (float lon = -180; lon < 180; lon += 10)
         {
             float last_lat = -90;
             for (float lat = -90; lat < 90; lat += 0.05)
             {
-                std::pair<float, float> start = projectionFunc(last_lat, lon,
+                std::pair<double, double> start = projectionFunc(last_lat, lon,
+                                                                 image.height(), image.width());
+                std::pair<double, double> end = projectionFunc(lat, lon,
                                                                image.height(), image.width());
-                std::pair<float, float> end = projectionFunc(lat, lon,
-                                                             image.height(), image.width());
 
                 if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
                     image.draw_line(start.first, start.second, end.first, end.second, color);
@@ -285,10 +272,10 @@ namespace map
             float last_lon = -180;
             for (float lon = -180; lon < 180; lon += 0.05)
             {
-                std::pair<float, float> start = projectionFunc(lat, last_lon,
+                std::pair<double, double> start = projectionFunc(lat, last_lon,
+                                                                 image.height(), image.width());
+                std::pair<double, double> end = projectionFunc(lat, lon,
                                                                image.height(), image.width());
-                std::pair<float, float> end = projectionFunc(lat, lon,
-                                                             image.height(), image.width());
 
                 if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
                     image.draw_line(start.first, start.second, end.first, end.second, color);
@@ -298,30 +285,25 @@ namespace map
         }
     }
 
-    template void drawProjectedMapLatLonGrid(image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>);
-    template void drawProjectedMapLatLonGrid(image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>);
+    /* void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image &image, image::TextDrawer &text_drawer, std::vector<double> color, std::function<std::pair<int, int>(double, double, int, int)> projectionFunc, double ratio)
+     {
+         if (!text_drawer.font_ready())
+             return;
 
-    template <typename T>
-    void drawProjectedLabels(std::vector<CustomLabel> labels, image::Image<T> &image, T color[], std::function<std::pair<int, int>(float, float, int, int)> projectionFunc, float ratio)
-    {
-        std::vector<image::Image<uint8_t>> font = image::make_font(50 * ratio);
+         for (CustomLabel &currentLabel : labels)
+         {
+             std::pair<double, double> cc = projectionFunc(currentLabel.lat, currentLabel.lon,
+                                                           image.height(), image.width());
 
-        for (CustomLabel &currentLabel : labels)
-        {
-            std::pair<float, float> cc = projectionFunc(currentLabel.lat, currentLabel.lon,
-                                                        image.height(), image.width());
+             if (cc.first == -1 || cc.first == -1)
+                 continue;
 
-            if (cc.first == -1 || cc.first == -1)
-                continue;
+             image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
+             image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
+             image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
 
-            image.draw_line(cc.first - 20 * ratio, cc.second - 20 * ratio, cc.first + 20 * ratio, cc.second + 20 * ratio, color);
-            image.draw_line(cc.first + 20 * ratio, cc.second - 20 * ratio, cc.first - 20 * ratio, cc.second + 20 * ratio, color);
-            image.draw_circle(cc.first, cc.second, 10 * ratio, color, true);
-
-            image.draw_text(cc.first, cc.second + 20 * ratio, color, font, currentLabel.label);
-        }
-    }
-
-    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint8_t> &, uint8_t[], std::function<std::pair<int, int>(float, float, int, int)>, float);
-    template void drawProjectedLabels(std::vector<CustomLabel>, image::Image<uint16_t> &, uint16_t[], std::function<std::pair<int, int>(float, float, int, int)>, float);
+            text_drawer .draw_text(image,cc.first, cc.second + 20 * ratio, color, font, currentLabel.label);
+            //text_drawer.draw_text(map_image, cc.first, cc.second + font_size * 0.15, color, font_size, name);
+         }
+     } */
 }

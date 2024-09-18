@@ -1,5 +1,6 @@
 #include "image_handler.h"
 #include "common/calibration.h"
+#include "common/image/image_background.h"
 
 #include "imgui/pfd/pfd_utils.h"
 #include "imgui/imgui_internal.h"
@@ -9,11 +10,17 @@
 #include "common/projection/projs/equirectangular.h"
 #include "common/map/map_drawer.h"
 #include "resources.h"
-#include "common/projection/reprojector.h"
 #include "core/opencl.h"
 #include "common/widgets/switch.h"
 #include "common/widgets/stepped_slider.h"
 #include "main_ui.h"
+#include "common/image/brightness_contrast.h"
+
+#include "common/image/meta.h"
+#include "common/projection/reprojector.h"
+
+#include "common/image/processing.h"
+#include "common/image/image_lut.h"
 
 namespace satdump
 {
@@ -40,11 +47,12 @@ namespace satdump
 
         for (int i = 0; i < (int)products->images.size(); i++)
         {
-            auto img = products->images[i];
+            auto &img = products->images[i];
             select_image_str += "Channel " + img.channel_name + '\0';
             channel_numbers.push_back(img.channel_name);
-            images_obj.push_back(img.image);
-            disaplay_ranges.push_back(products->get_calibration_default_radiance_range(i));
+            radiance_ranges.push_back(products->get_calibration_default_radiance_range(i));
+            temp_ranges.push_back({radiance_to_temperature(radiance_ranges[i].first, products->get_wavenumber(i)),
+                                   radiance_to_temperature(radiance_ranges[i].second, products->get_wavenumber(i))});
         }
 
         // generate scale iamge
@@ -53,7 +61,7 @@ namespace satdump
         // Setup correction factors.
         updateCorrectionFactors(true);
 
-        lut_image = image::LUT_jet<uint16_t>();
+        lut_image = image::LUT_jet<uint8_t>();
         asyncUpdate();
 
         try
@@ -63,10 +71,6 @@ namespace satdump
         catch (std::exception &)
         {
         }
-
-#ifdef USE_OPENCL
-        opencl::initOpenCL();
-#endif
     }
 
     ImageViewerHandler::~ImageViewerHandler()
@@ -80,6 +84,7 @@ namespace satdump
 
         config::main_cfg["user"]["viewer_state"]["products_handler"][products->instrument_name]["overlay_cfg"] = overlay_handler.get_config();
         config::saveUserConfig();
+        delete[] scale_buffer;
     }
 
     void ImageViewerHandler::updateImage()
@@ -92,10 +97,12 @@ namespace satdump
         {
             if (active_channel_calibrated && products->has_calibation())
             {
-                current_image = products->get_calibrated_image(select_image_id - 1,
-                                                               &rgb_progress,
-                                                               is_temp ? ImageProducts::CALIB_VTYPE_TEMPERATURE : ImageProducts::CALIB_VTYPE_AUTO,
-                                                               disaplay_ranges[select_image_id - 1]);
+                if (products->get_calibration_type(active_channel_id) && is_temp)
+                    current_image = products->get_calibrated_image(select_image_id - 1, &rgb_progress,
+                                                                   ImageProducts::CALIB_VTYPE_TEMPERATURE, temp_ranges[select_image_id - 1]);
+                else
+                    current_image = products->get_calibrated_image(select_image_id - 1, &rgb_progress,
+                                                                   ImageProducts::CALIB_VTYPE_AUTO, radiance_ranges[select_image_id - 1]);
                 update_needed = false;
             }
             else
@@ -107,45 +114,52 @@ namespace satdump
             current_timestamps = products->get_timestamps(select_image_id - 1);
 
         if (median_blur)
-            current_image.median_blur();
+            image::median_blur(current_image);
 
         if (despeckle)
-            current_image.kuwahara_filter();
+            image::kuwahara_filter(current_image);
 
         if (rotate_image)
             current_image.mirror(true, true);
 
         if (equalize_image)
-            current_image.equalize();
+            image::equalize(current_image);
 
         if (individual_equalize_image)
-            current_image.equalize(true);
+            image::equalize(current_image, true);
 
         if (white_balance_image)
-            current_image.white_balance();
+            image::white_balance(current_image);
 
         if (invert_image)
-            current_image.linear_invert();
+            image::linear_invert(current_image);
 
         if (normalize_image)
-            current_image.normalize();
+            image::normalize(current_image);
+
+        if (manual_brightness_contrast)
+            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
 
         // TODO : Cleanup?
         if (using_lut)
         {
             if (current_image.channels() < 3)
                 current_image.to_rgb();
+            if (current_image.depth() != lut_image.depth())
+                current_image = current_image.to_depth(lut_image.depth());
             for (size_t i = 0; i < current_image.width() * current_image.height(); i++)
             {
-                uint16_t val = current_image[i];
-                val = (float(val) / 65535.0) * lut_image.width();
+                size_t val = current_image.getf(i) * lut_image.width();
                 if (val >= lut_image.width())
                     val = lut_image.width() - 1;
-                current_image.channel(0)[i] = lut_image.channel(0)[val];
-                current_image.channel(1)[i] = lut_image.channel(1)[val];
-                current_image.channel(2)[i] = lut_image.channel(2)[val];
+                current_image.set(0, i, lut_image.get(0, val));
+                current_image.set(1, i, lut_image.get(1, val));
+                current_image.set(2, i, lut_image.get(2, val));
             }
         }
+
+        if (remove_background)
+            image::remove_background(current_image, products->get_proj_cfg(), &rgb_progress);
 
         int pre_corrected_width = current_image.width();
         int pre_corrected_height = current_image.height();
@@ -155,7 +169,7 @@ namespace satdump
         {
             corrected_stuff.resize(current_image.width());
             bool success = false;
-            image::Image<uint16_t> cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
+            image::Image cor = perform_geometric_correction(*products, current_image, success, corrected_stuff.data());
             if (success)
                 current_image = cor;
             if (!success)
@@ -165,7 +179,7 @@ namespace satdump
         if (overlay_handler.enabled())
         {
             // Ensure this is RGB!!
-            if(current_image.channels() < 3)
+            if (current_image.channels() < 3)
                 current_image.to_rgb();
             nlohmann::json proj_cfg = products->get_proj_cfg();
             proj_cfg["metadata"] = current_proj_metadata;
@@ -176,13 +190,13 @@ namespace satdump
 
             bool do_correction = corrected_stuff.size() != 0 && correct_image;
             if (do_correction != last_correct_image || rotate_image != last_rotate_image ||
-                current_image.width() != last_width || current_image.height() != last_height)
+                current_image.width() != last_width || current_image.height() != last_height || last_proj_cfg != proj_cfg)
             {
                 overlay_handler.clear_cache();
                 proj_func = satdump::reprojection::setupProjectionFunction(pre_corrected_width,
-                    pre_corrected_height,
-                    proj_cfg,
-                    !do_correction && rotate_image);
+                                                                           pre_corrected_height,
+                                                                           proj_cfg,
+                                                                           !do_correction && rotate_image);
 
                 if (do_correction)
                 {
@@ -191,23 +205,23 @@ namespace satdump
                     bool rotate = rotate_image;
                     auto &proj_func = this->proj_func;
 
-                    std::function<std::pair<int, int>(float, float, int, int)> newfun =
-                        [proj_func, corrected_stuff, fwidth, fheight, rotate](float lat, float lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                    std::function<std::pair<int, int>(double, double, int, int)> newfun =
+                        [proj_func, corrected_stuff, fwidth, fheight, rotate](double lat, double lon, int map_height, int map_width) mutable -> std::pair<int, int>
+                    {
+                        std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
+                        if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
                         {
-                            std::pair<int, int> ret = proj_func(lat, lon, map_height, map_width);
-                            if (ret.first != -1 && ret.second != -1 && ret.first < (int)corrected_stuff.size() && ret.first >= 0)
+                            ret.first = corrected_stuff[ret.first];
+                            if (rotate)
                             {
-                                ret.first = corrected_stuff[ret.first];
-                                if (rotate)
-                                {
-                                    ret.first = (fwidth - 1) - ret.first;
-                                    ret.second = (fheight - 1) - ret.second;
-                                }
+                                ret.first = (fwidth - 1) - ret.first;
+                                ret.second = (fheight - 1) - ret.second;
                             }
-                            else
-                                ret.second = ret.first = -1;
-                            return ret;
-                        };
+                        }
+                        else
+                            ret.second = ret.first = -1;
+                        return ret;
+                    };
                     proj_func = newfun;
                 }
 
@@ -215,15 +229,13 @@ namespace satdump
                 last_rotate_image = rotate_image;
                 last_width = current_image.width();
                 last_height = current_image.height();
+                last_proj_cfg = proj_cfg;
             }
 
             overlay_handler.apply(current_image, proj_func);
         }
 
-        projection_ready = false;
-
         image_view.update(current_image);
-        // current_image.clear();
 
         // Tooltip function
         image_view.mouseCallback = [this](int x, int y)
@@ -236,7 +248,7 @@ namespace satdump
                     y = current_image.height() - 1 - y;
                 }
 
-                int raw_value = products->images[active_channel_id].image[y * products->images[active_channel_id].image.width() + (correct_image ? correction_factors[x] : x)] >> (16 - products->bit_depth);
+                int raw_value = products->images[active_channel_id].image.get(0, correct_image ? correction_factors[x] : x, y) >> (products->images[active_channel_id].image.depth() - products->bit_depth);
 
                 ImGui::BeginTooltip();
                 ImGui::Text("Count : %d", raw_value);
@@ -297,23 +309,32 @@ namespace satdump
                                  { 
                     async_image_mutex.lock();
                     logger->info("Generating RGB Composite");
-                    satdump::ImageCompositeCfg cfg;
+                    satdump::ImageCompositeCfg cfg; 
                     cfg.equation = rgb_compo_cfg.equation;
                     cfg.lut = rgb_compo_cfg.lut;
                     cfg.channels = rgb_compo_cfg.channels;
                     cfg.lua = rgb_compo_cfg.lua;
-                    cfg.lua_vars = rgb_compo_cfg.lua_vars;
-                    cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
+                    cfg.cpp = rgb_compo_cfg.cpp;
+                    cfg.vars = rgb_compo_cfg.vars;
+                    cfg.calib_cfg.clear();
 
-                    despeckle = rgb_compo_cfg.despeckle;
-                    equalize_image = rgb_compo_cfg.equalize;
-                    individual_equalize_image = rgb_compo_cfg.individual_equalize;
-                    invert_image = rgb_compo_cfg.invert;
-                    normalize_image = rgb_compo_cfg.normalize;
-                    white_balance_image = rgb_compo_cfg.white_balance;
-                    using_lut = rgb_compo_cfg.apply_lut;
+                    if(select_rgb_presets > 0) 
+                    {
+                        // median_blur = rgb_compo_cfg.median_blur;
+                        // despeckle = rgb_compo_cfg.despeckle;
+                        equalize_image = rgb_compo_cfg.equalize;
+                        individual_equalize_image = rgb_compo_cfg.individual_equalize;
+                        invert_image = rgb_compo_cfg.invert;
+                        normalize_image = rgb_compo_cfg.normalize;
+                        white_balance_image = rgb_compo_cfg.white_balance;
+                        remove_background = rgb_compo_cfg.remove_background;
+                        using_lut = rgb_compo_cfg.apply_lut;
+                        
+                        // Test
+                        cfg.calib_cfg = rgb_compo_cfg.calib_cfg;
+                    }
 
-                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);//image::generate_composite_from_equ(images_obj, channel_numbers, rgb_equation, nlohmann::json(), &rgb_progress);
+                    rgb_image = satdump::make_composite_from_product(*products, cfg, &rgb_progress, &current_timestamps, &current_proj_metadata);
                     select_image_id = 0;
                     updateImage();
                     logger->info("Done");
@@ -385,16 +406,14 @@ namespace satdump
 
             if (products->has_calibation() && active_channel_id >= 0 && products->get_wavenumber(active_channel_id) != -1)
             {
+                ImGuiStyle &imgui_style = ImGui::GetStyle();
+                int to_pop = 0;
                 ImGui::SameLine();
                 if (range_window && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, imgui_style.Colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, imgui_style.Colors[ImGuiCol_TabHovered]);
+                    to_pop += 2;
                 }
                 if (!active_channel_calibrated)
                     ImGui::BeginDisabled();
@@ -402,16 +421,14 @@ namespace satdump
                     range_window = !range_window;
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Diaplay Range Control");
+                ImGui::PopStyleColor(to_pop);
+                to_pop = 0;
 
                 if (show_scale && active_channel_calibrated)
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.165, 0.31, 0.51, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22, 0.482, 0.796, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.216, 0.216, 0.216, 1.0f));
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.235, 0.235, 0.235, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Button, imgui_style.Colors[ImGuiCol_TabActive]);
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, imgui_style.Colors[ImGuiCol_TabHovered]);
+                    to_pop += 2;
                 }
                 if (!products->get_calibration_type(active_channel_id))
                     ImGui::BeginDisabled();
@@ -420,11 +437,11 @@ namespace satdump
                     show_scale = !show_scale;
                 if (!products->get_calibration_type(active_channel_id))
                     ImGui::EndDisabled();
+                ImGui::PopStyleColor(to_pop);
+                to_pop = 0;
 
                 if (!active_channel_calibrated)
                     ImGui::EndDisabled();
-
-                ImGui::PopStyleColor(4);
 
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Show Scale");
@@ -434,25 +451,25 @@ namespace satdump
                     ImGui::Begin("Display Range Control", &range_window, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                     ImGui::SetWindowSize(ImVec2(200 * ui_scale, 115 * ui_scale));
                     bool buff = false;
-                    double tmp_min = (disaplay_ranges[active_channel_id].first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
-                    double tmp_max = (disaplay_ranges[active_channel_id].second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    std::pair<double, double> &this_range = products->get_calibration_type(active_channel_id) && is_temp ? temp_ranges[active_channel_id] : radiance_ranges[active_channel_id];
+                    double tmp_min = (this_range.first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                    double tmp_max = (this_range.second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     ImGui::SetNextItemWidth(120 * ui_scale);
                     buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
                     buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
                     {
-                        disaplay_ranges[active_channel_id].first = (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
-                        disaplay_ranges[active_channel_id].second = (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        this_range.first = (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
+                        this_range.second = (tmp_max / (products->get_calibration_type(active_channel_id) ? 1 : 100));
                         update_needed = true;
                         asyncUpdate();
                     }
                     if (ImGui::Button("Default"))
                     {
-                        disaplay_ranges[active_channel_id] =
-                            is_temp ? std::pair<double, double>{radiance_to_temperature(products->get_calibration_default_radiance_range(active_channel_id).first, products->get_wavenumber(active_channel_id)),
-                                                                radiance_to_temperature(products->get_calibration_default_radiance_range(active_channel_id).second, products->get_wavenumber(active_channel_id))}
-                                    : products->get_calibration_default_radiance_range(active_channel_id);
+                        this_range = is_temp && products->get_calibration_type(active_channel_id) ? std::pair<double, double>{radiance_to_temperature(products->get_calibration_default_radiance_range(active_channel_id).first, products->get_wavenumber(active_channel_id)),
+                                                                                                                              radiance_to_temperature(products->get_calibration_default_radiance_range(active_channel_id).second, products->get_wavenumber(active_channel_id))}
+                                                                                                  : products->get_calibration_default_radiance_range(active_channel_id);
                         update_needed = true;
                         asyncUpdate();
                     }
@@ -461,22 +478,45 @@ namespace satdump
 
                 if (show_scale && active_channel_calibrated && products->get_calibration_type(active_channel_id))
                 {
+                    if (scale_has_update)
+                        updateImageTexture(scale_texture_id, scale_buffer, 25, 512);
+
                     int w = ImGui::GetWindowSize()[0];
-                    ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-                    ImGui::SetWindowSize(ImVec2(100 * ui_scale, 520 * ui_scale));
-                    ImGui::SetWindowPos(ImVec2(w + 20 * ui_scale, 50 * ui_scale), ImGuiCond_Once);
-                    scale_view.draw(ImVec2(22 * ui_scale, 460 * ui_scale));
-                    ImGui::SameLine();
-                    ImGui::BeginGroup();
-                    int y = ImGui::GetCursorPosY();
-                    for (int i = 0; i < 10; i++)
+                    if (ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
                     {
-                        ImGui::SetCursorPosY(y + i * 49 * ui_scale);
-                        std::pair<double, double> actual_ranges = disaplay_ranges[active_channel_id];
-                        ImGui::Text("%.3f", actual_ranges.second - (double)i * abs(actual_ranges.first - actual_ranges.second) / 9.0);
+                        ImGui::SetWindowSize(ImVec2(100 * ui_scale, 520 * ui_scale));
+                        ImGui::SetWindowPos(ImVec2(w + 20 * ui_scale, 50 * ui_scale), ImGuiCond_Once);
+
+                        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+                        float num_height = ImGui::CalcTextSize("0").y;
+                        float scale_height = (460 * ui_scale) - num_height;
+                        float start_y = ImGui::GetCursorPosY();
+                        float graduation_start_y = ImGui::GetCursorScreenPos().y + (num_height / 2);
+                        float graduation_start_x = ImGui::GetCursorScreenPos().x + (22 * ui_scale);
+                        float graduation_length = imgui_style.ItemSpacing.x * 0.75f;
+
+                        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + num_height / 2);
+                        ImGui::Image((void *)(intptr_t)scale_texture_id, ImVec2(22 * ui_scale, scale_height));
+                        ImGui::SameLine();
+                        ImGui::SetCursorPosY(start_y);
+                        ImGui::BeginGroup();
+
+                        std::pair<double, double> actual_ranges = is_temp ? temp_ranges[active_channel_id] : radiance_ranges[active_channel_id];
+                        float step_difference = std::abs(actual_ranges.first - actual_ranges.second) / 9;
+                        float step_height = (scale_height - 1) / 9;
+
+                        for (int i = 0; i < 10; i++)
+                        {
+                            ImGui::SetCursorPosY(start_y + i * step_height);
+                            ImGui::Text("%.3f", actual_ranges.second - i * step_difference);
+                            draw_list->AddLine(ImVec2(graduation_start_x, graduation_start_y + i * step_height),
+                                               ImVec2(graduation_start_x + graduation_length, graduation_start_y + i * step_height),
+                                               ImGui::ColorConvertFloat4ToU32(imgui_style.Colors[ImGuiCol_TextDisabled]), 1.0 * ui_scale);
+                        }
+
+                        ImGui::EndGroup();
+                        ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
                     }
-                    ImGui::EndGroup();
-                    ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
                     ImGui::End();
                 }
 
@@ -493,7 +533,6 @@ namespace satdump
                 if (ImGui::IsItemClicked())
                     asyncUpdate();
                 ImGui::SameLine();
-                // ImGui::Text(products->get_calibration_type(active_channel_id) ? "Radiance" : "Albedo");
                 if (products->get_calibration_type(active_channel_id))
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3 * ui_scale);
@@ -503,28 +542,16 @@ namespace satdump
                     {
                         if (ImGui::Selectable("Radiance", !is_temp))
                         {
-                            if (is_temp)
-                            {
-                                disaplay_ranges[active_channel_id].first = temperature_to_radiance(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id));
-                                disaplay_ranges[active_channel_id].second = temperature_to_radiance(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id));
-                            }
-
-                            asyncUpdate();
                             is_temp = false;
+                            asyncUpdate();
                         }
                         if (!is_temp)
                             ImGui::SetItemDefaultFocus();
 
                         if (ImGui::Selectable("Temperature", is_temp))
                         {
-                            if (!is_temp)
-                            {
-                                disaplay_ranges[active_channel_id].first = radiance_to_temperature(disaplay_ranges[active_channel_id].first, products->get_wavenumber(active_channel_id));
-                                disaplay_ranges[active_channel_id].second = radiance_to_temperature(disaplay_ranges[active_channel_id].second, products->get_wavenumber(active_channel_id));
-                            }
-
-                            asyncUpdate();
                             is_temp = true;
+                            asyncUpdate();
                         }
                         if (is_temp)
                             ImGui::SetItemDefaultFocus();
@@ -549,23 +576,11 @@ namespace satdump
             if (ImGui::Checkbox("Rotate", &rotate_image))
                 asyncUpdate();
 
-            if (products->can_geometrically_correct())
-            {
-                if (shouldProject())
-                    style::beginDisabled();
-                if (ImGui::Checkbox("Correct", &correct_image))
-                    asyncUpdate();
-                if (shouldProject())
-                {
-                    style::endDisabled();
-                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                    {
-                        ImGui::BeginTooltip();
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable projection!");
-                        ImGui::EndTooltip();
-                    }
-                }
-            }
+            if (products->can_geometrically_correct() && ImGui::Checkbox("Correct", &correct_image))
+                asyncUpdate();
+
+            if (products->can_remove_background() && ImGui::Checkbox("Remove Background", &remove_background))
+                asyncUpdate();
 
             if (ImGui::Checkbox("Equalize", &equalize_image))
                 asyncUpdate();
@@ -593,6 +608,16 @@ namespace satdump
             }
             */
 
+            if (ImGui::Checkbox("Manual Brightness/Constrast", &manual_brightness_contrast))
+                asyncUpdate();
+            if (manual_brightness_contrast)
+            {
+                if (ImGui::SliderFloat("Brightness", &manual_brightness_contrast_brightness, -2, 2))
+                    asyncUpdate();
+                if (ImGui::SliderFloat("Contrast", &manual_brightness_contrast_constrast, -2, 2))
+                    asyncUpdate();
+            }
+
             bool save_disabled = is_updating || rgb_processing;
             if (save_disabled)
                 style::beginDisabled();
@@ -600,20 +625,54 @@ namespace satdump
             {
                 handler_thread_pool.clear_queue();
                 handler_thread_pool.push([this](int)
-                                         {   async_image_mutex.lock();
-                        is_updating = true;
-                        logger->info("Saving Image...");
-                        std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                        std::string saved_at = save_image_dialog(products->instrument_name + "_" +
-                            (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                            default_path, "Save Image", &current_image, &viewer_app->save_type);
+                                         {
+                    async_image_mutex.lock();
+                    is_updating = true;
+                    logger->info("Saving Image...");
 
-                        if (saved_at == "")
-                            logger->info("Save cancelled");
-                        else
-                            logger->info("Saved current image at %s", saved_at.c_str());
-                        is_updating = false;
-                        async_image_mutex.unlock(); });
+                    std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+                    time_t timevalue = 0;
+                    std::string formatted_timestamp = "";
+                    std::string filename_suffix = "";
+                    int suffix_num = 1;
+
+                    if (products->has_product_timestamp())
+                        timevalue = products->get_product_timestamp();
+                    else if (products->has_timestamps)
+                        timevalue = get_median(products->get_timestamps());
+
+                    if(timevalue != 0)
+                    {
+                        std::tm *timeReadable = gmtime(&timevalue);
+                        formatted_timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+                            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z_";
+                    }
+
+                    std::string file_name = formatted_timestamp + products->instrument_name + "_" +
+                        (select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
+                        (std::string("composite_") + (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first)));
+
+                    // To ensure composites with slashes or spaces don't end up in the filename
+                    std::replace(file_name.begin(), file_name.end(), ' ', '-');
+                    std::replace(file_name.begin(), file_name.end(), '/', '-');
+
+                    // Make sure we never overwrite anything unintentinally
+                    while (std::filesystem::exists(default_path + "/" + file_name + filename_suffix + "." + viewer_app->save_type))
+                        filename_suffix = "_" + std::to_string(++suffix_num);
+                    file_name += filename_suffix;
+
+                    std::string saved_at = save_image_dialog(file_name, default_path, "Save Image", &current_image, &viewer_app->save_type);
+
+                    if (saved_at == "")
+                        logger->info("Save cancelled");
+                    else
+                        logger->info("Saved current image at %s", saved_at.c_str());
+                    is_updating = false;
+                    async_image_mutex.unlock(); });
             }
             if (save_disabled)
             {
@@ -637,7 +696,7 @@ namespace satdump
                     if (preset_search_str.size() != 0)
                         show = isStringPresent(rgb_presets[i].first, preset_search_str);
 
-                    if (show && ImGui::Selectable(rgb_presets[i].first.c_str(), i == select_rgb_presets))
+                    if (show && ImGui::Selectable(rgb_presets[i].first.c_str(), (int)i == select_rgb_presets))
                     {
                         select_rgb_presets = i;
                         rgb_compo_cfg = rgb_presets[select_rgb_presets].second;
@@ -663,6 +722,7 @@ namespace satdump
             if (ImGui::InputTextWithHint("##rgbEquation", "Equation", &rgb_compo_cfg.equation))
             {
                 select_rgb_presets = -1; // Editing, NOT the compo anymore!
+                rgb_compo_cfg.cpp = "";
                 rgb_compo_cfg.lua = "";
                 rgb_compo_cfg.lut = "";
             }
@@ -742,36 +802,31 @@ namespace satdump
                 ImGui::BeginGroup();
                 if (!canBeProjected())
                     style::beginDisabled();
-                ImGui::Checkbox("Project", &should_project);
+                if (ImGui::Button("Add to Projections"))
+                    addCurrentToProjections();
+                proj_notif.draw();
+                ImGui::Checkbox("Old Algorithm", &projection_use_old_algo);
                 if (!canBeProjected())
                     style::endDisabled();
 
-                ImGui::SameLine();
-
-                if (!should_project)
-                    style::beginDisabled();
-                ImGui::Checkbox("Old algorithm", &project_old_algorithm);
-                if (!should_project)
-                    style::endDisabled();
-
                 ImGui::EndGroup();
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !canBeProjected())
                 {
                     ImGui::BeginTooltip();
                     if (current_timestamps.size() == 0)
-                        ImGui::TextColored(ImColor(255, 0, 0), "No timestamps!");
+                        ImGui::TextColored(style::theme.red, "No timestamps!");
                     else if (correct_image)
-                        ImGui::TextColored(ImColor(255, 0, 0), "Disable correction!");
+                        ImGui::TextColored(style::theme.red, "Disable correction!");
                     else
-                        ImGui::TextColored(ImColor(255, 255, 0), "The old algorithm will\n"
-                                                                 "deal with very bad (noisy) data\n"
-                                                                 "better.\n"
-                                                                 "The new one is preferred if\n"
-                                                                 "possible though, as results\n"
-                                                                 "are a lot nicer! :-)\n"
-                                                                 "If you had to use this\n"
-                                                                 "and the data was not that bad\n"
-                                                                 "please report as a bug!");
+                        ImGui::TextColored(style::theme.yellow, "The old algorithm will\n"
+                                                                "deal with very bad (noisy) data\n"
+                                                                "better.\n"
+                                                                "The new one is preferred if\n"
+                                                                "possible though, as results\n"
+                                                                "are a lot nicer! :-)\n"
+                                                                "If you had to use this\n"
+                                                                "and the data was not that bad\n"
+                                                                "please report as a bug!");
 
                     ImGui::EndTooltip();
                 }
@@ -816,33 +871,35 @@ namespace satdump
 
     void ImageViewerHandler::updateScaleImage()
     {
-        scale_image = image::Image<uint16_t>(25, 512, 3);
-        for (int i = 0; i < 512; i++)
+        scale_image = image::Image(16, 25, 512, 3);
+        for (size_t i = 0; i < 512; i++)
         {
-            for (int x = 0; x < 25; x++)
+            std::vector<double> color = {double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0, double((511 - i) << 7) / 65535.0};
+            if (using_lut)
             {
-                uint16_t color[3] = {static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7), static_cast<uint16_t>((511 - i) << 7)};
-
-                if (using_lut)
-                {
-                    uint16_t val = color[0];
-                    val = (float(val) / 65535.0) * lut_image.width();
-                    if (val >= lut_image.width())
-                        val = lut_image.width() - 1;
-                    color[0] = lut_image.channel(0)[val];
-                    color[1] = lut_image.channel(1)[val];
-                    color[2] = lut_image.channel(2)[val];
-                }
-
-                scale_image.draw_pixel(x, i, color);
+                uint16_t val = color[0] * lut_image.width();
+                if (val >= lut_image.width())
+                    val = lut_image.width() - 1;
+                color[0] = lut_image.getf(0, val);
+                color[1] = lut_image.getf(1, val);
+                color[2] = lut_image.getf(2, val);
             }
+
+            for (int x = 0; x < 25; x++)
+                scale_image.draw_pixel(x, i, color);
         }
 
         if (invert_image)
             scale_image.mirror(false, true);
 
-        scale_view.update(scale_image);
-        scale_view.allow_zoom_and_move = false;
+        if (scale_texture_id == 0)
+        {
+            scale_texture_id = makeImageTexture();
+            scale_buffer = new uint32_t[25 * 512];
+        }
+
+        image::image_to_rgba(scale_image, scale_buffer);
+        scale_has_update = true;
     }
 
     void ImageViewerHandler::updateCorrectionFactors(bool first)
@@ -875,39 +932,54 @@ namespace satdump
                !correct_image;
     }
 
-    bool ImageViewerHandler::hasProjection()
-    {
-        return projection_ready && should_project;
-    }
-
-    bool ImageViewerHandler::shouldProject()
-    {
-        return should_project;
-    }
-
-    void ImageViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+    void ImageViewerHandler::addCurrentToProjections()
     {
         if (canBeProjected())
         {
             try
             {
-                reprojection::ReprojectionOperation op;
-                op.source_prj_info = products->get_proj_cfg();
-                op.source_prj_info["metadata"] = current_proj_metadata;
-                op.target_prj_info = settings;
-                op.img = current_image;
-                op.use_old_algorithm = project_old_algorithm;
-                if (rotate_image)
-                    op.img.mirror(true, true);
-                op.output_width = width;
-                op.output_height = height;
+                // Get projection information
+                nlohmann::json proj_cfg;
+                proj_cfg = products->get_proj_cfg();
+                proj_cfg["metadata"] = current_proj_metadata;
                 if (products->has_tle())
-                    op.source_prj_info["metadata"]["tle"] = products->get_tle();
+                    proj_cfg["metadata"]["tle"] = products->get_tle();
                 if (products->has_timestamps)
-                    op.source_prj_info["metadata"]["timestamps"] = current_timestamps;
-                reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-                projected_img = res.img;
-                projection_ready = true;
+                    proj_cfg["metadata"]["timestamps"] = current_timestamps;
+                image::set_metadata_proj_cfg(current_image, proj_cfg);
+
+                // Create projection title
+                std::string timestring, object_name, instrument_name, composite_name;
+                if (current_timestamps.size() > 0)
+                    timestring = "[" + timestamp_to_string(get_median(current_timestamps)) + "] ";
+                else
+                    timestring = "";
+                if (instrument_cfg.contains("name"))
+                    instrument_name = instrument_cfg["name"];
+                else
+                    instrument_name = products->instrument_name;
+                if (products->has_tle())
+                    object_name = products->get_tle().name;
+                else
+                    object_name = "";
+                if (timestring != "" || object_name != "")
+                    object_name += "\n";
+                if (active_channel_id >= 0)
+                    composite_name = "Channel " + channel_numbers[active_channel_id];
+                else if (select_rgb_presets == -1)
+                    composite_name = "Custom (" + rgb_compo_cfg.equation + ")";
+                else
+                    composite_name = rgb_presets[select_rgb_presets].first;
+
+                // Add projection layer and settings
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name + " - " + composite_name, current_image});
+
+                if (rotate_image)
+                    viewer_app->projection_layers.front().img.mirror(true, true);
+                if (projection_use_old_algo)
+                    viewer_app->projection_layers.front().old_algo = true;
+
+                proj_notif.set_message(style::theme.green, "Added!");
             }
             catch (std::exception &e)
             {
@@ -918,10 +990,5 @@ namespace satdump
         {
             logger->error("Current image can't be projected!");
         }
-    }
-
-    image::Image<uint16_t> &ImageViewerHandler::getProjection()
-    {
-        return projected_img;
     }
 }

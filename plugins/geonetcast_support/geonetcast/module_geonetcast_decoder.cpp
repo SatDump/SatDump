@@ -10,6 +10,7 @@
 #include "common/mpeg_ts/fazzt_processor.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/image/io.h"
 
 #include "goes_abi.h"
 
@@ -153,9 +154,9 @@ namespace geonetcast
                                         if (channel == 7)
                                             bit_depth = 14;
 
-                                        image::Image<uint16_t> final_image = parse_goesr_abi_netcdf_fulldisk_CMI(file.data, bit_depth);
+                                        image::Image final_image = parse_goesr_abi_netcdf_fulldisk_CMI(file.data, bit_depth);
 
-                                        final_image.save_img(directory + "/PROCESSED/" + file.name);
+                                        image::save_img(final_image, directory + "/PROCESSED/" + file.name);
                                         // return;
                                     }
 #endif
@@ -203,7 +204,7 @@ namespace geonetcast
         ImGui::Begin("GeoNetCast Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

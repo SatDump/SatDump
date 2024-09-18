@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "common/image/image.h"
+#include <vector>
 
 namespace dmsp
 {
@@ -25,6 +26,8 @@ namespace dmsp
             int offset_ir = 0;
             int offset_vis = 0;
 
+            int tag_bit_override = 0;
+
         public:
             OLSRTDReader();
             ~OLSRTDReader();
@@ -33,13 +36,18 @@ namespace dmsp
 
             void work(uint8_t *rtd_frame, uint8_t *rtd_words);
 
-            image::Image<uint8_t> getChannelVIS();
-            image::Image<uint8_t> getChannelIR();
+            image::Image getChannelVIS();
+            image::Image getChannelIR();
 
             void set_offsets(int i, int v)
             {
                 offset_ir = i;
                 offset_vis = v;
+            }
+
+            void set_tag_bit(int t)
+            {
+                tag_bit_override = t;
             }
         };
     } // namespace avhrr

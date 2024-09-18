@@ -4,9 +4,11 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "core/backend.h"
 #include "gl.h"
-#include "main_ui.h"
 
+float funcDeviceScale();
+void funcRebuildFonts();
 void funcSetMousePos(int x, int y);
 std::pair<int, int> funcBeginFrame();
 void funcEndFrame();

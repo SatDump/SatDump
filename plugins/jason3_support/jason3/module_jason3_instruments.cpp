@@ -1,11 +1,12 @@
 #include "module_jason3_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/image/io.h"
 
 #include <thread>
 
@@ -29,8 +30,8 @@ namespace jason3
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1101, false, 2, 4);
-            ccsds::ccsds_standard::Demuxer demuxer_vcid2(1101, false, 2, 4);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid1(1101, false, 2, 4);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid2(1101, false, 2, 4);
 
             while (!data_in.eof())
             {
@@ -38,7 +39,7 @@ namespace jason3
                 data_in.read((char *)&cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 if (vcdu.vcid == 1) // AMR-2, Poseidon
                 {
@@ -92,7 +93,8 @@ namespace jason3
 
                 for (int i = 0; i < 3; i++)
                 {
-                    WRITE_IMAGE(amr2_reader.getChannel(i), directory + "/AMR2-" + std::to_string(i + 1));
+                    auto img = amr2_reader.getChannel(i);
+                    image::save_img(img, directory + "/AMR2-" + std::to_string(i + 1));
                 }
                 amr2_status = DONE;
             }
@@ -120,7 +122,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMR-2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amr2_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", amr2_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amr2_status);
 
@@ -128,7 +130,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Poseidon C");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", poseidon_c_reader.frames);
+                ImGui::TextColored(style::theme.green, "%d", poseidon_c_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(poseidon_c_status);
 
@@ -136,7 +138,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Poseidon Ku");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", poseidon_ku_reader.frames);
+                ImGui::TextColored(style::theme.green, "%d", poseidon_ku_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(poseidon_ku_status);
 
@@ -144,7 +146,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT ELS-A");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_els_a_reader.frames);
+                ImGui::TextColored(style::theme.green, "%d", lpt_els_a_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_els_a_status);
 
@@ -152,7 +154,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT ELS-B");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_els_b_reader.frames);
+                ImGui::TextColored(style::theme.green, "%d", lpt_els_b_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_els_b_status);
 
@@ -160,7 +162,7 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT APS-A");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_aps_a_reader.frames);
+                ImGui::TextColored(style::theme.green, "%d", lpt_aps_a_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_aps_a_status);
 
@@ -168,14 +170,14 @@ namespace jason3
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("LPT APS-B");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", lpt_aps_b_reader.frames);
+                ImGui::TextColored(style::theme.green, "%d", lpt_aps_b_reader.frames);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(lpt_aps_b_status);
 
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

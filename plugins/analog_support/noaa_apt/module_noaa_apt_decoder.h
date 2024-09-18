@@ -18,9 +18,8 @@ namespace noaa_apt
     struct APTWedge
     {
         // Info about the wedge
-        int start_line = 0; // Start line
-        int end_line = 0;   // End Line
-        int max_diff = 0;   // Maximum difference (noise est.)
+        int start_line = 0;    // Start line
+        int std_dev[16] = {0}; // StdDev in section of wedge (noise est)
 
         // Values
         int ref1 = 0;
@@ -51,7 +50,10 @@ namespace noaa_apt
         std::atomic<uint64_t> progress;
 
         long d_audio_samplerate;
+        int d_max_crop_stddev = 3500;
         bool d_autocrop_wedges = false;
+        bool d_save_unsynced = true;
+        bool d_align_timestamps = true;
 
         std::shared_ptr<dsp::RealToComplexBlock> rtc;
         std::shared_ptr<dsp::FreqShiftBlock> frs;
@@ -59,19 +61,19 @@ namespace noaa_apt
         std::shared_ptr<dsp::FIRBlock<complex_t>> lpf;
         std::shared_ptr<dsp::ComplexToMagBlock> ctm;
 
-        image::Image<uint16_t> wip_apt_image;
+        image::Image wip_apt_image;
 
         // UI Stuff
         instrument_status_t apt_status = DECODING;
         bool has_to_update = false;
         unsigned int textureID = 0;
-        uint32_t *textureBuffer;
+        uint32_t *textureBuffer = nullptr;
 
         // Functions
-        image::Image<uint16_t> synchronize(int line_cnt);
+        image::Image synchronize(int line_cnt);
 
     protected: // Wedge parsing
-        std::vector<APTWedge> parse_wedge_full(image::Image<uint16_t> &wedge);
+        std::vector<APTWedge> parse_wedge_full(image::Image &wedge);
         void get_calib_values_wedge(std::vector<APTWedge> &wedges, int &new_white, int &new_black);
 
     public:

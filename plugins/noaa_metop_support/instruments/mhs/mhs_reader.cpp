@@ -72,17 +72,12 @@ namespace noaa_metop
             calib_lines.push_back(cl);
         }
 
-        image::Image<uint16_t> MHSReader::getChannel(int channel)
+        image::Image MHSReader::getChannel(int channel)
         {
-            image::Image<uint16_t> output(MHS_WIDTH, line, 1);
-            std::memset(&output[0], 0, MHS_WIDTH * line * 2);
+            image::Image output(16, MHS_WIDTH, line, 1);
             for (int l = 0; l < line; l++)
-            {
                 for (int x = 0; x < MHS_WIDTH; x++)
-                {
-                    output[l * MHS_WIDTH + (MHS_WIDTH - x - 1)] = channels[channel][l][x];
-                }
-            }
+                    output.set(l * MHS_WIDTH + (MHS_WIDTH - x - 1), channels[channel][l][x]);
             return output;
         }
 
@@ -122,10 +117,10 @@ namespace noaa_metop
         {
             // declare all the variables
             calib = calib_coefs;
-            //calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+            // calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
             calib_out["calibrator"] = "noaa_mhs";
 
-            uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end());
+            uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end(), 0);
             PIE_buff.clear();
 
             double a, b;
@@ -374,11 +369,11 @@ namespace noaa_metop
                                               "RF DC/DC converter module"};
 
             std::string current_id[6] = {"EE and SM +5V ",
-                                          "receiver +8V",
-                                          "receiver +15V",
-                                          "receiver -15V",
-                                          "RDM motor",
-                                          "FDM motor"};
+                                         "receiver +8V",
+                                         "receiver +15V",
+                                         "receiver -15V",
+                                         "RDM motor",
+                                         "FDM motor"};
             nlohmann::json telemetry;
             for (calib_line cl : calib_lines)
             {

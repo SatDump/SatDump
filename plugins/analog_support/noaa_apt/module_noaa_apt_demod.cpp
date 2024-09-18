@@ -14,8 +14,8 @@ namespace noaa_apt
         // Parse params
         if (parameters.count("sdrpp_noise_reduction") > 0)
             sdrpp_noise_reduction = parameters["sdrpp_noise_reduction"].get<bool>();
-        else
-            sdrpp_noise_reduction = true;
+        if (parameters.count("save_wav") > 0)
+            save_wav = parameters["save_wav"].get<bool>();
 
         name = "NOAA APT Demodulator (FM)";
         show_freq = false;
@@ -54,7 +54,7 @@ namespace noaa_apt
         else
             filesize = 0;
 
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
             d_output_files.push_back(d_output_file_hint + ".wav");
@@ -75,9 +75,9 @@ namespace noaa_apt
 
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
-        int final_data_size = 0;
+        uint64_t final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
             wave_writer.write_header(d_symbolrate, 1);
 
         std::shared_ptr<audio::AudioSink> audio_sink;
@@ -116,12 +116,12 @@ namespace noaa_apt
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);
 
-            if (output_data_type == DATA_FILE)
+            if (save_wav || output_data_type == DATA_FILE)
             {
                 data_out.write((char *)output_wav_buffer, dat_size * sizeof(int16_t));
                 final_data_size += dat_size * sizeof(int16_t);
             }
-            else
+            if(output_data_type != DATA_FILE)
             {
                 output_fifo->write((uint8_t *)output_wav_buffer, dat_size * sizeof(int16_t));
             }
@@ -142,8 +142,11 @@ namespace noaa_apt
             audio_sink->stop();
 
         // Finish up WAV
-        if (output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == DATA_FILE)
+        {
             wave_writer.finish_header(final_data_size);
+            data_out.close();
+        }
         delete[] output_wav_buffer;
 
         logger->info("Demodulation finished");
@@ -161,9 +164,6 @@ namespace noaa_apt
             nr->stop();
         qua->stop();
         qua->output_stream->stopReader();
-
-        if (output_data_type == DATA_FILE)
-            data_out.close();
     }
 
     void NOAAAPTDemodModule::drawUI(bool window)
@@ -183,7 +183,7 @@ namespace noaa_apt
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr); */
             if (!streamingInput)
@@ -192,16 +192,16 @@ namespace noaa_apt
             if (enable_audio)
             {
                 const char *btn_icon, *label;
-                ImU32 color;
+                ImVec4 color;
                 if (play_audio)
                 {
-                    color = IM_COL32(0, 255, 0, 255);
+                    color = style::theme.green.Value;
                     btn_icon = u8"\uF028##aptaudio";
                     label = "Audio Playing";
                 }
                 else
                 {
-                    color = IM_COL32(255, 0, 0, 255);
+                    color = style::theme.red.Value;
                     btn_icon = u8"\uF026##aptaudio";
                     label = "Audio Muted";
                 }
@@ -217,7 +217,7 @@ namespace noaa_apt
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
         ImGui::End();

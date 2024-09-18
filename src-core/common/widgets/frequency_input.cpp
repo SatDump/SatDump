@@ -16,6 +16,7 @@ namespace widgets
 			x -= dot_width;
 		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
 	}
+
 	inline void helper_right(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
 	{
 		if (i == 0)
@@ -25,18 +26,20 @@ namespace widgets
 			x += dot_width;
 		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
 	}
-	inline void digit_helper(int &i, uint64_t* frequency_hz, int64_t &change_by,
-		ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top)
+
+	inline void digit_helper(int &i, uint64_t *frequency_hz, int64_t &change_by,
+							 ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top, bool allow_mousewheel)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 			change_by = -(*frequency_hz % (uint64_t)pow(10, i + 1));
-		ImGuiContext& g = *GImGui;
-		if (g.WheelingWindowReleaseTimer == 0.0f)
-			ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
+		ImGuiContext &g = *GImGui;
+		if (allow_mousewheel)
+			if (g.WheelingWindowReleaseTimer == 0.0f)
+				ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY, ImGuiInputFlags_CondHovered);
 		if (ImGui::IsItemHovered())
 		{
-			//Handle Enter
-			if(ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
+			// Handle Enter
+			if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
 				change_by = -(*frequency_hz % (uint64_t)pow(10, i + 1));
 
 			// Handle Arrow Keys
@@ -50,8 +53,8 @@ namespace widgets
 				helper_right(i, digit_size, screen_pos, dot_width, top);
 
 			// Handle number keys
-			ImGuiIO& io = ImGui::GetIO();
-			for (auto& this_char : io.InputQueueCharacters)
+			ImGuiIO &io = ImGui::GetIO();
+			for (auto &this_char : io.InputQueueCharacters)
 			{
 				if (this_char >= '0' && this_char <= '9')
 				{
@@ -61,22 +64,23 @@ namespace widgets
 			}
 
 			// Handle mouse wheel (can be up or down)
-			if (g.WheelingWindowReleaseTimer == 0.0f)
-				change_by += io.MouseWheel * pow(10, i);
+			if (allow_mousewheel)
+				if (g.WheelingWindowReleaseTimer == 0.0f)
+					change_by += io.MouseWheel * pow(10, i);
 
 			// Draw rect
-			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			ImDrawList *draw_list = ImGui::GetWindowDrawList();
 			draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-				ImGui::ColorConvertFloat4ToU32(ImVec4(0.596, 0.728, 0.884, 0.5)), rounding);
+									 style::theme.freq_highlight, rounding);
 		}
 	}
 
-	bool FrequencyInput(const char *label, uint64_t *frequency_hz, float scale)
+	bool FrequencyInput(const char *label, uint64_t *frequency_hz, float scale, bool allow_mousewheel)
 	{
-		//Set up
+		// Set up
 		ImGuiContext &g = *GImGui;
 		ImGuiStyle style = ImGui::GetStyle();
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		ImDrawList *draw_list = ImGui::GetWindowDrawList();
 		ImVec2 pos = ImGui::GetCursorPos();
 		static ImGuiID enable_temp_input_on = 0;
 		static bool first_show_temp = false;
@@ -180,9 +184,9 @@ namespace widgets
 				else
 					change_by += pow(10, i);
 			}
-			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true);
+			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, true, allow_mousewheel);
 
-			//Handle "down" events
+			// Handle "down" events
 			this_id = "bottombutton" + std::to_string(i);
 			ImGui::SetCursorPos(ImVec2(pos.x, pos.y + (digit_size.y / 2)));
 			screen_pos = ImGui::GetCursorScreenPos();
@@ -196,9 +200,9 @@ namespace widgets
 				else
 					change_by -= pow(10, i);
 			}
-			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false);
+			digit_helper(i, frequency_hz, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false, allow_mousewheel);
 
-			//Add decimal, if needed
+			// Add decimal, if needed
 			pos.x += digit_size.x;
 			if (i % 3 == 0 && i != 0)
 			{
@@ -211,7 +215,7 @@ namespace widgets
 
 		// Display Label
 		ImGui::SetCursorPos(ImVec2(pos.x + (5 * ui_scale), pos.y + 1 * ui_scale + (digit_size.y / 2 - button_size.y / 2)));
-		if(ImGui::Button(display_label.c_str()))
+		if (ImGui::Button(display_label.c_str()))
 		{
 			enable_temp_input_on = id;
 			first_show_temp = true;
@@ -223,7 +227,12 @@ namespace widgets
 		if ((int64_t)(*frequency_hz) + change_by < 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
 
-		*frequency_hz += change_by;
-		return change_by != 0;
+		if (change_by != 0)
+		{
+			*frequency_hz += change_by;
+			return true;
+		}
+		else
+			return false;
 	}
 }

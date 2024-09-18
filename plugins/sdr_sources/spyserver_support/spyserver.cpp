@@ -144,7 +144,7 @@ void SpyServerSource::drawControlUI()
             catch (std::exception &e)
             {
                 logger->error("Error connecting to SpyServer %s", e.what());
-                error.set_message(e.what());
+                error.set_message(style::theme.red, e.what());
             }
         }
     }
@@ -205,21 +205,24 @@ void SpyServerSource::set_samplerate(uint64_t samplerate)
         }
 
         if (buffer_samplerate == 0)
-            throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+            throw std::runtime_error("Unsupported samplerate : " + std::to_string(samplerate) + "!");
         buffer_samplerate = 0;
     }
 }
 
 uint64_t SpyServerSource::get_samplerate()
 {
-    return current_samplerate;
+    if (is_connected)
+        return current_samplerate;
+    else
+        return buffer_samplerate;
 }
 
 std::vector<dsp::SourceDescriptor> SpyServerSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"spyserver", "SpyServer", 0, false});
+    results.push_back({"spyserver", "SpyServer", "0", false});
 
     return results;
 }

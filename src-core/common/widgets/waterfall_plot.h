@@ -22,8 +22,8 @@ namespace widgets
 
         std::mutex work_mtx;
 
-        int last_curr_width = -1;
-        int last_curr_height = -1;
+        int last_curr_width = 0;
+        int last_curr_height = 0;
 
         int curr_width;
         int curr_height;
@@ -32,6 +32,8 @@ namespace widgets
 
         int waterfall_i_mod = 0;
         int waterfall_i = 0;
+
+        bool buffer_alloc(size_t size);
 
     public:
         float scale_min, scale_max;

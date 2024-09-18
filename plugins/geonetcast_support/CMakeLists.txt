@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(geonetcast_support)
 
 file(GLOB_RECURSE geonetcast_support_CPPS *.cpp)
@@ -17,4 +17,8 @@ else()
     message("Could not find HDF5 libraries. Geonetcast HDF5 processing disabled!")
 endif()
 
-install(TARGETS geonetcast_support DESTINATION lib/satdump/plugins)
+if(MSVC OR BUILD_MSVC)
+    install(TARGETS geonetcast_support DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+else()
+    install(TARGETS geonetcast_support DESTINATION lib/satdump/plugins)
+endif()

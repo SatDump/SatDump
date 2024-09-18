@@ -3,7 +3,6 @@
 #include "imgui/imgui.h"
 #include <volk/volk.h>
 #include "common/utils.h"
-#include "common/image/image.h"
 #include "common/repack.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
@@ -40,7 +39,7 @@ namespace dmsp
         {
             sat_num = d_parameters["satellite_number"];
         }
-        catch (std::exception&)
+        catch (std::exception &)
         {
             sat_num = std::stoi(d_parameters["satellite_number"].get<std::string>());
         }
@@ -49,6 +48,20 @@ namespace dmsp
             ols_reader.set_offsets(9, -8);
         else if (sat_num == 18)
             ols_reader.set_offsets(0, 14);
+
+        std::string fs_config = d_parameters["tag_bit_override"].get<std::string>();
+
+        if (fs_config == "VIS/IR")
+        {
+            ols_reader.set_tag_bit(1);
+        }
+        else if (fs_config == "IR/VIS")
+        {
+            ols_reader.set_tag_bit(2);
+        } else
+        {
+            ols_reader.set_tag_bit(0);
+        }
 
         uint8_t rtd_words[19];
 
@@ -96,8 +109,8 @@ namespace dmsp
             ols_products.has_timestamps = false;
             ols_products.bit_depth = 8;
 
-            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS().to16bits()});
-            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR().to16bits()});
+            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS()});
+            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR()});
 
             ols_products.save(directory);
             dataset.products_list.push_back("OLS");
@@ -126,7 +139,7 @@ namespace dmsp
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("OLS");
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextColored(ImColor(0, 255, 0), "%d", ols_reader.lines);
+            ImGui::TextColored(style::theme.green, "%d", ols_reader.lines);
             ImGui::TableSetColumnIndex(2);
             drawStatus(ols_status);
 
@@ -134,7 +147,7 @@ namespace dmsp
         }
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

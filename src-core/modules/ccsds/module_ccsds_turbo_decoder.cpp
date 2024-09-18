@@ -1,11 +1,12 @@
 #include "module_ccsds_turbo_decoder.h"
 #include "logger.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
 #include "common/codings/randomization.h"
 #include "common/codings/turbo/ccsds_turbo.h"
 #include "common/codings/crc/crc_generic.h"
+#include "core/exception.h"
 
 namespace ccsds
 {
@@ -15,20 +16,20 @@ namespace ccsds
         if (parameters.contains("turbo_rate"))
             d_turbo_rate = parameters["turbo_rate"].get<std::string>();
         else
-            throw std::runtime_error("Turbo Rate is required!");
+            throw satdump_exception("Turbo Rate is required!");
 
         if (parameters.contains("turbo_base"))
             d_turbo_base = parameters["turbo_base"].get<int>();
         else
-            throw std::runtime_error("Turbo Base is required!");
+            throw satdump_exception("Turbo Base is required!");
 
         if (parameters.contains("turbo_iters"))
             d_turbo_iters = parameters["turbo_iters"].get<int>();
         else
-            throw std::runtime_error("Turbo Iters is required!");
+            throw satdump_exception("Turbo Iters is required!");
 
         if (!(d_turbo_base == 223 || d_turbo_base == 446 || d_turbo_base == 892 || d_turbo_base == 1115))
-            throw std::runtime_error("Turbo Base must be 223, 446, 892 or 1115!");
+            throw satdump_exception("Turbo Base must be 223, 446, 892 or 1115!");
 
         if (d_turbo_rate == "1/2")
         {
@@ -126,7 +127,7 @@ namespace ccsds
                 d_codeword_size = 53544;
         }
         else
-            throw std::runtime_error("Invalid Turbo Rate!");
+            throw satdump_exception("Invalid Turbo Rate!");
 
         d_frame_size = d_codeword_size + d_asm_size;
 
@@ -282,25 +283,26 @@ namespace ccsds
             {
                 ImGui::Text("Corr  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(locked ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cor));
+                ImGui::TextColored(locked ? style::theme.green : style::theme.orange, UITO_C_STR(cor));
 
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                ImGui::PlotLines("", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 100.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 100.0f,
+                    ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Button("CRC Check", {200 * ui_scale, 20 * ui_scale});
             {
                 ImGui::Text("Check  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(crc_lock ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, crc_lock ? "PASS" : "FAIL");
+                ImGui::TextColored(crc_lock ? style::theme.green : style::theme.orange, crc_lock ? "PASS" : "FAIL");
             }
         }
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

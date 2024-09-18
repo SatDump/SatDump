@@ -3,6 +3,7 @@
 #include "core/module.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
+#include "common/lrit/lrit_productizer.h"
 
 extern "C"
 {
@@ -26,9 +27,9 @@ namespace goes
             bool write_unknown;
             bool write_lrit;
 
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_full_disk;
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso1;
-            std::shared_ptr<GOESRFalseColorComposer> goes_r_fc_composer_meso2;
+            bool fill_missing;
+            int max_fill_lines;
+
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;
@@ -56,6 +57,10 @@ namespace goes
 
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
+
+            ::lrit::LRITProductizer productizer;
+
+            void saveImageP(GOESxRITProductMeta meta, image::Image &img);
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

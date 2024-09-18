@@ -1,19 +1,22 @@
 #include "module_metop_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/image_products.h"
 #include "products/radiation_products.h"
 #include "products/scatterometer_products.h"
 #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
+#include "nlohmann/json_utils.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
 
 namespace metop
 {
@@ -23,6 +26,7 @@ namespace metop
             : ProcessingModule(input_file, output_file_hint, parameters), avhrr_reader(false, -1)
         {
             write_hpt = parameters.contains("write_hpt") ? parameters["write_hpt"].get<bool>() : false;
+            ignore_integrated_tle = parameters.contains("ignore_integrated_tle") ? parameters["ignore_integrated_tle"].get<bool>() : false;
         }
 
         void MetOpInstrumentsDecoderModule::process()
@@ -36,13 +40,13 @@ namespace metop
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid3(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid9(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid10(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid15(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid24(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid34(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid3(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid9(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid10(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid12(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid15(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid24(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid34(882, true);
 
             // Setup Admin Message
             {
@@ -66,7 +70,7 @@ namespace metop
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == METOP_A_SCID ||
                     vcdu.spacecraft_id == METOP_B_SCID ||
@@ -144,7 +148,7 @@ namespace metop
 
             data_in.close();
 
-            int scid = most_common(metop_scids.begin(), metop_scids.end());
+            int scid = most_common(metop_scids.begin(), metop_scids.end(), 0);
             metop_scids.clear();
 
             std::string sat_name = "Unknown MetOp";
@@ -163,14 +167,14 @@ namespace metop
             else if (scid == METOP_C_SCID)
                 norad = METOP_C_NORAD;
 
-            std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
-            if (!satellite_tle.has_value())
-                satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
-
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(avhrr_reader.timestamps);
+
+            std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
+            if (!satellite_tle.has_value() || ignore_integrated_tle)
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
             if (write_hpt)
             {
@@ -303,7 +307,7 @@ namespace metop
 
                 // Output a few nice composites as well
                 logger->info("ASCAT Composite...");
-                image::Image<uint16_t> imageAll(256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
+                image::Image imageAll(16, 256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
                 {
                     int height = ascat_reader.getChannelImg(0).height();
 
@@ -330,7 +334,7 @@ namespace metop
                     imageAll.draw_image(0, image1, 256 * 1, height * 2);
                 }
 
-                WRITE_IMAGE(imageAll, directory + "/ASCAT-ALL");
+                image::save_img(imageAll, directory + "/ASCAT-ALL");
 
                 ascat_products.save(directory);
                 dataset.products_list.push_back("ASCAT");
@@ -360,9 +364,9 @@ namespace metop
                 if (iasi_reader_img.lines > 0)
                 {
                     logger->info("Channel IR imaging...");
-                    image::Image<uint16_t> iasi_imaging = iasi_reader_img.getIRChannel();
+                    image::Image iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                    iasi_imaging.simple_despeckle(10);                                                            // And, it has some dead pixels sometimes so well, we need to remove them I guess?
+                    image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;
@@ -421,7 +425,7 @@ namespace metop
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
 
                 for (int i = 0; i < 15; i++)
-                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1) + ".png", std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
+                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
 
                 // calib
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
@@ -461,6 +465,8 @@ namespace metop
                 gome_products.has_timestamps = true;
                 gome_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 gome_products.set_timestamps(gome_reader.timestamps);
+                gome_products.set_tle(satellite_tle);
+                gome_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json")));
                 gome_products.save_as_matrix = true;
 
                 for (int i = 0; i < 6144; i++)
@@ -526,7 +532,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AVHRR");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", avhrr_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", avhrr_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(avhrr_status);
 
@@ -534,7 +540,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("IASI");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", iasi_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", iasi_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(iasi_status);
 
@@ -542,7 +548,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("IASI Imaging");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", iasi_reader_img.lines * 64);
+                ImGui::TextColored(style::theme.green, "%d", iasi_reader_img.lines * 64);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(iasi_img_status);
 
@@ -550,7 +556,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MHS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", mhs_reader.line);
+                ImGui::TextColored(style::theme.green, "%d", mhs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mhs_status);
 
@@ -558,7 +564,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA1);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA1);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -566,7 +572,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA2);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -574,7 +580,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("GOME");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", gome_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", gome_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(gome_status);
 
@@ -582,7 +588,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("ASCAT");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", ascat_reader.lines[0]);
+                ImGui::TextColored(style::theme.green, "%d", ascat_reader.lines[0]);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(gome_status);
 
@@ -590,7 +596,7 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("SEM");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", sem_reader.samples);
+                ImGui::TextColored(style::theme.green, "%d", sem_reader.samples);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(sem_status);
 
@@ -598,14 +604,14 @@ namespace metop
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Admin Messages");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", admin_msg_reader.count);
+                ImGui::TextColored(style::theme.green, "%d", admin_msg_reader.count);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(admin_msg_status);
 
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

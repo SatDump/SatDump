@@ -2,6 +2,8 @@
 #include <cstring>
 #include "common/ccsds/ccsds_time.h"
 
+#include <cstdio>
+
 namespace metop
 {
     namespace gome
@@ -9,7 +11,7 @@ namespace metop
         GOMEReader::GOMEReader()
         {
             for (int i = 0; i < 6144; i++)
-                channels[i].resize(16);
+                channels[i].resize(32);
             lines = 0;
         }
 
@@ -64,10 +66,12 @@ namespace metop
                     if (band_starts[band] >= 1024 || counter > 15)
                         continue;
 
-                    if ((header[17] >> (10 - band * 2)) & 3)
-                        channels[band * 1024 + channel][lines * 16 + 15 - counter] = bands[0][band_channels[band]].data[band_starts[band] + channel];
-                    else if ((header[18] >> (5 - band)) & 1)
-                        channels[band * 1024 + channel][lines * 16 + 15 - counter] = bands[1][band_channels[band]].data[band_starts[band] + channel];
+                    // There might be a bug on metop?
+
+                    //    if ((header[17] >> (10 - band * 2)) & 3)
+                    channels[band * 1024 + channel][lines * 32 + (31 - (counter * 2 + 0))] = bands[0][band_channels[band]].data[band_starts[band] + channel];
+                    //  if ((header[18] >> (5 - band)) & 1)
+                    channels[band * 1024 + channel][lines * 32 + (31 - (counter * 2 + 1))] = bands[1][band_channels[band]].data[band_starts[band] + channel];
                 }
             }
 
@@ -78,12 +82,12 @@ namespace metop
             }
 
             for (int channel = 0; channel < 6144; channel++)
-                channels[channel].resize((lines + 1) * 16);
+                channels[channel].resize((lines + 1) * 32);
         }
 
-        image::Image<uint16_t> GOMEReader::getChannel(int channel)
+        image::Image GOMEReader::getChannel(int channel)
         {
-            return image::Image<uint16_t>(channels[channel].data(), 16, lines, 1);
+            return image::Image(channels[channel].data(), 16, 32, lines, 1);
         }
     } // namespace gome
 } // namespace metop

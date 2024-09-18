@@ -17,7 +17,7 @@ namespace demod
         if (parameters.count("pll_bw") > 0)
             d_pll_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL Bw parameter must be present!");
+            throw satdump_exception("PLL Bw parameter must be present!");
 
         if (parameters.count("pll_max_offset") > 0)
             d_pll_max_offset = parameters["pll_max_offset"].get<float>();
@@ -25,7 +25,7 @@ namespace demod
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else
-            throw std::runtime_error("RRC Alpha parameter must be present!");
+            throw satdump_exception("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
             d_rrc_taps = parameters["rrc_taps"].get<int>();
@@ -67,10 +67,15 @@ namespace demod
                                                  d_subccarier_offset == 0 ? d_symbolrate : d_subccarier_offset);
 
         if (d_resample_after_pll)
+        {
             resampler = std::make_shared<dsp::SmartResamplerBlock<complex_t>>(pm_psk->output_stream, final_samplerate, d_samplerate);
 
+            // AGC2
+            agc2 = std::make_shared<dsp::AGCBlock<complex_t>>(resampler->output_stream, 0.001, 1.0, 1.0, 1000.0);
+        }
+
         // RRC
-        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(d_resample_after_pll ? resampler->output_stream : pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
+        rrc = std::make_shared<dsp::FIRBlock<complex_t>>(d_resample_after_pll ? agc2->output_stream : pm_psk->output_stream, dsp::firdes::root_raised_cosine(1, final_samplerate, d_symbolrate, d_rrc_alpha, d_rrc_taps));
 
         // Costas
         costas = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 2);
@@ -107,6 +112,8 @@ namespace demod
         BaseDemodModule::start();
         pll->start();
         pm_psk->start();
+        if (d_resample_after_pll)
+            agc2->start();
         rrc->start();
         costas->start();
         rec->start();
@@ -175,6 +182,8 @@ namespace demod
 
         pll->stop();
         pm_psk->stop();
+        if (d_resample_after_pll)
+            agc2->stop();
         rrc->stop();
         costas->stop();
         rec->stop();

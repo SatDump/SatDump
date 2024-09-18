@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(aaronia_sdr_support)
 
 
@@ -19,7 +19,7 @@ if(UNIX OR MSVC)
         target_link_libraries(aaronia_sdr_support PUBLIC satdump_core AaroniaRTSAAPI.dll)
     else()
         target_link_libraries(aaronia_sdr_support PUBLIC satdump_core ${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so)
-        target_include_directories(aaronia_sdr_support PUBLIC ${AARONIA_RTSA_SUITE_PATH})
+        target_include_directories(aaronia_sdr_support PUBLIC ${AARONIA_RTSA_SUITE_PATH}/sdk)
     endif()
 
     target_include_directories(aaronia_sdr_support PUBLIC src)

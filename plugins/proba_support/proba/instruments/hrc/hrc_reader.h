@@ -26,9 +26,9 @@ namespace proba
                 delete[] tempChannelBuffer;
             }
 
-            image::Image<uint16_t> getImg()
+            image::Image getImg()
             {
-                return image::Image<uint16_t>(tempChannelBuffer, 1072, 1072, 1);
+                return image::Image(tempChannelBuffer, 16, 1072, 1072, 1);
             }
         };
 

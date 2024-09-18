@@ -8,6 +8,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "satdump_vars.h"
+#include "core/exception.h"
 
 std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 {
@@ -15,7 +16,7 @@ std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 
     void *dynlib = dlopen(plugin.c_str(), RTLD_LAZY);
     if (!dynlib)
-        throw std::runtime_error("Error loading " + plugin + "! Error : " + std::string(dlerror()));
+        throw satdump_exception("Error loading " + plugin + "! Error : " + std::string(dlerror()));
 
     void *create = dlsym(dynlib, "loader");
     const char *dlsym_error = dlerror();
@@ -74,9 +75,9 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
                 goto skip_this;
 
 #ifdef __ANDROID__
-            if (path.find("libandroid_imgui.so") != std::string::npos)
-                goto skip_this;
-            if (path.find("libsatdump_core.so") != std::string::npos)
+            if (path.find("libandroid_imgui.so") != std::string::npos ||
+                path.find("libsatdump_core.so") != std::string::npos ||
+                path.find("libsatdump_interface.so") != std::string::npos)
                 goto skip_this;
 #endif
             try

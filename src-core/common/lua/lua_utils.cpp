@@ -1,6 +1,9 @@
 #include "lua_utils.h"
 
 #include "common/image/image.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
+#include "common/image/image_lut.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/projection/sat_proj/sat_proj.h"
 #include "logger.h"
@@ -47,65 +50,72 @@ namespace lua_utils
         return l;
     }
 
-    template <typename T>
     void bindImageType(sol::state &lua, std::string name)
     {
-        sol::usertype<image::Image<T>> image_type = lua.new_usertype<image::Image<T>>(
+        sol::usertype<image::Image> image_type = lua.new_usertype<image::Image>(
             name,
-            sol::constructors<image::Image<T>(), image::Image<uint16_t>(size_t, size_t, int)>());
+            sol::constructors<image::Image(), image::Image(int, size_t, size_t, int)>());
 
-        image_type["clear"] = &image::Image<T>::clear;
+        image_type["clear"] = &image::Image::clear;
 
-        image_type["get"] = [](image::Image<T> &img, int i)
-        { return img[i]; };
-        image_type["set"] = [](image::Image<T> &img, int i, T x)
-        { img[i] = img.clamp(x); };
+        image_type["get"] = [](image::Image &img, size_t i) -> int
+        {
+            if (i < img.size())
+                return img.get(i);
+            else
+                return 0;
+        };
+        image_type["set"] = [](image::Image &img, size_t i, int x)
+        {
+            if (i < img.size())
+                img.set(i, img.clamp(x));
+        };
 
-        image_type["depth"] = &image::Image<T>::depth;
-        image_type["width"] = &image::Image<T>::width;
-        image_type["height"] = &image::Image<T>::height;
-        image_type["channels"] = &image::Image<T>::channels;
-        image_type["size"] = &image::Image<T>::size;
+        image_type["depth"] = &image::Image::depth;
+        image_type["width"] = &image::Image::width;
+        image_type["height"] = &image::Image::height;
+        image_type["channels"] = &image::Image::channels;
+        image_type["size"] = &image::Image::size;
 
-        image_type["to_rgb"] = &image::Image<T>::to_rgb;
-        image_type["to_rgba"] = &image::Image<T>::to_rgba;
+        image_type["to_rgb"] = &image::Image::to_rgb;
+        image_type["to_rgba"] = &image::Image::to_rgba;
 
-        image_type["fill_color"] = &image::Image<T>::fill_color;
-        image_type["fill"] = &image::Image<T>::fill;
-        image_type["mirror"] = &image::Image<T>::mirror;
-        image_type["equalize"] = &image::Image<T>::equalize;
-        image_type["white_balance"] = &image::Image<T>::white_balance;
+        image_type["fill_color"] = &image::Image::fill_color;
+        image_type["fill"] = &image::Image::fill;
+        image_type["mirror"] = &image::Image::mirror;
+        lua["image_equalize"] = &image::equalize;
+        lua["image_white_balance"] = &image::white_balance;
         // CROP / CROP-TO
-        image_type["resize"] = &image::Image<T>::resize;
-        image_type["resize_to"] = &image::Image<T>::resize_to;
-        image_type["resize_bilinear"] = &image::Image<T>::resize_bilinear;
-        image_type["brightness_contrast_old"] = &image::Image<T>::brightness_contrast_old;
-        image_type["linear_invert"] = &image::Image<T>::linear_invert;
-        image_type["equalize"] = &image::Image<T>::equalize;
-        image_type["simple_despeckle"] = &image::Image<T>::simple_despeckle;
-        image_type["median_blur"] = &image::Image<T>::median_blur;
-        image_type["despeckle"] = &image::Image<T>::kuwahara_filter;
+        image_type["resize"] = &image::Image::resize;
+        image_type["resize_to"] = &image::Image::resize_to;
+        image_type["resize_bilinear"] = &image::Image::resize_bilinear;
+        //        image_type["brightness_contrast_old"] = &image::brightness_contrast_old;
+        lua["image_linear_invert"] = &image::linear_invert;
+        lua["image_equalize"] = &image::equalize;
+        lua["image_simple_despeckle"] = &image::simple_despeckle;
+        lua["image_median_blur"] = &image::median_blur;
+        lua["image_despeckle"] = &image::kuwahara_filter;
 
-        image_type["draw_pixel"] = &image::Image<T>::draw_pixel;
-        image_type["draw_line"] = &image::Image<T>::draw_line;
-        image_type["draw_circle"] = &image::Image<T>::draw_circle;
-        image_type["draw_image"] = &image::Image<T>::draw_image;
-        // image_type["draw_text"] = &image::Image<T>::draw_text;
+        image_type["draw_pixel"] = &image::Image::draw_pixel;
+        image_type["draw_line"] = &image::Image::draw_line;
+        image_type["draw_circle"] = &image::Image::draw_circle;
+        image_type["draw_image"] = &image::Image::draw_image;
+        // image_type["draw_text"] = &image::Image::draw_text;
 
-        image_type["load_png"] = (void(image::Image<T>::*)(std::string, bool))(&image::Image<T>::load_png);
-        image_type["save_png"] = &image::Image<T>::save_png;
-        image_type["load_jpeg"] = (void(image::Image<T>::*)(std::string))(&image::Image<T>::load_jpeg);
-        image_type["save_jpeg"] = &image::Image<T>::save_jpeg;
-        image_type["load_img"] = (void(image::Image<T>::*)(std::string))(&image::Image<T>::load_img);
-        image_type["save_img"] = &image::Image<T>::save_img;
+        lua["image_load_png"] = (void (*)(image::Image &, std::string, bool))(&image::load_png);
+        lua["image_save_png"] = &image::save_png;
+        lua["image_load_jpeg"] = (void (*)(image::Image &, std::string))(&image::load_jpeg);
+        lua["image_save_jpeg"] = &image::save_jpeg;
+        lua["image_load_img"] = (void (*)(image::Image &, std::string))(&image::load_img);
+        lua["image_save_img"] = &image::save_img;
     }
 
     void bindImageTypes(sol::state &lua)
     {
-        bindImageType<uint8_t>(lua, "image8");
-        bindImageType<uint16_t>(lua, "image16");
+        bindImageType(lua, "image_t");
 
         lua["image8_lut_jet"] = &image::LUT_jet<uint8_t>;
+        lua["image16_lut_jet"] = &image::LUT_jet<uint16_t>;
     }
 
     void bindGeoTypes(sol::state &lua)

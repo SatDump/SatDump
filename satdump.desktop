@@ -1,5 +1,4 @@
 [Desktop Entry]
-Encoding=UTF-8
 Version=1.0
 Type=Application
 Terminal=false
@@ -7,4 +6,5 @@ Exec=@CMAKE_INSTALL_PREFIX@/bin/satdump-ui
 Name=SatDump
 Icon=@CMAKE_INSTALL_PREFIX@/share/satdump/icon.png
 StartupWMClass=SatDump v@SATDUMP_VERSION@
-Categories=HamRadio
+Categories=Science;HamRadio
+Keywords=Satellite;SDR

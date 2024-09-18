@@ -42,9 +42,9 @@ namespace satdump
         return v;
     }
 
-    image::Image<uint8_t> ObjectTracker::getPolarPlotImg(int plot_size)
+    image::Image ObjectTracker::getPolarPlotImg(int plot_size)
     {
-        image::Image<uint8_t> img(plot_size, plot_size, 3);
+        image::Image img(8, plot_size, plot_size, 3);
 
         // All black bg
         img.fill(0);
@@ -55,10 +55,10 @@ namespace satdump
         float radius2 = plot_size * radius * (6.0 / 9.0);
         float radius3 = plot_size * radius * (9.0 / 9.0);
 
-        uint8_t color_green[] = {0, 255, 0};
-        uint8_t color_red[] = {255, 0, 0};
-        uint8_t color_orange[] = {255, 165, 0};
-        uint8_t color_cyan[] = {0, 237, 255};
+        std::vector<double> color_green = {0, 1, 0};
+        std::vector<double> color_red = {1, 0, 0};
+        std::vector<double> color_orange = {1, 165.0 / 255.0, 0};
+        std::vector<double> color_cyan = {0, 237.0 / 255.0, 1};
 
         img.draw_circle(plot_size / 2, plot_size / 2,
                         radius1, color_green, false);

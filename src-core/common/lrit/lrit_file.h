@@ -40,6 +40,73 @@ namespace lrit
         }
     };
 
+    struct ImageStructureRecord
+    {
+        static constexpr int TYPE = 1;
+
+        uint8_t type;
+        uint16_t record_length;
+        uint8_t bit_per_pixel;
+        uint16_t columns_count;
+        uint16_t lines_count;
+        uint8_t compression_flag;
+
+        ImageStructureRecord(uint8_t *data)
+        {
+            type = data[0];
+            record_length = data[1] << 8 | data[2];
+            bit_per_pixel = data[3];
+            columns_count = data[4] << 8 | data[5];
+            lines_count = data[6] << 8 | data[7];
+            compression_flag = data[8];
+        }
+    };
+
+    struct ImageNavigationRecord
+    {
+        static constexpr int TYPE = 2;
+
+        uint8_t type;
+        uint16_t record_length;
+        std::string projection_name;
+        int32_t column_scaling_factor;
+        int32_t line_scaling_factor;
+        double column_offset;
+        double line_offset;
+
+        // Pre-computed projection information
+        double column_scalar;
+        double line_scalar;
+
+        ImageNavigationRecord(uint8_t *data)
+        {
+            type = data[0];
+            record_length = data[1] << 8 | data[2];
+            projection_name = std::string((char *)&data[3], (char *)&data[3 + 32]);
+            column_scaling_factor = data[35] << 24 | data[36] << 16 | data[37] << 8 | data[38];
+            line_scaling_factor = data[39] << 24 | data[40] << 16 | data[41] << 8 | data[42];
+            column_offset = (int32_t)(data[43] << 24 | data[44] << 16 | data[45] << 8 | data[46]);
+            line_offset = (int32_t)(data[47] << 24 | data[48] << 16 | data[49] << 8 | data[50]);
+            column_scalar = line_scalar = 0.0;
+        }
+    };
+
+    struct ImageDataFunctionRecord
+    {
+        static constexpr int TYPE = 3;
+
+        uint8_t type;
+        uint16_t record_length;
+        std::string datas;
+
+        ImageDataFunctionRecord(uint8_t *data)
+        {
+            type = data[0];
+            record_length = data[1] << 8 | data[2];
+            datas = std::string((char *)&data[3], (char *)&data[3 + record_length - 3]);
+        }
+    };
+
     struct AnnotationRecord
     {
         static constexpr int TYPE = 4;
@@ -77,33 +144,12 @@ namespace lrit
             timestamp = (days - 4383) * 86400 + milliseconds_of_day;
         }
     };
-
-    struct ImageStructureRecord
-    {
-        static constexpr int TYPE = 1;
-
-        uint8_t type;
-        uint16_t record_length;
-        uint8_t bit_per_pixel;
-        uint16_t columns_count;
-        uint16_t lines_count;
-        uint8_t compression_flag;
-
-        ImageStructureRecord(uint8_t *data)
-        {
-            type = data[0];
-            record_length = data[1] << 8 | data[2];
-            bit_per_pixel = data[3];
-            columns_count = data[4] << 8 | data[5];
-            lines_count = data[6] << 8 | data[7];
-            compression_flag = data[8];
-        }
-    };
     ////////////////////////////////////////
 
     struct LRITFile
     {
         int vcid = -1;
+        int last_tracked_counter = -1;
 
         bool file_in_progress = false;
         bool header_parsed = false;

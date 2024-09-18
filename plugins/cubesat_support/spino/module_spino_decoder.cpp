@@ -2,7 +2,6 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/image.h"
 #include "common/codings/crc/crc_generic.h"
 
 #define BUFFER_SIZE 256
@@ -94,7 +93,7 @@ namespace spino
                     {
                         int size = wip_frame[17] << 8 | wip_frame[16];
 
-                        if (wip_frame.size() >= size + 16)
+                        if ((int)wip_frame.size() >= size + 16)
                         {
                             // CRC Check
                             uint64_t crc = wip_frame[wip_frame.size() - 1] << 8 | wip_frame[wip_frame.size() - 2];
@@ -152,11 +151,11 @@ namespace spino
         {
             ImGui::Text("Frames : ");
             ImGui::SameLine();
-            ImGui::TextColored(ImColor::HSV(113.0 / 360.0, 1, 1, 1.0), UITO_C_STR(frm_cnt));
+            ImGui::TextColored(style::theme.green, UITO_C_STR(frm_cnt));
         }
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

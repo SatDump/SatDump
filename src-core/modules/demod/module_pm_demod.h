@@ -14,6 +14,7 @@ namespace demod
     protected:
         std::shared_ptr<dsp::PLLCarrierTrackingBlock> pll;
         std::shared_ptr<dsp::PMToBPSK> pm_psk;
+        std::shared_ptr<dsp::AGCBlock<complex_t>> agc2;
         std::shared_ptr<dsp::FIRBlock<complex_t>> rrc;
         std::shared_ptr<dsp::CostasLoopBlock> costas;
         std::shared_ptr<dsp::MMClockRecoveryBlock<complex_t>> rec;

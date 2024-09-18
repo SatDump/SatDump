@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <filesystem>
 #include "backend.h"
+#include "main_ui.h"
 #include "logger.h"
 #include "core/style.h"
 #include "init.h"
@@ -28,20 +29,8 @@ static void glfw_error_callback(int error, const char *description)
 
 void window_content_scale_callback(GLFWwindow *, float xscale, float)
 {
-    satdump::updateUI(xscale / style::macos_framebuffer_scale());
-    style::setFonts();
-#ifndef IMGUI_IMPL_OPENGL_ES2
-    if (fallback_gl)
-    {
-        ImGui_ImplOpenGL2_DestroyFontsTexture();
-        ImGui_ImplOpenGL2_CreateFontsTexture();
-    }
-    else
-#endif
-    {
-        ImGui_ImplOpenGL3_DestroyFontsTexture();
-        ImGui_ImplOpenGL3_CreateFontsTexture();
-    }
+    backend::device_scale = xscale / style::macos_framebuffer_scale();
+    satdump::update_ui = true;
 }
 
 void bindBaseTextureFunctions();
@@ -55,7 +44,7 @@ int main(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/wav16] --dc_block --iq_swap");
     }
     else
         satdump::processing::is_processing = true;
@@ -145,6 +134,7 @@ int main(int argc, char *argv[])
     io.IniFilename = NULL;
 
     logger->debug("Starting with OpenGL %s", (char *)glGetString(GL_VERSION));
+    logger->debug("Max texture size: %zu", maxTextureSize);
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -156,20 +146,15 @@ int main(int argc, char *argv[])
         ImGui_ImplOpenGL3_Init(OPENGL_VERSIONS_GLSL[selected_glsl]);
 
     // Handle DPI changes
-    float display_scale;
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
-    glfwGetWindowContentScale(window, &display_scale, nullptr);
-    display_scale /= style::macos_framebuffer_scale();
-#else
-    display_scale = 1.0f;
 #endif
 
     // Set font
-    style::setFonts(display_scale);
+    style::setFonts(backend::device_scale);
 
     // Init Loading Screen
-    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>(display_scale);
+    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>();
     logger->add_sink(loading_screen_sink);
 
     // Init SatDump
@@ -184,30 +169,15 @@ int main(int argc, char *argv[])
     // See if we need to add arguments
     satdump::config::main_cfg["cli"] = {};
     if (argc > 1 && !satdump::processing::is_processing)
-        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1]);
+        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1], {{"source_id", typeid(std::string)}});
 
     // Init UI
-    satdump::initMainUI(display_scale);
+    satdump::initMainUI();
 
     // Shut down loading screen
     logger->del_sink(loading_screen_sink);
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
-
-    // Set font again to adjust for DPI
-    style::setFonts();
-#ifndef IMGUI_IMPL_OPENGL_ES2
-    if (fallback_gl)
-    {
-        ImGui_ImplOpenGL2_DestroyFontsTexture();
-        ImGui_ImplOpenGL2_CreateFontsTexture();
-    }
-    else
-#endif
-    {
-        ImGui_ImplOpenGL3_DestroyFontsTexture();
-        ImGui_ImplOpenGL3_CreateFontsTexture();
-    }
 
     if (satdump::processing::is_processing)
     {

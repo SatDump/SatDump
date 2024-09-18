@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 
 if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -39,4 +39,8 @@ else()
     target_link_libraries(satdump-ui PRIVATE glfw)
 endif()
 
-install(TARGETS satdump-ui DESTINATION bin)
+if(MSVC OR BUILD_MSVC)
+    install(TARGETS satdump-ui DESTINATION bin RUNTIME_DEPENDENCY_SET satdump_deps)
+else()
+    install(TARGETS satdump-ui DESTINATION bin)
+endif()

@@ -4,6 +4,7 @@
 #include "common/dsp_source_sink/format_notated.h"
 #include "core/module.h"
 #include "resources.h"
+#include "common/image/text.h"
 
 namespace widgets
 {
@@ -36,20 +37,19 @@ namespace widgets
         const ImU32 col_base = ImGui::GetColorU32(ImGuiCol_PlotLines);
 
         // Background
-        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, style::theme.plot_bg, true, style.FrameRounding);
 
         // Draw lines
         float vscale = ((scale_max - scale_min) / scale_resolution);
         float step = (frame_bb.Max.y - frame_bb.Min.y) / scale_resolution;
         float value = scale_min;
-        const ImU32 color_scale = ImGui::GetColorU32(ImGuiCol_Text, 0.4);
         for (float i = frame_bb.Max.y - step; i >= frame_bb.Min.y; i -= step)
         {
             ImVec2 pos0 = {frame_bb.Min.x, i};
             ImVec2 pos1 = {frame_bb.Max.x, i};
-            window->DrawList->AddLine(pos0, pos1, color_scale);
+            window->DrawList->AddLine(pos0, pos1, style::theme.fft_graduations);
             value += vscale;
-            window->DrawList->AddText({pos0.x, pos0.y + 2}, color_scale, std::string(std::to_string(int(value)) + " dB").c_str());
+            window->DrawList->AddText({pos0.x, pos0.y + 2}, style::theme.fft_graduations, std::string(std::to_string(int(value)) + " dB").c_str());
         }
 
         // Draw Freq Scale
@@ -67,15 +67,37 @@ namespace widgets
 
                 auto cstr = format_notated(freq_here);
                 window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 30 * ui_scale},
-                                          i == 5 ? 0xFF00FF00 : col_base,
+                                          i == 5 ? (ImU32)style::theme.green : col_base,
                                           cstr.c_str());
                 if (i == 5 && actual_sdr_freq != -1)
                 {
                     auto cstr = "(" + format_notated(actual_sdr_freq) + ")";
                     window->DrawList->AddText({x_line - ImGui::CalcTextSize(cstr.c_str()).x / 2, y_level - 16 * ui_scale},
-                                              i == 5 ? 0xFF0000FF : col_base,
+                                              i == 5 ? (ImU32)style::theme.red : col_base,
                                               cstr.c_str());
                 }
+            }
+        }
+
+        // Draw VFOs
+        if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
+        {
+            const ImU32 col_base_vfo = style::theme.red;
+
+            for (auto vfo : vfo_freqs)
+            {
+                double vfreq = vfo.second - frequency;
+                float y_level = inner_bb.Max.y - 8 * ui_scale;
+                float x_line = inner_bb.Min.x + (((bandwidth / 2) + vfreq) / bandwidth) * res_w;
+
+                window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base_vfo, 3);
+                window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line - 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+                window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line + 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+
+                if (sqrtf(powf(ImGui::GetMousePos().x - x_line, 2) + powf(ImGui::GetMousePos().y - y_level, 2)) < 40 * ui_scale)
+                    window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 45 * ui_scale},
+                                              col_base_vfo,
+                                              vfo.first.c_str());
             }
         }
 
@@ -112,11 +134,12 @@ namespace widgets
         work_mutex.unlock();
     }
 
-    image::Image<uint8_t> FFTPlot::drawImg(int size_x, int size_y)
+    image::Image FFTPlot::drawImg(int size_x, int size_y)
     {
         work_mutex.lock();
-        image::Image<uint8_t> img(size_x, size_y, 3);
-        img.init_font(resources::getResourcePath("fonts/font.ttf"));
+        image::Image img(8, size_x, size_y, 3);
+        image::TextDrawer text_drawer;
+        text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
         int res_w = size_x;
 
@@ -126,9 +149,10 @@ namespace widgets
         float v0 = values[0];
         ImVec2 tp0 = ImVec2(t0, 1.0f - ImSaturate((v0 - scale_min) * inv_scale));
 
-        uint8_t color_cyan[] = {0, 237, 255};
-        uint8_t color_scale[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
-        uint8_t color_scale2[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
+        std::vector<double> color_cyan = {0, 237.0 / 255.0, 1};
+        std::vector<double> color_red = {1, 0, 0};
+        std::vector<double> color_scale = {0.4, 0.4, 0.4};
+        // uint8_t color_scale2[] = {int(255 * 0.4), int(255 * 0.4), int(255 * 0.4)};
 
         // Draw lines
         float vscale = ((scale_max - scale_min) / scale_resolution);
@@ -140,7 +164,7 @@ namespace widgets
             ImVec2 pos1 = {(float)(size_x - 1), i};
             img.draw_line(pos0.x, pos0.y, pos1.x, pos1.y, color_scale);
             value += vscale;
-            img.draw_text(pos0.x, pos0.y + 2, color_scale, 10, std::string(std::to_string(int(value)) + " dB").c_str());
+            text_drawer.draw_text(img, pos0.x, pos0.y + 2, color_scale, 10, std::string(std::to_string(int(value)) + " dB").c_str());
         }
 
 #if 0
@@ -169,6 +193,32 @@ namespace widgets
             }
         }
 #endif
+
+        // Draw VFOs
+        if (bandwidth != 0 && frequency != 0 && vfo_freqs.size() > 0)
+        {
+            // const ImU32 col_base_vfo = style::theme.red;
+
+            for (auto vfo : vfo_freqs)
+            {
+                double vfreq = vfo.second - frequency;
+                float y_level = size_y - 8 * ui_scale;
+                float x_line = 0 + (((bandwidth / 2) + vfreq) / bandwidth) * res_w;
+
+                //   window->DrawList->AddLine({x_line, y_level}, {x_line, y_level - 10 * ui_scale}, col_base_vfo, 3);
+                //   window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line - 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+                //   window->DrawList->AddLine({x_line, y_level - 10 * ui_scale}, {x_line + 5 * ui_scale, y_level - 20 * ui_scale}, col_base_vfo, 3);
+
+                img.draw_line(x_line, y_level, x_line, y_level - 10, color_red);
+                img.draw_line(x_line, y_level - 10, x_line - 5, y_level - 20, color_red);
+                img.draw_line(x_line, y_level - 10, x_line + 5, y_level - 20, color_red);
+
+                // if (sqrtf(powf(ImGui::GetMousePos().x - x_line, 2) + powf(ImGui::GetMousePos().y - y_level, 2)) < 40 * ui_scale)
+                //     window->DrawList->AddText({x_line - ImGui::CalcTextSize(vfo.first.c_str()).x / 2, y_level - 45 * ui_scale},
+                //                               col_base_vfo,
+                //                               vfo.first.c_str());
+            }
+        }
 
         // Draw lines
         double fz = (double)values_size / (double)res_w;

@@ -1,18 +1,20 @@
 #include "module_jpss_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "jpss.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
 #include "resources.h"
 #include "common/calibration.h"
+#include "nlohmann/json_utils.h"
+#include "common/image/io.h"
 
 namespace jpss
 {
@@ -38,11 +40,11 @@ namespace jpss
             int insert_zone_size = npp_mode ? 0 : 9;
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
 
             std::vector<uint8_t> jpss_scids;
 
@@ -52,7 +54,7 @@ namespace jpss
                 data_in.read((char *)&cadu, npp_mode ? 1024 : 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == SNPP_SCID ||
                     vcdu.spacecraft_id == JPSS1_SCID ||
@@ -136,7 +138,7 @@ namespace jpss
 
             data_in.close();
 
-            int scid = most_common(jpss_scids.begin(), jpss_scids.end());
+            int scid = most_common(jpss_scids.begin(), jpss_scids.end(), 0);
             jpss_scids.clear();
 
             std::string sat_name = "Unknown JPSS";
@@ -159,12 +161,12 @@ namespace jpss
             else if (scid == JPSS4_SCID)
                 norad = JPSS4_NORAD;
 
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
-
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(atms_reader.timestamps);
+
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {
@@ -239,7 +241,8 @@ namespace jpss
 
                 for (int i = 0; i < 339; i++)
                 {
-                    WRITE_IMAGE(omps_nadir_reader.getChannel(i), directory + "/OMPS-NADIR-" + std::to_string(i + 1));
+                    auto img = omps_nadir_reader.getChannel(i);
+                    image::save_img(img, directory + "/OMPS-NADIR-" + std::to_string(i + 1));
                 }
                 omps_nadir_status = DONE;
             }
@@ -257,7 +260,8 @@ namespace jpss
 
                 for (int i = 0; i < 135; i++)
                 {
-                    WRITE_IMAGE(omps_limb_reader.getChannel(i), directory + "/OMPS-LIMB-" + std::to_string(i + 1));
+                    auto img = omps_limb_reader.getChannel(i);
+                    image::save_img(img, directory + "/OMPS-LIMB-" + std::to_string(i + 1));
                 }
                 omps_limb_status = DONE;
             }
@@ -337,7 +341,7 @@ namespace jpss
                     if (viirs_reader_imaging[i].segments.size() > 0)
                     {
                         logger->info("I" + std::to_string(i + 1) + "...");
-                        image::Image<uint16_t> viirs_image = viirs_reader_imaging[i].getImage();
+                        image::Image viirs_image = viirs_reader_imaging[i].getImage();
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_imaging_status[i] = SAVING;
 
@@ -355,7 +359,7 @@ namespace jpss
                     if (viirs_reader_moderate[i].segments.size() > 0)
                     {
                         logger->info("M" + std::to_string(i + 1) + "...");
-                        image::Image<uint16_t> viirs_image = viirs_reader_moderate[i].getImage();
+                        image::Image viirs_image = viirs_reader_moderate[i].getImage();
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_moderate_status[i] = SAVING;
 
@@ -430,7 +434,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("ATMS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", atms_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", atms_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(atms_status);
 
@@ -438,7 +442,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("OMPS Nadir");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", omps_nadir_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", omps_nadir_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(omps_nadir_status);
 
@@ -446,7 +450,7 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("OMPS Limb");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", omps_limb_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", omps_limb_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(omps_limb_status);
 
@@ -456,7 +460,7 @@ namespace jpss
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIIRS M%d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_moderate[i].segments.size());
+                    ImGui::TextColored(style::theme.green, "%d", (int)viirs_reader_moderate[i].segments.size());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(viirs_moderate_status[i]);
                 }
@@ -467,7 +471,7 @@ namespace jpss
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("VIIRS I%d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_imaging[i].segments.size());
+                    ImGui::TextColored(style::theme.green, "%d", (int)viirs_reader_imaging[i].segments.size());
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(viirs_imaging_status[i]);
                 }
@@ -476,14 +480,14 @@ namespace jpss
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("VIIRS DNB");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)viirs_reader_dnb[0].segments.size());
+                ImGui::TextColored(style::theme.green, "%d", (int)viirs_reader_dnb[0].segments.size());
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(viirs_dnb_status);
 
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

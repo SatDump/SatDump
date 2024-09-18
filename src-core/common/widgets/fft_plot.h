@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 #include <mutex>
 #include "common/image/image.h"
+#include <string>
 
 namespace widgets
 {
@@ -28,7 +29,7 @@ namespace widgets
         FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
 
         void draw(ImVec2 size);
-        image::Image<uint8_t> drawImg(int size_x, int size_y);
+        image::Image drawImg(int size_x, int size_y);
 
         void set_size(int size)
         {
@@ -36,5 +37,7 @@ namespace widgets
             values_size = size;
             work_mutex.unlock();
         }
+
+        std::vector<std::pair<std::string, double>> vfo_freqs;
     };
 }

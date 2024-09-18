@@ -18,7 +18,7 @@ namespace aqua
             ~CERESReader();
             int lines;
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImage(int channel);
+            image::Image getImage(int channel);
         };
     } // namespace ceres
 } // namespace aqua

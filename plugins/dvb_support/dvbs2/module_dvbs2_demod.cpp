@@ -15,7 +15,7 @@ namespace dvb
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else
-            throw std::runtime_error("RRC Alpha parameter must be present!");
+            throw satdump_exception("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
             d_rrc_taps = parameters["rrc_taps"].get<int>();
@@ -23,7 +23,7 @@ namespace dvb
         if (parameters.count("pll_bw") > 0)
             d_loop_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL BW parameter must be present!");
+            throw satdump_exception("PLL BW parameter must be present!");
 
         if (parameters.count("freq_prop_factor") > 0)
             freq_propagation_factor = parameters["freq_prop_factor"].get<float>();
@@ -50,7 +50,7 @@ namespace dvb
         if (parameters.count("modcod") > 0)
             d_modcod = parameters["modcod"].get<int>();
         else
-            throw std::runtime_error("MODCOD parameter must be present!");
+            throw satdump_exception("MODCOD parameter must be present!");
 
         if (parameters.count("shortframes") > 0)
             d_shortframes = parameters["shortframes"].get<bool>();
@@ -363,7 +363,7 @@ namespace dvb
             ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             ImGui::Text("Freq : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCING, "%.0f Hz", display_freq);
+            ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
@@ -373,13 +373,13 @@ namespace dvb
             ImGui::Button("Header", {200 * ui_scale, 20 * ui_scale});
             ImGui::Text("MODCOD : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCED, UITO_C_STR(detected_modcod));
+            ImGui::TextColored(style::theme.green, UITO_C_STR(detected_modcod));
             ImGui::Text("Frames : ");
             ImGui::SameLine();
-            ImGui::TextColored(IMCOLOR_SYNCED, detected_shortframes ? "Short" : "Normal");
+            ImGui::TextColored(style::theme.green, detected_shortframes ? "Short" : "Normal");
             ImGui::Text("Pilots : ");
             ImGui::SameLine();
-            ImGui::TextColored(detected_pilots ? IMCOLOR_SYNCED : IMCOLOR_NOSYNC, detected_pilots ? "ON" : "OFF");
+            ImGui::TextColored(detected_pilots ? style::theme.green : style::theme.red, detected_pilots ? "ON" : "OFF");
         }
         ImGui::EndGroup();
 
@@ -396,7 +396,7 @@ namespace dvb
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
 

@@ -20,7 +20,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "8psk_demod": {
+                "psk_demod": {
+                    "constellation": "8psk",
                     "symbolrate": 9000000,
                     "agc_rate": 0.00001,
                     "rrc_alpha": 0.5,
@@ -136,8 +137,8 @@
             "cadu": {
                 "ccsds_simple_psk_decoder": {
                     "constellation": "qpsk",
+                    "d_oqpsk_method_2": true,
                     "cadu_size": 10232,
-                    "oqpsk_delay": true,
                     "rs_i": 5,
                     "rs_type": "rs223"
                 }
@@ -344,47 +345,6 @@
             }
         }
     },
-    "formosat5_s_dump": {
-        "name": "Formosat-5 S-Band dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "frequencies": [
-            [
-                "Main",
-                2215e6
-            ]
-        ],
-        "parameters": {},
-        "work": {
-            "baseband": {},
-            "soft": {
-                "psk_demod": {
-                    "constellation": "bpsk",
-                    "symbolrate": 1.6e6,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.006
-                }
-            },
-            "cadu": {
-                "ccsds_simple_psk_decoder": {
-                    "constellation": "bpsk",
-                    "cadu_size": 10232,
-                    "rs_i": 5,
-                    "rs_type": "rs223"
-                }
-            },
-            "products": {}
-        }
-    },
     "ops_sat_s_link": {
         "name": "OPS-SAT S-Band Link",
         "live": true,
@@ -465,9 +425,8 @@
             },
             "cadu": {
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
+                    "constellation": "oqpsk",
                     "cadu_size": 10232,
-                    "oqpsk_mode": true,
                     "nrzm": true,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
@@ -600,8 +559,7 @@
             },
             "cadu": {
                 "ccsds_simple_psk_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_mode": true,
+                    "constellation": "oqpsk",
                     "cadu_size": 2048,
                     "derandomize": true,
                     "nrzm": false,

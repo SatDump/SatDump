@@ -3,12 +3,12 @@
 #include <iostream>
 #include <map>
 #include "logger.h"
-#include "common/image/composite.h"
 #include "common/utils.h"
 #include "products/image_products.h"
 #include <filesystem>
 #include "common/repack.h"
 #include "../crc.h"
+#include "common/image/io.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3
@@ -90,7 +90,7 @@ namespace proba
 
             if ((count_marker > 50 && count_marker < 70) || (count_marker > 500 && count_marker < 520) || (count_marker > 700 && count_marker < 720))
             {
-                mode = most_common(modeMarkers.begin(), modeMarkers.end());
+                mode = most_common(modeMarkers.begin(), modeMarkers.end(), 0);
 
                 if (mode == WATER_MODE || mode == CHLOROPHYL_MODE || mode == LAND_MODE)
                 {
@@ -147,7 +147,7 @@ namespace proba
 
             CHRISImagesT ret;
             ret.mode = mode;
-            ret.raw = image::Image<uint16_t>(img_buffer.data(), current_width, final_height, 1);
+            ret.raw = image::Image(img_buffer.data(), 16, current_width, final_height, 1);
 
             if (mode == ALL_MODE)
                 for (int i = 0; i < 63; i++)
@@ -189,7 +189,7 @@ namespace proba
                     if (!std::filesystem::exists(dir_path))
                         std::filesystem::create_directories(dir_path);
 
-                    chris_img.raw.save_img(dir_path + "/RAW");
+                    image::save_img(chris_img.raw, dir_path + "/RAW");
 
                     satdump::ImageProducts chris_products;
                     chris_products.instrument_name = "chris";
@@ -198,7 +198,7 @@ namespace proba
 
                     for (int i = 0; i < (int)chris_img.channels.size(); i++)
                     {
-                        image::Image<uint16_t> ch = chris_img.channels[i];
+                        image::Image ch = chris_img.channels[i];
                         ch.resize(ch.width() * 2, ch.height());
                         chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch});
                     }
@@ -239,7 +239,7 @@ namespace proba
                     if (!std::filesystem::exists(dir_path))
                         std::filesystem::create_directories(dir_path);
 
-                    chris_img.raw.save_img(dir_path + "/RAW");
+                    image::save_img(chris_img.raw, dir_path + "/RAW");
 
                     satdump::ImageProducts chris_products;
                     chris_products.instrument_name = "chris";
@@ -248,7 +248,7 @@ namespace proba
 
                     for (int i = 0; i < (int)chris_img.channels.size(); i++)
                     {
-                        image::Image<uint16_t> ch = chris_img.channels[i];
+                        image::Image ch = chris_img.channels[i];
                         chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch});
                     }
 
@@ -284,15 +284,15 @@ namespace proba
             return full;
         }
 
-        image::Image<uint16_t> CHRISFullFrameT::interleaveCHRIS(image::Image<uint16_t> img1, image::Image<uint16_t> img2)
+        image::Image CHRISFullFrameT::interleaveCHRIS(image::Image img1, image::Image img2)
         {
-            image::Image<uint16_t> img_final(img1.width() * 2, img1.height(), 1);
+            image::Image img_final(img1.depth(), img1.width() * 2, img1.height(), 1);
             for (int i = 0; i < (int)img_final.width(); i += 2)
             {
                 for (int y = 0; y < (int)img_final.height(); y++)
                 {
-                    img_final[y * img_final.width() + i + 0] = img1[y * img1.width() + i / 2];
-                    img_final[y * img_final.width() + i + 1] = img2[y * img2.width() + i / 2];
+                    img_final.set(y * img_final.width() + i + 0, img1.get(y * img1.width() + i / 2));
+                    img_final.set(y * img_final.width() + i + 1, img2.get(y * img2.width() + i / 2));
                 }
             }
             return img_final;

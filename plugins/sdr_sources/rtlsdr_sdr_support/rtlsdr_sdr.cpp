@@ -156,14 +156,15 @@ void RtlSdrSource::start()
 {
     DSPSampleSource::start();
 #ifndef __ANDROID__
-    if (rtlsdr_open(&rtlsdr_dev_obj, d_sdr_id) != 0)
-        throw std::runtime_error("Could not open RTL-SDR device!");
+    int index = rtlsdr_get_index_by_serial(d_sdr_id.c_str());
+    if (index != -1 && rtlsdr_open(&rtlsdr_dev_obj, index) != 0)
+        throw satdump_exception("Could not open RTL-SDR device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, RTLSDR_USB_VID_PID, path);
     if (rtlsdr_open_fd(&rtlsdr_dev_obj, fd) != 0)
-        throw std::runtime_error("Could not open RTL-SDR device!");
+        throw satdump_exception("Could not open RTL-SDR device!");
 #endif
 
     uint64_t current_samplerate = samplerate_widget.get_value();
@@ -245,7 +246,7 @@ void RtlSdrSource::drawControlUI()
 void RtlSdrSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 3.2e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t RtlSdrSource::get_samplerate()
@@ -263,13 +264,17 @@ std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
     for (int i = 0; i < c; i++)
     {
         const char *name = rtlsdr_get_device_name(i);
-        results.push_back({"rtlsdr", std::string(name) + " #" + std::to_string(i), uint64_t(i)});
+        char manufact[256], product[256], serial[256];
+        if (rtlsdr_get_device_usb_strings(i, manufact, product, serial) != 0)
+            results.push_back({"rtlsdr", std::string(name) + " #" + std::to_string(i), std::to_string(i)});
+        else
+            results.push_back({"rtlsdr", std::string(manufact) + " " + std::string(product) + " #" + std::string(serial), std::string(serial)});
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, RTLSDR_USB_VID_PID, path) != -1)
-        results.push_back({"rtlsdr", "RTL-SDR USB", 0});
+        results.push_back({"rtlsdr", "RTL-SDR USB", "0"});
 #endif
 
     return results;

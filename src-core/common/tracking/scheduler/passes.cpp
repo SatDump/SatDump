@@ -1,17 +1,22 @@
 #include "passes.h"
 #include "common/geodetic/geodetic_coordinates.h"
 #include "libs/predict/predict.h"
+#include "logger.h"
 
 namespace satdump
 {
     std::vector<SatellitePass> getPassesForSatellite(int norad, double initial_time, double timespan, double qth_lon, double qth_lat, double qth_alt, std::vector<SatellitePass> premade_passes)
     {
         std::vector<SatellitePass> passes;
-
         predict_observer_t *observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt * DEG_TO_RAD);
-        auto tle = general_tle_registry.get_from_norad(norad).value();
-        predict_orbital_elements_t *satellite_object_ = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
+        auto tle = general_tle_registry.get_from_norad(norad);
+        if (!tle.has_value())
+        {
+            logger->warn("NORAD #%d is not available! Skipping pass calculation", norad);
+            return passes;
+        }
 
+        predict_orbital_elements_t *satellite_object_ = predict_parse_tle(tle->line1.c_str(), tle->line2.c_str());
         double current_time = initial_time;
 
         if (premade_passes.size() == 0) // Normal algo, for normal LEOs
@@ -120,7 +125,7 @@ namespace satdump
             }
         }
 #else
-        SatellitePass selectedPass = {-1, -1, -1 - 1};
+        SatellitePass selectedPass = {-1, -1, -1 - 1, -1};
         // double busyUntil = 0;
         if (passes.size() > 0)
         {
@@ -140,7 +145,7 @@ namespace satdump
                 // if (current_time < busyUntil)
                 //     continue;
 
-                SatellitePass picked_pass = {-1, -1, -1 - 1};
+                SatellitePass picked_pass = {-1, -1, -1 - 1, -1};
                 for (auto &cpass : ongoing_passes)
                     if (picked_pass.max_elevation < cpass.max_elevation)
                         picked_pass = cpass;

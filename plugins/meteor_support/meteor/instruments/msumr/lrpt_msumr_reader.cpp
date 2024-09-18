@@ -1,5 +1,8 @@
 #include "lrpt_msumr_reader.h"
+#include "logger.h"
+#include "common/utils.h"
 #include <ctime>
+#include <cmath>
 
 #define SEG_CNT 20000 // 12250
 
@@ -13,14 +16,9 @@ namespace meteor
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    channels[i] = new unsigned char[((SEG_CNT / 14) * 8) * 1568];
-                    lines[i] = 0;
                     segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
-                    lastSeg[i] = 0;
-                    segCount[i] = 0;
-                    rollover[i] = 0;
-                    offset[i] = 0;
+                    rollover[i] = lastSeq[i] = offset[i] = lastSeg[i] = lines[i] = 0;
                 }
 
                 // Fetch current day
@@ -31,10 +29,7 @@ namespace meteor
             MSUMRReader::~MSUMRReader()
             {
                 for (int i = 0; i < 6; i++)
-                {
-                    delete[] channels[i];
                     delete[] segments[i];
-                }
             }
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
@@ -59,7 +54,8 @@ namespace meteor
                 else
                     return;
 
-                Segment newSeg(&packet.payload.data()[0], packet.payload.size(), meteorm2x_mode);
+                Segment newSeg(&packet.payload.data()[0], packet.payload.size(),
+                               packet.payload.size() - 1 != packet.header.packet_length, meteorm2x_mode);
 
                 if (!newSeg.isValid())
                     return;
@@ -67,14 +63,17 @@ namespace meteor
                 uint16_t sequence = packet.header.packet_sequence_count;
                 uint32_t mcuNumber = newSeg.MCUN;
 
-                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 10000 && sequence < 1000)
+                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 13926 && sequence < 2458) // 15% threshold at each end
                 {
                     rollover[currentChannel] += 16384;
                 }
 
-                if (mcuNumber == 0 && offset[currentChannel] == 0)
+                if (offset[currentChannel] == 0)
                 {
-                    offset[currentChannel] = (sequence + rollover[currentChannel]) % 43 % 14;
+                    uint32_t mcu_count = mcuNumber / 14;
+                    offset[currentChannel] = (sequence + (mcu_count > sequence ? 16384 : 0) - mcu_count + rollover[currentChannel]) % 43 % 14;
+                    if (offset[currentChannel] == 0)
+                        offset[currentChannel] = 14;
                 }
 
                 uint32_t id = ((sequence + rollover[currentChannel] - offset[currentChannel]) / 43 * 14) + mcuNumber / 14;
@@ -94,10 +93,9 @@ namespace meteor
 
                 lastSeq[currentChannel] = sequence;
                 segments[currentChannel][id] = newSeg;
-                segCount[currentChannel]++;
             }
 
-            image::Image<uint8_t> MSUMRReader::getChannel(int channel, int32_t first, int32_t last, int32_t offsett)
+            image::Image MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
             {
                 uint32_t firstSeg_l;
                 uint32_t lastSeg_l;
@@ -117,13 +115,15 @@ namespace meteor
                 lastSeg_l -= lastSeg_l % 14;
 
                 lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
+                image::Image ret(8, 1568, lines[channel], 1);
 
+                std::set<uint32_t> bad_px;
                 uint32_t index = 0;
-                if(lastSeg_l != 0)
+                if (lastSeg_l != 0)
                     timestamps.clear();
                 for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
                 {
-                    bool hasDoneTimestamps = false;
+                    std::vector<double> line_timestamps;
                     for (uint32_t i = 0; i < 8; i++)
                     {
                         for (uint32_t j = 0; j < 14; j++)
@@ -131,34 +131,103 @@ namespace meteor
                             if (segments[channel][x + j].isValid())
                             {
                                 for (int f = 0; f < 14 * 8; f++)
-                                    channels[channel][index + f] = segments[channel][x + j].lines[i][f];
+                                    ret.set(index + f, segments[channel][x + j].lines[i][f]);
 
-                                if (!hasDoneTimestamps)
-                                {
-                                    if (meteorm2x_mode)
-                                        timestamps.push_back(segments[channel][x + j].timestamp);
-                                    else
-                                        timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
-                                    hasDoneTimestamps = true;
-                                }
+                                if (segments[channel][x + j].partial)
+                                    for (uint32_t f = 0; f < 14 * 8; f++)
+                                        bad_px.insert(index + f);
+
+                                if (meteorm2x_mode)
+                                    line_timestamps.push_back(segments[channel][x + j].timestamp);
+                                else
+                                    line_timestamps.push_back(dayValue + segments[channel][x + j].timestamp - 3 * 3600);
                             }
                             else
                             {
-                                for (int f = 0; f < 14 * 8; f++)
-                                    channels[channel][index + f] = 0;
+                                for (uint32_t f = 0; f < 14 * 8; f++)
+                                {
+                                    ret.set(index + f, 0);
+                                    bad_px.insert(index + f);
+                                }
                             }
 
                             index += 14 * 8;
                         }
                     }
 
-                    if (!hasDoneTimestamps)
-                    {
-                        timestamps.push_back(-1);
-                    }
+                    timestamps.push_back(most_common(line_timestamps.begin(), line_timestamps.end(), -1.0));
                 }
 
-                return image::Image<uint8_t>(channels[channel], 1568, lines[channel], 1);
+                if (max_correct > 0 && ret.size() > 0)
+                {
+                    logger->info("Filling missing data in channel %d...", channel + 1);
+
+                    // Interpolate image
+                    size_t width = ret.width();
+                    size_t height = ret.height();
+#pragma omp parallel for
+                    for (int x = 0; x < (int)width; x++)
+                    {
+                        int last_good = -1;
+                        bool found_bad = false;
+                        for (size_t y = 0; y < height; y++)
+                        {
+                            if (found_bad)
+                            {
+                                if (bad_px.find(y * width + x) == bad_px.end())
+                                {
+                                    size_t range = y - last_good;
+                                    if (last_good != -1 && range <= max_correct)
+                                    {
+                                        uint8_t top_val = ret.get(last_good * width + x);
+                                        uint8_t bottom_val = ret.get(y * width + x);
+                                        for (size_t fix_y = 1; fix_y < range; fix_y++)
+                                        {
+                                            float percent = (float)fix_y / (float)range;
+                                            ret.set((fix_y + last_good) * width + x, (1.0f - percent) * (float)top_val + percent * (float)bottom_val);
+                                        }
+                                    }
+                                    found_bad = false;
+                                    last_good = y;
+                                }
+                            }
+                            else if (bad_px.find(y * width + x) != bad_px.end())
+                                found_bad = true;
+                            else
+                                last_good = y;
+                        }
+                    }
+
+                    // Interpolate timestamps
+                    int last_good = -1;
+                    bool found_bad = false;
+                    for (size_t i = 0; i < timestamps.size(); i++)
+                    {
+                        if (found_bad)
+                        {
+                            if (timestamps[i] != -1)
+                            {
+                                if (last_good != -1)
+                                    for (size_t j = 1; j < i - last_good; j++)
+                                        timestamps[last_good + j] = timestamps[last_good] + (timestamps[i] - timestamps[last_good]) * ((double)j / double(i - last_good));
+
+                                last_good = i;
+                                found_bad = false;
+                            }
+                        }
+                        else if (timestamps[i] == -1)
+                            found_bad = true;
+                        else
+                            last_good = i;
+                    }
+
+                    // Round all timestamps to 3 decimal places to ensure made-up timestamps
+                    // Match with timestamps in other channels
+                    for (double &timestamp : timestamps)
+                        timestamp = std::floor(timestamp * 1000) / 1000;
+                }
+
+                return ret;
             }
 
             std::array<int32_t, 3> MSUMRReader::correlateChannels(int channel1, int channel2)

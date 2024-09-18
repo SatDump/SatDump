@@ -45,14 +45,14 @@ void AirspyHFSource::set_agcs()
 void AirspyHFSource::open_sdr()
 {
 #ifndef __ANDROID__
-    if (airspyhf_open_sn(&airspyhf_dev_obj, d_sdr_id) != AIRSPYHF_SUCCESS)
-        throw std::runtime_error("Could not open AirspyHF device!");
+    if (airspyhf_open_sn(&airspyhf_dev_obj, std::stoull(d_sdr_id)) != AIRSPYHF_SUCCESS)
+        throw satdump_exception("Could not open AirspyHF device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path);
     if (airspyhf_open_fd(&airspyhf_dev_obj, fd) != AIRSPYHF_SUCCESS)
-        throw std::runtime_error("Could not open AirspyHF device!");
+        throw satdump_exception("Could not open AirspyHF device!");
 #endif
 }
 
@@ -162,8 +162,8 @@ void AirspyHFSource::drawControlUI()
         set_atte();
 
     if (RImGui::Combo("AGC Mode", &agc_mode, "OFF\0"
-                                            "LOW\0"
-                                            "HIGH\0"))
+                                             "LOW\0"
+                                             "HIGH\0"))
         set_agcs();
 
     if (RImGui::Checkbox("HF LNA", &hf_lna_enabled))
@@ -173,7 +173,7 @@ void AirspyHFSource::drawControlUI()
 void AirspyHFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 3.2e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspyHFSource::get_samplerate()
@@ -193,13 +193,13 @@ std::vector<dsp::SourceDescriptor> AirspyHFSource::getAvailableSources()
     {
         std::stringstream ss;
         ss << std::hex << serials[i];
-        results.push_back({"airspyhf", "AirSpyHF " + ss.str(), serials[i]});
+        results.push_back({"airspyhf", "AirSpyHF " + ss.str(), std::to_string(serials[i])});
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, AIRSPYHF_USB_VID_PID, path) != -1)
-        results.push_back({"airspyhf", "AirSpyHF USB", 0});
+        results.push_back({"airspyhf", "AirSpyHF USB", "0"});
 #endif
 
     return results;

@@ -24,6 +24,10 @@
             [
                 "NOAA-15",
                 1702.5e6
+            ],
+            [
+                "NOAA POES S-Band",
+                2247.5e6
             ]
         ],
         "parameters": {
@@ -233,12 +237,12 @@
             "autocrop_wedges": {
                 "type": "bool",
                 "value": false,
-                "name": "Autocrop with Wedges",
-                "description": "This will automatically crop the image to only include\ntelemetry wedges considered valid.\nMay discard a lot on bad images!"
+                "name": "Autocrop Pass",
+                "description": "This will automatically crop the static from the\ntop and bottom of your pass"
             },
             "sdrpp_noise_reduction": {
                 "type": "bool",
-                "value": false,
+                "value": true,
                 "name": "SDR++ Noise Reduction",
                 "description": "APT Noise Reduction originally from Ryzerth in SDR++. Performs quite well on APT!"
             }
@@ -247,12 +251,16 @@
             "baseband": {},
             "audio_wav": {
                 "noaa_apt_demod": {
-                    "symbolrate": 50e3
+                    "symbolrate": 50e3,
+                    "save_wav": false
                 }
             },
             "products": {
                 "noaa_apt_decoder": {
-                    "audio_samplerate": 50e3
+                    "audio_samplerate": 50e3,
+                    "max_crop_stddev": 3500,
+                    "save_unsynced": true,
+                    "align_timestamps": true
                 }
             }
         }

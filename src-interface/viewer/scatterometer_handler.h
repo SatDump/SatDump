@@ -7,6 +7,7 @@
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
@@ -35,16 +36,14 @@ namespace satdump
         int scat_grayscale_min = 0, scat_grayscale_max = 1e7;
 
         nlohmann::json current_image_proj;
-        image::Image<uint16_t> current_img;
+        image::Image current_img;
 
         // ASCAT-Only
         int ascat_select_channel_id = 0;
         std::string ascat_select_channel_image_str;
 
         // Projections
-        bool use_draw_proj_algo = false;
-        bool projection_ready = false, should_project = false;
-        image::Image<uint16_t> projected_img;
+        image::Image projected_img;
 
         // GUI
         bool is_updating = false;
@@ -64,12 +63,9 @@ namespace satdump
         float drawTreeMenu();
 
         bool canBeProjected();
-        bool hasProjection();
-        bool shouldProject();
-        void updateProjection(int width, int height, nlohmann::json settings, float *progess);
-        image::Image<uint16_t> &getProjection();
-        unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
-        void setShouldProject(bool proj) { should_project = proj; }
+        void addCurrentToProjections();
+
+        widgets::TimedMessage proj_notif;
 
         static std::string getID() { return "scatterometer_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ScatterometerViewerHandler>(); }

@@ -126,7 +126,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 18.7e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.0063
+                    "pll_bw": 0.0063,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -164,7 +165,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 30e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.008
+                    "pll_bw": 0.008,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -202,7 +204,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 38.4e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.008
+                    "pll_bw": 0.008,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -240,7 +243,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 38.4e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.008
+                    "pll_bw": 0.008,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -284,7 +288,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 6e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.008
+                    "pll_bw": 0.008,
+                    "costas_max_offset": 1.5e6
                 }
             },
             "cadu": {
@@ -323,7 +328,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 62e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.006
+                    "pll_bw": 0.006,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -362,7 +368,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 150e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.006
+                    "pll_bw": 0.006,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -400,7 +407,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 225e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.006
+                    "pll_bw": 0.006,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {
@@ -440,7 +448,8 @@
                     "constellation": "qpsk",
                     "symbolrate": 225e6,
                     "rrc_alpha": 0.35,
-                    "pll_bw": 0.006
+                    "pll_bw": 0.006,
+                    "costas_max_offset": 1e6
                 }
             },
             "cadu": {

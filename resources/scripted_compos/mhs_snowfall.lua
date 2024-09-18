@@ -1,10 +1,15 @@
 -- Transparent snow cover using MHS
 
 function init()
+    if not has_sat_proj() then
+        lerror("This composite requires projection info")
+        return 0
+    end
+
 	sat_proj = get_sat_proj()
-	img_landmask = image8.new()
-	img_landmask:load_jpeg(get_resource_path("maps/landmask.jpg"))
-	img_landmask:linear_invert()
+	img_landmask = image_t.new()
+	image_load_jpeg(img_landmask, get_resource_path("maps/landmask.jpg"))
+	image_linear_invert(img_landmask)
 	equ_proj = EquirectangularProj.new()
 	equ_proj:init(img_landmask:width(), img_landmask:height(), -180, 90, 180, -90)
 	return 4

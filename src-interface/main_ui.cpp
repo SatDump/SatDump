@@ -1,3 +1,4 @@
+#define SATDUMP_DLL_EXPORT2 1
 #include "main_ui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imgui.h"
@@ -5,8 +6,6 @@
 #include "offline.h"
 #include "settings.h"
 #include "satdump_vars.h"
-#include "core/config.h"
-#include "core/style.h"
 #include "core/backend.h"
 #include "resources.h"
 #include "common/widgets/markdown_helper.h"
@@ -28,17 +27,19 @@ ImageViewWidget ivw;
 
 namespace satdump
 {
-    std::shared_ptr<RecorderApplication> recorder_app;
-    std::shared_ptr<ViewerApplication> viewer_app;
+    SATDUMP_DLL2 std::shared_ptr<RecorderApplication> recorder_app;
+    SATDUMP_DLL2 std::shared_ptr<ViewerApplication> viewer_app;
+    std::vector<std::shared_ptr<Application>> other_apps;
 
-    bool in_app = false; // true;
+    SATDUMP_DLL2 bool update_ui = true;
+    bool open_recorder;
 
     widgets::MarkdownHelper credits_md;
 
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
-    void initMainUI(float device_scale)
+    void initMainUI()
     {
         ImPlot::CreateContext();
 
@@ -46,19 +47,18 @@ namespace satdump
         offline::setup();
         settings::setup();
 
-        // Setup DPI/Theme
-        updateUI(device_scale);
-
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));
         std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         credits_md.set_md(credits_markdown);
 
-        registerApplications();
         registerViewerHandlers();
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
+        open_recorder = satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("start_recorder_device");
+
+        eventBus->fire_event<AddGUIApplicationEvent>({other_apps});
 
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
@@ -74,20 +74,6 @@ namespace satdump
         logger->add_sink(notify_logger_sink);
     }
 
-    void updateUI(float device_scale)
-    {
-        light_theme = config::main_cfg["user_interface"]["light_theme"]["value"].get<bool>();
-        float manual_dpi_scaling = config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
-        ui_scale = device_scale * manual_dpi_scaling;
-        ImGui::GetStyle() = ImGuiStyle();
-        ImGui::GetStyle().ScaleAllSizes(ui_scale);
-
-        if (light_theme)
-            style::setLightStyle();
-        else
-            style::setDarkStyle();
-    }
-
     void exitMainUI()
     {
         recorder_app->save_settings();
@@ -97,60 +83,25 @@ namespace satdump
         viewer_app.reset();
     }
 
-    bool main_ui_is_processing_selected = false;
-
     void renderMainUI()
     {
-        std::pair<int, int> dims = backend::beginFrame();
-        // ImGui::ShowDemoWindow();
+        if (update_ui)
+        {
+            style::setStyle();
+            style::setFonts(ui_scale);
+            update_ui = false;
+        }
 
-        /*if (in_app)
-        {
-            ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)wwidth, (float)wheight});
-            ImGui::Begin("Main", NULL, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
-            current_app->draw();
-            ImGui::End();
-        }*/
-        /*else if (processing::is_processing)
-        {
-            processing::ui_call_list_mutex->lock();
-            float winheight = processing::ui_call_list->size() > 0 ? wheight / processing::ui_call_list->size() : wheight;
-            float currentPos = 0;
-            for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
-            {
-                ImGui::SetNextWindowPos({0, currentPos});
-                currentPos += winheight;
-                ImGui::SetNextWindowSize({(float)wwidth, (float)winheight});
-                module->drawUI(false);
-            }
-            processing::ui_call_list_mutex->unlock();
-        }*/
+        std::pair<int, int> dims = backend::beginFrame();
+        dims.second -= status_logger_sink->draw();
+
         // else
         {
-            bool status_bar = status_logger_sink->is_shown();
-            if (status_bar && processing::is_processing && main_ui_is_processing_selected)
-            {
-                for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
-                {
-                    std::string module_id = module->getIDM();
-                    if (module_id == "products_processor")
-                    {
-                        status_bar = false;
-                        break;
-                    }
-                }
-            }
-            if (status_bar)
-                dims.second -= status_logger_sink->draw();
-
             ImGui::SetNextWindowPos({0, 0});
-            ImGui::SetNextWindowSize({(float)dims.first, (processing::is_processing & main_ui_is_processing_selected) ? -1.0f : (float)dims.second});
+            ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
             ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
-                main_ui_is_processing_selected = false;
-
                 if (ImGui::BeginTabItem("Offline processing"))
                 {
                     if (processing::is_processing)
@@ -181,10 +132,10 @@ namespace satdump
                     }
 
                     ImGui::EndTabItem();
-                    main_ui_is_processing_selected = true;
                 }
-                if (ImGui::BeginTabItem("Recorder"))
+                if (ImGui::BeginTabItem("Recorder", nullptr, open_recorder ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
                 {
+                    open_recorder = false;
                     recorder_app->draw();
                     ImGui::EndTabItem();
                 }
@@ -193,30 +144,14 @@ namespace satdump
                     viewer_app->draw();
                     ImGui::EndTabItem();
                 }
-#if 0
-                if (ImGui::BeginTabItem("Applications"))
+                for (auto &app : other_apps)
                 {
-                    // current_app->draw();
-                    if (in_app)
+                    if (ImGui::BeginTabItem(std::string(app->get_name() + "##appsoption").c_str()))
                     {
-                        // current_app->draw();
+                        app->draw();
+                        ImGui::EndTabItem();
                     }
-                    else
-                    {
-
-                        for (std::pair<const std::string, std::function<std::shared_ptr<Application>()>> &appEntry : application_registry)
-                        {
-                            if (ImGui::Button(appEntry.first.c_str()))
-                            {
-                                in_app = true;
-                                // current_app = application_registry[appEntry.first]();
-                            }
-                        }
-                    }
-
-                    ImGui::EndTabItem();
                 }
-#endif
                 if (ImGui::BeginTabItem("Settings"))
                 {
                     ImGui::BeginChild("settings", ImGui::GetContentRegionAvail());
@@ -268,10 +203,8 @@ namespace satdump
 
         // Render toasts on top of everything, at the end of your code!
         // You should push style vars here
-        float notification_bgcolor = (light_theme ? 212.f : 43.f) / 255.f;
-        float notification_transparency = (light_theme ? 200.f : 100.f) / 255.f;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)style::theme.notification_bg);
         notify_logger_sink->notify_mutex.lock();
         ImGui::RenderNotifications();
         notify_logger_sink->notify_mutex.unlock();
@@ -281,7 +214,5 @@ namespace satdump
         backend::endFrame();
     }
 
-    bool light_theme;
-
-    ctpl::thread_pool ui_thread_pool(8);
+    SATDUMP_DLL2 ctpl::thread_pool ui_thread_pool(8);
 }

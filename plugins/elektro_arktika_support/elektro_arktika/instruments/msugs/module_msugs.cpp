@@ -3,9 +3,9 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/hue_saturation.h"
 #include "common/utils.h"
 #include "common/simple_deframer.h"
+#include "common/image/io.h"
 
 namespace elektro_arktika
 {
@@ -110,33 +110,33 @@ namespace elektro_arktika
                 std::filesystem::create_directory(directory);
 
             channels_statuses[0] = channels_statuses[1] = channels_statuses[2] = PROCESSING;
-            image::Image<uint16_t> image1 = vis1_reader.getImage();
-            image::Image<uint16_t> image2 = vis2_reader.getImage();
-            image::Image<uint16_t> image3 = vis3_reader.getImage();
+            image::Image image1 = vis1_reader.getImage();
+            image::Image image2 = vis2_reader.getImage();
+            image::Image image3 = vis3_reader.getImage();
 
             image1.crop(0, 1421, 12008, 1421 + 12008);
             channels_statuses[0] = SAVING;
-            WRITE_IMAGE(image1, directory + "/MSU-GS-1");
+            image::save_img(image1, directory + "/MSU-GS-1");
             channels_statuses[0] = DONE;
 
             image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
             channels_statuses[1] = SAVING;
-            WRITE_IMAGE(image2, directory + "/MSU-GS-2");
+            image::save_img(image2, directory + "/MSU-GS-2");
             channels_statuses[1] = DONE;
 
             image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
             channels_statuses[2] = SAVING;
-            WRITE_IMAGE(image3, directory + "/MSU-GS-3");
+            image::save_img(image3, directory + "/MSU-GS-3");
             channels_statuses[2] = DONE;
 
             for (int i = 0; i < 7; i++)
             {
                 channels_statuses[3 + i] = PROCESSING;
                 logger->info("Channel IR " + std::to_string(i + 4) + "...");
-                image::Image<uint16_t> img = infr_reader.getImage(i);
+                image::Image img = infr_reader.getImage(i);
                 img.crop(183, 3294);
                 channels_statuses[3 + i] = SAVING;
-                WRITE_IMAGE(img, directory + "/MSU-GS-" + std::to_string(i + 4));
+                image::save_img(img, directory + "/MSU-GS-" + std::to_string(i + 4));
                 channels_statuses[3 + i] = DONE;
             }
 
@@ -205,7 +205,7 @@ namespace elektro_arktika
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Channel %d", i + 1);
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", frames);
+                    ImGui::TextColored(style::theme.green, "%d", frames);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(channels_statuses[i]);
                 }
@@ -213,7 +213,7 @@ namespace elektro_arktika
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

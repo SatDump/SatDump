@@ -31,18 +31,15 @@ namespace satdump
 
                 if (horizons_data.size() > 0)
                 {
-                    double timed = current_time;
-
-                    size_t iter = 0;
-                    for (size_t i = 0; i < horizons_data.size(); i++)
-                        if (horizons_data[i].timestamp < timed)
-                            iter = i;
+                    //    size_t iter = 0;
+                    //    for (size_t i = 0; i < horizons_data.size(); i++)
+                    //        if (horizons_data[i].timestamp < current_time)
+                    //            iter = i;
 
                     if (current_time > next_los_time)
                         updateNextPass(current_time);
 
-                    sat_current_pos.az = horizons_data[iter].az;
-                    sat_current_pos.el = horizons_data[iter].el;
+                    horizons_interpolate(current_time, &sat_current_pos.az, &sat_current_pos.el);
                 }
             }
             else if (tracking_mode == TRACKING_SATELLITE)
@@ -90,19 +87,22 @@ namespace satdump
 
     void ObjectTracker::updateNextPass(double current_time)
     {
+        upcoming_passes_mtx.lock();
         logger->trace("Update pass trajectory...");
 
         upcoming_pass_points.clear();
-
         next_aos_time = 0;
         next_los_time = 0;
+        northbound_cross = false;
+        southbound_cross = false;
 
         if (tracking_mode == TRACKING_HORIZONS)
         {
             if (horizons_data.size() == 0)
+            {
+                upcoming_passes_mtx.unlock();
                 return;
-
-            upcoming_passes_mtx.lock();
+            }
 
             int iter = 0;
             for (int i = 0; i < (int)horizons_data.size(); i++)
@@ -175,8 +175,6 @@ namespace satdump
                     upcoming_pass_points.push_back({horizons_data[iter].az, horizons_data[iter].el});
                 }
             }
-
-            upcoming_passes_mtx.unlock();
         }
         else if (tracking_mode == TRACKING_SATELLITE)
         {
@@ -184,10 +182,9 @@ namespace satdump
             {
                 next_aos_time = 0;
                 next_los_time = DBL_MAX;
+                upcoming_passes_mtx.unlock();
                 return;
             }
-
-            upcoming_passes_mtx.lock();
 
             // Get next LOS
             predict_observation next_aos, next_los;
@@ -206,6 +203,35 @@ namespace satdump
 
             sat_next_aos_pos.az = next_aos.azimuth * RAD_TO_DEG;
             sat_next_aos_pos.el = next_aos.elevation * RAD_TO_DEG;
+            sat_next_los_pos.az = next_los.azimuth * RAD_TO_DEG;
+            sat_next_los_pos.el = next_los.elevation * RAD_TO_DEG;
+
+            if (meridian_flip_correction)
+            {
+                // Determine pass direction
+                predict_position satellite_orbit2;
+                predict_observation observation_pos_cur;
+                predict_observation observation_pos_prev;
+                double currTime = next_aos_time;
+                predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
+                predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_prev);
+                currTime += 1.0;
+                do
+                {
+                    predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
+                    predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_cur);
+
+                    if (std::abs(observation_pos_prev.azimuth - observation_pos_cur.azimuth) > (180 * DEG_TO_RAD))
+                    {
+                        if (next_los.azimuth > (90 * DEG_TO_RAD) && next_los.azimuth < (270 * DEG_TO_RAD))
+                            southbound_cross = true;
+                        else
+                            northbound_cross = true;
+                    }
+                    currTime += 1.0;
+                    observation_pos_prev = observation_pos_cur;
+                } while (next_los_time > currTime);
+            }
 
             if (true) //(is_gui)
             {
@@ -222,8 +248,8 @@ namespace satdump
                     upcoming_pass_points.push_back({float(observation_pos2.azimuth * RAD_TO_DEG), float(observation_pos2.elevation * RAD_TO_DEG)});
                 }
             }
-
-            upcoming_passes_mtx.unlock();
         }
+
+        upcoming_passes_mtx.unlock();
     }
 }

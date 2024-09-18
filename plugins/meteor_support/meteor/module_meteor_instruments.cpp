@@ -10,6 +10,8 @@
 #include "common/tracking/tle.h"
 #include "products/dataset.h"
 #include "resources.h"
+#include "nlohmann/json_utils.h"
+#include "instruments/msumr/msumr_tlm.h"
 
 namespace meteor
 {
@@ -33,10 +35,10 @@ namespace meteor
             mtvza_reader2.endian_mode = true;
 
             // Deframers
-            def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, true);
-            def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, true);
-            def::SimpleDeframer mtvza_deframer2(0x38fb456a, 32, 248 * 8, 0, true);
-            def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, true);
+            def::SimpleDeframer msumr_deframer(0x0218a7a392dd9abf, 64, 11850 * 8, 10, false);
+            def::SimpleDeframer mtvza_deframer(0xFB386A45, 32, 248 * 8, 0, false);
+            def::SimpleDeframer mtvza_deframer2(0x38fb456a, 32, 248 * 8, 0, false);
+            def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, false);
 
             time_t current_time = d_parameters.contains("start_timestamp")
                                       ? (d_parameters["start_timestamp"].get<double>() != -1
@@ -49,6 +51,9 @@ namespace meteor
 
             std::vector<double> msumr_timestamps;
             std::vector<uint8_t> msumr_ids;
+
+            nlohmann::json msu_mr_telemetry;
+            nlohmann::json msu_mr_telemetry_calib;
 
             // std::ofstream file_out("idk_bism.bin");
 
@@ -80,6 +85,8 @@ namespace meteor
                     msumr_timestamps.push_back(timestamp);
                     mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     msumr_ids.push_back(msumr_frame[12] >> 4);
+
+                    parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_timestamps.size() - 1, msumr_frame.data());
                 }
 
                 // MTVZA Deframing
@@ -126,7 +133,7 @@ namespace meteor
             data_in.close();
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end());
+            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
             msumr_ids.clear();
 
             std::string sat_name = "Unknown Meteor";
@@ -138,6 +145,8 @@ namespace meteor
                 sat_name = "METEOR-M2-2";
             else if (msumr_serial_number == 3)
                 sat_name = "METEOR-M2-3";
+            else if (msumr_serial_number == 4)
+                sat_name = "METEOR-M2-4";
 
             int norad = 0;
             if (msumr_serial_number == 0)
@@ -148,6 +157,8 @@ namespace meteor
                 norad = 44387; // M2-2
             else if (msumr_serial_number == 3)
                 norad = 57166; // M2-3
+            else if (msumr_serial_number == 4)
+                norad = 59051; // M2-4, WAITING FOR NORAD
 
             // Products dataset
             satdump::ProductDataSet dataset;
@@ -174,16 +185,16 @@ namespace meteor
 
                 satdump::ImageProducts msumr_products;
                 msumr_products.instrument_name = "msu_mr";
+                msumr_products.bit_depth = 10;
                 msumr_products.has_timestamps = true;
                 msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                msumr_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                msumr_products.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp));
 
                 std::vector<double> filter_timestamps = msumr_timestamps;
-                double avg = avg_overflowless(filter_timestamps);
                 double last = 0;
                 for (double &v : filter_timestamps)
                 {
-                    if (abs(avg - v) > 10000)
+                    if (abs(dataset.timestamp - v) > 10000)
                     {
                         last = v;
                         v = -1;
@@ -211,10 +222,40 @@ namespace meteor
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_msumr.json")));
                 else if (msumr_serial_number == 3)
                     msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr.json")));
+                else if (msumr_serial_number == 4)
+                    msumr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr.json")));
 
                 for (int i = 0; i < 6; i++)
                     msumr_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i)});
 
+                nlohmann::json calib_cfg;
+                calib_cfg["calibrator"] = "meteor_msumr";
+                calib_cfg["vars"]["views"] = msumr_reader.calibration_info;
+                calib_cfg["vars"]["temps"] = msu_mr_telemetry_calib;
+
+                msumr_products.set_calibration(calib_cfg);
+                msumr_products.set_calibration_type(0, satdump::ImageProducts::CALIB_REFLECTANCE);
+                msumr_products.set_calibration_type(1, satdump::ImageProducts::CALIB_REFLECTANCE);
+                msumr_products.set_calibration_type(2, satdump::ImageProducts::CALIB_REFLECTANCE);
+                msumr_products.set_calibration_type(3, satdump::ImageProducts::CALIB_RADIANCE);
+                msumr_products.set_calibration_type(4, satdump::ImageProducts::CALIB_RADIANCE);
+                msumr_products.set_calibration_type(5, satdump::ImageProducts::CALIB_RADIANCE);
+
+                msumr_products.set_wavenumber(0, 0);
+                msumr_products.set_wavenumber(1, 0);
+                msumr_products.set_wavenumber(2, 0);
+                msumr_products.set_wavenumber(3, 2695.9743);
+                msumr_products.set_wavenumber(4, 925.4075);
+                msumr_products.set_wavenumber(5, 839.8979);
+
+                msumr_products.set_calibration_default_radiance_range(0, 0, 1);
+                msumr_products.set_calibration_default_radiance_range(1, 0, 1);
+                msumr_products.set_calibration_default_radiance_range(2, 0, 1);
+                msumr_products.set_calibration_default_radiance_range(3, 0.05, 1);
+                msumr_products.set_calibration_default_radiance_range(4, 30, 120);
+                msumr_products.set_calibration_default_radiance_range(5, 30, 120);
+
+                saveJsonFile(directory + "/telemetry.json", msu_mr_telemetry);
                 msumr_products.save(directory);
                 dataset.products_list.push_back("MSU-MR");
 
@@ -240,13 +281,15 @@ namespace meteor
                 mtvza_products.instrument_name = "mtvza";
                 mtvza_products.has_timestamps = true;
                 mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp));
                 mtvza_products.set_timestamps(mreader.timestamps);
 
                 if (msumr_serial_number == 2)
                     mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_mtvza.json")));
                 else if (msumr_serial_number == 3)
                     mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza.json")));
+                else if (msumr_serial_number == 4)
+                    mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_mtvza.json")));
 
                 for (int i = 0; i < 30; i++)
                     mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), mreader.getChannel(i)});
@@ -278,7 +321,7 @@ namespace meteor
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MSU-MR");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", msumr_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", msumr_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(msumr_status);
 
@@ -286,7 +329,7 @@ namespace meteor
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MTVZA");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d",
+                ImGui::TextColored(style::theme.green, "%d",
                                    mtvza_reader2.lines > mtvza_reader.lines
                                        ? mtvza_reader2.lines
                                        : mtvza_reader.lines);
@@ -296,7 +339,7 @@ namespace meteor
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

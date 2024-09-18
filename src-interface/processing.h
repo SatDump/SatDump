@@ -3,14 +3,22 @@
 #include <mutex>
 #include <memory>
 #include "core/module.h"
+#include "core/pipeline.h"
+#include "dll_export.h"
 
 namespace satdump
 {
     namespace processing
     {
-        extern std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list;
-        extern std::shared_ptr<std::mutex> ui_call_list_mutex;
-        extern bool is_processing;
+        SATDUMP_DLL2 extern std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list;
+        SATDUMP_DLL2 extern std::shared_ptr<std::mutex> ui_call_list_mutex;
+        SATDUMP_DLL2 extern bool is_processing;
+
+        void process(Pipeline downlink_pipeline,
+                     std::string input_level,
+                     std::string input_file,
+                     std::string output_file,
+                     nlohmann::json parameters);
 
         void process(std::string downlink_pipeline,
                      std::string input_level,

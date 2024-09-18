@@ -40,8 +40,7 @@ namespace satdump
         std::string default_dir = config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>();
         projection_new_layer_file.setDefaultDir(default_dir);
         projection_new_layer_cfg.setDefaultDir(default_dir);
-        select_dataset_dialog.setDefaultDir(default_dir);
-        select_products_dialog.setDefaultDir(default_dir);
+        select_dataset_products_dialog.setDefaultDir(default_dir);
 
         // pro.load("/home/alan/Documents/SatDump_ReWork/build/metop_ahrpt_new/AVHRR/product.cbor");
         //  pro.load("/home/alan/Documents/SatDump_ReWork/build/aqua_test_new/MODIS/product.cbor");
@@ -99,6 +98,20 @@ namespace satdump
         {
             try
             {
+                if (path.find("http") == 0)
+                {
+                    // Make sure the path is URL safe
+                    std::ostringstream encodedUrl;
+                    encodedUrl << std::hex << std::uppercase << std::setfill('0');
+                    for (char &c : pro_path)
+                    {
+                        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~')
+                            encodedUrl << c;
+                        else
+                            encodedUrl << '%' << std::setw(2) << static_cast<unsigned int>(static_cast<unsigned char>(c));
+                    }
+                    pro_path = encodedUrl.str();
+                }
                 loadProductsInViewer(pro_directory + "/" + pro_path, dataset_name);
             }
             catch (std::exception &e)
@@ -110,7 +123,7 @@ namespace satdump
 
     void ViewerApplication::loadProductsInViewer(std::string path, std::string dataset_name)
     {
-        if (std::filesystem::exists(path))
+        if (std::filesystem::exists(path) || path.find("http") == 0)
         {
             std::shared_ptr<Products> products = loadProducts(path);
 
@@ -160,6 +173,10 @@ namespace satdump
         std::string label = ph.products->instrument_name;
         if (ph.handler->instrument_cfg.contains("name"))
             label = ph.handler->instrument_cfg["name"].get<std::string>();
+        if (ph.products->has_product_source())
+            label = ph.products->get_product_source() + " " + label;
+        if (ph.products->has_product_timestamp())
+            label = label + " " + timestamp_to_string(ph.products->get_product_timestamp());
 
         ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | (index == current_handler_id ? ImGuiTreeNodeFlags_Selected : 0));
         if (ImGui::IsItemClicked())
@@ -171,15 +188,16 @@ namespace satdump
             ImGui::Text("  ");
             ImGui::SameLine();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
             if (ImGui::SmallButton(std::string(u8"\uf00d##" + ph.dataset_name + label).c_str()))
             {
                 logger->info("Closing products " + label);
                 ph.marked_for_close = true;
             }
-            ImGui::PopStyleColor();
-            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor(2);
         }
 
         ImRect rect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
@@ -213,35 +231,26 @@ namespace satdump
                         {
                             ImGui::TreeNodeEx(dataset_name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
                             ImGui::TreePush(std::string("##HandlerTree" + dataset_name).c_str());
-                            for (int i = 0; i < (int)products_and_handlers.size(); i++)
-                                if (products_and_handlers[i]->dataset_name == dataset_name && products_and_handlers[i]->handler->shouldProject())
-                                {
-                                    SelectableColor(IM_COL32(186, 153, 38, 65));
-                                    break;
-                                }
 
                             { // Closing button
                                 ImGui::SameLine();
                                 ImGui::Text("  ");
                                 ImGui::SameLine();
 
-                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
-                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                                ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
+                                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
                                 if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + dataset_name).c_str()))
                                 {
                                     logger->info("Closing datset " + dataset_name);
                                     for (int i = 0; i < (int)products_and_handlers.size(); i++)
                                         if (products_and_handlers[i]->dataset_name == dataset_name)
                                         {
-                                            if (products_and_handlers[i]->handler->shouldProject() && projections_are_generating)
-                                                logger->warn("%s is currently being projected and will not close",
-                                                             products_and_handlers[i]->products->instrument_name.c_str());
-                                            else
-                                                products_and_handlers[i]->marked_for_close = true;
+                                            products_and_handlers[i]->marked_for_close = true;
                                         }
                                 }
-                                ImGui::PopStyleColor();
-                                ImGui::PopStyleColor();
+                                ImGui::PopStyleVar();
+                                ImGui::PopStyleColor(2);
                             }
 
                             const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
@@ -261,8 +270,6 @@ namespace satdump
                                     const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
                                     drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
                                     verticalLineEnd.y = midpoint;
-                                    if (products_and_handlers[i]->handler->shouldProject())
-                                        SelectableColor(IM_COL32(186, 153, 38, 65));
                                 }
                             }
 
@@ -298,32 +305,24 @@ namespace satdump
                     }
 
                     ImGui::Separator();
-                    ImGui::Text("Load Dataset :");
-                    if (select_dataset_dialog.draw())
+                    ImGui::Text("Load Dataset/Products :");
+                    if (select_dataset_products_dialog.draw())
                     {
                         ui_thread_pool.push([this](int)
                                             {
                             try
                             {
-                                loadDatasetInViewer(select_dataset_dialog.getPath());
+                                std::string path = select_dataset_products_dialog.getPath();
+                                if(std::filesystem::path(path).extension() == ".json")
+                                    loadDatasetInViewer(path);
+                                else if(std::filesystem::path(path).extension() == ".cbor")
+                                    loadProductsInViewer(path);
+                                else
+                                    logger->error("Invalid file! Not products or dataset!");
                             }
                             catch (std::exception &e)
                             {
-                                logger->error("Error opening dataset - %s", e.what());
-                            } });
-                    }
-                    ImGui::Text("Load Products :");
-                    if (select_products_dialog.draw())
-                    {
-                        ui_thread_pool.push([this](int)
-                                            {
-                            try
-                            {
-                                loadProductsInViewer(select_products_dialog.getPath());
-                            }
-                            catch (std::exception &e)
-                            {
-                                logger->error("Error opening products - %s", e.what());
+                                logger->error("Error opening dataset/products - %s", e.what());
                             } });
                     }
                 }
@@ -338,10 +337,7 @@ namespace satdump
             if (ImGui::BeginTabItem("Projections###projssviewertab"))
             {
                 if (current_selected_tab != 1)
-                {
                     current_selected_tab = 1;
-                    refreshProjectionLayers();
-                }
                 drawProjectionPanel();
                 ImGui::EndTabItem();
             }
@@ -379,12 +375,6 @@ namespace satdump
             {
                 if (products_and_handlers.size() > 0)
                     products_and_handlers[current_handler_id]->handler->drawContents({float(right_width - 4), float(viewer_size.y)});
-                else
-                    ImGui::GetWindowDrawList()
-                        ->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                        ImVec2(ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x,
-                                               ImGui::GetCursorScreenPos().y + ImGui::GetContentRegionAvail().y),
-                                        ImColor::HSV(0, 0, 0));
             }
             else if (current_selected_tab == 1)
             {

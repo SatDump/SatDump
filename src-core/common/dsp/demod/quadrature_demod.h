@@ -19,5 +19,8 @@ namespace dsp
     public:
         QuadratureDemodBlock(std::shared_ptr<dsp::stream<complex_t>> input, float gain);
         ~QuadratureDemodBlock();
+
+        int process(complex_t *input, int nsamples, float *output);
+        void set_gain(float gain);
     };
 }

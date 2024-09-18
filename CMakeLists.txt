@@ -7,8 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+if(MSVC OR BUILD_MSVC)
+    set(VCPKG_TARGET_TRIPLET CACHE STRING "x64-windows")
+    set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
 endif()
 
 project(SatDump)
@@ -25,8 +26,8 @@ option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 
 if(ANDROID)
     # Build settings
-    set(BUILD_OPENCL OFF)
     set(BUILD_OPENMP OFF)
+    set(OPENCL_FOUND 1)
 endif()
 
 # Set default install prefix to /usr
@@ -41,35 +42,27 @@ if(UNIX)
 endif()
 
 if(APPLE)
-    include_directories(/usr/local/include)
-    include_directories(/usr/local/opt/jpeg-turbo/include)
-    include_directories(/usr/local/Cellar/fftw/3.3.9/include)
-    link_directories(/usr/local/lib)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    link_directories(vcpkg/installed/osx-satdump/lib)
 
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
-        include_directories(/opt/homebrew/include/)
-        link_directories(/opt/homebrew/lib/)
-    endif()
+    # Jemalloc
+    find_package(Jemalloc REQUIRED)
+    include_directories(${JEMALLOC_INCLUDE_DIR})
+    link_libraries(${JEMALLOC_LIBRARY})
 
 endif()
 
-
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
-
         if(APPLE)
-            # set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
-            # set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I/usr/local/opt/llvm/include -I/usr/local/opt/libomp/include -L/usr/local/opt/libomp/lib")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-command-line-argument -Xpreprocessor")
         endif()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     endif()
 
     find_package(ZSTD)
@@ -93,6 +86,12 @@ if(MSVC OR BUILD_MSVC)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /openmp")
     endif()
 
+    # This should be the default, but sometimes it isn't apparently
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
+
     # Speed up this to object-level, Suppress type conversion warnings, suppress
     # POSIX function warnings, suppress warnings about DLL-exported functions, and
     # Suppress warnings about template methods defined in another C++ file
@@ -105,11 +104,11 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286,4217")
 
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    include_directories(vcpkg/installed/x64-windows/include)
-    link_directories(vcpkg/installed/x64-windows/lib)
+    include_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/include)
+    link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
-project(SatDump VERSION "1.1.3")
+project(SatDump VERSION "1.2.1")
 
 # Check if the current commit has a tag
 execute_process(
@@ -128,14 +127,18 @@ execute_process(
 )
 
 # Set version
-if(GIT_HAS_TAG STREQUAL "undefined")
-    message("-- Commit has no tag (${GIT_HAS_TAG}). Assume dev build")
+if(GIT_HAS_TAG STREQUAL "undefined" OR GIT_HAS_TAG STREQUAL "nightly")
+    message("-- Commit has no tag/nightly tag (${GIT_HAS_TAG}). Assume dev build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
 else()
-    message("-- Commit has no tag (${GIT_HAS_TAG}). Assume release build")
+    message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}")
 endif()
 add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
+
+# Used for error messages
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
@@ -146,7 +149,7 @@ if(MSVC)
     set(OPENCL_FOUND 1)
     set(OpenCL_LIBRARY OpenCL.dll)
     set(OpenCL_LIBRARIES OpenCL.dll)
-else()
+elseif(NOT ANDROID)
     find_package(OpenCL)
 endif()
 
@@ -233,7 +236,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_VENDOR "SatDump")
     set(CPACK_PACKAGE_CONTACT "Aang23")
     
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1, libportaudiocpp0")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libomp5-14, ocl-icd-libopencl1, intel-opencl-icd, mesa-opencl-icd")
 
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
@@ -254,7 +257,10 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         # Customize NSIS template
         file(READ "${CMAKE_ROOT}/Modules/Internal/CPack/NSIS.template.in" NSIS_template)
         set(CREATE_ICONS_REPLACE "  SetOutPath \"$INSTDIR\\bin\"\n@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@\n  SetOutPath \"$INSTDIR\"")
+        string(CONCAT INSTALLDIR_REPLACE "  InstallDir \"@CPACK_NSIS_INSTALL_ROOT@\\@CPACK_PACKAGE_INSTALL_DIRECTORY@\""
+            "\n  InstallDirRegKey HKLM Software\\@CPACK_PACKAGE_VENDOR@\\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@ \"\"")
         string(REPLACE "@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@" "${CREATE_ICONS_REPLACE}" NSIS_template "${NSIS_template}")
+        string(REPLACE "  InstallDir \"@CPACK_NSIS_INSTALL_ROOT@\\@CPACK_PACKAGE_INSTALL_DIRECTORY@\"" "${INSTALLDIR_REPLACE}" NSIS_template "${NSIS_template}")
         file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in" "${NSIS_template}")
         set(CPACK_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -266,7 +272,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         set(CPACK_NSIS_MODIFY_PATH ON)
         set(CPACK_NSIS_BRANDING_TEXT "SatDump - General Purpose Satellite Data Processor")
         set(CPACK_NSIS_MUI_HEADERIMAGE "${PROJECT_SOURCE_DIR}\\\\windows\\\\installer-header.bmp")
-        set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\windows\\\\icon.ico")
+        set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}\\\\windows\\\\icon.ico")
         if(BUILD_GUI)
             set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\satdump-ui.exe")
             set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump-ui" "SatDump")
@@ -276,9 +282,22 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         if(PLUGIN_REMOTE_SDR_SUPPORT)
             set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump_sdr_server" "SatDump SDR Server")
         endif()
-        file(GLOB_RECURSE SATDUMP_WINDOWS_DEPENDENCIES ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/bin/*.dll)
-        install(FILES ${SATDUMP_WINDOWS_DEPENDENCIES} DESTINATION bin)
-        install(TARGETS satdump_core DESTINATION bin)
+
+        install(RUNTIME_DEPENDENCY_SET satdump_deps
+            PRE_EXCLUDE_REGEXES
+                "api-ms-.*"
+                "ext-ms-.*"
+                "^hvsifiletrust\\.dll$"
+                "^pdmutilities\\.dll$"
+                "^vc.*"
+                "^msvcp.*"
+                "^concrt.*"
+                "satdump_core.dll"
+            POST_EXCLUDE_REGEXES
+                ".*system32/.*\\.dll"
+            DIRECTORIES
+                "${PROJECT_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/bin"
+        )
     else()
         set(CPACK_GENERATOR DEB)
         #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)

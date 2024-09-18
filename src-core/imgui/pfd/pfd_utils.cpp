@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <sstream>
 #include "portable-file-dialogs.h"
 #include "core/config.h"
 #include "logger.h"
@@ -8,41 +9,59 @@
 #include <direct.h>
 #endif
 
+#include "common/image/io.h"
+
 namespace satdump
 {
-    template <typename T>
-    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image<T>* image, std::string *default_ext)
+    std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image *image, std::string *default_ext)
     {
         std::vector<std::string> saveopts = {
             "PNG Files", "*.png",
             "JPEG 2000 Files", "*.j2k",
             "JPEG Files", "*.jpg *.jpeg",
-            "PBM Files", "*.pbm *.pgm *.ppm"
-        };
+            "PBM Files", "*.pbm *.pgm *.ppm",
+            "TIFF Files", "*.tif *.tiff *.gtif",
+            "QOI Files", "*.qoi"};
 
-        for (auto it = saveopts.begin() + 1, lim = saveopts.end(); it != lim; it += 2)
+        size_t i = 1;
+        for (auto it = saveopts.begin() + 1;; it += 2)
         {
-            if (it->substr(2, 3) == *default_ext)
+            std::stringstream ss(*it);
+            std::string token;
+
+            while (std::getline(ss, token, ' '))
             {
-                std::rotate(saveopts.begin(), it - 1, it);
-                std::rotate(saveopts.begin() + 1, it, it + 1);
-                break;
+                if (token.substr(2) == *default_ext)
+                {
+                    std::rotate(saveopts.begin(), it - 1, it);
+                    std::rotate(saveopts.begin() + 1, it, it + 1);
+                    goto done_ext;
+                }
             }
+
+            i += 2;
+            if (i >= saveopts.size())
+                break;
         }
 
+    done_ext:
 #ifdef __ANDROID__
         *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
         if (default_path == ".")
         {
-            char* cwd;
+            char *cwd;
             cwd = _getcwd(NULL, 0);
             if (cwd != 0)
                 default_path = cwd;
         }
         default_path += "\\";
+#elif defined(__ANDROID__)
+        if (default_path == ".")
+            default_path = "/storage/emulated/0";
+        default_path += "/";
 #else
         default_path += "/";
 #endif
@@ -57,18 +76,15 @@ namespace satdump
         if (result.result().size() > 0)
         {
             path = result.result();
-            image->save_img(path);
+            image::save_img(*image, path);
             std::string extension = std::filesystem::path(path).extension().string();
             if (extension.size() > 1)
                 *default_ext = extension.substr(1);
         }
 #else
-        path = "/storage/emulated/0/" + save_name;
-        image->save_img("" + path);
+        path = save_name;
+        image::save_img(*image, save_name);
 #endif
         return path;
     }
-
-    template std::string save_image_dialog<uint8_t>(std::string default_name, std::string default_path, std::string window_title, image::Image<uint8_t>* image, std::string* default_ext);
-    template std::string save_image_dialog<uint16_t>(std::string default_name, std::string default_path, std::string window_title, image::Image<uint16_t>* image, std::string* default_ext);
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(sdrplay_sdr_support)
 
 
@@ -13,16 +13,15 @@ if(SDRPLAY_LIBRARY OR MSVC)
     message("Building with SDRPlay support")
     file(GLOB_RECURSE sdrplay_sdr_support_CPPS *.cpp)
     add_library(sdrplay_sdr_support SHARED ${sdrplay_sdr_support_CPPS})
+    target_include_directories(sdrplay_sdr_support PUBLIC src)
 
     if(MSVC)
         target_link_libraries(sdrplay_sdr_support PUBLIC satdump_core sdrplay_api.dll)
+        install(TARGETS sdrplay_sdr_support DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     else()
         target_link_libraries(sdrplay_sdr_support PUBLIC satdump_core ${SDRPLAY_LIBRARY})
+        install(TARGETS sdrplay_sdr_support DESTINATION lib/satdump/plugins)
     endif()
-
-    target_include_directories(sdrplay_sdr_support PUBLIC src)
-
-    install(TARGETS sdrplay_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("SDRlay Library could not be found! Not building.")
 endif()

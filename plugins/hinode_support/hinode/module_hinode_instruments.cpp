@@ -1,13 +1,15 @@
 #include "module_hinode_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "nlohmann/json_utils.h"
+#include "common/image/io.h"
 
 #include "common/codings/reedsolomon/reedsolomon.h"
 
@@ -27,11 +29,11 @@ namespace hinode
             // printf("status %d - %d\n", status, result.apid);
             if (result.apid != -1)
             {
-                result.img.save_img(directory + "/" + std::to_string(depack.img_cnt));
+                image::save_img(result.img, directory + "/" + std::to_string(depack.img_cnt));
                 saveJsonFile(directory + "/" + std::to_string(depack.img_cnt) + ".json", nlohmann::json(result.sci));
-                image::Image<uint16_t> img;
+                image::Image img;
                 if (recomp.pushSegment(result, &img))
-                    img.save_img(directory + "/full_" + std::to_string(result.sci.MainID));
+                    image::save_img(img, directory + "/full_" + std::to_string(result.sci.MainID));
             }
         }
 
@@ -46,7 +48,7 @@ namespace hinode
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid4(880, true, 0);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid4(880, true, 0);
 
             reedsolomon::ReedSolomon rs_check(reedsolomon::RS223);
 
@@ -95,7 +97,7 @@ namespace hinode
                     continue;
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // printf("VCID %d\n", vcdu.vcid);
@@ -161,7 +163,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("FLT OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_flt_obs1.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_flt_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -169,7 +171,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("FLT OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_flt_obs2.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_flt_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -177,7 +179,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("SPP OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_spp_obs1.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_spp_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -185,7 +187,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("SPP OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_spp_obs2.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_spp_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -193,7 +195,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("XRT OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_xrt_obs1.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_xrt_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -201,7 +203,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("XRT OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_xrt_obs2.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_xrt_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -209,7 +211,7 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("EIS OBS1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_eis_obs1.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_eis_obs1.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
@@ -217,14 +219,14 @@ namespace hinode
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("EIS OBS2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", depack_eis_obs2.img_cnt);
+                ImGui::TextColored(style::theme.green, "%d", depack_eis_obs2.img_cnt);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(general_status);
 
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

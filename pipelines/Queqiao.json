@@ -1,0 +1,121 @@
+{
+    "queqiao2_s_link": {
+        "name": "Queqiao-2 S-Band Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 4096,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 65536,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2048,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 1,
+                    "rs_fill_bytes": 3,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
+    },
+    "queqiao2_oqpsk_science_s_link": {
+        "name": "Queqiao-2 QPSK S-Band Science Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 3e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.002
+                }
+            },
+            "frm": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223",
+                    "rs_usecheck": false
+                }
+            },
+            "products": {}
+        }
+    },
+    "queqiao2_bpsk_science_s_link": {
+        "name": "Queqiao-2 BPSK S-Band Science Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 1e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.002
+                }
+            },
+            "frm": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs223",
+                    "rs_usecheck": false
+                }
+            },
+            "products": {}
+        }
+    }
+}

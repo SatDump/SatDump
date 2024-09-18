@@ -1,20 +1,20 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(portaudio_audio_sink)
 
 find_library(PORTAUDIO_LIBRARY portaudio)
 
 if(PORTAUDIO_LIBRARY OR MSVC)
-    message("Building with RtAudio sink")
+    message("Building with PortAudio sink")
     file(GLOB_RECURSE portaudio_audio_sink *.cpp)
     add_library(portaudio_audio_sink SHARED ${portaudio_audio_sink})
 
     if(MSVC)
-        target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio_x64.dll)
+        target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio.dll)
+        install(TARGETS portaudio_audio_sink DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     else()
         target_link_libraries(portaudio_audio_sink PUBLIC satdump_core ${PORTAUDIO_LIBRARY})
+        install(TARGETS portaudio_audio_sink DESTINATION lib/satdump/plugins)
     endif()
-
-    install(TARGETS portaudio_audio_sink DESTINATION lib/satdump/plugins)
 else()
-    message("RtAudio Library could not be found! Not building.")
+    message("PortAudio Library could not be found! Not building.")
 endif()

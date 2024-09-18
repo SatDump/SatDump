@@ -14,6 +14,21 @@ namespace dsp
         // Buffer
         buffer = create_volk_buffer<T>(2 * STREAM_BUFFER_SIZE);
 
+        set_ratio(interpolation, decimation, custom_taps);
+    }
+
+    template <typename T>
+    RationalResamplerBlock<T>::~RationalResamplerBlock()
+    {
+        volk_free(buffer);
+    }
+
+    template <typename T>
+    void RationalResamplerBlock<T>::set_ratio(unsigned interpolation, unsigned decimation, std::vector<float> custom_taps)
+    {
+        d_interpolation = interpolation;
+        d_decimation = decimation;
+
         // Start by reducing the interp and decim by their GCD
         int gcd = std::gcd(interpolation, decimation);
         d_interpolation /= gcd;
@@ -21,14 +36,7 @@ namespace dsp
 
         // Generate taps
         std::vector<float> rtaps = custom_taps.size() > 0 ? custom_taps : firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
-
         pfb.init(rtaps, d_interpolation);
-    }
-
-    template <typename T>
-    RationalResamplerBlock<T>::~RationalResamplerBlock()
-    {
-        volk_free(buffer);
     }
 
     template <typename T>

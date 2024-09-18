@@ -1,7 +1,7 @@
 #include "module_cryosat_siral.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/demuxer.h"
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -9,6 +9,7 @@
 #include <fftw3.h>
 
 #include "common/image/image.h"
+#include "common/image/io.h"
 #include "common/resizeable_buffer.h"
 
 // Return filesize
@@ -40,7 +41,7 @@ namespace cryosat
             uint8_t buffer[1279];
 
             // CCSDS Demuxer
-            ccsds::ccsds_standard::Demuxer ccsdsDemuxer(1101, false, 2, 4);
+            ccsds::ccsds_tm::Demuxer ccsdsDemuxer(1101, false, 2, 4);
 
             logger->info("Demultiplexing and deframing...");
 
@@ -63,7 +64,7 @@ namespace cryosat
                 // Read buffer
                 data_in.read((char *)buffer, 1279);
 
-                int vcid = ccsds::ccsds_standard::parseVCDU(buffer).vcid;
+                int vcid = ccsds::ccsds_tm::parseVCDU(buffer).vcid;
 
                 // std::cout << "VCID " << vcid << std::endl;
 
@@ -124,8 +125,8 @@ namespace cryosat
             logger->info("Writing images.... (Can take a while)");
 
             {
-                image::Image<uint8_t> outputImage(fftImage.buf, 243, lines, 1);
-                WRITE_IMAGE(outputImage, directory + "/SIRAL");
+                image::Image outputImage(fftImage.buf, 8, 243, lines, 1);
+                image::save_img(outputImage, directory + "/SIRAL");
             }
 
             fftImage.destroy();
@@ -135,7 +136,7 @@ namespace cryosat
         {
             ImGui::Begin("CryoSat SIRAL Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

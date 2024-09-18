@@ -85,16 +85,11 @@ void BladeRFSource::open()
 
         for (int i = 0; i < devs_cnt; i++)
         {
-            std::stringstream ss;
-            uint64_t id = 0;
-            ss << devs_list[i].serial;
-            id = std::hash<std::string>{}(ss.str());
-
-            if (id == d_sdr_id)
+            if (std::string(devs_list[i].serial) == d_sdr_id)
             {
                 selected_dev_id = i;
                 if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-                    throw std::runtime_error("Could not open BladeRF device!");
+                    throw satdump_exception("Could not open BladeRF device!");
             }
         }
     }
@@ -139,7 +134,7 @@ void BladeRFSource::start()
     DSPSampleSource::start();
 
     if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[selected_dev_id]) != 0)
-        throw std::runtime_error("Could not open BladeRF device!");
+        throw satdump_exception("Could not open BladeRF device!");
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
@@ -188,10 +183,13 @@ void BladeRFSource::start()
         bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), std::clamp<uint64_t>(current_samplerate, bladerf_range_bandwidth->min, bladerf_range_bandwidth->max), NULL);
 
     // Setup and start streaming
+    // sample_buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value(), 250);
     sample_buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
     sample_buffer_size = (sample_buffer_size / 1024) * 1024;
     if (sample_buffer_size < 1024)
         sample_buffer_size = 1024;
+    logger->trace("BladeRF Buffer size %d", sample_buffer_size);
+
 #ifdef BLADERF_HAS_WIDEBAND
     bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
 #else
@@ -293,7 +291,7 @@ void BladeRFSource::drawControlUI()
 void BladeRFSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 61.44e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t BladeRFSource::get_samplerate()
@@ -305,19 +303,15 @@ std::vector<dsp::SourceDescriptor> BladeRFSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    bladerf_devinfo *devs_list;
+    bladerf_devinfo *devs_list = nullptr;
     int devs_cnt = bladerf_get_device_list(&devs_list);
 
     for (int i = 0; i < devs_cnt; i++)
     {
-        std::stringstream ss;
-        uint64_t id = 0;
-        ss << devs_list[i].serial;
-        id = std::hash<std::string>{}(ss.str());
-        results.push_back({"bladerf", "BladeRF " + ss.str(), id});
+        results.push_back({"bladerf", "BladeRF " + std::string(devs_list[i].serial), std::string(devs_list[i].serial)});
     }
 
-    if (devs_list != NULL && devs_cnt > 0)
+    if (devs_list != nullptr && devs_cnt > 0)
         bladerf_free_device_list(devs_list);
 
     return results;

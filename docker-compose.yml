@@ -1,13 +1,31 @@
-version: '3.8'
 services:
   satdump:
     build:
       context: .
+      args:
+        # default values, override with .env
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
     image: satdump:latest
-    command: 
+    command: ${COMMAND:-bash}
+    init: true
     network_mode: host
+    working_dir: ${WORKDIR:-/srv}
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
     device_cgroup_rules:
       - 'c 189:* rwm'
     devices:
       - '/dev/bus/usb'
+    volumes:
+      - type: 'tmpfs'
+        target: '/tmp'
+      - type: 'bind'  # map working dir to host
+        source: './srv'
+        target: '/srv'
+#      - type: 'bind'  # for X11 usage
+#        source: '/tmp/.X11-unix'  # on Linux
+#        source: '/run/desktop/mnt/host/wslg/.X11-unix'  # on Windows WSL2
+#        target: '/tmp/.X11-unix'
     restart: 'unless-stopped'
+    stop_grace_period: 3s

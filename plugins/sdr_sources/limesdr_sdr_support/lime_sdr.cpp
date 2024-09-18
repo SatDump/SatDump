@@ -115,19 +115,19 @@ void LimeSDRSource::start()
         LMS_GetDeviceList(found_devices);
 
         limeDevice = NULL;
-        LMS_Open(&limeDevice, found_devices[d_sdr_id], NULL);
+        LMS_Open(&limeDevice, found_devices[std::stoi(d_sdr_id)], NULL);
         int err = LMS_Init(limeDevice);
 
         // LimeSuite Bug
         if (err)
         {
             LMS_Close(limeDevice);
-            LMS_Open(&limeDevice, found_devices[d_sdr_id], NULL);
+            LMS_Open(&limeDevice, found_devices[std::stoi(d_sdr_id)], NULL);
             err = LMS_Init(limeDevice);
         }
 
         if (err)
-            throw std::runtime_error("Could not open LimeSDR Device!");
+            throw satdump_exception("Could not open LimeSDR Device!");
 #else
         lime::ConnectionHandle handle;
         int vid, pid;
@@ -141,7 +141,7 @@ void LimeSDRSource::start()
         limeDevice = limeDevice_android;
 
         if (limeDevice == NULL)
-            throw std::runtime_error("Could not open LimeSDR Device!");
+            throw satdump_exception("Could not open LimeSDR Device!");
 #endif
     }
 
@@ -171,7 +171,7 @@ void LimeSDRSource::start()
     limeStreamID = limeStreamID_android;
 
     if (limeStreamID == 0)
-        throw std::runtime_error("Could not open LimeSDR device stream!");
+        throw satdump_exception("Could not open LimeSDR device stream!");
 
     limeStream = limeStreamID;
     limeStream->Start();
@@ -203,6 +203,8 @@ void LimeSDRSource::start()
 
     thread_should_run = true;
     work_thread = std::thread(&LimeSDRSource::mainThread, this);
+
+    set_others(); // LimeSDR Mini 2.0 Fix
 }
 
 void LimeSDRSource::stop()
@@ -305,7 +307,7 @@ void LimeSDRSource::drawControlUI()
 void LimeSDRSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 100e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t LimeSDRSource::get_samplerate()
@@ -330,13 +332,13 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
         std::stringstream ss;
         ss << std::hex << device_info->boardSerialNumber;
         LMS_Close(device);
-        results.push_back({"limesdr", "LimeSDR " + ss.str(), (uint64_t)i});
+        results.push_back({"limesdr", "LimeSDR " + ss.str(), std::to_string(i)});
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path) != -1)
-        results.push_back({"limesdr", "LimeSDR USB", 0});
+        results.push_back({"limesdr", "LimeSDR USB", "0"});
 #endif
 
     return results;

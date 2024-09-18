@@ -13,7 +13,7 @@ namespace xrit
 {
     GOESRecvPublisherModule::GOESRecvPublisherModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                         address(parameters["address"].get<std::string>()),
-                                                                                                                                        port(parameters["port"].get<int>())
+                                                                                                                                        port(parameters["nanomsg_port"].get<int>())
     {
         buffer = new uint8_t[FRAME_SIZE];
     }
@@ -87,14 +87,14 @@ namespace xrit
 
         ImGui::Text("Address  : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, "%s", address.c_str());
+        ImGui::TextColored(style::theme.green, "%s", address.c_str());
 
         ImGui::Text("Port    : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, UITO_C_STR(port));
+        ImGui::TextColored(style::theme.green, UITO_C_STR(port));
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }
@@ -106,7 +106,7 @@ namespace xrit
 
     std::vector<std::string> GOESRecvPublisherModule::getParameters()
     {
-        return {"address", "port"};
+        return {"address", "nanomsg_port"};
     }
 
     std::shared_ptr<ProcessingModule> GOESRecvPublisherModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)

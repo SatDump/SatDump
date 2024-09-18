@@ -23,7 +23,7 @@ namespace metop
             ASCATReader();
             ~ASCATReader();
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getChannelImg(int channel);
+            image::Image getChannelImg(int channel);
             std::vector<std::vector<float>> getChannel(int channel);
         };
     } // namespace avhrr

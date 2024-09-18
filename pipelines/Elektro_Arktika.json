@@ -107,7 +107,8 @@
                     "constellation": "bpsk",
                     "symbolrate": 294000,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02
+                    "pll_bw": 0.02,
+                    "max_sps": 3
                 }
             },
             "cadu": {
@@ -177,17 +178,17 @@
                     "constellation": "oqpsk",
                     "symbolrate": 1.15e6,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.001
+                    "pll_bw": 0.001,
+                    "max_sps": 3
                 }
             },
             "cadu": {
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
+                    "constellation": "oqpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
-                    "oqpsk_mode": true,
                     "rs_i": 4,
                     "rs_type": "rs223",
                     "rs_usecheck": true

@@ -25,7 +25,7 @@ namespace fengyun3
             int lines;
             int imgCount = 0;
             void work(std::vector<uint8_t> &packet);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
         };
     } // namespace virr
 } // namespace fengyun

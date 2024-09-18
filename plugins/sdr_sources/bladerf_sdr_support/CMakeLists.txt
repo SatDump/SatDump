@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(bladerf_sdr_support)
 include(CheckCXXSourceCompiles)
 
@@ -8,6 +8,7 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
     message("Building with BladeRF support")
     file(GLOB_RECURSE bladerf_sdr_support_CPPS *.cpp)
     add_library(bladerf_sdr_support SHARED ${bladerf_sdr_support_CPPS})
+    target_include_directories(bladerf_sdr_support PUBLIC src)
 
     set(BLADERF_WIDEBAND_TEST_SOURCE
         "
@@ -23,6 +24,11 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
         # set(CMAKE_REQUIRED_LIBRARIES bladerf.dll)
         # check_cxx_source_compiles("${BLADERF_WIDEBAND_TEST_SOURCE}" BLADERF_HAVE_WIDEBAND)
         set(BLADERF_HAVE_WIDEBAND 1)
+    elseif(APPLE)
+        target_link_libraries(bladerf_sdr_support PUBLIC satdump_core ${BLADERF_LIBRARY})
+        set(CMAKE_REQUIRED_LIBRARIES ${BLADERF_LIBRARY})
+        # check_cxx_source_compiles("${BLADERF_WIDEBAND_TEST_SOURCE}" BLADERF_HAVE_WIDEBAND)
+        set(BLADERF_HAVE_WIDEBAND 1) # Check does not work with vcpkg; trust it is there
     elseif(ANDROID)
         target_link_libraries(bladerf_sdr_support PUBLIC satdump_core bladerf usb)
         target_include_directories(bladerf_sdr_support PUBLIC ../../../android/deps/libbladerf)
@@ -37,9 +43,11 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
         target_compile_definitions(bladerf_sdr_support PUBLIC BLADERF_HAS_WIDEBAND=1)
     endif()
 
-    target_include_directories(bladerf_sdr_support PUBLIC src)
-
-    install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins)
+    if(MSVC)
+        install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+    else()
+        install(TARGETS bladerf_sdr_support DESTINATION lib/satdump/plugins)
+    endif()
 else()
     message("BladeRF Library could not be found! Not building.")
 endif()

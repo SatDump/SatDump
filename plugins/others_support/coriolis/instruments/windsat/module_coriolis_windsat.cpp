@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
+#include "common/image/io.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -71,8 +72,10 @@ namespace coriolis
 
             for (int i = 0; i < 11; i++)
             {
-                WRITE_IMAGE(readers[i]->getImage1(), directory + "/WindSat-" + std::to_string(i + 1));
-                WRITE_IMAGE(readers[i]->getImage2(), directory + "/WindSat-" + std::to_string(i + 12));
+                auto img = readers[i]->getImage1();
+                image::save_img(img, directory + "/WindSat-" + std::to_string(i + 1));
+                img = readers[i]->getImage2();
+                image::save_img(img, directory + "/WindSat-" + std::to_string(i + 12));
             }
 
             data_in.close();
@@ -82,7 +85,7 @@ namespace coriolis
         {
             ImGui::Begin("Coriolis WindSat Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

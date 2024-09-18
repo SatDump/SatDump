@@ -1,0 +1,42 @@
+{
+    "im1_s_tlm": {
+        "name": "IM-1 S-Band 2.5k TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ] /*,
+            [
+                2,
+                0
+            ]*/
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 2.5e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 30e3
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 1256,
+                    "viterbi_ber_thresold": 0.3,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    }
+}

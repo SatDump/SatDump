@@ -1,3 +1,4 @@
+#define DEFINE_COMPOSITE_UTILS 1
 #include "composite.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
@@ -8,108 +9,18 @@
 #include "common/projection/sat_proj/sat_proj.h"
 #include "resources.h"
 
+#include "io.h"
+
 namespace image
 {
-    struct compo_cfg_t
-    {
-        bool hasOffsets;
-        std::map<std::string, int> offsets;
-        int maxWidth;
-        int maxHeight;
-        std::vector<std::pair<float, float>> image_scales;
-        int img_width;
-        int img_height;
-    };
-
-    template <typename T>
-    compo_cfg_t get_compo_cfg(std::vector<Image<T>> &inputChannels, /*std::vector<std::string> &channelNumbers, */ nlohmann::json &offsets_cfg)
-    {
-        bool hasOffsets = !offsets_cfg.empty();
-        std::map<std::string, int> offsets;
-        if (hasOffsets)
-        {
-            std::map<std::string, int> offsetsStr = offsets_cfg.get<std::map<std::string, int>>();
-            for (std::pair<std::string, int> currentOff : offsetsStr)
-                offsets.emplace(currentOff.first, -currentOff.second);
-        }
-
-        // Compute channel variable names
-        double *channelValues = new double[inputChannels.size()];
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-            channelValues[i] = 0;
-
-        // Get maximum image size, and resize them all to that. Also acts as basic safety
-        int maxWidth = 0, maxHeight = 0;
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-        {
-            if ((int)inputChannels[i].width() > maxWidth)
-                maxWidth = inputChannels[i].width();
-
-            if ((int)inputChannels[i].height() > maxHeight)
-                maxHeight = inputChannels[i].height();
-        }
-
-        std::vector<std::pair<float, float>> image_scales;
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-            image_scales.push_back({float(inputChannels[i].width()) / float(maxWidth), float(inputChannels[i].height()) / float(maxHeight)});
-
-        // Get output width
-        int img_width = maxWidth;
-        int img_height = maxHeight;
-
-        return {hasOffsets,
-                offsets,
-                maxWidth,
-                maxHeight,
-                image_scales,
-                img_width,
-                img_height};
-    }
-
-    template <typename T>
-    inline void get_channel_vals(double *channelValues, std::vector<Image<T>> &inputChannels, std::vector<std::string> &channelNumbers, compo_cfg_t &f, size_t &line, size_t &pixel)
-    {
-        // Set variables and scale to 1.0
-        for (int i = 0; i < (int)inputChannels.size(); i++)
-        {
-            int line_ch = line * f.image_scales[i].first;
-            int pixe_ch = pixel * f.image_scales[i].second;
-
-            // If we have to offset some channels
-            if (f.hasOffsets)
-            {
-                if (f.offsets.count(channelNumbers[i]) > 0)
-                {
-                    int currentPx = pixe_ch + f.offsets[channelNumbers[i]];
-
-                    if (currentPx < 0)
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-                    else if (currentPx >= (int)inputChannels[i].width())
-                    {
-                        channelValues[i] = 0;
-                        continue;
-                    }
-
-                    pixe_ch += f.offsets[channelNumbers[i]] * f.image_scales[i].second;
-                }
-            }
-
-            channelValues[i] = double(inputChannels[i][line_ch * inputChannels[i].width() + pixe_ch]) / double(std::numeric_limits<T>::max());
-        }
-    }
-
     // Generate a composite from channels and an equation
-    template <typename T>
-    Image<T> generate_composite_from_equ(std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
+    Image generate_composite_from_equ(std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
     {
         // Equation parsing stuff
         mu::Parser rgbParser;
         int outValsCnt = 0;
 
-        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -128,7 +39,7 @@ namespace image
         catch (mu::ParserError &e)
         {
             logger->error(e.GetMsg());
-            return Image<T>();
+            return Image();
         }
 
         size_t img_fullch = f.img_width * f.img_height;
@@ -136,7 +47,7 @@ namespace image
         // Output image
         bool isRgb = outValsCnt == 3;
         bool isRgbA = outValsCnt == 4;
-        Image<T> rgb_output(f.img_width, f.img_height, isRgbA ? 4 : (isRgb ? 3 : 1));
+        Image rgb_output(f.img_depth, f.img_width, f.img_height, isRgbA ? 4 : (isRgb ? 3 : 1));
 
         // Utils
         double R = 0;
@@ -149,51 +60,30 @@ namespace image
         {
             for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
             {
-                get_channel_vals(channelValues, inputChannels, channelNumbers, f, line, pixel);
+                get_channel_vals(channelValues, inputChannels, f, line, pixel);
 
                 // Do the math
                 double *rgbOut = rgbParser.Eval(outValsCnt);
 
-                // Get output and scale back
-                R = rgbOut[0] * double(std::numeric_limits<T>::max());
+                // Get output
+                R = rgbOut[0];
                 if (isRgb || isRgbA)
                 {
-                    G = rgbOut[1] * double(std::numeric_limits<T>::max());
-                    B = rgbOut[2] * double(std::numeric_limits<T>::max());
+                    G = rgbOut[1];
+                    B = rgbOut[2];
                 }
                 if (isRgbA)
-                    A = rgbOut[3] * double(std::numeric_limits<T>::max());
-
-                // Clamp
-                if (R < 0)
-                    R = 0;
-
-                if (R > std::numeric_limits<T>::max())
-                    R = std::numeric_limits<T>::max();
-                if (isRgb || isRgbA)
-                {
-                    if (G < 0)
-                        G = 0;
-                    if (G > std::numeric_limits<T>::max())
-                        G = std::numeric_limits<T>::max();
-                    if (B < 0)
-                        B = 0;
-                    if (B > std::numeric_limits<T>::max())
-                        B = std::numeric_limits<T>::max();
-                }
-                if (isRgbA)
-                    if (A > std::numeric_limits<T>::max())
-                        A = std::numeric_limits<T>::max();
+                    A = rgbOut[3];
 
                 // Write output
-                rgb_output[img_fullch * 0 + line * f.img_width + pixel] = R;
+                rgb_output.setf(img_fullch * 0 + line * f.img_width + pixel, rgb_output.clampf(R));
                 if (isRgb || isRgbA)
                 {
-                    rgb_output[img_fullch * 1 + line * f.img_width + pixel] = G;
-                    rgb_output[img_fullch * 2 + line * f.img_width + pixel] = B;
+                    rgb_output.setf(img_fullch * 1 + line * f.img_width + pixel, rgb_output.clampf(G));
+                    rgb_output.setf(img_fullch * 2 + line * f.img_width + pixel, rgb_output.clampf(B));
                 }
                 if (isRgbA)
-                    rgb_output[img_fullch * 3 + line * f.img_width + pixel] = A;
+                    rgb_output.setf(img_fullch * 3 + line * f.img_width + pixel, rgb_output.clampf(A));
             }
 
             if (progress != nullptr)
@@ -205,17 +95,13 @@ namespace image
         return rgb_output;
     }
 
-    template Image<uint8_t> generate_composite_from_equ<uint8_t>(std::vector<Image<uint8_t>>, std::vector<std::string>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_equ<uint16_t>(std::vector<Image<uint16_t>>, std::vector<std::string>, std::string, nlohmann::json, float *);
-
     // Generate a composite from channels and a LUT
-    template <typename T>
-    Image<T> generate_composite_from_lut(std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string lut_path, nlohmann::json offsets_cfg, float *progress)
+    Image generate_composite_from_lut(std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string lut_path, nlohmann::json offsets_cfg, float *progress)
     {
-        Image<T> lut;
-        lut.load_png(lut_path);
+        Image lut;
+        load_png(lut, lut_path);
 
-        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -223,28 +109,42 @@ namespace image
             channelValues[i] = 0;
 
         // Output image
-        Image<T> rgb_output(f.img_width, f.img_height, std::min(3, lut.channels()));
+        int channels = std::min(3, lut.channels());
+        Image rgb_output(lut.depth(), f.img_width, f.img_height, channels);
 
-        // Run though the entire image
-        for (size_t line = 0; line < (size_t)f.img_height; line++)
+        // Run though the entire image - One-channel
+        if (inputChannels.size() == 1)
         {
-            for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
+            for (size_t line = 0; line < (size_t)f.img_height; line++)
             {
-                get_channel_vals(channelValues, inputChannels, channelNumbers, f, line, pixel);
-
-                // Apply the LUT
-                if (inputChannels.size() == 1) // 1D Case
+                for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
                 {
-                    int position = channelValues[0] * lut.width();
+                    get_channel_vals(channelValues, inputChannels, f, line, pixel);
 
+                    // Apply the LUT
+                    int position = channelValues[0] * lut.width();
                     if (position >= (int)lut.width())
                         position = (int)lut.width() - 1;
 
-                    for (int c = 0; c < std::min(3, lut.channels()); c++)
-                        rgb_output.channel(c)[line * f.img_width + pixel] = lut.channel(c)[position];
+                    for (int c = 0; c < channels; c++)
+                        rgb_output.set(c, pixel, line, lut.get(c, position));
                 }
-                else if (inputChannels.size() == 2) // 2D Case
+
+                if (progress != nullptr)
+                    *progress = (float)line / (float)f.img_height;
+            }
+        }
+
+        // Run though the entire image - Two-channel
+        else if (inputChannels.size() == 2)
+        {
+            for (size_t line = 0; line < (size_t)f.img_height; line++)
+            {
+                for (size_t pixel = 0; pixel < (size_t)f.img_width; pixel++)
                 {
+                    get_channel_vals(channelValues, inputChannels, f, line, pixel);
+
+                    // Apply the LUT
                     int position_x = channelValues[0] * lut.width();
                     int position_y = channelValues[1] * lut.height();
 
@@ -254,24 +154,21 @@ namespace image
                     if (position_y >= (int)lut.height())
                         position_y = (int)lut.height() - 1;
 
-                    for (int c = 0; c < std::min(3, lut.channels()); c++)
-                        rgb_output.channel(c)[line * f.img_width + pixel] = lut.channel(c)[position_y * lut.width() + position_x];
+                    for (int c = 0; c < channels; c++)
+                        rgb_output.set(c, pixel, line, lut.get(c, position_x, position_y));
 
                     // logger->critical("%d, %d, %d", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);
                 }
-            }
 
-            if (progress != nullptr)
-                *progress = (float)line / (float)f.img_height;
+                if (progress != nullptr)
+                    *progress = (float)line / (float)f.img_height;
+            }
         }
 
         delete[] channelValues;
 
         return rgb_output;
     }
-
-    template Image<uint8_t> generate_composite_from_lut<uint8_t>(std::vector<Image<uint8_t>>, std::vector<std::string>, std::string, nlohmann::json, float *);
-    template Image<uint16_t> generate_composite_from_lut<uint16_t>(std::vector<Image<uint16_t>>, std::vector<std::string>, std::string, nlohmann::json, float *);
 
     void bindCompoCfgType(sol::state &lua)
     {
@@ -287,10 +184,9 @@ namespace image
     }
 
     // Generate a composite from channels and a Lua script
-    template <typename T>
-    Image<T> generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image<T>> inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, std::vector<double> *final_timestamps, float *progress)
+    Image generate_composite_from_lua(satdump::ImageProducts *img_pro, std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string lua_path, nlohmann::json lua_vars, nlohmann::json offsets_cfg, std::vector<double> *final_timestamps, float *progress)
     {
-        compo_cfg_t f = get_compo_cfg(inputChannels, /*channelNumbers, */ offsets_cfg);
+        compo_cfg_t f = get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         // Compute channel variable names
         double *channelValues = new double[inputChannels.size()];
@@ -298,7 +194,7 @@ namespace image
             channelValues[i] = 0;
 
         // Output image
-        Image<T> rgb_output; //(f.img_width, f.img_height, 3);
+        Image rgb_output; //(f.img_width, f.img_height, 3);
 
         try
         {
@@ -315,10 +211,10 @@ namespace image
             lua_utils::bindEquProjType(lua);
 
             lua["has_sat_proj"] = [img_pro]()
-            { return img_pro->has_proj_cfg() && img_pro->has_tle() && img_pro->has_timestamps; };
+            { return img_pro->has_proj_cfg() /*&& img_pro->has_tle() && img_pro->has_timestamps*/; };
             if (final_timestamps != nullptr)
                 lua["get_sat_proj"] = [img_pro, &final_timestamps]()
-                { return satdump::get_sat_proj(img_pro->get_proj_cfg(), img_pro->get_tle(), *final_timestamps); };
+                { return satdump::get_sat_proj(img_pro->get_proj_cfg(), img_pro->get_tle(), *final_timestamps, true); };
             lua["get_resource_path"] = resources::getResourcePath;
 
             lua.script_file(lua_path);
@@ -326,8 +222,10 @@ namespace image
             lua["lua_vars"] = lua_utils::mapJsonToLua(lua, lua_vars);
 
             int n_ch = lua["init"]().get<int>();
+            if (n_ch == 0)
+                return rgb_output;
 
-            rgb_output.init(f.img_width, f.img_height, n_ch);
+            rgb_output.init(f.img_depth, f.img_width, f.img_height, n_ch);
 
             lua["rgb_output"] = rgb_output;
             lua["compo_cfg"] = f;
@@ -337,12 +235,14 @@ namespace image
                     return;
                 if (x >= rgb_output.width())
                     return;
-                rgb_output.channel(c)[y * rgb_output.width() + x] = rgb_output.clamp(v * double(std::numeric_limits<T>::max()));
+                rgb_output.setf(c, x, y, rgb_output.clampf(v));
             };
             lua["get_channel_value"] = [channelValues](int x)
             { return channelValues[x]; };
             lua["get_channel_values"] = [channelValues, &inputChannels, &channelNumbers, &f](size_t x, size_t y)
-            { get_channel_vals(channelValues, inputChannels, channelNumbers, f, y, x); };
+            { get_channel_vals(channelValues, inputChannels, f, y, x); };
+            lua["get_channel_image"] = [&inputChannels](int ch)
+            { return inputChannels[ch]; };
             lua["get_calibrated_image"] = [img_pro](int ch, std::string type, float min, float max)
             { 
                 satdump::ImageProducts::calib_vtype_t ctype = satdump::ImageProducts::CALIB_VTYPE_AUTO;
@@ -373,7 +273,4 @@ namespace image
 
         return rgb_output;
     }
-
-    template Image<uint8_t> generate_composite_from_lua<uint8_t>(satdump::ImageProducts *, std::vector<Image<uint8_t>>, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
-    template Image<uint16_t> generate_composite_from_lua<uint16_t>(satdump::ImageProducts *, std::vector<Image<uint16_t>>, std::vector<std::string>, std::string, nlohmann::json, nlohmann::json, std::vector<double> *, float *);
 }

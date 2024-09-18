@@ -6,6 +6,7 @@
 #include "imgui/imgui_image.h"
 #include "common/image/j2k_utils.h"
 #include <filesystem>
+#include "common/image/io.h"
 
 namespace fy4
 {
@@ -74,43 +75,48 @@ namespace fy4
                             }
                         }
 
-                        image::Image<uint16_t>
-                            img2 = image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset],
-                                                                 file.lrit_data.size() - primary_header.total_header_length - offset);
+                        image::Image img2 = image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset],
+                                                                          file.lrit_data.size() - primary_header.total_header_length - offset);
 
                         // Rely on the background for bit depth,
                         // as apparently nothing else works expected.
                         int max_val = 0;
                         for (int i = 0; i < (int)img2.size(); i++)
-                            if (img2[i] > max_val)
-                                max_val = img2[i];
+                            if (img2.get(i) > max_val)
+                                max_val = img2.get(i);
 
-                        image::Image<uint8_t> img = img2.to8bits();
+                        if (img2.depth() != 8)
+                            img2 = img2.to8bits();
+                        image::Image img = img2;
                         if (max_val == 255) // LRIT, 4-bits
                         {
                             for (int i = 0; i < (int)img.size(); i++)
                             {
-                                int v = img2[i] << 4;
+                                int v = img2.get(i) << 4;
                                 if (v > 255)
                                     v = 255;
-                                img[i] = v;
+                                img.set(i, v);
                             }
                         }
                         else // HRIT full 10-bits
                         {
                             for (int i = 0; i < (int)img.size(); i++)
                             {
-                                int v = img2[i] >> 4;
+                                int v = img2.get(i) >> 4;
                                 if (v > 255)
                                     v = 255;
-                                img[i] = v;
+                                img.set(i, v);
                             }
                         }
 
                         if (img.width() < image_structure_record.columns_count || img.height() < image_structure_record.lines_count)
-                            img.init(image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
+                            img.init(8, image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
+
+                        if (img.depth() != 8)
+                            logger->error("ELEKTRO xRIT JPEG Depth should be 8!");
+
                         file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
-                        file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)&img[0], (uint8_t *)&img[img.height() * img.width()]);
+                        file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.height() * img.width());
                     }
 
                     if (!std::filesystem::exists(directory + "/IMAGES"))
@@ -153,7 +159,7 @@ namespace fy4
                                 current_filename = image_id;
 
                                 wip_img->imageStatus = SAVING;
-                                segmentedDecoder.image.save_img(directory + "/IMAGES/" + current_filename);
+                                image::save_img(segmentedDecoder.image, directory + "/IMAGES/" + current_filename);
                                 wip_img->imageStatus = RECEIVING;
                             }
 
@@ -163,7 +169,8 @@ namespace fy4
                                                                          image_id);
                         }
 
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        segmentedDecoder.pushSegment(image, image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
 
                         // If the UI is active, update texture
                         if (wip_img->textureID > 0)
@@ -171,9 +178,9 @@ namespace fy4
                             // Downscale image
                             wip_img->img_height = 1000;
                             wip_img->img_width = 1000;
-                            image::Image<uint8_t> imageScaled = segmentedDecoder.image;
+                            image::Image imageScaled = segmentedDecoder.image;
                             imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                            uchar_to_rgba(imageScaled.data(), wip_img->textureBuffer, wip_img->img_height * wip_img->img_width);
+                            image::image_to_rgba(imageScaled, wip_img->textureBuffer);
                             wip_img->hasToUpdate = true;
                         }
 
@@ -182,7 +189,7 @@ namespace fy4
                             current_filename = image_id;
 
                             wip_img->imageStatus = SAVING;
-                            segmentedDecoder.image.save_img(directory + "/IMAGES/" + current_filename);
+                            image::save_img(segmentedDecoder.image, directory + "/IMAGES/" + current_filename);
                             segmentedDecoder = SegmentedLRITImageDecoder();
                             wip_img->imageStatus = IDLE;
                         }
@@ -194,8 +201,8 @@ namespace fy4
                         if (!std::filesystem::exists(directory + "/IMAGES/" + img_type))
                             std::filesystem::create_directory(directory + "/IMAGES/" + img_type);
 
-                        image::Image<uint8_t> image(&file.lrit_data[primary_header.total_header_length], image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                        image.save_img(directory + "/IMAGES/" + img_type + "/" + image_id);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image::save_img(image, directory + "/IMAGES/" + img_type + "/" + image_id);
                     }
                 }
                 else

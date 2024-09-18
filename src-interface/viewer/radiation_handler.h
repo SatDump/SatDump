@@ -7,6 +7,7 @@
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "libs/ctpl/ctpl_stl.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
@@ -22,7 +23,7 @@ namespace satdump
         int selected_visualization_id = 0;
 
         // Map viz
-        image::Image<uint16_t> map_img;
+        image::Image map_img;
         int select_channel_image_id = 0;
         std::string select_channel_image_str;
         ImageViewWidget image_view;
@@ -42,17 +43,12 @@ namespace satdump
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<RadiationViewerHandler>(); }
 
         // Projections
-        bool use_draw_proj_algo = false;
-        bool projection_ready = false, should_project = false;
-        image::Image<uint16_t> projected_img;
+        image::Image projected_img;
 
         bool canBeProjected();
-        bool hasProjection();
-        bool shouldProject();
-        void updateProjection(int width, int height, nlohmann::json settings, float *progess);
-        image::Image<uint16_t> &getProjection();
-        unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
-        void setShouldProject(bool proj) { should_project = proj; }
+        void addCurrentToProjections();
+
+        widgets::TimedMessage proj_notif;
 
         ctpl::thread_pool handler_thread_pool = ctpl::thread_pool(1);
         std::mutex async_image_mutex;

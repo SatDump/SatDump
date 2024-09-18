@@ -6,16 +6,18 @@
 #include "logger.h"
 #include "common/image/image.h"
 #include "common/image/jpeg_utils.h"
+#include "common/image/io.h"
+#include "common/image/processing.h"
 #include "resources.h"
 #include "common/ccsds/ccsds_time.h"
 
-#define WRITE_IMAGE_LOCAL(image, path)            \
-{                                                 \
-    std::string newPath = path;                   \
-    image.append_ext(&newPath);                   \
-    image.save_img(std::string(newPath).c_str()); \
-    all_images.push_back(newPath);                \
-}
+#define WRITE_IMAGE_LOCAL(img, path)                        \
+    {                                                       \
+        std::string newPath = path;                         \
+        image::append_ext(&newPath);                        \
+        image::save_img(img, std::string(newPath).c_str()); \
+        all_images.push_back(newPath);                      \
+    }
 
 namespace proba
 {
@@ -60,24 +62,19 @@ namespace proba
 
             int &currentFrameCount = currentOuts[timestamp].first;
             std::vector<uint8_t> &currentOutVec = currentOuts[timestamp].second.second;
-
-            if (currentFrameCount == 0)
-                currentOutVec.insert(currentOutVec.end(), &packet.payload[14 + 78], &packet.payload[14 + 78 + 65530 - 14]);
-            else
-                currentOutVec.insert(currentOutVec.end(), &packet.payload[14], &packet.payload[14 + 65530 - 14]);
-
+            currentOutVec.insert(currentOutVec.end(), &packet.payload[currentFrameCount == 0 ? 14 + 78 : 14], &packet.payload.back());
             currentFrameCount++;
         }
 
         void SWAPReader::save()
         {
             // This is temporary code until a resource system is implemented everywhere.
-            image::Image<uint8_t> adc_mask, ffc_mask;
+            image::Image adc_mask, ffc_mask;
             bool masks_found = false;
             if (resources::resourceExists("proba/swap/adc_mask.png") && resources::resourceExists("proba/swap/ffc_mask.png"))
             {
-                adc_mask.load_png(resources::getResourcePath("proba/swap/adc_mask.png"));
-                ffc_mask.load_png(resources::getResourcePath("proba/swap/ffc_mask.png"));
+                image::load_png(adc_mask, resources::getResourcePath("proba/swap/adc_mask.png"));
+                image::load_png(ffc_mask, resources::getResourcePath("proba/swap/ffc_mask.png"));
                 masks_found = true;
             }
             else
@@ -93,7 +90,7 @@ namespace proba
 
                 logger->info("Decompressing " + filename + "...");
 
-                image::Image<uint8_t> img = image::decompress_jpeg(currentOutVec.data(), currentOutVec.size());
+                image::Image img = image::decompress_jpeg(currentOutVec.data(), currentOutVec.size());
 
                 if (img.size() == 0)
                 {
@@ -106,14 +103,14 @@ namespace proba
                     for (size_t i = 0; i < img.height() * img.width(); i++)
                     {
                         // This was checked against official Proba-2 data
-                        img[i] = std::max<float>(0, img[i] - adc_mask[i] * 2.8); // ADC Bias correction
-                        img[i] = std::max<float>(0, img[i] - ffc_mask[i] * 2.8); // Flat field correction
+                        img.setf(i, std::max<float>(0, img.getf(i) - adc_mask.getf(i) * 2.8)); // ADC Bias correction
+                        img.setf(i, std::max<float>(0, img.getf(i) - ffc_mask.getf(i) * 2.8)); // Flat field correction
                     }
                 }
 
                 // Despeckle
-                img.simple_despeckle(20);
-                img.append_ext(&extension);
+                image::simple_despeckle(img, 20);
+                image::append_ext(&extension);
                 if (std::filesystem::exists(output_folder + "/" + filename + extension))
                 {
                     int i = 0;

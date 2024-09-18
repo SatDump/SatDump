@@ -7,6 +7,7 @@
 #include <memory>
 #include "nlohmann/json_utils.h"
 #include "format_notated.h"
+#include "core/exception.h"
 
 namespace dsp
 {
@@ -14,7 +15,7 @@ namespace dsp
     {
         std::string source_type;
         std::string name;
-        uint64_t unique_id;
+        std::string unique_id;
 
         bool remote_ok = true;
 
@@ -28,7 +29,13 @@ namespace dsp
         std::shared_ptr<dsp::stream<complex_t>> output_stream;
         nlohmann::json d_settings;
         uint64_t d_frequency;
-        uint64_t d_sdr_id;
+        std::string d_sdr_id;
+
+    protected:
+        inline int calculate_buffer_size_from_samplerate(int samplerate, int buffer_per_sec = 60, int blocksize = 512)
+        {
+            return std::min<int>(ceil((double)samplerate / double(buffer_per_sec * blocksize)) * blocksize, dsp::STREAM_BUFFER_SIZE);
+        }
 
     public:
         virtual void open() = 0;                                                              // Open the device, source, etc, but don't start the stream yet

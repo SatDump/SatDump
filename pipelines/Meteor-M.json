@@ -73,6 +73,12 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": false,
+                "name": "Fill Missing Data",
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
             }
         },
         "work": {
@@ -82,7 +88,7 @@
                     "constellation": "qpsk",
                     "symbolrate": 72e3,
                     "rrc_taps": 31,
-                    "rrc_alpha": 0.6,
+                    "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
             },
@@ -93,7 +99,8 @@
             },
             "products": {
                 "meteor_msumr_lrpt": {
-                    "m2x_mode": false
+                    "m2x_mode": false,
+                    "max_fill_lines": 50
                 }
             }
         }
@@ -124,6 +131,18 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "rs_usecheck": {
+                "type": "bool",
+                "value": true,
+                "name": "Use RS Check",
+                "description": "Discards data that fails the Reed-Solomon check\n\nIt is strongly recommended to leave this on - unless the satellite\nis transmitting bad RS codes, which may happen from time to time."
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": false,
+                "name": "Fill Missing Data",
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
             }
         },
         "work": {
@@ -132,7 +151,7 @@
                 "psk_demod": {
                     "constellation": "oqpsk",
                     "symbolrate": 72e3,
-                    "rrc_alpha": 0.6,
+                    "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
             },
@@ -141,8 +160,7 @@
                     "diff_decode": true
                 }*/
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_mode": true,
+                    "constellation": "oqpsk",
                     "nrzm": true,
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -156,7 +174,8 @@
             },
             "products": {
                 "meteor_msumr_lrpt": {
-                    "m2x_mode": true
+                    "m2x_mode": true,
+                    "max_fill_lines": 50
                 }
             }
         }
@@ -187,6 +206,12 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": false,
+                "name": "Fill Missing Data",
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
             }
         },
         "work": {
@@ -195,7 +220,7 @@
                 "psk_demod": {
                     "constellation": "oqpsk",
                     "symbolrate": 80e3,
-                    "rrc_alpha": 0.6,
+                    "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
             },
@@ -210,19 +235,33 @@
             },
             "products": {
                 "meteor_msumr_lrpt": {
-                    "m2x_mode": true
+                    "m2x_mode": true,
+                    "max_fill_lines": 50
                 }
             }
         }
     },
     // TEST
-    "meteor_m_dump_narrow": {
-        "name": "METEOR-M Narrow Dump (WIP!)",
+    "meteor_m_mtvza_dump": {
+        "name": "METEOR-M MTVZA Dump (Narrow BPSK)",
         "live": false,
         "frequencies": [],
         "parameters": {
-            "samplerate": {
-                "value": 1e6
+            "satellite_number": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "METEOR Satellite",
+                "options": [
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Please select the satellite being received!"
+            },
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
             }
         },
         "work": {
@@ -237,20 +276,37 @@
                 }
             },
             "frm": {
-                "meteor_dump_decoder": {}
+                "meteor_xband_decoder": {
+                    "instrument_type": "mtvza"
+                }
             },
             "products": {
-                "meteor_dump_instruments": {}
+                "meteor_xband_instruments": {
+                    "instrument_type": "mtvza"
+                }
             }
         }
     },
-    "meteor_m_dump_wide": {
-        "name": "METEOR-M Wide Dump (WIP!)",
+    "meteor_m_kmss_qpsk_dump": {
+        "name": "METEOR-M KMSS Dump (Wide QPSK)",
         "live": false,
         "frequencies": [],
         "parameters": {
-            "samplerate": {
-                "value": 1e6
+            "satellite_number": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "METEOR Satellite",
+                "options": [
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Please select the satellite being received!"
+            },
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
             }
         },
         "work": {
@@ -264,7 +320,59 @@
                     "pll_bw": 0.004
                 }
             },
-            "frm": {}
+            "frm": {
+                "meteor_qpsk_kmss_decoder": {}
+            },
+            "products": {
+                "meteor_xband_instruments": {
+                    "instrument_type": "kmss_bpsk"
+                }
+            }
+        }
+    },
+    "meteor_m_kmss_bpsk_db": {
+        "name": "METEOR-M KMSS DB (Wide BPSK)",
+        "live": false,
+        "frequencies": [],
+        "parameters": {
+            "satellite_number": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "METEOR Satellite",
+                "options": [
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Please select the satellite being received!"
+            },
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 61.44e6,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {
+                "meteor_xband_decoder": {
+                    "instrument_type": "kmss_bpsk"
+                }
+            },
+            "products": {
+                "meteor_xband_instruments": {
+                    "instrument_type": "kmss_bpsk"
+                }
+            }
         }
     }
 }

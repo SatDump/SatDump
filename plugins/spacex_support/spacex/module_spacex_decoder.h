@@ -14,7 +14,7 @@ namespace spacex
         // Read buffer
         int8_t *buffer;
 
-        ccsds::ccsds_standard::CADUDeframer deframer;
+        ccsds::ccsds_tm::CADUDeframer deframer;
 
         uint8_t rsWorkBuffer[255];
         int errors[5];

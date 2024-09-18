@@ -46,37 +46,37 @@ Quick-Start :
 ```
 Usage : satdump [pipeline_id] [input_level] [input_file] [output_file_or_directory] [additional options as required]
 Extra options (examples. Any parameter used in modules can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8] --dc_block --iq_swap
 Sample command :
-satdump metop_ahrpt baseband /home/user/metop_baseband.s16 metop_output_directory --samplerate 6e6 --baseband_format s16
+satdump metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format cs16
 ```
 
-You can find a list of Satellite pipelines and their parameters [Here](docs/Satellite-pipelines.md).
+You can find a list of Satellite pipelines and their parameters [Here](https://docs.satdump.org/pipelines.html).
 
 ### Live processing
 
 ```
 Usage : satdump live [pipeline_id] [output_file_or_directory] [additional options as required]
 Extra options (examples. Any parameter used in modules or sources can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/w8] --dc_block --iq_swap
   --source [airspy/rtlsdr/etc] --gain 20 --bias
 As well as --timeout in seconds
 Sample command :
 satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
 ```
 
-You can find a list of all SDR Options [Here](docs/SDR-Options.md). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
+You can find a list of all SDR Options [Here](https://docs.satdump.org/sdr_options.html). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
 
 ### Recording
 
 ```
 Usage : satdump record [output_baseband (without extension!)] [additional options as required]
 Extra options (examples. Any parameter used in sources can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8/w16] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8/w16] --dc_block --iq_swap
   --source [airspy/rtlsdr/etc] --gain 20 --bias
 As well as --timeout in seconds
 Sample command :
-satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
+satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780 --baseband_format cf32
 ```
 
 # Building / Installing
@@ -86,75 +86,38 @@ The fastest way to get started is to head over to the [Releases](https://github.
 
 Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
 
-For compilation information, see the dedicated documentation [here](/docs/Building-Windows.md). *Note : Mingw builds are NOT supported, VOLK will not work.*
+For compilation information, see the dedicated documentation [here](https://docs.satdump.org/build_windows.html). *Note : Mingw builds are NOT supported, VOLK will not work.*
 
 ### macOS
-Dependency-free Intel (x64) macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
-
-While those will work for Apple Silicon (M1/M2) Macs, it is NOT recommended as performance will suffer greatly compared to natively-compiled builds. Pre-compiled ARM/Universal builds are planned.
+Dependency-free macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
 
 General build instructions (Brew and XCode command line tools required)
 
 ```bash
-# Install dependencies
-brew install cmake volk jpeg libpng glfw airspy rtl-sdr hackrf mbedtls pkg-config libomp dylibbundler portaudio
+# Install build tools
+brew install cmake dylibbundler pkg-config libtool autoconf automake meson
 
-# On Apple Silicon also run
-brew link --force libomp
+# Clone SatDump
+git clone https://github.com/SatDump/SatDump.git && cd SatDump
 
-# Build and install libfftw3 to work around issue with brew version
-wget http://www.fftw.org/fftw-3.3.9.tar.gz
-tar xf fftw-3.3.9.tar.gz
-rm fftw-3.3.9.tar.gz
-cd fftw-3.3.9
-mkdir build && cd build
+# Build dependencies
+./macOS/Configure-vcpkg.sh
 
-# For Intel Macs
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=true -DENABLE_SSE2=true -DENABLE_AVX=true -DENABLE_AVX2=true ..
-
-# For Apple Silicon Macs
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=false -DENABLE_FLOAT=true -DENABLE_THREADS=true -DENABLE_SSE=false -DENABLE_SSE2=false -DENABLE_AVX=false -DENABLE_AVX2=false ..
-
-make
-sudo make install
-cd ../..
-
-# Build and install nng since the brew version does not support TLS
-git clone -b v1.6.0 https://github.com/nanomsg/nng
-cd nng
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=ON ..
-make -j`nproc`
-sudo make install
-cd ../..
-
-# Build and install airspyhf
-git clone https://github.com/airspy/airspyhf.git
-cd airspyhf
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j`nproc`
-sudo make install
-cd ../..
-
-# Finally, SatDump
-git clone https://github.com/altillimity/satdump.git
-cd satdump
-mkdir build && cd build
+# Finally, build.
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j`nproc`
+mkdir build && cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=osx-satdump ..
+make -j$(sysctl -n hw.logicalcpu)
 
-# To run without installing
+# To run without bundling
 ln -s ../pipelines .        # Symlink pipelines so it can run
 ln -s ../resources .        # Symlink resources so it can run
 ln -s ../satdump_cfg.json . # Symlink settings so it can run
+./satdump-ui
 
-# To install system-wide
-sudo make install
-
-# Make an app bundle (to add to your /Applications folder)
+# Make an app bundle (to add to your /Applications folder). Saves to build/MacApp, and
+# a .dmg is created as well. 'make install' is not supported.
 ../macOS/bundle.sh
 ```
 
@@ -162,37 +125,68 @@ sudo make install
 
 On Linux, building from source is recommended, but builds are provided for x64-based Ubuntu distributions. Here are some generic (Debian-oriented) build instructions.
 
+#### Install Dependencies
 ```bash
 # Install dependencies on Debian-based systems:
-sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libvolk2-dev libpng-dev                   # Core dependencies. If libvolk2-dev is not available, use libvolk1-dev
-sudo apt install libnng-dev                                                                                   # If this package is not found, follow build instructions below for NNG
-sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev                                    # All libraries required for live processing (optional)
-sudo apt install libglfw3-dev                                                                                 # Only if you want to build the GUI Version (optional)
-sudo apt install libzstd-dev                                                                                  # Only if you want to build with ZIQ Recording compression 
-(optional)
-sudo apt install libomp-dev                                                                                   # Shouldn't be required in general, but in case you have errors with OMP
-sudo apt install ocl-icd-opencl-dev                                                                           # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
-sudo apt install intel-opencl-icd                                                                             # Optional, enables OpenCL for Intel Integrated Graphics
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
+                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev
+sudo apt install libvolk-dev                                                      # If this package is not found, use libvolk2-dev or libvolk1-dev
+sudo apt install libnng-dev                                                       # If this package is not found, follow build instructions below for NNG
+
+# (Optional)
+sudo apt install libglfw3-dev zenity                                              # Only if you want to build the GUI Version
+sudo apt install portaudio19-dev                                                  # Only if you want audio output
+sudo apt install libzstd-dev                                                      # Only if you want to build with ZIQ Recording compression
+sudo apt install librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev        # All libraries required for live processing
+sudo apt install libad9361-dev libiio-dev                                         # For ADALM-Pluto, PlutoPlus, AntSDR and other SDRs based on Analog AD9361
+sudo apt install libbladerf-dev                                                   # For BladeRF
+sudo apt install libomp-dev                                                       # Shouldn't be required in general, but in case you have errors with OMP
+sudo apt install ocl-icd-opencl-dev                                               # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
+sudo apt install intel-opencl-icd                                                 # Enables OpenCL for Intel Integrated Graphics
+sudo apt install mesa-opencl-icd                                                  # For AMD Radeon cards *BEFORE series 5000* (e.g. RX480/580...). For newer cards, please install the official AMD drivers.
+
+# One-liner to install all dependencies:
+sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
+                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev libvolk-dev libnng-dev \
+                 libglfw3-dev zenity portaudio19-dev libzstd-dev librtlsdr-dev libhackrf-dev \
+                 libairspy-dev libairspyhf-dev libad9361-dev libiio-dev libbladerf-dev libomp-dev \
+                 ocl-icd-opencl-dev intel-opencl-icd mesa-opencl-icd
+                
 
 # Install dependencies on Red-Hat-based systems:
-sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel
-sudo dnf install nng-devel
-sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel
-sudo dnf install glfw-devel
-sudo dnf install libzstd-devel
-(optional)
-sudo dnf install libomp-devel
-sudo dnf install ocl-icd                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
-sudo dnf install intel-opencl                                                                                 # Optional, enables OpenCL for Intel Integrated Graphics
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel \
+                 libtiff-devel nng-devel curl-devel
 
-# Install dependencies on Alpine-based systems:
-sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev                                       # Adding the testing repository is required for libvolk-dev
+# (Optional)
+sudo dnf install glfw-devel zenity                                                # Only if you want to build the GUI Version
+sudo dnf install portaudio-devel                                                  # Only if you want audio output
+sudo dnf install libzstd-devel                                                    # Only if you want to build with ZIQ Recording compression
+sudo dnf install rtl-sdr-devel hackrf-devel airspyone_host-devel                  # All libraries required for live processing
+sudo dnf install libomp-devel                                                     # Shouldn't be required in general, but in case you have errors with OMP
+sudo dnf install ocl-icd                                                          # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
+sudo dnf install intel-opencl                                                     # Enables OpenCL for Intel Integrated Graphics
+
+# One-liner to install all dependencies:
+
+sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel \
+                 libtiff-devel nng-devel curl-devel glfw-devel zenity portaudio-devel \
+                 libzstd-devel rtl-sdr-devel hackrf-devel airspyone_host-devel libomp-devel \
+                 ocl-icd intel-opencl
+
+
+# Install dependencies on Alpine-based systems.
+# Adding the testing repository is required for libvolk-dev.
 # You need to build libnng from source, see below.
-sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev
-sudo apk add glfw-dev
-sudo apk add zstd-dev
-(optional)
-sudo apk add opencl-dev                                                                                      # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
+sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev \
+         jemalloc-dev tiff-dev curl-dev
+
+# (Optional)
+sudo apk add glfw-dev zenity                                                      # Only if you want to build the GUI Version
+sudo apk add portaudio-dev                                                        # Only if you want audio output
+sudo apk add zstd-dev                                                             # Only if you want to build with ZIQ Recording compression
+sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev             # All libraries required for live processing
+sudo apk add opencl-dev                                                           # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
+
 
 # If libnng-dev is not available, you will have to build it from source
 git clone https://github.com/nanomsg/nng.git
@@ -203,10 +197,12 @@ make -j4
 sudo make install
 cd ../..
 rm -rf nng
+```
 
-# Finally, SatDump
-git clone https://github.com/altillimity/satdump.git
-cd satdump
+#### Build SatDump
+```
+git clone https://github.com/SatDump/SatDump.git
+cd SatDump
 mkdir build && cd build
 # If you do not want to build the GUI Version, add -DBUILD_GUI=OFF to the command
 # If you want to disable some SDRs, you can add -DPLUGIN_HACKRF_SDR_SUPPORT=OFF or similar
@@ -227,7 +223,12 @@ sudo make install
 
 ### Android
 
-On Android, the preferred source is F-Droid - [https://f-droid.org/en/packages/org.satdump.SatDump/](https://f-droid.org/en/packages/org.satdump.SatDump/).   
+On Android, the preferred source is F-Droid.  
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/org.satdump.SatDump)
+
 
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.  
 
@@ -238,3 +239,50 @@ Supported SDR devices are :
 - AirspyHF
 - LimeSDR Mini
 - HackRF
+
+
+### Docker
+
+Building and running under docker is a nice way to separate the build environment and libraries from the host OS.
+The build process is a multistage build that uses two images, one with the -dev packages and another for the runtime.
+This means that the runtime image can be kept smaller, although the disk space is still needed to complete the build.
+
+To match the system user for the shared files get the same owner, set these in `.env` before building the image.
+The user inside the container will always be named `satdump`, but the uid and gid will match the system user.
+
+```bash
+# set the current uid and gid 
+printf "HOST_UID: $(id -u)\nHOST_GID: $(id -g)\n" > .env
+
+# create the shared directory
+mkdir -p srv
+
+# Build the images with compose, 8 parallel
+docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
+
+# Launch a shell inside the container/service
+docker compose run --rm -it satdump
+```
+
+The command that is started inside the container can either be specified at the end on the commandline mentioned above, 
+or put in the `.env` with for example `COMMAND: satdump_sdr_server`. If you want to run the sdr server in the background
+and have it start automatically on boot, simply launch the container with `docker compose up -d` and check the logs with
+`docker compose logs -f`
+
+#### X11 under docker
+
+To use the `satdump-ui` under docker you need to make a few changes.
+It is possible to run this on WSL2 as well, change the source to `/run/desktop/mnt/host/wslg/.X11-unix` instead.
+In the [docker-compose.yml](docker-compose.yml) you need to uncomment a few lines and make it looks like this:
+```yaml
+      - type: 'bind'
+        source: '/tmp/.X11-unix'
+        target: '/tmp/.X11-unix'
+```
+
+If the user in the container is not authorized for X11, you will probably get this error message:
+`Authorization required, ...`
+This is due to the ACL controlling access to your screen.
+There's several ways to solve this, a few very broad and insecure, but the following should be acceptable on a non-shared system.
+
+On the host, run: `xhost +local:docker` , then to start the ui: `docker compose run --rm -it satdump satdump-ui`

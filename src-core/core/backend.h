@@ -6,6 +6,9 @@
 
 namespace backend
 {
+	SATDUMP_DLL extern float device_scale;
+
+	SATDUMP_DLL extern std::function<void()> rebuildFonts;
 	SATDUMP_DLL extern std::function<void(int, int)> setMousePos;
 	SATDUMP_DLL extern std::function<std::pair<int, int>()> beginFrame;
 	SATDUMP_DLL extern std::function<void()> endFrame;

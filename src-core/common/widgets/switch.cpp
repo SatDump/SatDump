@@ -26,8 +26,9 @@ void ToggleButton(const char* str_id, int* v)
     }
     int off = 2;
 
-    draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), IM_COL32(35, 37, 38, 255), 2);
-    draw_list->AddRectFilled(ImVec2(p.x + t * height + off, p.y + off), ImVec2(p.x + (t + 1) * height - off, p.y + height - off),  IM_COL32(61, 133, 224, 255), 2);
+    draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]), 2);
+    draw_list->AddRectFilled(ImVec2(p.x + t * height + off, p.y + off), ImVec2(p.x + (t + 1) * height - off, p.y + height - off),
+        ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_SliderGrab]), 2);
 }
 
 void FancySlider(const char * str_id, const char * label, float* v, int width){
@@ -39,7 +40,11 @@ void FancySlider(const char * str_id, const char * label, float* v, int width){
 
     ImGui::SetNextItemWidth(width);
     ImGui::DragFloat(str_id, v, 100.0f/(float)width, 0, 100, "", ImGuiSliderFlags_AlwaysClamp);
-    draw_list->AddRectFilled(ImVec2(p.x + 2*ui_scale, p.y + ImGui::GetFrameHeight() * 0.15f), ImVec2(p.x + *v * (width - 4*ui_scale) / 100 + 2*ui_scale, p.y + height), IM_COL32(61, 133, 224, 255), 2);
-    draw_list->AddText(ImVec2(p.x + (width-ImGui::CalcTextSize(label).x)/2, p.y + ImGui::GetFrameHeight() * 0.15f), IM_COL32(255, 255, 255, 255), label);
+    draw_list->AddRectFilled(ImVec2(p.x + 2*ui_scale, p.y + ImGui::GetFrameHeight() * 0.15f),
+        ImVec2(p.x + *v * (width - 4*ui_scale) / 100 + 2*ui_scale, p.y + height),
+        ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[(GImGui->CurrentItemFlags & ImGuiItemFlags_Disabled) == 0 ?
+             ImGuiCol_SliderGrab : ImGuiCol_Button]), 2);
+    draw_list->AddText(ImVec2(p.x + (width-ImGui::CalcTextSize(label).x)/2, p.y + ImGui::GetFrameHeight() * 0.15f), 
+        ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), label);
     ImGui::EndGroup();
 }

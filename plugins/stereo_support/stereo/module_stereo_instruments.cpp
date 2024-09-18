@@ -1,13 +1,14 @@
 #include "module_stereo_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "common/image/io.h"
 
 #include "resources.h"
 
@@ -18,7 +19,7 @@ namespace stereo
     {
     }
 
-    image::Image<uint16_t> StereoInstrumentsDecoderModule::decompress_icer_tool(uint8_t *data, int dsize, int size)
+    image::Image StereoInstrumentsDecoderModule::decompress_icer_tool(uint8_t *data, int dsize, int size)
     {
         std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
 
@@ -31,7 +32,7 @@ namespace stereo
         if (!std::filesystem::exists(icer_path))
         {
             logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
-            return image::Image<uint16_t>();
+            return image::Image();
         }
 
         int ret = system(cmd.data());
@@ -43,7 +44,7 @@ namespace stereo
             std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
             uint16_t *buffer = new uint16_t[size * size];
             data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
-            image::Image<uint16_t> img(buffer, size, size, 1);
+            image::Image img(buffer, 16, size, size, 1);
             delete[] buffer;
 
             if (std::filesystem::exists("./stereo_secchi_out.tmp"))
@@ -58,7 +59,7 @@ namespace stereo
             if (std::filesystem::exists("./stereo_secchi_out.tmp"))
                 std::filesystem::remove("./stereo_secchi_out.tmp");
 
-            return image::Image<uint16_t>();
+            return image::Image();
         }
     }
 
@@ -89,7 +90,7 @@ namespace stereo
             data_in.read((char *)&cadu, 1119);
 
             // Parse this transport frame
-            ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+            ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
             // logger->info(pkt.header.apid);
             // logger->info(vcdu.vcid);
@@ -165,8 +166,8 @@ namespace stereo
             logger->info("----------- S/WAVES");
             logger->info("Lines : " + std::to_string(s_waves_lines));
 
-            image::Image<uint8_t> image_s_waves(s_waves_data.data(), 162, s_waves_lines, 1);
-            image_s_waves.save_img(directory + "/S_WAVES");
+            image::Image image_s_waves(s_waves_data.data(), 8, 162, s_waves_lines, 1);
+            image::save_img(image_s_waves, directory + "/S_WAVES");
         }
     }
 
@@ -190,7 +191,7 @@ namespace stereo
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("CIPS %d", i + 1);
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", (int)cips_readers[i].images.size());
+                ImGui::TextColored(style::theme.green, "%d", (int)cips_readers[i].images.size());
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(cips_status[i]);
             }
@@ -198,7 +199,7 @@ namespace stereo
             ImGui::EndTable();
         }*/
 
-        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

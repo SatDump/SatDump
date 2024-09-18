@@ -21,7 +21,7 @@ namespace goes
             void clear();
 
             void pushFrame(uint8_t *data, int counter);
-            image::Image<uint16_t> getImage(int channel);
+            image::Image getImage(int channel);
         };
     }
 }

@@ -151,7 +151,7 @@ void SoapySdrSource::start()
     DSPSampleSource::start();
     soapy_dev = get_device(d_source_label);
     if (soapy_dev == nullptr)
-        throw std::runtime_error("Could not open SoapySDR device!");
+        throw satdump_exception("Could not open SoapySDR device!");
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
@@ -250,7 +250,7 @@ void SoapySdrSource::drawControlUI()
 void SoapySdrSource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t SoapySdrSource::get_samplerate()
@@ -268,7 +268,7 @@ std::vector<dsp::SourceDescriptor> SoapySdrSource::getAvailableSources()
     for (auto &dev : devices)
     {
         std::string name = (dev["label"] != "" ? dev["label"] : dev["driver"]) + " [Soapy]";
-        results.push_back({"soapysdr", name, uint64_t(i++)});
+        results.push_back({"soapysdr", name, std::to_string(i++)});
     }
 
     return results;

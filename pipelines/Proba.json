@@ -175,8 +175,7 @@
             },
             "cadu": {
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_mode": true,
+                    "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
@@ -255,8 +254,7 @@
             },
             "cadu": {
                 "ccsds_conv_concat_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_mode": true,
+                    "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,

@@ -5,8 +5,9 @@
 #include "imgui/imgui.h"
 
 #include "common/image/image.h"
+#include "common/image/io.h"
 
-//#include <iostream>
+// #include <iostream>
 
 #define BUFFER_SIZE 8192
 
@@ -42,10 +43,10 @@ namespace angels
             logger->info("Demultiplexing and deframing...");
             logger->warn("This decoder is very WIP!");
 
-            //std::ofstream frames_out(directory + "/argos.ccsds", std::ios::binary);
-            //d_output_files.push_back(directory + "/argos.ccsds");
+            // std::ofstream frames_out(directory + "/argos.ccsds", std::ios::binary);
+            // d_output_files.push_back(directory + "/argos.ccsds");
 
-            image::Image<uint8_t> fft_image(4096, 5000, 1);
+            image::Image fft_image(8, 4096, 5000, 1);
             int lines = 0;
 
             while (!data_in.eof())
@@ -65,7 +66,7 @@ namespace angels
                     int cnt = cadu[32]; // Counter marker for the FFT data
 
                     if (cnt == 1 || cnt == 2 || cnt == 3 || cnt == 4 || cnt == 5)
-                        memcpy(&fft_image[lines * 4096 + (cnt - 1) * 841], &cadu[52], cnt == 5 ? 728 : 842);
+                        memcpy((uint8_t *)fft_image.raw_data() + lines * 4096 + (cnt - 1) * 841, &cadu[52], cnt == 5 ? 728 : 842);
 
                     if (cnt == 5)
                         lines++;
@@ -81,10 +82,10 @@ namespace angels
             }
 
             data_in.close();
-            //frames_out.close();
+            // frames_out.close();
 
             fft_image.crop(0, 0, 4096, lines);
-            WRITE_IMAGE(fft_image, directory + "/argos_fft");
+            image::save_img(fft_image, directory + "/argos_fft");
 
             logger->info("VCID 1 (ARGOS) Frames  : " + std::to_string(argos_cadu));
             logger->info("CCSDS Frames           : " + std::to_string(ccsds));
@@ -97,7 +98,7 @@ namespace angels
         {
             ImGui::Begin("Angels ARGOS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

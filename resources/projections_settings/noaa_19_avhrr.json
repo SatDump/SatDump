@@ -18,5 +18,7 @@
     "corr_width": 2048,
     "corr_swath": 2900,
     "corr_resol": 1.1,
-    "corr_altit": 865
+    "corr_altit": 865,
+    ///////////////////////
+    "apt_marker_offset": -14.0
 }

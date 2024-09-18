@@ -1,0 +1,132 @@
+{
+    "dvbs_test": {
+        "name": "DVB-S Test",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "symbolrate": {
+                "type": "int",
+                "value": 1e6,
+                "name": "Symbolrate",
+                "description": "DVB-S Symbolrate"
+            },
+            "fast_tssync": {
+                "type": "bool",
+                "value": true,
+                "name": "Fast TS Sync",
+                "description": "Faster algorithm for TS synchronization.\nNot fully tested, but appears to work well."
+            }
+        },
+        "work": {
+            "baseband": {},
+            "ts": {
+                "dvbs_demod": {
+                    "symbolrate": 1e6,
+                    "pll_bw": 0.003
+                }
+            },
+            "net": {
+                "network_server": {
+                    "server_mode": "udp_send",
+                    "server_address": "127.0.0.1",
+                    "server_port": 8888,
+                    "pkt_size": 1316
+                }
+            }
+        }
+    },
+    "dvbs2_test": {
+        "name": "DVB-S2 Test (TS)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "frequencies": [],
+        "parameters": {
+            "symbolrate": {
+                "type": "int",
+                "value": 1e6,
+                "name": "Symbolrate",
+                "description": "DVB-S2 Symbolrate"
+            },
+            "modcod": {
+                "type": "int",
+                "value": 11,
+                "name": "MODCOD",
+                "description": "DVB-S2 Modcod"
+            },
+            "rrc_alpha": {
+                "type": "float",
+                "value": 0.25,
+                "name": "RRC Alpha",
+                "description": "RRC Alpha"
+            },
+            "pll_bw": {
+                "type": "float",
+                "value": 0.005,
+                "name": "PLL BW",
+                "description": "DVB-S2 PLL Bandwidth"
+            },
+            /*"bb_size": {
+                "type": "int",
+                "value": 58192,
+                "name": "BBFrame Size",
+                "description": "BBFrame size for the TCP Sink"
+            },*/
+            "port": {
+                "type": "int",
+                "value": 6666,
+                "name": "TCP Port",
+                "description": "TCP Server Port"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "dvbs2_demod": {
+                    //"agc_rate": 1e-5,
+                    //"symbolrate": 1e6,
+                    //"rrc_alpha": 0.25,
+                    //"pll_bw": 0.005,
+                    //"modcod": 17,
+                    // "pilots": true,
+                    //"clock_alpha": 1.7e-4, // Needs to be tighter for 32-APSK.
+                    "freq_prop_factor": 0.01
+                }
+            },
+            "ts": {
+                "dvbs2_ts_extractor": {
+                    //"bb_size": 58192
+                }
+            },
+            "net": {
+                "network_server": {
+                    "server_mode": "udp_send",
+                    "server_address": "127.0.0.1",
+                    "server_port": 8888,
+                    "pkt_size": 1316
+                }
+            }
+        }
+    }
+}

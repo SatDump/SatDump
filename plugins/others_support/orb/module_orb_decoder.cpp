@@ -1,11 +1,11 @@
 #include "module_orb_decoder.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "imgui/imgui_image.h"
 
 namespace orb
@@ -26,7 +26,7 @@ namespace orb
         uint8_t cadu[1024];
 
         // Demuxers
-        ccsds::ccsds_weather::Demuxer demuxer_vcid4(882, true, 2);
+        ccsds::ccsds_aos::Demuxer demuxer_vcid4(882, true, 2);
 
         // Setup readers
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
@@ -54,7 +54,7 @@ namespace orb
                 input_fifo->read((uint8_t *)cadu, 1024);
 
             // Parse this transport frame
-            ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+            ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
             if (vcdu.vcid == 4)
             {
@@ -120,12 +120,12 @@ namespace orb
                         ImGui::BeginGroup();
                         ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                         // if (dec.imageStatus == SAVING)
-                        //     ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                        //     ImGui::TextColored(style::theme.green, "Writing image...");
                         /*else*/
                         if (dec.is_dling)
-                            ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                            ImGui::TextColored(style::theme.orange, "Receiving...");
                         else
-                            ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                            ImGui::TextColored(style::theme.red, "Idle (Image)...");
                         ImGui::EndGroup();
                         ImGui::EndTabItem();
                     }
@@ -162,12 +162,12 @@ namespace orb
                         ImGui::BeginGroup();
                         ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
                         // if (dec.imageStatus == SAVING)
-                        //     ImGui::TextColored(IMCOLOR_SYNCED, "Writing image...");
+                        //     ImGui::TextColored(style::theme.green, "Writing image...");
                         /*else*/
                         if (dec.is_dling)
-                            ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                            ImGui::TextColored(style::theme.orange, "Receiving...");
                         else
-                            ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                            ImGui::TextColored(style::theme.red, "Idle (Image)...");
                         ImGui::EndGroup();
                         ImGui::EndTabItem();
                     }
@@ -182,7 +182,7 @@ namespace orb
                     ImGui::SameLine();
                     ImGui::BeginGroup();
                     ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "Idle (Image)...");
+                    ImGui::TextColored(style::theme.red, "Idle (Image)...");
                     ImGui::EndGroup();
                     ImGui::EndTabItem();
                 }
@@ -190,7 +190,7 @@ namespace orb
         }
         ImGui::EndTabBar();
 
-        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

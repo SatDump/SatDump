@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(simd_neon)
 
 if(NOT ANDROID)
@@ -40,5 +40,5 @@ if(NEON_FOUND)
 
     install(TARGETS simd_neon DESTINATION lib/satdump/plugins)
 else()
-    message("NEON Features not found! This is only an error on x86 CPUs that should support NEON")
+    message("NEON Features not found! This is only an error on ARM CPUs that should support NEON")
 endif()

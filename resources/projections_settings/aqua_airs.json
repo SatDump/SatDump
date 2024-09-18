@@ -1,0 +1,24 @@
+{
+    "type": "normal_per_ifov_old",
+    "scan_angle": 99,
+    "roll_offset": -0.5, //-1.7,
+    "yaw_offset": 3, //0.2,
+    "image_width": 720,
+    "gcp_spacing_x": 100,
+    "gcp_spacing_y": 100,
+    "ifov_count": 90,
+    "ifov_y_size": 9,
+    "ifov_x_size": 8,
+    "ifov_x_scan_angle": 1.1,
+    "ifov_y_scan_angle": 1.1,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.02,
+        "max_diff": 2.0
+    }
+    ///////////////////////
+    //"corr_swath": 2130,
+    //"corr_resol": 0.75,
+    //"corr_altit": 865
+}

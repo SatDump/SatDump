@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(spacex_support)
 
 
@@ -18,6 +18,7 @@ if(MSVC)
 
         # Enable it
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
+        install(TARGETS spacex_support DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     endif()
 elseif(ANDROID)
 # NO encoder on Android
@@ -41,7 +42,6 @@ else()
 
         # Enable it
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
+        install(TARGETS spacex_support DESTINATION lib/satdump/plugins)
     endif()
 endif()
-
-install(TARGETS spacex_support DESTINATION lib/satdump/plugins)

@@ -2,6 +2,7 @@
 
 #include "products/image_products.h"
 #include "nlohmann/json.hpp"
+#include "core/exception.h"
 
 class NoaaMHSCalibrator : public satdump::ImageProducts::CalibratorBase
 {
@@ -23,6 +24,8 @@ public:
 
     void init()
     {
+        if (!d_calib.contains("vars") || !d_calib["vars"].contains("perLine_perChannel"))
+            throw satdump_exception("Calibration data missing!");
         perLine_perChannel = d_calib["vars"]["perLine_perChannel"];
     }
 

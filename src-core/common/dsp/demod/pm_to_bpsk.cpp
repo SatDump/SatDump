@@ -24,7 +24,11 @@ namespace dsp
         for (int i = 0; i < nsamples; i++)
             input_stream->readBuf[i] = complex_t(0, input_stream->readBuf[i].imag);
 
+#if VOLK_VERSION >= 030100
+        volk_32fc_s32fc_x2_rotator2_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)input_stream->readBuf, (lv_32fc_t *)&phase_delta, (lv_32fc_t *)&phase, nsamples);
+#else
         volk_32fc_s32fc_x2_rotator_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)input_stream->readBuf, phase_delta, (lv_32fc_t *)&phase, nsamples);
+#endif
 
         input_stream->flush();
         output_stream->swap(nsamples);

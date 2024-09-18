@@ -48,7 +48,7 @@ namespace satdump
 
         predict_orbital_elements_t *satellite_object = nullptr;
         predict_position satellite_orbit;
-        predict_observer_t *satellite_observer_station;
+        predict_observer_t *satellite_observer_station = nullptr;
         predict_observation satellite_observation_pos;
 
     private: // Horizons Tracking (horizons)
@@ -62,6 +62,36 @@ namespace satdump
         int current_horizons_id = 0;
         std::vector<HorizonsV> horizons_data;
         std::string horizons_searchstr;
+
+        inline void horizons_interpolate(double xvalue, float *az_out, float *el_out)
+        {
+            int start_pos = 0;
+            while (start_pos < (int)horizons_data.size() && xvalue > horizons_data[start_pos].timestamp)
+                start_pos++;
+
+            if (start_pos + 1 == (int)horizons_data.size())
+                start_pos--;
+            if (start_pos == 0)
+                start_pos++;
+
+            double x1 = horizons_data[start_pos].timestamp;
+            double x2 = horizons_data[start_pos + 1].timestamp;
+            double az_y1 = horizons_data[start_pos].az;
+            double az_y2 = horizons_data[start_pos + 1].az;
+            double el_y1 = horizons_data[start_pos].el;
+            double el_y2 = horizons_data[start_pos + 1].el;
+
+            // printf("%d - %f %f %f - %f %f\n", start_pos, x1, xvalue, x2, y1, y2);
+
+            double x_len = x2 - x1;
+            xvalue -= x1;
+
+            double az_y_len = az_y2 - az_y1;
+            double el_y_len = el_y2 - el_y1;
+
+            *az_out = az_y1 + (xvalue / x_len) * az_y_len;
+            *el_out = el_y1 + (xvalue / x_len) * el_y_len;
+        }
 
         double last_horizons_fetch_time = 0;
 
@@ -85,13 +115,17 @@ namespace satdump
         std::mutex upcoming_passes_mtx;
         std::vector<SatAzEl> upcoming_pass_points;
         void updateNextPass(double current_time);
+        float correctRotatorAzimuth(const float az);
 
         double next_aos_time = -1, next_los_time = -1;
         SatAzEl sat_next_aos_pos;
+        SatAzEl sat_next_los_pos;
 
     private: // Rotator control
         bool rotator_engaged = false;
         bool rotator_tracking = false;
+        bool northbound_cross = false;
+        bool southbound_cross = false;
         SatAzEl rot_current_pos;
         SatAzEl rot_current_req_pos;
         SatAzEl rot_current_reqlast_pos;
@@ -101,12 +135,21 @@ namespace satdump
 
         double rotator_update_period = 1;
         bool rotator_park_while_idle = false;
+        bool rotator_rounding = false;
+        int rotator_decimal_multiplier = 1000;
+        int rotator_decimal_precision = 3;
         SatAzEl rotator_park_position;
         double rotator_unpark_at_minus = 60;
+        bool meridian_flip_correction = false;
+        int rotator_az_min = 0;
+        int rotator_az_max = 360;
+
+        bool rotator_arrowkeys_enable = false;
+        double rotator_arrowkeys_increment = 0.1;
 
     public: // Functions
         nlohmann::json getStatus();
-        image::Image<uint8_t> getPolarPlotImg(int size = 256);
+        image::Image getPolarPlotImg(int size = 256);
 
         void setQTH(double qth_lon, double qth_lat, double qth_alt);
         void setObject(TrackingMode mode, int objid);
@@ -115,7 +158,7 @@ namespace satdump
         void setRotatorTracking(bool v);
         void setRotatorReqPos(float az, float el);
 
-        void renderPolarPlot(bool light_theme = false);
+        void renderPolarPlot();
         void renderSelectionMenu();
         void renderObjectStatus();
         void renderRotatorStatus();

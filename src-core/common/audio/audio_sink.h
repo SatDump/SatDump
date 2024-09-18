@@ -19,8 +19,8 @@ namespace audio
 
         virtual void push_samples(int16_t *samples, int nsamples) = 0;
 
-    protected:
-        int resample_s16(const int16_t *input, int16_t *output, int inSampleRate, int outSampleRate, int inputSize, int channels);
+    public:
+        static int resample_s16(const int16_t *input, int16_t *output, int inSampleRate, int outSampleRate, int inputSize, int channels);
 
     public:
         static std::string getID();

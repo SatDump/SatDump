@@ -6,10 +6,10 @@
 #include "products/image_products.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/image/composite.h"
 #include "core/style.h"
 #include "libs/ctpl/ctpl_stl.h"
 #include "common/widgets/markdown_helper.h"
+#include "common/widgets/timed_message.h"
 
 namespace satdump
 {
@@ -25,18 +25,19 @@ namespace satdump
         int active_channel_id = 0, select_image_id = 1;
         bool active_channel_calibrated = false;
         std::string select_image_str;
-        image::Image<uint16_t> rgb_image, current_image;
-        std::vector<image::Image<uint16_t>> images_obj;
+        image::Image rgb_image, current_image;
         ImageViewWidget image_view;
 
         // Map projection stuff
         std::function<std::pair<int, int>(float, float, int, int)> proj_func;
+        nlohmann::json last_proj_cfg;
         bool last_correct_image = false;
         bool last_rotate_image = false;
         size_t last_width = 0;
         size_t last_height = 0;
 
         // Other controls
+        bool remove_background = false;
         bool median_blur = false;
         bool despeckle = false;
         bool rotate_image = false;
@@ -46,10 +47,13 @@ namespace satdump
         bool correct_image = false;
         bool normalize_image = false;
         bool white_balance_image = false;
+        bool manual_brightness_contrast = false;
+        float manual_brightness_contrast_brightness = 0.0;
+        float manual_brightness_contrast_constrast = 0.0;
 
         // GUI
         bool range_window = false;
-        std::vector<std::pair<double, double>> disaplay_ranges;
+        std::vector<std::pair<double, double>> temp_ranges, radiance_ranges;
         bool update_needed;
         bool is_updating = false;
 
@@ -58,12 +62,14 @@ namespace satdump
         // Calibration
         bool is_temp = false;
         bool show_scale = false;
-        image::Image<uint16_t> scale_image; // 512x25
-        ImageViewWidget scale_view, scale_view_horizontal;
+        image::Image scale_image; // 512x25
+        unsigned int scale_texture_id = 0;
+        uint32_t *scale_buffer = nullptr;
+        bool scale_has_update = false;
 
         // LUT
         bool using_lut = false;
-        image::Image<uint16_t> lut_image;
+        image::Image lut_image;
 
         // Geo-Correction
         std::vector<int> correction_factors;
@@ -83,11 +89,7 @@ namespace satdump
         std::vector<double> current_timestamps;
         nlohmann::json current_proj_metadata;
 
-        // Projections
-        bool projection_ready = false, should_project = false;
-        image::Image<uint16_t> projected_img;
-
-        bool project_old_algorithm = false;
+        bool projection_use_old_algo = false;
 
         // Utils
         void updateScaleImage();
@@ -107,12 +109,9 @@ namespace satdump
         float drawTreeMenu();
 
         bool canBeProjected();
-        bool hasProjection();
-        bool shouldProject();
-        void updateProjection(int width, int height, nlohmann::json settings, float *progess);
-        image::Image<uint16_t> &getProjection();
-        unsigned int getPreviewImageTexture() { return image_view.getTextID(); }
-        void setShouldProject(bool proj) { should_project = proj; }
+        void addCurrentToProjections();
+
+        widgets::TimedMessage proj_notif;
 
         static std::string getID() { return "image_handler"; }
         static std::shared_ptr<ViewerHandler> getInstance() { return std::make_shared<ImageViewerHandler>(); }

@@ -1,6 +1,6 @@
 {
     "inspiresat7_tlm": {
-        "name": "INSPIRE-Sat7",
+        "name": "INSPIRE-Sat7 TLM",
         "live": true,
         "live_cfg": [
             [
@@ -15,11 +15,7 @@
         "frequencies": [
             [
                 "Primary",
-                137.1e6
-            ],
-            [
-                "Backup",
-                137.9e6
+                437.41e6
             ]
         ],
         "parameters": {

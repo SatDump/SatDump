@@ -2,13 +2,27 @@
 #include "logger.h"
 #include "core/config.h"
 #include "common/image/composite.h"
-#include "resources.h"
+#include "common/image/image_background.h"
 #include "common/image/earth_curvature.h"
+#include "resources.h"
 #include <filesystem>
 #include "libs/sol2/sol.hpp"
 #include "common/lua/lua_utils.h"
 #include "common/calibration.h"
 #include "core/plugin.h"
+#include "common/utils.h"
+#include "common/image/brightness_contrast.h"
+#include "common/image/processing.h"
+#include "common/image/io.h"
+#include "common/image/image_utils.h"
+#include "common/image/image_lut.h"
+
+#ifdef __ANDROID__
+#include <android_native_app_glue.h>
+extern struct android_app *g_App;
+#endif
+
+#include "common/lrit/generic_xrit_calibrator.h"
 
 namespace satdump
 {
@@ -44,9 +58,12 @@ namespace satdump
                 images[c].filename.find(".jpeg") == std::string::npos &&
                 images[c].filename.find(".jpg") == std::string::npos &&
                 images[c].filename.find(".j2k") == std::string::npos &&
+                images[c].filename.find(".tiff") == std::string::npos &&
+                images[c].filename.find(".tif") == std::string::npos &&
+                images[c].filename.find(".qoi") == std::string::npos &&
                 images[c].filename.find(".pbm") == std::string::npos)
                 images[c].filename += "." + image_format;
-            else
+            else if (!d_no_not_save_images)
                 logger->trace("Image format was specified in product call. Not supposed to happen!");
 
             contents["images"][c]["file"] = images[c].filename;
@@ -65,17 +82,17 @@ namespace satdump
                 contents["images"][c]["abs_index"] = images[c].abs_index;
 
             savemtx.unlock();
-            if (!save_as_matrix)
-                images[c].image.save_img(directory + "/" + images[c].filename);
+            if (!save_as_matrix && !d_no_not_save_images)
+                image::save_img(images[c].image, directory + "/" + images[c].filename);
         }
 
         if (save_as_matrix)
         {
             int size = ceil(sqrt(images.size()));
             logger->debug("Using size %d", size);
-            image::Image<uint16_t> image_all = image::make_manyimg_composite<uint16_t>(size, size, images.size(), [this](int c)
-                                                                                       { return images[c].image; });
-            image_all.save_img(directory + "/" + images[0].filename);
+            image::Image image_all = image::make_manyimg_composite(size, size, images.size(), [this](int c)
+                                                                   { return images[c].image; });
+            image::save_img(image_all, directory + "/" + images[0].filename);
             savemtx.lock();
             contents["img_matrix_size"] = size;
             savemtx.unlock();
@@ -98,11 +115,55 @@ namespace satdump
         if (contents.contains("save_as_matrix"))
             save_as_matrix = contents["save_as_matrix"].get<bool>();
 
-        image::Image<uint16_t> img_matrix;
+#ifdef __ANDROID__
+        JavaVM *java_vm = g_App->activity->vm;
+        JNIEnv *java_env = NULL;
+
+        jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
+        if (jni_return == JNI_ERR)
+            throw std::runtime_error("Could not get JNI environement");
+
+        jni_return = java_vm->AttachCurrentThread(&java_env, NULL);
+        if (jni_return != JNI_OK)
+            throw std::runtime_error("Could not attach to thread");
+
+        jclass activityClass = java_env->FindClass("android/app/NativeActivity");
+        jmethodID getCacheDir = java_env->GetMethodID(activityClass, "getCacheDir", "()Ljava/io/File;");
+        jobject cache_dir = java_env->CallObjectMethod(g_App->activity->clazz, getCacheDir);
+
+        jclass fileClass = java_env->FindClass("java/io/File");
+        jmethodID getPath = java_env->GetMethodID(fileClass, "getPath", "()Ljava/lang/String;");
+        jstring path_string = (jstring)java_env->CallObjectMethod(cache_dir, getPath);
+
+        const char *path_chars = java_env->GetStringUTFChars(path_string, NULL);
+        std::string tmp_path(path_chars);
+
+        java_env->ReleaseStringUTFChars(path_string, path_chars);
+        jni_return = java_vm->DetachCurrentThread();
+        if (jni_return != JNI_OK)
+            throw std::runtime_error("Could not detach from thread");
+#else
+        std::string tmp_path = std::filesystem::temp_directory_path().string();
+#endif
+
+        image::Image img_matrix;
         if (save_as_matrix)
         {
-            if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
-                img_matrix.load_img(directory + "/" + contents["images"][0]["file"].get<std::string>());
+            if (file.find("http") == 0)
+            {
+                std::string res;
+                if (perform_http_request(directory + "/" + contents["images"][0]["file"].get<std::string>(), res))
+                    throw std::runtime_error("Could not download from : " + directory + "/" + contents["images"][0]["file"].get<std::string>());
+                std::ofstream(tmp_path + "/satdumpdltmp.tmp", std::ios::binary).write((char *)res.data(), res.size());
+                image::load_img(img_matrix, tmp_path + "/satdumpdltmp.tmp");
+                if (std::filesystem::exists(tmp_path + "/satdumpdltmp.tmp"))
+                    std::filesystem::remove(tmp_path + "/satdumpdltmp.tmp");
+            }
+            else if (!d_no_not_load_images)
+            {
+                if (std::filesystem::exists(directory + "/" + contents["images"][0]["file"].get<std::string>()))
+                    image::load_img(img_matrix, directory + "/" + contents["images"][0]["file"].get<std::string>());
+            }
         }
 
         for (size_t c = 0; c < contents["images"].size(); c++)
@@ -116,8 +177,21 @@ namespace satdump
 
             if (!save_as_matrix)
             {
-                if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
-                    img_holder.image.load_img(directory + "/" + contents["images"][c]["file"].get<std::string>());
+                if (file.find("http") == 0)
+                {
+                    std::string res;
+                    if (perform_http_request(directory + "/" + contents["images"][c]["file"].get<std::string>(), res))
+                        throw std::runtime_error("Could not download from : " + directory + "/" + contents["images"][c]["file"].get<std::string>());
+                    std::ofstream(tmp_path + "/satdumpdltmp.tmp", std::ios::binary).write((char *)res.data(), res.size());
+                    image::load_img(img_holder.image, tmp_path + "/satdumpdltmp.tmp");
+                    if (std::filesystem::exists(tmp_path + "/satdumpdltmp.tmp"))
+                        std::filesystem::remove(tmp_path + "/satdumpdltmp.tmp");
+                }
+                else if (!d_no_not_load_images)
+                {
+                    if (std::filesystem::exists(directory + "/" + contents["images"][c]["file"].get<std::string>()))
+                        image::load_img(img_holder.image, directory + "/" + contents["images"][c]["file"].get<std::string>());
+                }
             }
             else
             {
@@ -152,6 +226,15 @@ namespace satdump
     void ImageProducts::init_calibration()
     {
         calib_mutex.lock();
+
+        calibration_type_lut.clear();
+        calibration_wavenumber_lut.clear();
+        for (size_t i = 0; i < images.size(); i++)
+        {
+            calibration_type_lut.push_back(get_calibration_type(i));
+            calibration_wavenumber_lut.push_back(get_wavenumber(i));
+        }
+
         if (contents["calibration"].contains("lua"))
         { // Lua-based calibration
             if (lua_state_ptr == nullptr)
@@ -183,13 +266,23 @@ namespace satdump
             satdump::eventBus->fire_event<RequestCalibratorEvent>({calibrator_id, calibrators, contents["calibration"], this});
             if (calibrators.size() > 0)
                 calibrator_ptr = calibrators[0];
+            else if (calibrator_id == "generic_xrit")
+                calibrator_ptr = std::make_shared<lrit::GenericxRITCalibrator>(contents["calibration"], this);
             else
             {
                 logger->error("Requested calibrator " + calibrator_id + " does not exist!");
                 calibrator_ptr = std::make_shared<DummyCalibrator>(contents["calibration"], this);
             }
 
-            calibrator_ptr->init();
+            try
+            {
+                calibrator_ptr->init();
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not initialize calibrator: %s", e.what());
+                calibrator_ptr = std::make_shared<DummyCalibrator>(contents["calibration"], this);
+            }
         }
         calib_mutex.unlock();
     }
@@ -211,11 +304,19 @@ namespace satdump
     {
         int calib_index = image_index;
         calib_mutex.lock();
-        uint16_t val = images[image_index].image[y * images[image_index].image.width() + x] >> (16 - bit_depth);
+        uint16_t val = CALIBRATION_INVALID_VALUE;
+        int diff = images[image_index].image.depth() - bit_depth;
+        if (diff >= 0)
+            val = images[image_index].image.get(0, x, y) >> (diff);
+        else
+            val = images[image_index].image.get(0, x, y) << (-diff);
 
         double val2 = CALIBRATION_INVALID_VALUE;
         if (images[image_index].abs_index == -2)
+        {
+            calib_mutex.unlock();
             return val2;
+        }
         else if (images[image_index].abs_index != -1)
             calib_index = images[image_index].abs_index;
 
@@ -224,14 +325,14 @@ namespace satdump
         else if (lua_state_ptr != nullptr)
             val2 = ((sol::function *)lua_comp_func_ptr)->call(calib_index, x, y, val).get<double>();
 
-        if (get_calibration_type(image_index) == calib_type_t::CALIB_RADIANCE && temp)
-            val2 = radiance_to_temperature(val2, get_wavenumber(image_index));
+        if (calibration_type_lut[image_index] == calib_type_t::CALIB_RADIANCE && temp)
+            val2 = radiance_to_temperature(val2, calibration_wavenumber_lut[image_index]);
 
         calib_mutex.unlock();
         return val2;
     }
 
-    image::Image<uint16_t> ImageProducts::get_calibrated_image(int image_index, float *progress, calib_vtype_t vtype, std::pair<double, double> range)
+    image::Image ImageProducts::get_calibrated_image(int image_index, float *progress, calib_vtype_t vtype, std::pair<double, double> range)
     {
         bool is_default = vtype == CALIB_VTYPE_AUTO && range.first == 0 && range.second == 0;
         if (calibrated_img_cache.count(image_index) > 0 && is_default)
@@ -257,9 +358,7 @@ namespace satdump
 
             logger->trace("Generating calibrated image channel %d. Range %f %f. Type %d", image_index + 1, range.first, range.second, vtype);
 
-            // calibrated_img_cache.insert({image_index, image::Image<uint16_t>(images[image_index].image.width(), images[image_index].image.height(), 1)});
-            // image::Image<uint16_t> &output = calibrated_img_cache[image_index];
-            image::Image<uint16_t> output(images[image_index].image.width(), images[image_index].image.height(), 1);
+            image::Image output(images[image_index].image.depth(), images[image_index].image.width(), images[image_index].image.height(), 1);
 
             if (vtype == CALIB_VTYPE_AUTO && get_calibration_type(image_index) == CALIB_RADIANCE)
                 vtype = CALIB_VTYPE_RADIANCE;
@@ -274,14 +373,10 @@ namespace satdump
                     {
                         double cal_val = get_calibrated_value(image_index, x, y);
 
-                        if (vtype == CALIB_VTYPE_TEMPERATURE && get_calibration_type(image_index) == CALIB_RADIANCE)
+                        if (vtype == CALIB_VTYPE_TEMPERATURE && calibration_type_lut[image_index] == CALIB_RADIANCE)
                             cal_val = radiance_to_temperature(cal_val, wn);
 
-                        output[y * output.width() + x] =
-                            output.clamp(
-                                ((cal_val - range.first) /
-                                 abs(range.first - range.second)) *
-                                65535);
+                        output.setf(0, x, y, output.clampf((cal_val - range.first) / abs(range.first - range.second)));
                     }
 
                     if (progress != nullptr)
@@ -300,7 +395,7 @@ namespace satdump
         }
     }
 
-    bool equation_contains(std::string init, std::string match, int *loc)
+    bool image_equation_contains(std::string init, std::string match, int *loc)
     {
         size_t pos = init.find(match);
     retry:
@@ -350,7 +445,7 @@ namespace satdump
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg)
     {
         std::string str_to_find_channels = cfg.equation;
-        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
             str_to_find_channels = cfg.channels;
 
         std::vector<std::string> channels_present;
@@ -434,11 +529,11 @@ namespace satdump
         return channels_present.size() == 0;
     }
 
-    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
+    image::Image make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress, std::vector<double> *final_timestamps, nlohmann::json *final_metadata)
     {
         std::vector<int> channel_indexes;
         std::vector<std::string> channel_numbers;
-        std::vector<image::Image<uint16_t>> images_obj;
+        std::vector<image::Image> images_obj;
         std::map<std::string, int> offsets;
 
         int max_width_total = 0;
@@ -450,9 +545,26 @@ namespace satdump
 
         std::string str_to_find_channels = cfg.equation;
 
-        if (cfg.lut.size() != 0 || cfg.lua.size() != 0)
+        bool is_lut_or_lua_or_cpp = false;
+        if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
+        {
             str_to_find_channels = cfg.channels;
+            is_lut_or_lua_or_cpp = true;
+        }
 
+        bool a_channel_is_empty = false;
+
+        // We want channels in equation order!
+        struct TempBeforeSort
+        {
+            int loc;
+            int index;
+            std::string number;
+            image::Image img;
+        };
+        std::vector<TempBeforeSort> channel_indexes_locations;
+
+        // Find all channels and prepare them
         for (int i = 0; i < (int)product.images.size(); i++)
         {
             auto &img = product.images[i];
@@ -465,37 +577,76 @@ namespace satdump
             int cal_loc = -1;
             int loc = -1;
 
-            if (equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && img.image.size() > 0 && product.has_calibation())
+            if (image_equation_contains(str_to_find_channels, equ_str_calib, &cal_loc) && product.has_calibation())
             {
-                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
                 product.init_calibration();
-                channel_indexes.push_back(i);
-                channel_numbers.push_back(equ_str_calib);
-                if (cfg.calib_cfg.contains(equ_str_calib))
+                if (is_lut_or_lua_or_cpp)
                 {
-                    ImageProducts::calib_vtype_t type;
-                    std::pair<double, double> range;
-                    get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
-                    images_obj.push_back(product.get_calibrated_image(i, progress, type, range));
+                    channel_indexes_locations.push_back(TempBeforeSort());
+                    TempBeforeSort &cur = channel_indexes_locations[channel_indexes_locations.size() - 1];
+                    cur.loc = cal_loc;
+                    cur.index = i;
+                    cur.number = equ_str_calib;
+
+                    if (cfg.calib_cfg.contains(equ_str_calib))
+                    {
+                        ImageProducts::calib_vtype_t type;
+                        std::pair<double, double> range;
+                        get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                        cur.img = product.get_calibrated_image(i, progress, type, range);
+                    }
+                    else
+                    {
+                        cur.img = product.get_calibrated_image(i, progress);
+                    }
                 }
                 else
                 {
-                    images_obj.push_back(product.get_calibrated_image(i, progress));
+                    channel_indexes.push_back(i);
+                    channel_numbers.push_back(equ_str_calib);
+
+                    if (cfg.calib_cfg.contains(equ_str_calib))
+                    {
+                        ImageProducts::calib_vtype_t type;
+                        std::pair<double, double> range;
+                        get_calib_cfg_from_json(cfg.calib_cfg[equ_str_calib], type, range);
+                        images_obj.push_back(product.get_calibrated_image(i, progress, type, range));
+                    }
+                    else
+                    {
+                        images_obj.push_back(product.get_calibrated_image(i, progress));
+                    }
                 }
                 offsets.emplace(equ_str_calib, img.offset_x);
+                logger->debug("Composite needs calibrated channel %s", equ_str.c_str());
 
                 if (max_width_used < (int)img.image.width())
                     max_width_used = img.image.width();
 
                 if (min_offset > img.offset_x)
                     min_offset = img.offset_x;
+
+                if (img.image.size() == 0)
+                    a_channel_is_empty = true;
             }
 
-            if (equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() > 0 && cal_loc != loc)
+            if (image_equation_contains(str_to_find_channels, equ_str, &loc) && cal_loc != loc)
             {
-                channel_indexes.push_back(i);
-                channel_numbers.push_back(equ_str);
-                images_obj.push_back(img.image);
+                channel_indexes_locations.push_back(TempBeforeSort());
+                if (is_lut_or_lua_or_cpp)
+                {
+                    TempBeforeSort &cur = channel_indexes_locations[channel_indexes_locations.size() - 1];
+                    cur.loc = loc;
+                    cur.index = i;
+                    cur.number = equ_str;
+                    cur.img = img.image;
+                }
+                else
+                {
+                    channel_indexes.push_back(i);
+                    channel_numbers.push_back(equ_str);
+                    images_obj.push_back(img.image);
+                }
                 offsets.emplace(equ_str, img.offset_x);
                 logger->debug("Composite needs channel %s", equ_str.c_str());
 
@@ -504,13 +655,35 @@ namespace satdump
 
                 if (min_offset > img.offset_x)
                     min_offset = img.offset_x;
+
+                if (img.image.size() == 0)
+                    a_channel_is_empty = true;
             }
         }
 
-        if (channel_indexes.size() == 0)
+        // They need to be in equation order!
+        if (is_lut_or_lua_or_cpp)
         {
-            logger->error("None of the required channels are present!");
-            return image::Image<uint16_t>();
+            std::sort(channel_indexes_locations.begin(), channel_indexes_locations.end(),
+                      [](auto &a, auto &b)
+                      {
+                          return a.loc < b.loc;
+                      });
+            for (auto &v : channel_indexes_locations)
+            {
+                channel_indexes.push_back(v.index);
+                channel_numbers.push_back(v.number);
+                images_obj.push_back(std::move(v.img));
+            }
+        }
+
+        // Free up memory
+        std::vector<TempBeforeSort>().swap(channel_indexes_locations);
+
+        if (channel_indexes.size() == 0 || a_channel_is_empty)
+        {
+            logger->error("One or more of the required channels are missing!");
+            return image::Image();
         }
 
         int ratio = max_width_total / max_width_used;
@@ -524,7 +697,7 @@ namespace satdump
             img_off.second /= ratio;
             logger->trace("Offset for %s is %d", img_off.first.c_str(), img_off.second);
 
-            if (final_metadata != nullptr)
+            if (final_metadata != nullptr && min_offset != 0)
                 (*final_metadata)["img_x_offset"] = min_offset;
         }
 
@@ -563,11 +736,12 @@ namespace satdump
                 }
 
                 // Now we know all timestamps that *are* common, so we can create new images and copy over
-                std::vector<image::Image<uint16_t>> images_obj_new;
+                std::vector<image::Image> images_obj_new;
                 for (int i = 0; i < (int)channel_indexes.size(); i++)
-                    images_obj_new.push_back(image::Image<uint16_t>(product.images[channel_indexes[i]].image.width(),
-                                                                    (single_line ? 1 : product.get_ifov_y_size(channel_indexes[i])) * common_timestamps.size(),
-                                                                    1));
+                    images_obj_new.push_back(image::Image(product.images[channel_indexes[i]].image.depth(),
+                                                          product.images[channel_indexes[i]].image.width(),
+                                                          (single_line ? 1 : product.get_ifov_y_size(channel_indexes[i])) * common_timestamps.size(),
+                                                          1));
 
                 // Recompose images to be synced
                 int y_index = 0;
@@ -582,10 +756,9 @@ namespace satdump
 
                             if (time1 == time2)
                             {
-                                //  Copy over scanlines
-                                memcpy(&images_obj_new[i][y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
-                                       &images_obj[i][t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index))],
-                                       images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)) * sizeof(uint16_t));
+                                image::imemcpy(images_obj_new[i], y_index * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)),
+                                               images_obj[i], t * images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)),
+                                               images_obj_new[i].width() * (single_line ? 1 : product.get_ifov_y_size(index)));
                                 break;
                             }
                         }
@@ -606,53 +779,90 @@ namespace satdump
                 *final_timestamps = product.get_timestamps();
         }
 
-        image::Image<uint16_t> rgb_composite;
+        image::Image rgb_composite;
 
-        if (cfg.lua != "")
-            rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.lua_vars, offsets, final_timestamps, progress);
-        else if (cfg.lut != "")
-            rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
-        else
-            rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
+        try
+        {
+            if (cfg.cpp != "")
+            {
+                std::vector<std::function<image::Image(
+                    satdump::ImageProducts *,
+                    std::vector<image::Image> &,
+                    std::vector<std::string>,
+                    std::string,
+                    nlohmann::json,
+                    nlohmann::json,
+                    std::vector<double> *,
+                    float *)>>
+                    compositors;
+                satdump::eventBus->fire_event<RequestCppCompositeEvent>({cfg.cpp, compositors, &product});
+                if (compositors.size() > 0)
+                    rgb_composite = compositors[0](&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
+                else
+                    logger->error("Could not get a C++ compositor with ID " + cfg.cpp);
+            }
+            else if (cfg.lua != "")
+                rgb_composite = image::generate_composite_from_lua(&product, images_obj, channel_numbers, resources::getResourcePath(cfg.lua), cfg.vars, offsets, final_timestamps, progress);
+            else if (cfg.lut != "")
+                rgb_composite = image::generate_composite_from_lut(images_obj, channel_numbers, resources::getResourcePath(cfg.lut), offsets, progress);
+            else
+                rgb_composite = image::generate_composite_from_equ(images_obj, channel_numbers, cfg.equation, offsets, progress);
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error making composite! %s", e.what());
+        }
+
+        // Free up memory
+        std::vector<image::Image>().swap(images_obj);
+
+        if (cfg.median_blur)
+            image::median_blur(rgb_composite);
 
         if (cfg.despeckle)
-            rgb_composite.kuwahara_filter();
+            image::kuwahara_filter(rgb_composite);
 
         if (cfg.equalize)
-            rgb_composite.equalize();
+            image::equalize(rgb_composite);
 
         if (cfg.individual_equalize)
-            rgb_composite.equalize(true);
+            image::equalize(rgb_composite, true);
 
         if (cfg.white_balance)
-            rgb_composite.white_balance();
+            image::white_balance(rgb_composite);
 
         if (cfg.invert)
-            rgb_composite.linear_invert();
+            image::linear_invert(rgb_composite);
 
         if (cfg.normalize)
-            rgb_composite.normalize();
+            image::normalize(rgb_composite);
+
+        if (cfg.remove_background)
+            image::remove_background(rgb_composite, product.get_proj_cfg(), progress);
+
+        if (cfg.manual_brightness != 0 || cfg.manual_contrast != 0)
+            image::brightness_contrast(rgb_composite, cfg.manual_brightness, cfg.manual_contrast);
 
         if (cfg.apply_lut)
         {
-            auto lut_image = image::LUT_jet<uint16_t>();
+            auto lut_image = image::LUT_jet<uint8_t>();
             rgb_composite.to_rgb();
+            rgb_composite = rgb_composite.to_depth(lut_image.depth());
             for (size_t i = 0; i < rgb_composite.width() * rgb_composite.height(); i++)
             {
-                uint16_t val = rgb_composite[i];
-                val = (float(val) / 65535.0) * lut_image.width();
-                if (val >= lut_image.width())
+                int val = rgb_composite.getf(i) * lut_image.width();
+                if (val >= (int)lut_image.width())
                     val = lut_image.width() - 1;
-                rgb_composite.channel(0)[i] = lut_image.channel(0)[val];
-                rgb_composite.channel(1)[i] = lut_image.channel(1)[val];
-                rgb_composite.channel(2)[i] = lut_image.channel(2)[val];
+                rgb_composite.set(0, i, lut_image.get(0, val));
+                rgb_composite.set(1, i, lut_image.get(1, val));
+                rgb_composite.set(2, i, lut_image.get(2, val));
             }
         }
 
         return rgb_composite;
     }
 
-    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table)
+    image::Image perform_geometric_correction(ImageProducts &product, image::Image img, bool &success, float *foward_table)
     {
         if (img.width() == 0)
             return img;

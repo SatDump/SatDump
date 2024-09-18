@@ -61,14 +61,14 @@ void AirspySource::set_agcs()
 void AirspySource::open_sdr()
 {
 #ifndef __ANDROID__
-    if (airspy_open_sn(&airspy_dev_obj, d_sdr_id) != AIRSPY_SUCCESS)
-        throw std::runtime_error("Could not open Airspy device!");
+    if (airspy_open_sn(&airspy_dev_obj, std::stoull(d_sdr_id)) != AIRSPY_SUCCESS)
+        throw satdump_exception("Could not open Airspy device!");
 #else
     int vid, pid;
     std::string path;
     int fd = getDeviceFD(vid, pid, AIRSPY_USB_VID_PID, path);
     if (airspy_open_fd(&airspy_dev_obj, fd) != AIRSPY_SUCCESS)
-        throw std::runtime_error("Could not open Airspy device!");
+        throw satdump_exception("Could not open Airspy device!");
 #endif
 }
 
@@ -157,6 +157,7 @@ void AirspySource::start()
     set_bias();
     set_agcs();
 
+    airspy_set_packing(airspy_dev_obj, 1);
     airspy_start_rx(airspy_dev_obj, &_rx_callback, &output_stream);
 }
 
@@ -240,7 +241,7 @@ void AirspySource::drawControlUI()
 void AirspySource::set_samplerate(uint64_t samplerate)
 {
     if (!samplerate_widget.set_value(samplerate, 10e6))
-        throw std::runtime_error("Unspported samplerate : " + std::to_string(samplerate) + "!");
+        throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
 uint64_t AirspySource::get_samplerate()
@@ -260,13 +261,13 @@ std::vector<dsp::SourceDescriptor> AirspySource::getAvailableSources()
     {
         std::stringstream ss;
         ss << std::hex << serials[i];
-        results.push_back({"airspy", "AirSpy One " + ss.str(), serials[i]});
+        results.push_back({"airspy", "AirSpy One " + ss.str(), std::to_string(serials[i])});
     }
 #else
     int vid, pid;
     std::string path;
     if (getDeviceFD(vid, pid, AIRSPY_USB_VID_PID, path) != -1)
-        results.push_back({"airspy", "AirSpy One USB", 0});
+        results.push_back({"airspy", "AirSpy One USB", "0"});
 #endif
 
     return results;

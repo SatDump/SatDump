@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "common/codings/reedsolomon/reedsolomon.h"
 #include "common/codings/differential/nrzm.h"
-#include "imgui/imgui.h"
+#include "common/widgets/themed_widgets.h"
 
 #define BBFRAME_SIZE (58192 / 8) // BBFrame size
 #define CADU_SIZE 2048           // CADU Size
@@ -144,18 +144,19 @@ namespace goes
                 {
                     ImGui::Text("Corr  : ");
                     ImGui::SameLine();
-                    ImGui::TextColored(cadu_sync ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(cadu_cor));
+                    ImGui::TextColored(cadu_sync ? style::theme.green : style::theme.orange, UITO_C_STR(cadu_cor));
 
                     std::memmove(&cor_history_ca[0], &cor_history_ca[1], (200 - 1) * sizeof(float));
                     cor_history_ca[200 - 1] = cadu_cor;
 
-                    ImGui::PlotLines("##caducor", cor_history_ca, IM_ARRAYSIZE(cor_history_ca), 0, "", 40.0f, 4.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##caducor", cor_history_ca, IM_ARRAYSIZE(cor_history_ca), 0, "", 40.0f, 4.0f,
+                        ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
             }
             ImGui::EndGroup();
 
             if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

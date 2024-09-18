@@ -5,6 +5,7 @@
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/sub.h>
 #include "common/net/udp.h"
+#include "core/exception.h"
 
 namespace network
 {
@@ -19,18 +20,18 @@ namespace network
             if (parameters.count("pkt_size") > 0)
                 pkt_size = parameters["pkt_size"].get<int>();
             else
-                throw std::runtime_error("pkt_size parameter must be present!");
+                throw satdump_exception("pkt_size parameter must be present!");
 
             if (parameters.count("server_address") > 0)
                 address = parameters["server_address"].get<std::string>();
             else
-                throw std::runtime_error("server_address parameter must be present!");
+                throw satdump_exception("server_address parameter must be present!");
         }
 
         if (parameters.count("server_port") > 0)
             port = parameters["server_port"].get<int>();
         else
-            throw std::runtime_error("server_port parameter must be present!");
+            throw satdump_exception("server_port parameter must be present!");
 
         buffer = new uint8_t[pkt_size * 10];
     }
@@ -94,11 +95,11 @@ namespace network
 
         ImGui::Text("Server Address  : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, "%s", address.c_str());
+        ImGui::TextColored(style::theme.green, "%s", address.c_str());
 
         ImGui::Text("Server Port    : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, UITO_C_STR(port));
+        ImGui::TextColored(style::theme.green, UITO_C_STR(port));
 
         ImGui::End();
     }

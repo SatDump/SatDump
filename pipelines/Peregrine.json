@@ -1,0 +1,49 @@
+{
+    "peregrine_x_tlm": {
+        "name": "Peregrine X-Band TLM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 13e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001,
+                    "subcarrier_offset": 1024e3
+                }
+            },
+            "cadu": {
+                /*"ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 8192,
+                    "rs_i": 0,
+                    "rs_type": "rs239",
+                    "rs_usecheck": true
+                }*/
+                "ccsds_ldpc_decoder": {
+                    "constellation": "bpsk",
+                    "ldpc_rate": "7/8",
+                    "ldpc_iterations": 10
+                    //"internal_stream": false,
+                    //"internal_cadu_size": 8272,
+                    //"internal_asm": "0x352EF853"
+                }
+            },
+            "products": {}
+        }
+    }
+}

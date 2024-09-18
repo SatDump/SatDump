@@ -97,17 +97,17 @@ namespace goes
                 ImGui::Text("State : ");
                 ImGui::SameLine();
                 if (isSavingInProgress)
-                    ImGui::TextColored(IMCOLOR_SYNCED, "Writing images...");
+                    ImGui::TextColored(style::theme.green, "Writing images...");
                 else if (isImageInProgress)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "Receiving...");
+                    ImGui::TextColored(style::theme.orange, "Receiving...");
                 else
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "IDLE");
+                    ImGui::TextColored(style::theme.red, "IDLE");
             }
             ImGui::EndGroup();
 #endif
 
             if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

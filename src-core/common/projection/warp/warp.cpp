@@ -1,5 +1,6 @@
 #include "warp_bkd.h"
 #include "logger.h"
+#include "core/exception.h"
 #include <map>
 #include "common/utils.h"
 #include "resources.h"
@@ -207,16 +208,20 @@ namespace satdump
                     {
                         if (op.input_image.channels() == 1)
                             for (int c = 0; c < 3; c++)
-                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image[(int)yy * op.input_image.width() + (int)xx];
-                        else if (op.input_image.channels() == 3)
+                                result.output_image.set(c, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(0, xx, yy));
+                        else if (op.input_image.channels() == 3 || op.input_image.channels() == 4)
                             for (int c = 0; c < 3; c++)
-                                result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
-                        result.output_image.channel(3)[y * result.output_image.width() + x] = 65535;
+                                result.output_image.set(c, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(c, xx, yy));
+
+                        if (op.input_image.channels() == 4)
+                            result.output_image.set(3, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(3, xx, yy));
+                        else
+                            result.output_image.set(3, y * result.output_image.width() + x, 65535);
                     }
                     else
                     {
                         for (int c = 0; c < op.input_image.channels(); c++)
-                            result.output_image.channel(c)[y * result.output_image.width() + x] = op.input_image.channel(c)[(int)yy * op.input_image.width() + (int)xx];
+                            result.output_image.set(c, y * result.output_image.width() + x, op.input_image.get_pixel_bilinear(c, xx, yy));
                     }
                 }
             }
@@ -240,10 +245,10 @@ namespace satdump
                 // Images
                 cl_mem buffer_map = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_map!");
+                    throw satdump_exception("Couldn't load buffer_map! Code " + std::to_string(err));
                 cl_mem buffer_img = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_img!");
+                    throw satdump_exception("Couldn't load buffer_img! Code " + std::to_string(err));
 
                 // TPS Stuff
                 cl_mem buffer_tps_npoints = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), NULL, &err);
@@ -266,10 +271,12 @@ namespace satdump
 
                 // Create an OpenCL queue
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
+                if (err != CL_SUCCESS)
+                    throw satdump_exception("Couldn't create OpenCL queue! Code " + std::to_string(err));
 
                 // Write all of buffers to the GPU
-                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.raw_data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_npoints, true, 0, sizeof(int), &tps->_nof_points, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_x, true, 0, sizeof(double) * tps->_nof_points, tps->x, 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_y, true, 0, sizeof(double) * tps->_nof_points, tps->y, 0, NULL, NULL);
@@ -302,11 +309,12 @@ namespace satdump
 
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
-                if (clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
+                err = clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL);
+                if (err != CL_SUCCESS)
+                    throw satdump_exception("Couldn't clEnqueueNDRangeKernel! Code " + std::to_string(err));
 
                 // Read image result back from VRAM
-                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
 
                 // Free up everything
                 clReleaseMemObject(buffer_img);
@@ -342,10 +350,10 @@ namespace satdump
                 // Images
                 cl_mem buffer_map = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * result.output_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_map!");
+                    throw satdump_exception("Couldn't load buffer_map! Code " + std::to_string(err));
                 cl_mem buffer_img = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(uint16_t) * op.input_image.size(), NULL, &err);
                 if (err != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't load buffer_img!");
+                    throw satdump_exception("Couldn't load buffer_img! Code " + std::to_string(err));
 
                 // TPS Stuff
                 cl_mem buffer_tps_npoints = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * tps->_nof_points, NULL, &err);
@@ -368,10 +376,12 @@ namespace satdump
 
                 // Create an OpenCL queue
                 cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
+                if (err != CL_SUCCESS)
+                    throw satdump_exception("Couldn't create OpenCL queue! Code " + std::to_string(err));
 
                 // Write all of buffers to the GPU, also converting to FP32
-                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
-                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
+                clEnqueueWriteBuffer(queue, buffer_img, true, 0, sizeof(uint16_t) * op.input_image.size(), op.input_image.raw_data(), 0, NULL, NULL);
                 clEnqueueWriteBuffer(queue, buffer_tps_npoints, true, 0, sizeof(int), &tps->_nof_points, 0, NULL, NULL);
                 std::vector<float> tps_x = double_buffer_to_float(tps->x, tps->_nof_points);
                 std::vector<float> tps_y = double_buffer_to_float(tps->y, tps->_nof_points);
@@ -410,11 +420,12 @@ namespace satdump
 
                 // Run the kernel!
                 size_t total_wg_size = int(size_wg) * int(compute_units);
-                if (clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL) != CL_SUCCESS)
-                    throw std::runtime_error("Couldn't clEnqueueNDRangeKernel!");
+                err = clEnqueueNDRangeKernel(queue, warping_kernel, 1, NULL, &total_wg_size, NULL, 0, NULL, NULL);
+                if (err != CL_SUCCESS)
+                    throw satdump_exception("Couldn't clEnqueueNDRangeKernel! Code " + std::to_string(err));
 
                 // Read image result back from VRAM
-                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.data(), 0, NULL, NULL);
+                clEnqueueReadBuffer(queue, buffer_map, true, 0, sizeof(uint16_t) * result.output_image.size(), result.output_image.raw_data(), 0, NULL, NULL);
 
                 // Free up everything
                 clReleaseMemObject(buffer_img);
@@ -448,27 +459,31 @@ namespace satdump
             WarpResult result;
 
             // Prepare the output
-            result.output_image = image::Image<uint16_t>(crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
-                                                         op.output_rgba ? 4 : op.input_image.channels());
+            result.output_image = image::Image(16, // TODOIMG ALLOW 8-bits
+                                                crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
+                                                op.output_rgba ? 4 : op.input_image.channels());
             result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
             result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
             result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1
             result.bottom_right = {(double)result.output_image.width() - 1, (double)result.output_image.height() - 1, (double)crop_set.lon_max, (double)crop_set.lat_min}; // 1,1
 
 #ifdef USE_OPENCL
-            try
+            if (satdump::opencl::useCL())
             {
-                logger->debug("Using GPU! Double precision requested %d", (int)force_double);
-                satdump::opencl::setupOCLContext();
-                if (force_double)
-                    warpOnGPU_fp64(result);
-                else
-                    warpOnGPU_fp32(result);
-                return result;
-            }
-            catch (std::runtime_error &e)
-            {
-                logger->error("Error warping on GPU : %s", e.what());
+                try
+                {
+                    logger->debug("Using GPU! Double precision requested %d", (int)force_double);
+                    satdump::opencl::setupOCLContext();
+                    if (force_double)
+                        warpOnGPU_fp64(result);
+                    else
+                        warpOnGPU_fp32(result);
+                    return result;
+                }
+                catch (std::runtime_error &e)
+                {
+                    logger->error("Error warping on GPU : %s", e.what());
+                }
             }
 #endif
 

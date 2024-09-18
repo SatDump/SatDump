@@ -1,0 +1,35 @@
+{
+  "light": true,
+  "ImGuiStyle": {
+    "WindowRounding": 2.0,
+    "ChildRounding": 2.0,
+    "FrameRounding": 2.0,
+    "GrabRounding": 2.0,
+    "PopupRounding": 2.0,
+    "ScrollbarRounding": 2.0
+  },
+  "ImGuiColors": {
+    "TextDisabled": "#646464FF"
+  },
+  "SatDumpColors": {
+    "red": "#BF0000FF",
+    "green": "#0F8000FF",
+    "blue": "#000080FF",
+    "yellow": "#8C4512FF",
+    "orange": "#BF800DFF",
+    "cyan": "#008080FF",
+    "fuchsia": "#800080FF",
+    "magenta": "#640080FF",
+    "lavender": "#505080FF",
+    "light_green": "#338033FF",
+    "light_cyan": "#008080FF",
+    "constellation": "#084000FF",
+    "plot_bg": "#FFFFFFFF",
+    "fft_graduations": "#00000066",
+    "notification_bg": "#D4D4D4C8",
+    "widget_bg": "#FFFFFFFF",
+    "frame_bg": "#E6E6E6FF",
+    "overlay_bg": "#FFFFFFB5",
+    "freq_highlight": "#98BAE1BF"
+  }
+}

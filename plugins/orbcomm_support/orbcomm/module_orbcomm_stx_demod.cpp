@@ -110,11 +110,16 @@ namespace orbcomm
             int framen = stx_deframer.work(bits_buf, dat_size, frames);
 
             for (int i = 0; i < framen; i++)
-                for (int y = 3; y < (ORBCOMM_STX_FRM_SIZE / 8); y++)
+                for (int y = 0; y < (ORBCOMM_STX_FRM_SIZE / 8); y++)
                     frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
 
             if (framen > 0)
-                data_out.write((char *)frames, framen * (ORBCOMM_STX_FRM_SIZE / 8));
+            {
+                if (output_data_type == DATA_FILE)
+                    data_out.write((char *)frames, framen * (ORBCOMM_STX_FRM_SIZE / 8));
+                else
+                    output_fifo->write((uint8_t *)frames, framen * (ORBCOMM_STX_FRM_SIZE / 8));
+            }
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
@@ -175,17 +180,17 @@ namespace orbcomm
                 ImGui::SameLine();
 
                 if (stx_deframer.getState() == stx_deframer.STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (stx_deframer.getState() == stx_deframer.STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
         }
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
 

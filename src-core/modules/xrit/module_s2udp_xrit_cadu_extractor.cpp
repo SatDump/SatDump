@@ -128,13 +128,13 @@ namespace xrit
             {
                 ImGui::Text("PID  : ");
                 ImGui::SameLine();
-                ImGui::TextColored(pid_to_decode == current_pid ? IMCOLOR_SYNCED : IMCOLOR_SYNCING, UITO_C_STR(current_pid));
+                ImGui::TextColored(pid_to_decode == current_pid ? style::theme.green : style::theme.orange, UITO_C_STR(current_pid));
             }
         }
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

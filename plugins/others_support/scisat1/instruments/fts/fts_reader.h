@@ -30,7 +30,7 @@ namespace scisat1
             int lines = 0;
 
             void work(ccsds::CCSDSPacket &packet);
-            image::Image<uint16_t> getImg();
+            image::Image getImg();
         };
     } // namespace swap
 } // namespace proba

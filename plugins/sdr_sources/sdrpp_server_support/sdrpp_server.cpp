@@ -95,7 +95,7 @@ void SDRPPServerSource::drawControlUI()
             catch (std::exception &e)
             {
                 logger->error("Error connecting to SDR++ Server %s", e.what());
-                error.set_message(e.what());
+                error.set_message(style::theme.red, e.what());
             }
         }
     }
@@ -155,7 +155,7 @@ std::vector<dsp::SourceDescriptor> SDRPPServerSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"sdrpp_server", "SDR++ Server", 0, false});
+    results.push_back({"sdrpp_server", "SDR++ Server", "0", false});
 
     return results;
 }

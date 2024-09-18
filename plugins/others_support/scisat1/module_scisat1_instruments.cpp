@@ -1,14 +1,14 @@
 #include "module_scisat1_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
+#include "common/image/io.h"
 
 namespace scisat1
 {
@@ -30,9 +30,9 @@ namespace scisat1
             uint8_t cadu[1199];
 
             // Demuxers
-            ccsds::ccsds_standard::Demuxer demuxer_vcid0(1016, false, 2, 7);
-            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1016, false, 2, 7);
-            ccsds::ccsds_standard::Demuxer demuxer_vcid4(1016, false, 2, 7);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid0(1016, false, 2, 7);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid1(1016, false, 2, 7);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid4(1016, false, 2, 7);
 
             // std::ofstream output("file.ccsds");
 
@@ -47,7 +47,7 @@ namespace scisat1
                 data_in.read((char *)&cadu, 1199);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);
@@ -96,11 +96,11 @@ namespace scisat1
                 if (!std::filesystem::exists(fts_directory))
                     std::filesystem::create_directory(fts_directory);
 
-                fts_reader.getImg().save_img(fts_directory + "/FTS");
-
                 auto img = fts_reader.getImg();
+                image::save_img(img, fts_directory + "/FTS");
+
                 img.resize_bilinear(img.width() / 10, img.height() * 10);
-                img.save_img(fts_directory + "/FTS_scaled");
+                image::save_img(img, fts_directory + "/FTS_scaled");
 
                 fts_status = DONE;
             }
@@ -118,8 +118,10 @@ namespace scisat1
                 if (!std::filesystem::exists(maestro_directory))
                     std::filesystem::create_directory(maestro_directory);
 
-                maestro_reader.getImg1().save_img(maestro_directory + "/MAESTRO_1");
-                maestro_reader.getImg2().save_img(maestro_directory + "/MAESTRO_2");
+                auto img = maestro_reader.getImg1();
+                image::save_img(img, maestro_directory + "/MAESTRO_1");
+                img = maestro_reader.getImg2();
+                image::save_img(img, maestro_directory + "/MAESTRO_2");
 
                 maestro_status = DONE;
             }
@@ -143,7 +145,7 @@ namespace scisat1
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("FTS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", fts_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", fts_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(fts_status);
 
@@ -151,7 +153,7 @@ namespace scisat1
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MAESTRO Mode 1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", maestro_reader.lines_1);
+                ImGui::TextColored(style::theme.green, "%d", maestro_reader.lines_1);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(maestro_status);
 
@@ -159,14 +161,14 @@ namespace scisat1
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MAESTRO Mode 2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", maestro_reader.lines_2);
+                ImGui::TextColored(style::theme.green, "%d", maestro_reader.lines_2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(maestro_status);
 
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

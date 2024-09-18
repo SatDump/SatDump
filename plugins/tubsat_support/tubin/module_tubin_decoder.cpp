@@ -8,6 +8,7 @@
 #include "products/dataset.h"
 #include "../png_fix.h"
 #include "common/image/bayer/bayer.h"
+#include "common/image/io.h"
 
 namespace tubin
 {
@@ -54,16 +55,18 @@ namespace tubin
                                              cadu[23] << 8 |
                                              cadu[24];
                     // File ID
-                    uint64_t file_id = (uint64_t)cadu[26] << 56 |
+                    uint64_t file_id = /*(uint64_t)cadu[26] << 56 |
                                        (uint64_t)cadu[27] << 48 |
                                        (uint64_t)cadu[28] << 40 |
                                        (uint64_t)cadu[29] << 32 |
                                        (uint64_t)cadu[31] << 24 |
                                        (uint64_t)cadu[32] << 16 |
                                        (uint64_t)cadu[33] << 8 |
-                                       (uint64_t)cadu[34];
+                                       (uint64_t)cadu[34];*/
+                        (uint64_t)cadu[18] << 8 |
+                        (uint64_t)cadu[19];
 
-                    // logger->info("%d %d", chunk_counter, file_id);
+                    logger->info("%d %llu", chunk_counter, file_id);
 
                     if (all_files_vis.count(file_id) == 0)
                         all_files_vis.insert({file_id, std::vector<uint8_t>()});
@@ -116,6 +119,7 @@ namespace tubin
                 continue; // Discard small files
 
             std::vector<uint8_t> out;
+            bool try_raw16 = false;
 
             // TUBIN's format is *so* robust to noise PNGs,
             // they are often at least a bit corrupted...
@@ -124,12 +128,31 @@ namespace tubin
             // decoding as much imagery that can actually be.
             if (png_fix::repair_png(f.second, out))
             {
-                logger->error("Could not repair PNG, discarding...");
-                continue;
+                logger->error("Could not repair PNG, trying as raw...");
+
+                //  std::string product_name = "UKN_" + std::to_string(f.first) + ".bin";
+                //  std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
+                //  std::ofstream(directory + "/" + product_name, std::ios::binary).write((char *)f.second.data(), f.second.size());
+
+                try_raw16 = true; // continue;
             }
 
-            image::Image<uint16_t> image;
-            image.load_png(out.data(), out.size());
+            image::Image image;
+            if (try_raw16)
+            {
+                if (f.second.size() > int(912 * 688 * sizeof(uint16_t) * 1.3))
+                {
+                    f.second.resize((127 + 3664 * 2748) * sizeof(uint16_t));
+                    image = image::Image((uint16_t *)f.second.data() + 127, 16, 3664, 2748, 1); // RAW
+                }
+                else
+                {
+                    f.second.resize((127 + 912 * 688) * sizeof(uint16_t));
+                    image = image::Image((uint16_t *)f.second.data() + 127, 16, 912, 688, 1); // RAW
+                }
+            }
+            else
+                image::load_png(image, out.data(), out.size()); // PNG
 
             logger->info("New image is %dx%d", image.width(), image.height());
 
@@ -141,20 +164,20 @@ namespace tubin
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
 
-                image.save_png(directory + "/TUBIN_RAW.png");
+                image::save_png(image, directory + "/TUBIN_RAW.png");
 
-                image::Image<uint16_t> img_color(image.width(), image.height(), 3);
-                dc1394_bayer_decoding_16bit(image.data(), img_color.data(), image.width(), image.height(), DC1394_COLOR_FILTER_GBRG, DC1394_BAYER_METHOD_NEAREST, 16);
+                image::Image img_color(16, image.width(), image.height(), 3);
+                dc1394_bayer_decoding_16bit((uint16_t *)image.raw_data(), (uint16_t *)img_color.raw_data(), image.width(), image.height(), DC1394_COLOR_FILTER_GBRG, DC1394_BAYER_METHOD_NEAREST, 16);
 
                 {
                     auto cpi = img_color;
 
                     for (size_t dddd = 0; dddd < cpi.width() * cpi.height(); dddd++)
                         for (int c = 0; c < 3; c++)
-                            img_color.channel(c)[dddd] = cpi[dddd * 3 + c];
+                            img_color.set(c, dddd, cpi.get(dddd * 3 + c));
                 }
 
-                img_color.save_png(directory + "/TUBIN_DEBAYER_RGB.png");
+                image::save_png(img_color, directory + "/TUBIN_DEBAYER_RGB.png");
 
                 logger->info("----------- TUBIN Vis");
                 logger->info("Width  : " + std::to_string(image.width()));
@@ -169,9 +192,9 @@ namespace tubin
                 // tubin_products.set_timestamps(avhrr_reader.timestamps);
                 // tubin_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
-                tubin_products.images.push_back({"TUBIN-1", "1", image::Image<uint16_t>(img_color.channel(0), image.width(), image.height(), 1)});
-                tubin_products.images.push_back({"TUBIN-2", "2", image::Image<uint16_t>(img_color.channel(1), image.width(), image.height(), 1)});
-                tubin_products.images.push_back({"TUBIN-3", "3", image::Image<uint16_t>(img_color.channel(2), image.width(), image.height(), 1)});
+                tubin_products.images.push_back({"TUBIN-1", "1", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 0), 16, image.width(), image.height(), 1)});
+                tubin_products.images.push_back({"TUBIN-2", "2", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 1), 16, image.width(), image.height(), 1)});
+                tubin_products.images.push_back({"TUBIN-3", "3", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 2), 16, image.width(), image.height(), 1)});
 
                 tubin_products.save(directory);
                 dataset.products_list.push_back(product_name);
@@ -189,7 +212,7 @@ namespace tubin
     {
         ImGui::Begin("TUBIN Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

@@ -24,7 +24,7 @@ int main_record(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " record [output_baseband (without extension!)] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in sources can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8/w16/ziq] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8/wav16/ziq] --dc_block --iq_swap");
         logger->error(" --source [airspy/rtlsdr/etc] --gain 20 --bias");
         logger->error("As well as --timeout in seconds");
         logger->error("Sample command :");
@@ -39,13 +39,13 @@ int main_record(int argc, char *argv[])
     std::string output_file = argv[2];
 
     // Parse flags
-    nlohmann::json parameters = parse_common_flags(argc - 3, &argv[3]);
+    nlohmann::json parameters = parse_common_flags(argc - 3, &argv[3], {{"source_id", typeid(std::string)}});
 
     uint64_t samplerate;
     uint64_t frequency;
     uint64_t timeout;
     std::string handler_id;
-    uint64_t hdl_dev_id = 0;
+    std::string hdl_dev_id;
     double decimation = 1;
 
     try
@@ -57,7 +57,7 @@ int main_record(int argc, char *argv[])
         if (parameters.contains("decimation"))
             decimation = parameters["decimation"].get<int>();
         if (parameters.contains("source_id"))
-            hdl_dev_id = parameters["source_id"].get<uint64_t>();
+            hdl_dev_id = parameters["source_id"].get<std::string>();
     }
     catch (std::exception &e)
     {
@@ -84,18 +84,7 @@ int main_record(int argc, char *argv[])
         {
             if (parameters.contains("source_id"))
             {
-#ifdef _WIN32 // Windows being cursed. TODO investigate further? It's uint64_t everywhere come on!
-                char cmp_buff1[100];
-                char cmp_buff2[100];
-
-                snprintf(cmp_buff1, sizeof(cmp_buff1), "%d", hdl_dev_id);
-                std::string cmp1 = cmp_buff1;
-                snprintf(cmp_buff2, sizeof(cmp_buff2), "%d", src.unique_id);
-                std::string cmp2 = cmp_buff2;
-                if (cmp1 == cmp2)
-#else
                 if (hdl_dev_id == src.unique_id)
-#endif
                 {
                     selected_src = src;
                     src_found = true;
@@ -185,25 +174,23 @@ int main_record(int argc, char *argv[])
         webserver_already_set = true;
     }
 
-    int ziq_bit_depth = 8;
-    if (parameters.contains("ziq_depth"))
-        ziq_bit_depth = parameters["ziq_depth"].get<int>();
-
-    if (parameters["baseband_format"].get<std::string>() == "ziq")
-        logger->info("Using ZIQ Depth %d", ziq_bit_depth);
-
-    if (parameters.contains("baseband_format"))
-    {
-        file_sink->set_output_sample_type(dsp::basebandTypeFromString(parameters["baseband_format"].get<std::string>()));
-    }
-    else
+    if (!parameters.contains("baseband_format"))
     {
         logger->error("baseband_format flag is required!");
         return 1;
     }
 
+    dsp::BasebandType baseband_type = parameters["baseband_format"].get<std::string>();
+
+    if (parameters.contains("ziq_depth"))
+        baseband_type.ziq_depth = parameters["ziq_depth"].get<int>();
+
+    if (parameters["baseband_format"].get<std::string>() == "ziq")
+        logger->info("Using ZIQ Depth %d", baseband_type.ziq_depth);
+
+    file_sink->set_output_sample_type(baseband_type);
     file_sink->start();
-    file_sink->start_recording(output_file, samplerate / decimation, ziq_bit_depth);
+    file_sink->start_recording(output_file, samplerate / decimation);
 
     // If requested, boot up webserver
     if (parameters.contains("http_server"))

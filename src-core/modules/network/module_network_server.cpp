@@ -4,26 +4,31 @@
 #include "common/utils.h"
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/pub.h>
+#include "common/net/udp.h"
+#include "core/exception.h"
 
 namespace network
 {
     NetworkServerModule::NetworkServerModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : ProcessingModule(input_file, output_file_hint, parameters)
     {
+        if (parameters.contains("server_mode"))
+            mode = parameters["server_mode"].get<std::string>();
+
         if (parameters.count("pkt_size") > 0)
             pkt_size = parameters["pkt_size"].get<int>();
         else
-            throw std::runtime_error("pkt_size parameter must be present!");
+            throw satdump_exception("pkt_size parameter must be present!");
 
         if (parameters.count("server_address") > 0)
             address = parameters["server_address"].get<std::string>();
         else
-            throw std::runtime_error("server_address parameter must be present!");
+            throw satdump_exception("server_address parameter must be present!");
 
         if (parameters.count("server_port") > 0)
             port = parameters["server_port"].get<int>();
         else
-            throw std::runtime_error("server_port parameter must be present!");
+            throw satdump_exception("server_port parameter must be present!");
 
         buffer = new uint8_t[pkt_size];
     }
@@ -54,38 +59,51 @@ namespace network
 
         logger->info("Using input frames " + d_input_file);
 
-        time_t lastTime = 0;
-
-        nng_socket sock;
-        nng_listener listener;
-
-        logger->info("Opening TCP socket on " + std::string("tcp://" + address + ":" + std::to_string(port)));
-
-        nng_pub0_open_raw(&sock);
-        nng_listener_create(&listener, sock, std::string("tcp://" + address + ":" + std::to_string(port)).c_str());
-        nng_listener_start(listener, NNG_FLAG_NONBLOCK);
-
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        if (mode == "default")
         {
-            // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)buffer, pkt_size);
-            else
-                input_fifo->read((uint8_t *)buffer, pkt_size);
+            nng_socket sock;
+            nng_listener listener;
 
-            nng_send(sock, buffer, pkt_size, NNG_FLAG_NONBLOCK);
+            logger->info("Opening TCP socket on " + std::string("tcp://" + address + ":" + std::to_string(port)));
 
-            if (input_data_type == DATA_FILE)
-                progress = data_in.tellg();
+            nng_pub0_open_raw(&sock);
+            nng_listener_create(&listener, sock, std::string("tcp://" + address + ":" + std::to_string(port)).c_str());
+            nng_listener_start(listener, NNG_FLAG_NONBLOCK);
 
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
+                // Read a buffer
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)buffer, pkt_size);
+                else
+                    input_fifo->read((uint8_t *)buffer, pkt_size);
+
+                nng_send(sock, buffer, pkt_size, NNG_FLAG_NONBLOCK);
+
+                if (input_data_type == DATA_FILE)
+                    progress = data_in.tellg();
+            }
+
+            nng_listener_close(listener);
+        }
+        else if (mode == "udp_send")
+        {
+            net::UDPClient udp_send((char *)address.c_str(), port);
+
+            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            {
+                // Read a buffer
+                if (input_data_type == DATA_FILE)
+                    data_in.read((char *)buffer, pkt_size);
+                else
+                    input_fifo->read((uint8_t *)buffer, pkt_size);
+
+                udp_send.send(buffer, pkt_size);
+
+                if (input_data_type == DATA_FILE)
+                    progress = data_in.tellg();
             }
         }
-
-        nng_listener_close(listener);
 
         if (input_data_type == DATA_FILE)
             data_in.close();
@@ -97,14 +115,14 @@ namespace network
 
         ImGui::Text("Address  : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, "%s", address.c_str());
+        ImGui::TextColored(style::theme.green, "%s", address.c_str());
 
         ImGui::Text("Port    : ");
         ImGui::SameLine();
-        ImGui::TextColored(IMCOLOR_SYNCED, UITO_C_STR(port));
+        ImGui::TextColored(style::theme.green, UITO_C_STR(port));
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

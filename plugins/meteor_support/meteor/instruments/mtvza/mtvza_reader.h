@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 #include "common/image/image.h"
 
 namespace meteor
@@ -23,7 +24,7 @@ namespace meteor
             double latest_msumr_timestamp = -1;
 
             void work(uint8_t *data);
-            image::Image<uint16_t> getChannel(int channel);
+            image::Image getChannel(int channel);
 
             bool endian_mode = false;
         };

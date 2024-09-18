@@ -3,6 +3,7 @@
 #include <string>
 #include "imgui/imgui_image.h"
 #include "resources.h"
+#include "logger.h"
 
 namespace widgets
 {
@@ -15,35 +16,57 @@ namespace widgets
     WaterfallPlot::~WaterfallPlot()
     {
         if (raw_img_buffer != nullptr)
-            delete[] raw_img_buffer;
+            free(raw_img_buffer);
+    }
+
+    bool WaterfallPlot::buffer_alloc(size_t size)
+    {
+        uint32_t* new_img_buffer = (uint32_t*)realloc(raw_img_buffer, size);
+        if (new_img_buffer == nullptr)
+        {
+            logger->error("Cannot allocate memory for waterfall");
+            if (raw_img_buffer != nullptr)
+            {
+                free(raw_img_buffer);
+                raw_img_buffer = nullptr;
+            }
+            last_curr_height = last_curr_width = 0;
+            return false;
+        }
+
+        raw_img_buffer = new_img_buffer;
+        uint64_t old_size = last_curr_width * last_curr_height;
+        if (size > old_size * sizeof(uint32_t))
+            memset(&raw_img_buffer[old_size], 0, size - old_size * sizeof(uint32_t));
+        last_curr_width = curr_width;
+        last_curr_height = curr_height;
+        return true;
     }
 
     void WaterfallPlot::draw(ImVec2 size, bool active)
     {
-        curr_width = size.x > fft_size ? fft_size : size.x;
-        curr_height = size.y > fft_lines ? fft_lines : size.y;
-
         work_mtx.lock();
+        if (texture_id == 0 || active)
+        {
+            curr_width = size.x > fft_size ? fft_size : size.x;
+            curr_height = size.y > fft_lines ? fft_lines : size.y;
+        }
         if (texture_id == 0)
         {
             texture_id = makeImageTexture();
-            raw_img_buffer = new uint32_t[curr_width * curr_height];
-            memset(raw_img_buffer, 0, sizeof(uint32_t) * curr_width * curr_height);
+            need_update = buffer_alloc(curr_width * curr_height * sizeof(uint32_t));
             if ((int)palette.size() != resolution)
                 set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
-
-            last_curr_width = curr_width;
-            last_curr_height = curr_height;
-            need_update = true;
         }
         if (active && (last_curr_width != curr_width || last_curr_height != curr_height))
         {
-            if (raw_img_buffer != nullptr)
-                delete[] raw_img_buffer;
-            raw_img_buffer = new uint32_t[curr_width * curr_height];
-            memset(raw_img_buffer, 0, sizeof(uint32_t) * curr_width * curr_height);
-            last_curr_width = curr_width;
-            last_curr_height = curr_height;
+            if (raw_img_buffer != nullptr && last_curr_width != curr_width)
+            {
+                free(raw_img_buffer);
+                raw_img_buffer = nullptr;
+                last_curr_height = last_curr_width = 0;
+            }
+            need_update = buffer_alloc(curr_width * curr_height * sizeof(uint32_t));
         }
         if (need_update)
         {
@@ -57,7 +80,7 @@ namespace widgets
 
     void WaterfallPlot::push_fft(float *values)
     {
-        if (texture_id == 0)
+        if (texture_id == 0 || raw_img_buffer == nullptr)
             return;
 
         work_mtx.lock();

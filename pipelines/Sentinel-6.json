@@ -60,8 +60,7 @@
             },
             "cadu": {
                 "ccsds_simple_psk_decoder": {
-                    "constellation": "qpsk",
-                    "oqpsk_mode": true,
+                    "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "nrzm": false,
                     "derandomize": true,

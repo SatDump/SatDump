@@ -1,0 +1,86 @@
+{
+    "cluster_lr_link": {
+        "name": "Cluster-IIFM S-Band Lowrate Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 43.7e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "costas_bw": 0.001,
+                    "subcarrier_offset": 262e3
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.3,
+                    "viterbi_outsync_after": 1,
+                    "nrzm": false,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            }
+        }
+    },
+    "cluster_hr_link": {
+        "name": "Cluster-IIFM S-Band Highrate Link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ],
+            [
+                3,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 524.288e3,
+                    "pll_bw": 0.002,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.3,
+                    "viterbi_outsync_after": 1,
+                    "nrzm": false,
+                    "derandomize": false,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            },
+            "products":{ 
+                "cluster_instruments": {} 
+            } 
+        }
+    }
+}

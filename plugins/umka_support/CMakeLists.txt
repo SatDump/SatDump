@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(umka_support)
 
 file(GLOB_RECURSE umka_support_CPPS *.cpp)

@@ -1,5 +1,5 @@
 #include "lrit_demux.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include "crc_table.h"
 
@@ -26,14 +26,14 @@ namespace lrit
     {
         files.clear();
 
-        ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+        ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
         if (vcdu.vcid == 63) // Skip filler
             return files;
 
         if (demuxers.count(vcdu.vcid) <= 0) // Add new demux if required
         {
-            demuxers.emplace(std::pair<int, std::unique_ptr<ccsds::ccsds_weather::Demuxer>>(vcdu.vcid, std::make_unique<ccsds::ccsds_weather::Demuxer>(d_mpdu_size, false)));
+            demuxers.emplace(std::pair<int, std::unique_ptr<ccsds::ccsds_aos::Demuxer>>(vcdu.vcid, std::make_unique<ccsds::ccsds_aos::Demuxer>(d_mpdu_size, false)));
             wip_files.insert({vcdu.vcid, std::map<int, LRITFile>()});
         }
 
@@ -65,12 +65,13 @@ namespace lrit
                 if (can_continue)
                 {
                     logger->warn("LRIT CRC is invalid, but file can be recovered");
-                    processLRITData(current_file, pkt); //Push anyway - there's probably some good pixels in there
+                    processLRITData(current_file, pkt, true);
                 }
                 else
                 {
                     logger->error("LRIT CRC is invalid... Skipping.");
                     current_file.file_in_progress = false;
+                    std::vector<uint8_t>().swap(current_file.lrit_data);
                 }
                 continue;
             }
@@ -86,6 +87,7 @@ namespace lrit
                 current_file.vcid = vcdu.vcid;
                 current_file.header_parsed = false;
                 current_file.file_in_progress = true;
+                current_file.last_tracked_counter = pkt.header.packet_sequence_count;
             }
             else if (pkt.header.sequence_flag == 0)
             {
@@ -99,6 +101,7 @@ namespace lrit
                     processLRITData(current_file, pkt);
                     finalizeLRITData(current_file);
                     current_file.file_in_progress = false;
+                    std::vector<uint8_t>().swap(current_file.lrit_data);
                 }
             }
 
@@ -110,6 +113,12 @@ namespace lrit
                 {
                     parseHeader(current_file);
                     current_file.header_parsed = true;
+                    if (pkt.header.sequence_flag == 3)
+                    {
+                        finalizeLRITData(current_file);
+                        current_file.file_in_progress = false;
+                        std::vector<uint8_t>().swap(current_file.lrit_data);
+                    }
                 }
             }
         }
@@ -129,9 +138,9 @@ namespace lrit
         onParseHeader(file);
     }
 
-    void LRITDemux::processLRITData(LRITFile &file, ccsds::CCSDSPacket &pkt)
+    void LRITDemux::processLRITData(LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc)
     {
-        if (onProcessData(file, pkt))
+        if (onProcessData(file, pkt, bad_crc))
             file.lrit_data.insert(file.lrit_data.end(), &pkt.payload.data()[0], &pkt.payload.data()[pkt.payload.size() - 2]);
     }
 

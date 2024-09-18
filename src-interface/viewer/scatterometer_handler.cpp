@@ -6,6 +6,7 @@
 #include "common/widgets/stepped_slider.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "main_ui.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {
@@ -43,7 +44,6 @@ namespace satdump
         {
         }
 
-        current_img.init_font(resources::getResourcePath("fonts/font.ttf"));
         update();
     }
 
@@ -183,15 +183,17 @@ namespace satdump
             ImGui::BeginGroup();
             if (!canBeProjected())
                 style::beginDisabled();
-            ImGui::Checkbox("Project", &should_project);
+            if (ImGui::Button("Add to Projections"))
+                addCurrentToProjections();
+            ImGui::SameLine();
+            proj_notif.draw();
             if (!canBeProjected())
                 style::endDisabled();
             ImGui::EndGroup();
-            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && selected_visualization_id != 1)
             {
                 ImGui::BeginTooltip();
-                if (selected_visualization_id != 1)
-                    ImGui::TextColored(ImColor(255, 0, 0), "Select projection view first!");
+                ImGui::TextColored(style::theme.red, "Select projection view first!");
                 ImGui::EndTooltip();
             }
         }
@@ -219,41 +221,44 @@ namespace satdump
                selected_visualization_id == 1;
     }
 
-    bool ScatterometerViewerHandler::hasProjection()
-    {
-        return projection_ready && should_project;
-    }
-
-    bool ScatterometerViewerHandler::shouldProject()
-    {
-        return should_project;
-    }
-
-    void ScatterometerViewerHandler::updateProjection(int width, int height, nlohmann::json settings, float *progess)
+    void ScatterometerViewerHandler::addCurrentToProjections()
     {
         if (canBeProjected())
         {
-            reprojection::ReprojectionOperation op;
-            op.source_prj_info = current_image_proj;
-            op.target_prj_info = settings;
-            op.img = current_img;
-            op.output_width = width;
-            op.output_height = height;
-            // op.use_draw_algorithm = use_draw_proj_algo;
-            // op.img_tle = products->get_tle();
-            // op.img_tim = current_timestamps;
-            reprojection::ProjectionResult res = reprojection::reproject(op, progess);
-            projected_img = res.img;
-            projection_ready = true;
+            try
+            {
+                nlohmann::json proj_cfg = current_image_proj;
+                image::set_metadata_proj_cfg(current_img, proj_cfg);
+
+                // Create projection title
+                std::string timestring, object_name, instrument_name;
+                if (products->has_timestamps)
+                    timestring = "[" + timestamp_to_string(get_median(products->get_timestamps(select_channel_image_id))) + "] ";
+                else
+                    timestring = "";
+                if (products->has_tle())
+                    object_name = products->get_tle().name;
+                else
+                    object_name = "";
+                if (timestring != "" || object_name != "")
+                    object_name += "\n";
+                if (instrument_cfg.contains("name"))
+                    instrument_name = instrument_cfg["name"];
+                else
+                    instrument_name = products->instrument_name;
+
+                viewer_app->projection_layers.push_front({timestring + object_name + instrument_name, current_img});
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not project image! %s", e.what());
+            }
+
+            proj_notif.set_message(style::theme.green, "Added!");
         }
         else
         {
             logger->error("Current image can't be projected!");
         }
-    }
-
-    image::Image<uint16_t> &ScatterometerViewerHandler::getProjection()
-    {
-        return projected_img;
     }
 }

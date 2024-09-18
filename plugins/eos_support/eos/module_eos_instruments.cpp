@@ -1,7 +1,7 @@
 #include "module_eos_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -11,9 +11,14 @@
 #include "products/dataset.h"
 #include "resources.h"
 #include "instruments/modis/modis_histmatch.h"
+#include "nlohmann/json_utils.h"
 
 #include "common/calibration.h"
 #include "instruments/modis/calibrator/modis_calibrator.h"
+#include "core/exception.h"
+
+#include "common/image/io.h"
+#include "common/image/image_utils.h"
 
 namespace eos
 {
@@ -30,7 +35,7 @@ namespace eos
             else if (parameters["satellite"] == "aura")
                 d_satellite = AURA;
             else
-                throw std::runtime_error("EOS Instruments Decoder : EOS satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+                throw satdump_exception("EOS Instruments Decoder : EOS satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
         }
 
         void EOSInstrumentsDecoderModule::process()
@@ -46,15 +51,15 @@ namespace eos
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid3;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid10;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid15;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid20;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid25;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid26;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid30;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid35;
-            ccsds::ccsds_weather::Demuxer demuxer_vcid42;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid3;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid10;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid15;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid20;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid25;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid26;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid30;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid35;
+            ccsds::ccsds_aos::Demuxer demuxer_vcid42;
 
             while (!data_in.eof())
             {
@@ -62,7 +67,7 @@ namespace eos
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (d_satellite == TERRA)
                 {
@@ -161,18 +166,21 @@ namespace eos
             else if (d_satellite == AURA)
                 dataset.satellite_name = "Aura";
 
+            if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
+                dataset.timestamp = get_median(modis_reader.timestamps_1000);
+            else
+                dataset.timestamp = time(0);
+
             std::optional<satdump::TLE> satellite_tle;
             if (d_satellite == AQUA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(27424);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(27424, dataset.timestamp);
             else if (d_satellite == TERRA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(25994);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(25994, dataset.timestamp);
             else if (d_satellite == AURA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad(28376);
+                satellite_tle = satdump::general_tle_registry.get_from_norad_time(28376, dataset.timestamp);
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {
-                dataset.timestamp = get_median(modis_reader.timestamps_1000);
-
                 modis_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MODIS";
 
@@ -207,7 +215,7 @@ namespace eos
 
                 for (int i = 0; i < 2; i++)
                 {
-                    image::Image<uint16_t> image = modis_reader.getImage250m(i);
+                    image::Image image = modis_reader.getImage250m(i);
                     // modis::modis_match_detector_histograms(image, 1 /*4*/, 40 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_250, alpha, beta);
@@ -216,7 +224,7 @@ namespace eos
 
                 for (int i = 0; i < 5; i++)
                 {
-                    image::Image<uint16_t> image = modis_reader.getImage500m(i);
+                    image::Image image = modis_reader.getImage500m(i);
                     // modis::modis_match_detector_histograms(image, 1 /*2*/, 20 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
@@ -226,7 +234,7 @@ namespace eos
                 std::vector<std::vector<int>> bowtie_lut_1km;
                 for (int i = 0; i < 31; i++)
                 {
-                    image::Image<uint16_t> image = modis_reader.getImage1000m(i);
+                    image::Image image = modis_reader.getImage1000m(i);
 
                     // modis::modis_match_detector_histograms(image, 1, 10 * 2);
 
@@ -303,7 +311,8 @@ namespace eos
                 airs_hd_products.bit_depth = 16;
                 airs_hd_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 airs_hd_products.set_tle(satellite_tle);
-                // airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_hd_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_hd_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_airs.json")));
 
                 for (int i = 0; i < 4; i++)
                     airs_hd_products.images.push_back({"AIRS-HD-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getHDChannel(i)});
@@ -316,9 +325,10 @@ namespace eos
                 airs_products.has_timestamps = true;
                 airs_products.bit_depth = 16;
                 airs_products.save_as_matrix = true;
-                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                airs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
                 airs_products.set_tle(satellite_tle);
-                // airs_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_products.set_timestamps(airs_reader.timestamps_ifov);
+                airs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aqua_airs.json")));
 
                 for (int i = 0; i < 2666; i++)
                     airs_products.images.push_back({"AIRS-" + std::to_string(i + 1), std::to_string(i + 1), airs_reader.getChannel(i)});
@@ -374,14 +384,20 @@ namespace eos
                 logger->info("Lines (FM3) : " + std::to_string(ceres_fm3_reader.lines));
                 logger->info("Lines (FM4) : " + std::to_string(ceres_fm4_reader.lines));
 
-                WRITE_IMAGE(ceres_fm3_reader.getImage(0), directory + "/CERES1-SHORTWAVE");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(1), directory + "/CERES1-LONGWAVE");
-                WRITE_IMAGE(ceres_fm3_reader.getImage(2), directory + "/CERES1-TOTAL");
+                auto img = ceres_fm3_reader.getImage(0);
+                image::save_img(img, directory + "/CERES1-SHORTWAVE");
+                img = ceres_fm3_reader.getImage(1);
+                image::save_img(img, directory + "/CERES1-LONGWAVE");
+                img = ceres_fm3_reader.getImage(2);
+                image::save_img(img, directory + "/CERES1-TOTAL");
                 ceres_fm3_status = DONE;
 
-                WRITE_IMAGE(ceres_fm4_reader.getImage(0), directory + "/CERES2-SHORTWAVE");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(1), directory + "/CERES2-LONGWAVE");
-                WRITE_IMAGE(ceres_fm4_reader.getImage(2), directory + "/CERES2-TOTAL");
+                img = ceres_fm4_reader.getImage(0);
+                image::save_img(img, directory + "/CERES2-SHORTWAVE");
+                img = ceres_fm4_reader.getImage(1);
+                image::save_img(img, directory + "/CERES2-LONGWAVE");
+                img = ceres_fm4_reader.getImage(2);
+                image::save_img(img, directory + "/CERES2-TOTAL");
                 ceres_fm4_status = DONE;
             }
 
@@ -397,18 +413,22 @@ namespace eos
                 logger->info("Lines (UV) : " + std::to_string(omi_1_reader.lines));
                 logger->info("Lines (VIS) : " + std::to_string(omi_2_reader.lines));
 
-                WRITE_IMAGE(omi_1_reader.getImageRaw(), directory + "/OMI-1");
-                WRITE_IMAGE(omi_2_reader.getImageRaw(), directory + "/OMI-2");
+                auto img = omi_1_reader.getImageRaw();
+                image::save_img(img, directory + "/OMI-1");
+                img = omi_2_reader.getImageRaw();
+                image::save_img(img, directory + "/OMI-2");
 
-                WRITE_IMAGE(omi_1_reader.getImageVisible(), directory + "/OMI-VIS-1");
-                WRITE_IMAGE(omi_2_reader.getImageVisible(), directory + "/OMI-VIS-2");
+                img = omi_1_reader.getImageVisible();
+                image::save_img(img, directory + "/OMI-VIS-1");
+                img = omi_2_reader.getImageVisible();
+                image::save_img(img, directory + "/OMI-VIS-2");
 
-                image::Image<uint16_t> imageAll1 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
-                                                                                           { return omi_1_reader.getChannel(c); });
-                image::Image<uint16_t> imageAll2 = image::make_manyimg_composite<uint16_t>(33, 24, 792, [this](int c)
-                                                                                           { return omi_2_reader.getChannel(c); });
-                WRITE_IMAGE(imageAll1, directory + "/OMI-ALL-1");
-                WRITE_IMAGE(imageAll2, directory + "/OMI-ALL-2");
+                image::Image imageAll1 = image::make_manyimg_composite(33, 24, 792, [this](int c)
+                                                                       { return omi_1_reader.getChannel(c); });
+                image::Image imageAll2 = image::make_manyimg_composite(33, 24, 792, [this](int c)
+                                                                       { return omi_2_reader.getChannel(c); });
+                image::save_img(imageAll1, directory + "/OMI-ALL-1");
+                image::save_img(imageAll2, directory + "/OMI-ALL-2");
                 omi_status = DONE;
             }
 
@@ -435,7 +455,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("MODIS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", modis_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", modis_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(modis_status);
                 }
@@ -446,7 +466,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("AIRS");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", airs_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", airs_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(airs_status);
 
@@ -454,7 +474,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("AMSU A1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a1_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", amsu_a1_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(amsu_status);
 
@@ -462,7 +482,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("AMSU A2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_a2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", amsu_a2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(amsu_status);
 
@@ -470,7 +490,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CERES FM-3");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", ceres_fm3_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", ceres_fm3_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(ceres_fm3_status);
 
@@ -478,7 +498,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("CERES FM-4");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", ceres_fm4_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", ceres_fm4_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(ceres_fm4_status);
                 }
@@ -489,7 +509,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("OMI 1");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", omi_1_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", omi_1_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(omi_status);
 
@@ -497,7 +517,7 @@ namespace eos
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("OMI 2");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::TextColored(ImColor(0, 255, 0), "%d", omi_2_reader.lines);
+                    ImGui::TextColored(style::theme.green, "%d", omi_2_reader.lines);
                     ImGui::TableSetColumnIndex(2);
                     drawStatus(omi_status);
                 }
@@ -505,7 +525,7 @@ namespace eos
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

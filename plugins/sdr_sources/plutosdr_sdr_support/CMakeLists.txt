@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.12)
 project(plutosdr_sdr_support)
 
 
@@ -9,27 +9,19 @@ if((IIO_LIBRARY AND AD9361_LIBRARY) OR MSVC OR ANDROID)
     message("Building with PlutoSDR support")
     file(GLOB_RECURSE plutosdr_sdr_support_CPPS *.cpp)
     add_library(plutosdr_sdr_support SHARED ${plutosdr_sdr_support_CPPS})
+    target_include_directories(plutosdr_sdr_support PUBLIC src)
 
     if(MSVC)
         target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core libiio.dll libad9361.dll)
+        install(TARGETS plutosdr_sdr_support DESTINATION lib/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     elseif(ANDROID)
         target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core iio ad9361iio)
         target_include_directories(plutosdr_sdr_support PUBLIC ../../../android/deps/libiio ../../../android/deps/libad9361-iio)
-    elseif(APPLE)
-        target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core)
-
-        target_include_directories(plutosdr_sdr_support PRIVATE "/Library/Frameworks/iio.framework/Headers")
-        target_link_libraries(plutosdr_sdr_support PRIVATE "/Library/Frameworks/iio.framework/iio")
-
-        target_include_directories(plutosdr_sdr_support PRIVATE "/Library/Frameworks/ad9361.framework/Headers")
-        target_link_libraries(plutosdr_sdr_support PRIVATE "/Library/Frameworks/ad9361.framework/ad9361")
+        install(TARGETS plutosdr_sdr_support DESTINATION lib/satdump/plugins)
     else()
         target_link_libraries(plutosdr_sdr_support PUBLIC satdump_core ${IIO_LIBRARY} ${AD9361_LIBRARY})
+        install(TARGETS plutosdr_sdr_support DESTINATION lib/satdump/plugins)
     endif()
-
-    target_include_directories(plutosdr_sdr_support PUBLIC src)
-
-    install(TARGETS plutosdr_sdr_support DESTINATION lib/satdump/plugins)
 else()
     message("IIO or AD9361 Library could not be found! Not building.")
 endif()

@@ -14,12 +14,12 @@ namespace demod
         if (parameters.count("constellation") > 0)
             constellation_type = parameters["constellation"].get<std::string>();
         else
-            throw std::runtime_error("Constellation type parameter must be present!");
+            throw satdump_exception("Constellation type parameter must be present!");
 
         if (parameters.count("rrc_alpha") > 0)
             d_rrc_alpha = parameters["rrc_alpha"].get<float>();
         else
-            throw std::runtime_error("RRC Alpha parameter must be present!");
+            throw satdump_exception("RRC Alpha parameter must be present!");
 
         if (parameters.count("rrc_taps") > 0)
             d_rrc_taps = parameters["rrc_taps"].get<int>();
@@ -27,7 +27,7 @@ namespace demod
         if (parameters.count("pll_bw") > 0)
             d_loop_bw = parameters["pll_bw"].get<float>();
         else
-            throw std::runtime_error("PLL BW parameter must be present!");
+            throw satdump_exception("PLL BW parameter must be present!");
 
         if (parameters.count("post_costas_dc") > 0)
             d_post_costas_dc_blocking = parameters["post_costas_dc"].get<bool>();
@@ -89,13 +89,13 @@ namespace demod
         if (d_has_carrier)
         {
             if (constellation_type != "bpsk")
-                throw std::runtime_error("For carrier mode, constellation must be BPSK!");
+                throw satdump_exception("For carrier mode, constellation must be BPSK!");
 
             float d_carrier_pll_bw;
             if (d_parameters.count("carrier_pll_bw") > 0)
                 d_carrier_pll_bw = d_parameters["carrier_pll_bw"].get<float>();
             else
-                throw std::runtime_error("Carrier PLL Bw parameter must be present!");
+                throw satdump_exception("Carrier PLL Bw parameter must be present!");
 
             float d_carrier_pll_max_offset = 3.14;
             if (d_parameters.count("carrier_pll_max_offset") > 0)
@@ -109,12 +109,16 @@ namespace demod
         }
 
         // PLL
+        float costas_max_offset = d_has_carrier ? 0.2 : 1.0; // The offset in frequency should already be resolved on AM subcarriers
+        if (d_parameters.count("costas_max_offset") > 0)
+            costas_max_offset = dsp::hz_to_rad(d_parameters["costas_max_offset"].get<float>(), final_samplerate);
+
         if (constellation_type == "bpsk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(d_has_carrier ? carrier_dc->output_stream : rrc->output_stream, d_loop_bw, 2);
+            pll = std::make_shared<dsp::CostasLoopBlock>(d_has_carrier ? carrier_dc->output_stream : rrc->output_stream, d_loop_bw, 2, costas_max_offset);
         else if (constellation_type == "qpsk" || constellation_type == "oqpsk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4);
+            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 4, costas_max_offset);
         else if (constellation_type == "8psk")
-            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 8);
+            pll = std::make_shared<dsp::CostasLoopBlock>(rrc->output_stream, d_loop_bw, 8, costas_max_offset);
 
         if (d_post_costas_dc_blocking)
             post_pll_dc = std::make_shared<dsp::CorrectIQBlock<complex_t>>(pll->output_stream);

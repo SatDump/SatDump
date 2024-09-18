@@ -131,18 +131,20 @@ namespace aqua
             // Constellation
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
-                draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         ImColor::HSV(0, 0, 0));
+                ImVec2 rect_min = ImGui::GetCursorScreenPos();
+                ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
+                draw_list->PushClipRect(rect_min, rect_max);
 
                 for (int i = 0; i < 2048; i++)
                 {
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
                                                2 * ui_scale,
-                                               ImColor::HSV(113.0 / 360.0, 1, 1, 1.0));
+                                               style::theme.constellation);
                 }
 
+                draw_list->PopClipRect();
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
         }
@@ -159,11 +161,11 @@ namespace aqua
                 ImGui::SameLine();
 
                 if (deframer.getState() == deframer.STATE_NOSYNC)
-                    ImGui::TextColored(IMCOLOR_NOSYNC, "NOSYNC");
+                    ImGui::TextColored(style::theme.red, "NOSYNC");
                 else if (deframer.getState() == deframer.STATE_SYNCING)
-                    ImGui::TextColored(IMCOLOR_SYNCING, "SYNCING");
+                    ImGui::TextColored(style::theme.orange, "SYNCING");
                 else
-                    ImGui::TextColored(IMCOLOR_SYNCED, "SYNCED");
+                    ImGui::TextColored(style::theme.green, "SYNCED");
             }
 
             ImGui::Spacing();
@@ -175,19 +177,26 @@ namespace aqua
                 {
                     ImGui::SameLine();
 
-                    if (errors[i] == -1)
-                        ImGui::TextColored(IMCOLOR_NOSYNC, "%i ", i);
-                    else if (errors[i] > 0)
-                        ImGui::TextColored(IMCOLOR_SYNCING, "%i ", i);
+                    if (deframer.getState() == deframer.STATE_NOSYNC)
+                    {
+                        ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "%i ", i);
+                    }
                     else
-                        ImGui::TextColored(IMCOLOR_SYNCED, "%i ", i);
+                    {
+                        if (errors[i] == -1)
+                            ImGui::TextColored(style::theme.red, "%i ", i);
+                        else if (errors[i] > 0)
+                            ImGui::TextColored(style::theme.orange, "%i ", i);
+                        else
+                            ImGui::TextColored(style::theme.green, "%i ", i);
+                    }
                 }
             }
         }
         ImGui::EndGroup();
 
         if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }

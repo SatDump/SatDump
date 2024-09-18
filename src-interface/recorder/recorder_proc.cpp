@@ -16,13 +16,17 @@ namespace satdump
         out["fft_rate"] = fft_rate;
         out["waterfall_rate"] = waterfall_rate;
         out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
-        out["select_sample_format"] = select_sample_format;
+        out["baseband_type"] = (std::string)baseband_format;
         if (fft_plot && waterfall_plot && fft)
         {
             out["fft_min"] = fft_plot->scale_min;
             out["fft_max"] = fft_plot->scale_max;
             out["fft_avgn"] = fft->avg_num;
         }
+
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+        out["ziq_depth"] = baseband_format.ziq_depth;
+#endif
         return out;
     }
 
@@ -43,7 +47,7 @@ namespace satdump
         if (in.contains("fft_size"))
         {
             fft_size = in["fft_size"].get<int>();
-            for (int i = 0; i < fft_sizes_lut.size(); i++)
+            for (int i = 0; i < (int)fft_sizes_lut.size(); i++)
                 if (fft_sizes_lut[i] == fft_size)
                     selected_fft_size = i;
         }
@@ -51,8 +55,8 @@ namespace satdump
             fft_rate = in["fft_rate"];
         if (in.contains("waterfall_rate"))
             waterfall_rate = in["waterfall_rate"];
-        if (in.contains("select_sample_format"))
-            select_sample_format = in["select_sample_format"];
+        if (in.contains("baseband_type"))
+            baseband_format = in["baseband_type"].get<std::string>();
         if (in.contains("waterfall_palette"))
         {
             std::string name = in["waterfall_palette"].get<std::string>();
@@ -61,16 +65,24 @@ namespace satdump
                     selected_waterfall_palette = i;
             waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
         }
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+        if (in.contains("ziq_depth"))
+            baseband_format.ziq_depth = in["ziq_depth"];
+#endif
     }
 
     void RecorderApplication::start()
     {
+        if (is_started)
+            return;
+
         set_frequency(frequency_hz);
+
         try
         {
             current_samplerate = source_ptr->get_samplerate();
-            if(current_samplerate == 0)
-                throw std::runtime_error("Samplerate not set!");
+            if (current_samplerate == 0)
+                throw satdump_exception("Samplerate not set!");
 
             source_ptr->start();
 
@@ -83,8 +95,7 @@ namespace satdump
 
             fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
             waterfall_plot->set_rate(fft_rate, waterfall_rate);
-            fft_plot->bandwidth = current_samplerate / current_decimation;
-            // fft_plot->frequency = frequency_mhz * 1e6;
+            fft_plot->bandwidth = get_samplerate();
 
             splitter->input_stream = current_decimation > 1 ? decim_ptr->output_stream : source_ptr->output_stream;
             splitter->start();
@@ -92,18 +103,22 @@ namespace satdump
         }
         catch (std::runtime_error &e)
         {
-            sdr_error.set_message(e.what());
+            sdr_error.set_message(style::theme.red, e.what());
             logger->error(e.what());
         }
     }
 
     void RecorderApplication::stop()
     {
+        if (!is_started)
+            return;
+
         splitter->stop_tmp();
         if (current_decimation > 1)
             decim_ptr->stop();
         source_ptr->stop();
         is_started = false;
+        config::main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"] = sources[sdr_select_id].name;
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
         config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_hz;
@@ -118,7 +133,7 @@ namespace satdump
         {
             if (config::main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
             {
-                auto cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
+                auto &cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
                 source_ptr->set_settings(cfg);
                 if (cfg.contains("samplerate"))
                 {
@@ -147,65 +162,6 @@ namespace satdump
         }
     }
 
-    void RecorderApplication::set_output_sample_format()
-    {
-        int type_lut[] = {
-            0,
-            1,
-            2,
-            3,
-#ifdef BUILD_ZIQ
-            4,
-            5,
-            6,
-#endif
-#ifdef BUILD_ZIQ2
-            7,
-            8,
-#endif
-        };
-
-        int f = type_lut[select_sample_format];
-
-        if (f == 0)
-            file_sink->set_output_sample_type(dsp::CF_32);
-        else if (f == 1)
-            file_sink->set_output_sample_type(dsp::IS_16);
-        else if (f == 2)
-            file_sink->set_output_sample_type(dsp::IS_8);
-        else if (f == 3)
-            file_sink->set_output_sample_type(dsp::WAV_16);
-#ifdef BUILD_ZIQ
-        else if (f == 4)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ);
-            ziq_bit_depth = 8;
-        }
-        else if (f == 5)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ);
-            ziq_bit_depth = 16;
-        }
-        else if (f == 6)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ);
-            ziq_bit_depth = 32;
-        }
-#endif
-#ifdef BUILD_ZIQ2
-        else if (f == 7)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ2);
-            ziq_bit_depth = 8;
-        }
-        else if (f == 8)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ2);
-            ziq_bit_depth = 16;
-        }
-#endif
-    }
-
     void RecorderApplication::start_processing()
     {
         if (pipeline_selector.outputdirselect.isValid() || automated_live_output_dir)
@@ -213,25 +169,13 @@ namespace satdump
             logger->trace("Start pipeline...");
             pipeline_params = pipeline_selector.getParameters();
             pipeline_params["samplerate"] = get_samplerate();
-            pipeline_params["baseband_format"] = "f32";
+            pipeline_params["baseband_format"] = "cf32";
             pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             pipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
             if (automated_live_output_dir)
             {
-                const time_t timevalue = time(0);
-                std::tm *timeReadable = gmtime(&timevalue);
-                std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                        (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                        (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                        (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                pipeline_output_dir = config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>() + "/" +
-                                      timestamp + "_" +
-                                      pipelines[pipeline_selector.pipeline_id].name + "_" +
-                                      std::to_string(long(source_ptr->d_frequency / 1e6)) + "Mhz";
-                std::filesystem::create_directories(pipeline_output_dir);
-                logger->info("Generated folder name : " + pipeline_output_dir);
+                pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipeline_selector.selected_pipeline.name);
             }
             else
             {
@@ -240,7 +184,7 @@ namespace satdump
 
             try
             {
-                live_pipeline = std::make_unique<LivePipeline>(pipelines[pipeline_selector.pipeline_id], pipeline_params, pipeline_output_dir);
+                live_pipeline = std::make_unique<LivePipeline>(pipeline_selector.selected_pipeline, pipeline_params, pipeline_output_dir);
                 splitter->reset_output("live");
                 live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
                 splitter->set_enabled("live", true);
@@ -249,13 +193,13 @@ namespace satdump
             }
             catch (std::runtime_error &e)
             {
-                error.set_message(e.what());
+                error.set_message(style::theme.red, e.what());
                 logger->error(e.what());
             }
         }
         else
         {
-            error.set_message("Please select a valid output directory!");
+            error.set_message(style::theme.red, "Please select a valid output directory!");
         }
     }
 
@@ -263,19 +207,20 @@ namespace satdump
     {
         if (is_processing)
         {
+            is_stopping_processing = true;
             logger->trace("Stop pipeline...");
-            is_processing = false;
             splitter->set_enabled("live", false);
             live_pipeline->stop();
+            is_stopping_processing = is_processing = false;
 
             if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
             {
-                Pipeline pipeline = pipelines[pipeline_selector.pipeline_id];
+                Pipeline pipeline = pipeline_selector.selected_pipeline;
                 std::string input_file = live_pipeline->getOutputFiles()[0];
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                 std::string input_level = pipeline.steps[start_level].level_name;
                 ui_thread_pool.push([=](int)
-                                    { processing::process(pipeline.name, input_level, input_file, pipeline_output_dir, pipeline_params); });
+                                    { processing::process(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params); });
             }
 
             live_pipeline.reset();
@@ -285,41 +230,10 @@ namespace satdump
     void RecorderApplication::start_recording()
     {
         splitter->set_enabled("record", true);
-
-        double timeValue_precise = 0;
-        {
-            auto time = std::chrono::system_clock::now();
-            auto since_epoch = time.time_since_epoch();
-            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
-            timeValue_precise = millis.count() / 1e3;
-        }
-
-        const time_t timevalue = timeValue_precise;
-        std::tm *timeReadable = gmtime(&timevalue);
-        std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
-                                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-
-        if (config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
-        {
-            std::ostringstream ss;
-
-            double ms_val = fmod(timeValue_precise, 1.0) * 1e3;
-            ss << "-" << std::fixed << std::setprecision(0) << std::setw(3) << std::setfill('0') << ms_val;
-            timestamp += ss.str();
-        }
-
-        std::string filename = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() +
-                               "/" + timestamp + "_" + std::to_string(get_samplerate()) + "SPS_" +
-                               std::to_string(frequency_hz) + "Hz";
-
-        recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
-
+        load_recording_path();
+        std::string filename = recording_path + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
+        recorder_filename = file_sink->start_recording(filename, get_samplerate());
         logger->info("Recording to " + recorder_filename);
-
         is_recording = true;
     }
 
@@ -334,54 +248,137 @@ namespace satdump
         }
     }
 
+    void RecorderApplication::load_recording_path()
+    {
+        recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+#if defined(_MSC_VER)
+        recording_path += "\\";
+#elif defined(__ANDROID__)
+        if (recording_path == ".")
+            recording_path = "/storage/emulated/0";
+        recording_path += "/";
+#else
+        recording_path += "/";
+#endif
+    }
+
     void RecorderApplication::try_init_tracking_widget()
     {
         if (tracking_widget == nullptr)
         {
             tracking_widget = new TrackingWidget();
 
-            tracking_widget->aos_callback = [this](SatellitePass, TrackedObject obj)
+            tracking_widget->aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (obj.live)
-                    stop_processing();
-                if (obj.record)
-                    stop_recording();
-
-                if (obj.live || obj.record)
+                if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
                 {
-                    frequency_hz = obj.frequency;
-                    if (is_started)
-                        set_frequency(frequency_hz);
-                    else
-                        start();
-
-                    // Catch situations where source could not start
-                    if (!is_started)
+                    if (!autotrack_cfg.multi_mode)
                     {
-                        logger->error("Could not start recorder/processor since the source could not be started!");
-                        return;
+                        double center_freq = 0;
+                        for (auto &dl : obj.downlinks)
+                            center_freq += dl.frequency;
+                        center_freq /= obj.downlinks.size();
+                        set_frequency(center_freq);
+                    }
+
+                    for (auto &dl : obj.downlinks)
+                    {
+                        if (dl.live || dl.record)
+                            if (!is_started)
+                                start();
+
+                        if (dl.live)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
+                            std::string name = std::to_string(obj.norad);
+                            if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
+                                name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                            name += " - " + format_notated(dl.frequency, "Hz");
+                            add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
+                        }
+
+                        if (dl.record)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
+                            std::string name = std::to_string(obj.norad);
+                            if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
+                                name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                            name += " - " + format_notated(dl.frequency, "Hz");
+                            add_vfo_reco(id, name, dl.frequency, dl.baseband_format, dl.baseband_decimation);
+                        }
                     }
                 }
-
-                if (obj.live)
+                else
                 {
-                    pipeline_selector.select_pipeline(pipelines[obj.pipeline_selector->pipeline_id].name);
-                    pipeline_selector.setParameters(obj.pipeline_selector->getParameters());
-                    start_processing();
-                }
+                    if (obj.downlinks[0].live)
+                        stop_processing();
+                    if (obj.downlinks[0].record)
+                        stop_recording();
 
-                if (obj.record)
-                {
-                    start_recording();
+                    if (obj.downlinks[0].live || obj.downlinks[0].record)
+                    {
+                        frequency_hz = obj.downlinks[0].frequency;
+                        if (is_started)
+                            set_frequency(frequency_hz);
+                        else
+                            start();
+
+                        // Catch situations where source could not start
+                        if (!is_started)
+                        {
+                            logger->error("Could not start recorder/processor since the source could not be started!");
+                            return;
+                        }
+                    }
+
+                    if (obj.downlinks[0].live)
+                    {
+                        pipeline_selector.select_pipeline(obj.downlinks[0].pipeline_selector->selected_pipeline.name);
+                        pipeline_selector.setParameters(obj.downlinks[0].pipeline_selector->getParameters());
+                        pipeline_selector.selected_pipeline.steps = obj.downlinks[0].pipeline_selector->selected_pipeline.steps;
+                        start_processing();
+                    }
+
+                    if (obj.downlinks[0].record)
+                    {
+                        file_sink->set_output_sample_type(obj.downlinks[0].baseband_format);
+                        start_recording();
+                    }
                 }
             };
 
-            tracking_widget->los_callback = [this](SatellitePass, TrackedObject obj)
+            tracking_widget->los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {
-                if (obj.record)
-                    stop_recording();
-                if (obj.live)
-                    stop_processing();
+                if (autotrack_cfg.multi_mode || obj.downlinks.size() > 1)
+                {
+                    for (auto &dl : obj.downlinks)
+                    {
+                        if (dl.live)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
+                            del_vfo(id);
+                        }
+
+                        if (dl.record)
+                        {
+                            std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
+                            del_vfo(id);
+                        }
+
+                        if (dl.live || dl.record)
+                            if (is_started && vfo_list.size() == 0 && autotrack_cfg.stop_sdr_when_idle)
+                                stop();
+                    }
+                }
+                else
+                {
+                    if (obj.downlinks[0].record)
+                        stop_recording();
+                    if (obj.downlinks[0].live)
+                        stop_processing();
+                    if (autotrack_cfg.stop_sdr_when_idle)
+                        stop();
+                }
             };
         }
     }

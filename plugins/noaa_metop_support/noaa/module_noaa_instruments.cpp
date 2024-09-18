@@ -118,7 +118,7 @@ namespace noaa
                 } // done with the frames
                 data_in.close();
 
-                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end());
+                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end(), 0);
                 spacecraft_ids.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -143,7 +143,7 @@ namespace noaa
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = get_median(avhrr_reader.timestamps);
 
-                std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+                std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
                 // SATELLITE ID
                 {
@@ -222,6 +222,7 @@ namespace noaa
                     if (scid == 15) // NOAA-19
                         proj_settings = loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_avhrr.json"));
 
+                    proj_settings.erase("apt_marker_offset");
                     if (is_gac)
                         proj_settings["image_width"] = 409;
 
@@ -277,7 +278,7 @@ namespace noaa
                         std::filesystem::create_directory(directory);
 
                     logger->info("----------- SEM");
-                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Sample counts from selected channels :");
                     logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
                     logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
                     logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
@@ -427,7 +428,7 @@ namespace noaa
                 }
 
                 // ID
-                uint8_t scid = most_common(scid_list.begin(), scid_list.end());
+                uint8_t scid = most_common(scid_list.begin(), scid_list.end(), 0);
                 scid_list.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -452,7 +453,7 @@ namespace noaa
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = avg_overflowless_timestamps(timestamp_filtering::filter_timestamps_width_cfg(hirs_reader.timestamps, loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json"))));
 
-                std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+                std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
                 // SATELLITE ID
                 {
@@ -498,7 +499,7 @@ namespace noaa
                         std::filesystem::create_directory(directory);
 
                     logger->info("----------- SEM");
-                    logger->info("Sample counts from selected cahnnels :");
+                    logger->info("Sample counts from selected channels :");
                     logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
                     logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
                     logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
@@ -552,7 +553,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AVHRR");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", avhrr_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", avhrr_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(avhrr_status);
 
@@ -560,7 +561,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("HIRS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", hirs_reader.line);
+                ImGui::TextColored(style::theme.green, "%d", hirs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(hirs_status);
 
@@ -568,7 +569,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MHS");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", mhs_reader.line);
+                ImGui::TextColored(style::theme.green, "%d", mhs_reader.line);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mhs_status);
 
@@ -576,7 +577,7 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A1");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA1);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA1);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
@@ -584,14 +585,14 @@ namespace noaa
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("AMSU A2");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(ImColor(0, 255, 0), "%d", amsu_reader.linesA2);
+                ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
 
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetWindowWidth() - 10, 20 * ui_scale));
+            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
         }

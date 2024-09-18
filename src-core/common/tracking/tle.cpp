@@ -22,7 +22,7 @@ namespace satdump
         {
             this_line.erase(0, this_line.find_first_not_of(" \t\n\r"));
             this_line.erase(this_line.find_last_not_of(" \t\n\r") + 1);
-            if(this_line != "")
+            if (this_line != "")
                 tle_lines.push_back(this_line);
 
             if (tle_lines.size() == 3)
@@ -62,7 +62,7 @@ namespace satdump
                     std::string noradstr = tle_lines[2].substr(2, tle_lines[2].substr(2, tle_lines[2].size() - 1).find(' '));
                     norad = std::stoi(noradstr);
                 }
-                catch (std::exception&)
+                catch (std::exception &)
                 {
                     tle_lines.pop_front();
                     continue;
@@ -74,39 +74,38 @@ namespace satdump
             }
         }
 
-        //Sort and remove duplicates
-        sort(new_registry.begin(), new_registry.end(), [](TLE& a, TLE& b) { return a.name < b.name; });
-        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE& a, TLE& b) { return a.norad == b.norad; }),
-            new_registry.end());
+        // Sort and remove duplicates
+        sort(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+             { return a.name < b.name; });
+        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+                                       { return a.norad == b.norad; }),
+                           new_registry.end());
 
         return total_lines;
     }
 
     void updateTLEFile(std::string path)
     {
+        try
+        {
+            if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
+                std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Cannot create directory for TLE file: %s", e.what());
+            return;
+        }
+
         std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
         std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
-
-        if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
-            std::filesystem::create_directories(std::filesystem::path(path).parent_path());
-
         bool success = true;
         TLERegistry new_registry;
 
-        for (int norad : norads_to_fetch)
-        {
-            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
-            while (url_str.find("%NORAD%") != std::string::npos)
-                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
-            urls_to_fetch.push_back(url_str);
-        }
-
         for (auto &url_str : urls_to_fetch)
         {
-
             logger->info(url_str);
             std::string result;
-
             int http_res = 1, trials = 0;
             while (http_res == 1 && trials < 10)
             {
@@ -132,20 +131,63 @@ namespace satdump
             }
         }
 
-        if (success)
+        if (!success)
         {
-            std::ofstream outfile(path, std::ios::trunc);
-            for (TLE& tle : new_registry)
-                outfile << tle.name << std::endl << tle.line1 << std::endl << tle.line2 << std::endl << std::endl;
-            outfile.close();
-            general_tle_registry = new_registry;
-            config::main_cfg["user"]["tles_last_updated"] = time(NULL);
-            config::saveUserConfig();
-            logger->info("%zu TLEs loaded!", new_registry.size());
-            eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
-        }
-        else
             logger->error("Error updating TLEs. Not updated.");
+            return;
+        }
+
+        for (int norad : norads_to_fetch)
+        {
+            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
+            while (url_str.find("%NORAD%") != std::string::npos)
+                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
+
+            logger->info(url_str);
+            std::string result;
+            int http_res = 1, trials = 0;
+            while (http_res == 1 && trials < 10)
+            {
+                if ((http_res = perform_http_request(url_str, result)) != 1)
+                {
+                    std::istringstream tle_stream(result);
+                    success = parseTLEStream(tle_stream, new_registry) > 0;
+                }
+                else
+                    success = false;
+                trials++;
+                if (!success)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    logger->info("Failed getting TLEs. Retrying...");
+                }
+            }
+
+            if (!success)
+            {
+                std::optional<TLE> old_tle = general_tle_registry.get_from_norad(norad);
+                if (old_tle.has_value())
+                {
+                    logger->warn("Error updating TLE for %d. Using old record", norad);
+                    new_registry.push_back(old_tle.value());
+                }
+                else
+                    logger->error("Error updating TLE for %d. Ignoring!", norad);
+            }
+        }
+
+        std::ofstream outfile(path, std::ios::trunc);
+        for (TLE &tle : new_registry)
+            outfile << tle.name << std::endl
+                    << tle.line1 << std::endl
+                    << tle.line2 << std::endl
+                    << std::endl;
+        outfile.close();
+        general_tle_registry = new_registry;
+        config::main_cfg["user"]["tles_last_updated"] = time(NULL);
+        config::saveUserConfig();
+        logger->info("%zu TLEs loaded!", new_registry.size());
+        eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
     void autoUpdateTLE(std::string path)
@@ -205,5 +247,92 @@ namespace satdump
         }
 
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    std::optional<TLE> TLERegistry::get_from_norad(int norad)
+    {
+        std::vector<TLE>::iterator it = std::find_if(begin(),
+                                                     end(),
+                                                     [&norad](const TLE &e)
+                                                     {
+                                                         return e.norad == norad;
+                                                     });
+
+        if (it != end())
+            return std::optional<TLE>(*it);
+        else
+            return std::optional<TLE>();
+    }
+
+    std::optional<TLE> TLERegistry::get_from_norad_time(int norad, time_t timestamp)
+    {
+        time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+        std::string sc_login = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_login"]["value"], "");
+        std::string sc_passw = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_password"]["value"], "");
+
+        // Use local time if Space Track credentials are not entered, or time is close to TLE catalog time
+        if (sc_login == "" || sc_passw == "" || sc_login == "yourloginemail" || sc_passw == "yourpassword" ||
+            fabs((double)last_update - (double)timestamp) < 4 * 24 * 3600)
+            return get_from_norad(norad);
+
+        // Otherwise, request on Space-Track's archive
+        std::string timestamp_day, timestamp_daytime;
+        {
+            if (timestamp < 0)
+                timestamp = 0;
+            time_t tttime = timestamp;
+            std::tm *timeReadable = gmtime(&tttime);
+            timestamp_day = std::to_string(timeReadable->tm_year + 1900) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0");
+            timestamp_daytime = (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "%3A" +
+                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "%3A" +
+                                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+        }
+
+        std::string post_request = "identity=" + sc_login +
+                                   "&password=" + sc_passw +
+                                   "&query=https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) +
+                                   "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
+        std::string url = "https://www.space-track.org/ajaxauth/login";
+
+        std::string result;
+        if (perform_http_request_post(url, result, post_request) != 1)
+        {
+            try
+            {
+                bool parsed = true;
+                nlohmann::json res;
+                try
+                {
+                    res = nlohmann::json::parse(result)[0];
+                }
+                catch (std::exception &)
+                {
+                    parsed = false;
+                }
+                if (!parsed || !res.contains("TLE_LINE0") || !res.contains("TLE_LINE1") || !res.contains("TLE_LINE2"))
+                {
+                    logger->warn("Error pulling TLE from Space-Track! Returned data: %s", result.c_str());
+                    return get_from_norad(norad);
+                }
+
+                TLE tle;
+                tle.norad = norad;
+                tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
+                tle.line1 = res["TLE_LINE1"].get<std::string>();
+                tle.line2 = res["TLE_LINE2"].get<std::string>();
+                return tle;
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Could not get TLE from Space-Track : %s", e.what());
+                return get_from_norad(norad);
+            }
+        }
+
+        return std::optional<TLE>();
     }
 }

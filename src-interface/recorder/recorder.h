@@ -22,6 +22,57 @@
 
 namespace satdump
 {
+    struct RecorderDrawPanelEvent
+    {
+    };
+
+    struct RecorderSetFrequencyEvent
+    {
+        double frequency;
+    };
+
+    struct RecorderStartDeviceEvent
+    {
+    };
+
+    struct RecorderStopDeviceEvent
+    {
+    };
+
+    struct RecorderSetDeviceSamplerateEvent
+    {
+        uint64_t samplerate;
+    };
+
+    struct RecorderSetDeviceDecimationEvent
+    {
+        int decimation;
+    };
+
+    struct RecorderSetDeviceLoOffsetEvent
+    {
+        double offset;
+    };
+
+    struct RecorderStartProcessingEvent
+    {
+        std::string pipeline_id;
+    };
+
+    struct RecorderStopProcessingEvent
+    {
+    };
+
+    struct RecorderSetFFTSettingsEvent
+    {
+        int fft_size = -1;
+        int fft_rate = -1;
+        int waterfall_rate = -1;
+        float fft_max = -1;
+        float fft_min = -1;
+        float fft_avgn = -1;
+    };
+
     class RecorderApplication : public Application
     {
     protected:
@@ -29,12 +80,12 @@ namespace satdump
 
         uint64_t frequency_hz = 100000000;
         bool show_waterfall = true;
-        bool is_started = false, is_recording = false, is_processing = false;
+        bool is_started = false, is_recording = false, is_processing = false, is_stopping_processing = false;
 
         double xconverter_frequency = 0;
 
         int selected_fft_size = 0;
-        std::vector<int> fft_sizes_lut = {131072, 65536, 16384, 8192, 4096, 2048, 1024};
+        std::vector<int> fft_sizes_lut = {131072, 65536, 32768, 16384, 8192, 4096, 2048, 1024};
         int fft_size = 8192; // * 4;
         int fft_rate = 120;
         int waterfall_rate = 60;
@@ -50,11 +101,12 @@ namespace satdump
         float panel_ratio = 0.2;
         float last_width = -1.0f;
 
+        std::string recording_path;
         std::string recorder_filename;
-        int select_sample_format = 0;
+        dsp::BasebandType baseband_format;
 
-        widgets::TimedMessage sdr_error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
-        widgets::TimedMessage error = widgets::TimedMessage(ImColor(255, 0, 0), 4);
+        widgets::TimedMessage sdr_error;
+        widgets::TimedMessage error;
 
         std::shared_ptr<dsp::DSPSampleSource> source_ptr;
         std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
@@ -66,10 +118,15 @@ namespace satdump
 
         std::vector<dsp::SourceDescriptor> sources;
 
-        int sdr_select_id = 0;
+        int sdr_select_id = -1;
         std::string sdr_select_string;
 
         bool processing_modules_floating_windows = false;
+        int remaining_disk_space_time = 0;
+        std::atomic<uint64_t> disk_available = 0;
+        bool been_warned = false;
+        bool run_disk_mon = true;
+        std::thread disk_mon_thr;
 
         bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
@@ -82,20 +139,43 @@ namespace satdump
         uint64_t current_samplerate = 1e6;
         int current_decimation = 1;
 
-        // #ifdef BUILD_ZIQ
-        int ziq_bit_depth;
-        // #endif
-
         nlohmann::json serialize_config();
         void deserialize_config(nlohmann::json in);
         void try_load_sdr_settings();
-        void set_output_sample_format();
 
         TrackingWidget *tracking_widget = nullptr;
         bool show_tracking = false;
+        bool tracking_started_cli = false;
 
         // Debug
         widgets::ConstellationViewer *constellation_debug = nullptr;
+
+    private: // VFO Stuff
+        struct VFOInfo
+        {
+            ////
+            std::string id;
+            std::string name;
+            double freq;
+
+            //// Live
+            Pipeline selected_pipeline;
+            nlohmann::json pipeline_params;
+            std::string output_dir;
+            std::shared_ptr<ctpl::thread_pool> lpool;
+            std::shared_ptr<satdump::LivePipeline> live_pipeline;
+
+            //// Recording
+            std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
+            std::shared_ptr<dsp::FileSinkBlock> file_sink;
+        };
+
+        std::mutex vfos_mtx;
+        std::vector<VFOInfo> vfo_list;
+
+        void add_vfo_live(std::string id, std::string name, double freq, Pipeline vpipeline, nlohmann::json vpipeline_params);
+        void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
+        void del_vfo(std::string id);
 
     private:
         void start();
@@ -106,6 +186,7 @@ namespace satdump
 
         void start_recording();
         void stop_recording();
+        void load_recording_path();
 
         void try_init_tracking_widget();
 
@@ -147,6 +228,7 @@ namespace satdump
 
     public:
         static std::string getID() { return "recorder"; }
+        std::string get_name() { return "Recorder"; }
         static std::shared_ptr<Application> getInstance() { return std::make_shared<RecorderApplication>(); }
     };
 };

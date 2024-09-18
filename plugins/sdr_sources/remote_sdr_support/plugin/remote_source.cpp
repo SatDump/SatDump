@@ -32,8 +32,20 @@ nlohmann::json RemoteSource::get_settings()
 {
     sendPacketWithVector(tcp_client, dsp::remote::PKT_TYPE_GETSETTINGS);
     waiting_for_settings = true;
+    auto reference_time = std::chrono::steady_clock::now();
     while (waiting_for_settings)
+    {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - reference_time).count() > 10)
+            tcp_client->readOne = true;
+        if (tcp_client->readOne)
+        {
+            logger->trace("Lost connection to the server!");
+            waiting_for_settings = false;
+            is_open = false;
+            return d_settings;
+        }
+    }
     logger->trace("Done waiting for settings!");
     d_settings["remote_bit_depth"] = bit_depth_used;
     return d_settings;
@@ -111,13 +123,13 @@ void RemoteSource::drawControlUI()
 
     if (is_started)
     {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Streaming %.3f MB/s", current_datarate);
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Samplerate %s", format_notated(current_samplerate, "sps").c_str());
+        ImGui::TextColored(style::theme.green, "Streaming %.3f MB/s", current_datarate);
+        ImGui::TextColored(style::theme.green, "Samplerate %s", format_notated(current_samplerate, "sps").c_str());
     }
     else
     {
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Streaming --.-- MB/s");
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Samplerate --.-- sps");
+        ImGui::TextColored(style::theme.red, "Streaming --.-- MB/s");
+        ImGui::TextColored(style::theme.red, "Samplerate --.-- sps");
     }
 
     RImGui::Separator();
@@ -162,7 +174,8 @@ std::vector<dsp::SourceDescriptor> RemoteSource::getAvailableSources()
 
     service_discovery::UDPDiscoveryConfig cfg = {REMOTE_NETWORK_DISCOVERY_REQPORT, REMOTE_NETWORK_DISCOVERY_REPPORT, REMOTE_NETWORK_DISCOVERY_REQPKT, REMOTE_NETWORK_DISCOVERY_REPPKT};
 
-    auto detected_servers = service_discovery::discoverUDPServers(cfg, 100);
+    std::vector<std::pair<std::string, int>> detected_servers;
+    detected_servers = service_discovery::discoverUDPServers(cfg, 100);
     detected_servers.insert(detected_servers.end(), additional_servers.begin(), additional_servers.end());
 
     for (auto server_ip : detected_servers)

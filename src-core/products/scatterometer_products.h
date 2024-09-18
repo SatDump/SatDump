@@ -62,7 +62,7 @@ namespace satdump
             {
                 timestamps = contents["timestamps"][channel].get<std::vector<double>>();
             }
-            catch (std::exception&)
+            catch (std::exception &)
             {
                 timestamps = contents["timestamps"].get<std::vector<double>>();
             }
@@ -114,6 +114,6 @@ namespace satdump
         v.max = j["max"].get<int>();
     }
 
-    image::Image<uint16_t> make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr);
-    image::Image<uint16_t> make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr, nlohmann::json *proj_cfg = nullptr);
+    image::Image make_scatterometer_grayscale(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr);
+    image::Image make_scatterometer_grayscale_projs(ScatterometerProducts &products, GrayScaleScatCfg cfg, float *progress = nullptr, nlohmann::json *proj_cfg = nullptr);
 }

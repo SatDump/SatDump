@@ -23,18 +23,29 @@ namespace dmsp
 
         void OLSRTDReader::work(uint8_t *rtd_frame, uint8_t *rtd_words)
         {
-            if (rtd_words[1] == 0xFB &&
-                rtd_words[2] == 0x07 &&
-                rtd_words[3] == 0xFB &&
-                rtd_words[4] == 0x07 &&
-                rtd_words[5] == 0xFB &&
-                rtd_words[6] == 0x07 &&
-                rtd_words[7] == 0xFB &&
-                rtd_words[8] == 0x07 &&
-                rtd_words[9] == 0xFB &&
-                rtd_words[10] == 0x07 &&
-                rtd_words[11] == 0xFB &&
-                rtd_words[12] == 0x07)
+            int alarm_match = 0;
+
+            for (int i = 1; i < 13; i++)
+            {
+                // Determine odd/even alarm code for word
+                int alarm_code = ((i & 1) == 0) ? 0x07 : 0xFB;
+
+                // Read word to check against alarm code
+                int check_word = rtd_words[i];
+
+                // Compare each bit and count matches
+                for (int j = 1; j < 9; j++)
+                {
+                    if ((check_word & 0x01) == (alarm_code & 0x01))
+                    {
+                        alarm_match++;
+                    }
+                    check_word = check_word >> 1;
+                    alarm_code = alarm_code >> 1;
+                }
+
+            }
+            if (alarm_match > 70)
             {
                 current_direction = (rtd_words[15] >> 2) & 1;
                 line_sync_code = (rtd_words[13] & 0b11111100) | rtd_words[14] >> 6;
@@ -48,7 +59,16 @@ namespace dmsp
             else
             {
                 // Get current channels configuration
-                bool tag_bit = (rtd_frame[1] >> 2) & 1;
+                bool tag_bit = true;
+                switch (tag_bit_override)
+                {
+                    case 0: tag_bit = (rtd_frame[1] >> 2) & 1;
+                        break;
+                    case 1: tag_bit = false;
+                        break;
+                    case 2: tag_bit = true;
+                        break;
+                }
 
                 // Extract fine pixel data
                 for (int i = 0; i < 15; i++)
@@ -97,16 +117,16 @@ namespace dmsp
             ir_ch.resize((lines + 1) * width);
         }
 
-        image::Image<uint8_t> OLSRTDReader::getChannelVIS()
+        image::Image OLSRTDReader::getChannelVIS()
         {
-            image::Image<uint8_t> img(vis_ch.data(), width, lines, 1);
+            image::Image img(vis_ch.data(), 8, width, lines, 1);
             img.mirror(true, false);
             return img;
         }
 
-        image::Image<uint8_t> OLSRTDReader::getChannelIR()
+        image::Image OLSRTDReader::getChannelIR()
         {
-            image::Image<uint8_t> img(ir_ch.data(), width, lines, 1);
+            image::Image img(ir_ch.data(), 2, width, lines, 1);
             img.mirror(true, false);
             return img;
         }

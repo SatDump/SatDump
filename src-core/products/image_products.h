@@ -15,7 +15,7 @@ namespace satdump
         {
             std::string filename;                                   // Filename & path of the image. Relative to the product file
             std::string channel_name;                               // Name of the channel, this is usually just a number but can be a string
-            image::Image<uint16_t> image;                           // The image itself
+            image::Image image;                                    // The image itself
             std::vector<double> timestamps = std::vector<double>(); // Timestamps of each image segment. What this means can heavily vary
             int ifov_y = -1;                                        // Size of an IFOV (image segment) in height
             int ifov_x = -1;                                        // Size of an IFOV (image segment) in width
@@ -41,6 +41,7 @@ namespace satdump
             TIMESTAMP_LINE,
             TIMESTAMP_MULTIPLE_LINES,
             TIMESTAMP_IFOV,
+            TIMESTAMP_SINGLE_IMAGE,
         };
 
         Timestamp_Type timestamp_type;
@@ -129,6 +130,14 @@ namespace satdump
             return true;
         }
 
+        bool can_remove_background()
+        {
+            if (!has_proj_cfg() || !get_proj_cfg().contains("type"))
+                return false;
+            std::string type = get_proj_cfg()["type"];
+            return type == "equirec" || type == "stereo" || type == "utm" || type == "geos" || type == "tpers" || type == "webmerc";
+        }
+
         /// CALIBRATION
 
         enum calib_type_t
@@ -197,6 +206,11 @@ namespace satdump
                 contents["calibration"]["wavenumbers"] = buff;
         }
 
+        nlohmann::json get_calibration_raw()
+        {
+            return contents.contains("calibration") ? contents["calibration"] : nlohmann::json();
+        }
+
         double get_wavenumber(int image_index)
         {
             if (!has_calibation())
@@ -252,7 +266,7 @@ namespace satdump
 
         calib_type_t get_calibration_type(int image_index)
         {
-            if (!has_calibation())
+            if (!has_calibation() || images[image_index].abs_index == -2)
                 return CALIB_REFLECTANCE;
 
             if (images[image_index].abs_index != -1)
@@ -266,18 +280,22 @@ namespace satdump
 
         double get_calibrated_value(int image_index, int x, int y, bool temp = false);
 
-        image::Image<uint16_t> get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
+        image::Image get_calibrated_image(int image_index, float *progress = nullptr, calib_vtype_t vtype = CALIB_VTYPE_AUTO, std::pair<double, double> range = {0, 0});
 
     public:
+        bool d_no_not_save_images = false;
+        bool d_no_not_load_images = false;
         virtual void save(std::string directory);
         virtual void load(std::string file);
 
-        ~ImageProducts();
+        virtual ~ImageProducts();
 
     private:
-        std::map<int, image::Image<uint16_t>> calibrated_img_cache;
+        std::map<int, image::Image> calibrated_img_cache;
         std::mutex calib_mutex;
         std::shared_ptr<CalibratorBase> calibrator_ptr = nullptr;
+        std::vector<calib_type_t> calibration_type_lut;
+        std::vector<double> calibration_wavenumber_lut;
         void *lua_state_ptr = nullptr; // Opaque pointer to not include sol2 here... As it's big!
         void *lua_comp_func_ptr = nullptr;
     };
@@ -286,18 +304,23 @@ namespace satdump
     struct ImageCompositeCfg
     {
         std::string equation;
+        bool median_blur = false;
         bool despeckle = false;
         bool equalize = false;
         bool individual_equalize = false;
         bool invert = false;
         bool normalize = false;
         bool white_balance = false;
+        bool remove_background = false;
         bool apply_lut = false;
+        float manual_brightness = 0;
+        float manual_contrast = 0;
 
         std::string lut = "";
         std::string channels = "";
         std::string lua = "";
-        nlohmann::json lua_vars;
+        std::string cpp = "";
+        nlohmann::json vars;
         nlohmann::json calib_cfg;
 
         std::string description_markdown = "";
@@ -305,6 +328,7 @@ namespace satdump
 
     inline void to_json(nlohmann::json &j, const ImageCompositeCfg &v)
     {
+        j["median_blur"] = v.median_blur;
         j["equation"] = v.equation;
         j["despeckle"] = v.despeckle;
         j["equalize"] = v.equalize;
@@ -312,12 +336,16 @@ namespace satdump
         j["invert"] = v.invert;
         j["normalize"] = v.normalize;
         j["white_balance"] = v.white_balance;
+        j["remove_background"] = v.remove_background;
         j["apply_lut"] = v.apply_lut;
+        j["manual_brightness"] = v.manual_brightness;
+        j["manual_contrast"] = v.manual_contrast;
 
         j["lut"] = v.lut;
         j["channels"] = v.channels;
         j["lua"] = v.lua;
-        j["lua_vars"] = v.lua_vars;
+        j["cpp"] = v.cpp;
+        j["vars"] = v.vars;
 
         j["calib_cfg"] = v.calib_cfg;
     }
@@ -337,13 +365,22 @@ namespace satdump
         {
             v.lua = j["lua"].get<std::string>();
             v.channels = j["channels"].get<std::string>();
-            if (j.contains("lua_vars"))
-                v.lua_vars = j["lua_vars"];
+            if (j.contains("vars"))
+                v.vars = j["vars"];
+        }
+        else if (j.contains("cpp"))
+        {
+            v.cpp = j["cpp"].get<std::string>();
+            v.channels = j["channels"].get<std::string>();
+            if (j.contains("vars"))
+                v.vars = j["vars"];
         }
 
         if (j.contains("calib_cfg"))
             v.calib_cfg = j["calib_cfg"];
 
+        if (j.contains("median_blur"))
+            v.median_blur = j["median_blur"].get<bool>();
         if (j.contains("despeckle"))
             v.despeckle = j["despeckle"].get<bool>();
         if (j.contains("equalize"))
@@ -356,17 +393,39 @@ namespace satdump
             v.normalize = j["normalize"].get<bool>();
         if (j.contains("white_balance"))
             v.white_balance = j["white_balance"].get<bool>();
+        if (j.contains("remove_background"))
+            v.remove_background = j["remove_background"].get<bool>();
         if (j.contains("apply_lut"))
             v.apply_lut = j["apply_lut"].get<bool>();
+        if (j.contains("manual_brightness"))
+            v.manual_brightness = j["manual_brightness"].get<float>();
+        if (j.contains("manual_contrast"))
+            v.manual_contrast = j["manual_contrast"].get<float>();
 
         if (j.contains("description"))
             v.description_markdown = j["description"].get<std::string>();
     }
 
+    bool image_equation_contains(std::string init, std::string match, int *loc);
     bool check_composite_from_product_can_be_made(ImageProducts &product, ImageCompositeCfg cfg);
 
-    image::Image<uint16_t> make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
-    image::Image<uint16_t> perform_geometric_correction(ImageProducts &product, image::Image<uint16_t> img, bool &success, float *foward_table = nullptr);
+    struct RequestCppCompositeEvent
+    {
+        std::string id;
+        std::vector<std::function<image::Image(
+            satdump::ImageProducts *,
+            std::vector<image::Image> &,
+            std::vector<std::string>,
+            std::string,
+            nlohmann::json,
+            nlohmann::json,
+            std::vector<double> *,
+            float *)>> &compositors;
+        satdump::ImageProducts *img_pro;
+    };
+
+    image::Image make_composite_from_product(ImageProducts &product, ImageCompositeCfg cfg, float *progress = nullptr, std::vector<double> *final_timestamps = nullptr, nlohmann::json *final_metadata = nullptr);
+    image::Image perform_geometric_correction(ImageProducts &product, image::Image img, bool &success, float *foward_table = nullptr);
 
     std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width);
 }
