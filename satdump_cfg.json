@@ -3434,6 +3434,11 @@
                         "equation": "ch17,1-ch16,1-ch15",
                         "individual_equalize": true
                     },
+                    "Microwave Airmass": {
+                        "equation": "ch30, ch29, ch28",
+                        "description": "descriptions/sounders/MicrowaveAirmass.md",
+                        "individual_equalize": true
+                    },
                     "Test1": {
                         "equation": "1-ch37",
                         "individual_equalize": true,

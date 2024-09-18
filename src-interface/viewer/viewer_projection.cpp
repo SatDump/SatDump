@@ -15,6 +15,7 @@
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 
+#include "settings.h"
 #include "common/widgets/json_editor.h"
 
 namespace satdump
@@ -339,6 +340,13 @@ namespace satdump
                         if (lay.enabled)
                             active_layers++;
 
+                    if (settings::advanced_mode)
+                    {
+                        ImGui::SameLine(ImGui::GetWindowWidth() - 100 * ui_scale);
+                        ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
+                        ImGui::Checkbox(std::string("##enablelayersettings" + layer.name + std::to_string(i)).c_str(), &layer.allow_editor);
+                    }
+
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
@@ -393,7 +401,7 @@ namespace satdump
                         {
                             ImGui::Separator();
                             auto js = image::get_metadata_proj_cfg(layer.img);
-                            widgets::JSONTableEditor(js, "THEJSONEDITOR");
+                            widgets::JSONTableEditor(js, "proj_cfg");
                             image::set_metadata_proj_cfg(layer.img, js);
                             ImGui::Separator();
                         }
