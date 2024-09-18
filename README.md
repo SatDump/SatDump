@@ -239,6 +239,8 @@ Supported SDR devices are :
 - AirspyHF
 - LimeSDR Mini
 - HackRF
+- MiriSDR (SDRplay clones)
+- And a whole lot more!
 
 
 ### Docker
