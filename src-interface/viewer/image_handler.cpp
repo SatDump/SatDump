@@ -386,7 +386,7 @@ namespace satdump
                     if (wl_nm < 1e3)
                         ImGui::Text("Wavelength : %f nm", wl_nm);
                     else if (wl_nm < 1e6)
-                        ImGui::Text("Wavelength : %f um", wl_nm / 1e3);
+                        ImGui::Text("Wavelength : %f µm", wl_nm / 1e3);
                     else if (wl_nm < 1e9)
                         ImGui::Text("Wavelength : %f mm", wl_nm / 1e6);
                     else
