@@ -379,7 +379,7 @@ namespace satdump
                 if (products->get_wavenumber(active_channel_id) != -1)
                 {
                     ImGui::BeginTooltip();
-                    ImGui::Text("Wavenumber : %f cm^-1", products->get_wavenumber(active_channel_id));
+                    ImGui::Text("Wavenumber : %f cm\u207b\u00b9", products->get_wavenumber(active_channel_id));
                     double wl_nm = 1e7 / products->get_wavenumber(active_channel_id);
                     double frequency = 299792458.0 / (wl_nm * 10e-10);
 
@@ -455,9 +455,9 @@ namespace satdump
                     double tmp_min = (this_range.first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     double tmp_max = (this_range.second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr\u207b\u00b9·m\u207b\u00b2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr-1·m-2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr\u207b\u00b9·m\u207b\u00b2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
                     {
                         this_range.first = (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
@@ -515,7 +515,7 @@ namespace satdump
                         }
 
                         ImGui::EndGroup();
-                        ImGui::Text(is_temp ? " [K]" : " [W·sr-1·m-2]");
+                        ImGui::Text(is_temp ? " [K]" : " [W·sr\u207b\u00b9·m\u207b\u00b2]");
                     }
                     ImGui::End();
                 }
