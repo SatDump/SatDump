@@ -92,10 +92,6 @@ namespace image
 
         int get_pixel_bilinear(int channel, double x, double y);
 
-        // Rotation functions
-        void rotate_left();
-        void rotate_right();
-
     public:
         void fill(int val);                         // Fill image with a single value
         void fill_color(std::vector<double> color); // Fill image with a color

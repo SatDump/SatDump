@@ -20,5 +20,5 @@ namespace image
 
     template <typename T>
     Image generate_lut(int width, std::vector<lut_point> p);
-    std::vector<float> get_color_lut(float f, std::vector<lut_point> p);
+    std::vector<double> get_color_lut(double f, std::vector<lut_point> p);
 }
