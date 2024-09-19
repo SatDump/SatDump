@@ -298,6 +298,12 @@ namespace noaa_metop
                 }
                 for (int c = 3; c < 6; c++)
                 {
+                    if (calib_out["vars"]["perLine_perChannel"].size() > 0)
+                        if (calib_out["vars"]["perLine_perChannel"][calib_out["vars"]["perLine_perChannel"].size() - 1][c].contains("Spc"))
+                        {
+                            ln[c]["Spc"] = calib_out["vars"]["perLine_perChannel"][calib_out["vars"]["perLine_perChannel"].size() - 1][c]["Spc"];
+                            ln[c]["Blb"] = calib_out["vars"]["perLine_perChannel"][calib_out["vars"]["perLine_perChannel"].size() - 1][c]["Blb"];
+                        }
                     ln[c]["Nbb"] =
                         temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * ltbb,
                                                 calib_coefs["channels"][c]["Vc"].get<double>());
