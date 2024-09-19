@@ -3605,6 +3605,229 @@
                                 "scalar_y": -0.087890625
                             }
                         }
+                    },
+                    "NO enhancement": {
+                        "lut": "lut/cal/WXtoImg-NO.png",
+                        "description": "descriptions/NO.md",
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        }
+                    },
+                    "ZA enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "lut": "lut/cal/WXtoImg-ZA.png",
+                        "description": "descriptions/ZA.md",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MB enhancement": {
+                        "lut": "lut/cal/WXtoImg-MB.png",
+                        "description": "descriptions/MB.md",
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "MD enhancement": {
+                        "lut": "lut/cal/WXtoImg-MD.png",
+                        "description": "descriptions/MD.md",
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "BD enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/BD.md",
+                        "lut": "lut/cal/WXtoImg-BD.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "CC enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/CC.md",
+                        "lut": "lut/cal/WXtoImg-CC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "EC enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/EC.md",
+                        "lut": "lut/cal/WXtoImg-EC.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HE enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HE.md",
+                        "lut": "lut/cal/WXtoImg-HE.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "HF enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HF.md",
+                        "lut": "lut/cal/WXtoImg-HF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JF enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JF.md",
+                        "lut": "lut/cal/WXtoImg-JF.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "JJ enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JJ.md",
+                        "lut": "lut/cal/WXtoImg-JJ.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "TA enhancement": {
+                        "channels": "cch1",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/TA.md",
+                        "lut": "lut/cal/WXtoImg-TA.png",
+                        "autogen": false,
+                        "geo_correct": true
+                    },
+                    "Enhanced IR": {
+                        "channels": "cch1",
+                        "description": "descriptions/EnhancedIR.md",
+                        "lut": "lut/cal/EnhancedIR.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 300
+                            }
+                        }
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch1",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "autogen": true,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
+                    },
+                    "Enhanced IR (Transparent)": {
+                        "equation": "cch1, 0, 0, cch1 > 0.99 ? 1 : 0",
+                        "description": "descriptions/EnhancedIR.md",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "apply_lut": true,
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 241
+                            }
+                        }
+                    },
+                    "Color general cloud IR": {
+                        "channels": "cch1",
+                        "description": "descriptions/ColorGeneralIR.md",
+                        "lut": "lut/cal/Multispectral.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
                     }
                 }
             },

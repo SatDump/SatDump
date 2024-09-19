@@ -319,7 +319,7 @@ namespace satdump
                     cfg.vars = rgb_compo_cfg.vars;
                     cfg.calib_cfg.clear();
 
-                    if(select_rgb_presets > 0) 
+                    if(select_rgb_presets >= 0) 
                     {
                         // median_blur = rgb_compo_cfg.median_blur;
                         // despeckle = rgb_compo_cfg.despeckle;

@@ -77,6 +77,13 @@ namespace nat2pro
                  identifier[555] == 'I')
             decodeIASINat(nat_file, pro_output_file);
 
+        // MetOp GOME Nat
+        else if (identifier[552] == 'G' &&
+                 identifier[553] == 'O' &&
+                 identifier[554] == 'M' &&
+                 identifier[555] == 'E')
+            decodeGOMENat(nat_file, pro_output_file);
+
         else
             logger->error("Unknown File Type!");
 
