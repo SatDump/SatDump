@@ -62,8 +62,26 @@ namespace noaa_metop
             {
                 for (int j = 0; j < 2; j++)
                 {
+                    uint32_t avg = 0;
+                    std::vector<uint16_t> counts;
                     for (int k = 0; k < 4; k++)
-                        cl.calibration_views[c][j] += ((buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2] << 8 | buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2 + 1]) / 4);
+                    {
+                        uint16_t sample = (buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2] << 8 | buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2 + 1]);
+                        if (sample > limits[j][0] && sample < limits[j][1])
+                        {
+                            avg += sample;
+                            counts.push_back(sample);
+                        }
+                    }
+                    if (counts.size() == 0)
+                        break;
+                    avg /= counts.size();
+                    for (uint8_t k = 0; k < counts.size(); k++){
+                        if (abs((int)((int)counts[k] - avg)) > CAL_LIMIT){
+                            counts.erase(counts.begin()+k);
+                            k--;
+                        }
+                    }
                 }
             }
 
