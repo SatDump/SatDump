@@ -7,8 +7,8 @@
 #include "resources.h"
 #include "common/calibration.h"
 
-#define BLB_LIMIT 100
-#define SPC_LIMIT 100
+#define BLB_LIMIT 150
+#define SPC_LIMIT 150
 
 namespace noaa_metop
 {

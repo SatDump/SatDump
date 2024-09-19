@@ -75,32 +75,38 @@ namespace noaa_metop
                         }
                     }
                 for (int j = 0; j < 3; j++)
+            {
+                avg_blb[j] /= blb_list[j].size();
+                for (int k = 0; k < blb_list[j].size(); k++)
                 {
-                    avg_blb[j] /= blb_list[j].size();
-                    for (int k = 0; k < blb_list[j].size(); k++)
+                    if (abs(blb_list[j][k] - avg_blb[j]) > BLB_LIMIT)
                     {
-                        if (abs(blb_list[j][k] - avg_blb[j]) > BLB_LIMIT)
-                        {
-                            blb_list[j].erase(blb_list[j].begin() + k);
-                            k--;
-                        }
+                        blb_list[j].erase(blb_list[j].begin() + k);
+                        k--;
                     }
+                }
+                if (blb_list[j].size() != 0)
+                {
                     avg_blb[j] = 0;
                     for (int k = 0; k < blb_list[j].size(); k++)
                     {
                         avg_blb[j] += blb_list[j][k];
                     }
-                    avg_blb[j] /= blb_list[j].size();
 
-                    avg_spc[j] /= spc_list[j].size();
-                    for (int k = 0; k < spc_list[j].size(); k++)
+                    avg_blb[j] /= blb_list[j].size();
+                }
+
+                avg_spc[j] /= spc_list[j].size();
+                for (int k = 0; k < spc_list[j].size(); k++)
+                {
+                    if (abs(spc_list[j][k] - avg_spc[j]) > SPC_LIMIT)
                     {
-                        if (abs(spc_list[j][k] - avg_spc[j]) > SPC_LIMIT)
-                        {
-                            spc_list[j].erase(spc_list[j].begin() + k);
-                            k--;
-                        }
+                        spc_list[j].erase(spc_list[j].begin() + k);
+                        k--;
                     }
+                }
+                if (spc_list[j].size() != 0)
+                {
                     avg_spc[j] = 0;
                     for (int k = 0; k < spc_list[j].size(); k++)
                     {
@@ -108,6 +114,7 @@ namespace noaa_metop
                     }
                     avg_spc[j] /= spc_list[j].size();
                 }
+            }
 
                 std::array<view_pair, 3> el;
                 for (int i = 0; i < 3; i++)
@@ -180,12 +187,16 @@ namespace noaa_metop
                         k--;
                     }
                 }
-                avg_blb[j] = 0;
-                for (int k = 0; k < blb_list[j].size(); k++)
+                if (blb_list[j].size() != 0)
                 {
-                    avg_blb[j] += blb_list[j][k];
+                    avg_blb[j] = 0;
+                    for (int k = 0; k < blb_list[j].size(); k++)
+                    {
+                        avg_blb[j] += blb_list[j][k];
+                    }
+
+                    avg_blb[j] /= blb_list[j].size();
                 }
-                avg_blb[j] /= blb_list[j].size();
 
                 avg_spc[j] /= spc_list[j].size();
                 for (int k = 0; k < spc_list[j].size(); k++)
@@ -196,12 +207,15 @@ namespace noaa_metop
                         k--;
                     }
                 }
-                avg_spc[j] = 0;
-                for (int k = 0; k < spc_list[j].size(); k++)
+                if (spc_list[j].size() != 0)
                 {
-                    avg_spc[j] += spc_list[j][k];
+                    avg_spc[j] = 0;
+                    for (int k = 0; k < spc_list[j].size(); k++)
+                    {
+                        avg_spc[j] += spc_list[j][k];
+                    }
+                    avg_spc[j] /= spc_list[j].size();
                 }
-                avg_spc[j] /= spc_list[j].size();
             }
 
             std::array<view_pair, 3> el;
