@@ -76,6 +76,8 @@ namespace noaa_metop
                     }
                 for (int j = 0; j < 3; j++)
             {
+                if (blb_list[j].size() == 0)
+                    break;
                 avg_blb[j] /= blb_list[j].size();
                 for (uint8_t k = 0; k < blb_list[j].size(); k++)
                 {
@@ -95,7 +97,8 @@ namespace noaa_metop
 
                     avg_blb[j] /= blb_list[j].size();
                 }
-
+                if (spc_list[j].size() == 0)
+                    break;
                 avg_spc[j] /= spc_list[j].size();
                 for (uint8_t k = 0; k < spc_list[j].size(); k++)
                 {
