@@ -242,6 +242,7 @@ namespace satdump
         {
             if (active_channel_id >= 0)
             {
+                y+=1;
                 if (rotate_image)
                 {
                     x = current_image.width() - 1 - x;
@@ -318,7 +319,7 @@ namespace satdump
                     cfg.vars = rgb_compo_cfg.vars;
                     cfg.calib_cfg.clear();
 
-                    if(select_rgb_presets > 0) 
+                    if(select_rgb_presets >= 0) 
                     {
                         // median_blur = rgb_compo_cfg.median_blur;
                         // despeckle = rgb_compo_cfg.despeckle;

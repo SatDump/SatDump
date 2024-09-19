@@ -125,7 +125,7 @@ namespace nat2pro
             avhrr_products.instrument_name = "avhrr_3";
             // avhrr_products.has_timestamps = true;
             // avhrr_products.set_tle(satellite_tle);
-            avhrr_products.bit_depth = 10;
+            avhrr_products.bit_depth = 16;
             // avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
             // avhrr_products.set_timestamps(avhrr_reader.timestamps);
             // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
@@ -146,10 +146,12 @@ namespace nat2pro
             // calib
             nlohmann::json calib_cfg;
             calib_cfg["calibrator"] = "metop_avhrr_nat";
+            for (int p = 0; p < 6; p++)
+                calib_cfg["wavenumbers"][p] = calib_coefs["MetOp-B"]["channels"][p]["wavnb"].get<double>();
             avhrr_products.set_calibration(calib_cfg);
             for (int n = 0; n < 3; n++)
             {
-                avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
                 avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
             }
             for (int c = 0; c < 6; c++)

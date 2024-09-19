@@ -7,6 +7,9 @@
 #include "resources.h"
 #include "common/calibration.h"
 
+#define BLB_LIMIT 150
+#define SPC_LIMIT 150
+
 namespace noaa_metop
 {
     namespace avhrr
@@ -42,6 +45,8 @@ namespace noaa_metop
             void line2image(uint16_t *buff, int pos, int width, bool is_ch3a);
             std::vector<uint16_t> prt_buffer;
             std::vector<std::array<view_pair, 3>> views;
+
+            uint16_t blb_limits[3] = {400, 250, 250};
 
         public:
             int lines;
