@@ -25,9 +25,7 @@
                 30,
                 120
             ]
-        ],
-        "blb_limit": 100,
-        "spc_limit": 100
+        ]
     },
     "NOAA-15": {
         "channels": [
