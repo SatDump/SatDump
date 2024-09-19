@@ -3027,6 +3027,17 @@
                             }
                         },
                         "autogen": false
+                    },
+                    "SSEC 89 GHz AMSU-B BT": {
+                        "channels": "cch1", 
+                        "lut": "lut/cal/ssec_amsu.png",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 280
+                            }
+                        }
                     }
                 },
                 "project_channels": {
@@ -3337,6 +3348,17 @@
                         "equation": "cch3^0.3, 0, 0, cch2 > 0.45 ? (cch3 < 0.439 ? 1 : 0) : 0",
                         "apply_lut": true,
                         "autogen": false
+                    },
+                    "SSEC 89 GHz AMSU-A BT": {
+                        "channels": "cch15", 
+                        "lut": "lut/cal/ssec_amsu.png",
+                        "calib_cfg": {
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 280
+                            }
+                        }
                     }
                 }
             },
@@ -3588,10 +3610,14 @@
             },
             "gome": {
                 "handler": "image_handler",
-                "name": "GOME",
+                "name": "GOME-2",
                 "rgb_composites": {
                     "True Color": {
                         "equation": "ch2406, ch2719, ch3367",
+                        "individual_equalize": true
+                    },
+                    "AVHRR 221 False Color": {
+                        "equation": "ch4096, ch4096, ch3263",
                         "individual_equalize": true
                     }
                 }
