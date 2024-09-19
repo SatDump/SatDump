@@ -352,7 +352,7 @@
             // 49008, // FengYun-3E
             // 57490, // FengYun-3F
             // 56232, // FengYun-3G
-            35865, // METEOR-M1
+            35865 // METEOR-M1
             // 40069, // METEOR-M2
             // 44387, // METEOR-M2-2
             // 57166, // METEOR-M2-3
@@ -407,7 +407,6 @@
             // 46984, // Sentinel-6
             // 48900, // TUBIN
             // 57172, // UmKA-1 (RS40S)
-            56211 // Inspire-Sat 7
             // 40376, // SMAP
             // 44874, // CHEOPS
             // 36036, // SMOS
@@ -2925,6 +2924,10 @@
                         "equation": "1-ch2, 1-ch1, 1-ch4",
                         "geo_correct": true,
                         "individual_equalize": true
+                    },
+                    "HIRS alternate airmass": {
+                        "equation": "ch11, ch8, ch6",
+                        "individual_equalize": true
                     }
                 }
             },
@@ -3405,6 +3408,20 @@
                         "description": "descriptions/sounders/CloudDetection.md",
                         "individual_equalize": true,
                         "apply_lut": true
+                    },
+                    "Visible Channel": {
+                        "equation": "ch20",
+                        "individual_equalize": true
+                    },
+                    "AVHRR 3b45 IR False Color": {
+                        "equation": "ch19,ch10,ch8",
+                        "description": "descriptions/3b45.md",
+                        "individual_equalize": true
+                    },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "ch8,ch10,ch19",
+                        "description": "descriptions/543b.md",
+                        "individual_equalize": true
                     }
                 }
             },
@@ -3572,7 +3589,12 @@
             "gome": {
                 "handler": "image_handler",
                 "name": "GOME",
-                "rgb_composites": {}
+                "rgb_composites": {
+                    "True Color": {
+                        "equation": "ch2406, ch2719, ch3367",
+                        "individual_equalize": true
+                    }
+                }
             },
             "sem": {
                 "handler": "radiation_handler",
