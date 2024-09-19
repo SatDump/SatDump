@@ -194,7 +194,7 @@ namespace satdump
 #else
                 struct statvfs stat_buffer;
                 if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
-                    disk_available = stat_buffer.f_bfree * stat_buffer.f_frsize;
+                    disk_available = stat_buffer.f_bfree * stat_buffer.f_bsize;
 #endif
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
