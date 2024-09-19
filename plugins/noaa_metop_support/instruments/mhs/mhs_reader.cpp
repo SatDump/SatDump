@@ -58,6 +58,7 @@ namespace noaa_metop
             for (int c = 0; c < 5; c++)
                 for (int j = 0; j < 2; j++)
                     cl.calibration_views[c][j] = 0;
+#if 0
             for (int c = 0; c < 5; c++)
             {
                 for (int j = 0; j < 2; j++)
@@ -82,6 +83,15 @@ namespace noaa_metop
                             k--;
                         }
                     }
+                }
+            }
+#endif
+            for (int c = 0; c < 5; c++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    for (int k = 0; k < 4; k++)
+                        cl.calibration_views[c][j] += ((buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2] << 8 | buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2 + 1]) / 4);
                 }
             }
 
