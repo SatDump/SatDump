@@ -3589,7 +3589,12 @@
             "gome": {
                 "handler": "image_handler",
                 "name": "GOME",
-                "rgb_composites": {}
+                "rgb_composites": {
+                    "True Color": {
+                        "equation": "ch2406, ch2719, ch3367",
+                        "individual_equalize": true
+                    }
+                }
             },
             "sem": {
                 "handler": "radiation_handler",
