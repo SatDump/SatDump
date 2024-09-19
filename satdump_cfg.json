@@ -352,7 +352,7 @@
             // 49008, // FengYun-3E
             // 57490, // FengYun-3F
             // 56232, // FengYun-3G
-            35865, // METEOR-M1
+            35865 // METEOR-M1
             // 40069, // METEOR-M2
             // 44387, // METEOR-M2-2
             // 57166, // METEOR-M2-3
@@ -407,7 +407,6 @@
             // 46984, // Sentinel-6
             // 48900, // TUBIN
             // 57172, // UmKA-1 (RS40S)
-            56211 // Inspire-Sat 7
             // 40376, // SMAP
             // 44874, // CHEOPS
             // 36036, // SMOS
