@@ -17,12 +17,6 @@
 
 #include "resources.h"
 
-#ifdef _MSC_VER
-#include <fileapi.h>
-#else
-#include <sys/statvfs.h>
-#endif
-
 namespace satdump
 {
     RecorderApplication::RecorderApplication()
@@ -32,7 +26,7 @@ namespace satdump
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
         remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
-        load_recording_path();
+        load_rec_path_data();
         dsp::registerAllSources();
         sources = dsp::getAllAvailableSources();
 
@@ -183,24 +177,6 @@ namespace satdump
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        disk_mon_thr = std::thread([this]() {
-            while (run_disk_mon)
-            {
-#ifdef _MSC_VER
-                ULARGE_INTEGER bytes_available;
-                if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
-                    disk_available = bytes_available.QuadPart;
-#else
-                struct statvfs stat_buffer;
-                if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
-                    disk_available = stat_buffer.f_bavail * stat_buffer.f_bsize;
-#endif
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-        });
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
         eventBus->register_handler<RecorderSetFrequencyEvent>([this](const RecorderSetFrequencyEvent &evt)
                                                               { set_frequency(evt.frequency); });
 
@@ -268,10 +244,6 @@ namespace satdump
             delete tracking_widget;
         if (constellation_debug != nullptr)
             delete constellation_debug;
-
-        run_disk_mon = false;
-        if (disk_mon_thr.joinable())
-            disk_mon_thr.join();
     }
 
     void RecorderApplication::drawUI()
@@ -568,29 +540,35 @@ namespace satdump
                     if (assume_recording)
                         style::endDisabled();
 
-                    if (file_sink->get_written() < 1e9)
-                        ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
-                    else
-                        ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
+                    uint64_t file_written = file_sink->get_written();
+                    uint64_t estimated_available = 0;
+                    if(file_written <= disk_available)
+                        estimated_available = disk_available - file_written;
 
-                    ImGui::Text("Free Space: %.2f GB", disk_available / pow(1024, 3));
+                    if (file_written < 1e9)
+                        ImGui::Text("Size : %.2f MB", file_written / 1e6);
+                    else
+                        ImGui::Text("Size : %.2f GB", file_written / 1e9);
+
+                    ImGui::Text("Free Space: %.2f GB", estimated_available / pow(1024, 3));
+
                     int timeleft;
                     switch (baseband_format)
                     {
                     case dsp::CF_32:
-                        timeleft = disk_available / (8 * get_samplerate());
+                        timeleft = estimated_available / (8 * get_samplerate());
                         break;
                     case dsp::CS_16:
-                        timeleft = disk_available / (4 * get_samplerate());
+                        timeleft = estimated_available / (4 * get_samplerate());
                         break;
                     case dsp::WAV_16:
-                        timeleft = disk_available / (4 * get_samplerate());
+                        timeleft = estimated_available / (4 * get_samplerate());
                         break;
                     case dsp::CS_8:
-                        timeleft = disk_available / (2 * get_samplerate());
+                        timeleft = estimated_available / (2 * get_samplerate());
                         break;
                     case dsp::CU_8:
-                        timeleft = disk_available / (2 * get_samplerate());
+                        timeleft = estimated_available / (2 * get_samplerate());
                         break;
                     default:
                         // Silence GCC warns
