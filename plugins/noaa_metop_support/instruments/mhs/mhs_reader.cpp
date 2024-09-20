@@ -64,8 +64,8 @@ namespace noaa_metop
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    int avg = 0;
-                    std::vector<uint16_t> counts;
+                    int avg = 0;                  //
+                    std::vector<uint16_t> counts; //  temporary variables so we can check for gross error
                     for (int k = 0; k < 4; k++)
                     {
                         uint16_t sample = (buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2] << 8 | buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2 + 1]);
@@ -80,7 +80,7 @@ namespace noaa_metop
                     avg /= counts.size();
                     for (uint8_t k = 0; k < counts.size(); k++)
                     {
-                        if (abs(counts[k] - avg) > CAL_LIMIT)
+                        if (abs(counts[k] - avg) > CAL_LIMIT) // check for bad samples
                         {
                             counts.erase(counts.begin() + k);
                             k--;
@@ -96,7 +96,7 @@ namespace noaa_metop
                         avg /= counts.size();
                     }
 
-                    cl.calibration_views[c][j] = avg;
+                    cl.calibration_views[c][j] = avg; // finally push the counts
                 }
             }
 
@@ -160,15 +160,15 @@ namespace noaa_metop
             double R[5], Tk[5], WTk = 0, Wk = 0, Tw;
             std::array<double, 24> Tth;
 
-            for (int l = 1; l < line; l++)
-            {
+            // first most basic filtering of the calibration views
+            for (int l = 1; l < line; l++) 
                 for (int j = 0; j < 2; j++)
                     for (int c = 0; c < 5; c++)
                         if (calib_lines[l - 1].calibration_views[c][j] > limits[j][0] && calib_lines[l - 1].calibration_views[c][j] < limits[j][1])
                             if (abs((int)((int)calib_lines[l - 1].calibration_views[c][j] - calib_lines[l].calibration_views[c][j])) > calib["rejection_lim"][c].get<int>() || calib_lines[l].calibration_views[c][j] == 0)
                                 calib_lines[l].calibration_views[c][j] = calib_lines[l - 1].calibration_views[c][j];
-            }
 
+            // weighed average of the samples, as described by the NOAA KLM User's Guide equation 7.6.6-3 
             std::vector<uint16_t> conv_views[5][2];
             for (int c = 0; c < 5; c++)
             {
@@ -238,7 +238,7 @@ namespace noaa_metop
                     {
                         Tk[i] += calib["f"][PIE][i][j].get<double>() * pow(R[i], (double)j);
                     }
-                    if (Tk[i] > 260 && Tk[i] < 310)
+                    if (Tk[i] > 260 && Tk[i] < 310) // check gross limits of PRT temp
                     {
                         WTk += (calib["W"][i].get<double>() * Tk[i]);
                         Wk += calib["W"][i].get<double>();
@@ -265,10 +265,10 @@ namespace noaa_metop
                 for (int i = 0; i < 5; i++)
                 {
                     double Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>() * Tw;
-                    if (Tw == 0)
+                    if (Tw == 0) // fill in missing lines (not optimal, should use an average, but good enough for our needs)
                         Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>() * last_Tw;
 
-                    if (Twp == 0)
+                    if (Twp == 0) // disable calib for the line if no calib data is available
                     {
                         ln[i]["a0"] = -999.99;
                     }
