@@ -4,6 +4,10 @@
 #include "logger.h"
 #include "processing.h"
 
+#ifndef _MSC_VER
+#include <sys/statvfs.h>
+#endif
+
 namespace satdump
 {
     nlohmann::json RecorderApplication::serialize_config()
@@ -230,7 +234,7 @@ namespace satdump
     void RecorderApplication::start_recording()
     {
         splitter->set_enabled("record", true);
-        load_recording_path();
+        load_rec_path_data();
         std::string filename = recording_path + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
         recorder_filename = file_sink->start_recording(filename, get_samplerate());
         logger->info("Recording to " + recorder_filename);
@@ -245,10 +249,11 @@ namespace satdump
             splitter->set_enabled("record", false);
             recorder_filename = "";
             is_recording = false;
+            load_rec_path_data();
         }
     }
 
-    void RecorderApplication::load_recording_path()
+    void RecorderApplication::load_rec_path_data()
     {
         recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
 #if defined(_MSC_VER)
@@ -259,6 +264,16 @@ namespace satdump
         recording_path += "/";
 #else
         recording_path += "/";
+#endif
+
+#ifdef _MSC_VER
+        ULARGE_INTEGER bytes_available;
+        if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
+            disk_available = bytes_available.QuadPart;
+#else
+        struct statvfs stat_buffer;
+        if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
+            disk_available = stat_buffer.f_bavail * stat_buffer.f_bsize;
 #endif
     }
 

@@ -1,7 +1,10 @@
 ﻿# Preps satdump for execution within the debugger
 # MSVC 2022 seems to build in a ./out/... folder
 # Assume this is true
-param([string]$platform="x64-windows") #or x86-windows, arm64-windows
+param(
+    [string]$platform="x64-windows", #or x86-windows, arm64-windows
+    [switch]$fast
+)
 
 function Parse-DumpBin($binary_path)
 {
@@ -45,60 +48,63 @@ cp -force plugins\Debug\*.dll Debug\plugins
 cp -force plugins\Debug\*.pdb Debug\plugins
 cp -force ..\..\..\satdump_cfg.json Debug
 
-$input_dlls = Get-ChildItem Debug\ -Recurse -Filter *.dll
-$input_dlls += Get-ChildItem Debug\ -Recurse -Filter *.exe
-$dll_array = @()
-
-foreach($input_dll in $input_dlls)
+if(-not $fast)
 {
-    $dll_array += Parse-Dumpbin $input_dll.FullName
-}
+    $input_dlls = Get-ChildItem Debug\ -Recurse -Filter *.dll
+    $input_dlls += Get-ChildItem Debug\ -Recurse -Filter *.exe
+    $dll_array = @()
 
-$dll_array = $dll_array | select -Unique
-$available_dlls = Get-ChildItem ..\..\..\vcpkg\installed\$platform\bin -Filter *.dll
-$dlls_to_copy = @()
-foreach($available_dll in $available_dlls)
-{
-    if($dll_array.Contains($available_dll.Name))
+    foreach($input_dll in $input_dlls)
     {
-        $dlls_to_copy += $available_dll
+        $dll_array += Parse-Dumpbin $input_dll.FullName
     }
-}
 
-# Recursively get remaining dependencies
-$last_count = 0
-while($last_count -ne $dlls_to_copy.Count)
-{
-    $last_count = $dlls_to_copy.Count
-    foreach($dll_to_copy in $dlls_to_copy)
+    $dll_array = $dll_array | select -Unique
+    $available_dlls = Get-ChildItem ..\..\..\vcpkg\installed\$platform\bin -Filter *.dll
+    $dlls_to_copy = @()
+    foreach($available_dll in $available_dlls)
     {
-        $potential_dlls = Parse-DumpBin $dll_to_copy.FullName
-        foreach($available_dll in $available_dlls)
+        if($dll_array.Contains($available_dll.Name))
         {
-            if($potential_dlls.Contains($available_dll.Name) -and -not $dlls_to_copy.Name.Contains($available_dll.Name))
+            $dlls_to_copy += $available_dll
+        }
+    }
+
+    # Recursively get remaining dependencies
+    $last_count = 0
+    while($last_count -ne $dlls_to_copy.Count)
+    {
+        $last_count = $dlls_to_copy.Count
+        foreach($dll_to_copy in $dlls_to_copy)
+        {
+            $potential_dlls = Parse-DumpBin $dll_to_copy.FullName
+            foreach($available_dll in $available_dlls)
             {
-                $dlls_to_copy += $available_dll
+                if($potential_dlls.Contains($available_dll.Name) -and -not $dlls_to_copy.Name.Contains($available_dll.Name))
+                {
+                    $dlls_to_copy += $available_dll
+                }
             }
         }
     }
-}
 
-# Copy determined dependencies
-foreach($dll_to_copy in $dlls_to_copy)
-{
-    cp -Force $dll_to_copy.FullName Debug
-}
+    # Copy determined dependencies
+    foreach($dll_to_copy in $dlls_to_copy)
+    {
+        cp -Force $dll_to_copy.FullName Debug
+    }
 
-#Overwrite debug DLLs
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libpng16d.dll Debug\libpng16.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\fftw3f.dll Debug\fftw3f.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\glfw3.dll Debug\glfw3.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\jpeg62.dll Debug\jpeg62.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\tiffd.dll Debug\tiff.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\liblzma.dll Debug\liblzma.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libcurl-d.dll Debug\libcurl.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libusb-1.0.dll Debug\libusb-1.0.dll
-cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\pthreadVC3d.dll Debug\pthreadVC3.dll
+    #Overwrite debug DLLs
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libpng16d.dll Debug\libpng16.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\fftw3f.dll Debug\fftw3f.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\glfw3.dll Debug\glfw3.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\jpeg62.dll Debug\jpeg62.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\tiffd.dll Debug\tiff.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\liblzma.dll Debug\liblzma.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libcurl-d.dll Debug\libcurl.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\libusb-1.0.dll Debug\libusb-1.0.dll
+    cp -force ..\..\..\vcpkg\installed\$platform\debug\bin\pthreadVC3d.dll Debug\pthreadVC3.dll
+}
 
 #Remove stray DLLs from plugin folder, if they're there
 rm Debug\plugins\fftw3f.dll | Out-Null
