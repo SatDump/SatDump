@@ -23,7 +23,7 @@
 #define DAY_OFFSET 17453
 #define SEC_OFFSET 3600 * 9 - 60 * 10
 
-#define CAL_LIMIT 9600
+#define CAL_LIMIT 5000
 
 namespace noaa_metop
 {
@@ -56,6 +56,7 @@ namespace noaa_metop
             nlohmann::json calib;
             std::vector<calib_line> calib_lines;
             std::vector<uint8_t> PIE_buff;
+            double last_Tw = 0;
 
             uint16_t limits[2][2] = {{1500, 28000}, {20000, 64881}};
 
