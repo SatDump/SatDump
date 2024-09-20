@@ -326,16 +326,5 @@ namespace nat2pro
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);
         seviri_products.save(pro_output_file);
-
-        // Write composite
-        std::string path = "SEVIRI_321";
-        image::Image compo_321(16, vis_ir_x_size, vis_ir_y_size, 3);
-
-        compo_321.draw_image(0, vis_ir_imgs[2]);
-        compo_321.draw_image(1, vis_ir_imgs[1]);
-        compo_321.draw_image(2, vis_ir_imgs[0]);
-
-        logger->info("Saving " + path);
-        image::save_png(compo_321, path + ".png");
     }
 }

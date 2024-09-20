@@ -163,6 +163,11 @@ namespace satdump
 
             out["projections_current_selected_proj"] = projections_current_selected_proj;
 
+            out["projection_auto_mode"] = projection_auto_mode;
+            out["projection_auto_scale_mode"] = projection_auto_scale_mode;
+            out["projection_autoscale_x"] = projection_autoscale_x;
+            out["projection_autoscale_y"] = projection_autoscale_y;
+
             out["projections_equirectangular_tl_lon"] = projections_equirectangular_tl_lon;
             out["projections_equirectangular_tl_lat"] = projections_equirectangular_tl_lat;
             out["projections_equirectangular_br_lon"] = projections_equirectangular_br_lon;
@@ -199,6 +204,11 @@ namespace satdump
                 projection_overlay_handler.set_config(in["projections_overlay_settings"]);
 
             setValueIfExists(in["projections_current_selected_proj"], projections_current_selected_proj);
+
+            setValueIfExists(in["projection_auto_mode"], projection_auto_mode);
+            setValueIfExists(in["projection_auto_scale_mode"], projection_auto_scale_mode);
+            setValueIfExists(in["projection_autoscale_x"], projection_autoscale_x);
+            setValueIfExists(in["projection_autoscale_y"], projection_autoscale_y);
 
             setValueIfExists(in["projections_equirectangular_tl_lon"], projections_equirectangular_tl_lon);
             setValueIfExists(in["projections_equirectangular_tl_lat"], projections_equirectangular_tl_lat);

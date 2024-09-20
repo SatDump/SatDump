@@ -40,6 +40,9 @@ namespace meteosat
                 images_nrm[i].fill(0);
             }
 
+            // Timestamps
+            timestamps_nrm.resize(d_mode_is_rss ? 1494 : 4482, -1);
+
             // HRV channel
             images_hrv = image::Image(16, 5751, d_mode_is_rss ? 4500 : 13500, 1);
             images_hrv.fill(0);
@@ -102,9 +105,26 @@ namespace meteosat
             else if (scid == METEOSAT_11_SCID)
                 seviri_products->set_product_source("MSG-4");
 
+            int norad = -1;
+
+            if (scid == METEOSAT_8_SCID)
+                norad = METEOSAT_8_NORAD;
+            else if (scid == METEOSAT_9_SCID)
+                norad = METEOSAT_9_NORAD;
+            else if (scid == METEOSAT_10_SCID)
+                norad = METEOSAT_10_NORAD;
+            else if (scid == METEOSAT_11_SCID)
+                norad = METEOSAT_11_NORAD;
+
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, last_timestamp);
+
             seviri_products->instrument_name = "seviri";
             seviri_products->has_timestamps = false;
             seviri_products->bit_depth = 10;
+            seviri_products->has_timestamps = true;
+            seviri_products->timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            seviri_products->set_timestamps(timestamps_nrm);
+            seviri_products->set_tle(satellite_tle);
 
             int ch_offsets[12] = {
                 0,
@@ -125,14 +145,17 @@ namespace meteosat
             {
                 images_nrm[i].mirror(true, true);
                 seviri_products->images.push_back({"SEVIRI-" + std::to_string(i + 1),
-                                                  std::to_string(i + 1),
-                                                  images_nrm[i],
-                                                  {},
-                                                  -1,
-                                                  -1,
-                                                  ch_offsets[i]});
+                                                   std::to_string(i + 1),
+                                                   images_nrm[i],
+                                                   {},
+                                                   -1,
+                                                   -1,
+                                                   ch_offsets[i]});
                 images_nrm[i].fill(0);
             }
+
+            for (auto &v : timestamps_nrm)
+                v = -1;
 
             images_hrv.mirror(true, true);
             seviri_products->images.push_back({"SEVIRI-12", "12", images_hrv, {}, -1, -1, ch_offsets[11]});
@@ -154,7 +177,7 @@ namespace meteosat
                 }
 
                 compo_queue_mtx.lock();
-                compo_queue.push_back({ seviri_products, directory });
+                compo_queue.push_back({seviri_products, directory});
                 compo_queue_mtx.unlock();
             }
             else
@@ -181,14 +204,14 @@ namespace meteosat
                 }
 
                 compo_queue_mtx.lock();
-                satdump::ImageProducts* pro = (satdump::ImageProducts*)compo_queue[0].first;
+                satdump::ImageProducts *pro = (satdump::ImageProducts *)compo_queue[0].first;
                 std::string pro_path = compo_queue[0].second;
                 compo_queue.erase(compo_queue.begin());
                 compo_queue_mtx.unlock();
 
                 try
                 {
-                    satdump::process_image_products((satdump::Products*)pro, pro_path);
+                    satdump::process_image_products((satdump::Products *)pro, pro_path);
                     delete pro;
                     pro = nullptr;
                 }
@@ -200,7 +223,7 @@ namespace meteosat
             }
         }
 
-        void SEVIRIReader::work(int scid, ccsds::CCSDSPacket& pkt)
+        void SEVIRIReader::work(int scid, ccsds::CCSDSPacket &pkt)
         {
             int scan_chunk_number = pkt.header.packet_sequence_count % 16;
             double scan_timestamp = 0;
@@ -256,6 +279,15 @@ namespace meteosat
 
                 int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (300 / 1494.0))
                                           : (fmod(scan_timestamp, 15 * 60) / (300 / 1494.0));
+
+                // Timestamp, somewhat interpolated to have one on all lines,
+                // assuming the scan rate to be right
+                if (scan_chunk_number == 0)
+                {
+                    timestamps_nrm[lines + 0] = scan_timestamp + 0.2 * 0;
+                    timestamps_nrm[lines + 1] = scan_timestamp + 0.2 * 1;
+                    timestamps_nrm[lines + 2] = scan_timestamp + 0.2 * 2;
+                }
 
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_linebuf_nrm);
                 for (int c = 0; c < 3; c++)

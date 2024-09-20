@@ -66,6 +66,8 @@ namespace satdump
 
 #include "manual_line_proj.h"
 
+#include "normal_line_xy_proj.h"
+
     std::shared_ptr<SatelliteProjection> get_sat_proj(nlohmann::ordered_json cfg, TLE tle, std::vector<double> timestamps_raw, bool allow_standard)
     {
         if (cfg.contains("timefilter"))
@@ -83,6 +85,9 @@ namespace satdump
 
         else if (cfg["type"].get<std::string>() == "manual_single_line")
             return std::make_shared<NormalLineManualSatProj>(cfg, tle, timestamps_raw);
+
+        else if (cfg["type"].get<std::string>() == "normal_single_xy_line")
+            return std::make_shared<NormalLineXYSatProj>(cfg, tle, timestamps_raw);
 
         // And plugins!
         std::vector<std::shared_ptr<SatelliteProjection>> projs;

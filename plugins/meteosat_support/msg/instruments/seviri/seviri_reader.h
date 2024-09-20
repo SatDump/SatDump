@@ -15,6 +15,7 @@ namespace meteosat
         private:
             bool d_mode_is_rss;
 
+            std::vector<double> timestamps_nrm;
             image::Image images_nrm[11];
             image::Image images_hrv;
 
@@ -30,7 +31,7 @@ namespace meteosat
             void compositeThreadFunc();
 
             std::mutex compo_queue_mtx;
-            std::vector<std::pair<void*, std::string>> compo_queue;
+            std::vector<std::pair<void *, std::string>> compo_queue;
 
         public:
             int lines_since_last_end;

@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "formats/formats.h"
 #include "products/dataset.h"
+#include "common/utils.h"
 
 namespace nat2pro
 {
@@ -15,6 +16,8 @@ namespace nat2pro
         std::string native_file = d_input_file;
         std::string pro_output_file = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
 
+        filesize = getFilesize(native_file);
+
         // We will in the future want to decode from memory, so load it all up in RAM
         std::vector<uint8_t> nat_file;
         {
@@ -24,6 +27,7 @@ namespace nat2pro
             {
                 input_file.read((char *)&byte, 1);
                 nat_file.push_back(byte);
+                progress++;
             }
         }
 
@@ -101,6 +105,8 @@ namespace nat2pro
     void Nat2ProModule::drawUI(bool window)
     {
         ImGui::Begin("Data Format To Products (nat2pro)", NULL, window ? 0 : NOWINDOW_FLAGS);
+
+        ImGui::ProgressBar(progress / filesize);
 
         ImGui::End();
     }
