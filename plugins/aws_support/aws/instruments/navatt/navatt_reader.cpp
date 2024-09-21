@@ -204,6 +204,7 @@ namespace aws
 
 	    telemetry["SCID"].push_back(scid);
 
+	    lines++;
 
             //logger->info("NAVATT! %s", timestamp_to_string(ephem_timestamp).c_str());
 
