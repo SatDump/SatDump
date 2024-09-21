@@ -46,7 +46,7 @@ namespace aws
             //     vcdu.spacecraft_id == METOP_C_SCID)
             aws_scids.push_back(vcdu.spacecraft_id);
 
-            if (vcdu.vcid == 3) // Sterna
+            if (vcdu.vcid == 3) // DDB service
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
