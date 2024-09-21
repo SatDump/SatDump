@@ -160,6 +160,12 @@ int mirisdr_open (mirisdr_dev_t **p, uint32_t index) {
     dev->transfer = MIRISDR_TRANSFER_ISOC;
 #else
     dev->transfer = MIRISDR_TRANSFER_BULK;
+    /* SatDump patch. TODO: Once upstreamed in LibUSB, put version guards here */
+//#if LIBUSB_API_VERSION >= 0x0100010B
+	if(libusb_endpoint_supports_raw_io(dev->dh, 0x81) == 1) {
+		libusb_endpoint_set_raw_io(dev->dh, 0x81, 1);
+	}
+//#endif
 #endif
 
     mirisdr_adc_init(dev);
