@@ -51,7 +51,6 @@ namespace aws
                 return;
 
             uint8_t *dat = &packet.payload[21 - 6 + 2];
-
 	    std::memcpy(array, packet.payload.data(), 116);
 
             uint8_t tmVersionNumber = array[0] >> 4;
@@ -64,7 +63,7 @@ namespace aws
 	    uint32_t cucTimeSecs = array[8] << 24 | array[9] << 16 | array[10] << 8 | array[11];
 	    uint32_t cucTimeFrac = array[12] << 16 | array[13] << 8 | array[14];
 
-	    // arraya field
+	    // Data field
 	    uint16_t sid = array[15] << 8 | array[16];
 
 	    double navTimestamp = get_double(&array[17]);
