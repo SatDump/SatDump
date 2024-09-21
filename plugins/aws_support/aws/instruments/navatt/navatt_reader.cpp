@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "common/utils.h"
 #include "nlohmann/json.hpp"
+#include <cstdint>
 
 namespace aws
 {
@@ -51,25 +52,26 @@ namespace aws
 
             uint8_t *dat = &packet.payload[21 - 6 + 2];
 
+	    std::memcpy(array, packet.payload.data(), 116);
 
-            uint8_t tmVersionNumber = dat[0] >> 4;
-	    uint8_t spacecraftTimeRefStat = dat[0] & 0b1111;
-	    uint8_t serviceType = dat[1];
-	    uint8_t serviceSubType = dat[2];
-	    uint16_t messageTypeCounter = dat[3] << 8 | dat[4];
-	    uint16_t destinationID = dat[5] << 8 | dat[6];
-	    uint8_t preamble = dat[7];
-	    uint32_t cucTimeSecs = dat[8] << 24 | dat[9] << 16 | dat[10] << 8 | dat[11];
-	    uint32_t cucTimeFrac = dat[12] << 16 | dat[13] << 8 | dat[14];
+            uint8_t tmVersionNumber = array[0] >> 4;
+	    uint8_t spacecraftTimeRefStat = array[0] & 0b1111;
+	    uint8_t serviceType = array[1];
+	    uint8_t serviceSubType = array[2];
+	    uint16_t messageTypeCounter = array[3] << 8 | array[4];
+	    uint16_t destinationID = array[5] << 8 | array[6];
+	    uint8_t preamble = array[7];
+	    uint32_t cucTimeSecs = array[8] << 24 | array[9] << 16 | array[10] << 8 | array[11];
+	    uint32_t cucTimeFrac = array[12] << 16 | array[13] << 8 | array[14];
 
-	    // Data field
-	    uint16_t sid = dat[15] << 8 | dat[16];
+	    // arraya field
+	    uint16_t sid = array[15] << 8 | array[16];
 
-	    double navTimestamp = get_double(&dat[17]);
+	    double navTimestamp = get_double(&array[17]);
 
-	    uint32_t orbitNumber = dat[25] << 16 | dat[26] << 8 | dat[27];
-	    uint32_t orbitFraction = dat[28] << 24 | dat[29] << 16 | dat[30] << 8 | dat[31];
-	    uint8_t posVelQuality = dat[32];
+	    uint32_t orbitNumber = array[25] << 16 | array[26] << 8 | array[27];
+	    uint32_t orbitFraction = array[28] << 24 | array[29] << 16 | array[30] << 8 | array[31];
+	    uint8_t posVelQuality = array[32];
 
             double ephem_timestamp = get_double(&dat[0]) + 3657 * 24 * 3600;
             double ephem_x = get_float(&dat[33]);
@@ -79,21 +81,21 @@ namespace aws
             double ephem_vy = get_float(&dat[49]);
             double ephem_vz = get_float(&dat[53]);
 
-	    uint8_t attitudeQual = dat[65];
+	    uint8_t attitudeQual = array[65];
 
-	    double quaternion1 = get_double(&dat[66]);
-	    double quaternion2 = get_double(&dat[74]);
-	    double quaternion3 = get_double(&dat[82]);
-	    double quaternion4 = get_double(&dat[90]);
+	    double quaternion1 = get_double(&array[66]);
+	    double quaternion2 = get_double(&array[74]);
+	    double quaternion3 = get_double(&array[82]);
+	    double quaternion4 = get_double(&array[90]);
 
-	    float xRate = get_float(&dat[98]);
-	    float yRate = get_float(&dat[102]);
-	    float zRate = get_float(&dat[106]);
+	    float xRate = get_float(&array[98]);
+	    float yRate = get_float(&array[102]);
+	    float zRate = get_float(&array[106]);
 
-	    uint8_t spacecraftMode = dat[110];
-	    uint8_t manoeuvreFlag = dat[111];
-	    uint8_t payloadMode = dat[112];
-	    uint16_t scid = dat[113] << 8 | dat[114];
+	    uint8_t spacecraftMode = array[110];
+	    uint8_t manoeuvreFlag = array[111];
+	    uint8_t payloadMode = array[112];
+	    uint16_t scid = array[113] << 8 | array[114];
 
 	    double epochTimestamp = cucTimeSecs + cucTimeFrac / 16777215.0 + 3657 * 24 * 3600;
 
@@ -127,7 +129,7 @@ namespace aws
 	    telemetry["CUC Time Fraction"].push_back(cucTimeFrac);
 	    telemetry["Epoch Timestamp"].push_back(epochTimestamp);
 
-	    // Data field
+	    // arraya field
 	    telemetry["SID"].push_back(sid);
 	    telemetry["Navigation timestamp"].push_back(navTimestamp);
 	    telemetry["Orbit Number"].push_back(orbitNumber);
@@ -209,11 +211,11 @@ namespace aws
             //logger->info("NAVATT! %s", timestamp_to_string(ephem_timestamp).c_str());
 
 #if 0
-            // double atti_timestamp = get_timestamp(&dat[33]);
-            // float atti_q1 = get_float(&dat[41]);
-            // float atti_q2 = get_float(&dat[45]);
-            // float atti_q3 = get_float(&dat[49]);
-            // float atti_q4 = get_float(&dat[53]);
+            // double atti_timestamp = get_timestamp(&array[33]);
+            // float atti_q1 = get_float(&array[41]);
+            // float atti_q2 = get_float(&array[45]);
+            // float atti_q3 = get_float(&array[49]);
+            // float atti_q4 = get_float(&array[53]);
 #endif
 
             if (fabs(ephem_x) > 8000000 || fabs(ephem_y) > 8000000 || fabs(ephem_z) > 8000000)
