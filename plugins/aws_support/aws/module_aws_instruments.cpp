@@ -50,8 +50,10 @@ namespace aws
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                    if(pkt.header.apid == 100)
+                    if (pkt.header.apid == 100)
                         sterna_reader.work(pkt);
+                    else if (pkt.header.apid == 51)
+                        navatt_reader.work(pkt);
             }
 
             progress = data_in.tellg();
@@ -111,7 +113,11 @@ namespace aws
             sterna_products.bit_depth = 16;
             sterna_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
             sterna_products.set_timestamps(sterna_reader.timestamps);
-            sterna_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json")));
+
+            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
+            if (d_parameters["use_ephemeris"].get<bool>())
+                proj_cfg["ephemeris"] = navatt_reader.getEphem();
+            sterna_products.set_proj_cfg(proj_cfg);
 
             for (int i = 0; i < 19; i++)
                 sterna_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), sterna_reader.getChannel(i)});

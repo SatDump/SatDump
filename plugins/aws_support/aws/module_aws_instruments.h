@@ -2,6 +2,7 @@
 
 #include "core/module.h"
 #include "instruments/sterna/sterna_reader.h"
+#include "instruments/navatt/navatt_reader.h"
 
 namespace aws
 {
@@ -13,6 +14,7 @@ namespace aws
 
         // Readers
         sterna::SternaReader sterna_reader;
+        navatt::NavAttReader navatt_reader;
 
         // Statuses
         instrument_status_t sterna_status = DECODING;
