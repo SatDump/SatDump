@@ -128,7 +128,7 @@ namespace aws
 	    telemetry["CUC Time Fraction"].push_back(cucTimeFrac);
 	    telemetry["Epoch Timestamp"].push_back(epochTimestamp);
 
-	    // arraya field
+	    // Data field
 	    telemetry["SID"].push_back(sid);
 	    telemetry["Navigation timestamp"].push_back(navTimestamp);
 	    telemetry["Orbit Number"].push_back(orbitNumber);
