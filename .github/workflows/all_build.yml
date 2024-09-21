@@ -34,6 +34,10 @@ jobs:
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         run: pip install mako
 
+      - name: Add msbuild to PATH
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        uses: microsoft/setup-msbuild@v2
+
       - name: Configure vcpkg
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
@@ -79,7 +83,7 @@ jobs:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
-      - name: Set PATH for dumpbin
+      - name: Add dumpbin to PATH
         run: echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
 
       - name: Build Portable
@@ -114,6 +118,10 @@ jobs:
       - name: Install mako
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         run: pip install mako
+
+      - name: Add msbuild to PATH
+        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
+        uses: microsoft/setup-msbuild@v2
 
       - name: Configure vcpkg
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
@@ -151,7 +159,7 @@ jobs:
           name: SatDump-Windows_arm64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
-      - name: Set PATH for dumpbin
+      - name: Add dumpbin to PATH
         run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
 
       - name: Build Portable

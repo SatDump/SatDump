@@ -70,8 +70,26 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
     $build_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON"
 }
 
+#TEMPORARY: Use an unmerged PR of LibUSB to allow setting RAW_IO on USB transferrs. This is needed to
+#           prevent sample drops on some Windows machines with USB SDRs
+Write-Output "Building libusb..."
+git clone https://github.com/HannesFranke-smartoptics/libusb -b raw_io_v2
+cd libusb\msvc
+msbuild -m -v:m -p:Platform=$generator,Configuration=Release .\libusb.sln
+msbuild -m -v:m -p:Platform=$generator,Configuration=Debug .\libusb.sln
+$toolset_used=$(get-childitem ..\build\)[0].Name
+cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.dll ..\..\..\installed\$platform\bin
+cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.pdb ..\..\..\installed\$platform\bin
+cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.lib ..\..\..\installed\$platform\lib
+cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.dll ..\..\..\installed\$platform\Debug\bin
+cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.pdb ..\..\..\installed\$platform\Debug\bin
+cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.lib ..\..\..\installed\$platform\Debug\lib
+cp -force ..\libusb\libusb.h ..\..\..\installed\$platform\include
+cd ..\..
+rm -recurse -force libusb
+
 Write-Output "Building cpu_features..."
-git clone https://github.com/google/cpu_features
+git clone https://github.com/google/cpu_features # -b 0.9.1 (not released as of this writing)
 cd cpu_features
 git checkout 6aecde5
 $null = mkdir build
@@ -95,7 +113,8 @@ cd ..\..
 rm -recurse -force volk
 
 Write-Output "Building Airspy..."
-git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
+#git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
+git clone https://github.com/JVital2013/airspyone_host -b rawio #Enables RAW_IO to avoid sample drops
 cd airspyone_host\libairspy
 $null = mkdir build
 cd build
@@ -106,7 +125,8 @@ cd ..\..\..
 rm -recurse -force airspyone_host
 
 Write-Output "Building Airspy HF..."
-git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
+#git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
+git clone https://github.com/JVital2013/airspyhf -b rawio #Enables RAW_IO to avoid sample drops
 cd airspyhf\libairspyhf
 $null = mkdir build
 cd build
@@ -117,18 +137,20 @@ cd ..\..\..
 rm -recurse -force airspyhf
 
 Write-Output "Building RTL-SDR..."
-git clone https://github.com/osmocom/rtl-sdr --depth 1 -b v2.0.2
-cd rtl-sdr
+#git clone https://github.com/osmocom/rtl-sdr --depth 1 -b v2.0.2
+git clone https://github.com/JVital2013/librtlsdr -b rawio #Enables RAW_IO to avoid sample drops
+cd librtlsdr
 $null = mkdir build
 cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIRS="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_INCLUDE_DIR="$($standard_include)" -DTHREADS_PTHREADS_LIBRARY="$($pthread_lib)" ..
 cmake --build . --config Release
 cmake --install .
 cd ..\..
-rm -recurse -force rtl-sdr
+rm -recurse -force librtlsdr
 
 Write-Output "Building HackRF..."
-git clone https://github.com/greatscottgadgets/hackrf --depth 1 -b v2024.02.1
+#git clone https://github.com/greatscottgadgets/hackrf --depth 1 -b v2024.02.1
+git clone https://github.com/JVital2013/hackrf -b rawio #Enables RAW_IO to avoid sample drops
 cd hackrf\host\libhackrf
 $null = mkdir build
 cd build
@@ -137,23 +159,6 @@ cmake --build . --config Release
 cmake --install .
 cd ..\..\..\..
 rm -recurse -force hackrf
-
-# Not compatible with ARM at this time
-if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
-{
-    Write-Output "Building LimeSuite..."
-    Invoke-WebRequest -Uri "https://www.satdump.org/FX3-SDK.zip" -OutFile FX3-SDK.zip
-    Expand-Archive FX3-SDK.zip .
-    git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
-    cd LimeSuite
-    $null = mkdir build-dir
-    cd build-dir
-    cmake $build_args -DENABLE_GUI=OFF -DFX3_SDK_PATH="$($(Get-Item ..\..\FX3-SDK).FullName)" ..
-    cmake --build . --config Release
-    cmake --install .
-    cd ..\..
-    rm -recurse -force LimeSuite, FX3-SDK, FX3-SDK.zip
-}
 
 Write-Output "Building libiio..."
 git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.25
@@ -178,6 +183,24 @@ cmake --install .
 cd ..\..
 rm -recurse -force libad9361-iio
 
+# Not compatible with ARM at this time
+if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
+{
+    Write-Output "Building LimeSuite..."
+    Invoke-WebRequest -Uri "https://www.satdump.org/FX3-SDK.zip" -OutFile FX3-SDK.zip
+    Expand-Archive FX3-SDK.zip .
+    $fx3_arg = "-DFX3_SDK_PATH=$($(Get-Item .\FX3-SDK).FullName)"
+    git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
+    cd LimeSuite
+    $null = mkdir build-dir
+    cd build-dir
+    cmake $build_args -DENABLE_GUI=OFF $fx3_arg ..
+    cmake --build . --config Release
+    cmake --install .
+    cd ..\..
+    rm -recurse -force LimeSuite
+}
+
 Write-Output "Building bladeRF..."
 git clone https://github.com/Nuand/bladeRF --depth 1 -b 2024.05
 cd bladeRF\host
@@ -186,7 +209,7 @@ Clear-Content cmake/modules/FindLibUSB.cmake
 (Get-Content -raw CMakeLists.txt) -replace "(?ms)find_package\(LibPThreadsWin32\).*endif\(LIBUSB_FOUND\)", "" | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
-cmake $build_args -DTREAT_WARNINGS_AS_ERRORS=OFF -DLIBPTHREADSWIN32_INCLUDE_DIRS="$($standard_include)" -DLIBUSB_INCLUDE_DIRS="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DLIBPTHREADSWIN32_LIBRARIES="$($pthread_lib)" -DTEST_LIBBLADERF=OFF -DLIBUSB_FOUND=ON -DLIBPTHREADSWIN32_FOUND=ON -DLIBUSB_VERSION="$($(ls ..\..\..\..\installed\vcpkg\info\libusb*).BaseName.split('_')[1])" ..
+cmake $build_args $fx3_arg -DTREAT_WARNINGS_AS_ERRORS=OFF -DLIBPTHREADSWIN32_INCLUDE_DIRS="$($standard_include)" -DLIBUSB_INCLUDE_DIRS="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DLIBPTHREADSWIN32_LIBRARIES="$($pthread_lib)" -DTEST_LIBBLADERF=OFF -DLIBUSB_FOUND=ON -DLIBPTHREADSWIN32_FOUND=ON -DLIBUSB_VERSION="$($(ls ..\..\..\..\installed\vcpkg\info\libusb*).BaseName.split('_')[1])" ..
 cmake --build . --config Release
 cmake --install .
 cd ..\..\..
@@ -195,6 +218,7 @@ rm -recurse -force bladeRF
 # Not compatible with ARM at this time
 if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
 {
+    rm -recurse -force FX3-SDK, FX3-SDK.zip
     Write-Output "Building UHD..."
     git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
     cd uhd\host
