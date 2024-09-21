@@ -211,10 +211,10 @@ namespace aws
 
 #if 0
             // double atti_timestamp = get_timestamp(&array[33]);
-            // float atti_q1 = get_float(&array[41]);
-            // float atti_q2 = get_float(&array[45]);
-            // float atti_q3 = get_float(&array[49]);
-            // float atti_q4 = get_float(&array[53]);
+            // float atti_q1 = get_float(&dat[41]);
+            // float atti_q2 = get_float(&dat[45]);
+            // float atti_q3 = get_float(&dat[49]);
+            // float atti_q4 = get_float(&dat[53]);
 #endif
 
             if (fabs(ephem_x) > 8000000 || fabs(ephem_y) > 8000000 || fabs(ephem_z) > 8000000)
