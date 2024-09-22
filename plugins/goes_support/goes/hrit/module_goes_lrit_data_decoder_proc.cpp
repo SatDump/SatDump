@@ -148,7 +148,11 @@ namespace goes
                                 sscanf(cutFilename[3].c_str(), "M%d_", &mode) == 1)
                             {
                                 if (channel_buf == -1)
+                                {
                                     lmeta.channel = cutFilename[2];
+                                    if (lmeta.channel.back() == 'F')
+                                        lmeta.channel.pop_back();
+                                }
                                 else
                                     lmeta.channel = std::to_string(channel_buf);
 

@@ -1746,7 +1746,7 @@
                         "remove_background": true,
                         "cpp": "goes_abi_false_color",
                         "vars": {
-                            "lut": "goes/abi/wxstar/lut.png"
+                            "lut": "lut/goes/abi/wxstar/lut.png"
                         },
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -1761,7 +1761,7 @@
                         "cpp": "goes_abi_false_color_ir_merge",
                         "draw_map_overlay": true,
                         "vars": {
-                            "lut": "goes/abi/usradioguycustomlut.png"
+                            "lut": "lut/goes/abi/usradioguycustomlut.png"
                         },
                         "borders_color": [
                             1.0,
@@ -2056,6 +2056,26 @@
                         "draw_shores_overlay": true,
                         "draw_latlon_overlay": true,
                         "autogen": false
+                    },
+                    "AWG Cloud Height Algorithm (ACHA)": {
+                        "channels": "chACHA",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/acha.png",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Cloud top Temperature (ACHT)": {
+                        "channels": "chACHT",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/acht.png",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
                     }
                 }
             },
