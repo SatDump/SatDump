@@ -533,6 +533,18 @@
                         "equation": "1-ch6",
                         "white_balance": true,
                         "apply_lut": true
+                    },
+                    "6.25µm Calibrated Water Vapor": {
+                       "lut": "lut/cal/star_abi_wv_8-10.png",
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 5.2
+                            }
+                        } 
                     }
                 }
             },
