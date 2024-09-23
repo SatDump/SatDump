@@ -529,11 +529,6 @@
                         "white_balance": true,
                         "individual_equalize": true
                     },
-                    "7.35 µm Water Vapor": {
-                        "equation": "1-ch6",
-                        "white_balance": true,
-                        "apply_lut": true
-                    },
                     "6.25µm Calibrated Water Vapor": {
                        "lut": "lut/cal/star_abi_wv_8-10.png",
                         //"description": "descriptions/cal_wv.md",
@@ -545,7 +540,19 @@
                                 "max": 5.2
                             }
                         } 
-                    }
+                    },
+                    "7.35µm Calibrated Water Vapor": {
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                         //"description": "descriptions/cal_wv.md",
+                         "channels": "cch6",
+                         "calib_cfg": {
+                             "cch6": {
+                                 "type": "radiance",
+                                 "min": 0,
+                                 "max": 23.2
+                             }
+                         } 
+                     }
                 }
             },
             "avhrr_3": {
@@ -2540,6 +2547,27 @@
                         "description": "descriptions/sounders/CloudDetection.md",
                         "individual_equalize": true,
                         "apply_lut": true
+                    }
+                }
+            },
+            "ceres": {
+                "handler": "image_handler",
+                "name": "CERES",
+                "rgb_composites": {
+                    "Longwave Radiation (Outgoing)": {
+                        "equation": "chl",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Shortwave Radiation (Incoming)": {
+                        "equation": "chs",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "Total Radiation": {
+                        "equation": "cht",
+                        "individual_equalize": true,
+                        "geo_correct": true
                     }
                 }
             },
