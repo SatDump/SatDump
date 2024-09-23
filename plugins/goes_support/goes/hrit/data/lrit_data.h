@@ -19,7 +19,7 @@ namespace goes
             std::string filename;
             bool is_goesn = false;
             std::string region = "Others";
-            int channel = -1;
+            std::string channel = "";
             std::string satellite_name;
             std::string satellite_short_name;
             time_t scan_time = 0;
