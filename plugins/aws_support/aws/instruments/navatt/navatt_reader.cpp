@@ -210,7 +210,7 @@ namespace aws
             //logger->info("NAVATT! %s", timestamp_to_string(ephem_timestamp).c_str());
 
 #if 0
-            // double atti_timestamp = get_timestamp(&array[33]);
+            // double atti_timestamp = get_timestamp(&dat[33]);
             // float atti_q1 = get_float(&dat[41]);
             // float atti_q2 = get_float(&dat[45]);
             // float atti_q3 = get_float(&dat[49]);
