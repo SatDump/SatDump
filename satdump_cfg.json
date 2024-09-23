@@ -2146,6 +2146,61 @@
                           0.45
                         ]
                     },
+                    "Clean Longwave IR (Transparent)": {
+                        "channels": "cch13",
+                        "description": "descriptions/ABICleanLWIR.md",
+                        "remove_background": true,
+                        "calib_cfg": {
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_11-15_transparent.png",
+                        "autogen": false
+                    },
+                    "Infrared Longwave (Transparent)": {
+                        "channels": "cch14",
+                        "description": "descriptions/ABILWIR.md",
+                        "remove_background": true,
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_11-15_transparent.png",
+                        "autogen": false
+                    },
+                    "Dirty Longwave IR (Transparent)": {
+                        "channels": "cch15",
+                        "description": "descriptions/ABIDirtyLWIR.md",
+                        "remove_background": true,
+                        "calib_cfg": {
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 330
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_11-15_transparent.png",
+                        "autogen": false
+                    },
+                    "Shortwave Window Band (Transparent)": {
+                        "channels": "cch7",
+                        "description": "descriptions/ABISW.md",
+                        "calib_cfg": {
+                            "cch7": {
+                                "type": "temperature",
+                                "min": 190,
+                                "max": 400
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_7_transparent.png",
+                        "autogen": false
+                    },
                     "RRQPE Transparent": {
                         "channels": "chRRQPE",
                         "lut": "lut/goes/abi/L2/rrqpe_transparent.png",
