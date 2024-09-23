@@ -2076,6 +2076,71 @@
                             1.0,
                             1.0
                         ]
+                    },
+                    "Derived Stability Indices - CAPE": {
+                        "channels": "chDSI",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/dsi-cape.png",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Total Precipitable Water": {
+                        "channels": "chTPW",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/tpw.png",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rain Rate Per Quarter Hour": {
+                        "channels": "chRRQPE",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/rrqpe.png",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Land Surface Temperature": {
+                        "channels": "chLST",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/lst.png",
+                        "borders_color": [
+                          0.45,
+                          0.45,
+                          0.45
+                        ]
+                    },
+                    "Sea Surface Temperature": {
+                        "channels": "chSST",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/sst.png",
+                        "borders_color": [
+                          0.45,
+                          0.45,
+                          0.45
+                        ]
+                    },
+                    "RRQPE Transparent": {
+                        "channels": "chRRQPE",
+                        "lut": "lut/goes/abi/L2/rrqpe_transparent.png",
+                        "autogen": false
+                    },
+                    "LST Transparent": {
+                        "channels": "chLST",
+                        "lut": "lut/goes/abi/L2/lst_transparent.png",
+                        "autogen": false
+                    },
+                    "SST Transparent": {
+                        "channels": "chSST",
+                        "lut": "lut/goes/abi/L2/sst_transparent.png",
+                        "autogen": false
                     }
                 }
             },

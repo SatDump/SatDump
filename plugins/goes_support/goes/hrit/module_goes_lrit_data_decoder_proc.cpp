@@ -150,8 +150,10 @@ namespace goes
                                 if (channel_buf == -1)
                                 {
                                     lmeta.channel = cutFilename[2];
-                                    if (lmeta.channel.back() == 'F')
+                                    if (lmeta.channel.back() == 'F' || lmeta.channel.back() == 'C')
                                         lmeta.channel.pop_back();
+                                    else if (lmeta.channel.find_last_of('M') != std::string::npos)
+                                        lmeta.channel = lmeta.channel.substr(0, lmeta.channel.find_last_of('M'));
                                 }
                                 else
                                     lmeta.channel = std::to_string(channel_buf);
