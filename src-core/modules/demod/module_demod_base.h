@@ -72,7 +72,7 @@ namespace demod
         std::atomic<uint64_t> progress;
 
         M2M4SNREstimator snr_estimator;
-        float snr, peak_snr;
+        float snr, peak_snr, signal, noise;
 
         bool show_freq = false;
         float display_freq = 0;
