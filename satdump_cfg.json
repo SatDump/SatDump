@@ -2120,6 +2120,7 @@
                         "channels": "chRRQPE",
                         "draw_map_overlay": true,
                         "lut": "lut/goes/abi/L2/rrqpe.png",
+                        "remove_background": true,
                         "borders_color": [
                             1.0,
                             1.0,
@@ -2204,6 +2205,7 @@
                     "RRQPE Transparent": {
                         "channels": "chRRQPE",
                         "lut": "lut/goes/abi/L2/rrqpe_transparent.png",
+                        "remove_background": true,
                         "autogen": false
                     },
                     "LST Transparent": {
