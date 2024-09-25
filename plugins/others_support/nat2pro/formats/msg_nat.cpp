@@ -6,6 +6,9 @@
 #include "common/image/io.h"
 #include "common/calibration.h"
 
+#include "nlohmann/json_utils.h"
+#include "resources.h"
+
 namespace nat2pro
 {
     inline int get_i4(uint8_t *buff)
@@ -305,23 +308,13 @@ namespace nat2pro
         seviri_products.set_calibration_default_radiance_range(9, 30, 120);
         seviri_products.set_calibration_default_radiance_range(10, 30, 120);
 
-        double wavelength_table[12] = {
-            0.635,
-            0.81,
-            1.64,
-            3.92,
-            6.25,
-            7.35,
-            8.7,
-            9.66,
-            10.8,
-            12,
-            13.40,
-            0.75,
-        };
+        nlohmann::json sev_config = loadJsonFile(resources::getResourcePath("calibration/SEVIRI_table.json"));
 
         for (int i = 0; i < 12; i++)
-            seviri_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (wavelength_table[i] / 1000000.0)));
+        {
+            seviri_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (sev_config["wavelengths"][i].get<double>())));
+            seviri_products.set_calibration_default_radiance_range(i, sev_config["default_ranges"][i][0].get<double>(), sev_config["default_ranges"][i][1].get<double>());
+        }
 
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);

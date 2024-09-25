@@ -12,6 +12,9 @@
 #include "common/projection/projs2/proj_json.h"
 #include "common/calibration.h"
 
+#include "nlohmann/json_utils.h"
+#include "resources.h"
+
 extern "C"
 {
     void register_MTG_FILTER();
@@ -279,24 +282,7 @@ namespace nc2pro
         proj_cfg["height"] = largest_height; // 3712;
         fci_products.set_proj_cfg(proj_cfg);
 
-        double wavelength_table[16] = {
-            0.444,
-            0.51,
-            0.64,
-            0.865,
-            0.914,
-            1.38,
-            1.61,
-            2.25,
-            3.8,
-            6.3,
-            7.35,
-            8.7,
-            9.66,
-            10.5,
-            12.3,
-            13.3,
-        };
+        nlohmann::json fci_config = loadJsonFile(resources::getResourcePath("calibration/FCI_table.json"));
 
         nlohmann::json calib_cfg;
         calib_cfg["calibrator"] = "mtg_nc_fci";
@@ -310,7 +296,8 @@ namespace nc2pro
         for (int i = 0; i < 16; i++)
         {
             fci_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
-            fci_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (wavelength_table[i] / 1000000.0)));
+            fci_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (fci_config["wavelengths"][i].get<double>())));
+            fci_products.set_calibration_default_radiance_range(i, fci_config["default_ranges"][i][0].get<double>(), fci_config["default_ranges"][i][1].get<double>());
         }
 
         if (!std::filesystem::exists(pro_output_file))
