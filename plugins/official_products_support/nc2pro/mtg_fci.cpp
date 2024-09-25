@@ -1,6 +1,9 @@
 #define _USE_MATH_DEFINES
 #include "mtg_fci.h"
 
+#include "libs/rapidxml.hpp"
+#include "common/utils.h"
+
 #include <hdf5.h>
 #include <H5LTpublic.h>
 #include "common/image/image.h"
@@ -15,8 +18,6 @@
 
 #include "nlohmann/json_utils.h"
 #include "resources.h"
-
-#include "libs/rapidxml.hpp"
 
 extern "C"
 {
