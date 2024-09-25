@@ -6,6 +6,7 @@
 #include "imgui/imgui_image.h"
 #include <filesystem>
 #include "common/image/io.h"
+#include "common/image/processing.h"
 
 namespace goes
 {
@@ -79,7 +80,15 @@ namespace goes
                 else if (meta.is_goesn)
                     productizer.setInstrumentID("goesn_imager");
                 else if (meta.channel.find_first_of("0123456789") == std::string::npos)
+                {
                     images_subdir = "/L2"; // GOES-R Level 2 (Non-CMIP)
+
+                    // TODO: Once calibration of custom types is possible, stop doing this!
+                    // RRPQE inverts its raw counts and lookup tables seemingly randomly.
+                    // So far, only RRQPE seems to do this...
+                    if (meta.channel == "RRQPE" && img.get(0) == 255)
+                        image::linear_invert(img);
+                }
                 productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + images_subdir, meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
                 if (meta.satellite_name == "Himawari" || meta.is_goesn)
                     productizer.setInstrumentID("abi");

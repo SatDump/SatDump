@@ -182,11 +182,13 @@ int main_record(int argc, char *argv[])
 
     dsp::BasebandType baseband_type = parameters["baseband_format"].get<std::string>();
 
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
     if (parameters.contains("ziq_depth"))
         baseband_type.ziq_depth = parameters["ziq_depth"].get<int>();
 
     if (parameters["baseband_format"].get<std::string>() == "ziq")
         logger->info("Using ZIQ Depth %d", baseband_type.ziq_depth);
+#endif
 
     file_sink->set_output_sample_type(baseband_type);
     file_sink->start();
