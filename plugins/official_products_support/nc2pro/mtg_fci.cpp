@@ -16,6 +16,8 @@
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 
+#include "libs/rapidxml.hpp"
+
 extern "C"
 {
     void register_MTG_FILTER();
@@ -184,6 +186,9 @@ namespace nc2pro
         float center_longitude = 0;
         std::vector<std::array<std::pair<int, image::Image>, 16>> all_images;
 
+        time_t prod_timestamp = time(0);
+        std::string satellite = "Unknown MTG-I";
+
         {
             mz_zip_archive zip{};
             mz_zip_reader_init_file(&zip, zip_file.c_str(), 0);
@@ -204,15 +209,68 @@ namespace nc2pro
                     {
                         logger->info("Chunk : %s", filename);
 
-                        size_t filesize = 0;
-                        void *file_ptr = mz_zip_reader_extract_to_heap(&zip, fi, &filesize, 0);
-
                         if (name.find("CHK-BODY") != std::string::npos)
                         {
+                            size_t filesize = 0;
+                            void *file_ptr = mz_zip_reader_extract_to_heap(&zip, fi, &filesize, 0);
+
                             std::vector<uint8_t> vec((uint8_t *)file_ptr, (uint8_t *)file_ptr + filesize);
                             auto img = parse_mtg_fci_netcdf_fulldisk(vec, 12, center_longitude, calibration_scale, calibration_offset);
                             all_images.push_back(img);
+
+                            mz_free(file_ptr);
                         }
+                    }
+                    else if (name == "EOPMetadata" && ext == ".xml")
+                    {
+                        logger->info("Parsing XML!");
+
+                        size_t filesize = 0;
+                        void *file_ptr = mz_zip_reader_extract_to_heap(&zip, fi, &filesize, 0);
+
+                        try
+                        {
+                            std::string xml_str((char *)file_ptr, filesize);
+                            xml_str += '\0'; // For some reason...
+                            rapidxml::xml_document<> doc;
+                            doc.parse<0>((char *)xml_str.c_str());
+                            std::string timestamp = doc.first_node("eum:EarthObservation")
+                                                        ->first_node("om:phenomenonTime")
+                                                        ->first_node("gml:TimePeriod")
+                                                        ->first_node("gml:beginPosition")
+                                                        ->value();
+                            std::string sat_id = doc.first_node("eum:EarthObservation")
+                                                     ->first_node("om:procedure")
+                                                     ->first_node("eop:EarthObservationEquipment")
+                                                     ->first_node("eop:platform")
+                                                     ->first_node("eop:Platform")
+                                                     ->first_node("eop:shortName")
+                                                     ->value();
+
+                            if (sat_id == "MTI1")
+                                satellite = "MTG-I1";
+                            else if (sat_id == "MTI2")
+                                satellite = "MTG-I2";
+
+                            std::tm timeS;
+                            memset(&timeS, 0, sizeof(std::tm));
+                            if (sscanf(timestamp.c_str(),
+                                       "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ",
+                                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+                            {
+                                timeS.tm_year -= 1900;
+                                timeS.tm_mon -= 1;
+                                timeS.tm_isdst = -1;
+                                prod_timestamp = timegm(&timeS);
+                            }
+                        }
+                        catch (std::exception &e)
+                        {
+                            logger->error("Error parsing XML : %s", e.what());
+                        }
+
+                        mz_free(file_ptr);
                     }
                 }
 
@@ -228,6 +286,8 @@ namespace nc2pro
         fci_products.instrument_name = "fci";
         fci_products.has_timestamps = false;
         fci_products.bit_depth = 12;
+        fci_products.set_product_timestamp(prod_timestamp);
+        fci_products.set_product_source(satellite);
 
         int largest_width = 0;
         int largest_height = 0;
