@@ -4196,46 +4196,54 @@
                         "equation": "ch3, ch2, ch1",
                         "white_balance": true,
                         "equalize": true,
-                        "remove_background":true
+                        "remove_background":true,
+                        "autogen": false
                     },
                     "AVHRR 221 False Color": {
                         "equation": "ch4, ch4, ch3",
                         "white_balance": true,
                         "equalize": true,
+                        "autogen": false,
                         "remove_background":true
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch7, ch4, ch3",
                         "white_balance": true,
                         "equalize": true,
+                        "autogen": false,
                         "remove_background":true
                     },
                     "AVHRR 124 False Color": {
                         "equation": "ch3, ch4, 1-ch14",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "autogen": false,
                         "remove_background":true
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1-ch15, 1-ch14, 1-ch9",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "autogen": false,
                         "remove_background":true
                     },
                     "AVHRR 3b45 IR False Color": {
                         "equation": "1-ch9, 1-ch14, 1-ch15",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "autogen": false,
                         "remove_background":true
                     },
                     "Cloud Phase RGB": {
                         "equation": "ch7, ch8, ch3",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "autogen": false,
                         "remove_background":true
                     },
                     "6.25µm Calibrated Water Vapor": {
                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                       "autogen": false,
                         //"description": "descriptions/cal_wv.md",
                         "channels": "cch10",
                         "remove_background":true,
@@ -4249,6 +4257,7 @@
                     },
                     "7.35µm Calibrated Water Vapor": {
                         "lut": "lut/cal/star_abi_wv_8-10.png",
+                        "autogen": false,
                          //"description": "descriptions/cal_wv.md",
                          "channels": "cch11",
                          "remove_background":true,
@@ -4262,6 +4271,7 @@
                     },
                     "Cloud Top IR": {
                         "channels": "cch14",
+                        "autogen": false,
                         "description": "descriptions/CloudTopIR.md",
                         "lut": "lut/cal/CloudTopIR.png",
                         "remove_background":true,
@@ -4275,6 +4285,7 @@
                     },
                     "NO enhancement": {
                         "lut": "lut/cal/WXtoImg-NO.png",
+                        "autogen": false,
                         "description": "descriptions/NO.md",
                         "channels": "cch14",
                         "remove_background":true,
