@@ -26,7 +26,7 @@ fi
 echo "Installing vcpkg packages..."
 
 # Core packages. libxml2 is for libiio
-./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng zstd armadillo
+./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng zstd armadillo hdf5
 
 # Entirely for UHD...
 ./vcpkg install --triplet osx-satdump boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread \
