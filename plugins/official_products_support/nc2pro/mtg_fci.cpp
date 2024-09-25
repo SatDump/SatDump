@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "mtg_fci.h"
 
 #include <hdf5.h>
@@ -200,7 +201,7 @@ namespace nc2pro
                     char filename[1000];
                     mz_zip_reader_get_filename(&zip, fi, filename, 1000);
                     std::string name = std::filesystem::path(filename).stem().string();
-                    std::string ext = std::filesystem::path(filename).extension();
+                    std::string ext = std::filesystem::path(filename).extension().string();
                     if (ext == ".nc")
                     {
                         logger->info("Chunk : %s", filename);

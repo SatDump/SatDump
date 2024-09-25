@@ -14,8 +14,7 @@ if(${HDF5_FOUND})
   target_include_directories(official_products_support
                              PUBLIC ${HDF5_INCLUDE_DIRS})
   target_link_directories(official_products_support PUBLIC ${HDF5_LIBRARY_DIRS})
-  target_link_libraries(official_products_support PUBLIC ${HDF5_LIBRARIES}
-                                                         hdf5_hl)
+  target_link_libraries(official_products_support PUBLIC hdf5 hdf5_hl)
   if(MSVC OR BUILD_MSVC)
     install(
       TARGETS official_products_support
