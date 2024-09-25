@@ -17,7 +17,7 @@ namespace nc2pro
     public:
         FCINcCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
         {
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 16; i++)
             {
                 calibration_scale[i] = calib["vars"]["scale"][i];
                 calibration_offset[i] = calib["vars"]["offset"][i];
