@@ -9,6 +9,16 @@
             }
         }
     },
+    "nc2pro": {
+        "name": "MTG FCI Zip (Experimental, Temporary pipeline)",
+        "live": false,
+        "work": {
+            "file": {},
+            "products": {
+                "nc2pro": {}
+            }
+        }
+    },
     "generic_analog_demod": {
         "name": "Generic Analog Demodulator",
         "live": true,
