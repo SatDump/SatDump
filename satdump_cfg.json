@@ -4195,37 +4195,249 @@
                     "True Color": {
                         "equation": "ch3, ch2, ch1",
                         "white_balance": true,
-                        "equalize": true
+                        "equalize": true,
+                        "remove_background":true
                     },
                     "AVHRR 221 False Color": {
                         "equation": "ch4, ch4, ch3",
                         "white_balance": true,
-                        "equalize": true
+                        "equalize": true,
+                        "remove_background":true
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch7, ch4, ch3",
                         "white_balance": true,
-                        "equalize": true
+                        "equalize": true,
+                        "remove_background":true
                     },
                     "AVHRR 124 False Color": {
                         "equation": "ch3, ch4, 1-ch14",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "remove_background":true
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1-ch15, 1-ch14, 1-ch9",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "remove_background":true
                     },
                     "AVHRR 3b45 IR False Color": {
                         "equation": "1-ch9, 1-ch14, 1-ch15",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "remove_background":true
                     },
                     "Cloud Phase RGB": {
                         "equation": "ch7, ch8, ch3",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "remove_background":true
+                    },
+                    "6.25µm Calibrated Water Vapor": {
+                       "lut": "lut/cal/star_abi_wv_8-10.png",
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch10",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch10": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 5.2
+                            }
+                        } 
+                    },
+                    "7.35µm Calibrated Water Vapor": {
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                         //"description": "descriptions/cal_wv.md",
+                         "channels": "cch11",
+                         "remove_background":true,
+                         "calib_cfg": {
+                             "cch11": {
+                                 "type": "radiance",
+                                 "min": 0,
+                                 "max": 23.2
+                             }
+                         } 
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch14",
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
+                    },
+                    "NO enhancement": {
+                        "lut": "lut/cal/WXtoImg-NO.png",
+                        "description": "descriptions/NO.md",
+                        "channels": "cch14",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        }
+                    },
+                    "ZA enhancement": {
+                        "channels": "cch14",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "lut": "lut/cal/WXtoImg-ZA.png",
+                        "description": "descriptions/ZA.md",
+                        "autogen": false
+                    },
+                    "MB enhancement": {
+                        "lut": "lut/cal/WXtoImg-MB.png",
+                        "description": "descriptions/MB.md",
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false
+                    },
+                    "MD enhancement": {
+                        "lut": "lut/cal/WXtoImg-MD.png",
+                        "description": "descriptions/MD.md",
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "BD enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/BD.md",
+                        "lut": "lut/cal/WXtoImg-BD.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "CC enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/CC.md",
+                        "lut": "lut/cal/WXtoImg-CC.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "EC enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/EC.md",
+                        "lut": "lut/cal/WXtoImg-EC.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "HE enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HE.md",
+                        "lut": "lut/cal/WXtoImg-HE.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "HF enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HF.md",
+                        "lut": "lut/cal/WXtoImg-HF.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "JF enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JF.md",
+                        "lut": "lut/cal/WXtoImg-JF.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "JJ enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JJ.md",
+                        "lut": "lut/cal/WXtoImg-JJ.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "TA enhancement": {
+                        "channels": "cch14",
+                        "calib_cfg": {
+                            "cch14": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/TA.md",
+                        "lut": "lut/cal/WXtoImg-TA.png",
+                        "autogen": false,
+                        "remove_background":true
                     }
                 }
             }
