@@ -4187,6 +4187,47 @@
                         "individual_equalize": true
                     }
                 }
+            },
+            "fci": {
+                "handler": "image_handler",
+                "name": "FCI",
+                "rgb_composites": {
+                    "True Color": {
+                        "equation": "ch3, ch2, ch1",
+                        "white_balance": true,
+                        "equalize": true
+                    },
+                    "AVHRR 221 False Color": {
+                        "equation": "ch4, ch4, ch3",
+                        "white_balance": true,
+                        "equalize": true
+                    },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch7, ch4, ch3",
+                        "white_balance": true,
+                        "equalize": true
+                    },
+                    "AVHRR 124 False Color": {
+                        "equation": "ch3, ch4, 1-ch14",
+                        "white_balance": true,
+                        "individual_equalize": true
+                    },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "1-ch15, 1-ch14, 1-ch9",
+                        "white_balance": true,
+                        "individual_equalize": true
+                    },
+                    "AVHRR 3b45 IR False Color": {
+                        "equation": "1-ch9, 1-ch14, 1-ch15",
+                        "white_balance": true,
+                        "individual_equalize": true
+                    },
+                    "Cloud Phase RGB": {
+                        "equation": "ch7, ch8, ch3",
+                        "white_balance": true,
+                        "individual_equalize": true
+                    }
+                }
             }
         }
     }
