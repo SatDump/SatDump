@@ -13,6 +13,7 @@ namespace nc2pro
     private:
         double calibration_scale[16];
         double calibration_offset[16];
+        int channel_lut[16];
 
     public:
         FCINcCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
@@ -22,6 +23,9 @@ namespace nc2pro
                 calibration_scale[i] = calib["vars"]["scale"][i];
                 calibration_offset[i] = calib["vars"]["offset"][i];
             }
+
+            for (int i = 0; i < products->images.size(); i++)
+                channel_lut[i] = std::stoi(products->images[i].channel_name) - 1;
         }
 
         void init()
@@ -32,6 +36,8 @@ namespace nc2pro
         {
             if (px_val == 0)
                 return CALIBRATION_INVALID_VALUE;
+
+            channel = channel_lut[channel];
 
             double physical_units = calibration_offset[channel] + px_val * calibration_scale[channel];
 

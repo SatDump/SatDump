@@ -128,10 +128,8 @@ namespace nc2pro
                 continue;
             }
 
-            {
-                calibration_scale[ch] = hdf5_get_float_attr(file, channel_path, "scale_factor");
-                calibration_offset[ch] = hdf5_get_float_attr(file, channel_path, "add_offset");
-            }
+            calibration_scale[ch] = hdf5_get_float_attr(file, channel_path, "scale_factor");
+            calibration_offset[ch] = hdf5_get_float_attr(file, channel_path, "add_offset");
 
             {
                 int start_row = hdf5_get_int(file, rowoff_path);
@@ -294,11 +292,16 @@ namespace nc2pro
         }
         fci_products.set_calibration(calib_cfg);
 
+        int ii2 = 0;
         for (int i = 0; i < 16; i++)
         {
-            fci_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
-            fci_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (fci_config["wavelengths"][i].get<double>())));
-            fci_products.set_calibration_default_radiance_range(i, fci_config["default_ranges"][i][0].get<double>(), fci_config["default_ranges"][i][1].get<double>());
+            if (final_imgs_present[i])
+            {
+                fci_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_RADIANCE);
+                fci_products.set_wavenumber(ii2, freq_to_wavenumber(299792458.0 / (fci_config["wavelengths"][i].get<double>())));
+                fci_products.set_calibration_default_radiance_range(ii2, fci_config["default_ranges"][i][0].get<double>(), fci_config["default_ranges"][i][1].get<double>());
+                ii2++;
+            }
         }
 
         if (!std::filesystem::exists(pro_output_file))
