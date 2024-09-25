@@ -6,7 +6,7 @@
 
 #include "nc2pro/fci_nc_calibrator.h"
 
-class OthersSupport : public satdump::Plugin
+class OfficalProductsSupport : public satdump::Plugin
 {
 public:
     std::string getID()
@@ -32,4 +32,4 @@ public:
     }
 };
 
-PLUGIN_LOADER(OthersSupport)
+PLUGIN_LOADER(OfficalProductsSupport)
