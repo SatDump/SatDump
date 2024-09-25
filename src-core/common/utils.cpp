@@ -86,7 +86,10 @@ int perform_http_request(std::string url_str, std::string &result)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
         curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+
+#ifdef CURLSSLOPT_NATIVE_CA
         curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
 
         res = curl_easy_perform(curl);
 
@@ -123,7 +126,10 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+
+#ifdef CURLSSLOPT_NATIVE_CA
         curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
 
         res = curl_easy_perform(curl);
 
