@@ -16,6 +16,12 @@ if(${HDF5_FOUND})
   target_link_directories(official_products_support PUBLIC ${HDF5_LIBRARY_DIRS})
   target_link_libraries(official_products_support PUBLIC ${HDF5_LIBRARIES}
                                                          hdf5_hl)
+  if(MSVC OR BUILD_MSVC)
+    install(
+      TARGETS official_products_support
+      DESTINATION lib/satdump/plugins
+      RUNTIME_DEPENDENCY_SET satdump_deps)
+  else()
+    install(TARGETS official_products_support DESTINATION lib/satdump/plugins)
+  endif()
 endif()
-
-install(TARGETS official_products_support DESTINATION lib/satdump/plugins)
