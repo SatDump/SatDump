@@ -55,9 +55,51 @@ namespace nat2pro
             return j;
         }
 
+        double trapz(std::vector<double> els)
+        {
+            double h = 1;
+            double i = 0;
+            double sum = 0;
+
+            for (i; i < els.size(); ++i)
+            {
+                if (i == 0 || i == els.size() - 1)
+                    sum += els[i] / 2;
+                else
+                    sum += els[i];
+            }
+            return sum * h;
+        }
+
+        double irrad(double low_wav, double high_wav, double t_bb)
+        {
+            // IRRAD calculate radiant flux of the blackbody over some wavelength interval
+            double h = 6.63e-34;  // J-s, Planck's constant
+            double k = 1.38e-23;  // J/K, Boltzmann's constant
+            double c = 299790000; // m/s, speed of light
+            double dwav = (high_wav - low_wav) / 50.0;
+            std::vector<double> E_wav;
+            double current_wav = low_wav;
+            for (int i = 0; i < 50; i++)
+            {
+                double ewav = temperature_to_radiance(t_bb, freq_to_wavenumber(299792458.0 / current_wav)); // dwav * (2.0 * M_PI * h * pow(c, 2)) / (pow(current_wav, 5) * (exp(h * c / (current_wav * k * t_bb)) - 1.0));
+                E_wav.push_back(ewav);
+                current_wav = low_wav + i * dwav;
+            }
+            return trapz(E_wav) / (49.0);
+        }
+
+        double calculate_sun_irradiance_interval(double low_wav, double high_wav)
+        {
+            double E_rad_sun = irrad(low_wav, high_wav, 5738);
+            double r_eq_sun = 696000000; // m, equatorial radius of sun
+            double r_AU = 149597870700;  // m, exact def of 1 AU
+            double E_irrad = E_rad_sun * (pow(r_eq_sun, 2) / pow(r_AU, 2));
+            return E_irrad;
+        }
+
         // From MSG_data_RadiometricProc.cpp
-        double cos_sol_za(int yr, int month, int day, int hour, int minute,
-                          double lat, double lon)
+        double cos_sol_za(int yr, int month, int day, int hour, int minute, double lat, double lon)
         {
             double hourz = (double)hour + ((double)minute) / 60.0;
             double jd = jday(yr, month, day);
@@ -105,30 +147,49 @@ namespace nat2pro
         // cos(80deg)
 #define cos80 0.173648178
 
-        float radiance_to_reflectance(int chnum, float radiance,
-                                      int year, int month, int day,
-                                      int hour, int minute,
-                                      float lat, float lon)
+        double v1 = calculate_sun_irradiance_interval(0.56e-6, 0.71e-6);
+        double v2 = calculate_sun_irradiance_interval(0.74e-6, 0.88e-6);
+        double v3 = calculate_sun_irradiance_interval(1.50e-6, 1.78e-6);
+        double v4 = calculate_sun_irradiance_interval(0.6e-6, 0.9e-6);
+
+        double radiance_to_reflectance(int chnum, double radiance, time_t ltime, float lat, float lon)
         {
-            if (chnum != 1 || chnum != 2 || chnum != 3 || chnum != 12)
+            if (chnum != 1 && chnum != 2 && chnum != 3 && chnum != 12)
                 return CALIBRATION_INVALID_VALUE;
+
+            std::tm t_read = *gmtime(&ltime);
+
+            int year = t_read.tm_year + 1900;
+            int month = t_read.tm_mon + 1;
+            int day = t_read.tm_mday;
+            int hour = t_read.tm_hour;
+            int minute = t_read.tm_min;
 
             int jd = jday(year, month, day);
             double esd = 1.0 - 0.0167 * cos(2.0 * M_PI * (jd - 3) / 365.0);
             double oneoveresdsquare = 1.0 / (esd * esd);
-            double torad[4] = {20.76 * oneoveresdsquare, 23.24 * oneoveresdsquare,
-                               19.85 * oneoveresdsquare, 25.11 * oneoveresdsquare};
+            // double torad[4] = {20.76 * oneoveresdsquare, 23.24 * oneoveresdsquare,
+            //                    19.85 * oneoveresdsquare, 25.11 * oneoveresdsquare};
+
+            double torad[4] = {
+                v1 * oneoveresdsquare,
+                v2 * oneoveresdsquare,
+                v3 * oneoveresdsquare,
+                v4 * oneoveresdsquare,
+            };
 
             double tr = (chnum < 4) ? torad[chnum - 1] : torad[3];
             double cos_sza = cos_sol_za(year, month, day, hour, minute, lat, lon);
             // Use cos(80°) as lower bound, to avoid division by zero
-            if (cos_sza < cos80)
-                return cos80;
-            return 100.0 * radiance / tr / cos_sza;
+            if (cos_sza < 0.05)                   // cos80)
+                return CALIBRATION_INVALID_VALUE; // 0.05;    // cos80;
+            return /*100.0 **/ radiance / tr / cos_sza;
         }
 
         geodetic::geodetic_coords_t coords;
         std::shared_ptr<satdump::SatelliteProjection> projs[12];
+
+        time_t acqu_time = 0;
 
     public:
         MSGNatCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
@@ -141,6 +202,9 @@ namespace nat2pro
                 nlohmann::json proj_cfg = products->get_proj_cfg();
                 satdump::reprojection::rescaleProjectionScalarsIfNeeded(proj_cfg, products->images[i].image.width(), products->images[i].image.height());
                 projs[i] = satdump::get_sat_proj(proj_cfg, products->get_tle(), {}, true);
+
+                if (products->has_product_timestamp())
+                    acqu_time = products->get_product_timestamp();
             }
         }
 
@@ -157,11 +221,15 @@ namespace nat2pro
 
             if (channel == 0 || channel == 1 || channel == 2 || channel == 11)
             {
+                if (acqu_time == 0)
+                    return CALIBRATION_INVALID_VALUE;
+
                 if (!projs[channel]->get_position(pos_x, pos_y, coords))
                 {
                     coords.toDegs();
-                    logger->trace("%f %f", coords.lon, coords.lat);
-                    return radiance_to_reflectance(channel + 1, physical_units, 2024, 7, 6, 11, 45, coords.lat, coords.lon);
+                    float val = radiance_to_reflectance(channel + 1, physical_units, acqu_time, coords.lat, coords.lon);
+                    // logger->trace("%f %f => %f => %f", coords.lon, coords.lat, physical_units, val);
+                    return val;
                 }
                 else
                 {
