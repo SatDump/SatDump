@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "common/image/io.h"
 #include "common/calibration.h"
+#include "common/utils.h"
 
 #include "nlohmann/json_utils.h"
 #include "resources.h"
