@@ -23,8 +23,6 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/lua/onelua.c
 )
 
-find_package(PkgConfig)
-
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
 target_include_directories(satdump_core PUBLIC .)
 

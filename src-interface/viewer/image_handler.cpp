@@ -480,7 +480,12 @@ namespace satdump
                 if (show_scale && active_channel_calibrated && products->get_calibration_type(active_channel_id))
                 {
                     if (scale_has_update)
+                    {
+                        if(scale_texture_id == 0)
+                            scale_texture_id = makeImageTexture();
                         updateImageTexture(scale_texture_id, scale_buffer, 25, 512);
+                        scale_has_update = false;
+                    }
 
                     int w = ImGui::GetWindowSize()[0];
                     if (ImGui::Begin("Scale##scale_window", &show_scale, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -881,11 +886,8 @@ namespace satdump
         if (invert_image)
             scale_image.mirror(false, true);
 
-        if (scale_texture_id == 0)
-        {
-            scale_texture_id = makeImageTexture();
+        if (scale_buffer == nullptr)
             scale_buffer = new uint32_t[25 * 512];
-        }
 
         image::image_to_rgba(scale_image, scale_buffer);
         scale_has_update = true;

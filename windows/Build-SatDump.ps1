@@ -11,16 +11,19 @@ if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false)
 if($platform -eq "x64-windows")
 {
     $generator = "x64"
+    $arch = "AMD64"
     $additional_args = @()
 }
 elseif($platform -eq "x86-windows")
 {
     $generator = "Win32"
+    $arch = "X86"
     $additional_args = @()
 }
 elseif($platform -eq "arm64-windows")
 {
     $generator = "ARM64"
+    $arch = "ARM64"
     $additional_args = "-DPLUGIN_USRP_SDR_SUPPORT=OFF", "-DPLUGIN_LIMESDR_SDR_SUPPORT=OFF"
 }
 else
@@ -29,10 +32,32 @@ else
     exit 1
 }
 
+if($env:PROCESSOR_ARCHITECTURE -ne $arch)
+{
+    if($env:PROCESSOR_ARCHITECTURE -eq "AMD64")
+    {
+        $host_triplet = "x64-windows"
+    }
+    elseif($env:PROCESSOR_ARCHITECTURE -eq "X86")
+    {
+        $host_triplet = "x86-windows"
+    }
+    elseif($env:PROCESSOR_ARCHITECTURE -eq "ARM64")
+    {
+        $host_triplet = "arm64-windows"
+    }
+    else
+    {
+        Write-Error "Unsupported host platform: $($env:PROCESSOR_ARCHITECTURE)"
+        exit 1
+    }
+    $additional_args += "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
+}
+
 #Build SatDump
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 mkdir build | Out-Null
 cd build
-cmake .. -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="$($(Get-Item ..\vcpkg\scripts\buildsystems\vcpkg.cmake).FullName)" -DVCPKG_TARGET_TRIPLET="$platform" -A $generator $additional_args
+cmake .. -DVCPKG_TARGET_TRIPLET=$platform -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="$($(Get-Item ..\vcpkg\scripts\buildsystems\vcpkg.cmake).FullName)" -DVCPKG_TARGET_TRIPLET="$platform" -A $generator $additional_args
 cmake --build . --config Release
 cd ..
