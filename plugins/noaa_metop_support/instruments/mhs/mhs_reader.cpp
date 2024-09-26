@@ -170,7 +170,7 @@ namespace noaa_metop
                     for (int j = 0; j < 2; j++)
                     {
                         conv_views[c][j][i] = calib_lines[i].calibration_views[c][j];
-                        conv_views[c][j][line - i] = calib_lines[line - i].calibration_views[c][j];
+                        conv_views[c][j][line - i - 1] = calib_lines[line - i - 1].calibration_views[c][j];
                     }
                 }
             }
