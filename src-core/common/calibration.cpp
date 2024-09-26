@@ -47,13 +47,13 @@ namespace
             E_wav.push_back(ewav);
             current_wav = low_wav + i * dwav;
         }
-        return trapz(E_wav) / (49.0);
+        return trapz(E_wav) / (48.0);
     }
 }
 
 double calculate_sun_irradiance_interval(double low_wav, double high_wav)
 {
-    double E_rad_sun = irrad(low_wav, high_wav, 5738);
+    double E_rad_sun = irrad(low_wav, high_wav, 5772);
     double r_eq_sun = 696000000; // m, equatorial radius of sun
     double r_AU = 149597870700;  // m, exact def of 1 AU
     double E_irrad = E_rad_sun * (pow(r_eq_sun, 2) / pow(r_AU, 2));

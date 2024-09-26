@@ -36,10 +36,12 @@ namespace nat2pro
                 if (products->has_product_timestamp())
                     acqu_time = products->get_product_timestamp();
 
-                irradiance_values[0] = calculate_sun_irradiance_interval(0.56e-6, 0.71e-6);
-                irradiance_values[1] = calculate_sun_irradiance_interval(0.74e-6, 0.88e-6);
-                irradiance_values[2] = calculate_sun_irradiance_interval(1.50e-6, 1.78e-6);
-                irradiance_values[3] = calculate_sun_irradiance_interval(0.6e-6, 0.9e-6);
+                bool official = true;
+
+                irradiance_values[0] = official ? 20.76 : calculate_sun_irradiance_interval(0.56e-6, 0.71e-6);
+                irradiance_values[1] = official ? 23.24 : calculate_sun_irradiance_interval(0.74e-6, 0.88e-6);
+                irradiance_values[2] = official ? 19.85 : calculate_sun_irradiance_interval(1.50e-6, 1.78e-6);
+                irradiance_values[3] = official ? 25.11 : calculate_sun_irradiance_interval(0.6e-6, 0.9e-6);
             }
         }
 
