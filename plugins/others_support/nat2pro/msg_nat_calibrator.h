@@ -147,15 +147,10 @@ namespace nat2pro
         // cos(80deg)
 #define cos80 0.173648178
 
-        double v1 = calculate_sun_irradiance_interval(0.56e-6, 0.71e-6);
-        double v2 = calculate_sun_irradiance_interval(0.74e-6, 0.88e-6);
-        double v3 = calculate_sun_irradiance_interval(1.50e-6, 1.78e-6);
-        double v4 = calculate_sun_irradiance_interval(0.6e-6, 0.9e-6);
-
-        double radiance_to_reflectance(int chnum, double radiance, time_t ltime, float lat, float lon)
+        double radiance_to_reflectance(double irradiance, double radiance, time_t ltime, float lat, float lon)
         {
-            if (chnum != 1 && chnum != 2 && chnum != 3 && chnum != 12)
-                return CALIBRATION_INVALID_VALUE;
+            // if (chnum != 1 && chnum != 2 && chnum != 3 && chnum != 12)
+            //     return CALIBRATION_INVALID_VALUE;
 
             std::tm t_read = *gmtime(&ltime);
 
@@ -171,14 +166,7 @@ namespace nat2pro
             // double torad[4] = {20.76 * oneoveresdsquare, 23.24 * oneoveresdsquare,
             //                    19.85 * oneoveresdsquare, 25.11 * oneoveresdsquare};
 
-            double torad[4] = {
-                v1 * oneoveresdsquare,
-                v2 * oneoveresdsquare,
-                v3 * oneoveresdsquare,
-                v4 * oneoveresdsquare,
-            };
-
-            double tr = (chnum < 4) ? torad[chnum - 1] : torad[3];
+            double tr = irradiance * oneoveresdsquare; // (chnum < 4) ? torad[chnum - 1] : torad[3];
             double cos_sza = cos_sol_za(year, month, day, hour, minute, lat, lon);
             // Use cos(80°) as lower bound, to avoid division by zero
             if (cos_sza < 0.05)                   // cos80)
@@ -190,6 +178,8 @@ namespace nat2pro
         std::shared_ptr<satdump::SatelliteProjection> projs[12];
 
         time_t acqu_time = 0;
+
+        double irradiance_values[4];
 
     public:
         MSGNatCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
@@ -205,6 +195,11 @@ namespace nat2pro
 
                 if (products->has_product_timestamp())
                     acqu_time = products->get_product_timestamp();
+
+                irradiance_values[0] = calculate_sun_irradiance_interval(0.56e-6, 0.71e-6);
+                irradiance_values[1] = calculate_sun_irradiance_interval(0.74e-6, 0.88e-6);
+                irradiance_values[2] = calculate_sun_irradiance_interval(1.50e-6, 1.78e-6);
+                irradiance_values[3] = calculate_sun_irradiance_interval(0.6e-6, 0.9e-6);
             }
         }
 
@@ -227,7 +222,8 @@ namespace nat2pro
                 if (!projs[channel]->get_position(pos_x, pos_y, coords))
                 {
                     coords.toDegs();
-                    float val = radiance_to_reflectance(channel + 1, physical_units, acqu_time, coords.lat, coords.lon);
+                    float val = radiance_to_reflectance(channel >= 3 ? irradiance_values[3] : irradiance_values[channel],
+                                                        physical_units, acqu_time, coords.lat, coords.lon);
                     // logger->trace("%f %f => %f => %f", coords.lon, coords.lat, physical_units, val);
                     return val;
                 }

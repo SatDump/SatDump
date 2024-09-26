@@ -114,6 +114,37 @@ namespace nat2pro
         logger->warn("HRV    Size : %dx%d", hrv_x_size, hrv_y_size);
         logger->warn("Longitude   : %f", longitude);
 
+        // Product Timestamp & satellite name
+        std::string satellite_name = "Unknown MSG";
+        time_t prod_timestamp = time(0);
+        {
+            std::tm timeS;
+            memset(&timeS, 0, sizeof(std::tm));
+            if (sscanf(mh_strs[17].c_str(),
+                       "SSBT                        : %4d%2d%2d%2d%2d%2d.%*dZ",
+                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
+                prod_timestamp = timegm(&timeS);
+            }
+
+            int satnum = -1;
+            if (sscanf(mh_strs[13].c_str(), "ASTI                        : MSG%d", &satnum) == 1)
+            {
+                if (satnum == 1)
+                    satellite_name = "MSG-1";
+                else if (satnum == 2)
+                    satellite_name = "MSG-2";
+                else if (satnum == 3)
+                    satellite_name = "MSG-3";
+                else if (satnum == 4)
+                    satellite_name = "MSG-4";
+            }
+        }
+
         // Other data
         long int headerpos, datapos, trailerpos;
         sscanf(mh_strs[8].c_str(), "%*s : %*d %ld\n", &headerpos);
@@ -235,6 +266,8 @@ namespace nat2pro
         seviri_products.instrument_name = "seviri";
         seviri_products.has_timestamps = false;
         seviri_products.bit_depth = 10;
+        seviri_products.set_product_timestamp(prod_timestamp);
+        seviri_products.set_product_source(satellite_name);
 
         proj::projection_t proj;
         proj.type = proj::ProjType_Geos;
