@@ -4193,9 +4193,8 @@
                 "name": "FCI",
                 "rgb_composites": {
                     "True Color": {
-                        "equation": "ch3, ch2, ch1",
+                        "equation": "(cch3^0.9)-0.05, (cch2^0.9), (cch1^0.9)",
                         "white_balance": true,
-                        "equalize": true,
                         "remove_background":true,
                         "autogen": false
                     },

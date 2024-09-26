@@ -37,6 +37,27 @@ else
     exit 1
 }
 
+if($env:PROCESSOR_ARCHITECTURE -ne $arch)
+{
+    if($env:PROCESSOR_ARCHITECTURE -eq "AMD64")
+    {
+        $host_triplet = "x64-windows"
+    }
+    elseif($env:PROCESSOR_ARCHITECTURE -eq "X86")
+    {
+        $host_triplet = "x86-windows"
+    }
+    elseif($env:PROCESSOR_ARCHITECTURE -eq "ARM64")
+    {
+        $host_triplet = "arm64-windows"
+    }
+    else
+    {
+        Write-Error "Unsupported host platform: $($env:PROCESSOR_ARCHITECTURE)"
+        exit 1
+    }
+}
+
 #Setup vcpkg
 Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
@@ -47,7 +68,6 @@ git checkout 68d3499
 
 # Core packages. libxml2 is for libiio
 .\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel] hdf5
-
 
 # Entirely for UHD...
 if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
@@ -67,7 +87,7 @@ $libusb_include=$(Get-Item ..\installed\$platform\include\libusb-1.0).FullName
 $libusb_lib=$(Get-Item ..\installed\$platform\lib\libusb-1.0.lib).FullName
 if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 {
-    $build_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON"
+    $build_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON", "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
 }
 
 #TEMPORARY: Use an unmerged PR of LibUSB to allow setting RAW_IO on USB transferrs. This is needed to
