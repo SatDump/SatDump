@@ -57,8 +57,6 @@ namespace satdump
     {
         std::string final_token = macaron::Base64::Encode(eumetsat_user_consumer_credential + ":" + eumetsat_user_consumer_secret);
 
-        logger->critical(final_token);
-
         std::string resp = "";
         if (perform_http_request_post("https://api.eumetsat.int/token", resp, "grant_type=client_credentials", "Authorization: Basic " + final_token) != 1)
             resp = nlohmann::json::parse(resp)["access_token"];
@@ -168,7 +166,7 @@ namespace satdump
                     if (perform_http_request(str.href, resp, "") != 1)
                     {
                         nlohmann::json respj = nlohmann::json::parse(resp);
-                        printf("\n%s\n", respj.dump(4).c_str());
+                        //                        printf("\n%s\n", respj.dump(4).c_str());
 
                         std::string nat_link, file_name;
                         if (eumetsat_selected_dataset < 2)
