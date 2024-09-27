@@ -14,6 +14,7 @@
 
 namespace
 {
+    bool _enable_loader = false;
     bool _loader_open = false;
     std::unique_ptr<satdump::ArchiveLoader> _loader;
 }
@@ -63,6 +64,8 @@ public:
                 auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
                 if (cfg.contains("eumetsat_credentials"))
                     _loader->eumetsat_user_consumer_token = cfg["eumetsat_credentials"];
+                if (cfg.contains("enable_loader"))
+                    _enable_loader = cfg["enable_loader"];
             }
         }
     }
@@ -71,6 +74,7 @@ public:
     {
         initLoader();
 
+        ImGui::Checkbox("Enable Loader", &_enable_loader);
         ImGui::Text("EUMETSAT User Credentials");
         ImGui::SameLine();
         ImGui::InputText("##eumetsattokenloader", &_loader->eumetsat_user_consumer_token);
@@ -81,10 +85,14 @@ public:
         satdump::config::main_cfg["plugin_settings"]["official_products"] = {};
         auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
         cfg["eumetsat_credentials"] = _loader->eumetsat_user_consumer_token;
+        cfg["enable_loader"] = _enable_loader;
     }
 
     static void renderViewerLoaderButton(const satdump::ViewerApplication::RenderLoadMenuElementsEvent &evt)
     {
+        if (!_enable_loader)
+            return;
+
         if (ImGui::Button("Load Official"))
             _loader_open = true;
 
