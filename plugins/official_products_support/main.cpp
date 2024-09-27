@@ -34,6 +34,10 @@ public:
 
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
         satdump::eventBus->register_handler<satdump::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
+
+        if (satdump::config::main_cfg.contains("plugin_settings") && satdump::config::main_cfg["plugin_settings"].contains("official_products"))
+            if (satdump::config::main_cfg["plugin_settings"]["official_products"].contains("enable_loader"))
+                _enable_loader = satdump::config::main_cfg["plugin_settings"]["official_products"]["enable_loader"];
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -62,8 +66,10 @@ public:
             if (satdump::config::main_cfg.contains("plugin_settings") && satdump::config::main_cfg["plugin_settings"].contains("official_products"))
             {
                 auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
-                if (cfg.contains("eumetsat_credentials"))
-                    _loader->eumetsat_user_consumer_token = cfg["eumetsat_credentials"];
+                if (cfg.contains("eumetsat_credentials_key"))
+                    _loader->eumetsat_user_consumer_credential = cfg["eumetsat_credentials_key"];
+                if (cfg.contains("eumetsat_credentials_secret"))
+                    _loader->eumetsat_user_consumer_secret = cfg["eumetsat_credentials_secret"];
                 if (cfg.contains("enable_loader"))
                     _enable_loader = cfg["enable_loader"];
             }
@@ -75,16 +81,22 @@ public:
         initLoader();
 
         ImGui::Checkbox("Enable Loader", &_enable_loader);
-        ImGui::Text("EUMETSAT User Credentials");
+
+        ImGui::Text("EUMETSAT User Credentials Key");
         ImGui::SameLine();
-        ImGui::InputText("##eumetsattokenloader", &_loader->eumetsat_user_consumer_token);
+        ImGui::InputText("##eumetsattokenloader_key", &_loader->eumetsat_user_consumer_credential);
+
+        ImGui::Text("EUMETSAT User Credentials Secret");
+        ImGui::SameLine();
+        ImGui::InputText("##eumetsattokenloader_secret", &_loader->eumetsat_user_consumer_secret);
     }
 
     static void saveConfig()
     {
         satdump::config::main_cfg["plugin_settings"]["official_products"] = {};
         auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
-        cfg["eumetsat_credentials"] = _loader->eumetsat_user_consumer_token;
+        cfg["eumetsat_credentials_key"] = _loader->eumetsat_user_consumer_credential;
+        cfg["eumetsat_credentials_secret"] = _loader->eumetsat_user_consumer_secret;
         cfg["enable_loader"] = _enable_loader;
     }
 

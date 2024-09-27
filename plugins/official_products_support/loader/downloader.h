@@ -6,6 +6,7 @@
 #include <fstream>
 #include "satdump_vars.h"
 #include "logger.h"
+#include "common/dsp_source_sink/format_notated.h"
 
 namespace widgets
 {
@@ -31,6 +32,8 @@ namespace widgets
             FileDownloaderWidget *pptr = (FileDownloaderWidget *)ptr;
             if (TotalToDownload != 0)
                 pptr->progress = NowDownloaded / TotalToDownload;
+            pptr->curSize = NowDownloaded;
+            pptr->downloadSize = TotalToDownload;
             return 0;
         }
 
@@ -38,6 +41,7 @@ namespace widgets
         bool is_downloading = false;
         float progress = 0;
         std::string file_downloading = "IDLE";
+        double curSize = 0, downloadSize = 0;
 
     public:
         FileDownloaderWidget()
@@ -56,6 +60,7 @@ namespace widgets
         void render()
         {
             ImGui::Text("Downloading : %s", file_downloading.c_str());
+            ImGui::Text("%s / %s", format_notated(curSize, "B", 2).c_str(), format_notated(downloadSize, "B", 2).c_str());
             ImGui::ProgressBar(progress);
         }
 
@@ -120,6 +125,8 @@ namespace widgets
             output_filestream.close();
             is_downloading = false;
             file_downloading = "IDLE";
+            curSize = 0;
+            downloadSize = 0;
 
             return ret;
         }

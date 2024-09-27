@@ -5,6 +5,7 @@
 #include "nlohmann/json.hpp"
 #include "processing.h"
 #include "main_ui.h"
+#include "libs/base64/base64.h"
 
 namespace satdump
 {
@@ -54,8 +55,12 @@ namespace satdump
 
     std::string ArchiveLoader::getEumetSatToken()
     {
+        std::string final_token = macaron::Base64::Encode(eumetsat_user_consumer_credential + ":" + eumetsat_user_consumer_secret);
+
+        logger->critical(final_token);
+
         std::string resp = "";
-        if (perform_http_request_post("https://api.eumetsat.int/token", resp, "grant_type=client_credentials", "Authorization: Basic " + eumetsat_user_consumer_token) != 1)
+        if (perform_http_request_post("https://api.eumetsat.int/token", resp, "grant_type=client_credentials", "Authorization: Basic " + final_token) != 1)
             resp = nlohmann::json::parse(resp)["access_token"];
         logger->trace("Token " + resp);
         return resp;
@@ -63,52 +68,59 @@ namespace satdump
 
     void ArchiveLoader::updateEUMETSAT()
     {
-        int year, month, day;
+        try
         {
-            time_t tttime = time(0);
-            std::tm *timeReadable = gmtime(&tttime);
-            year = timeReadable->tm_year + 1900;
-            month = timeReadable->tm_mon + 1;
-            day = timeReadable->tm_mday;
-        }
-
-        std::string url = "https://api.eumetsat.int/data/browse/1.0.0/collections/" + std::string(eumetsat_products[eumetsat_selected_dataset].id) + "/dates/" +
-                          std::to_string(year) + "/" +
-                          (month < 10 ? "0" : "") + std::to_string(month) + "/" +
-                          (day < 10 ? "0" : "") + std::to_string(day) +
-                          "/products?format=json";
-        std::string resp;
-        logger->info(url);
-        if (perform_http_request(url, resp, "") != 1)
-        {
-            eumetsat_list.clear();
-
-            nlohmann::json respj = nlohmann::json::parse(resp);
-            //            saveJsonFile("test.json", respj);
-            if (respj.contains("products"))
+            int year, month, day;
             {
-                for (int i = 0; i < respj["products"].size(); i++)
+                time_t tttime = request_time.get();
+                std::tm *timeReadable = gmtime(&tttime);
+                year = timeReadable->tm_year + 1900;
+                month = timeReadable->tm_mon + 1;
+                day = timeReadable->tm_mday;
+            }
+
+            std::string url = "https://api.eumetsat.int/data/browse/1.0.0/collections/" + std::string(eumetsat_products[eumetsat_selected_dataset].id) + "/dates/" +
+                              std::to_string(year) + "/" +
+                              (month < 10 ? "0" : "") + std::to_string(month) + "/" +
+                              (day < 10 ? "0" : "") + std::to_string(day) +
+                              "/products?format=json";
+            std::string resp;
+            logger->info(url);
+            if (perform_http_request(url, resp, "") != 1)
+            {
+                eumetsat_list.clear();
+
+                nlohmann::json respj = nlohmann::json::parse(resp);
+                //            saveJsonFile("test.json", respj);
+                if (respj.contains("products"))
                 {
-                    auto &prod = respj["products"][i];
-
-                    std::tm timeS;
-                    memset(&timeS, 0, sizeof(std::tm));
-
-                    if (sscanf(prod["date"].get<std::string>().c_str(),
-                               "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ/%*d-%*d-%*dT%*d:%*d:%*d.%*dZ",
-                               &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
-                               &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+                    for (int i = 0; i < respj["products"].size(); i++)
                     {
-                        timeS.tm_year -= 1900;
-                        timeS.tm_mon -= 1;
-                        timeS.tm_isdst = -1;
-                        time_t timestamp = timegm(&timeS);
+                        auto &prod = respj["products"][i];
 
-                        std::string prod_d = prod["links"][0]["href"];
-                        eumetsat_list.push_back({timestamp_to_string(timestamp), prod_d});
+                        std::tm timeS;
+                        memset(&timeS, 0, sizeof(std::tm));
+
+                        if (sscanf(prod["date"].get<std::string>().c_str(),
+                                   "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ/%*d-%*d-%*dT%*d:%*d:%*d.%*dZ",
+                                   &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                                   &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+                        {
+                            timeS.tm_year -= 1900;
+                            timeS.tm_mon -= 1;
+                            timeS.tm_isdst = -1;
+                            time_t timestamp = timegm(&timeS);
+
+                            std::string prod_d = prod["links"][0]["href"];
+                            eumetsat_list.push_back({timestamp_to_string(timestamp), prod_d});
+                        }
                     }
                 }
             }
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Error updating product list! %s", e.what());
         }
     }
 
@@ -119,7 +131,7 @@ namespace satdump
         if (should_disable)
             style::beginDisabled();
 
-        if (ImGui::BeginCombo("Dataset", eumetsat_products[eumetsat_selected_dataset].name.c_str()))
+        if (ImGui::BeginCombo("##archiveloader_dataset", eumetsat_products[eumetsat_selected_dataset].name.c_str()))
         {
             for (int i = 0; i < eumetsat_products.size(); i++)
                 if (ImGui::Selectable(eumetsat_products[i].name.c_str(), eumetsat_selected_dataset == i))
@@ -129,8 +141,16 @@ namespace satdump
                 }
             ImGui::EndCombo();
         }
+        ImGui::SameLine();
+        if (ImGui::Button("Refresh##archiveloader_refresh"))
+            updateEUMETSAT();
 
-        ImGui::BeginChild("##archiveloader_subwindow", {wsize.x - 50 * ui_scale, wsize.y - 200 * ui_scale}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        request_time.draw();
+        ImGui::SameLine();
+        if (ImGui::Button("Current##archiveloader_setcurrenttime"))
+            request_time.set(time(0));
+
+        ImGui::BeginChild("##archiveloader_subwindow", {wsize.x - 50 * ui_scale, wsize.y - 190 * ui_scale}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
         if (ImGui::BeginTable("##archiveloadertable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableSetupColumn("##archiveloadertable_name", ImGuiTableColumnFlags_None);
@@ -139,13 +159,13 @@ namespace satdump
             for (auto &str : eumetsat_list)
             {
                 ImGui::TableNextColumn();
-                ImGui::Text("%s", str.first.c_str());
+                ImGui::Text("%s", str.timestamp.c_str());
 
                 ImGui::TableNextColumn();
-                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.first).c_str()))
+                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.timestamp).c_str()))
                 {
                     std::string resp;
-                    if (perform_http_request(str.second, resp, "") != 1)
+                    if (perform_http_request(str.href, resp, "") != 1)
                     {
                         nlohmann::json respj = nlohmann::json::parse(resp);
                         printf("\n%s\n", respj.dump(4).c_str());
@@ -183,20 +203,27 @@ namespace satdump
 
                         auto func = [this, nat_link, download_path, process_path](int)
                         {
-                            if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
+                            try
                             {
-                                if (eumetsat_selected_dataset < 2)
-                                    processing::process("nc2pro",
-                                                        "file",
-                                                        download_path,
-                                                        process_path,
-                                                        {});
-                                else
-                                    processing::process("nat2pro",
-                                                        "file",
-                                                        download_path,
-                                                        process_path,
-                                                        {});
+                                if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
+                                {
+                                    if (eumetsat_selected_dataset < 2)
+                                        processing::process("nc2pro",
+                                                            "file",
+                                                            download_path,
+                                                            process_path,
+                                                            {});
+                                    else
+                                        processing::process("nat2pro",
+                                                            "file",
+                                                            download_path,
+                                                            process_path,
+                                                            {});
+                                }
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Failed downloading file from EUMETSAT! %s", e.what());
                             }
                         };
 
@@ -210,9 +237,6 @@ namespace satdump
         ImGui::EndChild();
 
         file_downloader.render();
-
-        if (ImGui::Button("Refresh##archiveloader_refresh"))
-            updateEUMETSAT();
 
         if (should_disable)
             style::endDisabled();
