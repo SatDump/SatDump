@@ -134,7 +134,7 @@ int perform_http_request(std::string url_str, std::string &result, std::string a
     return ret;
 }
 
-int perform_http_request_post(std::string url_str, std::string &result, std::string post_req)
+int perform_http_request_post(std::string url_str, std::string &result, std::string post_req, std::string added_header)
 {
     CURL *curl;
     CURLcode res;
@@ -157,6 +157,14 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
         curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
 #endif
 
+        struct curl_slist *chunk = NULL;
+        if (added_header != "")
+        {
+            /* Remove a header curl would otherwise add by itself */
+            chunk = curl_slist_append(chunk, added_header.c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+        }
+
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK)
@@ -169,6 +177,9 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
 
         curl_easy_cleanup(curl);
         ret = 0;
+
+        if (chunk != NULL)
+            curl_slist_free_all(chunk);
     }
     curl_global_cleanup();
     return ret;

@@ -1,0 +1,220 @@
+#include "archive_loader.h"
+
+#include "common/utils.h"
+#include "logger.h"
+#include "nlohmann/json.hpp"
+#include "processing.h"
+#include "main_ui.h"
+
+namespace satdump
+{
+    struct EumetSatProductItem
+    {
+        std::string name;
+        std::string id;
+    };
+
+    std::vector<EumetSatProductItem> eumetsat_products = {
+        {
+            "MTG FCI 0 deg Normal Resolution",
+            "EO%3AEUM%3ADAT%3A0662",
+        },
+        {
+            "MTG FCI 0 deg Full Resolution",
+            "EO%3AEUM%3ADAT%3A0665",
+        },
+        {
+            "MSG SEVIRI 0 deg",
+            "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI",
+        },
+        {
+            "MSG SEVIRI 0 deg RSS",
+            "EO%3AEUM%3ADAT%3AMSG%3AMSG15-RSS",
+        },
+        {
+            "MSG SEVIRI IODC",
+            "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI-IODC",
+        },
+        {
+            "MetOp AVHRR",
+            "EO%3AEUM%3ADAT%3AMETOP%3AAVHRRL1",
+        },
+        {
+            "MetOp MHS",
+            "EO%3AEUM%3ADAT%3AMETOP%3AMHSL1",
+        },
+        {
+            "MetOp AMSU",
+            "EO%3AEUM%3ADAT%3AMETOP%3AAMSUL1",
+        },
+        {
+            "MetOp HIRS",
+            "EO%3AEUM%3ADAT%3AMETOP%3AHIRSL1",
+        }};
+
+    std::string ArchiveLoader::getEumetSatToken()
+    {
+        std::string resp = "";
+        if (perform_http_request_post("https://api.eumetsat.int/token", resp, "grant_type=client_credentials", "Authorization: Basic " + eumetsat_user_consumer_token) != 1)
+            resp = nlohmann::json::parse(resp)["access_token"];
+        logger->trace("Token " + resp);
+        return resp;
+    }
+
+    void ArchiveLoader::updateEUMETSAT()
+    {
+        int year, month, day;
+        {
+            time_t tttime = time(0);
+            std::tm *timeReadable = gmtime(&tttime);
+            year = timeReadable->tm_year + 1900;
+            month = timeReadable->tm_mon + 1;
+            day = timeReadable->tm_mday;
+        }
+
+        std::string url = "https://api.eumetsat.int/data/browse/1.0.0/collections/" + std::string(eumetsat_products[eumetsat_selected_dataset].id) + "/dates/" +
+                          std::to_string(year) + "/" +
+                          (month < 10 ? "0" : "") + std::to_string(month) + "/" +
+                          (day < 10 ? "0" : "") + std::to_string(day) +
+                          "/products?format=json";
+        std::string resp;
+        logger->info(url);
+        if (perform_http_request(url, resp, "") != 1)
+        {
+            eumetsat_list.clear();
+
+            nlohmann::json respj = nlohmann::json::parse(resp);
+            //            saveJsonFile("test.json", respj);
+            if (respj.contains("products"))
+            {
+                for (int i = 0; i < respj["products"].size(); i++)
+                {
+                    auto &prod = respj["products"][i];
+
+                    std::tm timeS;
+                    memset(&timeS, 0, sizeof(std::tm));
+
+                    if (sscanf(prod["date"].get<std::string>().c_str(),
+                               "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ/%*d-%*d-%*dT%*d:%*d:%*d.%*dZ",
+                               &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                               &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+                    {
+                        timeS.tm_year -= 1900;
+                        timeS.tm_mon -= 1;
+                        timeS.tm_isdst = -1;
+                        time_t timestamp = timegm(&timeS);
+
+                        std::string prod_d = prod["links"][0]["href"];
+                        eumetsat_list.push_back({timestamp_to_string(timestamp), prod_d});
+                    }
+                }
+            }
+        }
+    }
+
+    void ArchiveLoader::renderEumetsat(ImVec2 wsize)
+    {
+        bool should_disable = file_downloader.is_busy() || satdump::processing::is_processing;
+
+        if (should_disable)
+            style::beginDisabled();
+
+        if (ImGui::BeginCombo("Dataset", eumetsat_products[eumetsat_selected_dataset].name.c_str()))
+        {
+            for (int i = 0; i < eumetsat_products.size(); i++)
+                if (ImGui::Selectable(eumetsat_products[i].name.c_str(), eumetsat_selected_dataset == i))
+                {
+                    eumetsat_selected_dataset = i;
+                    updateEUMETSAT();
+                }
+            ImGui::EndCombo();
+        }
+
+        ImGui::BeginChild("##archiveloader_subwindow", {wsize.x - 50 * ui_scale, wsize.y - 200 * ui_scale}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        if (ImGui::BeginTable("##archiveloadertable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        {
+            ImGui::TableSetupColumn("##archiveloadertable_name", ImGuiTableColumnFlags_None);
+            ImGui::TableSetupColumn("##archiveloadertable_butt", ImGuiTableColumnFlags_None);
+
+            for (auto &str : eumetsat_list)
+            {
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", str.first.c_str());
+
+                ImGui::TableNextColumn();
+                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.first).c_str()))
+                {
+                    std::string resp;
+                    if (perform_http_request(str.second, resp, "") != 1)
+                    {
+                        nlohmann::json respj = nlohmann::json::parse(resp);
+                        printf("\n%s\n", respj.dump(4).c_str());
+
+                        std::string nat_link, file_name;
+                        if (eumetsat_selected_dataset < 2)
+                        {
+                            auto &respj2 = respj["properties"]["links"]["data"];
+
+                            for (auto &item : respj2.items())
+
+                                if (item.value()["mediaType"].get<std::string>() == "application/zip")
+                                {
+                                    nat_link = item.value()["href"].get<std::string>();
+                                    file_name = respj["id"].get<std::string>() + ".zip";
+                                }
+                        }
+                        else
+                        {
+                            auto &respj2 = respj["properties"]["links"]["sip-entries"];
+
+                            for (auto &item : respj2.items())
+
+                                if (item.value()["mediaType"].get<std::string>() == "application/octet-stream")
+                                {
+                                    nat_link = item.value()["href"].get<std::string>();
+                                    file_name = item.value()["title"].get<std::string>();
+                                }
+                        }
+
+                        printf("\n%s\n", nat_link.c_str());
+
+                        std::string download_path = products_download_and_process_directory + "/" + file_name;
+                        std::string process_path = products_download_and_process_directory + "/" + std::filesystem::path(file_name).stem().string();
+
+                        auto func = [this, nat_link, download_path, process_path](int)
+                        {
+                            if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
+                            {
+                                if (eumetsat_selected_dataset < 2)
+                                    processing::process("nc2pro",
+                                                        "file",
+                                                        download_path,
+                                                        process_path,
+                                                        {});
+                                else
+                                    processing::process("nat2pro",
+                                                        "file",
+                                                        download_path,
+                                                        process_path,
+                                                        {});
+                            }
+                        };
+
+                        ui_thread_pool.push(func);
+                    }
+                }
+            }
+
+            ImGui::EndTable();
+        }
+        ImGui::EndChild();
+
+        file_downloader.render();
+
+        if (ImGui::Button("Refresh##archiveloader_refresh"))
+            updateEUMETSAT();
+
+        if (should_disable)
+            style::endDisabled();
+    }
+}

@@ -39,6 +39,11 @@ namespace satdump
 
     class ViewerApplication : public Application
     {
+    public:
+        struct RenderLoadMenuElementsEvent
+        {
+        };
+
     protected:
         const std::string app_id;
         virtual void drawUI();

@@ -325,6 +325,8 @@ namespace satdump
                                 logger->error("Error opening dataset/products - %s", e.what());
                             } });
                     }
+
+                    eventBus->fire_event<RenderLoadMenuElementsEvent>({});
                 }
 
                 if (products_and_handlers.size() > 0)
