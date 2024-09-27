@@ -455,10 +455,19 @@ namespace satdump
                     std::pair<double, double> &this_range = products->get_calibration_type(active_channel_id) && is_temp ? temp_ranges[active_channel_id] : radiance_ranges[active_channel_id];
                     double tmp_min = (this_range.first * (products->get_calibration_type(active_channel_id) ? 1 : 100));
                     double tmp_max = (this_range.second * (products->get_calibration_type(active_channel_id) ? 1 : 100));
+
+                    std::string format_string;
+                    if (is_temp && products->get_calibration_type(active_channel_id))
+                        format_string = "%.1f K";
+                    else if (products->get_calibration_type(active_channel_id))
+                        format_string = u8"%.2f W\u00B7sr\u207b\u00b9\u00B7m\u207b\u00b2";
+                    else
+                        format_string = "%.2f%% Albedo";
+
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr\u207b\u00b9·m\u207b\u00b2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Minimum", &tmp_min, 0, 0, format_string.c_str(), ImGuiInputTextFlags_EnterReturnsTrue);
                     ImGui::SetNextItemWidth(120 * ui_scale);
-                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, is_temp && products->get_calibration_type(active_channel_id) ? "%.1f K" : (products->get_calibration_type(active_channel_id) ? "%.2f W·sr\u207b\u00b9·m\u207b\u00b2" : "%.2f%% Albedo"), ImGuiInputTextFlags_EnterReturnsTrue);
+                    buff |= ImGui::InputDouble("Maximum", &tmp_max, 0, 0, format_string.c_str(), ImGuiInputTextFlags_EnterReturnsTrue);
                     if (buff)
                     {
                         this_range.first = (tmp_min / (products->get_calibration_type(active_channel_id) ? 1 : 100));
