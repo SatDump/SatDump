@@ -380,7 +380,7 @@ namespace satdump
                 if (products->get_wavenumber(active_channel_id) != -1)
                 {
                     ImGui::BeginTooltip();
-                    ImGui::Text("Wavenumber : %f cm\u207b\u00b9", products->get_wavenumber(active_channel_id));
+                    ImGui::Text(u8"Wavenumber : %f cm\u207b\u00b9", products->get_wavenumber(active_channel_id));
                     double wl_nm = 1e7 / products->get_wavenumber(active_channel_id);
                     double frequency = 299792458.0 / (wl_nm * 10e-10);
 
