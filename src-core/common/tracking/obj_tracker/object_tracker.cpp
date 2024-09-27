@@ -104,6 +104,8 @@ namespace satdump
     {
         rotator_handler_mtx.lock();
         rotator_handler = rot;
+        az_limits = rot->azLimits;
+        el_limits = rot->elLimits;
         rotator_handler_mtx.unlock();
     }
 
