@@ -13,45 +13,61 @@ namespace satdump
     {
         std::string name;
         std::string id;
+        bool is_hdf;
     };
 
     std::vector<EumetSatProductItem> eumetsat_products = {
         {
             "MTG FCI 0 deg Normal Resolution",
             "EO%3AEUM%3ADAT%3A0662",
+            true,
         },
         {
             "MTG FCI 0 deg Full Resolution",
             "EO%3AEUM%3ADAT%3A0665",
+            true,
         },
         {
             "MSG SEVIRI 0 deg",
             "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI",
+            false,
         },
         {
             "MSG SEVIRI 0 deg RSS",
             "EO%3AEUM%3ADAT%3AMSG%3AMSG15-RSS",
+            false,
         },
         {
             "MSG SEVIRI IODC",
             "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI-IODC",
+            false,
         },
         {
             "MetOp AVHRR",
             "EO%3AEUM%3ADAT%3AMETOP%3AAVHRRL1",
+            false,
         },
         {
             "MetOp MHS",
             "EO%3AEUM%3ADAT%3AMETOP%3AMHSL1",
+            false,
         },
         {
             "MetOp AMSU",
             "EO%3AEUM%3ADAT%3AMETOP%3AAMSUL1",
+            false,
         },
         {
             "MetOp HIRS",
             "EO%3AEUM%3ADAT%3AMETOP%3AHIRSL1",
-        }};
+            false,
+        },
+        {
+            "Sentinel-3 OLCI Full Resolution",
+            "EO%3AEUM%3ADAT%3A0409",
+            true,
+        },
+    };
 
     std::string ArchiveLoader::getEumetSatToken()
     {
@@ -169,7 +185,7 @@ namespace satdump
                         //                        printf("\n%s\n", respj.dump(4).c_str());
 
                         std::string nat_link, file_name;
-                        if (eumetsat_selected_dataset < 2)
+                        if (eumetsat_products[eumetsat_selected_dataset].is_hdf)
                         {
                             auto &respj2 = respj["properties"]["links"]["data"];
 
