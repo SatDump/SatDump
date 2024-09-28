@@ -292,6 +292,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
                 "^msvcp.*"
                 "^concrt.*"
                 "satdump_core.dll"
+                "satdump_interface.dll"
             POST_EXCLUDE_REGEXES
                 ".*system32/.*\\.dll"
             DIRECTORIES
