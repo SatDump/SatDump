@@ -15,7 +15,7 @@ namespace satdump
 
         widgets::FileDownloaderWidget file_downloader;
 
-        int eumetsat_selected_dataset = -1;
+        int eumetsat_selected_dataset = 0;
         struct EumetsatElement
         {
             std::string timestamp;
