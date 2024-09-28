@@ -8,7 +8,8 @@ if(${HDF5_FOUND})
       main.cpp
       fcidecomp/*.c
       fcidecomp/*.cpp
-      nc2pro/*.cpp)
+      nc2pro/*.cpp
+      nat2pro/*.cpp)
   if(BUILD_GUI)
     file(GLOB_RECURSE loader_CPPS loader/*.cpp)
     list(APPEND official_products_support_CPPS ${loader_CPPS})
@@ -31,9 +32,9 @@ if(${HDF5_FOUND})
   if(MSVC OR BUILD_MSVC)
     install(
       TARGETS official_products_support
-      DESTINATION lib/satdump/plugins
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
       RUNTIME_DEPENDENCY_SET satdump_deps)
   else()
-    install(TARGETS official_products_support DESTINATION lib/satdump/plugins)
+    install(TARGETS official_products_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
   endif()
 endif()

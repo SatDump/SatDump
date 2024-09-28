@@ -7,4 +7,4 @@ add_library(himawari_support SHARED ${himawari_support_CPPS})
 target_link_libraries(himawari_support PUBLIC satdump_core)
 target_include_directories(himawari_support PUBLIC src .)
 
-install(TARGETS himawari_support DESTINATION lib/satdump/plugins)
+install(TARGETS himawari_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

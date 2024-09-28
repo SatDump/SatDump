@@ -20,8 +20,8 @@ endif()
 if(MSVC OR BUILD_MSVC)
   install(
     TARGETS geonetcast_support
-    DESTINATION lib/satdump/plugins
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
     RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
-  install(TARGETS geonetcast_support DESTINATION lib/satdump/plugins)
+  install(TARGETS geonetcast_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 endif()

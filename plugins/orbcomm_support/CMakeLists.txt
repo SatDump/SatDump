@@ -7,4 +7,4 @@ add_library(orbcomm_support SHARED ${orbcomm_support_CPPS})
 target_link_libraries(orbcomm_support PUBLIC satdump_core)
 target_include_directories(orbcomm_support PUBLIC src)
 
-install(TARGETS orbcomm_support DESTINATION lib/satdump/plugins)
+install(TARGETS orbcomm_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

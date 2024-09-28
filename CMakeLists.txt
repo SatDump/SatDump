@@ -29,7 +29,8 @@ if(ANDROID)
     set(OPENCL_FOUND 1)
 endif()
 
-# Set default install prefix to /usr
+# Set default install prefix
+include(GNUInstallDirs) #Retruns good defaults on non-GNU systems as well
 if(UNIX)
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         if(APPLE)
@@ -144,18 +145,12 @@ if(ANDROID)
 endif()
 
 # Check we have OpenCL
-if(MSVC)
-    set(OPENCL_FOUND 1)
-    set(OpenCL_LIBRARY OpenCL.dll)
-    set(OpenCL_LIBRARIES OpenCL.dll)
-elseif(NOT ANDROID)
+if(NOT ANDROID)
     find_package(OpenCL)
 endif()
 
 if(OPENCL_FOUND AND BUILD_OPENCL)
     message("OpenCL Found! SatDump will support accelerated GPU computing.")
-
-# add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
 else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
@@ -167,7 +162,7 @@ if(BUILD_ZIQ)
 endif()
 
 if(BUILD_ZIQ2)
-    message("Building with ZIQ Support")
+    message("Building with ZIQ2 Support")
 endif()
 
 # If in debug, set the macro

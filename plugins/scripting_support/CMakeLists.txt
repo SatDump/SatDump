@@ -7,4 +7,4 @@ add_library(scripting_support SHARED ${scripting_support_CPPS})
 target_link_libraries(scripting_support PUBLIC satdump_core)
 target_include_directories(scripting_support PUBLIC src)
 
-install(TARGETS scripting_support DESTINATION lib/satdump/plugins)
+install(TARGETS scripting_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
