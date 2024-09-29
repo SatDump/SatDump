@@ -57,10 +57,12 @@ namespace nc2pro
         if (file < 0)
             return "";
         hid_t att = H5Aopen(file, attr.c_str(), H5P_DEFAULT);
+        hid_t att_type = H5Aget_type(att);
         char *str;
-        H5Aread(att, H5Aget_type(att), &str);
+        H5Aread(att, att_type, &str);
         val = std::string(str);
         H5free_memory(str);
+        H5Tclose(att_type);
         H5Aclose(att);
         return val;
     }
@@ -274,6 +276,8 @@ namespace nc2pro
 
                 *progess = double(fi) / double(numfiles);
             }
+
+            mz_zip_reader_end(&zip);
         }
 
         if (prod_timestamp == 0)

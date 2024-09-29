@@ -3,7 +3,9 @@
 #include "products/dataset.h"
 #include "common/utils.h"
 
+#include "../file_utils/file_utils.h"
 #include "mtg_fci.h"
+#include "sc3_olci.h"
 
 namespace nc2pro
 {
@@ -19,8 +21,17 @@ namespace nc2pro
 
         filesize = getFilesize(source_nc_file);
 
-        // MTG only for now
-        process_mtg_fci(source_nc_file, pro_output_file, &progress);
+        if (satdump::file_is_zip(source_nc_file))
+        {
+            std::string eum_id = satdump::try_get_eumetsat_id(source_nc_file);
+
+            if (eum_id == "FCI-1C-RRAD-FDHSI-FD")
+                process_mtg_fci(source_nc_file, pro_output_file, &progress);
+            else if (eum_id.find("SEN3") != std::string::npos && eum_id.find("OL_1_EF") != std::string::npos)
+                process_sc3_ocli(source_nc_file, pro_output_file, &progress);
+            else
+                logger->error("Unknown EUMETSAT file type! " + eum_id);
+        }
 
         if (std::filesystem::exists(pro_output_file + "/product.cbor"))
         {

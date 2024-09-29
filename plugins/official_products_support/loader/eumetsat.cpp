@@ -221,7 +221,7 @@ namespace satdump
                             {
                                 if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
                                 {
-                                    if (eumetsat_selected_dataset < 2)
+                                    if (eumetsat_products[eumetsat_selected_dataset].is_hdf)
                                         processing::process("nc2pro",
                                                             "file",
                                                             download_path,

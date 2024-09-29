@@ -4,12 +4,15 @@ project(official_products_support)
 find_package(PkgConfig)
 pkg_check_modules(HDF5 hdf5)
 if(${HDF5_FOUND})
-  file(GLOB_RECURSE official_products_support_CPPS
-      main.cpp
-      fcidecomp/*.c
-      fcidecomp/*.cpp
-      nc2pro/*.cpp
-      nat2pro/*.cpp)
+  file(
+    GLOB_RECURSE
+    official_products_support_CPPS
+    main.cpp
+    file_utils/*.cpp
+    fcidecomp/*.c
+    fcidecomp/*.cpp
+    nc2pro/*.cpp
+    nat2pro/*.cpp)
   if(BUILD_GUI)
     file(GLOB_RECURSE loader_CPPS loader/*.cpp)
     list(APPEND official_products_support_CPPS ${loader_CPPS})
@@ -35,6 +38,7 @@ if(${HDF5_FOUND})
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
       RUNTIME_DEPENDENCY_SET satdump_deps)
   else()
-    install(TARGETS official_products_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    install(TARGETS official_products_support
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
   endif()
 endif()
