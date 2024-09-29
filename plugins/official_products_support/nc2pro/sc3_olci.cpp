@@ -1,7 +1,6 @@
 #define _USE_MATH_DEFINES
 #include "sc3_olci.h"
 
-#include "libs/rapidxml.hpp"
 #include "common/utils.h"
 
 #include <hdf5.h>
@@ -18,11 +17,6 @@
 
 #include "nlohmann/json_utils.h"
 #include "resources.h"
-
-extern "C"
-{
-    void register_MTG_FILTER();
-}
 
 namespace nc2pro
 {
@@ -152,8 +146,6 @@ namespace nc2pro
 
     void process_sc3_ocli(std::string zip_file, std::string pro_output_file, double *progess)
     {
-        register_MTG_FILTER();
-
         image::Image all_channels[21];
 
         time_t prod_timestamp = time(0);
