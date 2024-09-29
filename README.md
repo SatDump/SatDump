@@ -125,6 +125,8 @@ ln -s ../satdump_cfg.json . # Symlink settings so it can run
 
 On Linux, building from source is recommended, but builds are provided for x64-based Ubuntu distributions. Here are some build instructions for common distros.
 
+---
+
 <details>
 
 <summary>Install Dependencies - Debian, Ubuntu, and other Debian-based distros</summary>
@@ -262,6 +264,8 @@ sudo zypper install git gcc-c++ cmake g++ pkgconf fftw3-devel libpng-devel libti
 ```
 
 </details>
+
+---
 
 If nng is not available for your distro, you will have to build it from source
 ```bash
