@@ -11,6 +11,7 @@ if(${HDF5_FOUND})
     file_utils/*.cpp
     fcidecomp/*.c
     fcidecomp/*.cpp
+    off2pro/*.cpp
     nc2pro/*.cpp
     nat2pro/*.cpp)
   if(BUILD_GUI)

@@ -2,13 +2,12 @@
 #include "logger.h"
 #include "core/module.h"
 
-#include "nc2pro/module_nc2pro.h"
+#include "off2pro/module_off2pro.h"
 
 #include "nc2pro/fci_nc_calibrator.h"
 
 //////////
 
-#include "nat2pro/module_nat2pro.h"
 #include "nat2pro/mhs_nat_calibrator.h"
 #include "nat2pro/msg_nat_calibrator.h"
 #include "nat2pro/amsu_nat_calibrator.h"
@@ -50,8 +49,7 @@ public:
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
     {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, nat2pro::Nat2ProModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, nc2pro::Nc2ProModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, off2pro::Off2ProModule);
     }
 
     static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)

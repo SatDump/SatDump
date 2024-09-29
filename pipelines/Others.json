@@ -1,21 +1,11 @@
 {
-    "nat2pro": {
+    "off2pro": {
         "name": "Data Stores / Archives Formats (NOAA/EUMETSAT/CMA/NASA), Experimental",
         "live": false,
         "work": {
             "file": {},
             "products": {
-                "nat2pro": {}
-            }
-        }
-    },
-    "nc2pro": {
-        "name": "MTG FCI Zip (Experimental, Temporary pipeline)",
-        "live": false,
-        "work": {
-            "file": {},
-            "products": {
-                "nc2pro": {}
+                "off2pro": {}
             }
         }
     },
