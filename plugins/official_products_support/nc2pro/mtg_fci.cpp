@@ -50,10 +50,35 @@ namespace nc2pro
         return val;
     }
 
-    std::array<std::pair<int, image::Image>, 16> parse_mtg_fci_netcdf_fulldisk(std::vector<uint8_t> data, int bit_depth, float &longitude,
-                                                                               double *calibration_scale, double *calibration_offset)
+    std::string hdf5_get_string_attr_FILE(hid_t &file, std::string attr)
     {
-        std::array<std::pair<int, image::Image>, 16> image_out;
+        std::string val;
+
+        if (file < 0)
+            return "";
+        hid_t att = H5Aopen(file, attr.c_str(), H5P_DEFAULT);
+        char *str;
+        H5Aread(att, H5Aget_type(att), &str);
+        val = std::string(str);
+        H5free_memory(str);
+        H5Aclose(att);
+        return val;
+    }
+
+    struct ParsedMTGFCI
+    {
+        image::Image imgs[16];
+        int start_row[16];
+        double longitude;
+        double calibration_scale[16];
+        double calibration_offset[16];
+        std::string time_coverage_start;
+        std::string platform_name;
+    };
+
+    ParsedMTGFCI parse_mtg_fci_netcdf_fulldisk(std::vector<uint8_t> data)
+    {
+        ParsedMTGFCI image_out;
 
         // herr_t status;
         hsize_t image_dims[2];
@@ -76,10 +101,9 @@ namespace nc2pro
             H5Dclose(dataset);
         }
 
-        {
-            float lon = hdf5_get_float_attr(file, "data/mtg_geos_projection", "longitude_of_projection_origin");
-            longitude = lon;
-        }
+        image_out.platform_name = hdf5_get_string_attr_FILE(file, "platform");
+        image_out.time_coverage_start = hdf5_get_string_attr_FILE(file, "time_coverage_start");
+        image_out.longitude = hdf5_get_float_attr(file, "data/mtg_geos_projection", "longitude_of_projection_origin");
 
         const std::string channel_map[16] = {
             "vis_04",
@@ -131,14 +155,14 @@ namespace nc2pro
                 continue;
             }
 
-            calibration_scale[ch] = hdf5_get_float_attr(file, channel_path, "scale_factor");
-            calibration_offset[ch] = hdf5_get_float_attr(file, channel_path, "add_offset");
+            image_out.calibration_scale[ch] = hdf5_get_float_attr(file, channel_path, "scale_factor");
+            image_out.calibration_offset[ch] = hdf5_get_float_attr(file, channel_path, "add_offset");
 
             {
                 int start_row = hdf5_get_int(file, rowoff_path);
                 if (start_row == -1e6)
                     continue;
-                image_out[ch].first = start_row;
+                image_out.start_row[ch] = start_row;
             }
 
             hid_t dataset = H5Dopen2(file, channel_path.c_str(), H5P_DEFAULT);
@@ -146,9 +170,9 @@ namespace nc2pro
             if (dataset < 0)
                 continue;
 
-            hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
+            hid_t dataspace = H5Dget_space(dataset);
             int rank = H5Sget_simple_extent_ndims(dataspace);
-            /*int status_n =*/H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
+            H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
 
             if (rank != 2)
                 return image_out;
@@ -157,17 +181,15 @@ namespace nc2pro
 
             image::Image img(16, image_dims[1], image_dims[0], 1);
 
-            /*status =*/H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)img.raw_data());
+            H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)img.raw_data());
 
             for (size_t i = 0; i < img.size(); i++)
-            {
                 if (img.get(i) == 65535)
                     img.set(i, 0);
                 else
-                    img.set(i, img.get(i) << (16 - bit_depth));
-            }
+                    img.set(i, img.get(i) << 4);
 
-            image_out[ch].second = img;
+            image_out.imgs[ch] = img;
 
             H5Dclose(dataset);
         }
@@ -185,9 +207,9 @@ namespace nc2pro
         double calibration_offset[16] = {0};
 
         float center_longitude = 0;
-        std::vector<std::array<std::pair<int, image::Image>, 16>> all_images;
+        std::vector<ParsedMTGFCI> all_images;
 
-        time_t prod_timestamp = time(0);
+        time_t prod_timestamp = 0;
         std::string satellite = "Unknown MTG-I";
 
         {
@@ -216,68 +238,40 @@ namespace nc2pro
                             void *file_ptr = mz_zip_reader_extract_to_heap(&zip, fi, &filesize, 0);
 
                             std::vector<uint8_t> vec((uint8_t *)file_ptr, (uint8_t *)file_ptr + filesize);
-                            auto img = parse_mtg_fci_netcdf_fulldisk(vec, 12, center_longitude, calibration_scale, calibration_offset);
+                            auto img = parse_mtg_fci_netcdf_fulldisk(vec);
                             all_images.push_back(img);
 
-                            mz_free(file_ptr);
-                        }
-                    }
-                    else if (name == "EOPMetadata" && ext == ".xml")
-                    {
-                        logger->info("Parsing XML!");
-
-                        size_t filesize = 0;
-                        void *file_ptr = mz_zip_reader_extract_to_heap(&zip, fi, &filesize, 0);
-
-                        try
-                        {
-                            std::string xml_str((char *)file_ptr, filesize);
-                            xml_str += '\0'; // For some reason...
-                            rapidxml::xml_document<> doc;
-                            doc.parse<0>((char *)xml_str.c_str());
-                            std::string timestamp = doc.first_node("eum:EarthObservation")
-                                                        ->first_node("om:phenomenonTime")
-                                                        ->first_node("gml:TimePeriod")
-                                                        ->first_node("gml:beginPosition")
-                                                        ->value();
-                            std::string sat_id = doc.first_node("eum:EarthObservation")
-                                                     ->first_node("om:procedure")
-                                                     ->first_node("eop:EarthObservationEquipment")
-                                                     ->first_node("eop:platform")
-                                                     ->first_node("eop:Platform")
-                                                     ->first_node("eop:shortName")
-                                                     ->value();
-
-                            if (sat_id == "MTI1")
+                            if (img.platform_name == "MTI1")
                                 satellite = "MTG-I1";
-                            else if (sat_id == "MTI2")
+                            else if (img.platform_name == "MTI2")
                                 satellite = "MTG-I2";
 
                             std::tm timeS;
                             memset(&timeS, 0, sizeof(std::tm));
-                            if (sscanf(timestamp.c_str(),
-                                       "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ",
+                            if (sscanf(img.time_coverage_start.c_str(),
+                                       "%4d%2d%2d%2d%2d%2d",
                                        &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
                                        &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
                             {
                                 timeS.tm_year -= 1900;
                                 timeS.tm_mon -= 1;
                                 timeS.tm_isdst = -1;
-                                prod_timestamp = timegm(&timeS);
+                                time_t ctime = timegm(&timeS);
+                                if (ctime < prod_timestamp || prod_timestamp == 0)
+                                    prod_timestamp = prod_timestamp;
                             }
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error parsing XML : %s", e.what());
-                        }
 
-                        mz_free(file_ptr);
+                            mz_free(file_ptr);
+                        }
                     }
                 }
 
                 *progess = double(fi) / double(numfiles);
             }
         }
+
+        if (prod_timestamp == 0)
+            prod_timestamp = time(0);
 
         image::Image final_imgs[16];
         bool final_imgs_present[16] = {false};
@@ -298,8 +292,8 @@ namespace nc2pro
             int final_x = 0, final_y = 0;
             for (auto &img : all_images)
             {
-                final_x = img[i].second.width();
-                final_y += img[i].second.height();
+                final_x = img.imgs[i].width();
+                final_y += img.imgs[i].height();
             }
 
             final_imgs[i] = image::Image(16, final_x, final_y, 1);
@@ -311,12 +305,12 @@ namespace nc2pro
 
             for (auto &img : all_images)
             {
-                if (img[i].second.depth() == final_imgs[i].depth())
+                if (img.imgs[i].depth() == final_imgs[i].depth())
                 {
-                    final_imgs[i].draw_image(0, img[i].second, 0, img[i].first);
+                    final_imgs[i].draw_image(0, img.imgs[i], 0, img.start_row[i]);
                     final_imgs_present[i] = true;
                 }
-                img[i].second.clear();
+                img.imgs[i].clear();
             }
 
             final_imgs[i].mirror(false, true);
