@@ -258,7 +258,13 @@ namespace nc2pro
                                 timeS.tm_isdst = -1;
                                 time_t ctime = timegm(&timeS);
                                 if (ctime < prod_timestamp || prod_timestamp == 0)
-                                    prod_timestamp = prod_timestamp;
+                                    prod_timestamp = ctime;
+                            }
+
+                            for (int i = 0; i < 16; i++)
+                            {
+                                calibration_scale[i] = img.calibration_scale[i];
+                                calibration_offset[i] = img.calibration_offset[i];
                             }
 
                             mz_free(file_ptr);
