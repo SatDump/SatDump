@@ -123,11 +123,13 @@ ln -s ../satdump_cfg.json . # Symlink settings so it can run
 
 ### Linux
 
-On Linux, building from source is recommended, but builds are provided for x64-based Ubuntu distributions. Here are some generic (Debian-oriented) build instructions.
+On Linux, building from source is recommended, but builds are provided for x64-based Ubuntu distributions. Here are some build instructions for common distros.
 
-#### Install Dependencies
+<details>
+
+<summary>Install Dependencies - Debian, Ubuntu, and other Debian-based distros</summary>
+
 ```bash
-# Install dependencies on Debian-based systems:
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
                  libtiff-dev libjemalloc-dev libcurl4-openssl-dev
 sudo apt install libvolk-dev                                                      # If this package is not found, use libvolk2-dev or libvolk1-dev
@@ -151,9 +153,14 @@ sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
                  libglfw3-dev zenity portaudio19-dev libzstd-dev librtlsdr-dev libhackrf-dev \
                  libairspy-dev libairspyhf-dev libad9361-dev libiio-dev libbladerf-dev libomp-dev \
                  ocl-icd-opencl-dev intel-opencl-icd mesa-opencl-icd
-                
+```
 
-# Install dependencies on Red-Hat-based systems:
+</details>
+<details>
+
+<summary>Install Dependencies - Red-Hat-based systems</summary>
+
+```bash
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel \
                  libtiff-devel nng-devel curl-devel
 
@@ -167,28 +174,97 @@ sudo dnf install ocl-icd                                                        
 sudo dnf install intel-opencl                                                     # Enables OpenCL for Intel Integrated Graphics
 
 # One-liner to install all dependencies:
-
 sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel \
                  libtiff-devel nng-devel curl-devel glfw-devel zenity portaudio-devel \
                  libzstd-devel rtl-sdr-devel hackrf-devel airspyone_host-devel libomp-devel \
                  ocl-icd intel-opencl
+```
+</details>
+<details>
 
+<summary>Install Dependencies - Alpine-based systems</summary>
 
-# Install dependencies on Alpine-based systems.
+```bash
 # Adding the testing repository is required for libvolk-dev.
 # You need to build libnng from source, see below.
 sudo apk add git cmake make g++ pkgconf fftw-dev libvolk-dev libpng-dev \
-         jemalloc-dev tiff-dev curl-dev
+             jemalloc-dev tiff-dev curl-dev
 
 # (Optional)
-sudo apk add glfw-dev zenity                                                      # Only if you want to build the GUI Version
-sudo apk add portaudio-dev                                                        # Only if you want audio output
-sudo apk add zstd-dev                                                             # Only if you want to build with ZIQ Recording compression
-sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev             # All libraries required for live processing
-sudo apk add opencl-dev                                                           # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
+sudo apk add glfw-dev zenity                                           # Only if you want to build the GUI Version
+sudo apk add portaudio-dev                                             # Only if you want audio output
+sudo apk add zstd-dev                                                  # Only if you want to build with ZIQ Recording compression
+sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev  # All libraries required for live processing
+sudo apk add opencl-dev                                                # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
+```
+</details>
+<details>
 
+<summary>Install Dependencies - Gentoo</summary>
 
-# If libnng-dev is not available, you will have to build it from source
+```bash
+# Assumes you already have gcc, g++, pkgconf, and cmake installed. 
+# Using Gentoo, you probably do!
+#
+# NOTE: You will need to build nng yourself. See below for details.
+#       Some SDR sources, such as AirSpy, also need to be build from
+#       source if needed.
+
+sudo emerge --ask dev-vcs/git sci-libs/fftw dev-libs/jemalloc sci-libs/volk \
+                  media-libs/libpng media-libs/tiff net-misc/curl
+
+sudo emerge --ask media-libs/glfw gnome-extra/zenity      # Only if you want to build the GUI Version
+sudo emerge --ask media-libs/portaudio                    # Only if you want audio output
+sudo emerge --ask app-arch/zstd                           # Only if you want to build with ZIQ Recording compression
+sudo emerge --ask net-wireless/rtl-sdr                    # RTL-SDR Support
+sudo emerge --ask net-libs/libhackrf                      # HackRF Support
+sudo emerge --ask net-wireless/bladerf                    # bladeRF Support
+sudo emerge --ask net-libs/libiio net-libs/libad9361-iio  # For ADALM-Pluto, PlutoPlus, AntSDR and other SDRs based on Analog AD9361
+sudo emerge --ask dev-libs/opencl-icd-loader              # OpenCL Support, Optional, but recommended
+
+# One-liner to install all dependencies:
+sudo emerge --ask dev-vcs/git sci-libs/fftw dev-libs/jemalloc sci-libs/volk \
+                  media-libs/libpng media-libs/tiff net-misc/curl \
+                  media-libs/glfw gnome-extra/zenity media-libs/portaudio \
+                  app-arch/zstd net-wireless/rtl-sdr net-libs/libhackrf   \
+                  net-wireless/bladerf net-libs/libiio net-libs/libad9361-iio \
+                  dev-libs/opencl-icd-loader
+```
+
+</details>
+<details>
+
+<summary>Install Dependencies - openSUSE</summary>
+
+```bash
+sudo zypper install git gcc-c++ cmake g++ pkgconf fftw3-devel libpng-devel \
+                    libtiff-devel jemalloc-devel libcurl-devel volk-devel  \
+                    nng-devel 
+
+# (Optional)
+sudo zypper install libglfw-devel zenity                                        # Only if you want to build the GUI Version
+sudo zypper install portaudio-devel                                             # Only if you want audio output
+sudo zypper install libzstd-devel                                               # Only if you want to build with ZIQ Recording compression
+sudo zypper install rtl-sdr-devel hackrf-devel airspy-devel airspyhf-devel      # All libraries required for live processing
+sudo zypper install libad9361-iio-devel libiio-devel                            # For ADALM-Pluto, PlutoPlus, AntSDR and other SDRs based on Analog AD9361
+sudo zypper install bladeRF-devel                                               # For BladeRF
+sudo zypper install libomp-devel                                                # Shouldn't be required in general, but in case you have errors with OMP
+sudo zypper install opencl-headers libOpenCL1                                   # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL.
+sudo zypper install intel-opencl                                                # Enables OpenCL for Intel Integrated Graphics
+sudo zypper install Mesa-libOpenCL                                              # For AMD Radeon cards *BEFORE series 5000* (e.g. RX480/580...). For newer cards, please install the official AMD drivers.
+
+# One-liner to install all dependencies:
+sudo zypper install git gcc-c++ cmake g++ pkgconf fftw3-devel libpng-devel libtiff-devel jemalloc-devel \
+                    libcurl-devel volk-devel nng-devel libglfw-devel zenity portaudio-devel libzstd-devel \
+                    rtl-sdr-devel hackrf-devel airspy-devel airspyhf-devel libad9361-iio-devel libiio-devel \
+                    bladeRF-devel libomp-devel opencl-headers libOpenCL1 intel-opencl Mesa-libOpenCL
+
+```
+
+</details>
+
+If nng is not available for your distro, you will have to build it from source
+```bash
 git clone https://github.com/nanomsg/nng.git
 cd nng
 mkdir build && cd build
