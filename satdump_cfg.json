@@ -4450,6 +4450,34 @@
                         "remove_background":true
                     }
                 }
+            },
+            "olci": {
+                "handler": "image_handler",
+                "name": "OLCI",
+                "rgb_composites": {
+                    "AVHRR 221 False Color": {
+                        "equation": "ch15, ch15, ch7",
+                        "equalize": true,
+                        "description": "descriptions/221.md"
+                    },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch15, ch15, ch7",
+                        "equalize": true,
+                        "description": "descriptions/221.md"
+                    },
+                    "True Color": {
+                        "equation": "ch8,ch6,ch4",
+                        "equalize": true
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "ch17,ch8,ch6",
+                        "equalize": true
+                    },
+                    "Bathymetric": {
+                        "equation": "ch8,ch6,ch3",
+                        "equalize": true
+                    }
+                }
             }
         }
     }
