@@ -22,6 +22,7 @@ option(BUILD_ZIQ2 "Build support for the custom ZIQ2 format (Very WIP)" OFF)
 option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
+option(BUILD_DOCS "Build with Doxygen Documentation" OFF)
 option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 
 if(ANDROID)
@@ -67,7 +68,7 @@ if(UNIX)
 
     find_package(ZSTD)
 
-    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND(NOT ANDROID))
+    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND (NOT ANDROID))
         message("ZIQ Was enabled but libzstd was not found!")
         set(BUILD_ZIQ OFF)
     endif()
@@ -134,14 +135,14 @@ else()
     message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}")
 endif()
-add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
+add_compile_definitions(SATDUMP_VERSION= "${SATDUMP_VERSION}")
 
 # Used for error messages
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 
 if(ANDROID)
-    add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
+    add_compile_definitions(ANDROID_ABI_LIB= "${ANDROID_ABI}")
 endif()
 
 # Check we have OpenCL
@@ -156,7 +157,7 @@ endif()
 if(OPENCL_FOUND AND BUILD_OPENCL)
     message("OpenCL Found! SatDump will support accelerated GPU computing.")
 
-# add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
+    # add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
 else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
@@ -235,7 +236,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
     set(CPACK_PACKAGE_VENDOR "SatDump")
     set(CPACK_PACKAGE_CONTACT "Aang23")
-    
+
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1, libportaudiocpp0")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libomp5-14, ocl-icd-libopencl1, intel-opencl-icd, mesa-opencl-icd")
 
@@ -285,18 +286,18 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
 
         install(RUNTIME_DEPENDENCY_SET satdump_deps
             PRE_EXCLUDE_REGEXES
-                "api-ms-.*"
-                "ext-ms-.*"
-                "^hvsifiletrust\\.dll$"
-                "^pdmutilities\\.dll$"
-                "^vc.*"
-                "^msvcp.*"
-                "^concrt.*"
-                "satdump_core.dll"
+            "api-ms-.*"
+            "ext-ms-.*"
+            "^hvsifiletrust\\.dll$"
+            "^pdmutilities\\.dll$"
+            "^vc.*"
+            "^msvcp.*"
+            "^concrt.*"
+            "satdump_core.dll"
             POST_EXCLUDE_REGEXES
-                ".*system32/.*\\.dll"
+            ".*system32/.*\\.dll"
             DIRECTORIES
-                "${PROJECT_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/bin"
+            "${PROJECT_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/bin"
         )
     else()
         set(CPACK_GENERATOR DEB)
@@ -308,4 +309,24 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
     include(CPack)
+endif()
+
+# Doxygen configuration
+if((CMAKE_BUILD_TYPE MATCHES "^[Rr]elease") AND BUILD_DOCS)
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+        message("-- Doxygen build enabled!")
+
+        add_custom_target(docs_doxygen ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM)
+    else(DOXYGEN_FOUND)
+        message("Doxygen need to be installed to generate the doxygen documentation")
+    endif(DOXYGEN_FOUND)
 endif()
