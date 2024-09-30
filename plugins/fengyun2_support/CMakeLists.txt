@@ -7,4 +7,4 @@ add_library(fengyun2_support SHARED ${fengyun2_support_CPPS})
 target_link_libraries(fengyun2_support PUBLIC satdump_core)
 target_include_directories(fengyun2_support PUBLIC src)
 
-install(TARGETS fengyun2_support DESTINATION lib/satdump/plugins)
+install(TARGETS fengyun2_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

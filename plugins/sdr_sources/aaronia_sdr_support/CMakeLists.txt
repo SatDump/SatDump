@@ -24,7 +24,7 @@ if(UNIX OR MSVC)
 
     target_include_directories(aaronia_sdr_support PUBLIC src)
 
-    install(TARGETS aaronia_sdr_support DESTINATION lib/satdump/plugins)
+    install(TARGETS aaronia_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 else()
     message("Aaronia Library could not be found! Not building.")
 endif()

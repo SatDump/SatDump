@@ -221,15 +221,19 @@ if(PLUGIN_CUBESAT OR PLUGINS_ALL)
   add_subdirectory(cubesat_support)
 endif()
 
-option(PLUGIN_OTHERS
-       "Enable the support plugin for a few other random satellites" OFF)
+option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)
   add_subdirectory(others_support)
 endif()
 
-option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)"
-       OFF)
+option(PLUGIN_OFFICIAL_PRODUCTS "Enable the support plugin for official satellite products" OFF)
+
+if(PLUGIN_OFFICIAL_PRODUCTS OR PLUGINS_ALL)
+  add_subdirectory(official_products_support)
+endif()
+
+option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)" OFF)
 
 if(PLUGIN_DVB OR PLUGINS_ALL)
   add_subdirectory(dvb_support)

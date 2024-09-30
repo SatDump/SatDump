@@ -4,7 +4,7 @@
 
 #include "msg/module_msg_instruments_decoder.h"
 
-class OthersSupport : public satdump::Plugin
+class MeteosatSupport : public satdump::Plugin
 {
 public:
     std::string getID()
@@ -30,4 +30,4 @@ public:
     // }
 };
 
-PLUGIN_LOADER(OthersSupport)
+PLUGIN_LOADER(MeteosatSupport)

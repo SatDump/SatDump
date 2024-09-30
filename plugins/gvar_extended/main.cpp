@@ -139,7 +139,7 @@ private:
                // calibrated temperature measurement based on NOAA LUTs (https://www.ospo.noaa.gov/Operations/GOES/calibration/gvar-conversion.html)
                if (evt.images.image1.width() == 5206 || evt.images.image1.width() == 5209)
                {
-                   std::string filename = "goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt";
+                   std::string filename = "lut/goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt";
                    if (resources::resourceExists(filename) && points.size() > 0)
                    {
                        std::ifstream input(resources::getResourcePath(filename).c_str());
@@ -204,7 +204,7 @@ private:
                    }
                    else
                    {
-                       logger->warn("goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt LUT is missing! Temperature measurement will not be performed.");
+                       logger->warn("lut/goes/gvar/goes" + std::to_string(evt.images.sat_number) + "_gvar_lut.txt LUT is missing! Temperature measurement will not be performed.");
                    }
                }
                else

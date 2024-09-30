@@ -11,4 +11,4 @@ if(MSVC)
     target_link_libraries(net_source_support PUBLIC ws2_32)
 endif()
 
-install(TARGETS net_source_support DESTINATION lib/satdump/plugins)
+install(TARGETS net_source_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

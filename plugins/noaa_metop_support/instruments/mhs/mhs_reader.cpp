@@ -95,7 +95,6 @@ namespace noaa_metop
                         }
                         avg /= counts.size();
                     }
-
                     cl.calibration_views[c][j] = avg; // finally push the counts
                 }
             }
@@ -158,17 +157,9 @@ namespace noaa_metop
 
             double a, b;
             double R[5], Tk[5], WTk = 0, Wk = 0, Tw;
-            std::array<double, 24> Tth;
+            std::array<double, 24> Tth;                            
 
-            // first most basic filtering of the calibration views
-            for (int l = 1; l < line; l++) 
-                for (int j = 0; j < 2; j++)
-                    for (int c = 0; c < 5; c++)
-                        if (calib_lines[l - 1].calibration_views[c][j] > limits[j][0] && calib_lines[l - 1].calibration_views[c][j] < limits[j][1])
-                            if (abs((int)((int)calib_lines[l - 1].calibration_views[c][j] - calib_lines[l].calibration_views[c][j])) > calib["rejection_lim"][c].get<int>() || calib_lines[l].calibration_views[c][j] == 0)
-                                calib_lines[l].calibration_views[c][j] = calib_lines[l - 1].calibration_views[c][j];
-
-            // weighed average of the samples, as described by the NOAA KLM User's Guide equation 7.6.6-3 
+            // weighed average of the samples, as described by the NOAA KLM User's Guide equation 7.6.6-3
             std::vector<uint16_t> conv_views[5][2];
             for (int c = 0; c < 5; c++)
             {
@@ -179,7 +170,7 @@ namespace noaa_metop
                     for (int j = 0; j < 2; j++)
                     {
                         conv_views[c][j][i] = calib_lines[i].calibration_views[c][j];
-                        conv_views[c][j][line - i] = calib_lines[line - i].calibration_views[c][j];
+                        conv_views[c][j][line - i - 1] = calib_lines[line - i - 1].calibration_views[c][j];
                     }
                 }
             }
@@ -274,10 +265,18 @@ namespace noaa_metop
                     }
                     else
                     {
+#if 1
                         double G = (conv_views[i][1][l] - conv_views[i][0][l]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
                         ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (conv_views[i][1][l] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((conv_views[i][1][l] * conv_views[i][0][l]) / pow(G, 2.0));
                         ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((conv_views[i][0][l] + conv_views[i][1][l]) / pow(G, 2.0));
                         ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
+#endif
+#if 0
+                        double G = (calib_lines[l].calibration_views[i][1] - calib_lines[l].calibration_views[i][0]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
+                        ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (calib_lines[l].calibration_views[i][1] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][1] * calib_lines[l].calibration_views[i][0]) / pow(G, 2.0));
+                        ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][0] + calib_lines[l].calibration_views[i][1]) / pow(G, 2.0));
+                        ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
+#endif
                     }
                 }
                 calib_out["vars"]["perLine_perChannel"].push_back(ln);

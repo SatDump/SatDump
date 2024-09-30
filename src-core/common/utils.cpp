@@ -68,12 +68,20 @@ size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::str
     return newLength;
 }
 
-int perform_http_request(std::string url_str, std::string &result)
+size_t curl_float_progress_func(void *ptr, double TotalToDownload, double NowDownloaded, double TotalToUpload, double NowUploaded)
+{
+    float *pptr = (float *)ptr;
+    if (TotalToDownload != 0)
+        *pptr = NowDownloaded / TotalToDownload;
+    return 0;
+}
+
+int perform_http_request(std::string url_str, std::string &result, std::string added_header, float *progress)
 {
     CURL *curl;
     CURLcode res;
     bool ret = 1;
-    char error_buffer[CURL_ERROR_SIZE] = { 0 };
+    char error_buffer[CURL_ERROR_SIZE] = {0};
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -86,13 +94,31 @@ int perform_http_request(std::string url_str, std::string &result)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
         curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+
+#ifdef CURLSSLOPT_NATIVE_CA
         curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
+
+        struct curl_slist *chunk = NULL;
+        if (added_header != "")
+        {
+            /* Remove a header curl would otherwise add by itself */
+            chunk = curl_slist_append(chunk, added_header.c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+        }
+
+        if (progress != nullptr)
+        {
+            curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, progress);
+            curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, curl_float_progress_func);
+            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+        }
 
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK)
         {
-            if(strlen(error_buffer))
+            if (strlen(error_buffer))
                 logger->error("curl_easy_perform() failed: %s", error_buffer);
             else
                 logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
@@ -100,17 +126,20 @@ int perform_http_request(std::string url_str, std::string &result)
 
         curl_easy_cleanup(curl);
         ret = 0;
+
+        if (chunk != NULL)
+            curl_slist_free_all(chunk);
     }
     curl_global_cleanup();
     return ret;
 }
 
-int perform_http_request_post(std::string url_str, std::string &result, std::string post_req)
+int perform_http_request_post(std::string url_str, std::string &result, std::string post_req, std::string added_header)
 {
     CURL *curl;
     CURLcode res;
     bool ret = 1;
-    char error_buffer[CURL_ERROR_SIZE] = { 0 };
+    char error_buffer[CURL_ERROR_SIZE] = {0};
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -123,13 +152,24 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+
+#ifdef CURLSSLOPT_NATIVE_CA
         curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
+
+        struct curl_slist *chunk = NULL;
+        if (added_header != "")
+        {
+            /* Remove a header curl would otherwise add by itself */
+            chunk = curl_slist_append(chunk, added_header.c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+        }
 
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK)
         {
-            if(strlen(error_buffer))
+            if (strlen(error_buffer))
                 logger->error("curl_easy_perform() failed: %s", error_buffer);
             else
                 logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
@@ -137,6 +177,9 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
 
         curl_easy_cleanup(curl);
         ret = 0;
+
+        if (chunk != NULL)
+            curl_slist_free_all(chunk);
     }
     curl_global_cleanup();
     return ret;
@@ -156,12 +199,12 @@ std::string timestamp_to_string(double timestamp, bool local)
     {
 #ifdef _WIN32
         size_t tznameSize = 0;
-        char* tznameBuffer = NULL;
+        char *tznameBuffer = NULL;
         timezone_string = " ";
         _get_tzname(&tznameSize, NULL, 0, timeReadable->tm_isdst);
         if (tznameSize > 0)
         {
-            if (nullptr != (tznameBuffer = (char*)(malloc(tznameSize))))
+            if (nullptr != (tznameBuffer = (char *)(malloc(tznameSize))))
             {
                 if (_get_tzname(&tznameSize, tznameBuffer, tznameSize, timeReadable->tm_isdst) == 0)
                     for (size_t i = 0; i < tznameSize; i++)
@@ -179,13 +222,13 @@ std::string timestamp_to_string(double timestamp, bool local)
     }
 
     timestamp_string << std::setfill('0')
-        << timeReadable->tm_year + 1900 << "/"
-        << std::setw(2) << timeReadable->tm_mon + 1 << "/"
-        << std::setw(2) << timeReadable->tm_mday << " "
-        << std::setw(2) << timeReadable->tm_hour << ":"
-        << std::setw(2) << timeReadable->tm_min << ":"
-        << std::setw(2) << timeReadable->tm_sec
-        << timezone_string;
+                     << timeReadable->tm_year + 1900 << "/"
+                     << std::setw(2) << timeReadable->tm_mon + 1 << "/"
+                     << std::setw(2) << timeReadable->tm_mday << " "
+                     << std::setw(2) << timeReadable->tm_hour << ":"
+                     << std::setw(2) << timeReadable->tm_min << ":"
+                     << std::setw(2) << timeReadable->tm_sec
+                     << timezone_string;
 
     return timestamp_string.str();
 }

@@ -6,6 +6,7 @@
 #include "imgui/imgui_image.h"
 #include <filesystem>
 #include "common/image/io.h"
+#include "common/image/processing.h"
 
 namespace goes
 {
@@ -53,7 +54,7 @@ namespace goes
             if (meta.is_goesn)
                 img.resize(img.width(), img.height() * 1.75);
 
-            if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
+            if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
             {
                 std::string ext;
                 image::append_ext(&ext, true);
@@ -73,11 +74,22 @@ namespace goes
             }
             else
             {
+                std::string images_subdir = "/IMAGES";
                 if (meta.satellite_name == "Himawari")
                     productizer.setInstrumentID("ahi");
                 else if (meta.is_goesn)
                     productizer.setInstrumentID("goesn_imager");
-                productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                else if (meta.channel.find_first_of("0123456789") == std::string::npos)
+                {
+                    images_subdir = "/L2"; // GOES-R Level 2 (Non-CMIP)
+
+                    // TODO: Once calibration of custom types is possible, stop doing this!
+                    // RRPQE inverts its raw counts and lookup tables seemingly randomly.
+                    // So far, only RRQPE seems to do this...
+                    if (meta.channel == "RRQPE" && img.get(0) == 255)
+                        image::linear_invert(img);
+                }
+                productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + images_subdir, meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
                 if (meta.satellite_name == "Himawari" || meta.is_goesn)
                     productizer.setInstrumentID("abi");
             }
@@ -140,9 +152,21 @@ namespace goes
                         if (cutFilename.size() >= 4)
                         {
                             int mode = -1;
-
-                            if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &lmeta.channel) == 2)
+                            int channel_buf = -1;
+                            if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel_buf) == 2 ||
+                                sscanf(cutFilename[3].c_str(), "M%d_", &mode) == 1)
                             {
+                                if (channel_buf == -1)
+                                {
+                                    lmeta.channel = cutFilename[2];
+                                    if (lmeta.channel.back() == 'F' || lmeta.channel.back() == 'C')
+                                        lmeta.channel.pop_back();
+                                    else if (lmeta.channel.find_last_of('M') != std::string::npos)
+                                        lmeta.channel = lmeta.channel.substr(0, lmeta.channel.find_last_of('M'));
+                                }
+                                else
+                                    lmeta.channel = std::to_string(channel_buf);
+
                                 AncillaryTextRecord ancillary_record = file.getHeader<AncillaryTextRecord>();
 
                                 // On GOES-R HRIT, the projection information in the Image Navigation Header is not accurate enough. Use the data
@@ -215,11 +239,11 @@ namespace goes
 
                         // Parse channel
                         if (noaa_header.product_subid <= 10)
-                            lmeta.channel = 4;
+                            lmeta.channel = "4";
                         else if (noaa_header.product_subid <= 20)
-                            lmeta.channel = 1;
+                            lmeta.channel = "1";
                         else if (noaa_header.product_subid <= 30)
-                            lmeta.channel = 3;
+                            lmeta.channel = "3";
 
                         // Parse Region. Had to peak in goestools again...
                         if (noaa_header.product_subid % 10 == 1)
@@ -254,16 +278,16 @@ namespace goes
                     {
                         lmeta.satellite_name = "Himawari";
                         lmeta.satellite_short_name = "HIM";
-                        lmeta.channel = noaa_header.product_subid;
+                        lmeta.channel = std::to_string(noaa_header.product_subid);
                         lmeta.region = "";
 
                         // Translate to real numbers
-                        if (lmeta.channel == 3)
-                            lmeta.channel = 13;
-                        else if (lmeta.channel == 7)
-                            lmeta.channel = 8;
-                        else if (lmeta.channel == 1)
-                            lmeta.channel = 3;
+                        if (lmeta.channel == "3")
+                            lmeta.channel = "13";
+                        else if (lmeta.channel == "7")
+                            lmeta.channel = "8";
+                        else if (lmeta.channel == "1")
+                            lmeta.channel = "3";
 
                         // Apparently the timestamp is in there for Himawari-8 data
                         AnnotationRecord annotation_record = file.getHeader<AnnotationRecord>();
@@ -297,7 +321,7 @@ namespace goes
                     // another in-progress channel. Use VCID 70+ as these channels should not be used OTA.
                     int vcid = file.vcid;
                     if (noaa_header.product_id == ID_HIMAWARI)
-                        vcid = 70 + lmeta.channel;
+                        vcid = 70 + std::stoi(lmeta.channel);
 
                     if (all_wip_images.count(vcid) == 0)
                         all_wip_images.insert({vcid, std::make_unique<wip_images>()});
@@ -317,7 +341,7 @@ namespace goes
 
                     uint16_t image_identifier = segment_id_header.image_identifier;
                     if (noaa_header.product_id == ID_HIMAWARI) // Image IDs are invalid for Himawari; make one up
-                        image_identifier = lmeta.scan_time % 10000 + lmeta.channel;
+                        image_identifier = lmeta.scan_time % 10000 + std::stoi(lmeta.channel);
 
                     if (segmentedDecoder.image_id != image_identifier)
                     {

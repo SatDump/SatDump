@@ -7,4 +7,4 @@ add_library(gk2a_support SHARED ${gk2a_support_CPPS})
 target_link_libraries(gk2a_support PUBLIC satdump_core)
 target_include_directories(gk2a_support PUBLIC src .)
 
-install(TARGETS gk2a_support DESTINATION lib/satdump/plugins)
+install(TARGETS gk2a_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

@@ -34,7 +34,7 @@ if(MSVC OR BUILD_MSVC)
     target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
 else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
-    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/lib/satdump/")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/satdump/")
 endif()
 
 # We have to... For MSVC
@@ -200,10 +200,10 @@ endif()
 
 # Install
 if(MSVC OR BUILD_MSVC)
-    install(TARGETS satdump_core DESTINATION bin RUNTIME_DEPENDENCY_SET satdump_deps)
+    install(TARGETS satdump_core DESTINATION ${CMAKE_INSTALL_BINDIR} RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
-    install(TARGETS satdump_core DESTINATION lib)
+    install(TARGETS satdump_core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/satdump FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/satdump FILES_MATCHING PATTERN "*.hpp")

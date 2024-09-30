@@ -109,8 +109,7 @@ namespace image
             channelValues[i] = 0;
 
         // Output image
-        int channels = std::min(3, lut.channels());
-        Image rgb_output(lut.depth(), f.img_width, f.img_height, channels);
+        Image rgb_output(lut.depth(), f.img_width, f.img_height, lut.channels());
 
         // Run though the entire image - One-channel
         if (inputChannels.size() == 1)
@@ -126,7 +125,7 @@ namespace image
                     if (position >= (int)lut.width())
                         position = (int)lut.width() - 1;
 
-                    for (int c = 0; c < channels; c++)
+                    for (int c = 0; c < lut.channels(); c++)
                         rgb_output.set(c, pixel, line, lut.get(c, position));
                 }
 
@@ -154,7 +153,7 @@ namespace image
                     if (position_y >= (int)lut.height())
                         position_y = (int)lut.height() - 1;
 
-                    for (int c = 0; c < channels; c++)
+                    for (int c = 0; c < lut.channels(); c++)
                         rgb_output.set(c, pixel, line, lut.get(c, position_x, position_y));
 
                     // logger->critical("%d, %d, %d", rgb_output.channel(0)[line * img_width + pixel], rgb_output.channel(1)[line * img_width + pixel], rgb_output.channel(2)[line * img_width + pixel]);

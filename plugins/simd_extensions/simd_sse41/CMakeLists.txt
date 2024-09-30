@@ -38,7 +38,7 @@ if(SSE41_FOUND)
         endif()
     endforeach()
 
-    install(TARGETS simd_sse41 DESTINATION lib/satdump/plugins)
+    install(TARGETS simd_sse41 DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 else()
     message("SSE41 Features not found! This is only an error on x86 CPUs that should support SSE41")
 endif()

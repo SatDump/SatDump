@@ -6,4 +6,4 @@ add_library(aws_support SHARED ${aws_support_CPPS})
 target_link_libraries(aws_support PUBLIC satdump_core)
 target_include_directories(aws_support PUBLIC src)
 
-install(TARGETS aws_support DESTINATION lib/satdump/plugins)
+install(TARGETS aws_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
