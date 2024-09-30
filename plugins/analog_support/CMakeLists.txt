@@ -7,4 +7,4 @@ add_library(analog_support SHARED ${analog_support_CPPS})
 target_link_libraries(analog_support PUBLIC satdump_core)
 target_include_directories(analog_support PUBLIC src)
 
-install(TARGETS analog_support DESTINATION lib/satdump/plugins)
+install(TARGETS analog_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

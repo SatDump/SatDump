@@ -7,4 +7,4 @@ add_library(sample SHARED ${sample_CPPS})
 target_link_libraries(sample PUBLIC satdump_core)
 target_include_directories(sample PUBLIC src)
 
-install(TARGETS sample DESTINATION lib/satdump/plugins)
+install(TARGETS sample DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

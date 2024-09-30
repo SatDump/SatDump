@@ -2,12 +2,12 @@
 
 #include "core/module.h"
 
-namespace nat2pro
+namespace off2pro
 {
-    class Nat2ProModule : public ProcessingModule
+    class Off2ProModule : public ProcessingModule
     {
     public:
-        Nat2ProModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        Off2ProModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         void process();
         void drawUI(bool window);
 

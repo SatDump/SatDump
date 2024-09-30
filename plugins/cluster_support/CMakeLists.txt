@@ -6,4 +6,4 @@ add_library(cluster_support SHARED ${cluster_support_CPPS})
 target_link_libraries(cluster_support PUBLIC satdump_core)
 target_include_directories(cluster_support PUBLIC src)
 
-install(TARGETS cluster_support DESTINATION lib/satdump/plugins)
+install(TARGETS cluster_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

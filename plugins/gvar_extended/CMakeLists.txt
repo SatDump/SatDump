@@ -7,4 +7,4 @@ add_library(gvar_extended SHARED ${gvar_extended_CPPS})
 target_link_libraries(gvar_extended PUBLIC satdump_core)
 target_include_directories(gvar_extended PUBLIC src ../goes_support)
 
-install(TARGETS gvar_extended DESTINATION lib/satdump/plugins)
+install(TARGETS gvar_extended DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

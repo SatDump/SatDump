@@ -7,4 +7,4 @@ add_library(proba_support SHARED ${proba_support_CPPS})
 target_link_libraries(proba_support PUBLIC satdump_core)
 target_include_directories(proba_support PUBLIC src)
 
-install(TARGETS proba_support DESTINATION lib/satdump/plugins)
+install(TARGETS proba_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

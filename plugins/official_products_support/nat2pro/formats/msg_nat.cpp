@@ -5,6 +5,10 @@
 #include "logger.h"
 #include "common/image/io.h"
 #include "common/calibration.h"
+#include "common/utils.h"
+
+#include "nlohmann/json_utils.h"
+#include "resources.h"
 
 namespace nat2pro
 {
@@ -110,6 +114,37 @@ namespace nat2pro
         logger->warn("VIS/IR Size : %dx%d", vis_ir_x_size, vis_ir_y_size);
         logger->warn("HRV    Size : %dx%d", hrv_x_size, hrv_y_size);
         logger->warn("Longitude   : %f", longitude);
+
+        // Product Timestamp & satellite name
+        std::string satellite_name = "Unknown MSG";
+        time_t prod_timestamp = time(0);
+        {
+            std::tm timeS;
+            memset(&timeS, 0, sizeof(std::tm));
+            if (sscanf(mh_strs[17].c_str(),
+                       "SSBT                        : %4d%2d%2d%2d%2d%2d.%*dZ",
+                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+            {
+                timeS.tm_year -= 1900;
+                timeS.tm_mon -= 1;
+                timeS.tm_isdst = -1;
+                prod_timestamp = timegm(&timeS);
+            }
+
+            int satnum = -1;
+            if (sscanf(mh_strs[13].c_str(), "ASTI                        : MSG%d", &satnum) == 1)
+            {
+                if (satnum == 1)
+                    satellite_name = "MSG-1";
+                else if (satnum == 2)
+                    satellite_name = "MSG-2";
+                else if (satnum == 3)
+                    satellite_name = "MSG-3";
+                else if (satnum == 4)
+                    satellite_name = "MSG-4";
+            }
+        }
 
         // Other data
         long int headerpos, datapos, trailerpos;
@@ -232,6 +267,8 @@ namespace nat2pro
         seviri_products.instrument_name = "seviri";
         seviri_products.has_timestamps = false;
         seviri_products.bit_depth = 10;
+        seviri_products.set_product_timestamp(prod_timestamp);
+        seviri_products.set_product_source(satellite_name);
 
         proj::projection_t proj;
         proj.type = proj::ProjType_Geos;
@@ -305,23 +342,13 @@ namespace nat2pro
         seviri_products.set_calibration_default_radiance_range(9, 30, 120);
         seviri_products.set_calibration_default_radiance_range(10, 30, 120);
 
-        double wavelength_table[12] = {
-            0.635,
-            0.81,
-            1.64,
-            3.92,
-            6.25,
-            7.35,
-            8.7,
-            9.66,
-            10.8,
-            12,
-            13.40,
-            0.75,
-        };
+        nlohmann::json sev_config = loadJsonFile(resources::getResourcePath("calibration/SEVIRI_table.json"));
 
         for (int i = 0; i < 12; i++)
-            seviri_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (wavelength_table[i] / 1000000.0)));
+        {
+            seviri_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (sev_config["wavelengths"][i].get<double>())));
+            seviri_products.set_calibration_default_radiance_range(i, sev_config["default_ranges"][i][0].get<double>(), sev_config["default_ranges"][i][1].get<double>());
+        }
 
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);
