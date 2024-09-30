@@ -491,11 +491,11 @@
                 "handler": "image_handler",
                 "name": "SEVIRI",
                 "rgb_composites": {
-                    "221": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch2,ch2,ch1",
                         "white_balance": true
                     },
-                    "321": {
+                    "AVHRR 3a21 False Color": {
                         "equation": "ch3,ch2,ch1",
                         "white_balance": true
                     },
@@ -552,7 +552,229 @@
                                  "max": 23.2
                              }
                          } 
-                     }
+                    },
+                    "Cloud Top IR": {
+                        "channels": "cch9",
+                        "autogen": false,
+                        "description": "descriptions/CloudTopIR.md",
+                        "lut": "lut/cal/CloudTopIR.png",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 183.15,
+                                "max": 323.15
+                            }
+                        }
+                    },
+                    "NO enhancement": {
+                        "lut": "lut/cal/WXtoImg-NO.png",
+                        "autogen": false,
+                        "description": "descriptions/NO.md",
+                        "channels": "cch9",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        }
+                    },
+                    "ZA enhancement": {
+                        "channels": "cch9",
+                        "remove_background":true,
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "lut": "lut/cal/WXtoImg-ZA.png",
+                        "description": "descriptions/ZA.md",
+                        "autogen": false
+                    },
+                    "MB enhancement": {
+                        "lut": "lut/cal/WXtoImg-MB.png",
+                        "description": "descriptions/MB.md",
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false
+                    },
+                    "MD enhancement": {
+                        "lut": "lut/cal/WXtoImg-MD.png",
+                        "description": "descriptions/MD.md",
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "BD enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/BD.md",
+                        "lut": "lut/cal/WXtoImg-BD.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "CC enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/CC.md",
+                        "lut": "lut/cal/WXtoImg-CC.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "EC enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/EC.md",
+                        "lut": "lut/cal/WXtoImg-EC.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "HE enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HE.md",
+                        "lut": "lut/cal/WXtoImg-HE.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "HF enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/HF.md",
+                        "lut": "lut/cal/WXtoImg-HF.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "JF enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JF.md",
+                        "lut": "lut/cal/WXtoImg-JF.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "JJ enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/JJ.md",
+                        "lut": "lut/cal/WXtoImg-JJ.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "TA enhancement": {
+                        "channels": "cch9",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "radiance",
+                                "min": 4.261272967687783,
+                                "max": 155.2782819316993
+                            }
+                        },
+                        "description": "descriptions/TA.md",
+                        "lut": "lut/cal/WXtoImg-TA.png",
+                        "autogen": false,
+                        "remove_background":true
+                    },
+                    "Color convection longwave IR": {
+                        "channels": "cch10",
+                        "description": "descriptions/ConvectionLWIR.md",
+                        "lut": "lut/cal/ConvectionLWIR.png",
+                        "autogen": false,
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch10": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
+                    },
+                    "Snow enhancement": {
+                        "equation": "((3*cch1-cch9)/2)^1.7, ((3*cch1+cch9)/4)^1.7, (cch1-cch3)^1.7",
+                        "description": "descriptions/Snow.md",
+                        "individual_equalize": true,
+                        "white_balance": true,
+                        "remove_background":true,
+                        "autogen": false
+                    },
+                    "NDVI": {
+                        "channels": "cch1, cch2",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            }
+                        },
+                        "lua": "scripted_compos/ndvi.lua",
+                        "description": "descriptions/NDVI.md",
+                        "autogen": false,
+                        "remove_background":true
+                    }
                 }
             },
             "avhrr_3": {
