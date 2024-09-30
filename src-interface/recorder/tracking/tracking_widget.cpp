@@ -1,4 +1,5 @@
 #include "tracking_widget.h"
+#include "import_export.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "core/config.h"
@@ -165,6 +166,16 @@ namespace satdump
                 if (ImGui::BeginTabItem("Rotator Config"))
                 {
                     object_tracker.renderRotatorConfig();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Import"))
+                {
+                    // TODO
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Export"))
+                {
+                    export_tracking();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
