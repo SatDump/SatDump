@@ -1,10 +1,8 @@
-# Thermal Channel (uncalibrated)
+# 10.8 µm Thermal IR (uncalibrated)
 
-Automatically selects the thermal infrared (10.8 µm) channel and equalizes it.
+Selects the thermal infrared (10.8 µm) channel and equalizes it.
 
 This enhancement is NOT calibrated in temperature.
-
-On IASI, it makes use of the 11 µm high resolution imaging channel.
 
 ### Appearance
 

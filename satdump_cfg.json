@@ -851,7 +851,7 @@
                             }
                         }
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "cch4",
                         "apply_lut": true,
                         "description": "descriptions/ThermalCal.md",
@@ -1476,7 +1476,7 @@
                             }
                         }
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "ch4",
                         "individual_equalize": true,
                         "geo_correct": true,
@@ -1562,7 +1562,7 @@
                         "geo_correct": true,
                         "white_balance": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1 - ch5",
                         "description": "descriptions/ThermalUncal.md",
                         "individual_equalize": true,
@@ -1973,7 +1973,7 @@
                         "cpp": "msugs_color_ir_merge",
                         "autogen": false // Needs to be optimized...
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1-ch9"
                     }
                 }
@@ -2662,7 +2662,7 @@
                         "equation": "chi1, chi3^2.5,chi4",
                         "individual_equalize": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1-chi4",
                         "individual_equalize": true
                     },
@@ -3184,7 +3184,7 @@
                         "equalize": true,
                         "geo_correct": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1.0 - ch5",
                         "individual_equalize": true,
                         "geo_correct": true
@@ -3243,7 +3243,7 @@
                         "equalize": true,
                         "geo_correct": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1.0 - ch5",
                         "individual_equalize": true,
                         "geo_correct": true
@@ -3299,7 +3299,7 @@
                         "equation": "min(((1 - ch4) - 0.9) * 8, ch10 < 0.03 ? 1 : ch10)",
                         "geo_correct": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1 - ch1",
                         "individual_equalize": true,
                         "geo_correct": true
@@ -3990,9 +3990,9 @@
                 "handler": "image_handler",
                 "name": "IASI Imaging",
                 "rgb_composites": {
-                    "Imaging Channel": {
-                        "equation": "1 - ch1",
-                        "description": "descriptions/ThermalUncal.md",
+                    "10.8µm Thermal IR": {
+                        "equation": "1-cch1",
+                        "description": "descriptions/ThermalCal.md",
                         "individual_equalize": true,
                         "geo_correct": true,
                         "project": {
@@ -4368,7 +4368,7 @@
                         "equation": "1-chir, chvis, chvis",
                         "individual_equalize": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1-chir",
                         "individual_equalize": true
                     }
@@ -4723,7 +4723,7 @@
                         "equation": "ch6,ch5,ch2",
                         "equalize": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1-ch8",
                         "white_balance": true,
                         "equalize": true
