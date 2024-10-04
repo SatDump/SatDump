@@ -4700,6 +4700,35 @@
                         "equalize": true
                     }
                 }
+            },
+            "slstr_nadir": {
+                "handler": "image_handler",
+                "name": "SLSTR Nadir",
+                "rgb_composites": {
+                    "AVHRR 221 False Color": {
+                        "equation": "ch3,ch3,ch2",
+                        "equalize": true,
+                        "description": "descriptions/221.md"
+                    },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch5, ch3, ch2",
+                        "equalize": true,
+                        "description": "descriptions/221.md"
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "ch3,ch2,ch1",
+                        "equalize": true
+                    },
+                    "Shortwave IR False Color": {
+                        "equation": "ch6,ch5,ch2",
+                        "equalize": true
+                    },
+                    "Thermal Channel": {
+                        "equation": "1-ch8",
+                        "white_balance": true,
+                        "equalize": true
+                    }
+                }
             }
         }
     }
