@@ -80,7 +80,12 @@ namespace satdump
 		// Parameters block
 		nlohmann::ordered_json exported_config = {};
 		exported_config["parameters"] = source_obj->get_settings();
+		exported_config["parameters"]["source"] = sdr_sources[selected_sdr];
+		exported_config["parameters"]["samplerate"] = source_obj->get_samplerate();
+		exported_config["parameters"]["initial_frequency"] = initial_frequency.get();
 		exported_config["parameters"]["fft_enable"] = fft_enable;
+		if (!source_id.empty())
+			exported_config["parameters"]["source_id"] = source_id;
 		if (fft_enable)
 		{
 			exported_config["parameters"]["fft_size"] = getValueOrDefault(config::main_cfg["user"]["recorder_state"]["fft_size"], 8192);
