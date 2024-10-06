@@ -1,5 +1,4 @@
 #include "tracking_widget.h"
-#include "import_export.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "core/config.h"
@@ -168,14 +167,12 @@ namespace satdump
                     object_tracker.renderRotatorConfig();
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem("Import"))
+                if (ImGui::BeginTabItem("Export/Import"))
                 {
-                    // TODO
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("Export"))
-                {
-                    export_tracking();
+                    if (config_import_export.draw_export())
+                        config_import_export.do_export(auto_scheduler, object_tracker, rotator_handler);
+                    if (config_import_export.draw_import())
+                        config_import_export.do_import(auto_scheduler, object_tracker, rotator_handler);
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();

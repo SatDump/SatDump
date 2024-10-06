@@ -9,9 +9,7 @@
 #include <functional>
 #include "core/config.h"
 #include "nlohmann/json_utils.h"
-
-#include "common/tracking/obj_tracker/object_tracker.h"
-#include "common/tracking/scheduler/scheduler.h"
+#include "import_export.h"
 
 namespace satdump
 {
@@ -21,6 +19,9 @@ namespace satdump
         double qth_lon = 0;
         double qth_lat = 0;
         double qth_alt = 0;
+
+    private: // Config Exporter
+        TrackingImportExport config_import_export;
 
     public: // Handlers
         std::function<void(AutoTrackCfg, SatellitePass, TrackedObject)> aos_callback = [](AutoTrackCfg, SatellitePass, TrackedObject) {};
