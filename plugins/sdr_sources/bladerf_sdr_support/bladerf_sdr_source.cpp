@@ -263,10 +263,13 @@ void BladeRFSource::drawControlUI()
                                                "Hybrid\0") &&
         is_started)
         set_gains();
-    if (RImGui::SteppedSliderInt("Gain", &general_gain,
-        is_open ? bladerf_range_gain->min : 0,
-        is_open ? bladerf_range_gain->max : 60) && is_started)
+    if (is_open)
+    {
+        if (RImGui::SteppedSliderInt("Gain", &general_gain, bladerf_range_gain->min, bladerf_range_gain->max) && is_started)
             set_gains();
+    }
+    else // Defaults for using UI when device is not attached (config export)
+        RImGui::SteppedSliderInt("Gain", &general_gain, 0, 60);
 
     if (bladerf_model == 2)
     {
