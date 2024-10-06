@@ -2359,6 +2359,12 @@
                           0.45
                         ]
                     },
+                    "Land Surface Temperature (tmbates)": {
+                        "channels": "chLST",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/lst_tmbates.png",
+                        "autogen": false
+                    },
                     "Sea Surface Temperature": {
                         "channels": "chSST",
                         "draw_map_overlay": true,
@@ -2368,6 +2374,12 @@
                           0.45,
                           0.45
                         ]
+                    },
+                    "Sea Surface Temperature (tmbates)": {
+                        "channels": "chSST",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/sst_tmbates.png",
+                        "autogen": false
                     },
                     "Clean Longwave IR (Transparent)": {
                         "channels": "cch13",
@@ -2435,9 +2447,19 @@
                         "lut": "lut/goes/abi/L2/lst_transparent.png",
                         "autogen": false
                     },
+                    "LST Transparent (tmbates)": {
+                        "channels": "chLST",
+                        "lut": "lut/goes/abi/L2/lst_transparent_tmbates.png",
+                        "autogen": false
+                    },
                     "SST Transparent": {
                         "channels": "chSST",
                         "lut": "lut/goes/abi/L2/sst_transparent.png",
+                        "autogen": false
+                    },
+                    "SST Transparent (tmbates)": {
+                        "channels": "chSST",
+                        "lut": "lut/goes/abi/L2/sst_transparent_tmbates.png",
                         "autogen": false
                     }
                 }
