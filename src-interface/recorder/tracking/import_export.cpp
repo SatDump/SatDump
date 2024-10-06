@@ -28,28 +28,29 @@ namespace satdump
 	bool TrackingImportExport::draw_export()
 	{
 		bool ret = false;
-		ImGuiStyle& imgui_style = ImGui::GetStyle();
-
-		ImGui::SeparatorText("Export to CLI");
-		initial_frequency.draw();
-		if (ImGui::Combo("Source", &selected_sdr, sdr_sources_str.c_str()))
-			source_obj = dsp::dsp_sources_registry[sdr_sources[selected_sdr]]
-				.getInstance({sdr_sources[selected_sdr], "", "" });
-		ImGui::InputTextWithHint("Source ID", "[Auto]", &source_id);
-		source_obj->drawControlUI();
-		ImGui::Spacing();
-		ImGui::Separator();
-		ImGui::Spacing();
-		ImGui::InputTextWithHint("HTTP Server", "[Disabled]", &http_server);
-		ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - ImGui::CalcTextSize(u8"\ufc6e Open").x -
-			imgui_style.ItemSpacing.x - imgui_style.FramePadding.x * 2);
-		output_directory.draw();
-		ImGui::SameLine(0, imgui_style.ItemInnerSpacing.x);
-		ImGui::TextUnformatted("Output Directory");
-		ImGui::Checkbox("FFT Enable", &fft_enable);
-		if (ImGui::Button("Export Config"))
-			ret = true;
-		error_message.draw();
+		if(ImGui::CollapsingHeader("Export to CLI", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGuiStyle& imgui_style = ImGui::GetStyle();
+			initial_frequency.draw();
+			if (ImGui::Combo("Source", &selected_sdr, sdr_sources_str.c_str()))
+				source_obj = dsp::dsp_sources_registry[sdr_sources[selected_sdr]]
+					.getInstance({sdr_sources[selected_sdr], "", "" });
+			ImGui::InputTextWithHint("Source ID", "[Auto]", &source_id);
+			source_obj->drawControlUI();
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+			ImGui::InputTextWithHint("HTTP Server", "[Disabled]", &http_server);
+			ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - ImGui::CalcTextSize(u8"\ufc6e Open").x -
+				imgui_style.ItemSpacing.x - imgui_style.FramePadding.x * 2);
+			output_directory.draw();
+			ImGui::SameLine(0, imgui_style.ItemInnerSpacing.x);
+			ImGui::TextUnformatted("Output Directory");
+			ImGui::Checkbox("FFT Enable", &fft_enable);
+			if (ImGui::Button("Export Config"))
+				ret = true;
+			export_message.draw();
+		}
 
 		return ret;
 	}
@@ -57,9 +58,19 @@ namespace satdump
 	bool TrackingImportExport::draw_import()
 	{
 		bool ret = false;
-		ImGui::SeparatorText("Import from CLI");
-		// TODO
-
+		if (ImGui::CollapsingHeader("Import from CLI"))
+		{
+			import_file.draw();
+			ImGui::Checkbox("Import Scheduler Options", &import_autotrack_settings);
+			ImGui::SameLine();
+			ImGui::Checkbox("Import Rotator Settings", &import_rotator_settings);
+			ImGui::SameLine();
+			ImGui::Checkbox("Import Tracked Objects", &import_tracked_objects);
+			ImGui::Spacing();
+			if (ImGui::Button("Import"))
+				ret = true;
+			import_message.draw();
+		}
 		return ret;
 	}
 
@@ -68,12 +79,12 @@ namespace satdump
 		// Sanity Checks
 		if (!output_directory.isValid())
 		{
-			error_message.set_message(style::theme.red, "Please select a valid output directory first");
+			export_message.set_message(style::theme.red, "Please select a valid output directory first");
 			return;
 		}
 		if (source_obj->get_samplerate() == 0)
 		{
-			error_message.set_message(style::theme.red, "Please set a valid samplerate first");
+			export_message.set_message(style::theme.red, "Please set a valid samplerate first");
 			return;
 		}
 
@@ -128,13 +139,53 @@ namespace satdump
 				std::ofstream test_output(result.result());
 				test_output << exported_config.dump(4);
 				test_output.close();
-				error_message.set_message(style::theme.green, "Successfully exported config");
+				export_message.set_message(style::theme.green, "Successfully exported config");
 			}
 		});
 	}
 
 	void TrackingImportExport::do_import(AutoTrackScheduler &scheduler, ObjectTracker &tracker, std::shared_ptr<rotator::RotatorHandler> rotator_handler)
 	{
-		// TODO
+		// Sanity Checks
+		if (!import_file.isValid())
+		{
+			import_message.set_message(style::theme.red, "Select a valid import file first");
+			return;
+		}
+		if (!import_autotrack_settings && !import_tracked_objects && !import_rotator_settings)
+		{
+			import_message.set_message(style::theme.red, "Select at least one setting to import");
+			return;
+		}
+
+		try
+		{
+			nlohmann::ordered_json imported_config = loadJsonFile(import_file.getPath());
+			if (import_autotrack_settings)
+				scheduler.setAutoTrackCfg(imported_config["tracking"]["autotrack_cfg"]);
+			if(import_tracked_objects)
+				scheduler.setTracked(imported_config["tracked_objects"]);
+			if (import_rotator_settings)
+			{
+				tracker.setRotatorConfig(imported_config["tracking"]["rotator_algo"]);
+				if (imported_config["tracking"]["rotator_config"].contains(rotator_handler->get_id()))
+				{
+					if (rotator_handler->is_connected())
+						logger->warn("Not importing some rotator settings as the rotator is currently connected");
+					else
+						rotator_handler->set_settings(imported_config["tracking"]["rotator_config"][rotator_handler->get_id()]);
+				}
+				else
+					logger->warn("Not importing some rotator settings as they are not included in this config");
+			}
+		}
+		catch (std::exception &e)
+		{
+			import_message.set_message(style::theme.red, "Error importing config!");
+			logger->error("Tracking import error: %s", e.what());
+			return;
+		}
+
+		import_message.set_message(style::theme.green, "Successfully imported config");
 	}
 }
