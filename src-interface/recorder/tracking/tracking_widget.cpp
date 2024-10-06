@@ -167,6 +167,23 @@ namespace satdump
                     object_tracker.renderRotatorConfig();
                     ImGui::EndTabItem();
                 }
+                if (ImGui::BeginTabItem("Export/Import"))
+                {
+                    ImGui::BeginChild("##trackingimportexport", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
+                    if (config_import_export.draw_export())
+                        config_import_export.do_export(auto_scheduler, object_tracker, rotator_handler);
+                    ImGui::Spacing();
+                    bool disable_import = auto_scheduler.getEngaged();
+                    if (disable_import)
+                        style::beginDisabled();
+                    if (config_import_export.draw_import())
+                        config_import_export.do_import(auto_scheduler, object_tracker, rotator_handler);
+                    if (disable_import)
+                        style::endDisabled();
+
+                    ImGui::EndChild();
+                    ImGui::EndTabItem();
+                }
                 ImGui::EndTabBar();
             }
 
