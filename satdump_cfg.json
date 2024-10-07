@@ -4559,12 +4559,17 @@
                         "remove_background":true
                     },
                     "Cloud Phase RGB": {
-                        "equation": "ch7, ch8, ch3",
-                        "white_balance": true,
-                        "individual_equalize": true,
+                        "equation": "cch7, cch8, cch3",
                         "autogen": false,
                         "description": "descriptions/CloudPhase.md",
                         "remove_background":true
+                    },
+                    "Cloud Type RGB": {
+                        "equation": "cch6^1.5, cch3^0.75, cch7",
+                        "autogen": false,
+                        "description": "descriptions/CloudType.md",
+                        "individual_equalize": true,
+                        "white_balance": true
                     },
                     "6.25µm Calibrated Water Vapor": {
                        "lut": "lut/cal/star_abi_wv_8-10.png",
