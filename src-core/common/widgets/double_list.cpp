@@ -17,11 +17,13 @@ namespace widgets
 
     bool DoubleList::render()
     {
-        bool v = RImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
+        if(available_values.size() == 0)
+            return current_value->draw();
 
+        bool v = RImGui::Combo(d_id.c_str(), &selected_value, values_option_str.c_str());
         if (allow_manual && selected_value == (int)available_values.size() - 1)
             v = v || current_value->draw();
-        else
+        else if(v)
             current_value->set(available_values[selected_value]);
 
         return v;
@@ -33,6 +35,7 @@ namespace widgets
 
         available_values.clear();
         values_option_str = "";
+        selected_value = 0;
 
         available_values = list;
 
@@ -45,12 +48,15 @@ namespace widgets
             values_option_str += "Manual";
             values_option_str += '\0';
         }
+
+        current_value->set(available_values[selected_value]);
     }
 
     double DoubleList::get_value()
     {
-        if (!allow_manual || selected_value != (int)available_values.size() - 1)
-            current_value->set(available_values[selected_value]);
+        if (!available_values.empty() &&
+            (!allow_manual || selected_value != (int)available_values.size() - 1))
+                current_value->set(available_values[selected_value]);
 
         return current_value->get();
     }

@@ -10,7 +10,7 @@ namespace
 {
     bool _enable_loader = false;
     bool _loader_open = false;
-    std::unique_ptr<satdump::ArchiveLoader> _loader;
+    std::unique_ptr<satdump::ArchiveLoader> _loader = nullptr;
 }
 
 class OfficalProductsLoaderSupport : public satdump::Plugin
@@ -73,6 +73,8 @@ public:
 
     static void saveConfig()
     {
+        if(_loader == nullptr)
+            return;
         satdump::config::main_cfg["plugin_settings"]["official_products"] = {};
         auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
         cfg["eumetsat_credentials_key"] = _loader->eumetsat_user_consumer_credential;

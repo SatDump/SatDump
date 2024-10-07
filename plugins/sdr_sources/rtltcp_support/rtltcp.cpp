@@ -160,15 +160,11 @@ void RTLTCPSource::drawControlUI()
     if (ppm_widget.draw())
         set_ppm();
 
-    if (!is_started)
-        style::beginDisabled();
     bool gain_changed = false;
     gain_changed |= widgets::SteppedSliderInt("Gain", &gain, 0, 49);
     gain_changed |= ImGui::Checkbox("AGC", &lna_agc_enabled);
     if (gain_changed)
         set_gains();
-    if (!is_started)
-        style::endDisabled();
 
     if (ImGui::Checkbox("Bias-Tee", &bias))
         set_bias();
