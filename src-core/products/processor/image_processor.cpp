@@ -48,14 +48,14 @@ namespace satdump
             logger->debug("%d, %d\n%s", op.output_width, op.output_height, op.target_prj_info.dump(4).c_str());
         }
 
-        if (!proj_settings.contains("width") || !proj_settings.contains("height"))
+        if (!op.target_prj_info.contains("width") || !op.target_prj_info.contains("height"))
         {
             logger->error("No width or height defined for projection!");
             return image::Image();
         }
 
-        op.output_width = proj_settings["width"].get<int>();
-        op.output_height = proj_settings["height"].get<int>();
+        op.output_width = op.target_prj_info["width"].get<int>();
+        op.output_height = op.target_prj_info["height"].get<int>();
 
         if (proj_settings.contains("old_algo"))
             op.use_old_algorithm = proj_settings["old_algo"];
@@ -222,8 +222,8 @@ namespace satdump
                                                          final_timestamps,
                                                          *img_products);
                         std::string fmt = "";
-                        if (compo.value()["project"]["config"].contains("img_format"))
-                            fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
+                        if (compo.value()["project"].contains("img_format"))
+                            fmt += compo.value()["project"]["img_format"].get<std::string>();
                         image::save_img(retimg, product_path + "/rgb_" + name + "_projected" + fmt);
                     }
 
@@ -275,8 +275,8 @@ namespace satdump
                                                      img_products->get_timestamps(chanid),
                                                      *img_products);
                     std::string fmt = "";
-                    if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
-                        fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();
+                    if (instrument_viewer_settings["project_channels"].contains("img_format"))
+                        fmt += instrument_viewer_settings["project_channels"]["img_format"].get<std::string>();
                     image::save_img(retimg, product_path + "/channel_" + img.channel_name + "_projected" + fmt);
                 }
                 catch (std::exception &e)

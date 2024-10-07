@@ -50,7 +50,7 @@ namespace satdump
             std::ofstream file_out(tmpfile, std::ios::binary);
 
             int bitpos = 0;
-            uint8_t tmp_buf;
+            uint8_t tmp_buf = 0;
 
             size_t current_ptr = 0;
             while (current_ptr < size)

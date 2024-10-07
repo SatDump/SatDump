@@ -4,6 +4,10 @@
 #include "logger.h"
 #include "processing.h"
 
+#ifndef _MSC_VER
+#include <sys/statvfs.h>
+#endif
+
 namespace satdump
 {
     nlohmann::json RecorderApplication::serialize_config()
@@ -16,13 +20,17 @@ namespace satdump
         out["fft_rate"] = fft_rate;
         out["waterfall_rate"] = waterfall_rate;
         out["waterfall_palette"] = waterfall_palettes[selected_waterfall_palette].name;
-        out["select_sample_format"] = select_sample_format;
+        out["baseband_type"] = (std::string)baseband_format;
         if (fft_plot && waterfall_plot && fft)
         {
             out["fft_min"] = fft_plot->scale_min;
             out["fft_max"] = fft_plot->scale_max;
             out["fft_avgn"] = fft->avg_num;
         }
+
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+        out["ziq_depth"] = baseband_format.ziq_depth;
+#endif
         return out;
     }
 
@@ -51,8 +59,8 @@ namespace satdump
             fft_rate = in["fft_rate"];
         if (in.contains("waterfall_rate"))
             waterfall_rate = in["waterfall_rate"];
-        if (in.contains("select_sample_format"))
-            select_sample_format = in["select_sample_format"];
+        if (in.contains("baseband_type"))
+            baseband_format = in["baseband_type"].get<std::string>();
         if (in.contains("waterfall_palette"))
         {
             std::string name = in["waterfall_palette"].get<std::string>();
@@ -61,6 +69,10 @@ namespace satdump
                     selected_waterfall_palette = i;
             waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
         }
+#if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
+        if (in.contains("ziq_depth"))
+            baseband_format.ziq_depth = in["ziq_depth"];
+#endif
     }
 
     void RecorderApplication::start()
@@ -125,7 +137,7 @@ namespace satdump
         {
             if (config::main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
             {
-                auto cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
+                auto &cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
                 source_ptr->set_settings(cfg);
                 if (cfg.contains("samplerate"))
                 {
@@ -152,65 +164,6 @@ namespace satdump
                     current_decimation = 1;
             }
         }
-    }
-
-    void RecorderApplication::set_output_sample_format()
-    {
-        int type_lut[] = {
-            0,
-            1,
-            2,
-            3,
-#ifdef BUILD_ZIQ
-            4,
-            5,
-            6,
-#endif
-#ifdef BUILD_ZIQ2
-            7,
-            8,
-#endif
-        };
-
-        int f = type_lut[select_sample_format];
-
-        if (f == 0)
-            file_sink->set_output_sample_type(dsp::CF_32);
-        else if (f == 1)
-            file_sink->set_output_sample_type(dsp::CS_16);
-        else if (f == 2)
-            file_sink->set_output_sample_type(dsp::CS_8);
-        else if (f == 3)
-            file_sink->set_output_sample_type(dsp::WAV_16);
-#ifdef BUILD_ZIQ
-        else if (f == 4)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ);
-            ziq_bit_depth = 8;
-        }
-        else if (f == 5)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ);
-            ziq_bit_depth = 16;
-        }
-        else if (f == 6)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ);
-            ziq_bit_depth = 32;
-        }
-#endif
-#ifdef BUILD_ZIQ2
-        else if (f == 7)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ2);
-            ziq_bit_depth = 8;
-        }
-        else if (f == 8)
-        {
-            file_sink->set_output_sample_type(dsp::ZIQ2);
-            ziq_bit_depth = 16;
-        }
-#endif
     }
 
     void RecorderApplication::start_processing()
@@ -281,20 +234,9 @@ namespace satdump
     void RecorderApplication::start_recording()
     {
         splitter->set_enabled("record", true);
-
-        std::string recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
-#if defined(_MSC_VER)
-        recording_path += "\\";
-#elif defined(__ANDROID__)
-        if (recording_path == ".")
-            recording_path = "/storage/emulated/0";
-        recording_path += "/";
-#else
-        recording_path += "/";
-#endif
-
+        load_rec_path_data();
         std::string filename = recording_path + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
-        recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
+        recorder_filename = file_sink->start_recording(filename, get_samplerate());
         logger->info("Recording to " + recorder_filename);
         is_recording = true;
     }
@@ -307,7 +249,32 @@ namespace satdump
             splitter->set_enabled("record", false);
             recorder_filename = "";
             is_recording = false;
+            load_rec_path_data();
         }
+    }
+
+    void RecorderApplication::load_rec_path_data()
+    {
+        recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+#if defined(_MSC_VER)
+        recording_path += "\\";
+#elif defined(__ANDROID__)
+        if (recording_path == ".")
+            recording_path = "/storage/emulated/0";
+        recording_path += "/";
+#else
+        recording_path += "/";
+#endif
+
+#ifdef _MSC_VER
+        ULARGE_INTEGER bytes_available;
+        if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
+            disk_available = bytes_available.QuadPart;
+#else
+        struct statvfs stat_buffer;
+        if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
+            disk_available = stat_buffer.f_bavail * stat_buffer.f_bsize;
+#endif
     }
 
     void RecorderApplication::try_init_tracking_widget()
@@ -352,7 +319,7 @@ namespace satdump
                             if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
                                 name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
-                            add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
+                            add_vfo_reco(id, name, dl.frequency, dl.baseband_format, dl.baseband_decimation);
                         }
                     }
                 }
@@ -389,7 +356,7 @@ namespace satdump
 
                     if (obj.downlinks[0].record)
                     {
-                        // file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
+                        file_sink->set_output_sample_type(obj.downlinks[0].baseband_format);
                         start_recording();
                     }
                 }

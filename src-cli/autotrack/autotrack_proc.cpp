@@ -71,9 +71,8 @@ void AutoTrackApp::start_recording()
 {
     splitter->set_enabled("record", true);
 
-    int ziq_bit_depth = 8; // TODO
     std::string filename = d_output_folder + "/" + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
-    std::string recorder_filename = file_sink->start_recording(filename, get_samplerate(), ziq_bit_depth);
+    std::string recorder_filename = file_sink->start_recording(filename, get_samplerate());
     logger->info("Recording to " + recorder_filename);
     is_recording = true;
 }

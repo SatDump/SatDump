@@ -7,4 +7,4 @@ add_library(elektro_arktika_support SHARED ${elektro_arktika_support_CPPS})
 target_link_libraries(elektro_arktika_support PUBLIC satdump_core)
 target_include_directories(elektro_arktika_support PUBLIC .)
 
-install(TARGETS elektro_arktika_support DESTINATION lib/satdump/plugins)
+install(TARGETS elektro_arktika_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

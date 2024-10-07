@@ -38,7 +38,7 @@ if(CXX_HAS_AVX_2)
         endif()
     endforeach()
 
-    install(TARGETS simd_avx2 DESTINATION lib/satdump/plugins)
+    install(TARGETS simd_avx2 DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 else()
     message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
 endif()

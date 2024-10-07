@@ -8,4 +8,4 @@ target_include_directories(satdump PUBLIC src-cli src-core)
 # Link against the core
 target_link_libraries(satdump PUBLIC satdump_core)
 
-install(TARGETS satdump DESTINATION bin)
+install(TARGETS satdump DESTINATION ${CMAKE_INSTALL_BINDIR})

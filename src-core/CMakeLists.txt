@@ -34,7 +34,7 @@ if(MSVC OR BUILD_MSVC)
     target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
 else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
-    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/lib/satdump/")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/satdump/")
 endif()
 
 # We have to... For MSVC
@@ -45,6 +45,16 @@ endif()
 # Threads
 find_package(Threads REQUIRED)
 target_link_libraries(satdump_core PUBLIC Threads::Threads)
+
+# Armadillo
+find_package(Armadillo)
+
+if(ARMADILLO_FOUND)
+    target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
+    target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
+    target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+    message("-- Building with Armadillo!")
+endif()
 
 # OpenCL if we found it
 if(BUILD_OPENCL AND NOT ANDROID)
@@ -92,7 +102,7 @@ elseif(ANDROID)
     target_link_libraries(satdump_core PUBLIC fftw)
 
     # cURL
-    target_link_libraries(satdump_core PUBLIC curl mbedtls mbedtlscrypto mbedtlsx509)
+    target_link_libraries(satdump_core PUBLIC curl wolfssl)
 
     # Libzstd
     target_link_libraries(satdump_core PUBLIC zstd)
@@ -149,16 +159,6 @@ else()
     # Lua
     target_include_directories(satdump_core PUBLIC libs/lua)
 
-    # Armadillo
-    find_package(Armadillo)
-
-    if(ARMADILLO_FOUND)
-        target_compile_definitions(satdump_core PUBLIC HAVE_ARMADILLO="1")
-        target_link_libraries(satdump_core PUBLIC ${ARMADILLO_LIBRARIES})
-        target_include_directories(satdump_core PUBLIC ${ARMADILLO_INCLUDE_DIRS})
-        message("-- Building with Armadillo!")
-    endif()
-
     # Curl
     find_package(CURL REQUIRED)
 
@@ -193,10 +193,10 @@ endif()
 
 # Install
 if(MSVC OR BUILD_MSVC)
-    install(TARGETS satdump_core DESTINATION bin)
+    install(TARGETS satdump_core DESTINATION ${CMAKE_INSTALL_BINDIR} RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
-    install(TARGETS satdump_core DESTINATION lib)
+    install(TARGETS satdump_core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY . DESTINATION include/satdump FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/satdump FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/satdump FILES_MATCHING PATTERN "*.hpp")

@@ -1,13 +1,13 @@
 #include "module_metop_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/image_products.h"
 #include "products/radiation_products.h"
 #include "products/scatterometer_products.h"
@@ -17,6 +17,7 @@
 #include "nlohmann/json_utils.h"
 #include "common/image/io.h"
 #include "common/image/processing.h"
+#include "common/calibration.h"
 
 namespace metop
 {
@@ -40,13 +41,13 @@ namespace metop
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid3(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid9(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid10(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid15(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid24(882, true);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid34(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid3(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid9(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid10(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid12(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid15(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid24(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid34(882, true);
 
             // Setup Admin Message
             {
@@ -70,7 +71,7 @@ namespace metop
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == METOP_A_SCID ||
                     vcdu.spacecraft_id == METOP_B_SCID ||
@@ -110,6 +111,8 @@ namespace metop
                             iasi_reader_img.work(pkt);
                         else if (pkt.header.apid == 130 || pkt.header.apid == 135 || pkt.header.apid == 140 || pkt.header.apid == 145)
                             iasi_reader.work(pkt);
+                        else if (pkt.header.apid == 180)
+                            iasi_reader_img.work_calib(pkt);
                     }
                 }
                 else if (vcdu.vcid == 3) // AMSU
@@ -366,7 +369,6 @@ namespace metop
                     logger->info("Channel IR imaging...");
                     image::Image iasi_imaging = iasi_reader_img.getIRChannel();
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
-                    image::simple_despeckle(iasi_imaging, 10);                                                    // And, it has some dead pixels sometimes so well, we need to remove them I guess?
 
                     // Test! TODO : Cleanup!!
                     satdump::ImageProducts iasi_img_products;
@@ -378,6 +380,14 @@ namespace metop
                     iasi_img_products.set_timestamps(iasi_reader_img.timestamps_ifov);
                     iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")));
                     iasi_img_products.images.push_back({"IASI-IMG", "1", iasi_imaging});
+
+                    nlohmann::json calib_cfg;
+                    calib_cfg["calibrator"] = "metop_iasi_img";
+                    calib_cfg["vars"] = iasi_reader_img.getCalib();
+                    iasi_img_products.set_calibration(calib_cfg);
+                    iasi_img_products.set_calibration_type(0, iasi_img_products.CALIB_RADIANCE);
+                    iasi_img_products.set_wavenumber(0, freq_to_wavenumber(26297584035088.0));
+                    iasi_img_products.set_calibration_default_radiance_range(0, -10, 180);
 
                     iasi_img_products.save(directory_img);
                     dataset.products_list.push_back("IASI-IMG");
@@ -465,9 +475,11 @@ namespace metop
                 gome_products.has_timestamps = true;
                 gome_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 gome_products.set_timestamps(gome_reader.timestamps);
+                gome_products.set_tle(satellite_tle);
+                gome_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json")));
                 gome_products.save_as_matrix = true;
 
-                for (int i = 0; i < 6144; i++)
+                for (int i = 0; i < gome_reader.channel_number; i++)
                     gome_products.images.push_back({"GOME-ALL", std::to_string(i + 1), gome_reader.getChannel(i)});
 
                 gome_products.save(directory);

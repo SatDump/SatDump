@@ -70,7 +70,7 @@ namespace image
         // Init buffer
         data_size = width * height * channels;
         d_data = malloc(type_size * data_size);
-        if (d_data == nullptr)
+        if (d_data == NULL)
             throw satdump_exception("Could not allocate memory for image!");
 
         // Set to 0

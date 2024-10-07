@@ -15,7 +15,7 @@ if(ZSTD_FOUND OR MSVC OR ANDROID)
         target_link_libraries(sdrpp_server_support PUBLIC ws2_32)
     endif()
 
-    install(TARGETS sdrpp_server_support DESTINATION lib/satdump/plugins)
+    install(TARGETS sdrpp_server_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 else()
     message("SDR++ Server requires ZSTD to build!")
 endif()

@@ -1,7 +1,7 @@
 #include "module_fy3_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -113,7 +113,7 @@ namespace fengyun3
             }
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid12(882, true);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid12(882, true);
 
             // Deframer
             def::SimpleDeframer virr_deframer(0b101000010001011011111101011100011001110110000011110010010101, 60, 208400, 0);
@@ -156,7 +156,7 @@ namespace fengyun3
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == FY3_A_SCID ||
                     vcdu.spacecraft_id == FY3_B_SCID ||
@@ -837,6 +837,8 @@ namespace fengyun3
                     logger->debug("Processing channel %d", i + 1);
                     if (d_mersi_histmatch)
                         mersi::mersi_match_detector_histograms(image, (i == 4 || i == 5) ? 80 : (i < 6 ? 40 : 10));
+                    if (i == 4 || i == 5)
+                        mersi::mersi_offset_interleaved(image, 40, -2);
                     if (d_mersi_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, i < 6 ? scanHeight_250 : scanHeight_1000, alpha, beta);
                     mersi3_products.images.push_back({"MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), image, {}, -1, -1, offset[i]});

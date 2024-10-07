@@ -98,7 +98,7 @@ namespace lrit
                 if (std::stoi(channel) > 1)
                     pro.set_calibration_default_radiance_range(pro.images.size() - 1, goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][0], goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
-            else if (instrument_id == "abi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
+            else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
                 const float goes_abi_wavelength_table[16] = {
                     470,
@@ -495,11 +495,13 @@ namespace lrit
                             saveJsonFile(file_for_cache, filecache);
 
                         delete pro;
+                        pro = nullptr;
                     }
                 }
                 catch (std::exception &e)
                 {
                     logger->error("Error trying to autogen composites! %s", e.what());
+                    delete pro;
                 }
             }
             else

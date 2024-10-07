@@ -204,10 +204,8 @@ namespace satdump
 
         // Render toasts on top of everything, at the end of your code!
         // You should push style vars here
-        float notification_bgcolor = (style::theme.light_mode ? 212.f : 43.f) / 255.f;
-        float notification_transparency = (style::theme.light_mode ? 200.f : 100.f) / 255.f;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(notification_bgcolor, notification_bgcolor, notification_bgcolor, notification_transparency));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)style::theme.notification_bg);
         notify_logger_sink->notify_mutex.lock();
         ImGui::RenderNotifications();
         notify_logger_sink->notify_mutex.unlock();

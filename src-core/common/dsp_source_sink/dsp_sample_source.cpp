@@ -1,13 +1,13 @@
+#define SATDUMP_DLL_EXPORT 1
+
 #include "dsp_sample_source.h"
 #include "core/plugin.h"
-
 #include "file_source.h"
-
 #include "logger.h"
 
 namespace dsp
 {
-    std::map<std::string, RegisteredSource> dsp_sources_registry;
+    SATDUMP_DLL std::map<std::string, RegisteredSource> dsp_sources_registry;
 
     std::vector<SourceDescriptor> getAllAvailableSources(bool remote)
     {

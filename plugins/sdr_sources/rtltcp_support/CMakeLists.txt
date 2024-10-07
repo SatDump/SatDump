@@ -12,4 +12,4 @@ if(MSVC)
     target_link_libraries(rtltcp_support PUBLIC ws2_32)
 endif()
 
-install(TARGETS rtltcp_support DESTINATION lib/satdump/plugins)
+install(TARGETS rtltcp_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

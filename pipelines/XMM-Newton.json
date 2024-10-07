@@ -1,0 +1,40 @@
+{
+    "xmm_newton_s_link": {
+        "name": "XMM-Newton S-band downlink",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 162e3,
+                    "pll_bw": 0.001,
+                    "rrc_alpha": 0.5,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.001
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.3,
+                    "viterbi_outsync_after": 1,
+                    "nrzm": false,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_type": "rs239"
+                }
+            }
+        }
+    }
+}   

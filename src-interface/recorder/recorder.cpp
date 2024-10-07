@@ -7,6 +7,7 @@
 #include "core/pipeline.h"
 #include "common/widgets/stepped_slider.h"
 #include "common/widgets/frequency_input.h"
+#include <math.h>
 
 #include "main_ui.h"
 
@@ -21,11 +22,12 @@ namespace satdump
     RecorderApplication::RecorderApplication()
         : Application("recorder"), pipeline_selector(true)
     {
-        dsp::registerAllSources();
-
         automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
+        remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
+        load_rec_path_data();
+        dsp::registerAllSources();
         sources = dsp::getAllAvailableSources();
 
         for (dsp::SourceDescriptor src : sources)
@@ -145,7 +147,7 @@ namespace satdump
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
 
-        set_output_sample_format();
+        file_sink->set_output_sample_type(baseband_format);
         fft_plot->set_size(fft_size);
         waterfall_plot->set_size(fft_size);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
@@ -531,32 +533,78 @@ namespace satdump
                     bool assume_recording = is_recording;
                     if (assume_recording)
                         style::beginDisabled();
-                    if (ImGui::Combo("Format", &select_sample_format, "cf32\0"
-                                                                      "cs16\0"
-                                                                      "cs8\0"
-                                                                      "wav16\0"
-#ifdef BUILD_ZIQ
-                                                                      "ziq cs8\0"
-                                                                      "ziq cs16\0"
-                                                                      "ziq cf32\0"
-#endif
-#ifdef BUILD_ZIQ2
-                                                                      "ziq2 cs8 (WIP)\0"
-                                                                      "ziq2 cs16 (WIP)\0"
-#endif
-                                     ))
-                        set_output_sample_format();
+
+                    if (baseband_format.draw_record_combo("Format##basebandrecordformat"))
+                        file_sink->set_output_sample_type(baseband_format);
 
                     if (assume_recording)
                         style::endDisabled();
 
-                    if (file_sink->get_written() < 1e9)
-                        ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
+                    uint64_t file_written = file_sink->get_written();
+                    uint64_t estimated_available = 0;
+                    if(file_written <= disk_available)
+                        estimated_available = disk_available - file_written;
+
+                    if (file_written < 1e9)
+                        ImGui::Text("Size : %.2f MB", file_written / 1e6);
                     else
-                        ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
+                        ImGui::Text("Size : %.2f GB", file_written / 1e9);
+
+                    ImGui::Text("Free Space: %.2f GB", estimated_available / pow(1024, 3));
+
+                    int timeleft;
+                    switch (baseband_format)
+                    {
+                    case dsp::CF_32:
+                        timeleft = estimated_available / (8 * get_samplerate());
+                        break;
+                    case dsp::CS_16:
+                        timeleft = estimated_available / (4 * get_samplerate());
+                        break;
+                    case dsp::WAV_16:
+                        timeleft = estimated_available / (4 * get_samplerate());
+                        break;
+                    case dsp::CS_8:
+                        timeleft = estimated_available / (2 * get_samplerate());
+                        break;
+                    case dsp::CU_8:
+                        timeleft = estimated_available / (2 * get_samplerate());
+                        break;
+                    default:
+                        // Silence GCC warns
+                        timeleft = 0;
+                        break;
+                    }
+#ifdef BUILD_ZIQ
+                    if (baseband_format != dsp::ZIQ)
+#endif
+                    {
+#ifdef BUILD_ZIQ2
+                        if (baseband_format != dsp::ZIQ2)
+#endif
+                        {
+                            if (is_recording && remaining_disk_space_time > timeleft && !been_warned)
+                            {
+                                logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
+                                been_warned = true;
+                            }
+
+                            int day = timeleft / (24 * 3600);
+
+                            timeleft = timeleft % (24 * 3600);
+                            int hour = timeleft / 3600;
+
+                            timeleft %= 3600;
+                            int minutes = timeleft / 60;
+
+                            timeleft %= 60;
+                            int seconds = timeleft;
+                            ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
+                        }
+                    }
 
 #ifdef BUILD_ZIQ
-                    if (select_sample_format == 4 || select_sample_format == 5 || select_sample_format == 6)
+                    if (baseband_format == dsp::ZIQ)
                     {
                         if (file_sink->get_written_raw() < 1e9)
                             ImGui::Text("Size (raw) : %.2f MB", file_sink->get_written_raw() / 1e6);

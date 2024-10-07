@@ -10,11 +10,11 @@ if(PORTAUDIO_LIBRARY OR MSVC)
 
     if(MSVC)
         target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio.dll)
+        install(TARGETS portaudio_audio_sink DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     else()
         target_link_libraries(portaudio_audio_sink PUBLIC satdump_core ${PORTAUDIO_LIBRARY})
+        install(TARGETS portaudio_audio_sink DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
     endif()
-
-    install(TARGETS portaudio_audio_sink DESTINATION lib/satdump/plugins)
 else()
     message("PortAudio Library could not be found! Not building.")
 endif()

@@ -33,6 +33,8 @@ private:
 
     std::string id_str;
 
+    bool autoFitNextFrame = false;
+
 public:
     ImageViewWidget();
     ~ImageViewWidget();
@@ -43,6 +45,4 @@ public:
     void draw(ImVec2 win_size);
 
     unsigned int getTextID() { return img_chunks.size() > 0 ? img_chunks[0].texture_id : 0; }
-
-    bool allow_zoom_and_move = true;
 };

@@ -36,22 +36,88 @@ namespace noaa_metop
 
             {
                 uint16_t *prts = &avhrr_buffer[10295];
-                prt_buffer.push_back(prts[2] + prts[3] + prts[4] < 20 ? 0 : (prts[2] + prts[3] + prts[4]) / 3);
+                // prt_buffer.push_back(prts[2] + prts[3] + prts[4] < 20 ? 0 : (prts[2] + prts[3] + prts[4]) / 3);
+
+                uint8_t prts_cnt = 0;
+                uint16_t prts_avg = 0;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (prts[2 + i] > 100 && prts[2 + i] < 500)
+                    { // limits check
+                        prts_avg += prts[2 + i];
+                        prts_cnt++;
+                    }
+                }
+                if (prts_cnt != 0)
+                    prt_buffer.push_back(prts_avg / prts_cnt);
+                else
+                    prt_buffer.push_back(0);
 
                 // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
                 uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
                 uint16_t avg_spc[3] = {0, 0, 0}; // space average
+
+                std::vector<uint16_t> blb_list[3];
+                std::vector<uint16_t> spc_list[3];
+
                 for (int i = 0; i < 10; i++)
                     for (int j = 0; j < 3; j++)
                     {
-                        if (i != 9)
+                        if (avhrr_buffer[10305 + 5 * i + j + 2] > blb_limits[j])
+                        {
                             avg_blb[j] += avhrr_buffer[10305 + 5 * i + j + 2];
-                        avg_spc[j] += avhrr_buffer[0 + 5 * i + j + 2];
+                            blb_list[j].push_back(avhrr_buffer[10305 + 5 * i + j + 2]);
+                        }
+                        if (avhrr_buffer[0 + 5 * i + j + 2] > 880)
+                        {
+                            avg_spc[j] += avhrr_buffer[0 + 5 * i + j + 2];
+                            spc_list[j].push_back(avhrr_buffer[0 + 5 * i + j + 2]);
+                        }
                     }
                 for (int j = 0; j < 3; j++)
                 {
-                    avg_blb[j] /= 9; // for whatever reason last scan on metop is all 0s (?)
-                    avg_spc[j] /= 10;
+                    if (blb_list[j].size() == 0)
+                        continue;
+
+                    avg_blb[j] /= blb_list[j].size();
+                    for (uint8_t k = 0; k < blb_list[j].size(); k++)
+                    {
+                        if (abs(blb_list[j][k] - avg_blb[j]) > BLB_LIMIT)
+                        {
+                            blb_list[j].erase(blb_list[j].begin() + k);
+                            k--;
+                        }
+                    }
+                    if (blb_list[j].size() != 0)
+                    {
+                        avg_blb[j] = 0;
+                        for (uint8_t k = 0; k < blb_list[j].size(); k++)
+                        {
+                            avg_blb[j] += blb_list[j][k];
+                        }
+
+                        avg_blb[j] /= blb_list[j].size();
+                    }
+                    if (spc_list[j].size() == 0)
+                        continue;
+                    avg_spc[j] /= spc_list[j].size();
+                    for (uint8_t k = 0; k < spc_list[j].size(); k++)
+                    {
+                        if (abs(spc_list[j][k] - avg_spc[j]) > SPC_LIMIT)
+                        {
+                            spc_list[j].erase(spc_list[j].begin() + k);
+                            k--;
+                        }
+                    }
+                    if (spc_list[j].size() != 0)
+                    {
+                        avg_spc[j] = 0;
+                        for (uint8_t k = 0; k < spc_list[j].size(); k++)
+                        {
+                            avg_spc[j] += spc_list[j][k];
+                        }
+                        avg_spc[j] /= spc_list[j].size();
+                    }
                 }
 
                 std::array<view_pair, 3> el;
@@ -74,22 +140,89 @@ namespace noaa_metop
             line2image(buffer, pos, width, buffer[6] & 1);
 
             // calibration data extraction (for later, we don't know what sat this is yet!)
-            prt_buffer.push_back(buffer[17] * buffer[18] * buffer[19] == 0 ? 0 : (buffer[17] + buffer[18] + buffer[19]) / 3);
+            // prt_buffer.push_back(buffer[17] * buffer[18] * buffer[19] == 0 ? 0 : (buffer[17] + buffer[18] + buffer[19]) / 3);
             // prt_buffer.push_back((buff[17] + buff[18] + buff[19]) / 3);
+
+            uint16_t *prts = &buffer[17];
+            uint8_t prts_cnt = 0;
+            uint16_t prts_avg = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                if (prts[i] > 100 && prts[i] < 500)
+                { // limits check
+                    prts_avg += prts[i];
+                    prts_cnt++;
+                }
+            }
+            if (prts_cnt != 0)
+                prt_buffer.push_back(prts_avg / prts_cnt);
+            else
+                prt_buffer.push_back(0);
 
             // AVHRR has space data for all 5 channels, but it will be not used for VIS in this implementation, so can be ommited
             uint16_t avg_blb[3] = {0, 0, 0}; // blackbody average
             uint16_t avg_spc[3] = {0, 0, 0}; // space average
+
+            std::vector<uint16_t> blb_list[3];
+            std::vector<uint16_t> spc_list[3];
+
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 3; j++)
                 {
-                    avg_blb[j] += buffer[22 + 3 * i + j];
-                    avg_spc[j] += buffer[52 + 5 * i + j + 2];
+                    if (buffer[22 + 3 * i + j] > blb_limits[j])
+                    {
+                        avg_blb[j] += buffer[22 + 3 * i + j];
+                        blb_list[j].push_back(buffer[22 + 3 * i + j]);
+                    }
+                    if (buffer[52 + 5 * i + j + 2] > 880)
+                    {
+                        avg_spc[j] += buffer[52 + 5 * i + j + 2];
+                        spc_list[j].push_back(buffer[52 + 5 * i + j + 2]);
+                    }
                 }
             for (int j = 0; j < 3; j++)
             {
-                avg_blb[j] /= 10;
-                avg_spc[j] /= 10;
+                if (blb_list[j].size() == 0)
+                    continue;
+                avg_blb[j] /= blb_list[j].size();
+                for (uint8_t k = 0; k < blb_list[j].size(); k++)
+                {
+                    if (abs(blb_list[j][k] - avg_blb[j]) > BLB_LIMIT)
+                    {
+                        blb_list[j].erase(blb_list[j].begin() + k);
+                        k--;
+                    }
+                }
+                if (blb_list[j].size() != 0)
+                {
+                    avg_blb[j] = 0;
+                    for (uint8_t k = 0; k < blb_list[j].size(); k++)
+                    {
+                        avg_blb[j] += blb_list[j][k];
+                    }
+
+                    avg_blb[j] /= blb_list[j].size();
+                }
+                if (spc_list[j].size() == 0)
+                    continue;
+                avg_spc[j] /= spc_list[j].size();
+                for (uint8_t k = 0; k < spc_list[j].size(); k++)
+                {
+                    if (abs(spc_list[j][k] - avg_spc[j]) > SPC_LIMIT)
+                    {
+                        spc_list[j].erase(spc_list[j].begin() + k);
+                        k--;
+                    }
+                }
+                if (spc_list[j].size() != 0)
+                {
+                    avg_spc[j] = 0;
+                    for (uint8_t k = 0; k < spc_list[j].size(); k++)
+                    {
+                        avg_spc[j] += spc_list[j][k];
+                    }
+                    avg_spc[j] /= spc_list[j].size();
+                }
             }
 
             std::array<view_pair, 3> el;
@@ -186,6 +319,12 @@ namespace noaa_metop
                 }
                 for (int c = 3; c < 6; c++)
                 {
+                    if (calib_out["vars"]["perLine_perChannel"].size() > 0)
+                        if (calib_out["vars"]["perLine_perChannel"][calib_out["vars"]["perLine_perChannel"].size() - 1][c].contains("Spc"))
+                        {
+                            ln[c]["Spc"] = calib_out["vars"]["perLine_perChannel"][calib_out["vars"]["perLine_perChannel"].size() - 1][c]["Spc"];
+                            ln[c]["Blb"] = calib_out["vars"]["perLine_perChannel"][calib_out["vars"]["perLine_perChannel"].size() - 1][c]["Blb"];
+                        }
                     ln[c]["Nbb"] =
                         temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * ltbb,
                                                 calib_coefs["channels"][c]["Vc"].get<double>());

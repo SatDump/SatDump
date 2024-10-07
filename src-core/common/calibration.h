@@ -23,3 +23,11 @@ inline double spectral_radiance_to_radiance(double L, double wavenumber)
     double temp = c_2 / (lamba * log(c_1 / (pow(lamba, 5) * L + 1)));
     return temperature_to_radiance(temp, wavenumber);
 }
+
+//////////////////////////////////////////////////////////////////////
+//// Experimental
+//////////////////////////////////////////////////////////////////////
+
+double calculate_sun_irradiance_interval(double low_wav, double high_wav);
+
+double radiance_to_reflectance(double irradiance, double radiance, time_t ltime, float lat, float lon);

@@ -11,6 +11,7 @@ This decoder takes in raw AIP data and processes it to MHS. It perfprms calibrat
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/utils.h"
+#include "common/calibration.h"
 
 #include "logger.h"
 
@@ -58,12 +59,43 @@ namespace noaa_metop
             for (int c = 0; c < 5; c++)
                 for (int j = 0; j < 2; j++)
                     cl.calibration_views[c][j] = 0;
+
             for (int c = 0; c < 5; c++)
             {
                 for (int j = 0; j < 2; j++)
                 {
+                    int avg = 0;                  //
+                    std::vector<uint16_t> counts; //  temporary variables so we can check for gross error
                     for (int k = 0; k < 4; k++)
-                        cl.calibration_views[c][j] += ((buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2] << 8 | buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2 + 1]) / 4);
+                    {
+                        uint16_t sample = (buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2] << 8 | buffer[MHS_OFFSET + (j * 4 + k + MHS_WIDTH) * 12 + (c + 1) * 2 + 1]);
+                        if (sample > limits[j][0] && sample < limits[j][1])
+                        {
+                            avg += sample;
+                            counts.push_back(sample);
+                        }
+                    }
+                    if (counts.size() == 0)
+                        continue;
+                    avg /= counts.size();
+                    for (uint8_t k = 0; k < counts.size(); k++)
+                    {
+                        if (abs(counts[k] - avg) > CAL_LIMIT) // check for bad samples
+                        {
+                            counts.erase(counts.begin() + k);
+                            k--;
+                        }
+                    }
+                    if (counts.size() > 0)
+                    {
+                        avg = 0;
+                        for (uint8_t k = 0; k < counts.size(); k++)
+                        {
+                            avg += counts[k];
+                        }
+                        avg /= counts.size();
+                    }
+                    cl.calibration_views[c][j] = avg; // finally push the counts
                 }
             }
 
@@ -125,7 +157,45 @@ namespace noaa_metop
 
             double a, b;
             double R[5], Tk[5], WTk = 0, Wk = 0, Tw;
-            std::array<double, 24> Tth;
+            std::array<double, 24> Tth;                            
+
+            // weighed average of the samples, as described by the NOAA KLM User's Guide equation 7.6.6-3
+            std::vector<uint16_t> conv_views[5][2];
+            for (int c = 0; c < 5; c++)
+            {
+                conv_views[c][0].resize(line);
+                conv_views[c][1].resize(line);
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        conv_views[c][j][i] = calib_lines[i].calibration_views[c][j];
+                        conv_views[c][j][line - i - 1] = calib_lines[line - i - 1].calibration_views[c][j];
+                    }
+                }
+            }
+            for (int l = 3; l < line - 3; l++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    for (int c = 0; c < 5; c++)
+                    {
+                        uint32_t avg = 0;
+                        uint8_t wc = 0;
+                        for (int pos = -3; pos <= 3; pos++)
+                        {
+                            if (calib_lines[l + pos].calibration_views[c][j] != 0)
+                            {
+                                avg += calib_lines[l + pos].calibration_views[c][j] * calib["avg_weights"][pos + 3].get<int>();
+                                wc += calib["avg_weights"][pos + 3].get<int>();
+                            }
+                        }
+                        if (wc != 0)
+                            avg /= wc;
+                        conv_views[c][j][l] = avg;
+                    }
+                }
+            }
 
             for (int l = 0; l < line; l++)
             {
@@ -159,10 +229,17 @@ namespace noaa_metop
                     {
                         Tk[i] += calib["f"][PIE][i][j].get<double>() * pow(R[i], (double)j);
                     }
-                    WTk += (calib["W"][i].get<double>() * Tk[i]);
-                    Wk += calib["W"][i].get<double>();
+                    if (Tk[i] > 260 && Tk[i] < 310) // check gross limits of PRT temp
+                    {
+                        WTk += (calib["W"][i].get<double>() * Tk[i]);
+                        Wk += calib["W"][i].get<double>();
+                    }
                 }
-                Tw = WTk / Wk;
+                if (Wk != 0)
+                {
+                    Tw = WTk / Wk;
+                    last_Tw = Tw;
+                }
 
                 // average instrument temperature
                 for (int i = 0; i < 24; i++)
@@ -179,10 +256,28 @@ namespace noaa_metop
                 for (int i = 0; i < 5; i++)
                 {
                     double Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>() * Tw;
-                    double G = (calib_lines[l].calibration_views[i][1] - calib_lines[l].calibration_views[i][0]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
-                    ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (calib_lines[l].calibration_views[i][1] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][1] * calib_lines[l].calibration_views[i][0]) / pow(G, 2.0));
-                    ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][0] + calib_lines[l].calibration_views[i][1]) / pow(G, 2.0));
-                    ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
+                    if (Tw == 0) // fill in missing lines (not optimal, should use an average, but good enough for our needs)
+                        Twp = calib["corr"][i][0].get<double>() + calib["corr"][i][1].get<double>() * last_Tw;
+
+                    if (Twp == 0) // disable calib for the line if no calib data is available
+                    {
+                        ln[i]["a0"] = -999.99;
+                    }
+                    else
+                    {
+#if 1
+                        double G = (conv_views[i][1][l] - conv_views[i][0][l]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
+                        ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (conv_views[i][1][l] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((conv_views[i][1][l] * conv_views[i][0][l]) / pow(G, 2.0));
+                        ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((conv_views[i][0][l] + conv_views[i][1][l]) / pow(G, 2.0));
+                        ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
+#endif
+#if 0
+                        double G = (calib_lines[l].calibration_views[i][1] - calib_lines[l].calibration_views[i][0]) / (temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - temperature_to_radiance(2.73 + calib["cs_corr"][calib["cs_corr_id"].get<int>()][i].get<double>(), calib["wavenumber"][i].get<double>()));
+                        ln[i]["a0"] = temperature_to_radiance(Twp, calib["wavenumber"][i].get<double>()) - (calib_lines[l].calibration_views[i][1] / G) + get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][1] * calib_lines[l].calibration_views[i][0]) / pow(G, 2.0));
+                        ln[i]["a1"] = 1.0 / G - get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * ((calib_lines[l].calibration_views[i][0] + calib_lines[l].calibration_views[i][1]) / pow(G, 2.0));
+                        ln[i]["a2"] = get_u(Tth[calib["instrument_temerature_sensor_backup"].get<bool>() ? 3 : 0], i) * (1.0 / pow(G, 2.0));
+#endif
+                    }
                 }
                 calib_out["vars"]["perLine_perChannel"].push_back(ln);
                 calib_out["wavenumbers"] = calib["wavenumber"];

@@ -106,8 +106,8 @@ namespace goes
                 image::Image ch2 = channel_images[1].to8bits();
 
                 image::Image ch2_curve, fc_lut;
-                image::load_png(ch2_curve, resources::getResourcePath("goes/abi/wxstar/ch2_curve.png").c_str());
-                image::load_png(fc_lut, resources::getResourcePath("goes/abi/wxstar/lut.png").c_str());
+                image::load_png(ch2_curve, resources::getResourcePath("lut/goes/abi/wxstar/ch2_curve.png").c_str());
+                image::load_png(fc_lut, resources::getResourcePath("lut/goes/abi/wxstar/lut.png").c_str());
 
                 for (size_t i = 0; i < ch2.width() * ch2.height(); i++)
                 {

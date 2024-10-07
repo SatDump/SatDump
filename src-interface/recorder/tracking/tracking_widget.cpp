@@ -24,7 +24,11 @@ namespace satdump
 
         logger->trace("Using QTH %f %f Alt %f", qth_lon, qth_lat, qth_alt);
 
-        rotator_handler = std::make_shared<rotator::RotctlHandler>();
+        rotator_options = rotator::getRotatorHandlerOptions();
+        for (auto &st : rotator_options)
+            rotator_options_str += st.name + '\0';
+
+        rotator_handler = rotator_options[selected_rotator_handler].construct();
 
         if (rotator_handler)
         {
@@ -104,13 +108,10 @@ namespace satdump
             if (rotator_handler->is_connected())
                 style::beginDisabled();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, "Rotctl\0"))
+            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, rotator_options_str.c_str()))
             {
-                if (selected_rotator_handler == 0)
-                {
-                    rotator_handler = std::make_shared<rotator::RotctlHandler>();
-                    object_tracker.setRotator(rotator_handler);
-                }
+                rotator_handler = rotator_options[selected_rotator_handler].construct();
+                object_tracker.setRotator(rotator_handler);
 
                 try
                 {
@@ -133,7 +134,7 @@ namespace satdump
         float width_available = ImGui::GetContentRegionAvail().x;
         std::string is_engaged = auto_scheduler.getEngaged() ? "YES" : "NO";
         float centered_pos = width_available / 2.0f - ImGui::CalcTextSize(std::string("Autotrack Engaged: " + is_engaged).c_str()).x / 2.0f;
-        if(centered_pos > 0)
+        if (centered_pos > 0)
             ImGui::SetCursorPosX(centered_pos);
         ImGui::TextUnformatted("Autotrack Engaged:");
         ImGui::SameLine();
@@ -164,6 +165,23 @@ namespace satdump
                 if (ImGui::BeginTabItem("Rotator Config"))
                 {
                     object_tracker.renderRotatorConfig();
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem("Export/Import"))
+                {
+                    ImGui::BeginChild("##trackingimportexport", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
+                    if (config_import_export.draw_export())
+                        config_import_export.do_export(auto_scheduler, object_tracker, rotator_handler);
+                    ImGui::Spacing();
+                    bool disable_import = auto_scheduler.getEngaged();
+                    if (disable_import)
+                        style::beginDisabled();
+                    if (config_import_export.draw_import())
+                        config_import_export.do_import(auto_scheduler, object_tracker, rotator_handler);
+                    if (disable_import)
+                        style::endDisabled();
+
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();

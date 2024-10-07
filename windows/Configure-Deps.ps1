@@ -10,5 +10,5 @@ mkdir vcpkg | Out-Null
 cd vcpkg
 mkdir installed | Out-Null
 cd installed
-git clone https://github.com/JVital2013/SatDump-WinXP-Deps x64-windows #These are 32-bit deps; the name is just 64-bit here to facilitate building
+git clone https://github.com/JVital2013/SatDump-WinXP-Deps x86-windows
 cd ../..

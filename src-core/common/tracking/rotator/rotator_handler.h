@@ -26,4 +26,17 @@ namespace rotator
         virtual void connect() = 0;
         virtual void disconnect() = 0;
     };
+
+    struct RotatorHandlerOption
+    {
+        std::string name;
+        std::function<std::shared_ptr<RotatorHandler>()> construct;
+    };
+
+    struct RequestRotatorHandlerOptionsEvent
+    {
+        std::vector<RotatorHandlerOption> &opts;
+    };
+
+    std::vector<RotatorHandlerOption> getRotatorHandlerOptions();
 }

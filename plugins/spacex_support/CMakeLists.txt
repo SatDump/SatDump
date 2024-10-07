@@ -19,8 +19,10 @@ if(MSVC)
         # Enable it
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
+    install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
 elseif(ANDROID)
 # NO encoder on Android
+install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 else()
     if(USE_VIDEO_ENCODER)
         # libavcodec
@@ -42,6 +44,5 @@ else()
         # Enable it
         target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
+    install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 endif()
-
-install(TARGETS spacex_support DESTINATION lib/satdump/plugins)

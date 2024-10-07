@@ -15,6 +15,9 @@
 #include "common/projection/projs2/proj_json.h"
 #include "common/widgets/spinner.h"
 
+#include "settings.h"
+#include "common/widgets/json_editor.h"
+
 namespace satdump
 {
     int osm_url_regex_len = 0;
@@ -120,11 +123,21 @@ namespace satdump
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
             {
-                ui_thread_pool.push([this](int)
-                                    { 
+                auto fun = [this](int)
+                {
                     logger->info("Update projection...");
-                    generateProjectionImage();
-                    logger->info("Done"); });
+                    try
+                    {
+                        generateProjectionImage();
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Lego should be happy!\n%s", e.what());
+                        projections_are_generating = false;
+                    }
+                    logger->info("Done");
+                };
+                ui_thread_pool.push(fun);
             }
             if (projections_are_generating)
             {
@@ -327,6 +340,13 @@ namespace satdump
                         if (lay.enabled)
                             active_layers++;
 
+                    if (settings::advanced_mode)
+                    {
+                        ImGui::SameLine(ImGui::GetWindowWidth() - 100 * ui_scale);
+                        ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
+                        ImGui::Checkbox(std::string("##enablelayersettings" + layer.name + std::to_string(i)).c_str(), &layer.allow_editor);
+                    }
+
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
@@ -376,6 +396,16 @@ namespace satdump
                             style::endDisabled();
                         }
                         ImGui::ProgressBar(layer.progress, ImVec2(ImGui::GetWindowWidth() - 76 * ui_scale, ImGui::GetFrameHeight()));
+
+                        if (layer.allow_editor)
+                        {
+                            ImGui::Separator();
+                            auto js = image::get_metadata_proj_cfg(layer.img);
+                            widgets::JSONTableEditor(js, "proj_cfg");
+                            image::set_metadata_proj_cfg(layer.img, js);
+                            ImGui::Separator();
+                        }
+
                         ImGui::EndGroup();
                     }
                     ImGui::EndGroup();
@@ -516,7 +546,7 @@ namespace satdump
         }
 
         // Copy projection metadata
-        if (image::has_metadata(layers_images[0]) && !image::has_metadata(projected_image_result))
+        if (image::has_metadata(layers_images[0]))
             image::set_metadata(projected_image_result, image::get_metadata(layers_images[0]));
 
         // Free up memory
