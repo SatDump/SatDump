@@ -48,7 +48,7 @@ jobs:
       - name: Copy DLLs
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cp $Env:GITHUB_WORKSPACE/vcpkg/installed/x64-windows/bin/*.dll Release
+        run: cp $Env:GITHUB_WORKSPACE/vcpkg/installed/x86-windows/bin/*.dll Release
 
       - name: Copy Resources
         working-directory: ${{runner.workspace}}/build
