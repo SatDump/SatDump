@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
     // Init SatDump
     satdump::tle_do_update_on_init = false;
-    satdump::initSatdump();
+    satdump::initSatdump(true);
 
     // Check if we need to start a pipeline
     std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
