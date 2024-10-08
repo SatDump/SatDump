@@ -13,9 +13,9 @@ namespace satdump
             if (cfg["type"] == "normal_gcps")
             {
                 double ratio_x = 1, ratio_y = 1;
-                if (width != -1)
+                if (width != -1 && cfg.contains("width"))
                     ratio_x = round(cfg["width"].get<double>() / (double)width);
-                if (height != -1)
+                if (height != -1 && cfg.contains("height"))
                     ratio_y = round(cfg["height"].get<double>() / (double)height);
 
                 std::vector<satdump::projection::GCP> gcps;
