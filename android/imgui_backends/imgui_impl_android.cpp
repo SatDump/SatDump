@@ -226,8 +226,7 @@ int32_t ImGui_ImplAndroid_HandleInputEvent(const AInputEvent* input_event)
             // but we have to process them separately to identify the actual button pressed. This is done below via
             // AMOTION_EVENT_ACTION_BUTTON_PRESS/_RELEASE. Here, we only process "FINGER" input (and "UNKNOWN", as a fallback).
             int tool_type = AMotionEvent_getToolType(input_event, event_pointer_index);
-            if (tool_type == AMOTION_EVENT_TOOL_TYPE_FINGER || tool_type == AMOTION_EVENT_TOOL_TYPE_UNKNOWN ||
-                tool_type == AMOTION_EVENT_TOOL_TYPE_STYLUS || tool_type == AMOTION_EVENT_TOOL_TYPE_MOUSE)
+            if (tool_type == AMOTION_EVENT_TOOL_TYPE_FINGER || tool_type == AMOTION_EVENT_TOOL_TYPE_UNKNOWN)
             {
                 io.AddMousePosEvent(AMotionEvent_getX(input_event, event_pointer_index), AMotionEvent_getY(input_event, event_pointer_index));
                 io.AddMouseButtonEvent(0, event_action == AMOTION_EVENT_ACTION_DOWN);
@@ -238,8 +237,8 @@ int32_t ImGui_ImplAndroid_HandleInputEvent(const AInputEvent* input_event)
         case AMOTION_EVENT_ACTION_BUTTON_RELEASE:
         {
             int32_t button_state = AMotionEvent_getButtonState(input_event);
-            io.AddMouseButtonEvent(0, (button_state & AMOTION_EVENT_BUTTON_PRIMARY) != 0);
-            io.AddMouseButtonEvent(1, (button_state & AMOTION_EVENT_BUTTON_SECONDARY) != 0);
+            io.AddMouseButtonEvent(0, (button_state & AMOTION_EVENT_BUTTON_PRIMARY) != 0 || (button_state & AMOTION_EVENT_BUTTON_STYLUS_PRIMARY) != 0);
+            io.AddMouseButtonEvent(1, (button_state & AMOTION_EVENT_BUTTON_SECONDARY) != 0 || (button_state & AMOTION_EVENT_BUTTON_STYLUS_SECONDARY) != 0);
             io.AddMouseButtonEvent(2, (button_state & AMOTION_EVENT_BUTTON_TERTIARY) != 0);
             break;
         }
