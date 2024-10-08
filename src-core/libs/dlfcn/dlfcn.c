@@ -362,7 +362,7 @@ void *dlopen( const char *file, int mode )
              * to UNIX's search paths (start with system folders instead of current
              * folder). SatDump mod: prefer DLLs in this directory
              */
-            hModule = LoadLibrary( lpFileName );
+            hModule = LoadLibraryA( lpFileName );
 
             if( !hModule )
             {
