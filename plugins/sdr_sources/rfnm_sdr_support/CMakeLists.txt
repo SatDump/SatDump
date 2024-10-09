@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 project(rfnm_sdr_support)
 
 
-find_library(RFNM_LIBRARY librfnm)
+find_package(PkgConfig)
+pkg_check_modules(RFNM librfnm)
 
 if(RFNM_LIBRARY) # OR MSVC
     message("Building with RFNM support")
