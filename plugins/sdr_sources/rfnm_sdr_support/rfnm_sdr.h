@@ -1,7 +1,9 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include <librfnm/librfnm.h>
+#include <librfnm/device.h>
+#include <librfnm/rfnm_fw_api.h>
+#include <librfnm/rx_stream.h>
 #include "logger.h"
 #include "common/rimgui.h"
 #include "common/widgets/double_list.h"
@@ -10,7 +12,8 @@ class RFNMSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
-    librfnm *rfnm_dev_obj;
+    rfnm::device *rfnm_dev_obj;
+    rfnm::rx_stream *rfnm_stream;
 
     widgets::DoubleList samplerate_widget;
     widgets::DoubleList bandwidth_widget;
@@ -29,8 +32,8 @@ protected:
     void open_sdr();
 
 protected:
-    int buffer_size = -1;
-    librfnm_rx_buf rx_buffers[LIBRFNM_MIN_RX_BUFCNT];
+    size_t buffer_size = -1;
+    // rfnm::rx_buf rx_buffers[rfnm::MIN_RX_BUFCNT];
 
     /// Temporary correction.
     float corr_mag = 0;
@@ -42,39 +45,44 @@ protected:
     complex_t v;
     void mainThread()
     {
-        librfnm_rx_buf *rx_buf;
+        int16_t *buf = (int16_t *)volk_malloc(buffer_size * 2 * sizeof(int16_t), volk_get_alignment());
+        size_t elems_read;
+        uint64_t timestamp_ns;
 
         while (thread_should_run)
         {
-            auto r = rfnm_dev_obj->rx_dqbuf(&rx_buf, channel == 1 ? LIBRFNM_CH1 : LIBRFNM_CH0, 1000);
-            if (r == rfnm_api_failcode::RFNM_API_DQBUF_NO_DATA)
+#if 0
+            auto r = rfnm_stream->read((void **)&buf, buffer_size, elems_read, timestamp_ns);
+            if (r == RFNM_API_OK)
+            {
+                logger->info("READ %d\n", elems_read);
+                volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, (int16_t *)buf, 32768.0f, elems_read * 2);
+
+                // Very basic, but helps a lot
+                if (corr_mag != 0 || corr_phase != 0)
+                {
+                    float mag_p1 = 1.0f + corr_mag;
+                    float phase = corr_phase;
+                    for (int i = 0; i < elems_read; i++)
+                    {
+                        v = output_stream->writeBuf[i];
+                        output_stream->writeBuf[i].real = v.real * mag_p1;
+                        output_stream->writeBuf[i].imag = v.imag + phase * v.real;
+                    }
+                }
+
+                output_stream->swap(elems_read);
+            }
+#else
+            auto r = rfnm_stream->read((void **)&output_stream->writeBuf, buffer_size, elems_read, timestamp_ns);
+            if (r == RFNM_API_OK)
+                output_stream->swap(elems_read);
+#endif
+            else if (r)
             {
                 logger->error("RFNM empty buffer!");
                 continue;
             }
-            else if (r)
-            {
-                continue;
-            }
-
-            volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, (int16_t *)rx_buf->buf, 32768.0f, (buffer_size / 4) * 2);
-
-            rfnm_dev_obj->rx_qbuf(rx_buf);
-
-            // Very basic, but helps a lot
-            if (corr_mag != 0 || corr_phase != 0)
-            {
-                float mag_p1 = 1.0f + corr_mag;
-                float phase = corr_phase;
-                for (int i = 0; i < (buffer_size / 4); i++)
-                {
-                    v = output_stream->writeBuf[i];
-                    output_stream->writeBuf[i].real = v.real * mag_p1;
-                    output_stream->writeBuf[i].imag = v.imag + phase * v.real;
-                }
-            }
-
-            output_stream->swap(buffer_size / 4);
         }
     }
 
