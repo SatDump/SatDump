@@ -431,7 +431,7 @@ MSDLL std::vector<struct rfnm_dev_hwinfo> librfnm::find(enum librfnm_transport t
             if (libusb_get_string_descriptor_ascii(thandle, desc.iSerialNumber, sn, 9) >= 0) {
                 sn[8] = '\0';
                 if(strcmp((const char*)sn, address.c_str())) {
-                    printf("This serial %s doesn't match the requested %s\n", (const char*)sn, address);
+                    printf("This serial %s doesn't match the requested %s\n", (const char*)sn, address.c_str());
                     libusb_close(thandle);
                     continue;
                 }
