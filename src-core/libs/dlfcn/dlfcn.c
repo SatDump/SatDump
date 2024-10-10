@@ -358,11 +358,11 @@ void *dlopen( const char *file, int mode )
                 dwProcModsBefore = 0;
 
             /* POSIX says the search path is implementation-defined.
-             * LOAD_WITH_ALTERED_SEARCH_PATH is used to make it behave more closely
+             * LOAD_WITH_ALTERED_SEARCH_PATH is typically used to make it behave more closely
              * to UNIX's search paths (start with system folders instead of current
-             * folder).
+             * folder). SatDump mod: prefer DLLs in this directory
              */
-            hModule = LoadLibraryExA( lpFileName, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
+            hModule = LoadLibraryA( lpFileName );
 
             if( !hModule )
             {

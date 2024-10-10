@@ -12,14 +12,20 @@ namespace satdump
         {
             if (cfg["type"] == "normal_gcps")
             {
+                double ratio_x = 1, ratio_y = 1;
+                if (width != -1 && cfg.contains("width"))
+                    ratio_x = round(cfg["width"].get<double>() / (double)width);
+                if (height != -1 && cfg.contains("height"))
+                    ratio_y = round(cfg["height"].get<double>() / (double)height);
+
                 std::vector<satdump::projection::GCP> gcps;
                 int gcpn = cfg["gcp_cnt"];
                 nlohmann::json gcps_cfg = cfg["gcps"];
                 for (int i = 0; i < gcpn; i++)
                 {
                     satdump::projection::GCP gcp;
-                    gcp.x = gcps_cfg[i]["x"];
-                    gcp.y = gcps_cfg[i]["y"];
+                    gcp.x = gcps_cfg[i]["x"].get<double>() / ratio_x;
+                    gcp.y = gcps_cfg[i]["y"].get<double>() / ratio_y;
                     gcp.lon = gcps_cfg[i]["lon"];
                     gcp.lat = gcps_cfg[i]["lat"];
                     gcps.push_back(gcp);

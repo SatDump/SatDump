@@ -79,7 +79,7 @@ int main(int /*argc*/, char *argv[])
     operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
     operation_t.input_image = operation_t.input_image.to16bits();
     // operation_t.input_image.median_blur();
-    nlohmann::json proj_cfg = /* img_pro.get_proj_cfg(); */ loadJsonFile(argv[2]);
+    nlohmann::json proj_cfg = img_pro.get_proj_cfg(); // loadJsonFile(argv[2]);
     proj_cfg["metadata"] = final_mtd;
     proj_cfg["metadata"]["tle"] = img_pro.get_tle();
     proj_cfg["metadata"]["timestamps"] = final_tt;

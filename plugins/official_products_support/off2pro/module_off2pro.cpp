@@ -8,6 +8,7 @@
 #include "../file_utils/file_utils.h"
 #include "../nc2pro/mtg_fci.h"
 #include "../nc2pro/sc3_olci.h"
+#include "../nc2pro/sc3_slstr.h"
 
 namespace off2pro
 {
@@ -23,6 +24,8 @@ namespace off2pro
 
         filesize = getFilesize(source_off_file);
 
+        std::vector<std::string> product_paths;
+
         // Perhaps a zip?
         if (satdump::file_is_zip(source_off_file))
         {
@@ -35,6 +38,9 @@ namespace off2pro
             // Sentinel-3 OCLI
             else if (eum_id.find("SEN3") != std::string::npos && eum_id.find("OL_1_EF") != std::string::npos)
                 nc2pro::process_sc3_ocli(source_off_file, pro_output_file, &progress);
+
+            else if (eum_id.find("SEN3") != std::string::npos && eum_id.find("SL_1_RBT") != std::string::npos)
+                nc2pro::process_sc3_slstr(source_off_file, pro_output_file, product_paths, &progress);
 
             else
                 logger->error("Unknown EUMETSAT file type! " + eum_id);
@@ -116,13 +122,16 @@ namespace off2pro
                 logger->error("Unknown File Type!");
         }
 
-        if (std::filesystem::exists(pro_output_file + "/product.cbor"))
+        if (std::filesystem::exists(pro_output_file + "/product.cbor") || product_paths.size() > 0)
         {
             // Products dataset
             satdump::ProductDataSet dataset;
             dataset.satellite_name = "Generic Product (Data Store / Archive)";
             dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
-            dataset.products_list.push_back(".");
+            if (product_paths.size() == 0)
+                dataset.products_list.push_back(".");
+            else
+                dataset.products_list = product_paths;
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
     }

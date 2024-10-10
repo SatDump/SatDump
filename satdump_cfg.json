@@ -493,36 +493,43 @@
                 "rgb_composites": {
                     "AVHRR 221 False Color": {
                         "equation": "ch2,ch2,ch1",
-                        "white_balance": true
+                        "white_balance": true,
+                        "description": "descriptions/221.md"
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch3,ch2,ch1",
-                        "white_balance": true
+                        "white_balance": true,
+                        "description": "descriptions/3a21.md"
                     },
                     "Natural Color": {
                         "equation": "((0.5*max(ch3,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.65, (ch2/0.7)^0.65, (ch1/0.7)^0.65",
                         "white_balance": true,
-                        "equalize": true
+                        "equalize": true,
+                        "description": "descriptions/NatColor.md"
                     },
                     "AVHRR 124 False Color": {
                         "equation": "ch1 == 0 ? 0 : ch1, ch2 == 0 ? 0 : ch2, 1-ch9 == 1 ? 0 : 1-ch9",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description": "descriptions/124.md"
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description" : "descriptions/543b.md"
                     },
                     "Day Microphysics": {
                         "equation": "ch1,ch4^2.5, ch9",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description" : "descriptions/DayMicro.md"
                     },
                     "Night Microphysics": {
                         "equation": "ch10-ch9,ch9-ch4,ch9",
                         "white_balance": true,
-                        "individual_equalize": true
+                        "individual_equalize": true,
+                        "description" : "descriptions/NightMicro.md"
                     },
                     "Water Vapor Blend": {
                         "equation": "ch7 ==  0 ? 0 : 1-ch7, ch6 ==  0 ? 0 : 1-ch6, ch5 ==  0 ? 0 : 1-ch5",
@@ -781,7 +788,7 @@
                 "handler": "image_handler",
                 "name": "AVHRR/3",
                 "rgb_composites": {
-                    "221": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch2, ch2, ch1",
                         "description": "descriptions/221.md",
                         "geo_correct": true,
@@ -799,7 +806,7 @@
                             }
                         }
                     },
-                    "3a21": {
+                    "AVHRR 3a21 False Color": {
                         "equation": "cch3a, cch2, cch1",
                         "description": "descriptions/321.md",
                         "equalize": true,
@@ -833,7 +840,7 @@
                         "description": "descriptions/3b45.md",
                         "geo_correct": true
                     },
-                    "124": {
+                    "AVHRR 124 False Color": {
                         "equation": "ch1, ch2, ch4",
                         "individual_equalize": true,
                         "description": "descriptions/124.md",
@@ -851,7 +858,7 @@
                             }
                         }
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "cch4",
                         "apply_lut": true,
                         "description": "descriptions/ThermalCal.md",
@@ -883,7 +890,8 @@
                                 "min": 203,
                                 "max": 323
                             }
-                        }
+                        },
+                        "description": "descriptions/DayCloudConv.md"
                     },
                     "Clouds Underlay (Merge)": {
                         "channels": "ch4",
@@ -1476,7 +1484,7 @@
                             }
                         }
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "ch4",
                         "individual_equalize": true,
                         "geo_correct": true,
@@ -1524,13 +1532,13 @@
                 "handler": "image_handler",
                 "name": "MSU-MR",
                 "rgb_composites": {
-                    "221": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch2, ch2, ch1",
                         "geo_correct": true,
                         "white_balance": true,
                         "description": "descriptions/221.md"
                     },
-                    "321": {
+                    "AVHRR 3a21 False Color": {
                         "equation": "ch3, ch2, ch1",
                         "description": "descriptions/321.md",
                         "geo_correct": true,
@@ -1549,8 +1557,14 @@
                             }
                         }
                     },
-                    "124": {
+                    "MSU-MR 124 False Color": {
                         "equation": "ch1, ch2, 1-ch4",
+                        "geo_correct": true,
+                        "white_balance": true,
+                        "individual_equalize": true
+                    },
+                    "AVHRR 124 False Color": {
+                        "equation": "ch1, ch2, 1-ch5",
                         "description": "descriptions/124.md",
                         "geo_correct": true,
                         "white_balance": true,
@@ -1562,7 +1576,7 @@
                         "geo_correct": true,
                         "white_balance": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1 - ch5",
                         "description": "descriptions/ThermalUncal.md",
                         "individual_equalize": true,
@@ -1593,14 +1607,14 @@
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "654": {
+                    "AVHRR 543b IR False Color": {
                         "equation": "1 - ch6, 1 - ch5, 1 - ch4",
                         "description": "descriptions/543b.md",
                         "individual_equalize": true,
                         "geo_correct": true,
                         "autogen": true
                     },
-                    "456": {
+                    "AVHRR 3b45 IR False Color": {
                         "equation": "1 - ch4, 1 - ch5, 1 - ch6",
                         "description": "descriptions/3b45.md",
                         "individual_equalize": true,
@@ -1931,7 +1945,8 @@
                     "CIR (Color Infrared)": {
                         "equation": "ch3, ch2, ch1",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/CIR.md"
                     },
                     "NDVI (Uncalibrated)": {
                         "equation": "(ch3-ch2)/(ch3+ch2)",
@@ -1954,10 +1969,11 @@
                 "handler": "image_handler",
                 "name": "MSU-GS",
                 "rgb_composites": {
-                    "221": {
-                        "equation": "ch2,ch2,ch1"
+                    "AVHRR 221 False Color": {
+                        "equation": "ch2,ch2,ch1",
+                        "description": "descriptions/221.md"
                     },
-                    "321": {
+                    "MSU-GS 321 False Color": {
                         "equation": "ch3,ch2,ch1",
                         //
                         "draw_map_overlay": true,
@@ -1966,14 +1982,15 @@
                     },
                     "Natural Color": {
                         "channels": "ch3, ch2, ch1",
-                        "cpp": "msugs_natural_color"
+                        "cpp": "msugs_natural_color",
+                        "description": "descriptions/NatColor.md"
                     },
                     "Color IR Merge": {
                         "channels": "ch3, ch2, ch1, ch4",
                         "cpp": "msugs_color_ir_merge",
                         "autogen": false // Needs to be optimized...
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1-ch9"
                     }
                 }
@@ -1982,7 +1999,7 @@
                 "handler": "image_handler",
                 "name": "ABI",
                 "rgb_composites": {
-                    "GEO False Color": {
+                    "ABI False Color": {
                         "channels": "ch2, ch13",
                         "remove_background": true,
                         "cpp": "goes_abi_false_color",
@@ -1997,7 +2014,7 @@
                         ],
                         "autogen": true
                     },
-                    "GEO False Color IR Merge": {
+                    "ABI False Color IR Merge": {
                         "channels": "ch2, ch13",
                         "cpp": "goes_abi_false_color_ir_merge",
                         "draw_map_overlay": true,
@@ -2041,7 +2058,7 @@
                         ],
                         "autogen": false
                     },
-                    "Split Window Difference": {
+                    "ABI Split Window Difference": {
                         "channels": "cch13, cch15",
                         "remove_background": true,
                         "calib_cfg": {
@@ -2359,6 +2376,12 @@
                           0.45
                         ]
                     },
+                    "Land Surface Temperature (tmbates)": {
+                        "channels": "chLST",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/lst_tmbates.png",
+                        "autogen": false
+                    },
                     "Sea Surface Temperature": {
                         "channels": "chSST",
                         "draw_map_overlay": true,
@@ -2368,6 +2391,12 @@
                           0.45,
                           0.45
                         ]
+                    },
+                    "Sea Surface Temperature (tmbates)": {
+                        "channels": "chSST",
+                        "draw_map_overlay": true,
+                        "lut": "lut/goes/abi/L2/sst_tmbates.png",
+                        "autogen": false
                     },
                     "Clean Longwave IR (Transparent)": {
                         "channels": "cch13",
@@ -2435,9 +2464,19 @@
                         "lut": "lut/goes/abi/L2/lst_transparent.png",
                         "autogen": false
                     },
+                    "LST Transparent (tmbates)": {
+                        "channels": "chLST",
+                        "lut": "lut/goes/abi/L2/lst_transparent_tmbates.png",
+                        "autogen": false
+                    },
                     "SST Transparent": {
                         "channels": "chSST",
                         "lut": "lut/goes/abi/L2/sst_transparent.png",
+                        "autogen": false
+                    },
+                    "SST Transparent (tmbates)": {
+                        "channels": "chSST",
+                        "lut": "lut/goes/abi/L2/sst_transparent_tmbates.png",
                         "autogen": false
                     }
                 }
@@ -2446,7 +2485,7 @@
                 "handler": "image_handler",
                 "name": "AHI",
                 "rgb_composites": {
-                    "GEO False Color (WIP)": {
+                    "AHI False Color (WIP)": {
                         "channels": "ch3, ch13",
                         "cpp": "goes_abi_false_color",
                         "draw_map_overlay": true,
@@ -2638,62 +2677,92 @@
                 "handler": "image_handler",
                 "name": "VIIRS",
                 "rgb_composites": {
-                    "I221": {
+                    "AVHRR 221 False Color": {
                         "equation": "chi2, chi2, chi1",
+                        "description": "descriptions/221.md",
                         "equalize": true
                     },
-                    "I321": {
+                    "AVHRR 3a21 False Color": {
                         "equation": "chi3, chi2, chi1",
+                        "description": "descriptions/3a21.md",
                         "equalize": true
                     },
-                    "I321/I221 Mix": {
+                    "VIIRS I321/I221 Mix": {
                         "equation": "(chi3 * 0.4 + chi2 * 0.6) * 4 - 0.2, chi2 * 4 - 0.2, chi1 * 4 - 0.2"
                     },
                     "True Color": {
                         "equation": "chm5, chm4, chm3",
+                        "description": "descriptions/TrueColor.md",
                         "equalize": true
+                    },
+                    "Urban False Color": {
+                        "equation": "chm11,chm10,chm5",
+                        "description": "descriptions/ShortwaveIRFC.md",
+                        "individual_equalize": true
                     },
                     "Night Microphysics": {
                         "equation": "chi5-chi4,chi4-chi3),chi4",
                         "individual_equalize": true,
+                        "description": "descriptions/NightMicro.md",
                         "white_balance": true
                     },
                     "Day Microphysics": {
                         "equation": "chi1, chi3^2.5,chi4",
+                        "description": "descriptions/DayMicro.md",
                         "individual_equalize": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1-chi4",
+                        "description": "descriptions/ThermalUncal.md",
                         "individual_equalize": true
                     },
                     "CIR (Color Infrared)": {
                         "equation": "chi3, chm5, chm4",
+                        "description": "descriptions/CIR.md",
                         "individual_equalize": true
+                    },
+                    "Agriculture": {
+                        "equation": "chm10,chm7,chm3",
+                        "equalize": true,
+                        "white_balance": true,
+                        "description": "descriptions/Agriculture.md"
+                    },
+                    "Geology": {
+                        "equation": "chm11,chm10,chm3",
+                        "individual_equalize": true,
+                        "white_balance": true,
+                        "description": "descriptions/Geology.md"
+                    },
+                    "Bathymetric": {
+                        "equation": "chm5, chm4, chm1",
+                        "description": "descriptions/Bathymetric.md",
+                        "equalize": true
                     },
                     "Cirrus IR (ABI band 4 like)": {
                         "equation": "chm9",
+                        "description": "descriptions/Cirrus.md",
                         "white_balance": true,
                         "apply_lut": true
                     },
                     "Cloud Type RGB": {
                         "equation": "chm9^1.5, chm5^0.75, chm10",
+                        "description": "descriptions/CloudType.md",
                         "individual_equalize": true
                     },
                     "Cloud Phase RGB": {
                         "equation": "chm10, chm11, chm5",
+                        "description": "descriptions/CloudPhase.md",
                         "individual_equalize": true
                     },
                     "Dust/Ash RGB": {
                         "equation": "chm16-chm15, chm15-chm14, chm15",
-                        "individual_equalize": true
-                    },
-                    "Snow RGB": {
-                        "equation": "chm7, chm10, chm12",
+                        "description": "descriptions/DustAshRGB.md",
                         "individual_equalize": true
                     },
                     "Fire Temperature RGB": {
                         "equation": "chm12, chm11, chm10",
-                        "white_balance": true
+                        "white_balance": true,
+                        "description": "descriptions/FireTempRGB.md"
                     }
                 }
             },
@@ -2701,9 +2770,10 @@
                 "handler": "image_handler",
                 "name": "VIIRS DNB",
                 "rgb_composites": {
-                    "Panchromatic day": {
+                    "Panchromatic": {
                         "equation": "chdnb",
-                        "equalize": true
+                        "equalize": true,
+                        "description": "descriptions/Panchromatic.md"
                     },
                     "DNB Night": {
                         "equation": "chdnb * 50 - 0.5"
@@ -2714,7 +2784,7 @@
                 "handler": "image_handler",
                 "name": "AIRS HD",
                 "rgb_composites": {
-                    "321": {
+                    "AIRS-HD 321": {
                         "equation": "ch3,ch2,ch1",
                         "equalize": true
                     }
@@ -2854,8 +2924,9 @@
                 "handler": "image_handler",
                 "name": "MODIS",
                 "rgb_composites": {
-                    "221": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch2, ch2, ch1",
+                        "description": "descriptions/221.md",
                         "geo_correct": true,
                         "project": {
                             "draw_map_overlay": true,
@@ -2873,6 +2944,7 @@
                     },
                     "True Color": {
                         "equation": "ch1, ch4, ch3",
+                        "description": "descriptions/TrueColor.md",
                         "white_balance": true,
                         "geo_correct": true,
                         "project": {
@@ -2889,7 +2961,7 @@
                             }
                         }
                     },
-                    "221/143 Mix": {
+                    "MODIS 221/143 Mix": {
                         "equation": "(ch2 + ch1) / 2, (ch2 + ch4) / 2, (ch1 + ch3) / 2",
                         "white_balance": true,
                         "geo_correct": true
@@ -2897,31 +2969,37 @@
                     "Day Microphysics": {
                         "equation": "ch17, ch22^2.5, ch31",
                         "geo_correct": true,
+                        "description": "descriptions/DayMicro.md",
                         "individual_equalize": true,
                         "white_balance": true
                     },
                     "CIR (Color Infrared)": {
                         "equation": "ch2, ch1, ch4",
+                        "description": "descriptions/CIR.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
                     "Geology": {
                         "equation": "ch7, ch6, ch3",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/Geology.md"
                     },
                     "Agriculture": {
                         "equation": "ch6, ch2, ch3",
                         "individual_equalize": true,
+                        "description": "descriptions/Agriculture.md",
                         "geo_correct": true
                     },
                     "Bathymetric": {
                         "equation": "ch1, ch4, ch9",
                         "individual_equalize": true,
+                        "description": "descriptions/Bathymetric.md",
                         "geo_correct": true
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1-cch32, 1-cch31, 1-cch20",
+                        "description": "descriptions/543b.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
@@ -3125,12 +3203,12 @@
                 "handler": "image_handler",
                 "name": "MERSI-1",
                 "rgb_composites": {
-                    "321": {
+                    "MERSI-1 321": {
                         "equation": "ch3, ch2, ch1",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "441": {
+                    "MERSI-1 441": {
                         "equation": "ch4, ch4, ch1",
                         "geo_correct": true
                     }
@@ -3143,49 +3221,64 @@
                     "True Color": {
                         "equation": "ch3, ch2, ch1",
                         "equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/TrueColor.md"
                     },
                     "MERSI False Color": {
                         "equation": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
+                    "Urban False Color": {
+                        "equation": "ch9, ch8, ch3",
+                        "equalize": true,
+                        "geo_correct": true,
+                        "description": "descriptions/ShortwaveIRFC.md"
+                    },
                     "CIR (Color Infrared)": {
                         "equation": "ch4, ch3, ch2",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/CIR.md"
                     },
                     "Agriculture": {
                         "equation": "ch8,ch4,ch1",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/Agriculture.md"
                     },
                     "Geology": {
                         "equation": "ch9,ch8,ch1",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/Geology.md"
                     },
                     "MERSI Airmass": {
                         "equation": "ch9, ch12, ch11",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/MERSIAirmass.md"
                     },
                     "AVHRR 221 False Color": {
                         "equation": "ch4, ch4, ch1",
+                        "description": "descriptions/221.md",
                         "geo_correct": true
                     },
                     "Day Microphysics": {
                         "equation": "ch3, ch8^2.5, ch5",
+                        "description": "descriptions/DayMicro.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch8, ch4, ch3",
+                        "description": "descriptions/3a21.md",
                         "equalize": true,
                         "geo_correct": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1.0 - ch5",
+                        "description": "descriptions/ThermalUncal.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
@@ -3195,7 +3288,7 @@
                         "apply_lut": true,
                         "geo_correct": true
                     },
-                    "NO enhancement": {
+                    "NO enhancement (Uncalibrated)": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
                         "channels": "ch4, ch5",
                         "autogen": true,
@@ -3216,55 +3309,60 @@
                 "rgb_composites": {
                     "True Color": {
                         "equation": "ch3, ch2, ch1",
+                        "description": "descriptions/TrueColor.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "3(24)1": {
+                    "MERSI False Color": {
                         "equation": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "17.19.18": {
-                        "equation": "ch17, ch19, ch18",
-                        "geo_correct": true
-                    },
                     "MERSI Airmass": {
                         "equation": "ch9, ch12, ch11",
+                        "description": "descriptions/MERSIAirmass.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
                     "AVHRR 221 False Color": {
                         "equation": "ch4, ch4, ch1",
+                        "description": "descriptions/221.md",
                         "equalize": true,
                         "geo_correct": true
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch8, ch4, ch3",
+                        "description": "descriptions/3a21.md",
                         "equalize": true,
                         "geo_correct": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1.0 - ch5",
                         "individual_equalize": true,
+                        "description": "descriptions/ThermalUncal.md",
                         "geo_correct": true
                     },
                     "CIR (Color Infrared)": {
                         "equation": "ch4, ch3, ch2",
                         "individual_equalize": true,
+                        "description": "descriptions/CIR.md",
                         "geo_correct": true
                     },
                     "Agriculture": {
                         "equation": "ch8,ch4,ch1",
                         "individual_equalize": true,
+                        "description": "descriptions/Agriculture.md",
                         "geo_correct": true
                     },
                     "Geology": {
                         "equation": "ch9,ch8,ch1",
                         "individual_equalize": true,
+                        "description": "descriptions/Geology.md",
                         "geo_correct": true
                     },
                     "Day Microphysics": {
                         "equation": "ch3, ch8^2.5, ch5",
+                        "description": "descriptions/DayMicro.md",
                         "individual_equalize": true,
                         "geo_correct": true
                     }
@@ -3289,9 +3387,10 @@
                     "MERSI-LL Airmass": {
                         "equation": "ch8, ch6, ch4",
                         "individual_equalize": true,
-                        "geo_correct": true
+                        "geo_correct": true,
+                        "description": "descriptions/MERSIAirmass.md"
                     },
-                    "IR/DNB Mix": {
+                    "IR/LL Mix": {
                         "channels": [
                             4,
                             10
@@ -3299,9 +3398,10 @@
                         "equation": "min(((1 - ch4) - 0.9) * 8, ch10 < 0.03 ? 1 : ch10)",
                         "geo_correct": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1 - ch1",
                         "individual_equalize": true,
+                        "description": "descriptions/ThermalUncal.md",
                         "geo_correct": true
                     },
                     "7.2 µm Water Vapor": {
@@ -3310,7 +3410,7 @@
                         "apply_lut": true,
                         "geo_correct": true
                     },
-                    "NO enhancement": {
+                    "NO enhancement (Uncalibrated)": {
                         "lut": "lut/WXtoImg-NO_mod_meteor.png",
                         "channels": "ch1, ch2",
                         "autogen": true,
@@ -3325,11 +3425,8 @@
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1-ch2, 1-ch1, 1-ch4",
+                        "description": "descriptions/543b.md",
                         "geo_correct": true,
-                        "individual_equalize": true
-                    },
-                    "HIRS alternate airmass": {
-                        "equation": "ch11, ch8, ch6",
                         "individual_equalize": true
                     }
                 }
@@ -3338,12 +3435,12 @@
                 "handler": "image_handler",
                 "name": "MERSI-RM",
                 "rgb_composites": {
-                    "321": {
+                    "MERSI-RM 321": {
                         "equation": "ch3, ch2, ch1",
                         "individual_equalize": true,
                         "geo_correct": true
                     },
-                    "221": {
+                    "AVHRR 221 False Color": {
                         "equation": "ch2, ch2, ch1",
                         "individual_equalize": true,
                         "description": "descriptions/221.md",
@@ -3434,6 +3531,7 @@
                     "SSEC 89 GHz AMSU-B BT": {
                         "channels": "cch1",
                         "lut": "lut/cal/ssec_amsu.png",
+                        "description": "descriptions/sounders/SSEC89GHz.md",
                         "calib_cfg": {
                             "cch1": {
                                 "type": "temperature",
@@ -3442,31 +3540,17 @@
                             }
                         }
                     }
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "individual_equalize": true,
-                    "draw_map_overlay": true,
-                    "config": {
-                        "type": "equirec",
-                        "offset_x": -180,
-                        "offset_y": 90,
-                        "scalar_x": 0.17578125,
-                        "scalar_y": -0.17578125,
-                        "width": 2048,
-                        "height": 1024
-                    }
                 }
             },
             "mwhs1": {
                 "handler": "image_handler",
                 "name": "MHWS-1",
                 "rgb_composites": {
-                    "421": {
+                    "MWHS 421": {
                         "equation": "ch4, ch2, ch1",
                         "individual_equalize": true
                     },
-                    "543": {
+                    "MWHS 543": {
                         "equation": "ch5, ch4, ch3",
                         "individual_equalize": true
                     }
@@ -3496,30 +3580,18 @@
                     },
                     "ATMS False Color": {
                         "equation": "ch1, ch10, ch13",
+                        "description": "descriptions/sounders/ATMSFC.md",
                         "individual_equalize": true
                     },
                     "MHS 421": {
                         "equation": "ch13, ch10, ch1",
+                        "description": "descriptions/sounders/MHS421.md",
                         "individual_equalize": true
                     },
                     "Microwave Airmass": {
                         "equation": "ch11,ch12,ch13",
                         "individual_equalize": true,
                         "description": "descriptions/sounders/MicrowaveAirmass.md"
-                    }
-                },
-                "project_channels": {
-                    "channels": "all",
-                    "individual_equalize": true,
-                    "draw_map_overlay": true,
-                    "config": {
-                        "type": "equirec",
-                        "offset_x": -180,
-                        "offset_y": 90,
-                        "scalar_x": 0.17578125,
-                        "scalar_y": -0.17578125,
-                        "width": 2048,
-                        "height": 1024
                     }
                 }
             },
@@ -3586,7 +3658,7 @@
                 "handler": "image_handler",
                 "name": "MWRI",
                 "rgb_composites": {
-                    "123": {
+                    "MWRI 123": {
                         "equation": "ch1, ch2, ch3",
                         "individual_equalize": true
                     },
@@ -3606,7 +3678,7 @@
                 "handler": "image_handler",
                 "name": "MWRI-RM",
                 "rgb_composites": {
-                    "10.20.23": {
+                    "MWRI-RM 10.20.23 like MWRI 123": {
                         "equation": "ch10, ch20, ch23",
                         "individual_equalize": true
                     },
@@ -3634,7 +3706,7 @@
                 "handler": "image_handler",
                 "name": "MWRI-2",
                 "rgb_composites": {
-                    "10.20.23": {
+                    "MWRI-2 10.20.23 like MWRI 123": {
                         "equation": "ch10, ch20, ch23",
                         "individual_equalize": true
                     },
@@ -3656,6 +3728,7 @@
                 "rgb_composites": {
                     "ATMS False Color": {
                         "equation": "ch16, ch17, ch18",
+                        "description": "descriptions/sounders/ATMSFC.md",
                         "individual_equalize": true
                     },
                     "MHS 221": {
@@ -3775,6 +3848,10 @@
                         "individual_equalize": true,
                         "white_balance": true
                     },
+                    "HIRS alternate airmass": {
+                        "equation": "ch11, ch8, ch6",
+                        "individual_equalize": true
+                    },
                     "Clouds Only (N2O Sounding)": {
                         "equation": "ch14, ch13, 1",
                         "description": "descriptions/sounders/CloudOnlyN2O.md",
@@ -3880,6 +3957,26 @@
                         "equation": "ch30, ch29, ch28",
                         "description": "descriptions/sounders/MicrowaveAirmass.md",
                         "individual_equalize": true
+                    },
+                    "550hPa Temperature (~5 km)": {
+                        "equation": "ch16",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "350hPa Temperature (~10 km)": {
+                        "equation": "ch17",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "200hPa Temperature (~12 km)": {
+                        "equation": "ch18",
+                        "individual_equalize": true,
+                        "apply_lut": true
+                    },
+                    "100hPa Temperature (~15 km)": {
+                        "equation": "ch19",
+                        "individual_equalize": true,
+                        "apply_lut": true
                     },
                     "Test1": {
                         "equation": "1-ch37",
@@ -3990,9 +4087,9 @@
                 "handler": "image_handler",
                 "name": "IASI Imaging",
                 "rgb_composites": {
-                    "Imaging Channel": {
-                        "equation": "1 - ch1",
-                        "description": "descriptions/ThermalUncal.md",
+                    "10.8µm Thermal IR": {
+                        "equation": "1-cch1",
+                        "description": "descriptions/ThermalCal.md",
                         "individual_equalize": true,
                         "geo_correct": true,
                         "project": {
@@ -4368,7 +4465,7 @@
                         "equation": "1-chir, chvis, chvis",
                         "individual_equalize": true
                     },
-                    "Thermal Channel": {
+                    "10.8µm Thermal IR": {
                         "equation": "1-chir",
                         "individual_equalize": true
                     }
@@ -4418,6 +4515,7 @@
                         "equation": "(cch3^0.9)-0.05, (cch2^0.9), (cch1^0.9)",
                         "white_balance": true,
                         "remove_background":true,
+                        "description": "descriptions/TrueColor.md",
                         "autogen": false
                     },
                     "AVHRR 221 False Color": {
@@ -4425,12 +4523,14 @@
                         "white_balance": true,
                         "equalize": true,
                         "autogen": false,
+                        "description": "descriptions/221.md",
                         "remove_background":true
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch7, ch4, ch3",
                         "white_balance": true,
                         "equalize": true,
+                        "description": "descriptions/3a21.md",
                         "autogen": false,
                         "remove_background":true
                     },
@@ -4438,6 +4538,7 @@
                         "equation": "ch3, ch4, 1-ch14",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "description": "descriptions/124.md",
                         "autogen": false,
                         "remove_background":true
                     },
@@ -4445,6 +4546,7 @@
                         "equation": "1-ch15, 1-ch14, 1-ch9",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "description": "descriptions/543b.md",
                         "autogen": false,
                         "remove_background":true
                     },
@@ -4452,15 +4554,22 @@
                         "equation": "1-ch9, 1-ch14, 1-ch15",
                         "white_balance": true,
                         "individual_equalize": true,
+                        "description": "descriptions/3b45.md",
                         "autogen": false,
                         "remove_background":true
                     },
                     "Cloud Phase RGB": {
-                        "equation": "ch7, ch8, ch3",
-                        "white_balance": true,
-                        "individual_equalize": true,
+                        "equation": "cch7, cch8, cch3",
                         "autogen": false,
+                        "description": "descriptions/CloudPhase.md",
                         "remove_background":true
+                    },
+                    "Cloud Type RGB": {
+                        "equation": "cch6^1.5, cch3^0.75, cch7",
+                        "autogen": false,
+                        "description": "descriptions/CloudType.md",
+                        "individual_equalize": true,
+                        "white_balance": true
                     },
                     "6.25µm Calibrated Water Vapor": {
                        "lut": "lut/cal/star_abi_wv_8-10.png",
@@ -4682,21 +4791,81 @@
                         "equalize": true,
                         "description": "descriptions/221.md"
                     },
-                    "AVHRR 3a21 False Color": {
-                        "equation": "ch15, ch15, ch7",
-                        "equalize": true,
-                        "description": "descriptions/221.md"
-                    },
                     "True Color": {
                         "equation": "ch8,ch6,ch4",
+                        "description": "descriptions/TrueColor.md",
                         "equalize": true
                     },
                     "CIR (Color Infrared)": {
                         "equation": "ch17,ch8,ch6",
+                        "description": "descriptions/CIR.md",
                         "equalize": true
                     },
                     "Bathymetric": {
                         "equation": "ch8,ch6,ch3",
+                        "description": "descriptions/Bathymetric.md",
+                        "equalize": true
+                    }
+                }
+            },
+            "slstr_nadir": {
+                "handler": "image_handler",
+                "name": "SLSTR (Nadir)",
+                "rgb_composites": {
+                    "AVHRR 221 False Color": {
+                        "equation": "ch3,ch3,ch2",
+                        "equalize": true,
+                        "description": "descriptions/221.md"
+                    },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch5, ch3, ch2",
+                        "equalize": true,
+                        "description": "descriptions/3a21.md"
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "ch3,ch2,ch1",
+                        "description": "descriptions/CIR.md",
+                        "equalize": true
+                    },
+                    "Urban False Color": {
+                        "equation": "ch6,ch5,ch2",
+                        "equalize": true
+                    },
+                    "10.8µm Thermal IR": {
+                        "equation": "1-ch8",
+                        "white_balance": true,
+                        "description": "descriptions/ThermalUncal.md",
+                        "equalize": true
+                    }
+                }
+            },
+            "slstr_offset": {
+                "handler": "image_handler",
+                "name": "SLSTR (Offset)",
+                "rgb_composites": {
+                    "AVHRR 221 False Color": {
+                        "equation": "ch3,ch3,ch2",
+                        "equalize": true,
+                        "description": "descriptions/221.md"
+                    },
+                    "AVHRR 3a21 False Color": {
+                        "equation": "ch5, ch3, ch2",
+                        "equalize": true,
+                        "description": "descriptions/3a21.md"
+                    },
+                    "CIR (Color Infrared)": {
+                        "equation": "ch3,ch2,ch1",
+                        "description": "descriptions/CIR.md",
+                        "equalize": true
+                    },
+                    "Urban False Color": {
+                        "equation": "ch6,ch5,ch2",
+                        "equalize": true
+                    },
+                    "10.8µm Thermal IR (Uncalibrated)": {
+                        "equation": "1-ch8",
+                        "description": "descriptions/ThermalUncal.md",
+                        "white_balance": true,
                         "equalize": true
                     }
                 }

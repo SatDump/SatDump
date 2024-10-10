@@ -67,6 +67,11 @@ namespace satdump
             "EO%3AEUM%3ADAT%3A0409",
             true,
         },
+        {
+            "Sentinel-3 SLSTR",
+            "EO%3AEUM%3ADAT%3A0411",
+            true,
+        },
     };
 
     std::string ArchiveLoader::getEumetSatToken()
