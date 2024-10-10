@@ -5,6 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <list>
+#include <string>
 
 namespace satdump
 {
