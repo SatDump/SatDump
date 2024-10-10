@@ -46,7 +46,7 @@ namespace aws
             //     vcdu.spacecraft_id == METOP_C_SCID)
             aws_scids.push_back(vcdu.spacecraft_id);
 
-            if (vcdu.vcid == 3) // Sterna
+            if (vcdu.vcid == 3) // DDB service
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
@@ -128,6 +128,23 @@ namespace aws
             sterna_status = DONE;
         }
 
+	// NAVATT
+	{
+	    navatt_status = SAVING;
+	    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/NAVATT";
+
+	    if (!std::filesystem::exists(directory))
+		    std::filesystem::create_directory(directory);
+
+            logger->info("----------- NAVATT");
+            logger->info("Lines : " + std::to_string(navatt_reader.lines));
+
+	    saveJsonFile(directory + "/NAVATT-Telemetry.json", navatt_reader.dump_telemetry());
+
+	    navatt_status = DONE;
+	}
+
+
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
     }
 
@@ -152,6 +169,14 @@ namespace aws
             ImGui::TextColored(style::theme.green, "%d", sterna_reader.lines);
             ImGui::TableSetColumnIndex(2);
             drawStatus(sterna_status);
+
+	    ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("NAVATT");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextColored(style::theme.green, "%d", navatt_reader.lines);
+            ImGui::TableSetColumnIndex(2);
+            drawStatus(navatt_status);
 
             ImGui::EndTable();
         }
