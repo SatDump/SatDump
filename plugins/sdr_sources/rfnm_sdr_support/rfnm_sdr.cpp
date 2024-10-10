@@ -5,8 +5,8 @@ void RFNMSource::set_gains()
     if (!is_started)
         return;
 
-    rfnm_dev_obj->set_rx_channel_gain(channel, gain);
-    rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? rfnm::APPLY_CH1_RX : rfnm::APPLY_CH0_RX);
+    rfnm_dev_obj->s->rx.ch[channel].gain = gain;
+    rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? LIBRFNM_APPLY_CH1_RX : LIBRFNM_APPLY_CH0_RX);
     if (r != rfnm_api_failcode::RFNM_API_OK)
         logger->error("RFNM Error %d", r);
     logger->debug("Set RFNM Gain to %d", gain);
@@ -17,11 +17,11 @@ void RFNMSource::set_others()
     if (!is_started)
         return;
 
-    rfnm_dev_obj->set_rx_channel_rfic_lpf_bw(channel, bandwidth_widget.get_value() / 1e6);
-    rfnm_dev_obj->set_rx_channel_fm_notch(channel, fmnotch_enabled ? rfnm_fm_notch::RFNM_FM_NOTCH_ON : rfnm_fm_notch::RFNM_FM_NOTCH_OFF);
-    rfnm_dev_obj->set_rx_channel_bias_tee(channel, bias_enabled ? rfnm_bias_tee::RFNM_BIAS_TEE_ON : rfnm_bias_tee::RFNM_BIAS_TEE_OFF);
+    rfnm_dev_obj->s->rx.ch[channel].rfic_lpf_bw = bandwidth_widget.get_value() / 1e6;
+    rfnm_dev_obj->s->rx.ch[channel].fm_notch = fmnotch_enabled ? rfnm_fm_notch::RFNM_FM_NOTCH_ON : rfnm_fm_notch::RFNM_FM_NOTCH_OFF;
+    rfnm_dev_obj->s->rx.ch[channel].bias_tee = bias_enabled ? rfnm_bias_tee::RFNM_BIAS_TEE_ON : rfnm_bias_tee::RFNM_BIAS_TEE_OFF;
 
-    rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? rfnm::APPLY_CH1_RX : rfnm::APPLY_CH0_RX);
+    rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? LIBRFNM_APPLY_CH1_RX : LIBRFNM_APPLY_CH0_RX);
     if (r != rfnm_api_failcode::RFNM_API_OK)
         logger->error("RFNM Error %d", r);
     logger->debug("Set RFNM BW to %d", int(bandwidth_widget.get_value() / 1e6));
@@ -31,7 +31,7 @@ void RFNMSource::set_others()
 
 void RFNMSource::open_sdr()
 {
-    rfnm_dev_obj = new rfnm::device(rfnm::TRANSPORT_USB, d_sdr_id);
+    rfnm_dev_obj = new librfnm(librfnm_transport::LIBRFNM_TRANSPORT_USB, d_sdr_id);
 }
 
 void RFNMSource::set_settings(nlohmann::json settings)
@@ -73,8 +73,8 @@ void RFNMSource::open()
 
     // Set available samplerate
     std::vector<double> available_samplerates;
-    available_samplerates.push_back(rfnm_dev_obj->get_hwinfo()->clock.dcs_clk);
-    available_samplerates.push_back(rfnm_dev_obj->get_hwinfo()->clock.dcs_clk / 2);
+    available_samplerates.push_back(rfnm_dev_obj->s->hwinfo.clock.dcs_clk);
+    available_samplerates.push_back(rfnm_dev_obj->s->hwinfo.clock.dcs_clk / 2);
     samplerate_widget.set_list(available_samplerates, false);
 
     // Set available bandwidth
@@ -83,8 +83,8 @@ void RFNMSource::open()
         available_bandwidth.push_back(i * 1e6);
     bandwidth_widget.set_list(available_bandwidth, false);
 
-    //    min_gain = rfnm_dev_obj->s->rx.ch[channel].gain_range.min;
-    //    max_gain = rfnm_dev_obj->s->rx.ch[channel].gain_range.max;
+    min_gain = rfnm_dev_obj->s->rx.ch[channel].gain_range.min;
+    max_gain = rfnm_dev_obj->s->rx.ch[channel].gain_range.max;
     if (min_gain == 0)
         min_gain = -60;
     if (max_gain == 0)
@@ -100,35 +100,31 @@ void RFNMSource::start()
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
-    //    rfnm_dev_obj->set_rx_channel_active(0, RFNM_CH_OFF, RFNM_CH_STREAM_AUTO);
-    //    rfnm_dev_obj->set_rx_channel_active(1, RFNM_CH_OFF, RFNM_CH_STREAM_AUTO);
+    rfnm_dev_obj->s->rx.ch[0].enable = RFNM_CH_OFF;
+    rfnm_dev_obj->s->rx.ch[1].enable = RFNM_CH_OFF;
+    rfnm_dev_obj->s->rx.ch[channel].enable = RFNM_CH_ON;
 
-    if (current_samplerate == rfnm_dev_obj->get_hwinfo()->clock.dcs_clk / 2)
-        rfnm_dev_obj->set_rx_channel_samp_freq_div(channel, 1, 2);
+    if (current_samplerate == rfnm_dev_obj->s->hwinfo.clock.dcs_clk / 2)
+        rfnm_dev_obj->s->rx.ch[channel].samp_freq_div_n = 2;
     else
-        rfnm_dev_obj->set_rx_channel_samp_freq_div(channel, 1, 1);
+        rfnm_dev_obj->s->rx.ch[channel].samp_freq_div_n = 1;
 
-    rfnm_dev_obj->set_rx_channel_path(channel, rfnm_dev_obj->get_rx_channel(channel)->path_preferred);
-    rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? rfnm::APPLY_CH1_RX : rfnm::APPLY_CH0_RX);
+    rfnm_dev_obj->s->rx.ch[channel].path = rfnm_dev_obj->s->rx.ch[channel].path_preferred;
+    rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? LIBRFNM_APPLY_CH1_RX : LIBRFNM_APPLY_CH0_RX);
     if (r != rfnm_api_failcode::RFNM_API_OK)
         logger->error("RFNM Error %d", r);
 
     logger->debug("Set RFNM samplerate to " + std::to_string(current_samplerate));
 
-    rfnm_dev_obj->set_stream_format(rfnm::STREAM_FORMAT_CF32, &buffer_size);
+    rfnm_dev_obj->rx_stream(librfnm_stream_format::LIBRFNM_STREAM_FORMAT_CS16, &buffer_size);
     if (buffer_size <= 0)
         logger->error("RFNM Error (Buffer Size) %d", buffer_size);
-    logger->info("Buffer Size is %d\n", buffer_size);
 
-    rfnm_stream = rfnm_dev_obj->rx_stream_create(channel);
-
-    rfnm_stream->start();
-
-    // for (int i = 0; i < rfnm::MIN_RX_BUFCNT; i++)
-    // {
-    //     rx_buffers[i].buf = dsp::create_volk_buffer<uint8_t>(buffer_size);
-    //     rfnm_dev_obj->rx_qbuf(&rx_buffers[i]);
-    // }
+    for (int i = 0; i < LIBRFNM_MIN_RX_BUFCNT; i++)
+    {
+        rx_buffers[i].buf = dsp::create_volk_buffer<uint8_t>(buffer_size);
+        rfnm_dev_obj->rx_qbuf(&rx_buffers[i]);
+    }
 
     is_started = true;
 
@@ -152,14 +148,12 @@ void RFNMSource::stop()
     logger->info("Thread stopped");
     if (is_started)
     {
-        //  rfnm_dev_obj->set_rx_channel_active(channel, RFNM_CH_OFF, RFNM_CH_STREAM_OFF);
-        rfnm_stream->stop();
-        rfnm_dev_obj->set(channel == 1 ? rfnm::APPLY_CH1_RX : rfnm::APPLY_CH0_RX);
-        delete rfnm_stream;
+        rfnm_dev_obj->s->rx.ch[channel].enable = RFNM_CH_OFF;
+        rfnm_dev_obj->set(channel == 1 ? LIBRFNM_APPLY_CH1_RX : LIBRFNM_APPLY_CH0_RX);
         delete rfnm_dev_obj;
 
-        //  for (int i = 0; i < rfnm::MIN_RX_BUFCNT; i++)
-        //      volk_free(rx_buffers[i].buf);
+        for (int i = 0; i < LIBRFNM_MIN_RX_BUFCNT; i++)
+            volk_free(rx_buffers[i].buf);
     }
     is_started = false;
 }
@@ -172,8 +166,8 @@ void RFNMSource::set_frequency(uint64_t frequency)
 {
     if (is_started)
     {
-        rfnm_dev_obj->set_rx_channel_freq(channel, frequency);
-        rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? rfnm::APPLY_CH1_RX : rfnm::APPLY_CH0_RX);
+        rfnm_dev_obj->s->rx.ch[channel].freq = frequency;
+        rfnm_api_failcode r = rfnm_dev_obj->set(channel == 1 ? LIBRFNM_APPLY_CH1_RX : LIBRFNM_APPLY_CH0_RX);
         if (r != rfnm_api_failcode::RFNM_API_OK)
             logger->error("RFNM Error %d", r);
         logger->debug("Set RFNM frequency to %llu", frequency);
@@ -238,7 +232,7 @@ std::vector<dsp::SourceDescriptor> RFNMSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    auto devlist = rfnm::device::find(rfnm::TRANSPORT_USB);
+    auto devlist = librfnm::find(librfnm_transport::LIBRFNM_TRANSPORT_USB);
 
     for (auto &dev : devlist)
     {
