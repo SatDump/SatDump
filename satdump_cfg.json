@@ -2942,6 +2942,28 @@
                             }
                         }
                     },
+		    "Day Fire Detection": {
+			    "channels": "cch21, cch22, cch31",
+			    //"calib_cfg": {
+			    //        "cch21": {
+			    //    	"type": "temperature",
+			    //    	"min": 0,
+			    //    	"max": 1000
+			    //        },
+			    //        "cch22": {
+			    //    	"type": "temperature",
+			    //    	"min": 0,
+			    //    	"max": 1000
+			    //        },
+			    //        "cch31": {
+			    //    	"type": "temperature",
+			    //    	"min": 0,
+			    //    	"max": 1000
+			    //        }
+			    //},
+			    "cpp": "day_fire",
+			    "autogen": false
+		    },
                     "True Color": {
                         "equation": "ch1, ch4, ch3",
                         "description": "descriptions/TrueColor.md",
