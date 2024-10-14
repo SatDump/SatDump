@@ -32,7 +32,7 @@ namespace off2pro
             std::string eum_id = satdump::try_get_eumetsat_id(source_off_file);
 
             // MTG-I FCI
-            if (eum_id == "FCI-1C-RRAD-FDHSI-FD")
+            if (eum_id == "FCI-1C-RRAD-FDHSI-FD" || eum_id == "FCI-1C-RRAD-HRFI-FD")
                 nc2pro::process_mtg_fci(source_off_file, pro_output_file, &progress);
 
             // Sentinel-3 OCLI
