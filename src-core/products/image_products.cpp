@@ -86,7 +86,7 @@ namespace satdump
                 image::save_img(images[c].image, directory + "/" + images[c].filename);
         }
 
-        if (save_as_matrix)
+        if (save_as_matrix && !images.empty())
         {
             int size = ceil(sqrt(images.size()));
             logger->debug("Using size %d", size);
