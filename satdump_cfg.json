@@ -2943,7 +2943,7 @@
                         }
                     },
 		    "Day Fire Detection": {
-			    "channels": "cch21, cch22, cch31",
+			    "channels": "cch21, cch22, cch31, cch32",
 			    //"calib_cfg": {
 			    //        "cch21": {
 			    //    	"type": "temperature",
