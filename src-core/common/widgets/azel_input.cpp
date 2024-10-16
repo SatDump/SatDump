@@ -3,6 +3,7 @@
 #include "core/backend.h"
 #include "frequency_input.h"
 #include "imgui/imgui_internal.h"
+#include <cmath>
 
 namespace widgets
 {
