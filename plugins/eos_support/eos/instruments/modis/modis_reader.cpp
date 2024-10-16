@@ -163,7 +163,7 @@ namespace eos
                         channels1000m[i][(lines + f) * 1354 + position] = modis_ifov[(4 - f) * 83 + 52 + i] << 4;
             }
 
-            fillCalib(packet, header);
+            fillCalib(header);
         }
 
         void MODISReader::processNightPacket(ccsds::CCSDSPacket &packet, MODISHeader &header)
@@ -213,10 +213,10 @@ namespace eos
                 for (int f = 0; f < 10; f++)
                     channels1000m[14 + i][(lines + f) * 1354 + position] = modis_ifov[(9 - f) * 17 + i] << 4;
 
-            fillCalib(packet, header);
+            fillCalib(header);
         }
 
-        void MODISReader::fillCalib(ccsds::CCSDSPacket &packet, MODISHeader &header)
+        void MODISReader::fillCalib(MODISHeader &header)
         {
             d_calib[lines / 10]["night_group"] = header.packet_type == MODISHeader::NIGHT_GROUP;
             d_calib[lines / 10]["mirror_side"] = header.mirror_side;
@@ -264,7 +264,7 @@ namespace eos
                 if (packet.payload.size() < 636)
                     return;
 
-                processEng1Packet(packet, modisHeader);
+                processEng1Packet(packet);
             }
             else if (modisHeader.packet_type == MODISHeader::ENG_GROUP_2)
             {
@@ -272,11 +272,11 @@ namespace eos
                 if (packet.payload.size() < 636)
                     return;
 
-                processEng2Packet(packet, modisHeader);
+                processEng2Packet(packet);
             }
         }
 
-        void MODISReader::processEng1Packet(ccsds::CCSDSPacket &packet, MODISHeader &header)
+        void MODISReader::processEng1Packet(ccsds::CCSDSPacket &packet)
         {
             // printf("ENG1 %d\n", packet.header.sequence_flag);
             if (packet.header.sequence_flag == 1)
@@ -295,7 +295,7 @@ namespace eos
             }
         }
 
-        void MODISReader::processEng2Packet(ccsds::CCSDSPacket &packet, MODISHeader &header)
+        void MODISReader::processEng2Packet(ccsds::CCSDSPacket &packet)
         {
             // printf("ENG2 %d\n", packet.header.sequence_flag);
             if (packet.header.sequence_flag == 1)

@@ -8,13 +8,13 @@
 
 namespace elektro
 {
-    image::Image msuGsNaturalColorCompositor(satdump::ImageProducts *img_pro,
+    image::Image msuGsNaturalColorCompositor(satdump::ImageProducts * /* img_pro */,
                                               std::vector<image::Image> &inputChannels,
                                               std::vector<std::string> channelNumbers,
-                                              std::string cpp_id,
-                                              nlohmann::json vars,
+                                              std::string /* cpp_id */,
+                                              nlohmann::json /* vars */,
                                               nlohmann::json offsets_cfg,
-                                              std::vector<double> *final_timestamps = nullptr,
+                                              std::vector<double> * /* final_timestamps = nullptr */,
                                               float *progress = nullptr)
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);

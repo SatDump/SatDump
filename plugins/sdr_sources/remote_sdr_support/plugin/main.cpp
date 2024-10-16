@@ -8,8 +8,6 @@
 #include "logger.h"
 #include "remote_source.h"
 #include "core/config.h"
-
-#include "core/module.h"
 #include "imgui/imgui.h"
 
 std::vector<std::pair<std::string, int>> additional_servers;

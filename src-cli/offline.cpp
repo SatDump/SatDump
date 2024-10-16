@@ -2,7 +2,6 @@
 #include "common/detect_header.h"
 #include "init.h"
 #include "common/cli_utils.h"
-#include "core/module.h"
 #include "core/pipeline.h"
 #include <filesystem>
 #include "nlohmann/json.hpp"

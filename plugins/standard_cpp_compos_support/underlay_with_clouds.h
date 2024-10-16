@@ -15,7 +15,7 @@ namespace cpp_compos
     image::Image underlay_with_clouds(satdump::ImageProducts *img_pro,
                                       std::vector<image::Image> &inputChannels,
                                       std::vector<std::string> channelNumbers,
-                                      std::string cpp_id,
+                                      std::string /* cpp_id */,
                                       nlohmann::json vars,
                                       nlohmann::json offsets_cfg,
                                       std::vector<double> *final_timestamps = nullptr,

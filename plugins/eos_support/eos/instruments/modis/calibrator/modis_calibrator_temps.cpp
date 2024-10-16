@@ -22,7 +22,7 @@ namespace eos
 
 #if 1 // Experimental, take most common value if delta is too high
                     std::vector<int> v_DN;
-                    for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
+                    for (size_t scan2 = 0; scan2 < d_vars.size(); scan2++)
                         if (d_vars[scan2].contains("bb_temp"))
                             v_DN.push_back(d_vars[scan2]["bb_temp"][thermistor]);
 
@@ -93,7 +93,7 @@ namespace eos
 
 #if 1 // Experimental, take most common value if delta is too high
                     std::vector<int> v_MIR;
-                    for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
+                    for (size_t scan2 = 0; scan2 < d_vars.size(); scan2++)
                         if (d_vars[scan2].contains("mir_temp"))
                             v_MIR.push_back(d_vars[scan2]["mir_temp"][i]);
 
@@ -138,7 +138,7 @@ namespace eos
 #if 1 // Experimental, take fist valid value if no value is provided
                     if (CAV == 0)
                     {
-                        for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
+                        for (size_t scan2 = 0; scan2 < d_vars.size(); scan2++)
                         {
                             if (!d_vars[scan2].contains("cav_temp"))
                                 continue;
@@ -184,7 +184,7 @@ namespace eos
 
 #if 1 // Experimental, take most common value if delta is too high
                     std::vector<int> v_INS;
-                    for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
+                    for (size_t scan2 = 0; scan2 < d_vars.size(); scan2++)
                         if (d_vars[scan2].contains("inst_temp") && d_vars[scan2]["inst_temp"][i] != 0)
                             v_INS.push_back(d_vars[scan2]["inst_temp"][i]);
 
@@ -233,7 +233,7 @@ namespace eos
                 std::vector<bool> v_FP_T3SET;
                 std::vector<bool> v_LWHTR_ON;
                 std::vector<bool> v_SMHTR_ON;
-                for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
+                for (size_t scan2 = 0; scan2 < d_vars.size(); scan2++)
                 {
                     if (!d_vars[scan2].contains("fp_temp_info"))
                         continue;
@@ -259,7 +259,7 @@ namespace eos
                 std::vector<int> v_FP2;
                 std::vector<int> v_FP3;
                 std::vector<int> v_FP4;
-                for (int scan2 = 0; scan2 < d_vars.size(); scan2++)
+                for (size_t scan2 = 0; scan2 < d_vars.size(); scan2++)
                 {
                     if (!d_vars[scan2].contains("fp_temp"))
                         continue;

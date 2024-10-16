@@ -1,5 +1,5 @@
-#include "../../imgui/imgui_internal.h"
-#include "../../core/module.h"
+#include "imgui/imgui_internal.h"
+#include "core/style.h"
 
 #include "switch.h"
 
