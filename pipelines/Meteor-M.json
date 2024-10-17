@@ -74,6 +74,19 @@
             "samplerate": {
                 "value": 1e6
             },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
+            },
             "fill_missing": {
                 "type": "bool",
                 "value": false,
@@ -131,6 +144,19 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
             },
             "rs_usecheck": {
                 "type": "bool",
@@ -206,6 +232,19 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
             },
             "fill_missing": {
                 "type": "bool",

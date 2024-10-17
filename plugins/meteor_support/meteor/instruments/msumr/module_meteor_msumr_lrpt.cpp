@@ -107,8 +107,29 @@ namespace meteor
             // Identify satellite, and apply per-sat settings...
             int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
             msumr_ids.clear();
-
             logger->trace("MSU-MR ID %d", msumr_serial_number);
+
+            // Override, if a valid override is provided
+            if (d_parameters.contains("satellite_number") && d_parameters["satellite_number"].is_string())
+            {
+                std::string override_sat = d_parameters["satellite_number"];
+                std::transform(override_sat.begin(), override_sat.end(), override_sat.begin(),
+                    [](unsigned char c) { return std::toupper(c); });
+
+                if (override_sat == "M2")
+                    msumr_serial_number = 0;
+                else if (override_sat == "M2-1")
+                    msumr_serial_number = 1;
+                else if (override_sat == "M2-2")
+                    msumr_serial_number = 2;
+                else if (override_sat == "M2-3")
+                    msumr_serial_number = 3;
+                else if (override_sat == "M2-4")
+                    msumr_serial_number = 4;
+                else if (override_sat != "AUTO")
+                    logger->warn("Invalid METEOR satellite \"%s\" provided. Using transmitted ID!",
+                        d_parameters["satellite_number"].get<std::string>().c_str());
+            }
 
             std::string sat_name = "Unknown Meteor";
             if (msumr_serial_number == 0)
