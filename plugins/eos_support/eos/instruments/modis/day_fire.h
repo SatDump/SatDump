@@ -6,20 +6,22 @@
 #include "common/image/io.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/projection/sat_proj/sat_proj.h"
+#include "common/utils.h"
 #include "products/image_products.h"
 #include "resources.h"
+#include <cmath>
 #include <cstdlib>
 #include <vector>
 #define DEFINE_COMPOSITE_UTILS 1
 #include "common/image/composite.h"
-
+#include "logger.h"
 
 namespace modis
 {
 	image::Image dayFireCompositor(satdump::ImageProducts *img_pro,
 			std::vector<image::Image> &inputChannels,
 			std::vector<std::string> channelNumbers,
-			std::string cpp_id,
+			std::string /* cpp_id */,
 			nlohmann::json vars,
 			nlohmann::json offsets_cfg,
 			std::vector<double> *final_timestamps = nullptr,
@@ -91,6 +93,49 @@ namespace modis
 		    if (progress != nullptr)
                         *progress = double(x) / double(rgb_output.width());
 		}
+		}
+
+		for (size_t x = 0; x < rgb_output.width(); x++)
+		{
+			for (size_t y = 0; y < rgb_output.height(); y++)
+			{
+				//float t4_22_array[9] = { 0 };
+				//t4_22_array[0] = img_pro->get_calibrated_value(23, x, y);
+				//t4_22_array[1] = img_pro->get_calibrated_value(23, x + 1, y);
+				//t4_22_array[2] = img_pro->get_calibrated_value(23, x + 2, y);
+				//t4_22_array[3] = img_pro->get_calibrated_value(23, x, y + 1);
+				//t4_22_array[4] = img_pro->get_calibrated_value(23, x + 1, y + 1);
+				//t4_22_array[5] = img_pro->get_calibrated_value(23, x + 2, y + 1);
+				//t4_22_array[6] = img_pro->get_calibrated_value(23, x, y + 2);
+				//t4_22_array[7] = img_pro->get_calibrated_value(23, x + 1, y + 2);
+				//t4_22_array[8] = img_pro->get_calibrated_value(23, x + 2, y + 2);
+
+				int std_dev = 0;
+				std::vector<double> vals;
+				//int n = 0;
+				for (int i = 0; i < 3; i++)
+				{
+					for (int j = 0; j < 3; j++)
+					{
+						//t4_22_array[n] = img_pro->get_calibrated_value(23, x + i, y + j);
+						vals.push_back(img_pro->get_calibrated_value(23, x + i, y + j));
+						//logger->info("N : %d", n);
+						//n++;
+					}
+				}
+
+				double mean = avg_overflowless(vals);
+				double variance = 0;
+				for (double &val : vals)
+					variance += (val - mean) * (val - mean);
+				std_dev = sqrt(variance / 8.0);
+
+				logger->info("Std_dev : %d", std_dev);
+
+
+
+
+			}
 		}
 
                 for (size_t x = 0; x < rgb_output.width(); x++)
