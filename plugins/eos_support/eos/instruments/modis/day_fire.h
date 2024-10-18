@@ -99,28 +99,14 @@ namespace modis
 		{
 			for (size_t y = 0; y < rgb_output.height(); y++)
 			{
-				//float t4_22_array[9] = { 0 };
-				//t4_22_array[0] = img_pro->get_calibrated_value(23, x, y);
-				//t4_22_array[1] = img_pro->get_calibrated_value(23, x + 1, y);
-				//t4_22_array[2] = img_pro->get_calibrated_value(23, x + 2, y);
-				//t4_22_array[3] = img_pro->get_calibrated_value(23, x, y + 1);
-				//t4_22_array[4] = img_pro->get_calibrated_value(23, x + 1, y + 1);
-				//t4_22_array[5] = img_pro->get_calibrated_value(23, x + 2, y + 1);
-				//t4_22_array[6] = img_pro->get_calibrated_value(23, x, y + 2);
-				//t4_22_array[7] = img_pro->get_calibrated_value(23, x + 1, y + 2);
-				//t4_22_array[8] = img_pro->get_calibrated_value(23, x + 2, y + 2);
 
-				int std_dev = 0;
+				double std_dev = 0;
 				std::vector<double> vals;
-				//int n = 0;
 				for (int i = 0; i < 3; i++)
 				{
 					for (int j = 0; j < 3; j++)
 					{
-						//t4_22_array[n] = img_pro->get_calibrated_value(23, x + i, y + j);
 						vals.push_back(img_pro->get_calibrated_value(23, x + i, y + j));
-						//logger->info("N : %d", n);
-						//n++;
 					}
 				}
 
@@ -130,10 +116,7 @@ namespace modis
 					variance += (val - mean) * (val - mean);
 				std_dev = sqrt(variance / 8.0);
 
-				logger->info("Std_dev : %d", std_dev);
-
-
-
+				logger->info("Std_dev : %f", std_dev);
 
 			}
 		}
