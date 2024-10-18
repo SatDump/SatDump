@@ -102,9 +102,9 @@ namespace modis
 
 				double std_dev = 0;
 				std::vector<double> vals;
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 21; i++)
 				{
-					for (int j = 0; j < 3; j++)
+					for (int j = 0; j < 21; j++)
 					{
 						vals.push_back(img_pro->get_calibrated_value(23, x + i, y + j));
 					}
@@ -114,9 +114,9 @@ namespace modis
 				double variance = 0;
 				for (double &val : vals)
 					variance += (val - mean) * (val - mean);
-				std_dev = sqrt(variance / 8.0);
+				std_dev = sqrt(variance / 440.0);
 
-				logger->info("Std_dev : %f", std_dev);
+				logger->info("Mean : %f Standard deviation : %f", mean, std_dev);
 
 			}
 		}
