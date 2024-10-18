@@ -27,15 +27,13 @@ namespace modis
 	{
 		image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
-		image::Image output(f.img_depth, f.maxWidth, f.maxHeight, 3);
-
 		image::Image img_background;
 		image::load_img(img_background, resources::getResourcePath("maps/nasa_hd.jpg"));
 		geodetic::projection::EquirectangularProjection equp;
 		equp.init(img_background.width(), img_background.height(), -180, 90, 180, -90);
 		int map_x, map_y;
 
-		image::Image rgb_output(f.img_depth, f.maxWidth, f.maxHeight, 3);
+		image::Image rgb_output(f.img_depth, f.maxWidth, f.maxHeight, 4);
 
 		geodetic::geodetic_coords_t coords;
 		auto proj_cfg = img_pro->get_proj_cfg();
@@ -43,6 +41,7 @@ namespace modis
 
 		float cfg_offset = vars["minoffset"];
 		float cfg_scalar = vars["scalar"];
+		bool map_overlay = vars["map_overlay"];
 
 		size_t background_size = img_background.width() * img_background.height();
 		auto &ch_equal = inputChannels[0];
@@ -54,6 +53,8 @@ namespace modis
 			proj_scale = proj_cfg["image_width"].get<double>() / double(rgb_output.width());
 
 
+		if (map_overlay == true)
+		{
                 for (size_t x = 0; x < rgb_output.width(); x++)
                 {
                     for (size_t y = 0; y < rgb_output.height(); y++)
@@ -82,12 +83,14 @@ namespace modis
 					    float mval = img_background.getf(background_size * c + mappos);
 					    rgb_output.setf(c, y * rgb_output.width() + x, rgb_output.clampf(mval));
 				    }
+				    rgb_output.setf(3, y * rgb_output.width() + x, rgb_output.clampf(1));
 
 			    }
 		    }
 		    // set first progerss bar
 		    if (progress != nullptr)
                         *progress = double(x) / double(rgb_output.width());
+		}
 		}
 
                 for (size_t x = 0; x < rgb_output.width(); x++)
@@ -123,7 +126,7 @@ namespace modis
                             if (t12 >= 265 && t4_22 > 310 && t4_22 - t11 > 15)
                             {
                                     //rgb_output.draw_circle(x, y, 3, {1.0,0,0}, true);
-				    rgb_output.draw_rectangle(x - 2, y + 2, x + 2, y - 2, {1,0,0}, true);
+				    rgb_output.draw_rectangle(x - 2, y + 2, x + 2, y - 2, {1,0,0,1}, true);
                             }
                     }
                     // set second progress bar
