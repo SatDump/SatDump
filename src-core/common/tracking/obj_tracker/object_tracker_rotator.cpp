@@ -240,25 +240,10 @@ namespace satdump
         if (rotator_rounding && ImGui::InputInt("Decimal Place Precision", &rotator_decimal_precision, 1, 3))
         {
             if (rotator_decimal_precision > 3)
-            {
                 rotator_decimal_precision = 3;
-            }
-            else if (rotator_decimal_precision == 0)
-            {
+            else if (rotator_decimal_precision <= 0)
                 rotator_decimal_precision = 1;
-            }
-            switch (rotator_decimal_precision)
-            {
-            case 1:
-                rotator_decimal_multiplier = 10;
-                break;
-            case 2:
-                rotator_decimal_multiplier = 100;
-                break;
-            case 3:
-                rotator_decimal_multiplier = 1000;
-                break;
-            }
+            rotator_decimal_multiplier = pow(10, rotator_decimal_precision);
         }
 
         ImGui::Checkbox("Arrow Keys Control", &rotator_arrowkeys_enable);
@@ -278,6 +263,7 @@ namespace satdump
         v["meridian_flip_correction"] = meridian_flip_correction;
         v["rotator_az_min"] = rotator_az_min;
         v["rotator_az_max"] = rotator_az_max;
+        v["rotator_arrowkeys_enable"] = rotator_arrowkeys_enable;
         return v;
     }
 
@@ -288,9 +274,11 @@ namespace satdump
         rotator_park_position = getValueOrDefault(v["park_position"], rotator_park_position);
         rotator_unpark_at_minus = getValueOrDefault(v["unpark_at_minus"], rotator_unpark_at_minus);
         rotator_rounding = getValueOrDefault(v["rounding"], rotator_rounding);
-        rotator_decimal_precision = getValueOrDefault(v["rotator_decimal_places"], rotator_decimal_precision);
+        rotator_decimal_precision = getValueOrDefault(v["rounding_decimal_places"], rotator_decimal_precision);
+        rotator_decimal_multiplier = pow(10, rotator_decimal_precision);
         meridian_flip_correction = getValueOrDefault(v["meridian_flip_correction"], meridian_flip_correction);
         rotator_az_min = getValueOrDefault(v["rotator_az_min"], rotator_az_min);
         rotator_az_max = getValueOrDefault(v["rotator_az_max"], rotator_az_max);
+        rotator_arrowkeys_enable = getValueOrDefault(v["rotator_arrowkeys_enable"], rotator_arrowkeys_enable);
     }
 }
