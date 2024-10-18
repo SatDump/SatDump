@@ -2947,10 +2947,7 @@
 			    "cpp": "day_fire",
 			    "vars": {
 				"minoffset": 0.0,
-				"scalar": 1.5,
-				"thresold": 0.0,
-				"blend": false,
-				"invert": false
+				"scalar": 1.0
 			    },
 			    "autogen": false
 		    },
