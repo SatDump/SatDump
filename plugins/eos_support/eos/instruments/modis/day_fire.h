@@ -9,12 +9,9 @@
 #include "products/image_products.h"
 #include "resources.h"
 #include <cstdlib>
-#include <numeric>
 #include <vector>
 #define DEFINE_COMPOSITE_UTILS 1
 #include "common/image/composite.h"
-#include "common/image/hue_saturation.h"
-#include "logger.h"
 
 
 namespace modis
@@ -80,26 +77,6 @@ namespace modis
 				    if (mappos < 0)
 					mappos = 0;
 
-			            //if (t12 >= 265 && t4_22 > 310 && t4_22 - t11 > 15)
-			            //{
-				    //    val = 1.0;
-			            //	//output.set(0, y * output.width() + x, 1);
-			            //	//output.set(1, y * output.width() + x, 0);
-			            //	//output.set(2, y * output.width() + x, 0);
-			            //	//output.set(3, y * output.width() + x, 1);
-			            //}
-			            //else
-			            //{
-				    //    val = 0.0;
-			            //	//output.set(0, y * output.width() + x, 0);
-			            //	//output.set(1, y * output.width() + x, 0);
-			            //	//output.set(2, y * output.width() + x, 0);
-			            //	//output.set(3, y * output.width() + x, 0);
-			            //}
-
-
-
-
 				    for (int c = 0; c < 3; c++)
 				    {
 					    float mval = img_background.getf(background_size * c + mappos);
@@ -108,13 +85,10 @@ namespace modis
 
 			    }
 		    }
-
 		    // set first progerss bar
 		    if (progress != nullptr)
                         *progress = double(x) / double(rgb_output.width());
-
 		}
-
 
                 for (size_t x = 0; x < rgb_output.width(); x++)
                 {
@@ -143,7 +117,8 @@ namespace modis
                             {
                             	t11 = 0;
                             }
-                            
+
+			    //if (t12 >= 265 && t4_22 > 310 && t4_22 - t11 > 15)
                             
                             if (t12 >= 265 && t4_22 > 310 && t4_22 - t11 > 15)
                             {
@@ -151,13 +126,10 @@ namespace modis
 				    rgb_output.draw_rectangle(x - 2, y + 2, x + 2, y - 2, {1,0,0}, true);
                             }
                     }
-
-                    // set the progress bar accordingly
+                    // set second progress bar
                     if (progress != nullptr)
                         *progress = double(x) / double(rgb_output.width());
                 }
-
-	//delete[] channelVals;
 
         return rgb_output;
     }
