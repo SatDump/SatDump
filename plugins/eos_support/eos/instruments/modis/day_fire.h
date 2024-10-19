@@ -95,31 +95,31 @@ namespace modis
 		}
 		}
 
-		for (size_t x = 0; x < rgb_output.width(); x++)
-		{
-			for (size_t y = 0; y < rgb_output.height(); y++)
-			{
+		//for (size_t x = 0; x < rgb_output.width(); x++)
+		//{
+		//	for (size_t y = 0; y < rgb_output.height(); y++)
+		//	{
 
-				double std_dev = 0;
-				std::vector<double> vals;
-				for (int i = 0; i < 21; i++)
-				{
-					for (int j = 0; j < 21; j++)
-					{
-						vals.push_back(img_pro->get_calibrated_value(23, x + i, y + j));
-					}
-				}
+		//		double std_dev = 0;
+		//		std::vector<double> vals;
+		//		for (int i = 0; i < 21; i++)
+		//		{
+		//			for (int j = 0; j < 21; j++)
+		//			{
+		//				vals.push_back(img_pro->get_calibrated_value(23, x + i, y + j));
+		//			}
+		//		}
 
-				double mean = avg_overflowless(vals);
-				double variance = 0;
-				for (double &val : vals)
-					variance += (val - mean) * (val - mean);
-				std_dev = sqrt(variance / 440.0);
+		//		double mean = avg_overflowless(vals);
+		//		double variance = 0;
+		//		for (double &val : vals)
+		//			variance += (val - mean) * (val - mean);
+		//		std_dev = sqrt(variance / 440.0);
 
-				logger->info("Mean : %f Standard deviation : %f", mean, std_dev);
+		//		logger->info("Mean : %f Standard deviation : %f", mean, std_dev);
 
-			}
-		}
+		//	}
+		//}
 
                 for (size_t x = 0; x < rgb_output.width(); x++)
                 {
