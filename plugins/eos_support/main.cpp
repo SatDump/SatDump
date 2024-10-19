@@ -39,8 +39,8 @@ public:
     }
     static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
     {
-	    if (evt.id == "day_fire")
-		    evt.compositors.push_back(modis::dayFireCompositor);
+	if (evt.id == "day_fire")
+	    evt.compositors.push_back(modis::dayFireCompositor);
     }
 };
 
