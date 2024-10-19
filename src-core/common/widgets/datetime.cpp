@@ -1,7 +1,8 @@
 #include "datetime.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "core/module.h"
+#include "core/style.h"
+#include <cmath>
 
 #ifdef _WIN32
 #define timegm _mkgmtime

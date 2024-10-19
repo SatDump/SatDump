@@ -2056,9 +2056,9 @@ dc1394_bayer_VNG(const uint8_t *B2R_RESTRICT bayer,
                 weight = *cp++;
                 grads = *cp++;
                 color = FC(row + y1, col + x1);
-                if (FC(row + y2, col + x2) != color)
+                if (FC(row + y2, col + x2) != (unsigned)color)
                     continue;
-                diag = (FC(row, col + 1) == color && FC(row + 1, col) == color) ? 2 : 1;
+                diag = (FC(row, col + 1) == (unsigned)color && FC(row + 1, col) == (unsigned)color) ? 2 : 1;
                 if (abs(y1 - y2) == diag && abs(x1 - x2) == diag)
                     continue;
                 *ip++ = (y1 * width + x1) * 3 + color; /* [FD] */
@@ -2076,7 +2076,7 @@ dc1394_bayer_VNG(const uint8_t *B2R_RESTRICT bayer,
                 x = *cp++;
                 *ip++ = (y * width + x) * 3; /* [FD] */
                 color = FC(row, col);
-                if (FC(row + y, col + x) != color && FC(row + y * 2, col + x * 2) == color)
+                if (FC(row + y, col + x) != (unsigned)color && FC(row + y * 2, col + x * 2) == (unsigned)color)
                     *ip++ = (y * width + x) * 6 + color; /* [FD] */
                 else
                     *ip++ = 0;
@@ -2204,9 +2204,9 @@ dc1394_bayer_VNG_uint16(const uint16_t *B2R_RESTRICT bayer,
                 weight = *cp++;
                 grads = *cp++;
                 color = FC(row + y1, col + x1);
-                if (FC(row + y2, col + x2) != color)
+                if (FC(row + y2, col + x2) != (unsigned)color)
                     continue;
-                diag = (FC(row, col + 1) == color && FC(row + 1, col) == color) ? 2 : 1;
+                diag = (FC(row, col + 1) == (unsigned)color && FC(row + 1, col) == (unsigned)color) ? 2 : 1;
                 if (abs(y1 - y2) == diag && abs(x1 - x2) == diag)
                     continue;
                 *ip++ = (y1 * width + x1) * 3 + color; /* [FD] */
@@ -2224,7 +2224,7 @@ dc1394_bayer_VNG_uint16(const uint16_t *B2R_RESTRICT bayer,
                 x = *cp++;
                 *ip++ = (y * width + x) * 3; /* [FD] */
                 color = FC(row, col);
-                if (FC(row + y, col + x) != color && FC(row + y * 2, col + x * 2) == color)
+                if (FC(row + y, col + x) != (unsigned)color && FC(row + y * 2, col + x * 2) == (unsigned)color)
                     *ip++ = (y * width + x) * 6 + color; /* [FD] */
                 else
                     *ip++ = 0;
@@ -2414,18 +2414,18 @@ dc1394_bayer_AHD(const uint8_t *B2R_RESTRICT bayer,
 
     /* start - code from border_interpolate (int border) */
     {
-        int border = 3;
+        const unsigned border = 3;
         unsigned row, col, y, x, f, c, sum[8];
 
-        for (row = 0; row < height; row++)
-            for (col = 0; col < width; col++)
+        for (row = 0; row < (unsigned)height; row++)
+            for (col = 0; col < (unsigned)width; col++)
             {
                 if (col == border && row >= border && row < height - border)
                     col = width - border;
                 memset(sum, 0, sizeof sum);
                 for (y = row - 1; y != row + 2; y++)
                     for (x = col - 1; x != col + 2; x++)
-                        if (y < height && x < width)
+                        if (y < (unsigned)height && x < (unsigned)width)
                         {
                             f = FC(y, x);
                             sum[f] += dst[(y * width + x) * 3 + f]; /* [SA] */
@@ -2596,11 +2596,11 @@ dc1394_bayer_AHD_uint16(const uint16_t *B2R_RESTRICT bayer,
 
     /* start - code from border_interpolate(int border) */
     {
-        int border = 3;
+        const unsigned border = 3;
         unsigned row, col, y, x, f, c, sum[8];
 
-        for (row = 0; row < height; row++)
-            for (col = 0; col < width; col++)
+        for (row = 0; row < (unsigned)height; row++)
+            for (col = 0; col < (unsigned)width; col++)
             {
                 if (col == border && row >= border && row < height - border)
                     col = width - border;

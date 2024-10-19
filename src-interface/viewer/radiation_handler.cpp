@@ -1,7 +1,6 @@
 #include "radiation_handler.h"
 #include "imgui/pfd/pfd_utils.h"
 #include "resources.h"
-#include "core/module.h"
 #include "core/style.h"
 #include "common/widgets/themed_widgets.h"
 #include "main_ui.h"

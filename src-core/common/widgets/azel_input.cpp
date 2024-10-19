@@ -3,7 +3,7 @@
 #include "core/backend.h"
 #include "frequency_input.h"
 #include "imgui/imgui_internal.h"
-#include "core/module.h"
+#include <cmath>
 
 namespace widgets
 {
@@ -32,7 +32,6 @@ namespace widgets
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 			change_by = -(*wip_val % (int64_t)pow(10, i + 1));
-		ImGuiContext &g = *GImGui;
 		if (ImGui::IsItemHovered())
 		{
 			// Handle Enter
@@ -101,9 +100,8 @@ namespace widgets
 			ImGui::ItemAdd(total_bb, id, &frame_bb, ImGuiItemFlags_Inputable);
 		}
 
-#if 0
 		// Old-style input field
-		else
+		else if(allow_edit)
 		{
 			if (first_show_temp)
 				ImGui::SetKeyboardFocusHere();
@@ -116,7 +114,6 @@ namespace widgets
 			ImGui::PopID();
 			return retval;
 		}
-#endif
 
 		// Modern input
 		int64_t change_by = 0;

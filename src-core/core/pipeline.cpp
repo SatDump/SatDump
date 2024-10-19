@@ -1,7 +1,6 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "pipeline.h"
 #include "logger.h"
-#include "core/module.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>

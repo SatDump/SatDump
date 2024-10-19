@@ -1,6 +1,6 @@
 #include <filesystem>
 #include "widget.h"
-#include "core/module.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "android_dialogs.h"

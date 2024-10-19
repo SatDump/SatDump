@@ -3,6 +3,9 @@
 #include "imgui/imgui.h"
 #include <string>
 
+SATDUMP_DLL extern float ui_scale;               // UI Scaling factor, for DPI scaling
+SATDUMP_DLL extern int demod_constellation_size; // Demodulator constellation size
+
 namespace style
 {
     struct Theme

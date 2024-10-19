@@ -119,7 +119,6 @@ namespace meteosat
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, last_timestamp);
 
             seviri_products->instrument_name = "seviri";
-            seviri_products->has_timestamps = false;
             seviri_products->bit_depth = 10;
             seviri_products->has_timestamps = true;
             seviri_products->timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
@@ -277,12 +276,12 @@ namespace meteosat
                     }
                 }
 
-                int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (300 / 1494.0))
+                size_t lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (300 / 1494.0))
                                           : (fmod(scan_timestamp, 15 * 60) / (300 / 1494.0));
 
                 // Timestamp, somewhat interpolated to have one on all lines,
                 // assuming the scan rate to be right
-                if (scan_chunk_number == 0)
+                if (scan_chunk_number == 0 && lines + 2 <= timestamps_nrm.size())
                 {
                     timestamps_nrm[lines + 0] = scan_timestamp + 0.2 * 0;
                     timestamps_nrm[lines + 1] = scan_timestamp + 0.2 * 1;
@@ -323,7 +322,7 @@ namespace meteosat
                 uint16_t *tmp_buf = new uint16_t[15000];
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_buf);
 
-                int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
+                size_t lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
                                           : fmod(scan_timestamp, 15 * 60) / (100 / 1494.0);
                 lines += (scan_chunk_number - 11) * 2;
 
@@ -348,7 +347,7 @@ namespace meteosat
                 uint16_t *tmp_buf = new uint16_t[15000];
                 repackBytesTo10bits(&pkt.payload[8], pkt.payload.size() - 8, tmp_buf);
 
-                int lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
+                size_t lines = d_mode_is_rss ? (fmod(scan_timestamp, 5 * 60) / (100 / 1494.0))
                                           : fmod(scan_timestamp, 15 * 60) / (100 / 1494.0);
                 lines += (scan_chunk_number - 11) * 2;
 

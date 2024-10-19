@@ -530,7 +530,7 @@ namespace satdump
                         }
 
                         ImGui::EndGroup();
-                        ImGui::Text(is_temp ? " [K]" : " [W·sr\u207b\u00b9·m\u207b\u00b2]");
+                        ImGui::Text(is_temp ? u8" [K]" : u8" [W\u00b7sr\u207b\u00b9\u00b7m\u207b\u00b2]");
                     }
                     ImGui::End();
                 }

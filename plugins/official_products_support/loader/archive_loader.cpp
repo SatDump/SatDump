@@ -1,6 +1,6 @@
 #include "archive_loader.h"
 #include <filesystem>
-#include "core/module.h"
+#include "core/style.h"
 
 namespace satdump
 {

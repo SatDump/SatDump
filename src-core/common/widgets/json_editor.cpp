@@ -1,7 +1,7 @@
 #include "json_editor.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "core/module.h"
+#include "core/style.h"
 
 namespace widgets
 {

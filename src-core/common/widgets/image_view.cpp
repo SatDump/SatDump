@@ -1,6 +1,6 @@
 #include "image_view.h"
 #include "imgui/imgui_image.h"
-#include "core/module.h"
+#include "core/style.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/implot/implot.h"
 #include "imgui/implot/implot_internal.h"

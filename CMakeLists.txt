@@ -58,6 +58,10 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
+    endif()
+
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
         if(APPLE)
@@ -80,6 +84,7 @@ endif()
 
 if(MSVC OR BUILD_MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
+    add_compile_definitions(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
