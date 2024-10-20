@@ -31,7 +31,6 @@ namespace satdump
         if (products->has_calibation())
             products->init_calibration();
 
-        // TMP
         if (instrument_cfg.contains("rgb_composites"))
         {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
@@ -41,6 +40,10 @@ namespace satdump
                 else
                     logger->debug("Disabling " + compo.key() + " as it can't be made!");
             }
+
+            std::sort(rgb_presets.begin(), rgb_presets.end(), [](auto &l, auto &r) {
+                                                                  return l.first < r.first;
+                                                              });
         }
 
         select_image_str += std::string("Composite") + '\0';
