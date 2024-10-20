@@ -11,6 +11,7 @@ namespace noaa
         {
             for (int i = 0; i < 20; i++)
                 channels[i].resize(56);
+            c_sequences.resize(1);
         }
 
         HIRSReader::~HIRSReader()
@@ -43,11 +44,11 @@ namespace noaa
 
             uint16_t elnum = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
             uint8_t encoder = HIRS_data[0];
-            //std::cout << "element number:" << elnum << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
+            // std::cout << "element number:" << elnum << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
 
-            std::cout<< (unsigned int)HIRS_data[0] << std::endl;
             if (elnum < 56 && (HIRS_data[35] & 0b10) >> 1)
             {
+                aux_counter++;
                 sync += ((HIRS_data[3] & 0x40) >> 6);
                 int current = ((buffer[22] % (int)pow(2, 5)) << 1) | (buffer[23] >> 7);
                 // std::cout<<last << ", " << elnum << ", " << current <<std::endl;
@@ -58,25 +59,37 @@ namespace noaa
                 repackBytesTo13bits(tmp, 32, words13bit);
 
                 for (int i = 0; i < 20; i++)
-                    channels[HIRSChannels[i]][56 - encoder + 56 * line] = words13bit[i];
+                    channels[HIRSChannels[i]][55 - elnum + 56 * line] = words13bit[i];
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if ((channels[i][56 - encoder + 56 * line] >> 12) == 1)
+                    if (encoder < 57)
                     {
-                        channels[i][56 - encoder + 56 * line] = (channels[i][56 - encoder + 56 * line] & 0b0000111111111111) + 4095;
+                        if ((channels[i][55 - elnum + 56 * line] >> 12) == 1)
+                        {
+                            channels[i][55 - elnum + 56 * line] = (channels[i][55 - elnum + 56 * line] & 0b0000111111111111) + 4095;
+                        }
+                        else
+                        {
+                            int buffer = 4096 - ((channels[i][55 - elnum + 56 * line] & 0b0000111111111111));
+                            channels[i][55 - elnum + 56 * line] = abs(buffer);
+                        }
                     }
                     else
                     {
-                        int buffer = 4096 - ((channels[i][56 - encoder + 56 * line] & 0b0000111111111111));
-                        channels[i][56 - encoder + 56 * line] = abs(buffer);
+                        if (encoder == 68)
+                            spc_calib++;
+                        if (encoder == 156)
+                            bb_calib++;
+                        // channels[i][55 - elnum + 56 * line] = 0;
                     }
-
-                    channels[i][56 - encoder + 56 * line] = /*HIRS_data[0] > 56 ? 0 :*/ channels[i][56 - encoder + 56 * line];
                 }
 
-                if (current == 55)
+                if (current == 55 || (encoder == 0 && aux_counter > 10)) // 10 was choosen for best results
                 {
+                    if (spc_calib > 40)
+
+                        aux_counter = 0;
                     line++;
                     for (int l = 0; l < 20; l++)
                         channels[l].resize((line + 1) * 56);
@@ -94,7 +107,6 @@ namespace noaa
             return image::Image(channels[channel].data(), 16, 56, line, 1);
         }
 
-
         // #################
         // ## calib stuff ##
         // #################
@@ -106,14 +118,21 @@ namespace noaa
             */
             double mean = 0;
             double variance = 0;
+            uint8_t ignored = 0;
 
             // calculate the mean
             for (int i = 0; i < count; i++)
-                mean += samples[i];
-            mean /= count;
+            {
+                if (samples[i] != 0)
+                    mean += samples[i];
+                else
+                    ignored++;
+            }
+            mean /= (count - ignored);
 
             for (int i = 0; i < count; i++)
-                variance += pow(samples[i] - mean, 2) / count;
+                if (samples[i] != 0)
+                    variance += pow(samples[i] - mean, 2) / (count - ignored);
 
             std::pair<uint16_t, uint16_t> range = {mean - 3 * pow(variance, 0.5), mean + 3 * pow(variance, 0.5)};
             uint32_t avg = 0;
@@ -127,7 +146,7 @@ namespace noaa
                     cnt++;
                 }
             }
-            if (cnt!=0)
+            if (cnt != 0)
                 avg /= cnt;
 
             return avg;
