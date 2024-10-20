@@ -41,13 +41,16 @@ namespace noaa
                 // std::cout<<pos<<std::endl;
             }
 
-            uint16_t enct = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
-            // std::cout << "element number:" << enct << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
-            if (enct < 56 && (HIRS_data[35] & 0b10) >> 1)
+            uint16_t elnum = ((HIRS_data[2] % (int)pow(2, 5)) << 1) | (HIRS_data[3] >> 7);
+            uint8_t encoder = HIRS_data[0];
+            //std::cout << "element number:" << elnum << " encoder position:" << (unsigned int)HIRS_data[0] << std::endl;
+
+            std::cout<< (unsigned int)HIRS_data[0] << std::endl;
+            if (elnum < 56 && (HIRS_data[35] & 0b10) >> 1)
             {
                 sync += ((HIRS_data[3] & 0x40) >> 6);
                 int current = ((buffer[22] % (int)pow(2, 5)) << 1) | (buffer[23] >> 7);
-                // std::cout<<last << ", " << enct << ", " << current <<std::endl;
+                // std::cout<<last << ", " << elnum << ", " << current <<std::endl;
 
                 uint16_t words13bit[20] = {0};
                 uint8_t tmp[32];
@@ -55,21 +58,21 @@ namespace noaa
                 repackBytesTo13bits(tmp, 32, words13bit);
 
                 for (int i = 0; i < 20; i++)
-                    channels[HIRSChannels[i]][55 - enct + 56 * line] = words13bit[i];
+                    channels[HIRSChannels[i]][56 - encoder + 56 * line] = words13bit[i];
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if ((channels[i][55 - enct + 56 * line] >> 12) == 1)
+                    if ((channels[i][56 - encoder + 56 * line] >> 12) == 1)
                     {
-                        channels[i][55 - enct + 56 * line] = (channels[i][55 - enct + 56 * line] & 0b0000111111111111) + 4095;
+                        channels[i][56 - encoder + 56 * line] = (channels[i][56 - encoder + 56 * line] & 0b0000111111111111) + 4095;
                     }
                     else
                     {
-                        int buffer = 4096 - ((channels[i][55 - enct + 56 * line] & 0b0000111111111111));
-                        channels[i][55 - enct + 56 * line] = abs(buffer);
+                        int buffer = 4096 - ((channels[i][56 - encoder + 56 * line] & 0b0000111111111111));
+                        channels[i][56 - encoder + 56 * line] = abs(buffer);
                     }
 
-                    channels[i][55 - enct + 56 * line] = HIRS_data[0] > 56 ? 0 : channels[i][55 - enct + 56 * line];
+                    channels[i][56 - encoder + 56 * line] = /*HIRS_data[0] > 56 ? 0 :*/ channels[i][56 - encoder + 56 * line];
                 }
 
                 if (current == 55)
@@ -82,7 +85,7 @@ namespace noaa
                     else
                         timestamps.push_back(-1);
                 }
-                // last = enct;
+                // last = elnum;
             }
         }
 
