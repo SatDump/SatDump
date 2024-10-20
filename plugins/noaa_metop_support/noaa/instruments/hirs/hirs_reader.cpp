@@ -10,8 +10,10 @@ namespace noaa
         HIRSReader::HIRSReader(int year) : ttp(year)
         {
             for (int i = 0; i < 20; i++)
+            {
                 channels[i].resize(56);
-            c_sequences.resize(1);
+                c_sequences[i].push_back(calib_sequence());
+            }
         }
 
         HIRSReader::~HIRSReader()
@@ -81,15 +83,35 @@ namespace noaa
                             spc_calib++;
                         if (encoder == 156)
                             bb_calib++;
-                        // channels[i][55 - elnum + 56 * line] = 0;
                     }
                 }
 
                 if (current == 55 || (encoder == 0 && aux_counter > 10)) // 10 was choosen for best results
                 {
                     if (spc_calib > 40)
-
-                        aux_counter = 0;
+                    {
+                        spc_calib = 0;
+                        for (int c = 0; c < 20; c++)
+                        {
+                            c_sequences[c][c_sequences[c].size() - 1].calc_space(&channels[c][56 * line]);
+                            for (int i = 0; i < 56; i++)
+                                channels[c][i + 56 * line] = 0;
+                        }
+                    }
+                    if (bb_calib > 40)
+                    {
+                        bb_calib = 0;
+                        for (int c = 0; c < 20; c++)
+                        {
+                            c_sequences[c][c_sequences[c].size() - 1].calc_bb(&channels[c][56 * line]);
+                            c_sequences[c][c_sequences[c].size() - 1].position = line;
+                            if (c_sequences[c][c_sequences[c].size() - 1].is_ready())
+                                c_sequences[c].push_back(calib_sequence());
+                            for (int i = 0; i < 56; i++)
+                                channels[c][i + 56 * line] = 0;
+                        }
+                    }
+                    aux_counter = 0;
                     line++;
                     for (int l = 0; l < 20; l++)
                         channels[l].resize((line + 1) * 56);
