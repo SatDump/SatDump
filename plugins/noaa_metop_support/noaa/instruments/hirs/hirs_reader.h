@@ -38,39 +38,21 @@ namespace noaa
             uint16_t space = 0;
             uint16_t blackbody = 0;
 
-        private:
-            uint16_t calc_avg(uint16_t *samples, int count)
-            {
-                /*
-                This function calcualtes the average value for space and bb looks, using the 3-sigma criterion to discard bad samples
-                */
-                double mean = 0;
-                double variance = 0;
-
-                // calculate the mean
-                for (int i = 0; i < count; i++)
-                    mean += samples[i];
-                mean /= count;
-
-                for (int i = 0; i < count; i++)
-                    variance += pow(samples[i] - mean, 2) / count;
-
-                std::pair<uint16_t, uint16_t> range = {mean - 3 * pow(variance, 0.5), mean + 3 * pow(variance, 0.5)};
-                uint32_t avg = 0;
-                uint8_t cnt = 0;
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (samples[i] >= range.first && samples[i] <= range.second)
-                    {
-                        avg += samples[i];
-                        cnt++;
-                    }
-                }
-                avg /= cnt;
-
-                return avg;
+            void calc_space(uint16_t *samples){
+                space = calc_avg(samples+8, 48);
+                s_ready = true;
             }
+            void calc_bb(uint16_t *samples){
+                blackbody = calc_avg(samples, 56);
+                b_ready = true;
+            }
+            bool is_ready(){
+                return s_ready && b_ready;
+            }
+
+        private:
+            uint16_t calc_avg(uint16_t *samples, int count);
+            bool s_ready = false, b_ready = false;
         };
     } // namespace hirs
 } // namespace noaa

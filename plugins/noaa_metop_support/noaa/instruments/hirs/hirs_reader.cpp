@@ -90,5 +90,45 @@ namespace noaa
         {
             return image::Image(channels[channel].data(), 16, 56, line, 1);
         }
+
+
+        // #################
+        // ## calib stuff ##
+        // #################
+
+        uint16_t calib_sequence::calc_avg(uint16_t *samples, int count)
+        {
+            /*
+            This function calcualtes the average value for space and bb looks, using the 3-sigma criterion to discard bad samples
+            */
+            double mean = 0;
+            double variance = 0;
+
+            // calculate the mean
+            for (int i = 0; i < count; i++)
+                mean += samples[i];
+            mean /= count;
+
+            for (int i = 0; i < count; i++)
+                variance += pow(samples[i] - mean, 2) / count;
+
+            std::pair<uint16_t, uint16_t> range = {mean - 3 * pow(variance, 0.5), mean + 3 * pow(variance, 0.5)};
+            uint32_t avg = 0;
+            uint8_t cnt = 0;
+
+            for (int i = 0; i < count; i++)
+            {
+                if (samples[i] >= range.first && samples[i] <= range.second)
+                {
+                    avg += samples[i];
+                    cnt++;
+                }
+            }
+            if (cnt!=0)
+                avg /= cnt;
+
+            return avg;
+        }
+
     } // namespace hirs
 } // namespace noaa
