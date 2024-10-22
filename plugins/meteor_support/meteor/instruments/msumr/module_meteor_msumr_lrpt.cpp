@@ -314,8 +314,41 @@ namespace meteor
                 if (d_parameters.contains("max_fill_lines"))
                     max_fill_lines = d_parameters["max_fill_lines"];
 
+                // Fill missing calibration data
+                for (int channel = 0; channel < calib_cfg["vars"]["views"].size(); channel++)
+                {
+                    int last_good_view = -1;
+                    bool found_bad_view = false;
+                    for (int i = 0; i < calib_cfg["vars"]["views"][channel][0].size(); i++)
+                    {
+                        if (found_bad_view)
+                        {
+                            if (calib_cfg["vars"]["views"][channel][0][i].get<int>() != -1)
+                            {
+                                if (last_good_view != -1)
+                                {
+                                    for (size_t j = 1; j < i - last_good_view; j++)
+                                    {
+                                        calib_cfg["vars"]["views"][channel][0][last_good_view + j] = (int)((int)calib_cfg["vars"]["views"][channel][0][last_good_view] +
+                                            ((int)calib_cfg["vars"]["views"][channel][0][i] -
+                                                (int)calib_cfg["vars"]["views"][channel][0][last_good_view]) * ((double)j / double(i - last_good_view)));
+                                        calib_cfg["vars"]["views"][channel][1][last_good_view + j] = (int)((int)calib_cfg["vars"]["views"][channel][1][last_good_view] +
+                                            ((int)calib_cfg["vars"]["views"][channel][1][i] -
+                                                (int)calib_cfg["vars"]["views"][channel][1][last_good_view]) * ((double)j / double(i - last_good_view)));
+                                    }
+                                }
+                                last_good_view = i;
+                                found_bad_view = false;
+                            }
+                        }
+                        else if (calib_cfg["vars"]["views"][channel][0][i].get<int>() == -1)
+                            found_bad_view = true;
+                        else
+                            last_good_view = i;
+                    }
+                }
+
                 satdump::ImageProducts filled_products;
-                // TODO: Fill missing callibration data
                 createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels);
                 for (int i = 0; i < 6; i++)
                 {
