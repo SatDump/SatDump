@@ -2,6 +2,7 @@
 
 #include "products/image_products.h"
 #include "nlohmann/json.hpp"
+#include "nlohmann/json_utils.h"
 #include "common/calibration.h"
 #include "common/utils.h"
 
@@ -9,8 +10,9 @@ class MeteorMsuMrCalibrator : public satdump::ImageProducts::CalibratorBase
 {
 private:
     nlohmann::json d_vars;
+    bool lrpt;
     // todo
-    double wavenumbers[6];
+    std::vector<double> wavenumbers;
 
     std::vector<double> cold_temps;
     std::vector<double> hot_temps;
@@ -19,8 +21,9 @@ public:
     MeteorMsuMrCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
     {
         d_vars = calib["vars"];
-        for (int i = 0; i < 6; i++)
-            wavenumbers[i] = products->get_wavenumber(i);
+        lrpt = getValueOrDefault(d_vars["lrpt"], false);
+        for (int i = 0; i < products->images.size(); i++)
+            wavenumbers.push_back(products->get_wavenumber(i));
 
         int lcnt = d_vars["views"][0][0].size();
         for (int i = 0; i < lcnt; i++)
@@ -75,28 +78,32 @@ public:
 
     double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
     {
-        if (channel < 3)
-        {
+        if (wavenumbers[channel] == 0)
             return CALIBRATION_INVALID_VALUE;
-        }
-        else
+
+        if (lrpt)
         {
-            double cold_ref = cold_temps[pos_y]; // 225;
-            double hot_ref = hot_temps[pos_y];   // 312;
-            double wavenumber = wavenumbers[channel];
-
-            double cold_view = d_vars["views"][channel][0][pos_y];
-            double hot_view = d_vars["views"][channel][1][pos_y];
-
-            double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
-            double hot_rad = temperature_to_radiance(hot_ref, wavenumber);
-
-            double gain_rad = (hot_rad - cold_rad) / (hot_view - cold_view);
-            double rad = cold_rad + (px_val - cold_view) * gain_rad; // hot_rad + ((px_val - hot_view) / gain_rad);
-
-            // printf("VIEW %f, %f %f %f %f (%f)=> %f\n", double(px_val), hot_view, cold_view, hot_rad, cold_rad, gain_rad, rad);
-
-            return rad;
+            pos_y /= 8; // Telemetry data covers 8 lines
+            if (pos_y >= d_vars["views"][channel][0].size())
+                pos_y = d_vars["views"][channel][0].size() - 1;
+            px_val = ((float)px_val / 255.0f) * 1023.0f; // Scale to 10-bit
         }
+
+        double cold_ref = cold_temps[pos_y]; // 225;
+        double hot_ref = hot_temps[pos_y];   // 312;
+        double wavenumber = wavenumbers[channel];
+
+        double cold_view = d_vars["views"][channel][0][pos_y];
+        double hot_view = d_vars["views"][channel][1][pos_y];
+
+        double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
+        double hot_rad = temperature_to_radiance(hot_ref, wavenumber);
+
+        double gain_rad = (hot_rad - cold_rad) / (hot_view - cold_view);
+        double rad = cold_rad + (px_val - cold_view) * gain_rad; // hot_rad + ((px_val - hot_view) / gain_rad);
+
+        // printf("VIEW %f, %f %f %f %f (%f)=> %f\n", double(px_val), hot_view, cold_view, hot_rad, cold_rad, gain_rad, rad);
+
+        return rad;
     }
 };

@@ -230,6 +230,7 @@ namespace meteor
 
                 nlohmann::json calib_cfg;
                 calib_cfg["calibrator"] = "meteor_msumr";
+                calib_cfg["vars"]["lrpt"] = false;
                 calib_cfg["vars"]["views"] = msumr_reader.calibration_info;
                 calib_cfg["vars"]["temps"] = msu_mr_telemetry_calib;
 
