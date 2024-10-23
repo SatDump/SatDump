@@ -297,6 +297,7 @@ namespace meteor
             createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels);
             msumr_products.images.swap(msumr_images);
             msumr_products.save(directory);
+            msumr_products.images.clear(); // Free up memory
 
             // Products dataset
             satdump::ProductDataSet dataset;

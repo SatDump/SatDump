@@ -9,34 +9,43 @@
 class MeteorMsuMrCalibrator : public satdump::ImageProducts::CalibratorBase
 {
 private:
-    nlohmann::json d_vars;
     bool lrpt;
     // todo
     std::vector<double> wavenumbers;
 
+    std::vector<std::vector<std::pair<uint16_t, uint16_t>>> views;
     std::vector<double> cold_temps;
     std::vector<double> hot_temps;
 
 public:
     MeteorMsuMrCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
     {
-        d_vars = calib["vars"];
-        lrpt = getValueOrDefault(d_vars["lrpt"], false);
-        for (int i = 0; i < products->images.size(); i++)
-            wavenumbers.push_back(products->get_wavenumber(i));
+        lrpt = getValueOrDefault(calib["vars"]["lrpt"], false);
+        views.resize(products->images.size());
 
-        int lcnt = d_vars["views"][0][0].size();
-        for (int i = 0; i < lcnt; i++)
+        int max_lcnt = 0;
+        for (int i = 0; i < products->images.size(); i++)
+        {
+            wavenumbers.push_back(products->get_wavenumber(i));
+            int lcnt = calib["vars"]["views"][i][0].size();
+            max_lcnt = std::max(lcnt, max_lcnt);
+            for(int j = 0; j < lcnt; j++)
+                views[i].push_back({ calib["vars"]["views"][i][0][j], calib["vars"]["views"][i][1][j] });
+        }
+
+        for (int i = 0; i < max_lcnt; i++)
         {
             double coldt = 0;
             double hott = 0;
             int next_x_calib = i;
-            while (next_x_calib < lcnt)
+            while (next_x_calib < max_lcnt)
             {
-                if (!d_vars["temps"][next_x_calib].is_null())
+                if (!calib["vars"]["temps"][next_x_calib].is_null())
                 {
-                    coldt = (d_vars["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() + d_vars["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) / 2.0;
-                    hott = (d_vars["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() + d_vars["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) / 2.0;
+                    coldt = (calib["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() +
+                        calib["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) / 2.0;
+                    hott = (calib["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() +
+                        calib["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) / 2.0;
                     break;
                 }
                 next_x_calib++;
@@ -47,10 +56,12 @@ public:
                 int next_x_calib = i;
                 while (0 < next_x_calib)
                 {
-                    if (!d_vars["temps"][next_x_calib].is_null())
+                    if (!calib["vars"]["temps"][next_x_calib].is_null())
                     {
-                        coldt = (d_vars["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() + d_vars["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) / 2.0;
-                        hott = (d_vars["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() + d_vars["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) / 2.0;
+                        coldt = (calib["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() +
+                            calib["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) / 2.0;
+                        hott = (calib["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() +
+                            calib["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) / 2.0;
                         break;
                     }
                     next_x_calib--;
@@ -63,7 +74,7 @@ public:
 
         auto coldm = most_common(cold_temps.begin(), cold_temps.end(), 0);
         auto hotm = most_common(hot_temps.begin(), hot_temps.end(), 0);
-        for (int i = 0; i < lcnt; i++)
+        for (int i = 0; i < max_lcnt; i++)
         {
             if (abs(coldm - cold_temps[i]) > 5)
                 cold_temps[i] = coldm;
@@ -91,8 +102,8 @@ public:
         double hot_ref = hot_temps[pos_y];   // 312;
         double wavenumber = wavenumbers[channel];
 
-        double cold_view = d_vars["views"][channel][0][pos_y];
-        double hot_view = d_vars["views"][channel][1][pos_y];
+        double cold_view = views[channel][pos_y].first;
+        double hot_view = views[channel][pos_y].second;
 
         double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
         double hot_rad = temperature_to_radiance(hot_ref, wavenumber);
