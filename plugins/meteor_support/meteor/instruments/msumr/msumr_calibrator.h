@@ -84,8 +84,6 @@ public:
         if (lrpt)
         {
             pos_y /= 8; // Telemetry data covers 8 lines
-            if (pos_y >= d_vars["views"][channel][0].size())
-                pos_y = d_vars["views"][channel][0].size() - 1;
             px_val = ((float)px_val / 255.0f) * 1023.0f; // Scale to 10-bit
         }
 

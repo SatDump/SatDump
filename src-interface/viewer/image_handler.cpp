@@ -245,7 +245,8 @@ namespace satdump
         {
             if (active_channel_id >= 0)
             {
-                y+=1;
+                if(y < current_image.height() - 1)
+                    y+=1;
                 if (rotate_image)
                 {
                     x = current_image.width() - 1 - x;
