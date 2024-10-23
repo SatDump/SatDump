@@ -1931,10 +1931,33 @@
                             0.0
                         ]
                     },
-                    "Channel 4 Equalized": {
+                    "3.9 µm Shortwave IR (Uncalibrated)": {
                         "equation": "1 - ch4",
                         "individual_equalize": true,
                         "geo_correct": true
+                    },
+                    "3.9 µm Shortwave IR (Calibrated)": {
+                        "equation": "1 - cch4",
+                        "geo_correct": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 320
+                            }
+                        }
+                    },
+                    "3.9 µm Cloud Tops (Transparent)": {
+                        "equation": "1-cch4, 0, 0, cch4 < 0.99 ? 1 : 0",
+                        "geo_correct": true,
+                        "apply_lut": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 241
+                            }
+                        }
                     }
                 }
             },
