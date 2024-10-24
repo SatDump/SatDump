@@ -98,6 +98,8 @@ namespace meteor
                     next_channel++;
                 }
             }
+            else
+                logger->warn("Analog telemetry missing from transmission. Calibration is disabled!");
         }
 
         METEORMSUMRLRPTDecoderModule::METEORMSUMRLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -269,12 +271,12 @@ namespace meteor
                     nlohmann::json channel_views = nlohmann::json::array();
                     channel_views[0] = nlohmann::json::array();
                     channel_views[1] = nlohmann::json::array();
-                    for (double & this_timestamp : msureader.timestamps)
+                    for (double &this_timestamp : msureader.timestamps)
                     {
                         if (telemetry_timestamps.count(this_timestamp) == 0)
                         {
-                            channel_views[0].push_back(-1);
-                            channel_views[1].push_back(-1);
+                            channel_views[0].push_back(0);
+                            channel_views[1].push_back(0);
                         }
                         else
                         {
@@ -324,7 +326,7 @@ namespace meteor
                     {
                         if (found_bad_view)
                         {
-                            if (calib_cfg["vars"]["views"][channel][0][i].get<int>() != -1)
+                            if (calib_cfg["vars"]["views"][channel][0][i].get<int>() != 0)
                             {
                                 if (last_good_view != -1)
                                 {
@@ -342,7 +344,7 @@ namespace meteor
                                 found_bad_view = false;
                             }
                         }
-                        else if (calib_cfg["vars"]["views"][channel][0][i].get<int>() == -1)
+                        else if (calib_cfg["vars"]["views"][channel][0][i].get<int>() == 0)
                             found_bad_view = true;
                         else
                             last_good_view = i;

@@ -98,12 +98,14 @@ public:
             px_val = ((float)px_val / 255.0f) * 1023.0f; // Scale to 10-bit
         }
 
+        double cold_view = views[channel][pos_y].first;
+        double hot_view = views[channel][pos_y].second;
+        if (cold_view == 0 || hot_view == 0 || px_val == 0)
+            return CALIBRATION_INVALID_VALUE;
+
         double cold_ref = cold_temps[pos_y]; // 225;
         double hot_ref = hot_temps[pos_y];   // 312;
         double wavenumber = wavenumbers[channel];
-
-        double cold_view = views[channel][pos_y].first;
-        double hot_view = views[channel][pos_y].second;
 
         double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
         double hot_rad = temperature_to_radiance(hot_ref, wavenumber);
