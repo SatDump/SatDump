@@ -647,16 +647,36 @@ namespace satdump
                          is_updating = true;
                          logger->info("Saving Image...");
 
-                         std::string filename_template = config::main_cfg["satdump_directories"]["image_filename_temlate"]["value"].get<std::string>();
+                         std::string filename_template = config::main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
                          std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
                          time_t timevalue = 0;
 
+                         std::string product_source = products->has_product_source() ? products->get_product_source() :
+                             products->has_tle() ? products->get_tle().name : "UNK";
+                         std::string product_name = select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
+                             (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first);
                          if (products->has_product_timestamp())
                              timevalue = products->get_product_timestamp();
                          else if (products->has_timestamps)
                              timevalue = get_median(products->get_timestamps(select_image_id == 0 ? 0 : select_image_id - 1));
                          std::tm* timeReadable = gmtime(&timevalue);
 
+                         std::string instrument_name_upper, product_source_upper, product_name_upper, product_name_abbr;
+                         instrument_name_upper.resize(products->instrument_name.size());
+                         product_source_upper.resize(product_source.size());
+                         product_name_upper.resize(product_name.size());
+                         std::transform(products->instrument_name.begin(), products->instrument_name.end(), instrument_name_upper.begin(), ::toupper);
+                         std::transform(product_source.begin(), product_source.end(), product_source_upper.begin(), ::toupper);
+                         std::transform(product_name.begin(), product_name.end(), product_name_upper.begin(), ::toupper);
+                         for (char &name_char : product_name)
+                             if ((name_char >= 'A' && name_char <= 'Z') || (name_char >= '-' && name_char <= '9'))
+                                 product_name_abbr += name_char;
+                         std::replace(instrument_name_upper.begin(), instrument_name_upper.end(), ' ', '_');
+                         std::replace(product_source_upper.begin(), product_source_upper.end(), ' ', '_');
+                         std::replace(product_name_upper.begin(), product_name_upper.end(), ' ', '_');
+
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$t"),
+                             std::to_string(timevalue));
                          filename_template = std::regex_replace(filename_template, std::regex("\\$y"),
                              std::to_string(timeReadable->tm_year + 1900));
                          filename_template = std::regex_replace(filename_template, std::regex("\\$M"),
@@ -671,12 +691,18 @@ namespace satdump
                              timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
                          filename_template = std::regex_replace(filename_template, std::regex("\\$i"),
                              products->instrument_name);
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$I"),
+                             instrument_name_upper);
                          filename_template = std::regex_replace(filename_template, std::regex("\\$c"),
-                             select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
-                             (std::string("composite_") + (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first)));
+                             product_name);
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$C"),
+                             product_name_upper);
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$a"),
+                             product_name_abbr);
                          filename_template = std::regex_replace(filename_template, std::regex("\\$o"),
-                             products->has_product_source() ? products->get_product_source() :
-                             products->has_tle() ? products->get_tle().name : "UNK");
+                             product_source);
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$O"),
+                             product_source_upper);
 
                          std::string saved_at = save_image_dialog(filename_template, default_path, "Save Image", &current_image, &viewer_app->save_type);
 

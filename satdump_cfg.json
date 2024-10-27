@@ -328,18 +328,20 @@
             "name": "Default Proj Output Directory",
             "description": "Path to the default folder to open when saving a projection in the viewer."
         },
-        "image_filename_temlate": {
+        "image_filename_template": {
             "type": "options",
-            "value": "$i_$y-$M-$d_$h-$m-$sZ_$c",
+            "value": "$i_$c",
             "name": "Image Filename Template",
             "options": [
-                "$i_$y-$M-$d_$h-$m-$sZ_$c", // jamie's default
-                "$y$M$d$h$m_$o_$c", //lego's default (example: 202405061127_NOAA-15_composite_221.png)
-                "Z_SATDUMP_C_----_$y$M$d$h$m$s_$o_$i_$c" //WMO
-
+                "$i_$c",                                      // Default
+                "$i_$y-$M-$d_$h-$m-$sZ_$c",                   // Detailed
+                "$y$M$d$h$m_$O_$C",                           // Compact Detailed
+                "$y-$M-$d $h$m UTC - $o",                     // Satellite and Time
+                "Z_SATDUMP_C_----_$y$M$d$h$m$s_$O_$I_$a"      // WMO
+                                                              // Custom (TODO)
             ],
-            "description": "Template used when saving images in the viewer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $i - instrument name\n - $o - satellite/object"
-        }
+            "description": "Template used when saving images in the viewer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $C - composite/channel name (caps)\n - $a - composite/channel name (abbreviated)\n - $i - instrument name\n - $I - instrument name (caps)\n - $o - satellite/object\n - $O - satellite/object (caps)"
+      }
     },
     // TLE settings
     "tle_settings": {
