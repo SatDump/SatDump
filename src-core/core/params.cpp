@@ -67,14 +67,13 @@ namespace satdump
                 d_options = p_json["options"].get<std::vector<std::string>>();
 
                 d_options_str = "";
-                for (std::string opt : d_options)
+                for (std::string &opt : d_options)
                     d_options_str += opt + '\0';
 
                 if (hasValue)
                 {
-                    d_option = 0;
                     int i = 0;
-                    for (std::string opt : d_options)
+                    for (std::string &opt : d_options)
                     {
                         if (p_json["value"].get<std::string>() == opt)
                             d_option = i;
@@ -120,6 +119,39 @@ namespace satdump
                 d_type = PARAM_BASEBAND_TYPE;
                 baseband_type = p_json["value"].get<std::string>();
             }
+            else if (type_str == "template_options")
+            {
+                d_type = PARAM_TEMPLATE_OPTIONS;
+
+                d_templates = p_json["templates"];
+
+                d_options_str = "";
+                for (std::pair<std::string, std::string> &opt : d_templates)
+                    d_options_str += opt.second + '\0';
+                d_options_str += std::string("Custom") + '\0';
+
+                if (hasValue)
+                {
+                    int i = 0;
+                    p_string = p_json["value"].get<std::string>();
+                    for (std::pair<std::string, std::string> &opt : d_templates)
+                    {
+                        if (p_json["value"].get<std::string>() == opt.first)
+                        {
+                            d_option = i;
+                            break;
+                        }
+                        i++;
+                    }
+                    if (i == d_templates.size())
+                        d_option = i;
+                }
+                else
+                {
+                    d_option = 0;
+                    p_string = d_templates[0].first;
+                }
+            }
             else
             {
                 logger->error("Invalid options on EditableParameter!");
@@ -157,12 +189,22 @@ namespace satdump
                 ImGui::ColorEdit3(d_id.c_str(), (float *)p_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             else if (d_type == PARAM_BASEBAND_TYPE)
                 baseband_type.draw_playback_combo(d_id.c_str());
+            else if (d_type == PARAM_TEMPLATE_OPTIONS)
+            {
+                if (ImGui::Combo(d_id.c_str(), &d_option, d_options_str.c_str()) && d_option != d_templates.size())
+                    p_string = d_templates[d_option].first;
+                if (d_option != d_templates.size())
+                    ImGui::BeginDisabled();
+                ImGui::InputText(std::string(d_id + "_custom").c_str(), &p_string);
+                if (d_option != d_templates.size())
+                    ImGui::EndDisabled();
+            }
         }
 
         nlohmann::json EditableParameter::getValue()
         {
             nlohmann::json v;
-            if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD)
+            if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD || d_type == PARAM_TEMPLATE_OPTIONS)
                 v = std::string(p_string);
             else if (d_type == PARAM_INT)
                 v = p_int;
@@ -218,6 +260,22 @@ namespace satdump
             }
             else if (d_type == PARAM_BASEBAND_TYPE)
                 baseband_type = v.get<std::string>();
+            else if (d_type == PARAM_TEMPLATE_OPTIONS)
+            {
+                int i = 0;
+                p_string = v.get<std::string>();
+                for (std::pair<std::string, std::string> &opt : d_templates)
+                {
+                    if (p_string == opt.first)
+                    {
+                        d_option = i;
+                        break;
+                    }
+                    i++;
+                }
+                if (i == d_templates.size())
+                    d_option = i;
+            }
             return v;
         }
     }

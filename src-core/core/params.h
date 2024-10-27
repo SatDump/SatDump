@@ -26,7 +26,8 @@ namespace satdump
             PARAM_TIMESTAMP,
             PARAM_NOTATED_INT,
             PARAM_COLOR,
-            PARAM_BASEBAND_TYPE
+            PARAM_BASEBAND_TYPE,
+            PARAM_TEMPLATE_OPTIONS
         };
 
         class EditableParameter
@@ -52,6 +53,7 @@ namespace satdump
             int d_option;
             std::string d_options_str;
             std::vector<std::string> d_options;
+            std::vector<std::pair<std::string, std::string>> d_templates;
 
         public:
             EditableParameter(nlohmann::json p_json);
