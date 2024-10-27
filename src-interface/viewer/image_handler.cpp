@@ -646,10 +646,39 @@ namespace satdump
                          async_image_mutex.lock();
                          is_updating = true;
                          logger->info("Saving Image...");
+
+                         std::string filename_template = config::main_cfg["satdump_directories"]["image_filename_temlate"]["value"].get<std::string>();
                          std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                         std::string saved_at = save_image_dialog(products->instrument_name + "_" +
-                             (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                             default_path, "Save Image", &current_image, &viewer_app->save_type);
+                         time_t timevalue = 0;
+
+                         if (products->has_product_timestamp())
+                             timevalue = products->get_product_timestamp();
+                         else if (products->has_timestamps)
+                             timevalue = get_median(products->get_timestamps(select_image_id == 0 ? 0 : select_image_id - 1));
+                         std::tm* timeReadable = gmtime(&timevalue);
+
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$y"),
+                             std::to_string(timeReadable->tm_year + 1900));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$M"),
+                             timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$d"),
+                             timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$h"),
+                             timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$m"),
+                             timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$s"),
+                             timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$i"),
+                             products->instrument_name);
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$c"),
+                             select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
+                             (std::string("composite_") + (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first)));
+                         filename_template = std::regex_replace(filename_template, std::regex("\\$o"),
+                             products->has_product_source() ? products->get_product_source() :
+                             products->has_tle() ? products->get_tle().name : "UNK");
+
+                         std::string saved_at = save_image_dialog(filename_template, default_path, "Save Image", &current_image, &viewer_app->save_type);
 
                          if (saved_at == "")
                              logger->info("Save cancelled");
