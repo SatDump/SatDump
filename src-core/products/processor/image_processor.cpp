@@ -1,20 +1,20 @@
-#include "processor.h"
+﻿#include "processor.h"
 
 #include "logger.h"
 #include "../dataset.h"
 #include "../image_products.h"
 #include "core/config.h"
-
 #include "resources.h"
+
 #include "common/projection/reprojector.h"
 #include "common/map/map_drawer.h"
 #include "common/utils.h"
-
 #include "common/overlay_handler.h"
-
 #include "common/image/meta.h"
 #include "common/image/processing.h"
 #include "common/image/io.h"
+
+#include <regex>
 
 namespace satdump
 {
@@ -117,6 +117,8 @@ namespace satdump
                     std::string initial_name = compo.key();
                     std::replace(initial_name.begin(), initial_name.end(), ' ', '_');
                     std::replace(initial_name.begin(), initial_name.end(), '/', '_');
+                    initial_name = std::regex_replace(initial_name, std::regex(u8"\u00B5"), u8"u");
+                    initial_name = std::regex_replace(initial_name, std::regex(u8"\u03BB="), u8"");
                     ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
                     if (!check_composite_from_product_can_be_made(*img_products, cfg))
                     {

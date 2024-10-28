@@ -647,7 +647,7 @@ namespace satdump
                          is_updating = true;
                          logger->info("Saving Image...");
 
-                         std::string filename_template = config::main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
+                         std::string file_name = config::main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
                          std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
                          time_t timevalue = 0;
 
@@ -675,36 +675,49 @@ namespace satdump
                          std::replace(product_source_upper.begin(), product_source_upper.end(), ' ', '_');
                          std::replace(product_name_upper.begin(), product_name_upper.end(), ' ', '_');
 
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$t"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$t"),
                              std::to_string(timevalue));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$y"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$y"),
                              std::to_string(timeReadable->tm_year + 1900));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$M"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$M"),
                              timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$d"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$d"),
                              timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$h"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$h"),
                              timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$m"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$m"),
                              timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$s"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$s"),
                              timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$i"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$i"),
                              products->instrument_name);
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$I"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$I"),
                              instrument_name_upper);
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$c"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$c"),
                              product_name);
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$C"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$C"),
                              product_name_upper);
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$a"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$a"),
                              product_name_abbr);
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$o"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$o"),
                              product_source);
-                         filename_template = std::regex_replace(filename_template, std::regex("\\$O"),
+                         file_name = std::regex_replace(file_name, std::regex("\\$O"),
                              product_source_upper);
 
-                         std::string saved_at = save_image_dialog(filename_template, default_path, "Save Image", &current_image, &viewer_app->save_type);
+                         // Make sure we never overwrite anything unintentionally
+                         std::string filename_suffix = "";
+                         int suffix_num = 1;
+                         while (std::filesystem::exists(default_path + "/" + file_name + filename_suffix + "." + viewer_app->save_type))
+                             filename_suffix = "_" + std::to_string(++suffix_num);
+                         file_name += filename_suffix;
+
+                         // Remove common problematic characters
+                         std::replace(file_name.begin(), file_name.end(), '/', '-');
+                         file_name = std::regex_replace(file_name, std::regex(u8"\u00B5"), u8"u");
+                         file_name = std::regex_replace(file_name, std::regex(u8"\u03BB="), u8"");
+
+                         // Launch save as dialog
+                         std::string saved_at = save_image_dialog(file_name, default_path, "Save Image", &current_image, &viewer_app->save_type);
 
                          if (saved_at == "")
                              logger->info("Save cancelled");

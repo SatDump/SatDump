@@ -134,30 +134,30 @@
             "description": "Save ALL SatDump logs to a file.\nThis is useful to send in\nbug reports and such."
         },
         "product_format": {
-            "type": "options",
+            "type": "labeled_options",
             "value": "png",
             "name": "Product Image Format",
             "options": [
-                "png",
-                "tif",
-                "j2k",
-                "jpg",
-                "pbm",
-                "qoi"
+                [ "png", "PNG Image (*.png)" ],
+                [ "tif", "TIFF Image (*.tif, *.tiff)" ],
+                [ "j2k", "JPEG 2000 Image (*.j2k)" ],
+                [ "jpg", "JPEG Image (*.jpg, *.jpeg)" ],
+                [ "pbm", "PBM Image (*.pbm, *.pgm)" ],
+                [ "qoi", "Quite OK Image (*.qoi)" ]
             ],
-            "description": "Image format for raw image products\n\npng: PNG Image (recommended)\n\nj2k: JPEG 2000\n\njpg: JPEG Image (not recommended; may result\nin low-quality composites and projections)\n\npbm : Really fast, but will result is very big files\n\nqoi: A very fast image format with compression"
+            "description": "Image format for raw image products\n\n - png: PNG Image (recommended)\n - j2k: JPEG 2000\n - jpg: JPEG Image (not recommended; may result\n   in low-quality composites and projections)\n - pbm : Really fast, but will result is very big files\n - qoi: A very fast image format with compression.\n   8-bit only!"
         },
         "image_format": {
-            "type": "options",
+            "type": "labeled_options",
             "value": "png",
             "name": "Processed Image Format",
             "options": [
-                "png",
-                "tif",
-                "j2k",
-                "jpg",
-                "pbm",
-                "qoi"
+                [ "png", "PNG Image (*.png)" ],
+                [ "tif", "TIFF Image (*.tif, *.tiff)" ],
+                [ "j2k", "JPEG 2000 Image (*.j2k)" ],
+                [ "jpg", "JPEG Image (*.jpg, *.jpeg)" ],
+                [ "pbm", "PBM Image (*.pbm, *.pgm)" ],
+                [ "qoi", "Quite OK Image (*.qoi)" ]
             ],
             "description": "Default format for processed images\n\nDoes not apply to raw image products or images\ntransmitted in an already viewable format"
         },
@@ -329,10 +329,11 @@
             "description": "Path to the default folder to open when saving a projection in the viewer."
         },
         "image_filename_template": {
-            "type": "template_options",
+            "type": "labeled_options",
             "value": "$i_$c",
             "name": "Image Filename Template",
-            "templates": [
+            "manual": true,
+            "options": [
                 [ "$i_$c", "Default" ],
                 [ "$i_$y-$M-$d_$h-$m-$sZ_$c", "Detailed" ],
                 [ "$y$M$d$h$m_$O_$C", "Compact Detailed" ],
