@@ -141,7 +141,7 @@ namespace satdump
             image::normalize(current_image);
 
         if (manual_brightness_contrast)
-            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
+            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_contrast);
 
         // TODO : Cleanup?
         if (using_lut)
@@ -245,7 +245,8 @@ namespace satdump
         {
             if (active_channel_id >= 0)
             {
-                y+=1;
+                if(y < current_image.height() - 1)
+                    y+=1;
                 if (rotate_image)
                 {
                     x = current_image.width() - 1 - x;
@@ -624,13 +625,13 @@ namespace satdump
                 updateScaleImage();
             }
 
-            if (ImGui::Checkbox("Manual Brightness/Constrast", &manual_brightness_contrast))
+            if (ImGui::Checkbox("Manual Brightness/Contrast", &manual_brightness_contrast))
                 asyncUpdate();
             if (manual_brightness_contrast)
             {
                 if (ImGui::SliderFloat("Brightness", &manual_brightness_contrast_brightness, -2, 2))
                     asyncUpdate();
-                if (ImGui::SliderFloat("Contrast", &manual_brightness_contrast_constrast, -2, 2))
+                if (ImGui::SliderFloat("Contrast", &manual_brightness_contrast_contrast, -2, 2))
                     asyncUpdate();
             }
 
