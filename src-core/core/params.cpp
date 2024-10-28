@@ -135,7 +135,7 @@ namespace satdump
 
                 if (hasValue)
                 {
-                    int i = 0;
+                    size_t i = 0;
                     p_string = p_json["value"].get<std::string>();
                     for (std::pair<std::string, std::string> &opt : d_labeled_opts)
                     {
@@ -199,15 +199,15 @@ namespace satdump
                 baseband_type.draw_playback_combo(d_id.c_str());
             else if (d_type == PARAM_LABELED_OPTIONS)
             {
-                if (ImGui::Combo(d_id.c_str(), &d_option, d_options_str.c_str()) && d_option != d_labeled_opts.size())
+                if (ImGui::Combo(d_id.c_str(), &d_option, d_options_str.c_str()) && d_option != (int)d_labeled_opts.size())
                     p_string = d_labeled_opts[d_option].first;
 
                 if (p_bool) // Allow Manual
                 {
-                    if (d_option != d_labeled_opts.size())
+                    if (d_option != (int)d_labeled_opts.size())
                         ImGui::BeginDisabled();
                     ImGui::InputText(std::string(d_id + "_custom").c_str(), &p_string);
-                    if (d_option != d_labeled_opts.size())
+                    if (d_option != (int)d_labeled_opts.size())
                         ImGui::EndDisabled();
                 }
             }
@@ -274,7 +274,7 @@ namespace satdump
                 baseband_type = v.get<std::string>();
             else if (d_type == PARAM_LABELED_OPTIONS)
             {
-                int i = 0;
+                size_t i = 0;
                 p_string = v.get<std::string>();
                 for (std::pair<std::string, std::string> &opt : d_labeled_opts)
                 {
