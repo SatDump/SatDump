@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include <librfnm/librfnm.h>
+#include "librfnm/librfnm/librfnm.h"
 #include "logger.h"
 #include "common/rimgui.h"
 #include "common/widgets/double_list.h"

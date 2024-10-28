@@ -79,9 +79,6 @@ struct RegisterModulesEvent
 
 void registerModules();
 
-SATDUMP_DLL extern float ui_scale;               // UI Scaling factor, for DPI scaling
-SATDUMP_DLL extern int demod_constellation_size; // Demodulator constellation size
-
 // Status stuff
 enum instrument_status_t
 {

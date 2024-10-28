@@ -1,6 +1,7 @@
 #include "constellation_s2.h"
 #include <cstring>
-#include "core/module.h"
+#include <algorithm>
+#include "core/style.h"
 #include "common/dsp/block.h"
 
 namespace widgets

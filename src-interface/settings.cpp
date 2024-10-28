@@ -198,7 +198,7 @@ namespace satdump
                 }
             }
 
-            if (ImGui::CollapsingHeader("Output Directories"))
+            if (ImGui::CollapsingHeader("File Input/Output"))
             {
                 if (ImGui::BeginTable("##satdumpoutput_directories", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                 {

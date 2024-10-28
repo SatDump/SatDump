@@ -36,7 +36,7 @@ public:
         {
             return calc_rad(channel, pos_y, px_val);
         }
-        catch (std::exception &e)
+        catch (std::exception &)
         {
             return 0;
         }

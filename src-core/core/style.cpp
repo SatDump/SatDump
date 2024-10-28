@@ -7,13 +7,15 @@
 #include "nlohmann/json_utils.h"
 #include "logger.h"
 #include "config.h"
-#include "module.h"
 #include "backend.h"
 #include "resources.h"
 
 #ifdef __APPLE__
 #include <CoreGraphics/CGDirectDisplay.h>
 #endif
+
+SATDUMP_DLL float ui_scale = 1;                 // UI Scaling factor, set to 1 (no scaling) by default
+SATDUMP_DLL int demod_constellation_size = 200; // Demodulator constellation size
 
 namespace style
 {

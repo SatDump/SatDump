@@ -1,4 +1,4 @@
-#include "core/module.h"
+#include "core/style.h"
 #include <array>
 #include <cstring>
 #include "value_plot.h"
@@ -10,7 +10,7 @@ namespace widgets
     {
         ImGui::Text("%s", name.c_str());
         ImGui::SameLine();
-        ImGui::TextColored(value > -1 ? value < 5 ? style::theme.green : style::theme.orange : style::theme.red, UITO_C_STR(value));
+        ImGui::TextColored(value > -1 ? value < 5 ? style::theme.green : style::theme.orange : style::theme.red, "%s", std::to_string(value).c_str());
 
         std::memmove(&history[0], &history[1], (200 - 1) * sizeof(float));
         history[200 - 1] = value;

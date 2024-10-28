@@ -23,6 +23,12 @@ int main_autotrack(int argc, char *argv[])
         return 1;
     }
 
+    if (!std::filesystem::exists(argv[2]))
+    {
+        logger->critical("%s does not exist! Exiting", argv[2]);
+        return 1;
+    }
+
     logger->error("CLI AutoTrack is still WIP!");
 
     nlohmann::json settings = loadJsonFile(argv[2]);

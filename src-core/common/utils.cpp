@@ -68,11 +68,13 @@ size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::str
     return newLength;
 }
 
-size_t curl_float_progress_func(void *ptr, double TotalToDownload, double NowDownloaded, double TotalToUpload, double NowUploaded)
+int curl_float_progress_func(void *ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded)
 {
     float *pptr = (float *)ptr;
     if (TotalToDownload != 0)
-        *pptr = NowDownloaded / TotalToDownload;
+        *pptr = (float)NowDownloaded / (float)TotalToDownload;
+    else if(TotalToUpload != 0)
+        *pptr = (float)NowUploaded / (float)TotalToUpload;
     return 0;
 }
 
@@ -110,8 +112,8 @@ int perform_http_request(std::string url_str, std::string &result, std::string a
 
         if (progress != nullptr)
         {
-            curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, progress);
-            curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, curl_float_progress_func);
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, progress);
+            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, curl_float_progress_func);
             curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
         }
 

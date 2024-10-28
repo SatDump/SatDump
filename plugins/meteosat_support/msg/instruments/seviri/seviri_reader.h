@@ -34,8 +34,8 @@ namespace meteosat
             std::vector<std::pair<void *, std::string>> compo_queue;
 
         public:
-            int lines_since_last_end;
-            int not_channels_lines;
+            size_t lines_since_last_end;
+            size_t not_channels_lines;
 
             std::string d_directory;
 

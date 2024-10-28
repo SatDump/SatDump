@@ -2,7 +2,7 @@
 #include "imgui/imgui_internal.h"
 #include <string>
 #include "common/dsp_source_sink/format_notated.h"
-#include "core/module.h"
+#include "core/style.h"
 #include "resources.h"
 #include "common/image/text.h"
 

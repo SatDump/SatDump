@@ -24,7 +24,7 @@ namespace
         double i = 0;
         double sum = 0;
 
-        for (i; i < els.size(); ++i)
+        for (; i < els.size(); ++i)
         {
             if (i == 0 || i == els.size() - 1)
                 sum += els[i] / 2;
@@ -37,9 +37,9 @@ namespace
     double irrad(double low_wav, double high_wav, double t_bb)
     {
         // IRRAD calculate radiant flux of the blackbody over some wavelength interval
-        double h = 6.63e-34;  // J-s, Planck's constant
-        double k = 1.38e-23;  // J/K, Boltzmann's constant
-        double c = 299790000; // m/s, speed of light
+        // double h = 6.63e-34;  // J-s, Planck's constant
+        // double k = 1.38e-23;  // J/K, Boltzmann's constant
+        // double c = 299790000; // m/s, speed of light
         double dwav = (high_wav - low_wav) / 50.0;
         std::vector<double> E_wav;
         double current_wav = low_wav;

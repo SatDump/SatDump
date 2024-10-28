@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "stepped_slider.h"
+#include "imgui/imgui_internal.h"
 
 namespace widgets
 {
@@ -18,6 +19,7 @@ namespace widgets
         ImGui::PushButtonRepeat(true);
         if (ImGui::Button("-", ImVec2(button_size, button_size)))
         {
+            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
             retval = true;
             if (*v - v_rate < v_min)
                 *v = v_min;
@@ -27,6 +29,7 @@ namespace widgets
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         if (ImGui::Button("+", ImVec2(button_size, button_size)))
         {
+            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
             retval = true;
             if (*v + v_rate > v_max)
                 *v = v_max;
@@ -58,6 +61,7 @@ namespace widgets
         ImGui::PushButtonRepeat(true);
         if (ImGui::Button("-", ImVec2(button_size, button_size)))
         {
+            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
             retval = true;
             if (ImGui::IsKeyDown(ImGuiKey_ModShift))
                 v_rate /= 10;
@@ -72,6 +76,7 @@ namespace widgets
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         if (ImGui::Button("+", ImVec2(button_size, button_size)))
         {
+            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
             retval = true;
             if (ImGui::IsKeyDown(ImGuiKey_ModShift))
                 v_rate /= 10;

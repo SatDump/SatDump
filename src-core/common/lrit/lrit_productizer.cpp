@@ -71,7 +71,7 @@ namespace lrit
     }
 
     // This will most probably get moved over to each
-    inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string satellite, std::string instrument_id)
+    inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
     {
         if (image_data_function_record)
         {
@@ -611,7 +611,7 @@ namespace lrit
                             pro->set_proj_cfg(proj_cfg);
                 }
 
-                addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
+                addCalibrationInfoFunc(*pro, image_data_function_record, channel, instrument_id);
 
                 pro->save(directory_path);
             }
@@ -634,7 +634,7 @@ namespace lrit
                 }
                 pro->images.push_back({filename, channel, image::Image()});
 
-                addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
+                addCalibrationInfoFunc(*pro, image_data_function_record, channel, instrument_id);
 
                 pro->save(directory_path);
             }

@@ -215,7 +215,7 @@ namespace satdump
                                 }
                         }
 
-                        printf("\n%s\n", nat_link.c_str());
+                        //logger->trace("\n%s\n", nat_link.c_str());
 
                         std::string download_path = products_download_and_process_directory + "/" + file_name;
                         std::string process_path = products_download_and_process_directory + "/" + std::filesystem::path(file_name).stem().string();
@@ -247,10 +247,9 @@ namespace satdump
             ImGui::EndTable();
         }
         ImGui::EndChild();
-
-        file_downloader.render();
-
         if (should_disable)
             style::endDisabled();
+
+        file_downloader.render();
     }
 }

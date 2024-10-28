@@ -25,12 +25,12 @@ namespace metop
             {
             }
 
-            double compute(int channel, int pos_x, int pos_y, int px_val)
+            double compute(int /* channel */, int /* pos_x */, int pos_y, int px_val)
             {
                 int fpos_y = pos_y / 64;
-                int fpos_x = pos_x / 64;
-                int ifov_pos_y = pos_y % 64;
-                int ifov_pos_x = pos_x % 64;
+                // int fpos_x = pos_x / 64;
+                // int ifov_pos_y = pos_y % 64;
+                // int ifov_pos_x = pos_x % 64;
 
                 if (px_val == 0)
                     return CALIBRATION_INVALID_VALUE;

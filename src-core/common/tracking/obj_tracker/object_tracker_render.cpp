@@ -2,7 +2,6 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "core/module.h"
 #include "common/utils.h"
 #include "core/style.h"
 #include "common/tracking/tle.h"

@@ -18,7 +18,8 @@ namespace dsp
             bufferStart = &buffer[_bins - 1];
 
             // Clear backward FFT input since only one value is changed and reset at a time
-            memset(backFFTIn, 0, _bins * sizeof(complex_t));
+            for (int i = 0; i < _bins; i++)
+                backFFTIn[i].imag = backFFTIn[i].real = 0;
 
             // Allocate amplitude buffer
             ampBuf = dsp::create_volk_buffer<float>(_bins);
