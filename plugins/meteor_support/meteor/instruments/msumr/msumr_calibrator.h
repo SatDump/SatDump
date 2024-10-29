@@ -24,7 +24,7 @@ public:
         views.resize(products->images.size());
 
         int max_lcnt = 0;
-        for (int i = 0; i < products->images.size(); i++)
+        for (size_t i = 0; i < products->images.size(); i++)
         {
             wavenumbers.push_back(products->get_wavenumber(i));
             int lcnt = calib["vars"]["views"][i][0].size();

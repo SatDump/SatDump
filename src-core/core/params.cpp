@@ -67,14 +67,13 @@ namespace satdump
                 d_options = p_json["options"].get<std::vector<std::string>>();
 
                 d_options_str = "";
-                for (std::string opt : d_options)
+                for (std::string &opt : d_options)
                     d_options_str += opt + '\0';
 
                 if (hasValue)
                 {
-                    d_option = 0;
                     int i = 0;
-                    for (std::string opt : d_options)
+                    for (std::string &opt : d_options)
                     {
                         if (p_json["value"].get<std::string>() == opt)
                             d_option = i;
@@ -120,6 +119,47 @@ namespace satdump
                 d_type = PARAM_BASEBAND_TYPE;
                 baseband_type = p_json["value"].get<std::string>();
             }
+            else if (type_str == "labeled_options")
+            {
+                d_type = PARAM_LABELED_OPTIONS;
+
+                d_labeled_opts = p_json["options"];
+                p_bool = p_json.contains("manual") ? p_json["manual"].get<bool>() : false;
+
+                d_options_str = "";
+                for (std::pair<std::string, std::string> &opt : d_labeled_opts)
+                    d_options_str += opt.second + '\0';
+
+                if(p_bool) // Allow manual
+                    d_options_str += std::string("Custom") + '\0';
+
+                if (hasValue)
+                {
+                    size_t i = 0;
+                    p_string = p_json["value"].get<std::string>();
+                    for (std::pair<std::string, std::string> &opt : d_labeled_opts)
+                    {
+                        if (p_json["value"].get<std::string>() == opt.first)
+                        {
+                            d_option = i;
+                            break;
+                        }
+                        i++;
+                    }
+                    if (i == d_labeled_opts.size())
+                    {
+                        if(p_bool) // Allow Manual
+                            d_option = i;
+                        else
+                            d_option = 0;
+                    }
+                }
+                else
+                {
+                    d_option = 0;
+                    p_string = d_labeled_opts[0].first;
+                }
+            }
             else
             {
                 logger->error("Invalid options on EditableParameter!");
@@ -157,12 +197,26 @@ namespace satdump
                 ImGui::ColorEdit3(d_id.c_str(), (float *)p_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
             else if (d_type == PARAM_BASEBAND_TYPE)
                 baseband_type.draw_playback_combo(d_id.c_str());
+            else if (d_type == PARAM_LABELED_OPTIONS)
+            {
+                if (ImGui::Combo(d_id.c_str(), &d_option, d_options_str.c_str()) && d_option != (int)d_labeled_opts.size())
+                    p_string = d_labeled_opts[d_option].first;
+
+                if (p_bool) // Allow Manual
+                {
+                    if (d_option != (int)d_labeled_opts.size())
+                        ImGui::BeginDisabled();
+                    ImGui::InputText(std::string(d_id + "_custom").c_str(), &p_string);
+                    if (d_option != (int)d_labeled_opts.size())
+                        ImGui::EndDisabled();
+                }
+            }
         }
 
         nlohmann::json EditableParameter::getValue()
         {
             nlohmann::json v;
-            if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD)
+            if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD || d_type == PARAM_LABELED_OPTIONS)
                 v = std::string(p_string);
             else if (d_type == PARAM_INT)
                 v = p_int;
@@ -218,6 +272,22 @@ namespace satdump
             }
             else if (d_type == PARAM_BASEBAND_TYPE)
                 baseband_type = v.get<std::string>();
+            else if (d_type == PARAM_LABELED_OPTIONS)
+            {
+                size_t i = 0;
+                p_string = v.get<std::string>();
+                for (std::pair<std::string, std::string> &opt : d_labeled_opts)
+                {
+                    if (p_string == opt.first)
+                    {
+                        d_option = i;
+                        break;
+                    }
+                    i++;
+                }
+                if (i == d_labeled_opts.size() && p_bool) // Allow manual
+                    d_option = i;
+            }
             return v;
         }
     }

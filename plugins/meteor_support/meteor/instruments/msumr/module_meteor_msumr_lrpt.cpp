@@ -318,11 +318,11 @@ namespace meteor
                     max_fill_lines = d_parameters["max_fill_lines"];
 
                 // Fill missing calibration data
-                for (int channel = 0; channel < calib_cfg["vars"]["views"].size(); channel++)
+                for (size_t channel = 0; channel < calib_cfg["vars"]["views"].size(); channel++)
                 {
                     int last_good_view = -1;
                     bool found_bad_view = false;
-                    for (int i = 0; i < calib_cfg["vars"]["views"][channel][0].size(); i++)
+                    for (size_t i = 0; i < calib_cfg["vars"]["views"][channel][0].size(); i++)
                     {
                         if (found_bad_view)
                         {
