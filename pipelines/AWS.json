@@ -25,7 +25,7 @@
                 "psk_demod": {
                     "constellation": "qpsk",
                     "symbolrate": 1785000,
-                    "rrc_alpha": 0.5,
+                    "rrc_alpha": 0.45,
                     "pll_bw": 0.003
                 }
             },
