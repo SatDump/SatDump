@@ -167,6 +167,49 @@
             "products": {}
         }
     },
+    "tropics_dumps": {
+        "name": "TROPICS - Encrypted Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Default",
+                2252.5e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2000000,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.003
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 2072,
+                    "nrzm": true,
+                    //"derandomize": true,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "rs_i": 0
+                }
+            }
+        }
+    },
     "yunhai_ahrpt": {
         "name": "Yunhai AHRPT - Encrypted",
         "live": false,
