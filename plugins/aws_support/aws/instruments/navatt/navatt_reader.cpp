@@ -50,7 +50,7 @@ namespace aws
             if (packet.payload.size() != 117)
                 return;
 
-            uint8_t *dat = &packet.payload[21 - 6 + 2];
+            //uint8_t *dat = &packet.payload[21 - 6 + 2];
 	    std::memcpy(array, packet.payload.data(), 116);
 
             uint8_t tmVersionNumber = array[0] >> 4;
@@ -66,19 +66,17 @@ namespace aws
 	    // Data field
 	    uint16_t sid = array[15] << 8 | array[16];
 
-	    double navTimestamp = get_double(&array[17]);
-
 	    uint32_t orbitNumber = array[25] << 16 | array[26] << 8 | array[27];
 	    uint32_t orbitFraction = array[28] << 24 | array[29] << 16 | array[30] << 8 | array[31];
 	    uint8_t posVelQuality = array[32];
 
-            double ephem_timestamp = get_double(&dat[0]) + 3657 * 24 * 3600;
-            double ephem_x = get_float(&dat[33]);
-            double ephem_y = get_float(&dat[37]);
-            double ephem_z = get_float(&dat[41]);
-            double ephem_vx = get_float(&dat[45]);
-            double ephem_vy = get_float(&dat[49]);
-            double ephem_vz = get_float(&dat[53]);
+            double ephem_timestamp = get_double(&array[17]) + 3657 * 24 * 3600;
+            double ephem_x = get_float(&array[33]);
+            double ephem_y = get_float(&array[37]);
+            double ephem_z = get_float(&array[41]);
+            double ephem_vx = get_float(&array[45]);
+            double ephem_vy = get_float(&array[49]);
+            double ephem_vz = get_float(&array[53]);
 
 	    uint8_t attitudeQual = array[65];
 
@@ -130,7 +128,7 @@ namespace aws
 
 	    // Data field
 	    telemetry["SID"].push_back(sid);
-	    telemetry["Navigation timestamp"].push_back(navTimestamp);
+	    telemetry["Navigation timestamp"].push_back(ephem_timestamp);
 	    telemetry["Orbit Number"].push_back(orbitNumber);
 	    telemetry["Orbit Fraction"].push_back(orbitFraction);
 
