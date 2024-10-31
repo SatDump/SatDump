@@ -5,6 +5,8 @@
 #include "../../tip_time_parser.h"
 #include "../../contains.h"
 
+#include <fstream>
+
 namespace noaa
 {
     namespace hirs
@@ -50,6 +52,7 @@ namespace noaa
             std::vector<calib_sequence> c_sequences[20];
             uint8_t aux_counter = 0;
             int spc_calib = 0, bb_calib = 0;
+            std::ofstream out;
 
         public:
             HIRSReader(int year);

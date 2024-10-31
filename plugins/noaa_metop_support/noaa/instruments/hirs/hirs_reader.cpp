@@ -14,6 +14,7 @@ namespace noaa
                 channels[i].resize(56);
                 c_sequences[i].push_back(calib_sequence());
             }
+            out.open("/tmp/hirs.bin");
         }
 
         HIRSReader::~HIRSReader()
@@ -21,6 +22,7 @@ namespace noaa
             for (int i = 0; i < 20; i++)
                 channels[i].clear();
             // delete[] imageBuffer;
+            out.close();
         }
 
         void HIRSReader::work(uint8_t *buffer)
@@ -56,9 +58,9 @@ namespace noaa
                 // std::cout<<last << ", " << elnum << ", " << current <<std::endl;
 
                 uint16_t words13bit[20] = {0};
-                uint8_t tmp[32];
-                shift_array_left(&HIRS_data[3], 32, 2, tmp);
-                repackBytesTo13bits(tmp, 32, words13bit);
+                uint8_t tmp[33];
+                shift_array_left(&HIRS_data[3], 33, 2, tmp);
+                repackBytesTo13bits(tmp, 33, words13bit);
 
                 for (int i = 0; i < 20; i++)
                     channels[HIRSChannels[i]][55 - elnum + 56 * line] = words13bit[i];
@@ -122,6 +124,23 @@ namespace noaa
                 }
                 // last = elnum;
             }
+            if (elnum == 61)
+            {
+
+                uint16_t words13bit[20] = {0};
+                uint8_t tmp[32];
+                shift_array_left(&HIRS_data[3], 32, 2, tmp);
+                out.write((char *)tmp, 32);
+                repackBytesTo13bits(tmp, 32, words13bit);
+
+                for (int i = 0; i < 20; i++)
+                {
+                    std::cout << words13bit[i] << std::endl;
+                }
+                std::cout << std::endl;
+
+
+            }
         }
 
         image::Image HIRSReader::getChannel(int channel)
@@ -133,9 +152,11 @@ namespace noaa
         // ## calib stuff ##
         // #################
 
-        void HIRSReader::calibrate(){
-            for (int i = 0; i<c_sequences[0].size(); i++){
-                std::cout << "position: " << c_sequences[0][i].position << ", space: " << c_sequences[0][i].space << ", bb: " << c_sequences[0][i].blackbody <<std::endl;
+        void HIRSReader::calibrate()
+        {
+            for (int i = 0; i < c_sequences[0].size(); i++)
+            {
+                std::cout << "position: " << c_sequences[0][i].position << ", space: " << c_sequences[0][i].space << ", bb: " << c_sequences[0][i].blackbody << std::endl;
             }
         }
 
