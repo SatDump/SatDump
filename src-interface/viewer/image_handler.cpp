@@ -31,7 +31,6 @@ namespace satdump
         if (products->has_calibation())
             products->init_calibration();
 
-        // TMP
         if (instrument_cfg.contains("rgb_composites"))
         {
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_cfg["rgb_composites"].items())
@@ -41,6 +40,10 @@ namespace satdump
                 else
                     logger->debug("Disabling " + compo.key() + " as it can't be made!");
             }
+
+            std::sort(rgb_presets.begin(), rgb_presets.end(), [](auto &l, auto &r) {
+                                                                  return l.first < r.first;
+                                                              });
         }
 
         select_image_str += std::string("Composite") + '\0';
@@ -138,7 +141,7 @@ namespace satdump
             image::normalize(current_image);
 
         if (manual_brightness_contrast)
-            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_constrast);
+            image::brightness_contrast(current_image, manual_brightness_contrast_brightness, manual_brightness_contrast_contrast);
 
         // TODO : Cleanup?
         if (using_lut)
@@ -242,7 +245,8 @@ namespace satdump
         {
             if (active_channel_id >= 0)
             {
-                y+=1;
+                if(y < (int)current_image.height() - 1)
+                    y+=1;
                 if (rotate_image)
                 {
                     x = current_image.width() - 1 - x;
@@ -621,13 +625,13 @@ namespace satdump
                 updateScaleImage();
             }
 
-            if (ImGui::Checkbox("Manual Brightness/Constrast", &manual_brightness_contrast))
+            if (ImGui::Checkbox("Manual Brightness/Contrast", &manual_brightness_contrast))
                 asyncUpdate();
             if (manual_brightness_contrast)
             {
                 if (ImGui::SliderFloat("Brightness", &manual_brightness_contrast_brightness, -2, 2))
                     asyncUpdate();
-                if (ImGui::SliderFloat("Contrast", &manual_brightness_contrast_constrast, -2, 2))
+                if (ImGui::SliderFloat("Contrast", &manual_brightness_contrast_contrast, -2, 2))
                     asyncUpdate();
             }
 
@@ -642,10 +646,78 @@ namespace satdump
                          async_image_mutex.lock();
                          is_updating = true;
                          logger->info("Saving Image...");
+
+                         std::string file_name = config::main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
                          std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                         std::string saved_at = save_image_dialog(products->instrument_name + "_" +
-                             (select_image_id == 0 ? "composite" : ("ch" + channel_numbers[select_image_id - 1])),
-                             default_path, "Save Image", &current_image, &viewer_app->save_type);
+                         time_t timevalue = 0;
+
+                         std::string product_source = products->has_product_source() ? products->get_product_source() :
+                             products->has_tle() ? products->get_tle().name : "UNK";
+                         std::string product_name = select_image_id != 0 ? ("ch" + channel_numbers[select_image_id - 1]) :
+                             (select_rgb_presets == -1 ? "custom" : rgb_presets[select_rgb_presets].first);
+                         if (products->has_product_timestamp())
+                             timevalue = products->get_product_timestamp();
+                         else if (products->has_timestamps)
+                             timevalue = get_median(products->get_timestamps(select_image_id == 0 ? 0 : select_image_id - 1));
+                         std::tm* timeReadable = gmtime(&timevalue);
+
+                         std::string instrument_name_upper, product_source_upper, product_name_upper, product_name_abbr;
+                         instrument_name_upper.resize(products->instrument_name.size());
+                         product_source_upper.resize(product_source.size());
+                         product_name_upper.resize(product_name.size());
+                         std::transform(products->instrument_name.begin(), products->instrument_name.end(), instrument_name_upper.begin(), ::toupper);
+                         std::transform(product_source.begin(), product_source.end(), product_source_upper.begin(), ::toupper);
+                         std::transform(product_name.begin(), product_name.end(), product_name_upper.begin(), ::toupper);
+                         for (char &name_char : product_name)
+                             if ((name_char >= 'A' && name_char <= 'Z') || (name_char >= '-' && name_char <= '9'))
+                                 product_name_abbr += name_char;
+                         std::replace(instrument_name_upper.begin(), instrument_name_upper.end(), ' ', '_');
+                         std::replace(product_source_upper.begin(), product_source_upper.end(), ' ', '_');
+                         std::replace(product_name_upper.begin(), product_name_upper.end(), ' ', '_');
+
+                         file_name = std::regex_replace(file_name, std::regex("\\$t"),
+                             std::to_string(timevalue));
+                         file_name = std::regex_replace(file_name, std::regex("\\$y"),
+                             std::to_string(timeReadable->tm_year + 1900));
+                         file_name = std::regex_replace(file_name, std::regex("\\$M"),
+                             timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1));
+                         file_name = std::regex_replace(file_name, std::regex("\\$d"),
+                             timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday));
+                         file_name = std::regex_replace(file_name, std::regex("\\$h"),
+                             timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour));
+                         file_name = std::regex_replace(file_name, std::regex("\\$m"),
+                             timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+                         file_name = std::regex_replace(file_name, std::regex("\\$s"),
+                             timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+                         file_name = std::regex_replace(file_name, std::regex("\\$i"),
+                             products->instrument_name);
+                         file_name = std::regex_replace(file_name, std::regex("\\$I"),
+                             instrument_name_upper);
+                         file_name = std::regex_replace(file_name, std::regex("\\$c"),
+                             product_name);
+                         file_name = std::regex_replace(file_name, std::regex("\\$C"),
+                             product_name_upper);
+                         file_name = std::regex_replace(file_name, std::regex("\\$a"),
+                             product_name_abbr);
+                         file_name = std::regex_replace(file_name, std::regex("\\$o"),
+                             product_source);
+                         file_name = std::regex_replace(file_name, std::regex("\\$O"),
+                             product_source_upper);
+
+                         // Make sure we never overwrite anything unintentionally
+                         std::string filename_suffix = "";
+                         int suffix_num = 1;
+                         while (std::filesystem::exists(default_path + "/" + file_name + filename_suffix + "." + viewer_app->save_type))
+                             filename_suffix = "_" + std::to_string(++suffix_num);
+                         file_name += filename_suffix;
+
+                         // Remove common problematic characters
+                         std::replace(file_name.begin(), file_name.end(), '/', '-');
+                         file_name = std::regex_replace(file_name, std::regex(u8"\u00B5"), u8"u");
+                         file_name = std::regex_replace(file_name, std::regex(u8"\u03BB="), u8"");
+
+                         // Launch save as dialog
+                         std::string saved_at = save_image_dialog(file_name, default_path, "Save Image", &current_image, &viewer_app->save_type);
 
                          if (saved_at == "")
                              logger->info("Save cancelled");

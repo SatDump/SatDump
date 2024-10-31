@@ -177,17 +177,13 @@ namespace satdump
             pipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             pipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
-            if (automated_live_output_dir)
-            {
-                pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipeline_selector.selected_pipeline.name);
-            }
-            else
-            {
-                pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
-            }
-
             try
             {
+                if (automated_live_output_dir)
+                    pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipeline_selector.selected_pipeline.name);
+                else
+                    pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
+
                 live_pipeline = std::make_unique<LivePipeline>(pipeline_selector.selected_pipeline, pipeline_params, pipeline_output_dir);
                 splitter->reset_output("live");
                 live_pipeline->start(splitter->get_output("live"), ui_thread_pool);

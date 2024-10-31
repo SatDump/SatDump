@@ -114,7 +114,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
-project(SatDump VERSION "1.2.1")
+project(SatDump VERSION "1.2.2")
 
 # Check if the current commit has a tag
 execute_process(
@@ -236,7 +236,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_VENDOR "SatDump")
     set(CPACK_PACKAGE_CONTACT "Aang23")
 
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1, libportaudiocpp0")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1, libportaudiocpp0, libhdf5-hl-100t64 | libhdf5-hl-100 | libhdf5-103 | libhdf5-100")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libomp5-14, ocl-icd-libopencl1, intel-opencl-icd, mesa-opencl-icd")
 
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
