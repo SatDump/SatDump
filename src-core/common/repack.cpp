@@ -35,7 +35,7 @@ int repackBytesTo10bits(uint8_t *bytes, int byte_length, uint16_t *words)
     {
         for (int b = 7; b >= 0; b--)
         {
-            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 1024;
+            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 1023;
             inshifter++;
             if (inshifter == 10)
             {
@@ -74,7 +74,7 @@ int repackBytesTo12bits(uint8_t *bytes, int byte_length, uint16_t *words)
     {
         for (int b = 7; b >= 0; b--)
         {
-            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 4096;
+            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 4095;
             inshifter++;
             if (inshifter == 12)
             {
@@ -119,7 +119,7 @@ int repackBytesTo13bits(uint8_t *bytes, int byte_length, uint16_t *words)
     {
         for (int b = 7; b >= 0; b--)
         {
-            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 8192;
+            shifter = (shifter << 1 | ((bytes[bpos] >> b) & 1)) & 8191;
             inshifter++;
             if (inshifter == 13)
             {
