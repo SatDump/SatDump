@@ -57,6 +57,7 @@ namespace noaa
             int line = 0;
             void work(uint8_t *buffer);
             image::Image getChannel(int channel);
+            void calibrate();
 
             double last_timestamp = -1;
             TIPTimeParser ttp;

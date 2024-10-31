@@ -133,6 +133,12 @@ namespace noaa
         // ## calib stuff ##
         // #################
 
+        void HIRSReader::calibrate(){
+            for (int i = 0; i<c_sequences[0].size(); i++){
+                std::cout << "position: " << c_sequences[0][i].position << ", space: " << c_sequences[0][i].space << ", bb: " << c_sequences[0][i].blackbody <<std::endl;
+            }
+        }
+
         uint16_t calib_sequence::calc_avg(uint16_t *samples, int count)
         {
             /*
