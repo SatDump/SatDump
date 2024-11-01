@@ -200,7 +200,7 @@
         }
     },
     "elektro_tlm": {
-        "name": "ELEKTRO-L L-Band TLM",
+        "name": "ELEKTRO-L GGAK",
         "live": true,
         "live_cfg": [
             [
@@ -240,7 +240,7 @@
         }
     },
     "arktika_tlm": {
-        "name": "ARKTIKA-M L-Band TLM",
+        "name": "ARKTIKA-M GGAK",
         "live": true,
         "live_cfg": [
             [
