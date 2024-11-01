@@ -178,7 +178,7 @@ namespace noaa
                             c_sequences[channel][i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(w_avg, deg);
                     }
                     c_sequences[channel][i].PRT_temp /= 5;
-                    c_sequences[channel][i].PRT_temp = calib_coef["b"].get<double>() + calib_coef["c"].get<double>() * c_sequences[channel][i].PRT_temp;
+                    c_sequences[channel][i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[channel][i].PRT_temp;
                 }
 
                 nlohmann::json ch;
