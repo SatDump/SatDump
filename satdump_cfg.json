@@ -2979,6 +2979,26 @@
                             }
                         }
                     },
+		    "Day Fire Detection (Transparent)": {
+			    "channels": "cch21, cch22, cch31, cch32",
+			    "cpp": "day_fire",
+			    "vars": {
+				"minoffset": 0.0,
+				"scalar": 1.0,
+				"map_overlay": false
+			    },
+			    "autogen": false
+		    },
+		    "Day Fire Detection  (Map overlay)": {
+			    "channels": "cch21, cch22, cch31, cch32",
+			    "cpp": "day_fire",
+			    "vars": {
+				"minoffset": 0.0,
+				"scalar": 1.0,
+				"map_overlay": true
+			    },
+			    "autogen": false
+		    },
                     "True Color": {
                         "equation": "ch1, ch4, ch3",
                         "description": "descriptions/TrueColor.md",
