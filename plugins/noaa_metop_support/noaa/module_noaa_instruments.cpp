@@ -254,7 +254,7 @@ namespace noaa
 
                     satdump::ImageProducts hirs_products;
                     hirs_products.instrument_name = "hirs";
-                    hirs_products.bit_depth = 13;
+                    hirs_products.bit_depth = 16;
                     hirs_products.set_tle(satellite_tle);
                     hirs_products.has_timestamps = true;
                     hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;

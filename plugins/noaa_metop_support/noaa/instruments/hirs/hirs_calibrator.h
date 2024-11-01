@@ -12,11 +12,11 @@ private:
 
     double calc_rad(int channel, int pos_y, int px_val)
     {
+        if (channel == 19)
+            return px_val == 0 ? CALIBRATION_INVALID_VALUE : perChannel["a0"].get<double>() + perChannel["a1"].get<double>() * px_val;
+
         if (px_val == 0 || perLine_perChannel[channel][pos_y]["a0"].get<double>() == -999.99)
             return CALIBRATION_INVALID_VALUE;
-
-        if (channel = 19)
-            return perChannel[channel]["a0"].get<double>() + perLine_perChannel[channel][pos_y]["a1"].get<double>() * px_val;
 
         return perLine_perChannel[channel][pos_y]["a0"].get<double>() + perLine_perChannel[channel][pos_y]["a1"].get<double>() * px_val;
     }
@@ -42,7 +42,7 @@ public:
         }
         catch (std::exception &)
         {
-            return 0;
+            return -999.99;
         }
     }
 };

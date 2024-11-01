@@ -70,7 +70,7 @@ namespace noaa
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if (encoder < 57)
+                    if (encoder < 57 || encoder == 68 || encoder == 156)
                     {
                         if ((channels[i][55 - elnum + 56 * line] >> 12) == 1)
                         {
@@ -81,9 +81,7 @@ namespace noaa
                             int buffer = 4096 - ((channels[i][55 - elnum + 56 * line] & 0b0000111111111111));
                             channels[i][55 - elnum + 56 * line] = abs(buffer);
                         }
-                    }
-                    else
-                    {
+
                         if (encoder == 68)
                             spc_calib++;
                         if (encoder == 156)
@@ -102,6 +100,8 @@ namespace noaa
                             for (int i = 0; i < 56; i++)
                                 channels[c][i + 56 * line] = 0;
                         }
+                        for (int i = 0; i < 56; i++)
+                            channels[19][i + 56 * line] = 0;
                     }
                     if (bb_calib > 40)
                     {
@@ -115,6 +115,8 @@ namespace noaa
                             for (int i = 0; i < 56; i++)
                                 channels[c][i + 56 * line] = 0;
                         }
+                        for (int i = 0; i < 56; i++)
+                            channels[19][i + 56 * line] = 0;
                     }
                     aux_counter = 0;
                     line++;
@@ -175,7 +177,7 @@ namespace noaa
                             w_avg += PRT_counts[p][c_sequences[channel][i].position - 1 + l] * ((l % 2) + 1);
                         w_avg /= 4;
                         for (int deg = 0; deg < 6; deg++)
-                            c_sequences[channel][i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(w_avg, deg);
+                            c_sequences[channel][i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(-w_avg, deg);
                     }
                     c_sequences[channel][i].PRT_temp /= 5;
                     c_sequences[channel][i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[channel][i].PRT_temp;
@@ -195,28 +197,28 @@ namespace noaa
                     if (current_cseq == 0)
                     {
                         a1 = rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space);
-                        a0 = a1 * c_sequences[channel][current_cseq].space;
+                        a0 = -a1 * c_sequences[channel][current_cseq].space;
                     }
                     else if (current_cseq == c_sequences[channel].size())
                     {
                         a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space);
-                        a0 = a1 * c_sequences[channel][current_cseq - 1].space;
+                        a0 = -a1 * c_sequences[channel][current_cseq - 1].space;
                     }
                     else
                     { // interpolate
-                        ratio = (c_sequences[channel][current_cseq].position - (cl + 2)) / 38;
+                        ratio = (c_sequences[channel][current_cseq].position - (cl + 2)) / 38.0;
                         a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space) * ratio + rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space) * (1 - ratio);
-                        a0 = a1 * c_sequences[channel][current_cseq - 1].space * ratio + a1 * c_sequences[channel][current_cseq].space * (1 - ratio);
+                        a0 = -a1 * c_sequences[channel][current_cseq - 1].space * ratio - a1 * c_sequences[channel][current_cseq].space * (1 - ratio);
                     }
 
                     ln["a0"] = a0;
                     ln["a1"] = a1;
-                    ch.push_back(cl);
+                    ch.push_back(ln);
                 }
                 calib_out["vars"]["perLine_perChannel"][channel] = ch;
             }
             calib_out["wavenumbers"] = calib_coef["wavenumber"];
-            calib_out["vars"]["perChannel"] = calib_coef["perChannel"];
+            calib_out["vars"]["perChannel"] = calib_coef["visChannel"];
         }
 
         uint16_t calib_sequence::calc_avg(uint16_t *samples, int count)

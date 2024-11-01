@@ -18,8 +18,8 @@ namespace noaa
             calib_sequence(){};
 
             uint16_t position = 0;
-            uint16_t space = 0;
-            uint16_t blackbody = 0;
+            int space = 0;
+            int blackbody = 0;
             double PRT_temp = 0;
 
             void calc_space(uint16_t *samples)
