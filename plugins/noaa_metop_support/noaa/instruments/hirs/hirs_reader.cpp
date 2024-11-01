@@ -1,6 +1,7 @@
 #include "hirs_reader.h"
 #include <cmath>
 #include "common/repack.h"
+#include "common/calibration.h"
 // #include "iostream"
 
 namespace noaa
@@ -12,7 +13,8 @@ namespace noaa
             for (int i = 0; i < 20; i++)
             {
                 channels[i].resize(56);
-                c_sequences[i].push_back(calib_sequence());
+                if (i != 19)
+                    c_sequences[i].push_back(calib_sequence());
             }
             out.open("/tmp/hirs.bin");
         }
@@ -94,7 +96,7 @@ namespace noaa
                     if (spc_calib > 40)
                     {
                         spc_calib = 0;
-                        for (int c = 0; c < 20; c++)
+                        for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c][c_sequences[c].size() - 1].calc_space(&channels[c][56 * line]);
                             for (int i = 0; i < 56; i++)
@@ -104,7 +106,7 @@ namespace noaa
                     if (bb_calib > 40)
                     {
                         bb_calib = 0;
-                        for (int c = 0; c < 20; c++)
+                        for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c][c_sequences[c].size() - 1].calc_bb(&channels[c][56 * line]);
                             c_sequences[c][c_sequences[c].size() - 1].position = line;
@@ -161,7 +163,8 @@ namespace noaa
 
         void HIRSReader::calibrate(nlohmann::json calib_coef)
         {
-            for (int channel = 0; channel < 20; channel++)
+            calib_out["calibrator"] = "noaa_hirs";
+            for (int channel = 0; channel < 19; channel++)
             {
                 for (int i = 0; i < c_sequences[channel].size(); i++) // per channel per calib sequence
                 {
@@ -172,14 +175,47 @@ namespace noaa
                             w_avg += PRT_counts[p][c_sequences[channel][i].position - 1 + l] * ((l % 2) + 1);
                         w_avg /= 4;
                         for (int deg = 0; deg < 6; deg++)
-                            c_sequences[channel][i].PRT_temp[p] += calib_coef["PRT_poly"][p][deg] * pow(w_avg, deg);
+                            c_sequences[channel][i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(w_avg, deg);
                     }
-                }
-                for (int cl = 0; cl < line; cl++){ // per line
-                    
+                    c_sequences[channel][i].PRT_temp /= 5;
                 }
 
+                nlohmann::json ch;
+                double a0 = 0, a1 = 0, rad = 0, ratio = 0;
+                uint16_t current_cseq = 0;
+                for (int cl = 0; cl < line; cl++)
+                { // per line
+                    nlohmann::json ln;
+                    if (cl == c_sequences[channel][current_cseq].position)
+                        current_cseq++;
+
+                    rad = temperature_to_radiance(c_sequences[channel][current_cseq].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
+
+                    if (current_cseq == 0)
+                    {
+                        a1 = rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space);
+                        a0 = a1 * c_sequences[channel][current_cseq].space;
+                    }
+                    else if (current_cseq == c_sequences[channel].size())
+                    {
+                        a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space);
+                        a0 = a1 * c_sequences[channel][current_cseq - 1].space;
+                    }
+                    else
+                    { // interpolate
+                        ratio = (c_sequences[channel][current_cseq].position - (cl + 2)) / 38;
+                        a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space) * ratio + rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space) * (1 - ratio);
+                        a0 = a1 * c_sequences[channel][current_cseq - 1].space * ratio + a1 * c_sequences[channel][current_cseq].space * (1 - ratio);
+                    }
+
+                    ln["a0"] = a0;
+                    ln["a1"] = a1;
+                    ch.push_back(cl);
+                }
+                calib_out["vars"]["perLine_perChannel"][channel] = ch;
             }
+            calib_out["wavenumbers"] = calib_coef["wavenumber"];
+            calib_out["vars"]["perChannel"] = calib_coef["perChannel"];
         }
 
         uint16_t calib_sequence::calc_avg(uint16_t *samples, int count)
