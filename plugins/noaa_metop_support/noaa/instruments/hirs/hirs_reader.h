@@ -35,8 +35,9 @@ namespace noaa
                 return s_ready && b_ready;
             }
 
+            static uint16_t calc_avg(uint16_t *samples, int count);
+
         private:
-            uint16_t calc_avg(uint16_t *samples, int count);
             bool s_ready = false, b_ready = false;
         };
         
@@ -53,6 +54,7 @@ namespace noaa
             uint8_t aux_counter = 0;
             int spc_calib = 0, bb_calib = 0;
             std::ofstream out;
+            std::vector<uint16_t> PRT_counts[5];
 
         public:
             HIRSReader(int year);
