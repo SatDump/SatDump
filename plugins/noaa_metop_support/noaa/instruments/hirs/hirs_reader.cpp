@@ -137,10 +137,12 @@ namespace noaa
                     for (int i = 0; i < 20; i += 5)
                     {
                         if ((int)PRT_counts[i / 5].size() - line < -1)
-                            PRT_counts[i/5].push_back(0);
+                            PRT_counts[i / 5].push_back(0);
                         PRT_counts[i / 5].push_back(calib_sequence::calc_avg(&words13bit[i], 5));
                     }
-                } else {
+                }
+                else
+                {
                     if ((int)PRT_counts[4].size() - line < -1)
                         PRT_counts[4].push_back(0);
                     PRT_counts[4].push_back(calib_sequence::calc_avg(&words13bit[10], 5));
@@ -157,11 +159,26 @@ namespace noaa
         // ## calib stuff ##
         // #################
 
-        void HIRSReader::calibrate()
+        void HIRSReader::calibrate(nlohmann::json calib_coef)
         {
-            for (int i = 0; i < c_sequences[0].size(); i++)
+            for (int channel = 0; channel < 20; channel++)
             {
-                std::cout << "position: " << c_sequences[0][i].position << ", space: " << c_sequences[0][i].space << ", bb: " << c_sequences[0][i].blackbody << std::endl;
+                for (int i = 0; i < c_sequences[channel].size(); i++) // per channel per calib sequence
+                {
+                    for (int p = 0; p < 5; p++)
+                    {
+                        uint16_t w_avg = 0;
+                        for (int l = 0; l < 3; l++)
+                            w_avg += PRT_counts[p][c_sequences[channel][i].position - 1 + l] * ((l % 2) + 1);
+                        w_avg /= 4;
+                        for (int deg = 0; deg < 6; deg++)
+                            c_sequences[channel][i].PRT_temp[p] += calib_coef["PRT_poly"][p][deg] * pow(w_avg, deg);
+                    }
+                }
+                for (int cl = 0; cl < line; cl++){ // per line
+                    
+                }
+
             }
         }
 

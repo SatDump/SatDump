@@ -4,6 +4,7 @@
 #include "common/image/image.h"
 #include "../../tip_time_parser.h"
 #include "../../contains.h"
+#include "nlohmann/json.hpp"
 
 #include <fstream>
 
@@ -14,11 +15,15 @@ namespace noaa
         struct calib_sequence
         {
         public:
-            calib_sequence(){};
+            calib_sequence(){
+                for (int i = 0; i < 5; i++)
+                    PRT_temp[i] = 0;
+            };
 
             uint16_t position = 0;
             uint16_t space = 0;
             uint16_t blackbody = 0;
+            double PRT_temp[5];
 
             void calc_space(uint16_t *samples)
             {
@@ -62,7 +67,8 @@ namespace noaa
             int line = 0;
             void work(uint8_t *buffer);
             image::Image getChannel(int channel);
-            void calibrate();
+            void calibrate(nlohmann::json calib_coef);
+            nlohmann::json calib_out;
 
             double last_timestamp = -1;
             TIPTimeParser ttp;

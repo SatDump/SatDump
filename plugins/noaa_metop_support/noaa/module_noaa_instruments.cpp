@@ -249,8 +249,6 @@ namespace noaa
                     logger->info("----------- HIRS");
                     logger->info("Lines : " + std::to_string(hirs_reader.line));
 
-                    hirs_reader.calibrate();
-
                     if (hirs_reader.sync < hirs_reader.line * 28)
                         logger->error("(HIRS) Possible filter wheel synchronization loss detected! Radiometric data may be invalid.");
 
@@ -262,6 +260,21 @@ namespace noaa
                     hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     hirs_products.set_timestamps(hirs_reader.timestamps);
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
+
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/HIRS.json"));
+                    if (calib_coefs.contains(sat_name))
+                    {
+                        hirs_reader.calibrate(calib_coefs[sat_name]);
+                        hirs_products.set_calibration(hirs_reader.calib_out);
+                        for (int n = 0; n < 19; n++)
+                            hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);
+                        hirs_products.set_calibration_type(19, hirs_products.CALIB_REFLECTANCE);
+                            
+                        // for (int c = 0; c < 20; c++)
+                        //     hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                    }
+                    else
+                        logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
                     for (int i = 0; i < 20; i++)
                         hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
