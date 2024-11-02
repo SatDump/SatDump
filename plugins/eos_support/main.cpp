@@ -22,7 +22,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
-	satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
+        satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -39,8 +39,8 @@ public:
     }
     static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
     {
-	if (evt.id == "day_fire")
-	    evt.compositors.push_back(modis::dayFireCompositor);
+        if (evt.id == "day_fire")
+            evt.compositors.push_back(modis::dayFireCompositor);
     }
 };
 
