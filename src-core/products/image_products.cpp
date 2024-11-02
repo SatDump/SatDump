@@ -448,6 +448,10 @@ namespace satdump
         if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
             str_to_find_channels = cfg.channels;
 
+        // Malformed composite
+        if (str_to_find_channels.size() == 0)
+            return false;
+
         std::vector<std::string> channels_present;
 
         for (size_t i = 0; i < str_to_find_channels.size() - 1; i++)
