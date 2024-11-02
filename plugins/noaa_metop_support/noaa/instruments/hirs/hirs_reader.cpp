@@ -170,14 +170,16 @@ namespace noaa
             {
                 for (int i = 0; i < c_sequences[channel].size(); i++) // per channel per calib sequence
                 {
+                    c_sequences[channel][i].PRT_temp = 0;
                     for (int p = 0; p < 5; p++)
                     {
                         uint16_t w_avg = 0;
                         for (int l = 0; l < 3; l++)
                             w_avg += PRT_counts[p][c_sequences[channel][i].position - 1 + l] * ((l % 2) + 1);
                         w_avg /= 4;
-                        for (int deg = 0; deg < 6; deg++)
+                        for (int deg = 0; deg < 6; deg++){
                             c_sequences[channel][i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(-w_avg, deg);
+                        }
                     }
                     c_sequences[channel][i].PRT_temp /= 5;
                     c_sequences[channel][i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[channel][i].PRT_temp;
@@ -199,7 +201,7 @@ namespace noaa
                         a1 = rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space);
                         a0 = -a1 * c_sequences[channel][current_cseq].space;
                     }
-                    else if (current_cseq == c_sequences[channel].size())
+                    else if (current_cseq > c_sequences[channel].size()-2)
                     {
                         a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space);
                         a0 = -a1 * c_sequences[channel][current_cseq - 1].space;
