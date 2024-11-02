@@ -14,9 +14,7 @@ namespace aws
         private:
             int ephems_n = 0;
             nlohmann::json ephems;
-	    nlohmann::ordered_json telemetry;
-
-	    uint8_t array[116];
+            nlohmann::ordered_json telemetry;
 
         public:
             NavAttReader();
@@ -24,8 +22,8 @@ namespace aws
 
             void work(ccsds::CCSDSPacket &packet);
 
-	    int lines;
-	    nlohmann::ordered_json dump_telemetry();
+            int lines;
+            nlohmann::ordered_json dump_telemetry();
             nlohmann::json getEphem();
         };
     }

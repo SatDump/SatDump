@@ -41,10 +41,6 @@ namespace aws
 
             // Parse this transport frame
             ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
-
-            // if (vcdu.spacecraft_id == METOP_A_SCID ||
-            //     vcdu.spacecraft_id == METOP_B_SCID ||
-            //     vcdu.spacecraft_id == METOP_C_SCID)
             aws_scids.push_back(vcdu.spacecraft_id);
 
             if (vcdu.vcid == 2) // Stored S/C Sciente telemetry dataa
@@ -127,7 +123,7 @@ namespace aws
             sterna_products.set_timestamps(sterna_reader.timestamps);
 
             nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
-            if (d_parameters["use_ephemeris"].get<bool>())
+            if (getValueOrDefault(d_parameters["use_ephemeris"], false))
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
             sterna_products.set_proj_cfg(proj_cfg);
 
@@ -140,22 +136,21 @@ namespace aws
             sterna_status = DONE;
         }
 
-	// NAVATT
-	{
-	    navatt_status = SAVING;
-	    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/NAVATT";
+	    // NAVATT
+	    {
+	        navatt_status = SAVING;
+	        std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/NAVATT";
 
-	    if (!std::filesystem::exists(directory))
-		    std::filesystem::create_directory(directory);
+	        if (!std::filesystem::exists(directory))
+		        std::filesystem::create_directory(directory);
 
-            logger->info("----------- NAVATT");
-            logger->info("Lines : " + std::to_string(navatt_reader.lines));
+                logger->info("----------- NAVATT");
+                logger->info("Lines : " + std::to_string(navatt_reader.lines));
 
-	    saveJsonFile(directory + "/NAVATT-Telemetry.json", navatt_reader.dump_telemetry());
+	        saveJsonFile(directory + "/NAVATT-Telemetry.json", navatt_reader.dump_telemetry());
 
-	    navatt_status = DONE;
-	}
-
+	        navatt_status = DONE;
+	    }
 
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
     }
@@ -182,7 +177,7 @@ namespace aws
             ImGui::TableSetColumnIndex(2);
             drawStatus(sterna_status);
 
-	    ImGui::TableNextRow();
+	        ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("NAVATT");
             ImGui::TableSetColumnIndex(1);
@@ -194,7 +189,6 @@ namespace aws
         }
 
         ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
-
         ImGui::End();
     }
 

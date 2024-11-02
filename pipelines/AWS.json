@@ -18,7 +18,17 @@
                 1707e6
             ]
         ],
-        "parameters": {},
+        "parameters": {
+            "samplerate": {
+                "value": 6e6
+            },
+            "use_ephemeris": {
+                "type": "bool",
+                "value": false, //TODO: Appears to return incorrect results
+                "name": "Use Ephemeris",
+                "description": "Use ephemeris data from the satellite for projection"
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -42,9 +52,7 @@
                 }
             },
             "products": {
-                "aws_instruments": {
-                    "use_ephemeris": true
-                }
+                "aws_instruments": {}
             }
         }
     }
