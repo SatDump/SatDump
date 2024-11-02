@@ -11,6 +11,7 @@ libcurl4-openssl-dev
 libfftw3-dev
 libglfw3-dev
 libhackrf-dev
+libhdf5-dev
 libiio-dev
 libjemalloc-dev
 liblimesuite-dev

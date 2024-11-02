@@ -5,6 +5,7 @@ libbladerf2
 libfftw3-bin
 libglfw3
 libhackrf0
+libhdf5-103
 libiio0
 libjemalloc2
 liblimesuite22.09-1

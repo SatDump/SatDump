@@ -29,12 +29,12 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
 COPY packages.runner /usr/local/src/
+COPY --from=builder /usr/local/src/satdump/build/satdump_*.deb /usr/local/src/
 RUN apt -y update && \
     apt -y upgrade && \
     xargs -a /usr/local/src/packages.runner apt install -qy && \
+    apt install -qy /usr/local/src/satdump_*.deb && \
     rm -rf /var/lib/apt/lists/*
-COPY --from=builder /usr/local/src/satdump/build/satdump_*.deb /usr/local/src/
-RUN apt install /usr/local/src/satdump_*.deb
 
 # Add a user, possibility to map it to a user on the host to get the same uid & gid on files
 ARG HOST_UID=1000
