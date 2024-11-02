@@ -270,8 +270,8 @@ namespace noaa
                             hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);
                         hirs_products.set_calibration_type(19, hirs_products.CALIB_REFLECTANCE);
                             
-                        // for (int c = 0; c < 20; c++)
-                        //     hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                        for (int c = 0; c < 20; c++)
+                            hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
                     }
                     else
                         logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
