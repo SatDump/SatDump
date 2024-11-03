@@ -86,7 +86,14 @@ namespace satdump
                 }
 
                 if (update)
+                {
                     updateAutotrackPasses(curr_time);
+                    TrackedObject obj;
+                    for (auto &v : enabled_satellites)
+                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
+                            obj = v;
+                    eng_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                }
             }
             else
             {
