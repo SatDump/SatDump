@@ -1,55 +1,4 @@
 {
-    "geoscan_eldeveis_uhf": {
-        "name": "Geoscan-Eldeveis UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
-        ],
-        "parameters": {
-            "start_timestamp": {
-                "type": "timestamp",
-                "value": -1,
-                "name": "Start Timestamp",
-                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
-            },
-            "enable_doppler": {
-                "type": "bool",
-                "value": true,
-                "name": "Doppler Correction",
-                "description": "Apply doppler correction"
-            }
-        },
-        "frequencies": [
-            [
-                "Main",
-                436.2e6
-            ]
-        ],
-        "work": {
-            "baseband": {},
-            "soft": {
-                "xfsk_burst_demod": {
-                    "symbolrate": 9600,
-                    "enable_doppler": true,
-                    "satellite_norad": 53385,
-                    "satellite_frequency": 436.2e6
-                }
-            },
-            "frm": {
-                "geoscan_decoder": {}
-            },
-            "products": {
-                "geoscan_data_decoder": {}
-            }
-        }
-    },
     "stratosat_tk1_uhf": {
         "name": "StratoSat-TK1 UHF",
         "live": true,
@@ -94,10 +43,288 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {}
+                "geoscan_decoder": {
+                    "frame_length": 66,
+                    "thresold": 4
+                }
             },
             "products": {
                 "geoscan_data_decoder": {}
+            }
+        }
+    },
+    "rtumirea1_uhf": {
+        "name": "RTU-MIREA1 UHF",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "frequencies": [
+            [
+                "Main UHF",
+                436.20e6
+            ],
+            [
+                "Main DVB-S2",
+                10473.00e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "xfsk_burst_demod": {
+                    "symbolrate": 9600,
+                    "enable_doppler": true,
+                    "satellite_norad": 98894,
+                    "satellite_frequency": 436.20e6
+                }
+            },
+            "frm": {
+                "geoscan_decoder": {
+                    "frame_length": 74,
+                    "thresold": 6
+                }
+            }
+        }
+    },
+    "tusur_go_uhf": {
+        "name": "TUSUR-GO UHF",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "frequencies": [
+            [
+                "Main UHF",
+                437.73e6
+            ],
+            [
+                "Main DVB-S2",
+                10475.00e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "xfsk_burst_demod": {
+                    "symbolrate": 9600,
+                    "enable_doppler": true,
+                    "satellite_norad": 98788,
+                    "satellite_frequency": 437.73e6
+                }
+            },
+            "frm": {
+                "geoscan_decoder": {
+                    "frame_length": 74,
+                    "thresold": 6
+                }
+            }
+        }
+    },
+    "vizard_ion_uhf": {
+        "name": "VIZARD-ION UHF",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "frequencies": [
+            [
+                "Main UHF",
+                436.87e6
+            ],
+            [
+                "Main DVB-S2",
+                10475.00e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "xfsk_burst_demod": {
+                    "symbolrate": 9600,
+                    "enable_doppler": true,
+                    "satellite_norad": 98789,
+                    "satellite_frequency": 436.87e6
+                }
+            },
+            "frm": {
+                "geoscan_decoder": {
+                    "frame_length": 74,
+                    "thresold": 6
+                }
+            }
+        }
+    },
+    "colibri_s_uhf": {
+        "name": "COLIBRI-S UHF",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "frequencies": [
+            [
+                "Main UHF",
+                436.835e6
+            ],
+            [
+                "Main DVB-S2",
+                10475.00e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "xfsk_burst_demod": {
+                    "symbolrate": 9600,
+                    "enable_doppler": true,
+                    "satellite_norad": 98794,
+                    "satellite_frequency": 436.835e6
+                }
+            },
+            "frm": {
+                "geoscan_decoder": {
+                    "frame_length": 74,
+                    "thresold": 6
+                }
+            }
+        }
+    },
+    "horizon_uhf": {
+        "name": "HORIZON UHF",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "start_timestamp": {
+                "type": "timestamp",
+                "value": -1,
+                "name": "Start Timestamp",
+                "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+            },
+            "enable_doppler": {
+                "type": "bool",
+                "value": true,
+                "name": "Doppler Correction",
+                "description": "Apply doppler correction"
+            }
+        },
+        "frequencies": [
+            [
+                "Main UHF",
+                435.43e6
+            ],
+            [
+                "Main DVB-S2",
+                10474.00e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "xfsk_burst_demod": {
+                    "symbolrate": 9600,
+                    "enable_doppler": true,
+                    "satellite_norad": 98793,
+                    "satellite_frequency": 435.43e6
+                }
+            },
+            "frm": {
+                "geoscan_decoder": {
+                    "frame_length": 74,
+                    "thresold": 6
+                }
             }
         }
     }
