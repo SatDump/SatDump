@@ -1,6 +1,6 @@
 {
-    "aws_pfm_db": {
-        "name": "AWS PFM L-Band DB",
+    "aws_pfm": {
+        "name": "AWS PFM L-Band",
         "live": true,
         "live_cfg": [
             [

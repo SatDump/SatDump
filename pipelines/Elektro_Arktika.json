@@ -199,7 +199,7 @@
             }
         }
     },
-    "elektro_tlm": {
+    "elektro_ggak": {
         "name": "ELEKTRO-L GGAK",
         "live": true,
         "live_cfg": [
@@ -239,7 +239,7 @@
             }
         }
     },
-    "arktika_tlm": {
+    "arktika_ggak": {
         "name": "ARKTIKA-M GGAK",
         "live": true,
         "live_cfg": [
