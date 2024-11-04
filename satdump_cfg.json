@@ -3914,18 +3914,30 @@
                         "description": "descriptions/sounders/CloudOnlyN2O.md",
                         "individual_equalize": true
                     },
-                    "Low Level Water Vapor": {
-                        "equation": "ch10",
-                        "description": "descriptions/sounders/LLWV.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
-                    },
-                    "Mid Level Water Vapor": {
-                        "equation": "ch11",
-                        "description": "descriptions/sounders/MLWV.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
-                    },
+                    "6.25µm Calibrated Water Vapor": {
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                         //"description": "descriptions/cal_wv.md",
+                         "channels": "cch12",
+                         "calib_cfg": {
+                             "cch12": {
+                                 "type": "radiance",
+                                 "min": 0,
+                                 "max": 5.2
+                             }
+                         } 
+                     },
+                     "7.35µm Calibrated Water Vapor": {
+                         "lut": "lut/cal/star_abi_wv_8-10.png",
+                          //"description": "descriptions/cal_wv.md",
+                          "channels": "cch11",
+                          "calib_cfg": {
+                              "cch11": {
+                                  "type": "radiance",
+                                  "min": 0,
+                                  "max": 23.2
+                              }
+                          } 
+                     },
                     "Mid Stratosphere CO2 Temperature": {
                         "equation": "1-ch2",
                         "description": "descriptions/sounders/MidStratoCO2T.md",
