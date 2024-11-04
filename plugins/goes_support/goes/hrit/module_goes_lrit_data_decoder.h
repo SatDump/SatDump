@@ -4,6 +4,7 @@
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
 #include "common/lrit/lrit_productizer.h"
+#include "goes/crc32.h"
 
 extern "C"
 {
@@ -33,6 +34,7 @@ namespace goes
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;
+            CRC32 dcs_crc32;
 
             enum CustomFileParams
             {
@@ -57,6 +59,7 @@ namespace goes
 
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
+            bool parseDCS(uint8_t *data, size_t size);
 
             ::lrit::LRITProductizer productizer;
 

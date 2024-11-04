@@ -3,7 +3,7 @@
 #include <vector>
 #include "grb_headers.h"
 #include "common/ccsds/ccsds.h"
-#include "crc32.h"
+#include "goes/crc32.h"
 #include "data_processor.h"
 
 namespace goes
