@@ -11,12 +11,8 @@ namespace noaa
         HIRSReader::HIRSReader(int year) : ttp(year)
         {
             for (int i = 0; i < 20; i++)
-            {
                 channels[i].resize(56);
-                if (i != 19)
-                    c_sequences[i].push_back(calib_sequence());
-            }
-            out.open("/tmp/hirs.bin");
+            c_sequences = {calib_sequence()};
         }
 
         HIRSReader::~HIRSReader()
@@ -24,7 +20,6 @@ namespace noaa
             for (int i = 0; i < 20; i++)
                 channels[i].clear();
             // delete[] imageBuffer;
-            out.close();
         }
 
         void HIRSReader::work(uint8_t *buffer)
@@ -63,7 +58,6 @@ namespace noaa
                 uint8_t tmp[33];
                 shift_array_left(&HIRS_data[3], 33, 2, tmp);
                 repackBytesTo13bits(tmp, 33, words13bit);
-                out.write((char *)words13bit, 40);
 
                 for (int i = 0; i < 20; i++)
                     channels[HIRSChannels[i]][55 - elnum + 56 * line] = words13bit[i];
@@ -96,7 +90,7 @@ namespace noaa
                         spc_calib = 0;
                         for (int c = 0; c < 19; c++)
                         {
-                            c_sequences[c][c_sequences[c].size() - 1].calc_space(&channels[c][56 * line]);
+                            c_sequences[c_sequences.size() - 1].calc_space(&channels[c][56 * line], c);
                             for (int i = 0; i < 56; i++)
                                 channels[c][i + 56 * line] = 0;
                         }
@@ -108,10 +102,14 @@ namespace noaa
                         bb_calib = 0;
                         for (int c = 0; c < 19; c++)
                         {
-                            c_sequences[c][c_sequences[c].size() - 1].calc_bb(&channels[c][56 * line]);
-                            c_sequences[c][c_sequences[c].size() - 1].position = line;
-                            if (c_sequences[c][c_sequences[c].size() - 1].is_ready())
-                                c_sequences[c].push_back(calib_sequence());
+                            c_sequences[c_sequences.size() - 1].calc_bb(&channels[c][56 * line], c);
+
+                            if (c_sequences[c_sequences.size() - 1].is_ready())
+                            {
+                                c_sequences[c_sequences.size() - 1].position = line;
+                                c_sequences.push_back(calib_sequence());
+                            }
+
                             for (int i = 0; i < 56; i++)
                                 channels[c][i + 56 * line] = 0;
                         }
@@ -168,21 +166,24 @@ namespace noaa
             calib_out["calibrator"] = "noaa_hirs";
             for (int channel = 0; channel < 19; channel++)
             {
-                for (int i = 0; i < c_sequences[channel].size(); i++) // per channel per calib sequence
+                for (uint8_t i = 0; i < c_sequences.size(); i++) // per channel per calib sequence
                 {
-                    c_sequences[channel][i].PRT_temp = 0;
+                    c_sequences[i].PRT_temp = 0;
                     for (int p = 0; p < 5; p++)
                     {
                         uint16_t w_avg = 0;
                         for (int l = 0; l < 3; l++)
-                            w_avg += PRT_counts[p][c_sequences[channel][i].position - 1 + l] * ((l % 2) + 1);
+                            w_avg += PRT_counts[p][c_sequences[i].position - 1 + l] * ((l % 2) + 1);
                         w_avg /= 4;
-                        for (int deg = 0; deg < 6; deg++){
-                            c_sequences[channel][i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(-w_avg, deg);
+                        for (int deg = 0; deg < 6; deg++)
+                        {
+                            c_sequences[i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(-w_avg, deg);
                         }
                     }
-                    c_sequences[channel][i].PRT_temp /= 5;
-                    c_sequences[channel][i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[channel][i].PRT_temp;
+                    c_sequences[i].PRT_temp /= 5;
+
+                    //std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].blackbody[channel] << std::endl;
+                    c_sequences[i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[i].PRT_temp;
                 }
 
                 nlohmann::json ch;
@@ -191,26 +192,27 @@ namespace noaa
                 for (int cl = 0; cl < line; cl++)
                 { // per line
                     nlohmann::json ln;
-                    if (cl == c_sequences[channel][current_cseq].position)
+                    if (cl == c_sequences[current_cseq].position)
                         current_cseq++;
-
-                    rad = temperature_to_radiance(c_sequences[channel][current_cseq].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
 
                     if (current_cseq == 0)
                     {
-                        a1 = rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space);
-                        a0 = -a1 * c_sequences[channel][current_cseq].space;
+                        rad = temperature_to_radiance(c_sequences[current_cseq].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
+                        a1 = rad / (c_sequences[current_cseq].blackbody[channel] - c_sequences[current_cseq].space[channel]);
+                        a0 = -a1 * c_sequences[current_cseq].space[channel];
                     }
-                    else if (current_cseq > c_sequences[channel].size()-2)
+                    else if (current_cseq > c_sequences.size() - 2)
                     {
-                        a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space);
-                        a0 = -a1 * c_sequences[channel][current_cseq - 1].space;
+                        rad = temperature_to_radiance(c_sequences[current_cseq-1].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
+                        a1 = rad / (c_sequences[current_cseq - 1].blackbody[channel] - c_sequences[current_cseq - 1].space[channel]);
+                        a0 = -a1 * c_sequences[current_cseq - 1].space[channel];
                     }
                     else
                     { // interpolate
-                        ratio = (c_sequences[channel][current_cseq].position - (cl + 2)) / 38.0;
-                        a1 = rad / (c_sequences[channel][current_cseq - 1].blackbody - c_sequences[channel][current_cseq - 1].space) * ratio + rad / (c_sequences[channel][current_cseq].blackbody - c_sequences[channel][current_cseq].space) * (1 - ratio);
-                        a0 = -a1 * c_sequences[channel][current_cseq - 1].space * ratio - a1 * c_sequences[channel][current_cseq].space * (1 - ratio);
+                        rad = temperature_to_radiance(c_sequences[current_cseq].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
+                        ratio = (c_sequences[current_cseq].position - (cl + 2)) / 38.0;
+                        a1 = rad / (c_sequences[current_cseq - 1].blackbody[channel] - c_sequences[current_cseq - 1].space[channel]) * ratio + rad / (c_sequences[current_cseq].blackbody[channel] - c_sequences[current_cseq].space[channel]) * (1 - ratio);
+                        a0 = -a1 * c_sequences[current_cseq - 1].space[channel] * ratio - a1 * c_sequences[current_cseq].space[channel] * (1 - ratio);
                     }
 
                     ln["a0"] = a0;
