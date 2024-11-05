@@ -484,9 +484,6 @@ namespace goes
             else if (write_dcs && primary_header.file_type_code == 130)
             {
                 int offset = primary_header.total_header_length;
-                if (!std::filesystem::exists(directory + "/DCS"))
-                    std::filesystem::create_directory(directory + "/DCS");
-
                 if (!parseDCS(&file.lrit_data.data()[offset], file.lrit_data.size() - offset))
                     saveLRITFile(file, directory + "/DCS/Unknown");
             }

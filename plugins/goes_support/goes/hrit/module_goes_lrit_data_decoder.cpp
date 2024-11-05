@@ -216,8 +216,11 @@ namespace goes
                 }
             };
 
-            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
+            // Create directories
+            if (write_images && !std::filesystem::exists(directory + "/IMAGES/Unknown"))
                 std::filesystem::create_directories(directory + "/IMAGES/Unknown");
+            if (write_dcs && !std::filesystem::exists(directory + "/DCS"))
+                std::filesystem::create_directory(directory + "/DCS");
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
