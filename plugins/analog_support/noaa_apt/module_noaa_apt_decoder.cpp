@@ -619,8 +619,10 @@ namespace noaa_apt
                 }
             }
 
-            space_av /= validl1;
-            space_bv /= validl2;
+            if(validl1 > 0)
+                space_av /= validl1;
+            if(validl2 > 0)
+                space_bv /= validl2;
         }
         else
         {
