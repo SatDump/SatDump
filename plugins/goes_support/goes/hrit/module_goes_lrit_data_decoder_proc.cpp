@@ -484,7 +484,9 @@ namespace goes
             else if (write_dcs && primary_header.file_type_code == 130)
             {
                 int offset = primary_header.total_header_length;
-                if (!parseDCS(&file.lrit_data.data()[offset], file.lrit_data.size() - offset))
+
+                // Can only dump new format
+                if (file.vcid != 32 || !parseDCS(&file.lrit_data.data()[offset], file.lrit_data.size() - offset))
                     saveLRITFile(file, directory + "/DCS/Unknown");
             }
             // Otherwise, write as generic, unknown stuff. This should not happen

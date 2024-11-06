@@ -8,10 +8,8 @@ namespace goes
 {
     namespace hrit
     {
-        struct DCSMessage
+        struct DCSMessageHeader
         {
-            std::string type = "DCS Message";
-
             bool crc_pass = false;
             uint32_t sequence_number = 0;
             std::string data_rate;
@@ -41,17 +39,12 @@ namespace goes
             std::string modulation_index;
             std::string spacecraft;
             std::string drgs_source;
+
+            int type_id = 0; // Technically not part of a header, but the first word of the body
         };
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessage, type, crc_pass, sequence_number, data_rate, cs_platform,
-            parity_errors, no_eot, address_corrected, uncorrectable_address, invalid_address, pdt_incomplete,
-            timing_error, unexpected_message, wrong_channel, corrected_address, carrier_start, message_end,
-            signal_strength, freq_offset, phase_noise, good_phase, channel, modulation_index, spacecraft,
-            drgs_source);
 
-        struct MissedMessage
+        struct MissedMessageHeader
         {
-            std::string type = "Missed Message";
-
             bool crc_pass = false;
             uint32_t sequence_number = 0;
             uint16_t channel = 0;
@@ -61,8 +54,20 @@ namespace goes
             std::string window_end;
             std::string spacecraft;
         };
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessage, type, crc_pass, sequence_number, channel,
-            data_rate, platform_address, window_start, window_end, spacecraft);
+
+        struct DCSMessage
+        {
+            std::string type = "DCS Message";
+            DCSMessageHeader header;
+            std::string data_raw;
+            std::string data_ascii;
+        };
+
+        struct MissedMessage
+        {
+            std::string type = "Missed Message";
+            MissedMessageHeader header;
+        };
 
         struct DCSFile
         {
@@ -76,6 +81,17 @@ namespace goes
 
             std::vector<std::variant<DCSMessage, MissedMessage>> blocks;
         };
+
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessageHeader, crc_pass, sequence_number, data_rate, cs_platform,
+            parity_errors, no_eot, address_corrected, uncorrectable_address, invalid_address, pdt_incomplete,
+            timing_error, unexpected_message, wrong_channel, corrected_address, carrier_start, message_end,
+            signal_strength, freq_offset, phase_noise, good_phase, channel, modulation_index, spacecraft,
+            drgs_source, type_id);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessageHeader, crc_pass, sequence_number, channel, data_rate,
+            platform_address, window_start, window_end, spacecraft);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessage, type, header, data_raw, data_ascii);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessage, type, header);
+
         inline void to_json(nlohmann::ordered_json &j, const DCSFile &v)
         {
             j["name"] = v.name;
