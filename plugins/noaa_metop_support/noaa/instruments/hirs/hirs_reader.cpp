@@ -203,7 +203,7 @@ namespace noaa
                         a1 = rad / (c_sequences[current_cseq].blackbody[channel] - c_sequences[current_cseq].space[channel]);
                         a0 = -a1 * c_sequences[current_cseq].space[channel];
                     }
-                    else if (current_cseq > c_sequences.size() - 2)
+                    else if (current_cseq > c_sequences.size() - 1)
                     {
                         rad = temperature_to_radiance(c_sequences[current_cseq-1].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
                         a1 = rad / (c_sequences[current_cseq - 1].blackbody[channel] - c_sequences[current_cseq - 1].space[channel]);
