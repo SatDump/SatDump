@@ -164,6 +164,8 @@ namespace noaa
         void HIRSReader::calibrate(nlohmann::json calib_coef)
         {
             calib_out["calibrator"] = "noaa_hirs";
+            c_sequences.pop_back(); // Last sequence is always incomplete
+
             for (int channel = 0; channel < 19; channel++)
             {
                 for (uint8_t i = 0; i < c_sequences.size(); i++) // per channel per calib sequence
@@ -192,7 +194,7 @@ namespace noaa
                 for (int cl = 0; cl < line; cl++)
                 { // per line
                     nlohmann::json ln;
-                    if (cl == c_sequences[current_cseq].position)
+                    if (current_cseq < c_sequences.size() && cl == c_sequences[current_cseq].position)
                         current_cseq++;
 
                     if (current_cseq == 0)
