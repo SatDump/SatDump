@@ -227,94 +227,67 @@ namespace goes
                     hex_stream.clear();
 
                     // Parse known message types
-                    // SHEF
-                    if (dcs_message.data_ascii[0] == ':')
+                    // PRS Messages - modified SHEF
+                    if (dcs_message.data_ascii.substr(0, 5) == ":PRS:")
                     {
-                        size_t message_pos = 0;
-                        size_t char_pos;
-                        while (message_pos != std::string::npos)
+                        std::stringstream message_stream(dcs_message.data_ascii.substr(5, dcs_message.data_ascii.size() - 5));
+                        // TODO
+                    }
+
+                    // SHEF
+                    else if (dcs_message.data_ascii[0] == ':')
+                    {
+                        std::stringstream message_stream(dcs_message.data_ascii);
+                        std::string instrument_string;
+                        while (std::getline(message_stream, instrument_string, ':'))
                         {
+                            if (instrument_string.empty())
+                                continue;
+
+                            std::stringstream value_stream(instrument_string);
+                            std::vector<std::string> value_strings;
+                            std::string tmp_value;
+                            while (std::getline(value_stream, tmp_value, ' '))
+                                value_strings.push_back(tmp_value);
+
+                            // TODO: Handle when there are multiple sensors of the same name (HG1, HG2)
                             DCSValue new_value;
-                            char_pos = message_pos + 1;
+                            if (shef_codes.count(value_strings[0]) > 0)
+                                new_value.name = shef_codes[value_strings[0]];
+                            else
+                                new_value.name = value_strings[0];
 
-                            // Sensor label
-                            size_t next_char_pos = dcs_message.data_ascii.find_first_of(' ', char_pos + 1);
-                            if (next_char_pos == std::string::npos)
-                            {
-                                message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
+                            // Header with no body
+                            if (value_strings.size() < 2)
                                 continue;
-                            }
 
-                            new_value.name = dcs_message.data_ascii.substr(char_pos, next_char_pos - char_pos);
-                            char_pos = next_char_pos + 1;
+                            // Simple header/value
+                            else if (value_strings.size() == 2)
+                                new_value.values.push_back(value_strings[1]);
 
-                            // TODO: Implement SHEF code lookup table
-
-                            // Check for value-only
-                            size_t next_message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
-                            next_char_pos = dcs_message.data_ascii.find_first_of(" ", char_pos + 1);
-                            if(next_char_pos == std::string::npos || next_char_pos == dcs_message.data_ascii.length() - 1 || next_char_pos + 1 == next_message_pos)
+                            // Standard value
+                            else
                             {
-                                new_value.values.push_back(dcs_message.data_ascii.substr(char_pos, next_char_pos - char_pos));
-                                dcs_message.data_values.emplace_back(new_value);
-                                message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
-                                continue;
-                            }
-
-                            // Age of newest reading
-                            next_char_pos = dcs_message.data_ascii.find_first_of(' ', char_pos + 1);
-                            if (next_char_pos == std::string::npos)
-                            {
-                                message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
-                                continue;
-                            }
-
-                            try
-                            {
-                                new_value.reading_age = std::stoi(dcs_message.data_ascii.substr(char_pos, next_char_pos - char_pos));
-                            }
-                            catch (std::exception &)
-                            {
-                                message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
-                                continue;
-                            }
-                            char_pos = next_char_pos + 1;
-
-                            // Reading Interval
-                            if (dcs_message.data_ascii[char_pos] == '#')
-                            {
-                                char_pos++;
-                                next_char_pos = dcs_message.data_ascii.find_first_of(' ', char_pos + 1);
-                                if (next_char_pos == std::string::npos)
-                                {
-                                    message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
-                                    continue;
-                                }
-
+                                int val_offset = 2;
                                 try
                                 {
-                                    new_value.interval = std::stoi(dcs_message.data_ascii.substr(char_pos, next_char_pos - char_pos));
+                                    new_value.reading_age = std::stoi(value_strings[1]);
+                                    if (value_strings[2][0] == '#')
+                                    {
+                                        val_offset++;
+                                        new_value.interval = std::stoi(value_strings[2].substr(1, value_strings[2].size() - 1));
+                                    }
                                 }
-                                catch (std::exception&)
+                                catch(std::exception &)
                                 {
-                                    message_pos = dcs_message.data_ascii.find_first_of(':', message_pos + 1);
                                     continue;
                                 }
 
-                                char_pos = next_char_pos;
-                            }
-
-                            // Get all readings
-                            while (char_pos != std::string::npos && char_pos < next_message_pos - 1)
-                            {
-                                char_pos++;
-                                next_char_pos = dcs_message.data_ascii.find_first_of(": ", char_pos + 1);
-                                new_value.values.push_back(dcs_message.data_ascii.substr(char_pos, next_char_pos - char_pos));
-                                char_pos = next_char_pos;
+                                while (val_offset < value_strings.size())
+                                    new_value.values.push_back(value_strings[val_offset++]);
                             }
 
                             dcs_message.data_values.emplace_back(new_value);
-                            message_pos = next_message_pos;
                         }
 
                         if (dcs_message.data_values.size() > 0)

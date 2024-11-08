@@ -35,6 +35,7 @@ namespace goes
 
             std::string directory;
             CRC32 dcs_crc32;
+            std::map<std::string, std::string> shef_codes;
 
             enum CustomFileParams
             {

@@ -61,7 +61,6 @@ namespace goes
             int interval = 0;
             int reading_age = 0;
             std::vector<std::string> values;
-            std::string units;
         };
 
         struct DCSMessage
@@ -100,7 +99,7 @@ namespace goes
             drgs_source, type_id);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessageHeader, crc_pass, sequence_number, channel, data_rate,
             platform_address, window_start, window_end, spacecraft);
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSValue, name, reading_age, interval, values, units);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSValue, name, reading_age, interval, values);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessage, type, header, data_type, data_raw, data_ascii, data_values);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessage, type, header);
 

@@ -7,6 +7,8 @@
 #include "common/utils.h"
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
+#include "nlohmann/json_utils.h"
+#include "resources.h"
 
 namespace goes
 {
@@ -63,6 +65,10 @@ namespace goes
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+            if (write_images && !std::filesystem::exists(directory + "/IMAGES/Unknown"))
+                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
+            if (write_dcs && !std::filesystem::exists(directory + "/DCS"))
+                std::filesystem::create_directory(directory + "/DCS");
 
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
@@ -216,11 +222,8 @@ namespace goes
                 }
             };
 
-            // Create directories
-            if (write_images && !std::filesystem::exists(directory + "/IMAGES/Unknown"))
-                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
-            if (write_dcs && !std::filesystem::exists(directory + "/DCS"))
-                std::filesystem::create_directory(directory + "/DCS");
+            if (write_dcs)
+                shef_codes = loadJsonFile(resources::getResourcePath("dcs/shef_codes.json"));
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
