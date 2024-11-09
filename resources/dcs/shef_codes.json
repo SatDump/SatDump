@@ -1,5 +1,7 @@
 {
   // Source: https://www.noaasis.noaa.gov/GOES/GOES_DCS/schefcodes.html
+  // Modified for modern usage
+
   "AF": "Surface frost intensity (coded, see Table 20)",
   "AG": "Percent of green vegetation (%)",
   "AM": "Surface dew intensity (coded, see Table 21)",
@@ -16,13 +18,7 @@
   "BH": "Amount of water equivalent above which 100 % areal snow cover temporarily exists (in, mm)",
   "BI": "Excess liquid water in storage (in, mm)",
   "BJ": "Areal extent of snow cover adjustment (in, mm)",
-  "BK": "Lagged excess liquid water for interval 1 (in, mm)",
-  "BL": "Lagged excess liquid water for interval 2 (in, mm)",
-  "BM": "Lagged excess liquid water for interval 3 (in, mm)",
-  "BN": "Lagged excess liquid water for interval 4 (in, mm)",
-  "BO": "Lagged excess liquid water for interval 5 (in, mm)",
-  "BP": "Lagged excess liquid water for interval 6 (in, mm)",
-  "BQ": "Lagged excess liquid water for interval 7 (in, mm)",
+  "BL": "Voltage - battery (volt)",
   "CA": "Upper zone tension water contents (in, mm)",
   "CB": "Upper zone free water contents (in, mm)",
   "CC": "Lower zone tension water contents (in, mm)",

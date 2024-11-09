@@ -8,6 +8,29 @@ namespace goes
 {
     namespace hrit
     {
+        struct PEInfo
+        {
+            int record_interval = 0;
+            int read_to_transmit_offset = 0;
+            float base_elevation = 0.0f;
+            float correction = 0.0f;
+        };
+
+        struct DCP
+        {
+            std::map<std::string, PEInfo> pe_info;
+            std::string nwsli;
+            std::string dcp_owner;
+            std::string state_location;
+            std::string hydrologic_service_area;
+            std::string initial_transmission_time;
+            std::string location_name;
+            std::string decoding_mode;
+            int transmission_interval = 0;
+            float lat = 0.0f;
+            float lon = 0.0f;
+        };
+
         struct DCSMessageHeader
         {
             bool crc_pass = false;
@@ -68,6 +91,7 @@ namespace goes
             std::string type = "DCS Message";
             DCSMessageHeader header;
             std::string data_type = "Unknown";
+            std::shared_ptr<DCP> dcp = nullptr;
             std::string data_raw;
             std::string data_ascii;
             std::vector<DCSValue> data_values;
@@ -77,6 +101,7 @@ namespace goes
         {
             std::string type = "Missed Message";
             MissedMessageHeader header;
+            std::shared_ptr<DCP> dcp = nullptr;
         };
 
         struct DCSFile
@@ -92,6 +117,9 @@ namespace goes
             std::vector<std::variant<DCSMessage, MissedMessage>> blocks;
         };
 
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PEInfo, record_interval, read_to_transmit_offset, base_elevation, correction);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCP, pe_info, nwsli, dcp_owner, state_location, hydrologic_service_area,
+            initial_transmission_time, location_name, decoding_mode, transmission_interval, lat, lon);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessageHeader, crc_pass, sequence_number, data_rate, cs_platform,
             parity_errors, no_eot, address_corrected, uncorrectable_address, invalid_address, pdt_incomplete,
             timing_error, unexpected_message, wrong_channel, corrected_address, carrier_start, message_end,
@@ -100,8 +128,53 @@ namespace goes
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessageHeader, crc_pass, sequence_number, channel, data_rate,
             platform_address, window_start, window_end, spacecraft);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSValue, name, reading_age, interval, values);
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessage, type, header, data_type, data_raw, data_ascii, data_values);
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MissedMessage, type, header);
+
+        inline void to_json(nlohmann::json &j, const DCSMessage &v)
+        {
+            j["type"] = v.type;
+            j["header"] = v.header;
+            j["data_type"] = v.data_type;
+            j["data_raw"] = v.data_raw;
+            j["data_ascii"] = v.data_ascii;
+            j["data_values"] = v.data_values;
+
+            if (v.dcp == nullptr)
+                j["dcp"] = nullptr;
+            else
+                j["dcp"] = *v.dcp;
+        }
+
+        inline void from_json(const nlohmann::json &j, DCSMessage &v)
+        {
+            j.at("type").get_to(v.type);
+            j.at("header").get_to(v.header);
+
+            if (j.at("dcp").is_null())
+                v.dcp = nullptr;
+            else
+                v.dcp = std::make_shared<DCP>((DCP)(j.at("dcp")));
+        };
+
+        inline void to_json(nlohmann::json &j, const MissedMessage &v)
+        {
+            j["type"] = v.type;
+            j["header"] = v.header;
+            if (v.dcp == nullptr)
+                j["dcp"] = nullptr;
+            else
+                j["dcp"] = *v.dcp;
+        }
+
+        inline void from_json(const nlohmann::json &j, MissedMessage &v)
+        {
+            j.at("type").get_to(v.type);
+            j.at("header").get_to(v.header);
+
+            if (j.at("dcp").is_null())
+                v.dcp = nullptr;
+            else
+                v.dcp = std::make_shared<DCP>((DCP)(j.at("dcp")));
+        };
 
         inline void to_json(nlohmann::ordered_json &j, const DCSFile &v)
         {
@@ -112,10 +185,11 @@ namespace goes
             j["file_crc_pass"] = v.file_crc_pass;
 
             nlohmann::json blocks_arr = nlohmann::json::array();
-            for(auto &block : v.blocks)
-                std::visit([&blocks_arr](const auto &v) { blocks_arr.push_back(v); }, block);
+            for (auto& block : v.blocks)
+                std::visit([&blocks_arr](const auto& v) { blocks_arr.push_back(v); }, block);
             j["blocks"] = blocks_arr;
         }
+
         inline void from_json(const nlohmann::ordered_json &j, DCSFile &v)
         {
             j.at("name").get_to(v.name);
@@ -124,7 +198,7 @@ namespace goes
             j.at("header_crc_pass").get_to(v.header_crc_pass);
             j.at("file_crc_pass").get_to(v.file_crc_pass);
 
-            for(auto &block : j["blocks"])
+            for (auto& block : j["blocks"])
             {
                 if (block["type"] == "DCS Message")
                     v.blocks.push_back(block.get<DCSMessage>());

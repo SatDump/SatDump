@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/module.h"
+#include "data/dcs_decoder.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
 #include "common/lrit/lrit_productizer.h"
@@ -34,8 +35,10 @@ namespace goes
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;
+
             CRC32 dcs_crc32;
             std::map<std::string, std::string> shef_codes;
+            std::map<uint32_t, std::shared_ptr<DCP>> dcp_list;
 
             enum CustomFileParams
             {
@@ -60,6 +63,8 @@ namespace goes
 
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
+
+            void initDCS();
             bool parseDCS(uint8_t *data, size_t size);
 
             ::lrit::LRITProductizer productizer;

@@ -4,11 +4,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-#include "common/utils.h"
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
-#include "nlohmann/json_utils.h"
-#include "resources.h"
 
 namespace goes
 {
@@ -74,8 +71,9 @@ namespace goes
             logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
-
             uint8_t cadu[1024];
+
+            initDCS();
 
             logger->info("Demultiplexing and deframing...");
 
@@ -221,9 +219,6 @@ namespace goes
                     }
                 }
             };
-
-            if (write_dcs)
-                shef_codes = loadJsonFile(resources::getResourcePath("dcs/shef_codes.json"));
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
