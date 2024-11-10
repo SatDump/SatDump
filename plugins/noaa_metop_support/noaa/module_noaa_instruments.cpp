@@ -264,7 +264,7 @@ namespace noaa
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/HIRS.json"));
                     if (calib_coefs.contains(sat_name))
                     {
-                        hirs_reader.calibrate(calib_coefs[sat_name]);
+                        hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
                         hirs_products.set_calibration(hirs_reader.calib_out);
                         for (int n = 0; n < 19; n++)
                             hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);

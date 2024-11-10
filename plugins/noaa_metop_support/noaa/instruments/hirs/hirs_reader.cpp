@@ -64,7 +64,7 @@ namespace noaa
 
                 for (int i = 0; i < 20; i++)
                 {
-                    if (encoder < 57 || encoder == 68 || encoder == 156)
+                    if (encoder < 57 || encoder == 68 || encoder == 156 || encoder == 59 || encoder == 99)
                     {
                         if ((channels[i][55 - elnum + 56 * line] >> 12) == 1)
                         {
@@ -76,18 +76,19 @@ namespace noaa
                             channels[i][55 - elnum + 56 * line] = abs(buffer);
                         }
 
-                        if (encoder == 68)
+                        if (encoder == 68 || encoder == 59)
                             spc_calib++;
-                        if (encoder == 156)
+                        if (encoder == 156 || encoder == 99)
                             bb_calib++;
                     }
                 }
 
                 if (current == 55 || (encoder == 0 && aux_counter > 10)) // 10 was choosen for best results
                 {
-                    if (spc_calib > 40)
+                    if (spc_calib > 500)
                     {
                         spc_calib = 0;
+                        c_sequences[c_sequences.size() - 1].spc_ready = true;
                         for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c_sequences.size() - 1].calc_space(&channels[c][56 * line], c);
@@ -97,18 +98,13 @@ namespace noaa
                         for (int i = 0; i < 56; i++)
                             channels[19][i + 56 * line] = 0;
                     }
-                    if (bb_calib > 40)
+                    if (bb_calib > 500)
                     {
                         bb_calib = 0;
+                        c_sequences[c_sequences.size() - 1].bb_ready = true;
                         for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c_sequences.size() - 1].calc_bb(&channels[c][56 * line], c);
-
-                            if (c_sequences[c_sequences.size() - 1].is_ready())
-                            {
-                                c_sequences[c_sequences.size() - 1].position = line;
-                                c_sequences.push_back(calib_sequence());
-                            }
 
                             for (int i = 0; i < 56; i++)
                                 channels[c][i + 56 * line] = 0;
@@ -116,6 +112,13 @@ namespace noaa
                         for (int i = 0; i < 56; i++)
                             channels[19][i + 56 * line] = 0;
                     }
+
+                    if (c_sequences[c_sequences.size() - 1].is_ready())
+                    {
+                        c_sequences[c_sequences.size() - 1].position = line;
+                        c_sequences.push_back(calib_sequence());
+                    }
+
                     aux_counter = 0;
                     line++;
                     for (int l = 0; l < 20; l++)
@@ -161,10 +164,11 @@ namespace noaa
         // ## calib stuff ##
         // #################
 
-        void HIRSReader::calibrate(nlohmann::json calib_coef)
+        void HIRSReader::calibrate(nlohmann::json calib_coef, bool HIRS3)
         {
             calib_out["calibrator"] = "noaa_hirs";
-            c_sequences.pop_back(); // Last sequence is always incomplete
+            if (c_sequences.size() > 1)
+                c_sequences.pop_back(); // Last sequence is always incomplete
 
             for (int channel = 0; channel < 19; channel++)
             {
@@ -182,39 +186,82 @@ namespace noaa
                             c_sequences[i].PRT_temp += calib_coef["PRT_poly"][p][deg].get<double>() * pow(-w_avg, deg);
                         }
                     }
-                    c_sequences[i].PRT_temp /= 5;
+                    c_sequences[i].PRT_temp /= HIRS3 ? 4 : 5;
 
-                    //std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].blackbody[channel] << std::endl;
+                    // std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].space[channel] << std::endl;
                     c_sequences[i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[i].PRT_temp;
                 }
 
                 nlohmann::json ch;
                 double a0 = 0, a1 = 0, rad = 0, ratio = 0;
                 uint16_t current_cseq = 0;
+
                 for (int cl = 0; cl < line; cl++)
                 { // per line
                     nlohmann::json ln;
+                    if (c_sequences.size() == 0)
+                    {
+                        ln["a0"] = -999.99;
+                        ln["a1"] = -999.99;
+                        ch.push_back(ln);
+                        continue;
+                    }
+
                     if (current_cseq < c_sequences.size() && cl == c_sequences[current_cseq].position)
                         current_cseq++;
 
                     if (current_cseq == 0)
                     {
+                        if (c_sequences[current_cseq].blackbody[channel] == 0 || c_sequences[current_cseq].space[channel] == 0)
+                        {
+                            ln["a0"] = -999.99;
+                            ln["a1"] = -999.99;
+                            ch.push_back(ln);
+                            continue;
+                        }
                         rad = temperature_to_radiance(c_sequences[current_cseq].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
                         a1 = rad / (c_sequences[current_cseq].blackbody[channel] - c_sequences[current_cseq].space[channel]);
                         a0 = -a1 * c_sequences[current_cseq].space[channel];
                     }
                     else if (current_cseq > c_sequences.size() - 1)
                     {
-                        rad = temperature_to_radiance(c_sequences[current_cseq-1].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
+                        if (c_sequences[current_cseq - 1].blackbody[channel] == 0 || c_sequences[current_cseq - 1].space[channel] == 0)
+                        {
+                            ln["a0"] = -999.99;
+                            ln["a1"] = -999.99;
+                            ch.push_back(ln);
+                            continue;
+                        }
+                        rad = temperature_to_radiance(c_sequences[current_cseq - 1].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
                         a1 = rad / (c_sequences[current_cseq - 1].blackbody[channel] - c_sequences[current_cseq - 1].space[channel]);
                         a0 = -a1 * c_sequences[current_cseq - 1].space[channel];
                     }
                     else
                     { // interpolate
+                        bool bb0 = c_sequences[current_cseq].blackbody[channel], bb1 = c_sequences[current_cseq - 1].blackbody[channel], spc0 = c_sequences[current_cseq].space[channel], spc1 = c_sequences[current_cseq - 1].space[channel];
+
+                        if (bb0 == 0 && bb1 != 0)
+                            bb0 = bb1;
+                        else if (bb1 == 0 && bb0 != 0)
+                            bb1 = bb0;
+
+                        if (spc0 == 0 && spc1 != 0)
+                            spc0 = spc1;
+                        else if (spc1 == 0 && spc0 != 0)
+                            spc1 = spc0;
+
+                        if ((bb0 == 0 && bb1 == 0) || (spc0 == 0 && spc1 == 0))
+                        {
+                            ln["a0"] = -999.99;
+                            ln["a1"] = -999.99;
+                            ch.push_back(ln);
+                            continue;
+                        }
+
                         rad = temperature_to_radiance(c_sequences[current_cseq].PRT_temp, calib_coef["wavenumber"][channel].get<double>());
                         ratio = (c_sequences[current_cseq].position - (cl + 2)) / 38.0;
-                        a1 = rad / (c_sequences[current_cseq - 1].blackbody[channel] - c_sequences[current_cseq - 1].space[channel]) * ratio + rad / (c_sequences[current_cseq].blackbody[channel] - c_sequences[current_cseq].space[channel]) * (1 - ratio);
-                        a0 = -a1 * c_sequences[current_cseq - 1].space[channel] * ratio - a1 * c_sequences[current_cseq].space[channel] * (1 - ratio);
+                        a1 = rad / (bb1 - spc1) * ratio + rad / (bb0 - spc0) * (1 - ratio);
+                        a0 = -a1 * spc1 * ratio - a1 * spc0 * (1 - ratio);
                     }
 
                     ln["a0"] = a0;

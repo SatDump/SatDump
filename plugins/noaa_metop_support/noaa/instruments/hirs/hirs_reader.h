@@ -24,6 +24,7 @@ namespace noaa
             uint16_t space[19];
             uint16_t blackbody[19];
             double PRT_temp = 0;
+            bool bb_ready = false, spc_ready = false;
 
             void calc_space(uint16_t *samples, uint8_t channel)
             {
@@ -35,10 +36,7 @@ namespace noaa
             }
             bool is_ready()
             {
-                for (int i = 0; i < 19; i++)
-                    if (space[i] == 0 || blackbody[i] == 0)
-                        return false;
-                return true;
+                return bb_ready && spc_ready;
             }
 
             static uint16_t calc_avg(uint16_t *samples, int count);
@@ -62,7 +60,7 @@ namespace noaa
             int line = 0;
             void work(uint8_t *buffer);
             image::Image getChannel(int channel);
-            void calibrate(nlohmann::json calib_coef);
+            void calibrate(nlohmann::json calib_coef, bool HIRS3);
             nlohmann::json calib_out;
 
             double last_timestamp = -1;
