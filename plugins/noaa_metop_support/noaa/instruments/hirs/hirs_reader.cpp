@@ -92,8 +92,8 @@ namespace noaa
                         for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c_sequences.size() - 1].calc_space(&channels[c][56 * line], c);
-                            //for (int i = 0; i < 56; i++)
-                            //    channels[c][i + 56 * line] = 0;
+                            for (int i = 0; i < 56; i++)
+                                channels[c][i + 56 * line] = 0;
                         }
                         for (int i = 0; i < 56; i++)
                             channels[19][i + 56 * line] = 0;
