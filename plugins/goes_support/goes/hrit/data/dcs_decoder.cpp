@@ -38,16 +38,18 @@ namespace goes
 
             shef_codes = loadJsonFile(resources::getResourcePath("dcs/shef_codes.json"));
 
-            std::string file_data;
-            logger->info("Updating DCP list for DCS processing. Please wait...");
-            if (!perform_http_request("https://hads.ncep.noaa.gov/compressed_defs/all_dcp_defs.txt", file_data))
             {
-                std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
-                save_hads << file_data;
-                save_hads.close();
+                std::string file_data;
+                logger->info("Updating DCP list for DCS processing. Please wait...");
+                if (!perform_http_request("https://hads.ncep.noaa.gov/compressed_defs/all_dcp_defs.txt", file_data))
+                {
+                    std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
+                    save_hads << file_data;
+                    save_hads.close();
+                }
+                else
+                    logger->warn("Unable to downloadload DCP list!");
             }
-            else
-                logger->warn("Unable to downloadload DCP list!");
 
             if (std::filesystem::exists(satdump::user_path + "/all_dcp_defs.txt"))
             {
@@ -139,13 +141,15 @@ namespace goes
 
                         dcp_list[std::stoul(hads_tokens[0], nullptr, 16)] = new_dcp;
                     }
-                    catch (std::exception&)
+                    catch (std::exception &)
                     {
                         logger->warn("Error loading DCP list! Some DCS data will not be parsed");
                         dcp_list.clear();
+                        read_hads.close();
                         break;
                     }
                 }
+                read_hads.close();
             }
             else
                 logger->warn("Unable to load DCP list! Some DCS data will not be parsed");
@@ -346,12 +350,10 @@ namespace goes
                         hex_stream << std::setw(2) << +block_ptr[i];
 
                         // Modified ascii to ascii
-                        if (!found_beginning && (block_ptr[i] & 0x3F) == 0x20)
+                        if (!found_beginning && block_ptr[i] == 0x20)
                             continue;
                         found_beginning = true;
-                        dcs_message.data_ascii += block_ptr[i] & 0x3F;
-                        if(dcs_message.data_ascii.back() < 0x20)
-                            dcs_message.data_ascii.back() += 0x40;
+                        dcs_message.data_ascii += block_ptr[i] & 0x7F;
                     }
 
                     dcs_message.data_raw = hex_stream.str();
@@ -359,10 +361,9 @@ namespace goes
 
                     // Parse known message types
                     // PRS Messages - modified SHEF
-                    if (dcs_message.data_ascii.substr(0, 5) == ":PRS:")
+                    if (dcs_message.data_ascii.substr(0, 4) == ":PRS")
                     {
-                        std::stringstream message_stream(dcs_message.data_ascii.substr(5, dcs_message.data_ascii.size() - 5));
-                        // TODO
+                        // Ignore for now...
                     }
 
                     // SHEF
@@ -379,7 +380,32 @@ namespace goes
                             std::vector<std::string> value_strings;
                             std::string tmp_value;
                             while (std::getline(value_stream, tmp_value, ' '))
-                                value_strings.push_back(tmp_value);
+                            {
+                                if (tmp_value.empty())
+                                    continue;
+
+                                bool is_number = true;
+                                if (value_strings.size() == 1 && value_stream.peek() != EOF)
+                                {
+                                    for (size_t i = 0; i < tmp_value.size(); i++)
+                                    {
+                                        if (!((tmp_value[i] >= '0' && tmp_value[i] <= '9') ||
+                                            (tmp_value.size() > 1 && (tmp_value[i] == '-' || tmp_value[i] == '.'))))
+                                        {
+                                            is_number = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (is_number)
+                                    value_strings.push_back(tmp_value);
+                                else
+                                    value_strings[0] += " " + tmp_value;
+                            }
+
+                            if (value_strings.size() == 0)
+                                continue;
 
                             DCSValue new_value;
                             std::string sensor_label = value_strings[0];
@@ -413,7 +439,7 @@ namespace goes
                                 try
                                 {
                                     new_value.reading_age = std::stoi(value_strings[1]);
-                                    if (value_strings[2][0] == '#')
+                                    if (value_strings[2][0] == '#' && value_strings[2].size() > 1)
                                     {
                                         val_offset++;
                                         new_value.interval = std::stoi(value_strings[2].substr(1, value_strings[2].size() - 1));
@@ -435,68 +461,71 @@ namespace goes
                             dcs_message.data_type = "SHEF";
                     }
 
-                    // Sutron
-                    // TODO: Types C and D
-                    else if ((dcs_message.data_ascii[0] == 'B' || dcs_message.data_ascii[0] == 'C' ||
-                        dcs_message.data_ascii[0] == 'D') && (dcs_message.data_ascii[1] == '1' ||
+                    // Pseudobinary B
+                    else if (dcs_message.data_ascii[0] == 'B' && (dcs_message.data_ascii[1] == '1' ||
                         dcs_message.data_ascii[1] == '2' || dcs_message.data_ascii[1] == '3' ||
                         dcs_message.data_ascii[1] == '4'))
                     {
-                        // Sutron can only be decoded if we know what data to expect
+                        // Pseudobinary B and D can only be decoded if we know what data to expect.
+                        // Type D is not used on platforms listed in HADS as of November 2024,
+                        // so no point in decoding it here
+
                         if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0)
                         {
-                            // Pseudobinary B
-                            if (dcs_message.data_ascii[0] == 'B')
+                            int data_bytes = dcs_message.data_ascii.size() - 4;
+                            if (data_bytes % 3 != 0)
                             {
-                                int data_bytes = dcs_message.data_ascii.size() - 4;
-                                if (data_bytes % 3 != 0)
-                                {
-                                    // Look for optional fields at the end
-                                    size_t data_end = dcs_message.data_ascii.find_first_of(' ');
-                                    if (data_end != std::string::npos)
-                                        data_bytes -= dcs_message.data_ascii.size() - data_end;
-                                }
+                                // Look for optional fields at the end
+                                size_t data_end = dcs_message.data_ascii.find_first_of(' ');
+                                if (data_end != std::string::npos)
+                                    data_bytes -= dcs_message.data_ascii.size() - data_end;
+                            }
 
-                                if (data_bytes % 3 == 0)
+                            if (data_bytes % 3 == 0)
+                            {
+                                dcs_message.data_type = "Pseudobinary";
+                                int sensor_offset = 3;
+                                for (auto &physical_element : dcs_message.dcp->pe_info)
                                 {
-                                    dcs_message.data_type = "Sutron";
-                                    int sensor_offset = 3;
-                                    for (auto &physical_element : dcs_message.dcp->pe_info)
+                                    DCSValue new_value;
+                                    new_value.reading_age = dcs_message.data_ascii[2] - 0x40;
+                                    new_value.name = physical_element.first;
+                                    new_value.interval = physical_element.second.record_interval;
+                                    for (size_t i = 0; i < data_bytes / dcs_message.dcp->pe_info.size() / 3; i++)
                                     {
-                                        DCSValue new_value;
-                                        new_value.reading_age = dcs_message.data_ascii[2] - 0x40;
-                                        new_value.name = physical_element.first;
-                                        new_value.interval = physical_element.second.record_interval;
-                                        for (size_t i = 0; i < data_bytes / dcs_message.dcp->pe_info.size() / 3; i++)
+                                        // No reading
+                                        if (dcs_message.data_ascii.substr(sensor_offset + (3 * i), 3) == "///")
                                         {
-                                            int val_int = (uint32_t)(dcs_message.data_ascii[sensor_offset + (3 * i) + 2] - 0x40) |
-                                                (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
-                                                (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i)] - 0x40) << 12);
-
-                                            // TODO: Seems to give incorrect values sometimes
-                                            if ((dcs_message.data_ascii[sensor_offset + (3 * i)] & 0x20) != 0)
-                                                val_int = val_int * -1 + 0x20000;
-
-                                            new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
+                                            new_value.values.emplace_back("0");
+                                            continue;
                                         }
 
-                                        sensor_offset += data_bytes / dcs_message.dcp->pe_info.size();
-                                        dcs_message.data_values.emplace_back(new_value);
+                                        int val_int = (uint32_t)(dcs_message.data_ascii[sensor_offset + (3 * i) + 2] - 0x40) |
+                                            (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
+                                            (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i)] - 0x40) << 12);
+
+                                        if ((dcs_message.data_ascii[sensor_offset + (3 * i)] & 0x20) != 0)
+                                            val_int = val_int * -1 + 0x20000;
+
+                                        new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
                                     }
 
-                                    // Get Battery Value
-                                    DCSValue battery_value;
-                                    battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
-                                    battery_value.name = "Voltage - battery (volt)";
-                                    battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.234 + 10.6));
-                                    dcs_message.data_values.emplace_back(battery_value);
+                                    sensor_offset += data_bytes / dcs_message.dcp->pe_info.size();
+                                    dcs_message.data_values.emplace_back(new_value);
                                 }
+
+                                // Get Battery Value
+                                DCSValue battery_value;
+                                battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
+                                battery_value.name = "Voltage - battery (volt)";
+                                battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.234 + 10.6));
+                                dcs_message.data_values.emplace_back(battery_value);
                             }
                         }
                     }
 
                     // ASCII Files (just mark here for easy rendering)
-                    else if (dcs_message.data_ascii.substr(0, 2) == "MJ") // "MJ" - 0x40 == "\r\n"
+                    else if (dcs_message.data_ascii.substr(0, 2) == "\r\n")
                         dcs_message.data_type = "ASCII";
 
                     dcs_file.blocks.emplace_back(dcs_message);
