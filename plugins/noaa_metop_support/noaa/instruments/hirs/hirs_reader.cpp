@@ -238,7 +238,7 @@ namespace noaa
                     }
                     else
                     { // interpolate
-                        bool bb0 = c_sequences[current_cseq].blackbody[channel], bb1 = c_sequences[current_cseq - 1].blackbody[channel], spc0 = c_sequences[current_cseq].space[channel], spc1 = c_sequences[current_cseq - 1].space[channel];
+                        double bb0 = c_sequences[current_cseq].blackbody[channel], bb1 = c_sequences[current_cseq - 1].blackbody[channel], spc0 = c_sequences[current_cseq].space[channel], spc1 = c_sequences[current_cseq - 1].space[channel];
 
                         if (bb0 == 0 && bb1 != 0)
                             bb0 = bb1;
