@@ -65,7 +65,7 @@ namespace goes
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
 
             void initDCS();
-            bool parseDCS(uint8_t *data, size_t size);
+            bool processDCS(uint8_t *data, size_t size);
 
             ::lrit::LRITProductizer productizer;
 

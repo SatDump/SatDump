@@ -486,7 +486,7 @@ namespace goes
                 int offset = primary_header.total_header_length;
 
                 // Can only dump new format
-                if (file.vcid != 32 || !parseDCS(&file.lrit_data.data()[offset], file.lrit_data.size() - offset))
+                if (file.vcid != 32 || !processDCS(&file.lrit_data.data()[offset], file.lrit_data.size() - offset))
                     saveLRITFile(file, directory + "/DCS/Unknown");
             }
             // Otherwise, write as generic, unknown stuff. This should not happen

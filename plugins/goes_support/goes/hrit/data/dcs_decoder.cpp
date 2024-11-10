@@ -133,10 +133,12 @@ namespace goes
                             new_info.base_elevation = std::stoi(hads_tokens[i + 3]);
                             new_info.correction = std::stoi(hads_tokens[i + 4]);
                             
-                            if(shef_codes.count(hads_tokens[i]) > 0)
-                                new_dcp->pe_info[shef_codes[hads_tokens[i]]] = new_info;
+                            if (shef_codes.count(hads_tokens[i]) > 0)
+                                new_info.name = shef_codes[hads_tokens[i]];
                             else
-                                new_dcp->pe_info[hads_tokens[i]] = new_info;
+                                new_info.name = hads_tokens[i];
+
+                            new_dcp->pe_info.emplace_back(new_info);
                         }
 
                         dcp_list[std::stoul(hads_tokens[0], nullptr, 16)] = new_dcp;
@@ -155,7 +157,7 @@ namespace goes
                 logger->warn("Unable to load DCP list! Some DCS data will not be parsed");
         }
 
-        bool GOESLRITDataDecoderModule::parseDCS(uint8_t *data, size_t size)
+        bool GOESLRITDataDecoderModule::processDCS(uint8_t *data, size_t size)
         {
             DCSFile dcs_file;
 
@@ -361,13 +363,13 @@ namespace goes
 
                     // Parse known message types
                     // PRS Messages - modified SHEF
-                    if (dcs_message.data_ascii.substr(0, 4) == ":PRS")
+                    if (dcs_message.data_ascii.substr(0, 4) == ":PRS" && dcs_message.data_ascii.size() > 3)
                     {
                         // Ignore for now...
                     }
 
                     // SHEF
-                    else if (dcs_message.data_ascii[0] == ':')
+                    else if (dcs_message.data_ascii[0] == ':' && dcs_message.data_ascii.size() > 1)
                     {
                         std::stringstream message_stream(dcs_message.data_ascii);
                         std::string instrument_string;
@@ -464,7 +466,7 @@ namespace goes
                     // Pseudobinary B
                     else if (dcs_message.data_ascii[0] == 'B' && (dcs_message.data_ascii[1] == '1' ||
                         dcs_message.data_ascii[1] == '2' || dcs_message.data_ascii[1] == '3' ||
-                        dcs_message.data_ascii[1] == '4'))
+                        dcs_message.data_ascii[1] == '4') && dcs_message.data_ascii.size() > 4)
                     {
                         // Pseudobinary B and D can only be decoded if we know what data to expect.
                         // Type D is not used on platforms listed in HADS as of November 2024,
@@ -483,14 +485,14 @@ namespace goes
 
                             if (data_bytes % 3 == 0)
                             {
-                                dcs_message.data_type = "Pseudobinary";
+                                dcs_message.data_type = "Pseudobinary B";
                                 int sensor_offset = 3;
-                                for (auto &physical_element : dcs_message.dcp->pe_info)
+                                for (int pe_count = 0; pe_count < dcs_message.dcp->pe_info.size(); pe_count++)
                                 {
                                     DCSValue new_value;
                                     new_value.reading_age = dcs_message.data_ascii[2] - 0x40;
-                                    new_value.name = physical_element.first;
-                                    new_value.interval = physical_element.second.record_interval;
+                                    new_value.name = dcs_message.dcp->pe_info[pe_count].name;
+                                    new_value.interval = dcs_message.dcp->pe_info[pe_count].record_interval;
                                     for (size_t i = 0; i < data_bytes / dcs_message.dcp->pe_info.size() / 3; i++)
                                     {
                                         // No reading
@@ -519,6 +521,75 @@ namespace goes
                                 battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
                                 battery_value.name = "Voltage - battery (volt)";
                                 battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.234 + 10.6));
+                                dcs_message.data_values.emplace_back(battery_value);
+                            }
+                        }
+                    }
+
+                    // Pseudobinary C
+                    // Rarely used, but only pseudobinary format that
+                    // can be accurately decoded without DCP info
+                    else if (dcs_message.data_ascii[0] == 'C' && (dcs_message.data_ascii[1] == '1' ||
+                        dcs_message.data_ascii[1] == '2' || dcs_message.data_ascii[1] == '3' ||
+                        dcs_message.data_ascii[1] == '4') && dcs_message.data_ascii[2] == '+' && dcs_message.data_ascii.size() > 13)
+                    {
+                        size_t end_of_data = dcs_message.data_ascii.find_last_of('.');
+                        if (end_of_data != std::string::npos)
+                        {
+                            dcs_message.data_type = "Pseudobinary C";
+
+                            std::stringstream message_stream(dcs_message.data_ascii.substr(3, end_of_data - 3));
+                            std::string instrument_string;
+                            for (int measurement_index = 1; std::getline(message_stream, instrument_string, '+'); measurement_index++)
+                            {
+                                DCSValue new_value;
+                                new_value.name = "Sensor " + std::to_string((int)(instrument_string[0] - 0x40));
+
+                                // Skipping Day of year
+
+                                // Minute of day to compute reading age
+                                uint16_t recorded_minute = (((uint16_t)instrument_string[3] - 0x40) << 6) | (instrument_string[4] - 0x40);
+                                uint16_t transmission_minute = ((block_ptr[16] & 0x0f) * 10 + ((block_ptr[15] & 0xf0) >> 4)) * 60 +
+                                    (block_ptr[15] & 0x0f) * 10 + ((block_ptr[14] & 0xf0) >> 4);
+                                new_value.reading_age = transmission_minute - recorded_minute;
+
+                                // Interval
+                                new_value.interval = (((uint16_t)instrument_string[5] - 0x40) << 6) | (instrument_string[6] - 0x40);
+
+                                // Reading values
+                                for (int i = 7; i + 2 < instrument_string.size(); i += 3)
+                                {
+                                    int val_int = (uint32_t)(instrument_string[i + 2] - 0x40) |
+                                        (uint32_t)((instrument_string[i + 1] - 0x40) << 6) |
+                                        (uint32_t)((instrument_string[i] - 0x40) << 12);
+
+                                    if ((instrument_string[i] & 0x20) != 0)
+                                        val_int = val_int * -1 + 0x20000;
+
+                                    new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
+                                }
+
+                                dcs_message.data_values.emplace_back(new_value);
+                            }
+
+                            if (dcs_message.dcp != nullptr)
+                            {
+                                int i = 0;
+                                for (PEInfo &pe_info : dcs_message.dcp->pe_info)
+                                {
+                                    if (i >= dcs_message.data_values.size())
+                                        break;
+                                    dcs_message.data_values[i].name = pe_info.name;
+                                    i++;
+                                }
+                            }
+
+                            // Get Battery Value
+                            if (end_of_data < dcs_message.data_ascii.size() - 1)
+                            {
+                                DCSValue battery_value;
+                                battery_value.name = "Voltage - battery (volt)";
+                                battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[end_of_data + 1] - 0x40) * 0.234 + 10.6));
                                 dcs_message.data_values.emplace_back(battery_value);
                             }
                         }

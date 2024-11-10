@@ -10,6 +10,7 @@ namespace goes
     {
         struct PEInfo
         {
+            std::string name;
             int record_interval = 0;
             int read_to_transmit_offset = 0;
             float base_elevation = 0.0f;
@@ -18,7 +19,7 @@ namespace goes
 
         struct DCP
         {
-            std::map<std::string, PEInfo> pe_info;
+            std::vector<PEInfo> pe_info;
             std::string nwsli;
             std::string dcp_owner;
             std::string state_location;
@@ -117,7 +118,7 @@ namespace goes
             std::vector<std::variant<DCSMessage, MissedMessage>> blocks;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PEInfo, record_interval, read_to_transmit_offset, base_elevation, correction);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PEInfo, name, record_interval, read_to_transmit_offset, base_elevation, correction);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCP, pe_info, nwsli, dcp_owner, state_location, hydrologic_service_area,
             initial_transmission_time, location_name, decoding_mode, transmission_interval, lat, lon);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessageHeader, crc_pass, sequence_number, data_rate, cs_platform,
