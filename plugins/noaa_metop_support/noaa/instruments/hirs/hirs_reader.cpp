@@ -92,8 +92,8 @@ namespace noaa
                         for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c_sequences.size() - 1].calc_space(&channels[c][56 * line], c);
-                            for (int i = 0; i < 56; i++)
-                                channels[c][i + 56 * line] = 0;
+                            //for (int i = 0; i < 56; i++)
+                            //    channels[c][i + 56 * line] = 0;
                         }
                         for (int i = 0; i < 56; i++)
                             channels[19][i + 56 * line] = 0;
@@ -188,7 +188,7 @@ namespace noaa
                     }
                     c_sequences[i].PRT_temp /= HIRS3 ? 4 : 5;
 
-                    // std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].space[channel] << std::endl;
+                    std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].space[channel] << ", " << c_sequences[i].blackbody[channel] << std::endl;
                     c_sequences[i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[i].PRT_temp;
                 }
 

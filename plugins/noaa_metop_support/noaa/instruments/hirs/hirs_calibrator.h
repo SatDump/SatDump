@@ -13,7 +13,7 @@ private:
     double calc_rad(int channel, int pos_y, int px_val)
     {
         if (channel == 19)
-            return px_val == 0 ? CALIBRATION_INVALID_VALUE : perChannel["a0"].get<double>() + perChannel["a1"].get<double>() * px_val;
+            return px_val == 0 ? CALIBRATION_INVALID_VALUE : (perChannel["a0"].get<double>() + perChannel["a1"].get<double>() * px_val > 1 ? CALIBRATION_INVALID_VALUE : perChannel["a0"].get<double>() + perChannel["a1"].get<double>() * px_val);
 
         if (px_val == 0 || perLine_perChannel[channel][pos_y]["a0"].get<double>() == -999.99)
             return CALIBRATION_INVALID_VALUE;
