@@ -362,8 +362,13 @@ namespace goes
                     hex_stream.clear();
 
                     // Parse known message types
+                    if (dcs_message.data_ascii.empty())
+                    {
+                        // Do nothing
+                    }
+
                     // PRS Messages - modified SHEF
-                    if (dcs_message.data_ascii.substr(0, 4) == ":PRS" && dcs_message.data_ascii.size() > 3)
+                    else if (dcs_message.data_ascii.substr(0, 4) == ":PRS" && dcs_message.data_ascii.size() > 3)
                     {
                         // Ignore for now...
                     }
@@ -466,11 +471,16 @@ namespace goes
                     // Pseudobinary B
                     else if (dcs_message.data_ascii[0] == 'B' && (dcs_message.data_ascii[1] == '1' ||
                         dcs_message.data_ascii[1] == '2' || dcs_message.data_ascii[1] == '3' ||
-                        dcs_message.data_ascii[1] == '4') && dcs_message.data_ascii.size() > 4)
+                        dcs_message.data_ascii[1] == '4' || dcs_message.data_ascii[1] == 'C')
+                        && dcs_message.data_ascii.size() > 4)
                     {
                         // Pseudobinary B and D can only be decoded if we know what data to expect.
-                        // Type D is not used on platforms listed in HADS as of November 2024,
-                        // so no point in decoding it here
+                        // 
+                        // - Type D is not used on platforms listed in HADS as of November 2024,
+                        //   so no point in decoding it here.
+                        // - BS* seems to be similar to BC*, but the values are interleaved. We'd
+                        //   need to know how many of each to expect, which we don't. So, no
+                        //   decoding for BS* Pseudobinary files unfortunately!
 
                         if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0)
                         {
@@ -487,13 +497,18 @@ namespace goes
                             {
                                 dcs_message.data_type = "Pseudobinary B";
                                 int sensor_offset = 3;
-                                for (int pe_count = 0; pe_count < dcs_message.dcp->pe_info.size(); pe_count++)
+                                size_t num_physical_elements = dcs_message.dcp->pe_info.size();
+
+                                if (dcs_message.data_ascii[1] == 'C' && dcs_message.dcp->pe_info.back().name == "Voltage - battery (volt)")
+                                    num_physical_elements--;
+
+                                for (int pe_count = 0; pe_count < num_physical_elements; pe_count++)
                                 {
                                     DCSValue new_value;
                                     new_value.reading_age = dcs_message.data_ascii[2] - 0x40;
                                     new_value.name = dcs_message.dcp->pe_info[pe_count].name;
                                     new_value.interval = dcs_message.dcp->pe_info[pe_count].record_interval;
-                                    for (size_t i = 0; i < data_bytes / dcs_message.dcp->pe_info.size() / 3; i++)
+                                    for (size_t i = 0; i < data_bytes / num_physical_elements / 3; i++)
                                     {
                                         // No reading
                                         if (dcs_message.data_ascii.substr(sensor_offset + (3 * i), 3) == "///")
@@ -512,16 +527,19 @@ namespace goes
                                         new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
                                     }
 
-                                    sensor_offset += data_bytes / dcs_message.dcp->pe_info.size();
+                                    sensor_offset += data_bytes / num_physical_elements;
                                     dcs_message.data_values.emplace_back(new_value);
                                 }
 
                                 // Get Battery Value
-                                DCSValue battery_value;
-                                battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
-                                battery_value.name = "Voltage - battery (volt)";
-                                battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.234 + 10.6));
-                                dcs_message.data_values.emplace_back(battery_value);
+                                if (dcs_message.data_ascii[1] != 'C' || dcs_message.dcp->pe_info.back().name == "Voltage - battery (volt)")
+                                {
+                                    DCSValue battery_value;
+                                    battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
+                                    battery_value.name = "Voltage - battery (volt)";
+                                    battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.234 + 10.6));
+                                    dcs_message.data_values.emplace_back(battery_value);
+                                }
                             }
                         }
                     }
@@ -592,6 +610,45 @@ namespace goes
                                 battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[end_of_data + 1] - 0x40) * 0.234 + 10.6));
                                 dcs_message.data_values.emplace_back(battery_value);
                             }
+                        }
+                    }
+
+                    // Pseudobinary 2
+                    // Reverse-engineered format. Similar to Pseudobinary B, but it is more consistently formatted
+                    else if (dcs_message.data_ascii[0] == '2' && dcs_message.data_ascii.size() > 7 && (dcs_message.data_ascii.size() - 5) % 3 == 0)
+                    {
+                        int data_bytes = dcs_message.data_ascii.size() - 5;
+                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && data_bytes / dcs_message.dcp->pe_info.size() / 3 > 0)
+                        {
+                            dcs_message.data_type = "Pseudobinary 2";
+                            int sensor_offset = 2;
+
+                            for (int pe_count = 0; pe_count < dcs_message.dcp->pe_info.size(); pe_count++)
+                            {
+                                DCSValue new_value;
+                                new_value.reading_age = dcs_message.data_ascii[1] - 0x40;
+                                new_value.name = dcs_message.dcp->pe_info[pe_count].name;
+                                new_value.interval = dcs_message.dcp->pe_info[pe_count].record_interval;
+                                for (size_t i = 0; i < data_bytes / dcs_message.dcp->pe_info.size() / 3; i++)
+                                {
+                                    int val_int = (uint32_t)(dcs_message.data_ascii[sensor_offset + (3 * i) + 2] - 0x40) |
+                                        (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
+                                        (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i)] - 0x40) << 12);
+
+                                    new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
+                                }
+
+                                sensor_offset += data_bytes / dcs_message.dcp->pe_info.size();
+                                dcs_message.data_values.emplace_back(new_value);
+                            }
+
+                            /*
+                            * An unknown 18-bit value trails the expected values
+
+                            uint32_t unknown_value = (uint32_t)(dcs_message.data_ascii[dcs_message.data_ascii.size() - 1] - 0x40) |
+                                (uint32_t)((dcs_message.data_ascii[dcs_message.data_ascii.size() - 2] - 0x40) << 6) |
+                                (uint32_t)((dcs_message.data_ascii[dcs_message.data_ascii.size() - 3] - 0x40) << 12);
+                            */
                         }
                     }
 
