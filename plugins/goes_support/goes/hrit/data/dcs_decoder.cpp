@@ -652,9 +652,86 @@ namespace goes
                         }
                     }
 
-                    // ASCII Files (just mark here for easy rendering)
+                    // ASCII Files
                     else if (dcs_message.data_ascii.substr(0, 2) == "\r\n")
+                    {
                         dcs_message.data_type = "ASCII";
+
+                        // Check for column/row data - requires dcp info!
+                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && 
+                            dcs_message.data_ascii.find_first_not_of("0123456789-. \r\n") == std::string::npos)
+                        {
+                            std::vector<std::vector<std::string>> column_matrix;
+                            std::string filtered_ascii_data = dcs_message.data_ascii;
+                            filtered_ascii_data.erase(std::remove(filtered_ascii_data.begin(), filtered_ascii_data.end(), '\r'), filtered_ascii_data.end());
+                            std::stringstream ascii_linestream(filtered_ascii_data);
+                            std::string ascii_line;
+
+                            while (std::getline(ascii_linestream, ascii_line))
+                            {
+                                if (ascii_line.empty())
+                                    continue;
+
+                                column_matrix.emplace_back(std::vector<std::string>());
+                                std::stringstream value_stream(ascii_line);
+                                std::string value_string;
+
+                                while (std::getline(value_stream, value_string, ' '))
+                                {
+                                    if (value_string.empty())
+                                        continue;
+
+                                    column_matrix.back().emplace_back(value_string);
+                                }
+                            }
+
+                            // Values are each on their own line
+                            if (column_matrix.size() == dcs_message.dcp->pe_info.size())
+                            {
+                                dcs_message.data_type = "ASCII Rows";
+
+                                for (size_t i = 0; i < column_matrix.size(); i++)
+                                {
+                                    DCSValue new_value;
+                                    new_value.name = dcs_message.dcp->pe_info[i].name;
+                                    new_value.interval = dcs_message.dcp->transmission_interval;
+                                    for (size_t j = 0; j < column_matrix[i].size(); j++)
+                                        new_value.values.push_back(column_matrix[i][j]);
+
+                                    dcs_message.data_values.emplace_back(new_value);
+                                }
+                            }
+
+                            // Values are in their own column, with the occasional exception of battery
+                            else if (column_matrix[0].size() == dcs_message.dcp->pe_info.size() ||
+                                (column_matrix.back().size() == dcs_message.dcp->pe_info.size() &&
+                                column_matrix[0].size() == column_matrix.back().size() - 1))
+                            {
+                                dcs_message.data_type = "ASCII Columns";
+
+                                for (size_t i = 0; i < column_matrix[0].size(); i++)
+                                {
+                                    DCSValue new_value;
+                                    new_value.name = dcs_message.dcp->pe_info[i].name;
+                                    new_value.interval = dcs_message.dcp->transmission_interval;
+                                    for (size_t j = 0; j < column_matrix.size(); j++)
+                                        if(i < column_matrix[j].size())
+                                            new_value.values.push_back(column_matrix[j][i]);
+
+                                    dcs_message.data_values.emplace_back(new_value);
+                                }
+
+                                if (column_matrix[0].size() == column_matrix.back().size() - 1)
+                                {
+                                    DCSValue trailing_value;
+                                    trailing_value.name = dcs_message.dcp->pe_info.back().name;
+                                    trailing_value.interval = dcs_message.dcp->transmission_interval;
+                                    trailing_value.values.push_back(column_matrix.back().back());
+                                    dcs_message.data_values.emplace_back(trailing_value);
+                                }
+                            }
+                        }
+                    }
 
                     dcs_file.blocks.emplace_back(dcs_message);
                 }
