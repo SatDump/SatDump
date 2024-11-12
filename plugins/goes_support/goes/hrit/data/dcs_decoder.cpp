@@ -274,10 +274,8 @@ namespace goes
                     dcs_message.header.signal_strength = ((block_ptr[27] << 8 | block_ptr[26]) & 0x03ff) / 10.0f; // First 6 bits reserved
 
                     // Frequency offset. First 2 bits reserved; signed!
-                    int16_t masked_freq_offset_10x = (block_ptr[29] << 8 | block_ptr[28]) & 0x3fff;
-                    if ((masked_freq_offset_10x & 0b10000000000000) == 0b10000000000000)
-                        masked_freq_offset_10x |= 0b1100000000000000; //Sign Extending
-                    dcs_message.header.freq_offset = masked_freq_offset_10x / 10.0f;
+                    uint16_t masked_freq_offset_10x = (block_ptr[29] << 8 | block_ptr[28]) & 0x3fff;
+                    dcs_message.header.freq_offset = (float)((int)((masked_freq_offset_10x ^ 0x2000) - 0x2000)) / 10.0f;
 
                     // Phase noise (last 12 bits) and modulation index (first 2 bits). Bits 3-4 reserved
                     dcs_message.header.phase_noise = ((block_ptr[31] << 8 | block_ptr[30]) & 0x0fff) / 100.0f;
@@ -484,47 +482,43 @@ namespace goes
 
                         if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0)
                         {
-                            int data_bytes = dcs_message.data_ascii.size() - 4;
-                            if (data_bytes % 3 != 0)
-                            {
-                                // Look for optional fields at the end
-                                size_t data_end = dcs_message.data_ascii.find_first_of(' ');
-                                if (data_end != std::string::npos)
-                                    data_bytes -= dcs_message.data_ascii.size() - data_end;
-                            }
+                            size_t num_physical_elements = dcs_message.dcp->pe_info.size();
+                            if (dcs_message.data_ascii[1] == 'C' && dcs_message.dcp->pe_info.back().name == "Voltage - battery (volt)")
+                                num_physical_elements--;
 
-                            if (data_bytes % 3 == 0)
+                            int data_bytes = dcs_message.data_ascii.size() - 4;
+                            size_t data_end = dcs_message.data_ascii.find_first_of(' ');
+                            if (data_end != std::string::npos)
+                                data_bytes -= dcs_message.data_ascii.size() - data_end;
+
+                            if (data_bytes % (num_physical_elements * 3) == 0)
                             {
                                 dcs_message.data_type = "Pseudobinary B";
                                 int sensor_offset = 3;
-                                size_t num_physical_elements = dcs_message.dcp->pe_info.size();
 
-                                if (dcs_message.data_ascii[1] == 'C' && dcs_message.dcp->pe_info.back().name == "Voltage - battery (volt)")
-                                    num_physical_elements--;
+                                std::string pseudo_string = dcs_message.data_ascii;
+                                std::replace(pseudo_string.begin(), pseudo_string.end(), '?', (char)0x7f); //Del
 
                                 for (int pe_count = 0; pe_count < num_physical_elements; pe_count++)
                                 {
                                     DCSValue new_value;
-                                    new_value.reading_age = dcs_message.data_ascii[2] - 0x40;
+                                    new_value.reading_age = pseudo_string[2] - 0x40;
                                     new_value.name = dcs_message.dcp->pe_info[pe_count].name;
                                     new_value.interval = dcs_message.dcp->pe_info[pe_count].record_interval;
                                     for (size_t i = 0; i < data_bytes / num_physical_elements / 3; i++)
                                     {
                                         // No reading
-                                        if (dcs_message.data_ascii.substr(sensor_offset + (3 * i), 3) == "///")
+                                        if (pseudo_string.substr(sensor_offset + (3 * i), 3) == "///")
                                         {
                                             new_value.values.emplace_back("0");
                                             continue;
                                         }
 
-                                        int val_int = (uint32_t)(dcs_message.data_ascii[sensor_offset + (3 * i) + 2] - 0x40) |
-                                            (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
-                                            (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i)] - 0x40) << 12);
+                                        uint32_t val_int = (uint32_t)(pseudo_string[sensor_offset + (3 * i) + 2] - 0x40) |
+                                            (uint32_t)((pseudo_string[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
+                                            (uint32_t)((pseudo_string[sensor_offset + (3 * i)] - 0x40) << 12);
 
-                                        if ((dcs_message.data_ascii[sensor_offset + (3 * i)] & 0x20) != 0)
-                                            val_int = val_int * -1 + 0x20000;
-
-                                        new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
+                                        new_value.values.emplace_back(std::to_string((float)((int)((val_int ^ 0x20000) - 0x20000)) / 100.0f));
                                     }
 
                                     sensor_offset += data_bytes / num_physical_elements;
@@ -532,12 +526,22 @@ namespace goes
                                 }
 
                                 // Get Battery Value
-                                if (dcs_message.data_ascii[1] != 'C' || dcs_message.dcp->pe_info.back().name == "Voltage - battery (volt)")
+                                if (dcs_message.data_ascii[1] != 'C')
                                 {
                                     DCSValue battery_value;
                                     battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
                                     battery_value.name = "Voltage - battery (volt)";
                                     battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.234 + 10.6));
+                                    dcs_message.data_values.emplace_back(battery_value);
+                                }
+
+                                // BC Battery value - reverse engineered equation. Seems good with wide range of sample values
+                                else if (dcs_message.dcp->pe_info.back().name == "Voltage - battery (volt)")
+                                {
+                                    DCSValue battery_value;
+                                    battery_value.reading_age = dcs_message.data_ascii[2] - 0x40;
+                                    battery_value.name = "Voltage - battery (volt)";
+                                    battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset] - 0x40) * 0.313 + 0.285));
                                     dcs_message.data_values.emplace_back(battery_value);
                                 }
                             }
@@ -556,7 +560,10 @@ namespace goes
                         {
                             dcs_message.data_type = "Pseudobinary C";
 
-                            std::stringstream message_stream(dcs_message.data_ascii.substr(3, end_of_data - 3));
+                            std::string pseudo_string = dcs_message.data_ascii.substr(3, end_of_data - 3);
+                            std::replace(pseudo_string.begin(), pseudo_string.end(), '?', (char)0x7f); //Del
+
+                            std::stringstream message_stream(pseudo_string);
                             std::string instrument_string;
                             for (int measurement_index = 1; std::getline(message_stream, instrument_string, '+'); measurement_index++)
                             {
@@ -577,14 +584,18 @@ namespace goes
                                 // Reading values
                                 for (int i = 7; i + 2 < instrument_string.size(); i += 3)
                                 {
-                                    int val_int = (uint32_t)(instrument_string[i + 2] - 0x40) |
+                                    // No reading
+                                    if (instrument_string.substr(i, 3) == "///")
+                                    {
+                                        new_value.values.emplace_back("0");
+                                        continue;
+                                    }
+
+                                    uint32_t val_int = (uint32_t)(instrument_string[i + 2] - 0x40) |
                                         (uint32_t)((instrument_string[i + 1] - 0x40) << 6) |
                                         (uint32_t)((instrument_string[i] - 0x40) << 12);
 
-                                    if ((instrument_string[i] & 0x20) != 0)
-                                        val_int = val_int * -1 + 0x20000;
-
-                                    new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
+                                    new_value.values.emplace_back(std::to_string((float)((int)((val_int ^ 0x20000) - 0x20000)) / 100.0f));
                                 }
 
                                 dcs_message.data_values.emplace_back(new_value);
@@ -618,24 +629,35 @@ namespace goes
                     else if (dcs_message.data_ascii[0] == '2' && dcs_message.data_ascii.size() > 7 && (dcs_message.data_ascii.size() - 5) % 3 == 0)
                     {
                         int data_bytes = dcs_message.data_ascii.size() - 5;
-                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && data_bytes / dcs_message.dcp->pe_info.size() / 3 > 0)
+                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && data_bytes / dcs_message.dcp->pe_info.size() / 3 > 0 && 
+                            data_bytes % (dcs_message.dcp->pe_info.size() * 3) == 0)
                         {
                             dcs_message.data_type = "Pseudobinary 2";
                             int sensor_offset = 2;
 
+                            std::string pseudo_string = dcs_message.data_ascii;
+                            std::replace(pseudo_string.begin(), pseudo_string.end(), '?', (char)0x7f); //Del
+
                             for (int pe_count = 0; pe_count < dcs_message.dcp->pe_info.size(); pe_count++)
                             {
                                 DCSValue new_value;
-                                new_value.reading_age = dcs_message.data_ascii[1] - 0x40;
+                                new_value.reading_age = pseudo_string[1] - 0x40;
                                 new_value.name = dcs_message.dcp->pe_info[pe_count].name;
                                 new_value.interval = dcs_message.dcp->pe_info[pe_count].record_interval;
                                 for (size_t i = 0; i < data_bytes / dcs_message.dcp->pe_info.size() / 3; i++)
                                 {
-                                    int val_int = (uint32_t)(dcs_message.data_ascii[sensor_offset + (3 * i) + 2] - 0x40) |
-                                        (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
-                                        (uint32_t)((dcs_message.data_ascii[sensor_offset + (3 * i)] - 0x40) << 12);
+                                    // No reading
+                                    if (pseudo_string.substr(sensor_offset + (3 * i), 3) == "///")
+                                    {
+                                        new_value.values.emplace_back("0");
+                                        continue;
+                                    }
 
-                                    new_value.values.emplace_back(std::to_string((float)val_int / 100.0f));
+                                    uint32_t val_int = (uint32_t)(pseudo_string[sensor_offset + (3 * i) + 2] - 0x40) |
+                                        (uint32_t)((pseudo_string[sensor_offset + (3 * i) + 1] - 0x40) << 6) |
+                                        (uint32_t)((pseudo_string[sensor_offset + (3 * i)] - 0x40) << 12);
+
+                                    new_value.values.emplace_back(std::to_string((float)((int)((val_int ^ 0x20000) - 0x20000)) / 100.0f));
                                 }
 
                                 sensor_offset += data_bytes / dcs_message.dcp->pe_info.size();
@@ -643,11 +665,11 @@ namespace goes
                             }
 
                             /*
-                            * An unknown 18-bit value trails the expected values
+                            * An unknown 18-bit (?) value trails the expected values
 
-                            uint32_t unknown_value = (uint32_t)(dcs_message.data_ascii[dcs_message.data_ascii.size() - 1] - 0x40) |
-                                (uint32_t)((dcs_message.data_ascii[dcs_message.data_ascii.size() - 2] - 0x40) << 6) |
-                                (uint32_t)((dcs_message.data_ascii[dcs_message.data_ascii.size() - 3] - 0x40) << 12);
+                            uint32_t unknown_value = (uint32_t)(pseudo_string[pseudo_string.size() - 1] - 0x40) |
+                                (uint32_t)((pseudo_string[pseudo_string.size() - 2] - 0x40) << 6) |
+                                (uint32_t)((pseudo_string[pseudo_string.size() - 3] - 0x40) << 12);
                             */
                         }
                     }
@@ -703,9 +725,9 @@ namespace goes
                             }
 
                             // Values are in their own column, with the occasional exception of battery
-                            else if (column_matrix[0].size() == dcs_message.dcp->pe_info.size() ||
+                            else if (column_matrix.size() > 0 && (column_matrix[0].size() == dcs_message.dcp->pe_info.size() ||
                                 (column_matrix.back().size() == dcs_message.dcp->pe_info.size() &&
-                                column_matrix[0].size() == column_matrix.back().size() - 1))
+                                column_matrix[0].size() == column_matrix.back().size() - 1)))
                             {
                                 dcs_message.data_type = "ASCII Columns";
 
