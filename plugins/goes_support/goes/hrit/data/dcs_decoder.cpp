@@ -624,8 +624,7 @@ namespace goes
                         }
                     }
 
-                    // Pseudobinary 2
-                    // Reverse-engineered format. Similar to Pseudobinary B, but it is more consistently formatted
+                    // Pseudobinary 2 (B Random)
                     else if (dcs_message.data_ascii[0] == '2' && dcs_message.data_ascii.size() > 7 && (dcs_message.data_ascii.size() - 5) % 3 == 0)
                     {
                         int data_bytes = dcs_message.data_ascii.size() - 5;
@@ -664,13 +663,22 @@ namespace goes
                                 dcs_message.data_values.emplace_back(new_value);
                             }
 
-                            /*
-                            * An unknown 18-bit (?) value trails the expected values
+                            // Transmission count
+                            {
+                                DCSValue transmission_count;
+                                transmission_count.name = "Transmissions since reboot";
+                                transmission_count.values.emplace_back(std::to_string((uint16_t)((dcs_message.data_ascii[sensor_offset] - 0x40) << 6 |
+                                    (dcs_message.data_ascii[sensor_offset + 1] - 0x40))));
+                                dcs_message.data_values.emplace_back(transmission_count);
+                            }
 
-                            uint32_t unknown_value = (uint32_t)(pseudo_string[pseudo_string.size() - 1] - 0x40) |
-                                (uint32_t)((pseudo_string[pseudo_string.size() - 2] - 0x40) << 6) |
-                                (uint32_t)((pseudo_string[pseudo_string.size() - 3] - 0x40) << 12);
-                            */
+                            // Get Battery Value
+                            {
+                                DCSValue battery_value;
+                                battery_value.name = "Voltage - battery (volt)";
+                                battery_value.values.emplace_back(std::to_string((float)(dcs_message.data_ascii[sensor_offset + 2] - 0x40) * 0.234 + 10.6));
+                                dcs_message.data_values.emplace_back(battery_value);
+                            }
                         }
                     }
 
