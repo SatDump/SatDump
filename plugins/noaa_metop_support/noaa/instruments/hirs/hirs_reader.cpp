@@ -92,8 +92,10 @@ namespace noaa
                         for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c_sequences.size() - 1].calc_space(&channels[c][56 * line], c);
-                            for (int i = 0; i < 56; i++)
-                                channels[c][i + 56 * line] = 0;
+                            if(c_sequences[c_sequences.size() - 1].space[c]!=0){
+                                for (int i = 0; i < 56; i++)
+                                    channels[c][i + 56 * line] = 0;
+                            }
                         }
                         for (int i = 0; i < 56; i++)
                             channels[19][i + 56 * line] = 0;
@@ -105,7 +107,6 @@ namespace noaa
                         for (int c = 0; c < 19; c++)
                         {
                             c_sequences[c_sequences.size() - 1].calc_bb(&channels[c][56 * line], c);
-
                             for (int i = 0; i < 56; i++)
                                 channels[c][i + 56 * line] = 0;
                         }
@@ -188,7 +189,7 @@ namespace noaa
                     }
                     c_sequences[i].PRT_temp /= HIRS3 ? 4 : 5;
 
-                    std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].space[channel] << ", " << c_sequences[i].blackbody[channel] << std::endl;
+                    // std::cout << (int)i << ", " << channel << ", " << c_sequences[i].position << ", " << c_sequences[i].space[channel] << ", " << c_sequences[i].blackbody[channel] << std::endl;
                     c_sequences[i].PRT_temp = calib_coef["b"][channel].get<double>() + calib_coef["c"][channel].get<double>() * c_sequences[i].PRT_temp;
                 }
 
@@ -277,7 +278,7 @@ namespace noaa
         uint16_t calib_sequence::calc_avg(uint16_t *samples, int count)
         {
             /*
-            This function calcualtes the average value for space and bb looks, using the 3-sigma criterion to discard bad samples
+            This function calcualtes the average value for space and bb looks, using the 1-sigma criterion to discard bad samples
             */
             double mean = 0;
             double variance = 0;
@@ -297,7 +298,7 @@ namespace noaa
                 if (samples[i] != 0)
                     variance += pow(samples[i] - mean, 2) / (count - ignored);
 
-            std::pair<uint16_t, uint16_t> range = {mean - 3 * pow(variance, 0.5), mean + 3 * pow(variance, 0.5)};
+            std::pair<int, int> range = {mean - pow(variance, 0.5), mean + pow(variance, 0.5)};
             uint32_t avg = 0;
             uint8_t cnt = 0;
 
