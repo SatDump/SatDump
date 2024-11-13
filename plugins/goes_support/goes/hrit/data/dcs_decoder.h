@@ -20,14 +20,15 @@ namespace goes
         struct DCP
         {
             std::vector<PEInfo> pe_info;
-            std::string nwsli;
-            std::string dcp_owner;
-            std::string state_location;
-            std::string hydrologic_service_area;
-            std::string initial_transmission_time;
-            std::string location_name;
-            std::string decoding_mode;
-            int transmission_interval = 0;
+            char data_format = 0;
+            std::string agency;
+            std::string state;
+            std::string manufacturer;
+            std::string model;
+            std::string nmc_descriptor;
+            std::string description;
+            int transmit_interval = -1;
+            int transmit_window = -1;
             float lat = 0.0f;
             float lon = 0.0f;
         };
@@ -119,8 +120,8 @@ namespace goes
         };
 
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PEInfo, name, record_interval, read_to_transmit_offset, base_elevation, correction);
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCP, pe_info, nwsli, dcp_owner, state_location, hydrologic_service_area,
-            initial_transmission_time, location_name, decoding_mode, transmission_interval, lat, lon);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCP, pe_info, agency, state, manufacturer, model, nmc_descriptor, description, transmit_interval,
+            transmit_window, lat, lon, data_format);
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DCSMessageHeader, crc_pass, sequence_number, data_rate, cs_platform,
             parity_errors, no_eot, address_corrected, uncorrectable_address, invalid_address, pdt_incomplete,
             timing_error, unexpected_message, wrong_channel, corrected_address, carrier_start, message_end,

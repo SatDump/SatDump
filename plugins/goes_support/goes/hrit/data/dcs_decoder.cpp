@@ -38,9 +38,20 @@ namespace goes
 
             shef_codes = loadJsonFile(resources::getResourcePath("dcs/shef_codes.json"));
 
+            // Download PDT and HADS Data
             {
                 std::string file_data;
-                logger->info("Updating DCP list for DCS processing. Please wait...");
+                logger->info("Updating PDTs and HADS data for DCS processing...");
+                if (!perform_http_request("https://dcs1.noaa.gov/PDTS_COMPRESSED.txt", file_data))
+                {
+                    std::ofstream save_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
+                    save_pdts << file_data;
+                    save_pdts.close();
+                }
+                else
+                    logger->warn("Unable to download PDTs!");
+
+                file_data = "";
                 if (!perform_http_request("https://hads.ncep.noaa.gov/compressed_defs/all_dcp_defs.txt", file_data))
                 {
                     std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
@@ -48,79 +59,209 @@ namespace goes
                     save_hads.close();
                 }
                 else
-                    logger->warn("Unable to downloadload DCP list!");
+                    logger->warn("Unable to download HADS data!");
             }
 
-            if (std::filesystem::exists(satdump::user_path + "/all_dcp_defs.txt"))
+            if (std::filesystem::exists(satdump::user_path + "/PDTS_COMPRESSED.txt"))
             {
-                logger->info("Loading DCP list...");
-                std::ifstream read_hads(satdump::user_path + "/all_dcp_defs.txt");
-                std::string hads_line;
-                while (std::getline(read_hads, hads_line))
+                logger->info("Loading PDTs...");
+                uint16_t field_offsets[] = { 0, 6, 14, 15, 18, 19, 22, 28, 34, 38, 42, 43, 45, 46,
+                    47, 78, 85, 93, 94, 108, 124, 125, 126, 132, 156, 176, 196, 226, 237, 238, 239 };
+
+                std::ifstream read_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
+                std::string pdt_line;
+                while (std::getline(read_pdts, pdt_line))
                 {
                     try
                     {
-                        std::stringstream hads_stream(hads_line);
-                        std::string tmp;
-                        std::vector<std::string> hads_tokens;
-                        while (std::getline(hads_stream, tmp, '|'))
+                        std::shared_ptr<DCP> new_dcp = std::make_shared<DCP>();
+
+                        // Agency
+                        new_dcp->agency = pdt_line.substr(0, 6);
+
+                        // Transmit interval and window (scheduled transmissions only)
+                        if (pdt_line[field_offsets[2]] == 'S' || pdt_line[field_offsets[2]] == 'D')
                         {
-                            size_t first_letter = std::string::npos, last_letter = std::string::npos;
-                            for (size_t i = 0; i < tmp.size(); i++)
-                            {
-                                if (first_letter == std::string::npos)
-                                {
-                                    if (tmp[i] == ' ')
-                                        continue;
-                                    first_letter = i;
-                                }
-                                if (tmp[i] != ' ')
-                                    last_letter = i;
-                            }
-                            if (first_letter == std::string::npos)
-                                hads_tokens.push_back("");
-                            else
-                                hads_tokens.push_back(tmp.substr(first_letter, last_letter - first_letter + 1));
+                            new_dcp->transmit_interval = std::stoi(pdt_line.substr(field_offsets[7], 2)) * 3600 + 
+                                std::stoi(pdt_line.substr(field_offsets[7] + 2, 2)) * 60 + 
+                                std::stoi(pdt_line.substr(field_offsets[7] + 4, 2));
+                            new_dcp->transmit_window = std::stoi(pdt_line.substr(field_offsets[8], 2)) * 60 +
+                                std::stoi(pdt_line.substr(field_offsets[8] + 2, 2));
                         }
 
-                        std::shared_ptr<DCP> new_dcp = std::make_shared<DCP>();
-                        new_dcp->nwsli = hads_tokens[1];
-                        new_dcp->dcp_owner = hads_tokens[2];
-                        new_dcp->state_location = hads_tokens[3];
-                        new_dcp->hydrologic_service_area = hads_tokens[4];
+                        // Data format
+                        new_dcp->data_format = pdt_line[field_offsets[10]];
 
-                        // Latitude
-                        std::stringstream degree_stream;
-                        std::string degree_str;
-                        degree_stream = std::stringstream(hads_tokens[5]);
-                        std::getline(degree_stream, degree_str, ' ');
-                        new_dcp->lat = std::stof(degree_str);
-                        std::getline(degree_stream, degree_str, ' ');
-                        new_dcp->lat += std::stof(degree_str) / 60.0f;
-                        std::getline(degree_stream, degree_str, ' ');
-                        new_dcp->lat += std::stof(degree_str) / 3600.0f;
+                        // State
+                        if (pdt_line.size() >= field_offsets[11])
+                            new_dcp->state = pdt_line.substr(field_offsets[11], 2);
 
-                        // Longitude
-                        degree_stream = std::stringstream(hads_tokens[6]);
-                        std::getline(degree_stream, degree_str, ' ');
-                        new_dcp->lon = std::stof(degree_str);
-                        std::getline(degree_stream, degree_str, ' ');
-                        new_dcp->lon += std::stof(degree_str) / 60.0f;
-                        std::getline(degree_stream, degree_str, ' ');
-                        new_dcp->lon += std::stof(degree_str) / 3600.0f;
+                        // Description
+                        if (pdt_line.size() >= field_offsets[14])
+                        {
+                            int desc_last_pos = 0;
+                            for (uint16_t last_pos = field_offsets[14]; last_pos < field_offsets[15]; last_pos++)
+                                if (pdt_line[last_pos] != ' ')
+                                    desc_last_pos = last_pos;
+                            if (desc_last_pos != 0)
+                            {
+                                new_dcp->description = pdt_line.substr(field_offsets[14], desc_last_pos - field_offsets[14] + 1);
+                                new_dcp->description.erase(std::remove_if(new_dcp->description.begin(), new_dcp->description.end(),
+                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->description.end());
+                            }
+                        }
 
-                        new_dcp->initial_transmission_time = hads_tokens[7];
-                        new_dcp->transmission_interval = std::stoi(hads_tokens[8]);
-                        new_dcp->location_name = hads_tokens[9];
+                        // Lat and Lon
+                        if (pdt_line.size() >= field_offsets[16])
+                        {
+                            new_dcp->lat = std::stof(pdt_line.substr(field_offsets[15] + 1, 2));
+                            new_dcp->lat += std::stof(pdt_line.substr(field_offsets[15] + 3, 2)) / 60.0f;
+                            new_dcp->lat += std::stof(pdt_line.substr(field_offsets[15] + 5, 2)) / 3600.0f;
+                            if (pdt_line[field_offsets[15]] == '-')
+                                new_dcp->lat *= -1;
 
-                        if (hads_tokens[10] == "S")
-                            new_dcp->decoding_mode = "Self-Timed";
-                        else if (hads_tokens[10] == "R")
-                            new_dcp->decoding_mode = "Random";
-                        else if (hads_tokens[10] == "B")
-                            new_dcp->decoding_mode = "Both";
+                            new_dcp->lon = std::stof(pdt_line.substr(field_offsets[16] + 1, 3));
+                            new_dcp->lon += std::stof(pdt_line.substr(field_offsets[16] + 4, 2)) / 60.0f;
+                            new_dcp->lon += std::stof(pdt_line.substr(field_offsets[16] + 6, 2)) / 3600.0f;
+                            if (pdt_line[field_offsets[16]] == '-')
+                                new_dcp->lon *= -1;
+                        }
+
+                        // Transmitter Manufacturer
+                        if (pdt_line.size() >= field_offsets[18])
+                        {
+                            int manu_last_pos = 0;
+                            for (uint16_t last_pos = field_offsets[18]; last_pos < field_offsets[19]; last_pos++)
+                                if (pdt_line[last_pos] != ' ')
+                                    manu_last_pos = last_pos;
+                            if (manu_last_pos != 0)
+                            {
+                                new_dcp->manufacturer = pdt_line.substr(field_offsets[18], manu_last_pos - field_offsets[18] + 1);
+                                new_dcp->manufacturer.erase(std::remove_if(new_dcp->manufacturer.begin(), new_dcp->manufacturer.end(),
+                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->manufacturer.end());
+                            }
+                        }
+
+                        // Transmitter Model
+                        if (pdt_line.size() >= field_offsets[19])
+                        {
+                            int model_last_pos = 0;
+                            for (uint16_t last_pos = field_offsets[19]; last_pos < field_offsets[20]; last_pos++)
+                                if (pdt_line[last_pos] != ' ')
+                                    model_last_pos = last_pos;
+                            if (model_last_pos != 0)
+                            {
+                                new_dcp->model = pdt_line.substr(field_offsets[19], model_last_pos - field_offsets[19] + 1);
+                                new_dcp->model.erase(std::remove_if(new_dcp->model.begin(), new_dcp->model.end(),
+                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->model.end());
+                            }
+                        }
+
+                        //NMC Descriptor
+                        if (pdt_line.size() >= field_offsets[22])
+                        {
+                            int nmc_last_pos = 0;
+                            for (uint16_t last_pos = field_offsets[22]; last_pos < field_offsets[23]; last_pos++)
+                                if (pdt_line[last_pos] != ' ')
+                                    nmc_last_pos = last_pos;
+                            if (nmc_last_pos != 0)
+                            {
+                                new_dcp->nmc_descriptor = pdt_line.substr(field_offsets[22], nmc_last_pos - field_offsets[22] + 1);
+                                new_dcp->nmc_descriptor.erase(std::remove_if(new_dcp->nmc_descriptor.begin(), new_dcp->nmc_descriptor.end(),
+                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->nmc_descriptor.end());
+                            }
+                        }
+
+                        // SHEF Codes in this file are mostly wrong - ignore!
+
+                        // Finish up
+                        dcp_list[std::stoul(pdt_line.substr(field_offsets[1], 8), nullptr, 16)] = new_dcp;
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->warn("Error loading PDT line for DCP processing: %s", e.what());
+                    }
+                }
+            }
+            else
+                logger->warn("Unable to load PDTs! Some DCS data will not be parsed");
+
+            // Load PE info
+            if (std::filesystem::exists(satdump::user_path + "/all_dcp_defs.txt"))
+            {
+                logger->info("Loading HADS data...");
+                std::ifstream read_hads(satdump::user_path + "/all_dcp_defs.txt");
+                std::string hads_line;
+                bool first_line = true;
+                std::vector<uint16_t> hads_offsets;
+                hads_offsets.push_back(0);
+
+                while (std::getline(read_hads, hads_line))
+                {
+                    std::stringstream hads_stream(hads_line);
+                    std::string tmp;
+                    std::vector<std::string> hads_tokens;
+                    while (std::getline(hads_stream, tmp, '|'))
+                    {
+                        size_t first_letter = std::string::npos, last_letter = std::string::npos;
+                        for (size_t i = 0; i < tmp.size(); i++)
+                        {
+                            if (first_letter == std::string::npos)
+                            {
+                                if (tmp[i] == ' ')
+                                    continue;
+                                first_letter = i;
+                            }
+                            if (tmp[i] != ' ')
+                                last_letter = i;
+                        }
+                        if (first_letter == std::string::npos)
+                            hads_tokens.push_back("");
                         else
-                            new_dcp->decoding_mode = "Unknown - " + hads_tokens[10];
+                            hads_tokens.push_back(tmp.substr(first_letter, last_letter - first_letter + 1));
+                    }
+
+                    try
+                    {
+                        std::shared_ptr<DCP> this_dcp;
+                        uint32_t device_address = std::stoul(hads_tokens[0], nullptr, 16);
+
+                        if (dcp_list.count(device_address) > 0)
+                            this_dcp = dcp_list[device_address];
+
+                        // DADDs should have all DCPs... but they do not. Fill in extras HADS has
+                        else
+                        {
+                            this_dcp = std::make_shared<DCP>();
+                            this_dcp->agency = hads_tokens[2];
+                            this_dcp->state = hads_tokens[3];
+                            dcp_list[device_address] = this_dcp;
+
+                            // Latitude
+                            std::stringstream degree_stream;
+                            std::string degree_str;
+                            degree_stream = std::stringstream(hads_tokens[5]);
+                            std::getline(degree_stream, degree_str, ' ');
+                            this_dcp->lat = std::stof(degree_str);
+                            std::getline(degree_stream, degree_str, ' ');
+                            this_dcp->lat += std::stof(degree_str) / 60.0f;
+                            std::getline(degree_stream, degree_str, ' ');
+                            this_dcp->lat += std::stof(degree_str) / 3600.0f;
+
+                            // Longitude
+                            degree_stream = std::stringstream(hads_tokens[6]);
+                            std::getline(degree_stream, degree_str, ' ');
+                            this_dcp->lon = std::stof(degree_str);
+                            std::getline(degree_stream, degree_str, ' ');
+                            this_dcp->lon += std::stof(degree_str) / 60.0f;
+                            std::getline(degree_stream, degree_str, ' ');
+                            this_dcp->lon += std::stof(degree_str) / 3600.0f;
+
+                            // Other info
+                            this_dcp->transmit_interval = std::stoi(hads_tokens[8]);
+                        }
+
+                        this_dcp->description = hads_tokens[9];
 
                         for (size_t i = 11; i < hads_tokens.size() - 5; i += 5)
                         {
@@ -132,32 +273,26 @@ namespace goes
                             new_info.read_to_transmit_offset = std::stoi(hads_tokens[i + 2]);
                             new_info.base_elevation = std::stoi(hads_tokens[i + 3]);
                             new_info.correction = std::stoi(hads_tokens[i + 4]);
-                            
+
                             if (shef_codes.count(hads_tokens[i]) > 0)
                                 new_info.name = shef_codes[hads_tokens[i]];
                             else
                                 new_info.name = hads_tokens[i];
 
-                            new_dcp->pe_info.emplace_back(new_info);
+                            this_dcp->pe_info.emplace_back(new_info);
                         }
-
-                        dcp_list[std::stoul(hads_tokens[0], nullptr, 16)] = new_dcp;
                     }
-                    catch (std::exception &)
+                    catch (std::exception&)
                     {
-                        logger->warn("Error loading DCP list! Some DCS data will not be parsed");
-                        dcp_list.clear();
-                        read_hads.close();
-                        break;
+                        logger->warn("Error parsing HADS line! Skipping");
                     }
                 }
-                read_hads.close();
             }
             else
-                logger->warn("Unable to load DCP list! Some DCS data will not be parsed");
+                logger->warn("Unable to load HADS data! Some DCS data will not be parsed");
         }
 
-        bool GOESLRITDataDecoderModule::processDCS(uint8_t *data, size_t size)
+        bool GOESLRITDataDecoderModule::processDCS(uint8_t* data, size_t size)
         {
             DCSFile dcs_file;
 
@@ -344,7 +479,7 @@ namespace goes
                     // Initial body parsing
                     bool found_beginning = false;
                     hex_stream << std::hex << std::setfill('0') << std::setw(2) << +block_ptr[39];
-                    for (size_t i = 40; i < block_length - 2; i ++)
+                    for (size_t i = 40; i < block_length - 2; i++)
                     {
                         // Save raw data as hex
                         hex_stream << std::setw(2) << +block_ptr[i];
@@ -628,7 +763,7 @@ namespace goes
                     else if (dcs_message.data_ascii[0] == '2' && dcs_message.data_ascii.size() > 7 && (dcs_message.data_ascii.size() - 5) % 3 == 0)
                     {
                         int data_bytes = dcs_message.data_ascii.size() - 5;
-                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && data_bytes / dcs_message.dcp->pe_info.size() / 3 > 0 && 
+                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && data_bytes / dcs_message.dcp->pe_info.size() / 3 > 0 &&
                             data_bytes % (dcs_message.dcp->pe_info.size() * 3) == 0)
                         {
                             dcs_message.data_type = "Pseudobinary 2";
@@ -688,7 +823,7 @@ namespace goes
                         dcs_message.data_type = "ASCII";
 
                         // Check for column/row data - requires dcp info!
-                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 && 
+                        if (dcs_message.dcp != nullptr && dcs_message.dcp->pe_info.size() > 0 &&
                             dcs_message.data_ascii.find_first_not_of("0123456789-. \r\n") == std::string::npos)
                         {
                             std::vector<std::vector<std::string>> column_matrix;
@@ -724,7 +859,6 @@ namespace goes
                                 {
                                     DCSValue new_value;
                                     new_value.name = dcs_message.dcp->pe_info[i].name;
-                                    new_value.interval = dcs_message.dcp->transmission_interval;
                                     for (size_t j = 0; j < column_matrix[i].size(); j++)
                                         new_value.values.push_back(column_matrix[i][j]);
 
@@ -735,7 +869,7 @@ namespace goes
                             // Values are in their own column, with the occasional exception of battery
                             else if (column_matrix.size() > 0 && (column_matrix[0].size() == dcs_message.dcp->pe_info.size() ||
                                 (column_matrix.back().size() == dcs_message.dcp->pe_info.size() &&
-                                column_matrix[0].size() == column_matrix.back().size() - 1)))
+                                    column_matrix[0].size() == column_matrix.back().size() - 1)))
                             {
                                 dcs_message.data_type = "ASCII Columns";
 
@@ -743,9 +877,8 @@ namespace goes
                                 {
                                     DCSValue new_value;
                                     new_value.name = dcs_message.dcp->pe_info[i].name;
-                                    new_value.interval = dcs_message.dcp->transmission_interval;
                                     for (size_t j = 0; j < column_matrix.size(); j++)
-                                        if(i < column_matrix[j].size())
+                                        if (i < column_matrix[j].size())
                                             new_value.values.push_back(column_matrix[j][i]);
 
                                     dcs_message.data_values.emplace_back(new_value);
@@ -755,7 +888,6 @@ namespace goes
                                 {
                                     DCSValue trailing_value;
                                     trailing_value.name = dcs_message.dcp->pe_info.back().name;
-                                    trailing_value.interval = dcs_message.dcp->transmission_interval;
                                     trailing_value.values.push_back(column_matrix.back().back());
                                     dcs_message.data_values.emplace_back(trailing_value);
                                 }
@@ -792,7 +924,7 @@ namespace goes
                     hex_stream << std::hex << std::setfill('0')
                         << std::setw(2) << +block_ptr[10]
                         << std::setw(2) << +block_ptr[9]
-                        << std::setw(2) << +block_ptr[8] 
+                        << std::setw(2) << +block_ptr[8]
                         << std::setw(2) << +block_ptr[7];
 
                     uint32_t address_int = (uint32_t)block_ptr[10] << 24 | (uint32_t)block_ptr[9] << 16 |
