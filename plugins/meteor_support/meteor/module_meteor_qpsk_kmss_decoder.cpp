@@ -199,6 +199,10 @@ namespace meteor
         def::SimpleDeframer kmssbpsk_deframer2_1(0x3fcf0fc03ccc30, 56, 481280, 0, false);
         def::SimpleDeframer kmssbpsk_deframer2_2(0x3fcf0fc03ccc30, 56, 481280, 0, false);
 
+        // 20241030_002029_METEOR-M2 4.dat
+        def::SimpleDeframer kmssbpsk_deframer3_1(0x3ece1a912d8974, 56, 481280, 0, false);
+        def::SimpleDeframer kmssbpsk_deframer3_2(0x3ece1a912d8974, 56, 481280, 0, false);
+
         std::mutex writeMtx;
 
         bool convert_from_hard = false;
@@ -253,13 +257,16 @@ namespace meteor
 
                     std::vector<std::vector<uint8_t>> vf1_1 = kmssbpsk_deframer1_1.work(rpkt_buffer_1, rpktpos_1);
                     std::vector<std::vector<uint8_t>> vf2_1 = kmssbpsk_deframer2_1.work(rpkt_buffer_1, rpktpos_1);
+                    std::vector<std::vector<uint8_t>> vf3_1 = kmssbpsk_deframer3_1.work(rpkt_buffer_1, rpktpos_1);
 
                     handleFramesType1(vf1_1, data_out, writeMtx);
                     handleFramesType2(vf2_1, data_out, writeMtx);
+                    handleFramesType2(vf3_1, data_out, writeMtx);
 
                     writeMtx.lock();
                     frame_count += vf1_1.size();
                     frame_count += vf2_1.size();
+                    frame_count += vf3_1.size();
                     writeMtx.unlock();
                 }
                 // #pragma omp section
@@ -277,13 +284,16 @@ namespace meteor
 
                     std::vector<std::vector<uint8_t>> vf1_2 = kmssbpsk_deframer1_2.work(rpkt_buffer_2, rpktpos_2);
                     std::vector<std::vector<uint8_t>> vf2_2 = kmssbpsk_deframer2_2.work(rpkt_buffer_2, rpktpos_2);
+                    std::vector<std::vector<uint8_t>> vf3_2 = kmssbpsk_deframer3_2.work(rpkt_buffer_2, rpktpos_2);
 
                     handleFramesType1(vf1_2, data_out, writeMtx);
                     handleFramesType2(vf2_2, data_out, writeMtx);
+                    handleFramesType2(vf3_2, data_out, writeMtx);
 
                     writeMtx.lock();
                     frame_count += vf1_2.size();
                     frame_count += vf2_2.size();
+                    frame_count += vf3_2.size();
                     writeMtx.unlock();
                 }
             }
