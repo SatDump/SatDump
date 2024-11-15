@@ -144,7 +144,7 @@ namespace goes
                             {
                                 new_dcp->description = pdt_line.substr(field_offsets[14], desc_last_pos - field_offsets[14] + 1);
                                 new_dcp->description.erase(std::remove_if(new_dcp->description.begin(), new_dcp->description.end(),
-                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->description.end());
+                                    [](char &c) {return !(c < 128); }), new_dcp->description.end());
                             }
                         }
 
@@ -189,7 +189,7 @@ namespace goes
                             {
                                 new_dcp->manufacturer = pdt_line.substr(field_offsets[18], manu_last_pos - field_offsets[18] + 1);
                                 new_dcp->manufacturer.erase(std::remove_if(new_dcp->manufacturer.begin(), new_dcp->manufacturer.end(),
-                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->manufacturer.end());
+                                    [](char &c) {return !(c < 128); }), new_dcp->manufacturer.end());
                             }
                         }
 
@@ -204,7 +204,7 @@ namespace goes
                             {
                                 new_dcp->model = pdt_line.substr(field_offsets[19], model_last_pos - field_offsets[19] + 1);
                                 new_dcp->model.erase(std::remove_if(new_dcp->model.begin(), new_dcp->model.end(),
-                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->model.end());
+                                    [](char &c) {return !(c < 128); }), new_dcp->model.end());
                             }
                         }
 
@@ -219,7 +219,7 @@ namespace goes
                             {
                                 new_dcp->nmc_descriptor = pdt_line.substr(field_offsets[22], nmc_last_pos - field_offsets[22] + 1);
                                 new_dcp->nmc_descriptor.erase(std::remove_if(new_dcp->nmc_descriptor.begin(), new_dcp->nmc_descriptor.end(),
-                                    [](char &c) {return !(c >= 0 && c < 128); }), new_dcp->nmc_descriptor.end());
+                                    [](char &c) {return !(c < 128); }), new_dcp->nmc_descriptor.end());
                             }
                         }
 
@@ -243,7 +243,6 @@ namespace goes
                 logger->info("Loading HADS data...");
                 std::ifstream read_hads(satdump::user_path + "/all_dcp_defs.txt");
                 std::string hads_line;
-                bool first_line = true;
                 std::vector<uint16_t> hads_offsets;
                 hads_offsets.push_back(0);
 
@@ -635,7 +634,7 @@ namespace goes
                             // Standard value
                             else
                             {
-                                int val_offset = 2;
+                                size_t val_offset = 2;
                                 try
                                 {
                                     new_value.reading_age = std::stoi(value_strings[1]);
@@ -777,7 +776,7 @@ namespace goes
                                 new_value.interval = (((uint16_t)instrument_string[5] - 0x40) << 6) | (instrument_string[6] - 0x40);
 
                                 // Reading values
-                                for (int i = 7; i + 2 < instrument_string.size(); i += 3)
+                                for (size_t i = 7; i + 2 < instrument_string.size(); i += 3)
                                 {
                                     // No reading
                                     if (instrument_string.substr(i, 3) == "///")
@@ -798,7 +797,7 @@ namespace goes
 
                             if (dcs_message->dcp != nullptr)
                             {
-                                int i = 0;
+                                size_t i = 0;
                                 for (PEInfo &pe_info : dcs_message->dcp->pe_info)
                                 {
                                     if (i >= dcs_message->data_values.size())

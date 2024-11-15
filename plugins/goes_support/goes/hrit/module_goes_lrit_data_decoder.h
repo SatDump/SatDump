@@ -27,9 +27,9 @@ namespace goes
 
             bool write_images;
             bool write_emwin;
-            bool write_messages;
             bool parse_dcs;
             bool write_dcs;
+            bool write_messages;
             bool write_unknown;
             bool write_lrit;
 
