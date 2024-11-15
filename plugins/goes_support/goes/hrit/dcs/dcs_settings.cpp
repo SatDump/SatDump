@@ -28,7 +28,7 @@ namespace goes
 
         void initDcsConfig()
         {
-            advanced_mode = advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t*>();
+            advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t*>();
             if (!satdump::config::main_cfg["plugin_settings"].contains("goes_support"))
                 satdump::config::main_cfg["plugin_settings"]["goes_support"] = nlohmann::ordered_json();
 

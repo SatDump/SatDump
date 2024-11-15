@@ -6,7 +6,9 @@
 #include "common/lrit/lrit_file.h"
 #include "common/lrit/lrit_productizer.h"
 #include "goes/crc32.h"
+
 #include <set>
+#include <deque>
 
 extern "C"
 {
@@ -38,7 +40,11 @@ namespace goes
 
             std::string directory;
 
+            bool is_gui = false;
             CRC32 dcs_crc32;
+            std::mutex ui_dcs_mtx;
+            std::shared_ptr<DCSMessage> focused_dcs_message = nullptr;
+            std::deque<std::shared_ptr<DCSMessage>> ui_dcs_messages;
             std::map<std::string, std::string> shef_codes;
             std::map<uint32_t, std::shared_ptr<DCP>> dcp_list;
             std::set<uint32_t> filtered_dcps;
@@ -69,6 +75,7 @@ namespace goes
 
             void initDCS();
             bool processDCS(uint8_t *data, size_t size);
+            void drawDCSUI();
 
             ::lrit::LRITProductizer productizer;
 

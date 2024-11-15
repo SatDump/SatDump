@@ -116,7 +116,7 @@ namespace goes
             bool header_crc_pass = false;
             bool file_crc_pass = false;
 
-            std::vector<std::variant<DCSMessage, MissedMessage>> blocks;
+            std::vector<std::variant<std::shared_ptr<DCSMessage>, std::shared_ptr<MissedMessage>>> blocks;
         };
 
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PEInfo, name, record_interval, read_to_transmit_offset, base_elevation, correction);
@@ -188,7 +188,7 @@ namespace goes
 
             nlohmann::json blocks_arr = nlohmann::json::array();
             for (auto& block : v.blocks)
-                std::visit([&blocks_arr](const auto& v) { blocks_arr.push_back(v); }, block);
+                std::visit([&blocks_arr](const auto &v) { blocks_arr.push_back(*v); }, block);
             j["blocks"] = blocks_arr;
         }
 
@@ -203,9 +203,9 @@ namespace goes
             for (auto& block : j["blocks"])
             {
                 if (block["type"] == "DCS Message")
-                    v.blocks.push_back(block.get<DCSMessage>());
+                    v.blocks.push_back(std::make_shared<DCSMessage>(block.get<DCSMessage>()));
                 else if (block["type"] == "Missed Message")
-                    v.blocks.push_back(block.get<MissedMessage>());
+                    v.blocks.push_back(std::make_shared<MissedMessage>(block.get<MissedMessage>()));
             }
         };
     }

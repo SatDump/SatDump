@@ -351,6 +351,9 @@ namespace goes
                 ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
+
+            if (streamingInput && parse_dcs)
+                drawDCSUI();
         }
 
         std::string GOESLRITDataDecoderModule::getID()
