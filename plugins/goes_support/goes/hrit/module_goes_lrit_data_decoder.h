@@ -1,11 +1,12 @@
 #pragma once
 
 #include "core/module.h"
-#include "data/dcs_decoder.h"
+#include "dcs/dcs_decoder.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
 #include "common/lrit/lrit_productizer.h"
 #include "goes/crc32.h"
+#include <set>
 
 extern "C"
 {
@@ -25,6 +26,7 @@ namespace goes
             bool write_images;
             bool write_emwin;
             bool write_messages;
+            bool parse_dcs;
             bool write_dcs;
             bool write_unknown;
             bool write_lrit;
@@ -39,6 +41,7 @@ namespace goes
             CRC32 dcs_crc32;
             std::map<std::string, std::string> shef_codes;
             std::map<uint32_t, std::shared_ptr<DCP>> dcp_list;
+            std::set<uint32_t> filtered_dcps;
 
             enum CustomFileParams
             {

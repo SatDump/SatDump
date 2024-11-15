@@ -1,6 +1,7 @@
 #include <sstream>
 #include <fstream>
 #include "dcs_decoder.h"
+#include "core/config.h"
 #include "common/utils.h"
 #include "common/lrit/crc_table.h"
 #include "nlohmann/json_utils.h"
@@ -33,33 +34,69 @@ namespace goes
 
         void GOESLRITDataDecoderModule::initDCS()
         {
-            if (!write_dcs)
+            if (!parse_dcs)
                 return;
 
+            // Load SHEF codes
             shef_codes = loadJsonFile(resources::getResourcePath("dcs/shef_codes.json"));
 
             // Download PDT and HADS Data
+            time_t current_time = time(NULL);
+            if(!std::filesystem::exists(satdump::user_path + "/PDTS_COMPRESSED.txt") ||
+                !std::filesystem::exists(satdump::user_path + "/all_dcp_defs.txt") ||
+                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] == -1 ||
+                current_time - satdump::config::main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"] > satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"])
             {
+                bool update_success = true;
+                bool this_success = false;
                 std::string file_data;
-                logger->info("Updating PDTs and HADS data for DCS processing...");
-                if (!perform_http_request("https://dcs1.noaa.gov/PDTS_COMPRESSED.txt", file_data))
-                {
-                    std::ofstream save_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
-                    save_pdts << file_data;
-                    save_pdts.close();
-                }
-                else
-                    logger->warn("Unable to download PDTs!");
 
-                file_data = "";
-                if (!perform_http_request("https://hads.ncep.noaa.gov/compressed_defs/all_dcp_defs.txt", file_data))
+                logger->info("Updating PDTs and HADS data for DCS processing...");
+                std::vector<std::string> pdt_urls = satdump::config::main_cfg["plugin_settings"]["goes_support"]["pdt_urls"];
+                for (std::string &pdt_url : pdt_urls)
                 {
-                    std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
-                    save_hads << file_data;
-                    save_hads.close();
+                    if (perform_http_request(pdt_url, file_data) == 0)
+                    {
+                        std::ofstream save_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
+                        save_pdts << file_data;
+                        save_pdts.close();
+                        this_success = true;
+                        break;
+                    }
                 }
-                else
+
+                if(!this_success)
+                {
+                    logger->warn("Unable to download PDTs!");
+                    update_success = false;
+                }
+
+                this_success = false;
+                file_data = "";
+                std::vector<std::string> hads_urls = satdump::config::main_cfg["plugin_settings"]["goes_support"]["hads_urls"];
+                for (std::string &hads_url : hads_urls)
+                {
+                    if (perform_http_request(hads_url, file_data) == 0)
+                    {
+                        std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
+                        save_hads << file_data;
+                        save_hads.close();
+                        this_success = true;
+                        break;
+                    }
+                }
+
+                if (!this_success)
+                {
                     logger->warn("Unable to download HADS data!");
+                    update_success = false;
+                }
+
+                if (update_success)
+                {
+                    satdump::config::main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"] = current_time;
+                    satdump::config::saveUserConfig();
+                }
             }
 
             if (std::filesystem::exists(satdump::user_path + "/PDTS_COMPRESSED.txt"))
@@ -387,16 +424,25 @@ namespace goes
                     dcs_message.header.wrong_channel = (block_ptr[7] & 0b1000000) == 0b1000000;
                     //Last bit of block_ptr[6] is reserved (should be 0)
 
-                    // Address
+                    // Address (Hex)
                     hex_stream << std::hex << std::setfill('0')
                         << std::setw(2) << +block_ptr[11]
                         << std::setw(2) << +block_ptr[10]
                         << std::setw(2) << +block_ptr[9]
                         << std::setw(2) << +block_ptr[8];
 
-                    // Pull in DCP info
+                    // Address (int)
                     uint32_t address_int = (uint32_t)block_ptr[11] << 24 | (uint32_t)block_ptr[10] << 16 |
                         (uint32_t)block_ptr[9] << 8 | (uint32_t)block_ptr[8];
+
+                    // Skip if we're filtering messages
+                    if (filtered_dcps.size() > 0 && filtered_dcps.count(address_int) == 0)
+                    {
+                        block_ptr += block_length;
+                        continue;
+                    }
+
+                    // Pull in the DCP, if available
                     if (dcp_list.count(address_int) > 0)
                         dcs_message.dcp = dcp_list[address_int];
 
@@ -920,15 +966,25 @@ namespace goes
                     else
                         missed_message.header.data_rate = "Reserved";
 
-                    // Address
+                    // Address (Hex)
                     hex_stream << std::hex << std::setfill('0')
                         << std::setw(2) << +block_ptr[10]
                         << std::setw(2) << +block_ptr[9]
                         << std::setw(2) << +block_ptr[8]
                         << std::setw(2) << +block_ptr[7];
 
+                    // Address (int)
                     uint32_t address_int = (uint32_t)block_ptr[10] << 24 | (uint32_t)block_ptr[9] << 16 |
                         (uint32_t)block_ptr[8] << 8 | (uint32_t)block_ptr[7];
+
+                    // Skip if we're filtering messages
+                    if (filtered_dcps.size() > 0 && filtered_dcps.count(address_int) == 0)
+                    {
+                        block_ptr += block_length;
+                        continue;
+                    }
+
+                    // Pull in DCP, if available
                     if (dcp_list.count(address_int) > 0)
                         missed_message.dcp = dcp_list[address_int];
 
@@ -965,10 +1021,14 @@ namespace goes
             }
 
             // Write out data
-            nlohmann::ordered_json export_json = dcs_file;
-            std::ofstream json_writer(directory + "/DCS/" + dcs_file.name + ".json");
-            json_writer << export_json.dump(4);
-            json_writer.close();
+            // Do not save if filtering and all blocks are filtered out
+            if (filtered_dcps.empty() || dcs_file.blocks.size() > 0)
+            {
+                nlohmann::ordered_json export_json = dcs_file;
+                std::ofstream json_writer(directory + "/DCS/" + dcs_file.name + ".json");
+                json_writer << export_json.dump(4);
+                json_writer.close();
+            }
 
             return true;
         }
