@@ -144,7 +144,7 @@ namespace goes
                             {
                                 new_dcp->description = pdt_line.substr(field_offsets[14], desc_last_pos - field_offsets[14] + 1);
                                 new_dcp->description.erase(std::remove_if(new_dcp->description.begin(), new_dcp->description.end(),
-                                    [](char &c) {return !((uint8_t)c < 128); }), new_dcp->description.end());
+                                    [](char &c) {return !(*((uint8_t*)&c) < 128); }), new_dcp->description.end());
                             }
                         }
 
@@ -189,7 +189,7 @@ namespace goes
                             {
                                 new_dcp->manufacturer = pdt_line.substr(field_offsets[18], manu_last_pos - field_offsets[18] + 1);
                                 new_dcp->manufacturer.erase(std::remove_if(new_dcp->manufacturer.begin(), new_dcp->manufacturer.end(),
-                                    [](char &c) {return !((uint8_t)c < 128); }), new_dcp->manufacturer.end());
+                                    [](char &c) {return !(*((uint8_t*)&c) < 128); }), new_dcp->manufacturer.end());
                             }
                         }
 
@@ -204,7 +204,7 @@ namespace goes
                             {
                                 new_dcp->model = pdt_line.substr(field_offsets[19], model_last_pos - field_offsets[19] + 1);
                                 new_dcp->model.erase(std::remove_if(new_dcp->model.begin(), new_dcp->model.end(),
-                                    [](char &c) {return !((uint8_t)c < 128); }), new_dcp->model.end());
+                                    [](char &c) {return !(*((uint8_t*)&c) < 128); }), new_dcp->model.end());
                             }
                         }
 
@@ -219,7 +219,7 @@ namespace goes
                             {
                                 new_dcp->nmc_descriptor = pdt_line.substr(field_offsets[22], nmc_last_pos - field_offsets[22] + 1);
                                 new_dcp->nmc_descriptor.erase(std::remove_if(new_dcp->nmc_descriptor.begin(), new_dcp->nmc_descriptor.end(),
-                                    [](char &c) {return !((uint8_t)c < 128); })), new_dcp->nmc_descriptor.end());
+                                    [](char &c) {return !(*((uint8_t*)&c) < 128); }), new_dcp->nmc_descriptor.end());
                             }
                         }
 
