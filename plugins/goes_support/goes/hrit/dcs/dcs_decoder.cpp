@@ -759,7 +759,7 @@ namespace goes
 
                             std::stringstream message_stream(pseudo_string);
                             std::string instrument_string;
-                            for (int measurement_index = 1; std::getline(message_stream, instrument_string, '+'); measurement_index++)
+                            while (std::getline(message_stream, instrument_string, '+'))
                             {
                                 DCSValue new_value;
                                 new_value.name = "Sensor " + std::to_string((int)(instrument_string[0] - 0x40));
