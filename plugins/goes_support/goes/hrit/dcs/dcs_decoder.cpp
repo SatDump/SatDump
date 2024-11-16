@@ -1071,6 +1071,12 @@ namespace goes
                 ImGui::BeginTabBar("##dcsmessagestabbar");
                 if (ImGui::BeginTabItem("Parsed Values"))
                 {
+                    ImGui::TextColored(style::theme.yellow, "%s", "Note:");
+                    ImGui::SameLine();
+                    ImGui::PushTextWrapPos(ImGui::GetContentRegionMax().x);
+                    ImGui::TextUnformatted("Due to the variability of data on DCS, this decoder can only make a \"best effort\" attempt to decode data. Validate data before use.");
+                    ImGui::PopTextWrapPos();
+
                     ImGui::BeginTable("##dcsparsedtable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit);
                     ImGui::TableSetupColumn("", ImGuiTableColumnFlags_NoResize, 20 * ui_scale);
                     ImGui::TableSetupColumn("Address", ImGuiTableColumnFlags_NoResize, 75 * ui_scale);
