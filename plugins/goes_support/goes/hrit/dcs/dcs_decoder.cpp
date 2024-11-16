@@ -1043,6 +1043,7 @@ namespace goes
             // Do not save if filtering and all blocks are filtered out
             if (filtered_dcps.empty() || dcs_file.blocks.size() > 0)
             {
+                logger->info("Writing file " + directory + "/DCS/" + dcs_file.name + ".json" + "...");
                 nlohmann::ordered_json export_json = dcs_file;
                 std::ofstream json_writer(directory + "/DCS/" + dcs_file.name + ".json");
                 json_writer << export_json.dump(4);
