@@ -113,17 +113,23 @@
                 "name": "Fill Missing Data",
                 "description": "Corrects black lines caused by\ninterference or signal drop-outs"
             },
-            "write_dcs": {
+            "parse_dcs": {
                 "type": "bool",
                 "value": false,
-                "name": "Save DCS LRIT",
-                "description": "Save DCS LRIT for processing\nin another program"
+                "name": "Parse DCS",
+                "description": "Process DCS data and save it as json"
             },
             "write_lrit": {
                 "type": "bool",
                 "value": false,
                 "name": "Save All LRIT",
                 "description": "Save all unprocessed LRIT files"
+            },
+            "tracked_addresses": {
+                "type": "string",
+                "value": "",
+                "name": "Tracked DCS Addresses",
+                "description": "Only process DCS messages from the specified addresses (comma separated).\n\nExample: DE4CB498, DE4704BE"
             }
         },
         "work": {
@@ -156,6 +162,7 @@
                     "write_images": true,
                     "write_emwin": true,
                     "write_messages": true,
+                    "write_dcs": false,
                     "write_unknown": false
                 }
             }
