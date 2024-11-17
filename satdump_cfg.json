@@ -540,10 +540,26 @@
                         "description" : "descriptions/DayMicro.md"
                     },
                     "Night Microphysics": {
-                        "equation": "ch10-ch9,ch9-ch4,ch9",
-                        "white_balance": true,
-                        "individual_equalize": true,
-                        "description" : "descriptions/NightMicro.md"
+                        "equation": "1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
+                        "description" : "descriptions/NightMicro.md",
+                        "remove_background": true,
+                        "calib_cfg": {
+                        "cch4": {
+                            "type": "temperature",
+                            "min": 200,
+                            "max": 400
+                        },
+                        "cch9": {
+                            "type": "temperature",
+                            "min": 200,
+                            "max": 400
+                        },
+                        "cch10": {
+                            "type": "temperature",
+                            "min": 200,
+                            "max": 400
+                        }
+                    }
                     },
                     "Water Vapor Blend": {
                         "equation": "ch7 ==  0 ? 0 : 1-ch7, ch6 ==  0 ? 0 : 1-ch6, ch5 ==  0 ? 0 : 1-ch5",
@@ -879,7 +895,7 @@
                         "geo_correct": true
                     },
                     "Night Microphysics": {
-                        "equation": "(cch5-cch4)*(100/10.5)+(3/10.5), (cch4-cch3b)*(100/9.9)+(7/9.9), 1-(((cch4-200)*(293.2-243.7))/(400-200))+243.7",
+                        "equation": "1-(3/200-cch5+cch4)*(200/10.5), 1-(7/200-cch4+cch3b)*(200/9.9), ((cch4*200+200-243.7)/(293.2-243.7))",
                         "geo_correct": true,
                         "description": "descriptions/NightMicro.md",
                         "calib_cfg": {
@@ -1631,10 +1647,26 @@
                         "geo_correct": true
                     },
                     "Night Microphysics": {
-                        "equation": "ch6-ch5, ch5-ch4, ch5",
+                        "equation": "1-(3/200-cch6+cch5)*(200/10.5), 1-(7/200-cch5+cch4)*(200/9.9), ((cch5*200+200-243.7)/(293.2-243.7))",
+                        "geo_correct": true,
                         "description": "descriptions/NightMicro.md",
-                        "individual_equalize": true,
-                        "geo_correct": true
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch6": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1 - ch6, 1 - ch5, 1 - ch4",
@@ -3285,6 +3317,29 @@
                         },
                         "lua": "scripted_compos/IR108-IR62_MODIS.lua",
                         "autogen": false
+                    },
+                    "Night Microphysics": {
+                        "equation": "1-(3/200-cch32+cch31)*(200/10.5), 1-(7/200-cch31+cch20)*(200/9.9), ((cch31*200+200-243.7)/(293.2-243.7))",
+                        "geo_correct": true,
+                        "remove_background": true,
+                        "description": "descriptions/NightMicro.md",
+                        "calib_cfg": {
+                            "cch20": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch31": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch32": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
                     }
                 }
             },
@@ -4933,6 +4988,29 @@
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
                         "remove_background":true
+                    },
+                    "Night Microphysics": {
+                        "equation": "1-(3/200-cch15+cch14)*(200/10.5), 1-(7/200-cch14+cch9)*(200/9.9), ((cch14*200+200-243.7)/(293.2-243.7))",
+                        "geo_correct": true,
+                        "remove_background": true,
+                        "description": "descriptions/NightMicro.md",
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch14": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch15": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
                     }
                 }
             },
