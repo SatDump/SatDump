@@ -879,11 +879,26 @@
                         "geo_correct": true
                     },
                     "Night Microphysics": {
-                        "equation": "cch5-cch4,cch4-cch3b,cch4",
+                        "equation": "(cch5-cch4)*(100/10.5)+(3/10.5), (cch4-cch3b)*(100/9.9)+(7/9.9), 1-(((cch4-200)*(293.2-243.7))/(400-200))+243.7",
                         "geo_correct": true,
                         "description": "descriptions/NightMicro.md",
-                        "individual_equalize": true,
-                        "white_balance": true
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
                     },
                     "Day Microphysics": {
                         "equation": "cch1, cch3a^2.5,cch4",
@@ -3253,6 +3268,23 @@
                                 "max": 300
                             }
                         }
+                    },
+                    "IR 10.8µm - IR 6.2 µm Difference": {
+                        "channels": "cch32, cch28",
+                        "calib_cfg": {
+                            "cch32": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            },
+                            "cch28": {
+                                "type": "temperature",
+                                "min": 0,
+                                "max": 1000
+                            }
+                        },
+                        "lua": "scripted_compos/IR108-IR62_MODIS.lua",
+                        "autogen": false
                     }
                 }
             },
@@ -4044,7 +4076,7 @@
                                 "max": 1000
                             }
                         },
-                        "lua": "scripted_compos/IR108-IR62.lua",
+                        "lua": "scripted_compos/IR108-IR62_HIRS.lua",
                         "autogen": false
                     }
                 }

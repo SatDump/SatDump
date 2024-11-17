@@ -15,19 +15,15 @@ function process()
 
             --get channels from satdump.json
 
-            local cch9 = get_calibrated_value(8, x, y, true)
-            local cch12 = get_calibrated_value(11, x, y, true)
+            local cch32 = get_calibrated_value(32, x, y, true)
+            local cch28 = get_calibrated_value(28, x, y, true)
             
             
             --perform split window
-            print("cch9:   "..cch9)
-            print("cch12:  "..cch12)
-            local ndvi = cch9-cch12
-            print("Val:    " .. ndvi)
+            local ndvi = cch32-cch28
+  
             --range convert from -10 -> 50 to 0 -> 256
             local ndvi_lutval = (((ndvi-(-10))*256) / (50-(-10)))
-
-            print("Lutval: " .. ndvi_lutval)
 
             --sanity checks (noise)
             if ndvi_lutval < 0 then
