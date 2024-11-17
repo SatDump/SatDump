@@ -3939,40 +3939,76 @@
                           } 
                      },
                     "Mid Stratosphere CO2 Temperature": {
-                        "equation": "1-ch2",
                         "description": "descriptions/sounders/MidStratoCO2T.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
+                        "lut": "lut/cal/bluered.png",
+                        "channels": "cch2",
+                        "calib_cfg": {
+                            "cch2": {
+                                "type": "temperature",
+                                "min": 213.15,
+                                "max": 243.15
+                            }
+                        }
                     },
                     "Low Stratosphere CO2 Temperature": {
-                        "equation": "1-ch3",
                         "description": "descriptions/sounders/LowStratoCO2T.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
+                        "lut": "lut/cal/bluered.png",
+                        "channels": "cch3",
+                        "calib_cfg": {
+                            "cch3": {
+                                "type": "temperature",
+                                "min": 213.15,
+                                "max": 243.15
+                            }
+                        }
                     },
                     "Top Troposphere CO2 Temperature": {
-                        "equation": "1-ch4",
                         "description": "descriptions/sounders/TopTropoCO2T.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
+                        "lut": "lut/cal/bluered.png",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 213.15,
+                                "max": 243.15
+                            }
+                        }
                     },
                     "High Troposphere CO2 Temperature": {
-                        "equation": "1-ch5",
                         "description": "descriptions/sounders/HighTropoCO2T.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
+                        "lut": "lut/cal/bluered.png",
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 223.2,
+                                "max": 253.2
+                            }
+                        }
                     },
                     "Mid Troposphere CO2/H2O Temperature": {
-                        "equation": "1-ch6",
                         "description": "descriptions/sounders/MidTropoCO2H2OT.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
+                        "lut": "lut/cal/bluered.png",
+                        "channels": "cch6",
+                        "calib_cfg": {
+                            "cch6": {
+                                "type": "temperature",
+                                "min": 213.15,
+                                "max": 283.15
+                            }
+                        }
                     },
                     "Low Troposphere CO2/H2O Temperature": {
-                        "equation": "1-ch7",
                         "description": "descriptions/sounders/LowTropoCO2H2OT.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
+                        "lut": "lut/cal/bluered.png",
+                        "channels": "cch7",
+                        "calib_cfg": {
+                            "cch7": {
+                                "type": "temperature",
+                                "min": 213.15,
+                                "max": 293.15
+                            }
+                        }
                     },
                     "Cloud Detection Channel": {
                         "equation": "ch17",
@@ -3993,6 +4029,23 @@
                         "equation": "ch8,ch10,ch19",
                         "description": "descriptions/543b.md",
                         "individual_equalize": true
+                    },
+                    "IR 10.8µm - IR 6.2 µm Difference WIP!!!": {
+                        "channels": "cch9, cch12",
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            }
+                        },
+                        "lua": "scripted_compos/IR108-IR62.lua",
+                        "autogen": false
                     }
                 }
             },
