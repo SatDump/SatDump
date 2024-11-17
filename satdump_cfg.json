@@ -3480,6 +3480,18 @@
                         "equalize": true,
                         "geo_correct": true
                     },
+                    "AVHRR 543b IR False Color": {
+                        "equation": "ch6, ch5, ch11",
+                        "description": "descriptions/543b.md",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
+                    "AVHRR 3b45 IR False Color": {
+                        "equation": "ch11, ch5, ch6",
+                        "description": "descriptions/3b45.md",
+                        "individual_equalize": true,
+                        "geo_correct": true
+                    },
                     "10.8µm Thermal IR (Uncalibrated)": {
                         "equation": "1.0 - ch5",
                         "individual_equalize": true,
