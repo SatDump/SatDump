@@ -4030,18 +4030,18 @@
                         "description": "descriptions/543b.md",
                         "individual_equalize": true
                     },
-                    "IR 10.8µm - IR 6.2 µm Difference WIP!!!": {
+                    "IR 10.8µm - IR 6.2 µm Difference": {
                         "channels": "cch9, cch12",
                         "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
+                            "cch9": {
+                                "type": "temperature",
                                 "min": 0,
-                                "max": 1
+                                "max": 1000
                             },
-                            "cch2": {
-                                "type": "albedo",
+                            "cch12": {
+                                "type": "temperature",
                                 "min": 0,
-                                "max": 1
+                                "max": 1000
                             }
                         },
                         "lua": "scripted_compos/IR108-IR62.lua",

@@ -4,7 +4,7 @@ function init()
     --create an empty image for the LUT
     img_lut = image_t.new()
     --load the LUT
-    image_load_png(img_lut, get_resource_path("lut/cal/IR108-IR62-10+50.png"))
+    image_load_png(img_lut, get_resource_path("lut/IR108-IR62-10+50_HIRS.png"))
     --return 3 channels, RGB
     return 3
 end
@@ -15,15 +15,19 @@ function process()
 
             --get channels from satdump.json
 
-            local cch9 = get_calibrated_value(0, x, y, true)
-            local cch12 = get_calibrated_value(1, x, y, true)
+            local cch9 = get_calibrated_value(8, x, y, true)
+            local cch12 = get_calibrated_value(11, x, y, true)
             
             
             --perform split window
+            print("cch9:   "..cch9)
+            print("cch12:  "..cch12)
             local ndvi = cch9-cch12
-
+            print("Val:    " .. ndvi)
             --range convert from -10 -> 50 to 0 -> 256
             local ndvi_lutval = (((ndvi-(-10))*256) / (50-(-10)))
+
+            print("Lutval: " .. ndvi_lutval)
 
             --sanity checks (noise)
             if ndvi_lutval < 0 then
