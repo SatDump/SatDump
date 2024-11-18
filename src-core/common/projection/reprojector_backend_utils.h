@@ -132,7 +132,7 @@ namespace satdump
                 continue;
 
             op.target_prj_info = target_cfg;
-            op.img = layer.img;
+            op.img = &layer.img;
             op.output_width = width;
             op.output_height = height;
 

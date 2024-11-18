@@ -17,7 +17,7 @@ namespace satdump
         */
         struct WarpOperation
         {
-            image::Image input_image;
+            image::Image *input_image;
             std::vector<projection::GCP> ground_control_points;
             int output_width;
             int output_height;

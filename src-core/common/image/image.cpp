@@ -206,7 +206,7 @@ namespace image
             return image16;
         }
 
-        throw satdump_exception("Error in to8bits()"); // This should never happen
+        throw satdump_exception("Error in to16bits()"); // This should never happen
     }
 
     Image Image::to_depth(int bit_depth)
