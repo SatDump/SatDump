@@ -151,7 +151,7 @@ namespace demod
             agc2->output_stream->flush();
 #endif
 
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+            if ((time(NULL) - lastTime) >= progress_log_interval)
             {
                 lastTime = time(NULL);
                 logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
