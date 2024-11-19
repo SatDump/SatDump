@@ -73,6 +73,7 @@ namespace demod
 
         M2M4SNREstimator snr_estimator;
         float snr, peak_snr;
+        int progress_log_interval;
 
         bool show_freq = false;
         float display_freq = 0;
