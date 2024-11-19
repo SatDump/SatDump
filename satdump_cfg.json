@@ -127,6 +127,12 @@
             "description": "The logger level of SatDump in the console.\nEg, if you wish to only show errors\nor every little thing that's going on",
             "no_live": true
         },
+        "progress_log_interval": {
+          "type": "int",
+          "value": 10,
+          "name": "Live decode log interval (secs)",
+          "description": "How often to log SNR decoding stats"
+        },
         "log_to_file": {
             "type": "bool",
             "value": true,
