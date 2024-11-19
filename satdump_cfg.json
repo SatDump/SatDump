@@ -1090,6 +1090,35 @@
                         "geo_correct": true,
                         "autogen": false
                     },
+                    "Split Window Difference": {
+                        "channels": "cch4, cch5",
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 400
+                            },
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 400
+                            }
+                        },
+                        "vars": {
+                            "minval": -7,
+                            "maxval": 7,
+                            "input_range": 250, //250
+                            "lut": "lut/cal/IR12-IR108-7+7.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
                     "Sea Surface Temperature": {
                         "channels": "cch4",
                         "description": "descriptions/SST.md",
@@ -2847,6 +2876,36 @@
                         "equation": "chm12, chm11, chm10",
                         "white_balance": true,
                         "description": "descriptions/FireTempRGB.md"
+                    },
+                                        "Fog Brightness Temperature Difference": {
+                        "channels": "cch13, cch7",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch7": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 300
+                            },
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 163,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -16,
+                            "maxval": 16,
+                            "input_range": 137, //300-163
+                            "lut": "lut/cal/fog_btd.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
                     }
                 }
             },
