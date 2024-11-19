@@ -596,6 +596,96 @@
                              }
                          } 
                     },
+                    "Split Water Vapor": {
+                        "channels": "cch5, cch6",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            },
+                            "cch6": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -35,
+                            "maxval": 5,
+                            "input_range": 150,
+                            "lut": "lut/cal/CIMSSLUT.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
+                    "Split Ozone": {
+                        "channels": "cch8, cch9",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch8": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            },
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -45,
+                            "maxval": 5,
+                            "input_range": 150,
+                            "lut": "lut/cal/CIMSSLUT.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
+                    "Split Cloud Phase": {
+                        "channels": "cch9, cch8",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 350
+                            },
+                            "cch8": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 350
+                            }
+                        },
+                        "vars": {
+                            "minval": -10,
+                            "maxval": 25,
+                            "input_range": 200,
+                            "lut": "lut/cal/CIMSSLUT.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
                     "Cloud Top IR": {
                         "channels": "cch9",
                         "autogen": false,
@@ -1072,7 +1162,7 @@
                         "geo_correct": true,
                         "autogen": false
                     },
-                    "Fog Brightness Temperature Difference": {
+                    "Night Fog Difference": {
                         "channels": "cch4, cch3b",
                         "calib_cfg": {
                             "cch4": {
@@ -2147,7 +2237,7 @@
                         ],
                         "autogen": false // Needs to be optimized...
                     },
-                    "Fog Brightness Temperature Difference": {
+                    "Night Fog Difference": {
                         "channels": "cch13, cch7",
                         "remove_background": true,
                         "draw_map_overlay": true,
@@ -2883,7 +2973,7 @@
                         "white_balance": true,
                         "description": "descriptions/FireTempRGB.md"
                     },
-                                        "Fog Brightness Temperature Difference": {
+                                        "Night Fog Difference": {
                         "channels": "cch13, cch7",
                         "remove_background": true,
                         "draw_map_overlay": true,
@@ -3368,19 +3458,31 @@
                     },
                     "IR 10.8µm - IR 6.2 µm Difference": {
                         "channels": "cch32, cch28",
+                        "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch32": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 1000
+                                "min": 100,
+                                "max": 400
                             },
                             "cch28": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 1000
+                                "min": 100,
+                                "max": 400
                             }
                         },
-                        "lua": "scripted_compos/IR108-IR62_MODIS.lua",
+                        "vars": {
+                            "minval": -10,
+                            "maxval": 50,
+                            "input_range": 300,
+                            "lut": "lut/cal/IR108-IR62-10+50.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
                         "autogen": false
                     },
                     "Night Microphysics": {
@@ -4102,6 +4204,64 @@
                               }
                           } 
                      },
+                     "Split Water Vapor": {
+                        "channels": "cch12, cch11",
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch12": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            },
+                            "cch11": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -35,
+                            "maxval": 5,
+                            "input_range": 150,
+                            "lut": "lut/cal/CIMSSLUT.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
+                    "Split Ozone": {
+                        "channels": "cch10, cch9",
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch10": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            },
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -45,
+                            "maxval": 5,
+                            "input_range": 150,
+                            "lut": "lut/cal/CIMSSLUT.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
                     "Mid Stratosphere CO2 Temperature": {
                         "description": "descriptions/sounders/MidStratoCO2T.md",
                         "lut": "lut/cal/bluered.png",
@@ -4196,20 +4356,47 @@
                     },
                     "IR 10.8µm - IR 6.2 µm Difference": {
                         "channels": "cch9, cch12",
+                        "draw_map_overlay": true,
                         "calib_cfg": {
                             "cch9": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 1000
+                                "min": 100,
+                                "max": 350
                             },
                             "cch12": {
                                 "type": "temperature",
-                                "min": 0,
-                                "max": 1000
+                                "min": 100,
+                                "max": 350
                             }
                         },
-                        "lua": "scripted_compos/IR108-IR62_HIRS.lua",
+                        "vars": {
+                            "minval": -10,
+                            "maxval": 50,
+                            "input_range": 250,
+                            "lut": "lut/cal/IR108-IR62-10+50.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
                         "autogen": false
+                    },
+                    "Differential Water Vapor RGB": {
+                        "equation": "(1-(3/200-cch11+cch12)*(200/33))^0.2587, (1-((cch11*200+200-213.15)/(278.15-213.15)))^0.4, (1-((cch12*200+200-208.5)/(243.9-208.5)))^0.4",
+                        "calib-cfg": {
+                            "cch11": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch12": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
                     }
                 }
             },
@@ -4884,6 +5071,36 @@
                                  "max": 23.2
                              }
                          } 
+                    },
+                    "Split Water Vapor": {
+                        "channels": "cch10, cch11",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch10": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            },
+                            "cch11": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 300
+                            }
+                        },
+                        "vars": {
+                            "minval": -35,
+                            "maxval": 5,
+                            "input_range": 150,
+                            "lut": "lut/cal/CIMSSLUT.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
                     },
                     "Cloud Top IR": {
                         "channels": "cch14",
