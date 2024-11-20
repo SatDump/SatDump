@@ -2447,7 +2447,7 @@
                         "autogen": false
                     },
                     "Nighttime Microphysics": {
-                        "equation": "(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.45838323353)/0.29401197604",
+                        "equation": "(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.48233532934)/0.29401197604",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "borders_color": [
