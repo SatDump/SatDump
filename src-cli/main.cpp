@@ -6,6 +6,7 @@
 #include "autotrack/autotrack.h"
 
 #include "sdr_probe.h"
+#include "help_general.h"
 
 #include "project/project.h"
 
@@ -17,6 +18,7 @@ int main(int argc, char *argv[])
     if (argc < 2)
     {
         logger->error("Please specify either live/record or pipeline name!");
+		logger->error("Use -h or help for information");
         return 1;
     }
 
@@ -60,6 +62,12 @@ int main(int argc, char *argv[])
     else if (std::string(argv[1]) == "sdr_probe")
     {
         sdr_probe();
+    }
+    //////////////
+	//////////////
+    else if ((std::string(argv[1]) == "-h") or (std::string(argv[1]) == "help"))
+    {
+        help_general();
     }
     //////////////
     else
