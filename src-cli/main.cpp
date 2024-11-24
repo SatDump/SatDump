@@ -51,6 +51,11 @@ int main(int argc, char *argv[])
             logger->error("Error running project! %s", e.what());
         }
     }
+    else if (std::string(argv[1]) == "version" || std::string(argv[1]) == "--v")
+    {
+        logger->info("This is SatDump v" + (std::string)SATDUMP_VERSION);
+        return 0;
+    }
     //////////////
     else if (std::string(argv[1]) == "sdr_probe")
     {

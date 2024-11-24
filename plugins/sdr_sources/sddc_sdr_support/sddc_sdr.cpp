@@ -65,7 +65,7 @@ void SDDCSource::open()
 {
     if (!is_open)
     {
-        sddc_dev_obj = sddc_open(d_sdr_id, resources::getResourcePath("sddc/SDDC_FX3.img").c_str());
+        sddc_dev_obj = sddc_open(std::stoi(d_sdr_id), resources::getResourcePath("sddc/SDDC_FX3.img").c_str());
         if (sddc_dev_obj == NULL)
             throw satdump_exception("Could not open SDDC device!");
     }

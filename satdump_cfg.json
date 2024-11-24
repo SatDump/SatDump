@@ -545,6 +545,23 @@
                         "individual_equalize": true,
                         "description" : "descriptions/DayMicro.md"
                     },
+                    "Differential Water Vapor RGB": {
+                        "equation": "((cch6-cch5+0.01363636363)/0.15)^3.86548125242,((cch6-0.15068181818)/0.29545454545)^2.5,((cch5-0.12954545454)/0.1609090909)^2.5",
+                        "remove_background": true,
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 400
+                            },
+                            "cch6": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 400
+                            }
+                        }
+                    },
                     "Night Microphysics": {
                         "equation": "1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
                         "description" : "descriptions/NightMicro.md",
@@ -2453,7 +2470,7 @@
                         "autogen": false
                     },
                     "Nighttime Microphysics": {
-                        "equation": "(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.45838323353)/0.29401197604",
+                        "equation": "(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.48233532934)/0.29401197604",
                         "remove_background": true,
                         "draw_map_overlay": true,
                         "borders_color": [
@@ -4384,16 +4401,18 @@
                         "autogen": false
                     },
                     "Differential Water Vapor RGB": {
-                        "equation": "(1-(3/200-cch11+cch12)*(200/33))^0.2587, (1-((cch11*200+200-213.15)/(278.15-213.15)))^0.4, (1-((cch12*200+200-208.5)/(243.9-208.5)))^0.4",
-                        "calib-cfg": {
-                            "cch11": {
-                                "type": "temperature",
-                                "min": 200,
-                                "max": 400
-                            },
+                        "equation": "((cch11-cch12+0.01363636363)/0.15)^3.86548125242,((cch11-0.15068181818)/0.29545454545)^2.5,((cch12-0.12954545454)/0.1609090909)^2.5",
+                        "remove_background": true,
+                        "invert": true,
+                        "calib_cfg": {
                             "cch12": {
                                 "type": "temperature",
-                                "min": 200,
+                                "min": 180,
+                                "max": 400
+                            },
+                            "cch11": {
+                                "type": "temperature",
+                                "min": 180,
                                 "max": 400
                             }
                         }
