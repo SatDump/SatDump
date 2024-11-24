@@ -202,8 +202,10 @@ namespace satdump
 
             ImGui::SameLine();
             ImGuiStyle &imguistyle = ImGui::GetStyle();
-            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) +
-                                                                   ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0));
+            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) + 
+                                                                   (ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0) + imguistyle.ItemSpacing.x +
+                                                                   (ImGui::CalcTextSize("Enable All").x + imguistyle.FramePadding.x * 2.0) + imguistyle.ItemSpacing.x +
+                                                                   (ImGui::CalcTextSize("Disable All").x + imguistyle.FramePadding.x * 2.0)));
 
             if (projections_loading_new_layer)
             {
@@ -321,6 +323,22 @@ namespace satdump
                 }
             }
 
+            ImGui::SameLine();
+            if (ImGui::Button("Enable All"))
+            {
+                logger->info("Enabling all layers for projection");
+                for (auto& lay : projection_layers)
+                    lay.enabled = true;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Disable All"))
+            {
+                logger->info("Disabling all layers for projection");
+                for (auto& lay : projection_layers)
+                    lay.enabled = false;
+            }
+
             if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
             {
                 for (int i = 0; i < (int)projection_layers.size(); i++)
@@ -350,9 +368,6 @@ namespace satdump
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-
-                    if (active_layers < 1)
-                        layer.enabled = true;
 
                     {
                         if (disable_buttons)
