@@ -20,6 +20,7 @@
 
 namespace satdump
 {
+    int active_layers;
     int osm_url_regex_len = 0;
     float general_progress = 0;
     float general_sum = 1;
@@ -119,7 +120,7 @@ namespace satdump
             ImGui::Separator();
             ImGui::Spacing();
 
-            if (disable_buttons || projection_layers.size() == 0)
+            if (disable_buttons || projection_layers.size() == 0 || active_layers == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
             {
@@ -150,6 +151,8 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
+                if (active_layers == 0)
+                    ImGui::SetTooltip("No layers active for projection!");
             }
 
             ImGui::Spacing();
@@ -175,8 +178,10 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
+                if (active_layers == 0)
+                    ImGui::SetTooltip("No layers active for projection!");
             }
-            if (disable_buttons || projection_layers.size() == 0)
+            if (disable_buttons || projection_layers.size() == 0 || active_layers == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Layers"))
@@ -204,8 +209,8 @@ namespace satdump
             ImGuiStyle &imguistyle = ImGui::GetStyle();
             ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) + 
                                                                    (ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0) + imguistyle.ItemSpacing.x +
-                                                                   (ImGui::CalcTextSize("Enable All").x + imguistyle.FramePadding.x * 2.0) + imguistyle.ItemSpacing.x +
-                                                                   (ImGui::CalcTextSize("Disable All").x + imguistyle.FramePadding.x * 2.0)));
+                                                                   (ImGui::CalcTextSize("All").x + imguistyle.FramePadding.x * 2.0) + imguistyle.ItemSpacing.x +
+                                                                   (ImGui::CalcTextSize("None").x + imguistyle.FramePadding.x * 2.0)));
 
             if (projections_loading_new_layer)
             {
@@ -326,17 +331,17 @@ namespace satdump
             ImGui::SameLine();
             if (ImGui::Button("Enable All"))
             {
-                logger->info("Enabling all layers for projection");
                 for (auto &lay : projection_layers)
                     lay.enabled = true;
+                logger->info("Enabled all layers for projection");
             }
 
             ImGui::SameLine();
             if (ImGui::Button("Disable All"))
             {
-                logger->info("Disabling all layers for projection");
                 for (auto &lay : projection_layers)
                     lay.enabled = false;
+                logger->info("Disabled all layers for projection");
             }
 
             if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
@@ -353,7 +358,7 @@ namespace satdump
                     ImGui::Text("%s", label.c_str());
                     ImGui::PopTextWrapPos();
 
-                    int active_layers = 0;
+                    active_layers = 0;
                     for (auto &lay : projection_layers)
                         if (lay.enabled)
                             active_layers++;
