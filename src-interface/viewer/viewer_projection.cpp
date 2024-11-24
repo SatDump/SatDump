@@ -19,8 +19,7 @@
 #include "common/widgets/json_editor.h"
 
 namespace satdump
-{
-    int active_layers;
+{    
     int osm_url_regex_len = 0;
     float general_progress = 0;
     float general_sum = 1;
@@ -30,6 +29,12 @@ namespace satdump
     {
         bool disable_buttons = projections_are_generating;
         bool disable_add_layer = is_opening_layer;
+
+        int active_layers = 0;
+        for (auto &lay : projection_layers)
+            if (lay.enabled)
+                active_layers++;
+        
         if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Text("Output image : ");
