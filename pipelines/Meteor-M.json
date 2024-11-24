@@ -22,11 +22,11 @@
             "samplerate": {
                 "value": 3e6
             },
-            "start_timestamp": {
-                "type": "timestamp",
+            "year_override": {
+                "type": "int",
                 "value": -1,
-                "name": "Start Timestamp",
-                "description": "Unix timestamp of the start of the file provided.\nRequired in case you are not\nprocessing your file on the same Mocow day."
+                "name": "Year Override",
+                "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
             }
         },
         "work": {
