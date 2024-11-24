@@ -327,7 +327,7 @@ namespace satdump
             if (ImGui::Button("Enable All"))
             {
                 logger->info("Enabling all layers for projection");
-                for (auto& lay : projection_layers)
+                for (auto &lay : projection_layers)
                     lay.enabled = true;
             }
 
@@ -335,7 +335,7 @@ namespace satdump
             if (ImGui::Button("Disable All"))
             {
                 logger->info("Disabling all layers for projection");
-                for (auto& lay : projection_layers)
+                for (auto &lay : projection_layers)
                     lay.enabled = false;
             }
 
