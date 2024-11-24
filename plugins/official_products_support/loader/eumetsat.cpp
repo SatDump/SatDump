@@ -235,7 +235,7 @@ namespace satdump
                             }
                             catch (std::exception &e)
                             {
-                                logger->error("Failed downloading file from EUMETSAT! %s", e.what());
+                                logger->error("Failed downloading file from EUMETSAT: %s", e.what());
                             }
                         };
 

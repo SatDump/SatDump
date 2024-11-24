@@ -42,6 +42,9 @@ namespace widgets
 
     int FileDownloaderWidget::download_file(std::string url_str, std::string output_file, std::string added_header)
     {
+        if (is_downloading)
+            throw std::exception("Already downloading file. Not starting second download.");
+
         is_downloading = true;
         file_downloading = output_file;
 
