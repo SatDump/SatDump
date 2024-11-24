@@ -19,7 +19,7 @@
 #include "common/widgets/json_editor.h"
 
 namespace satdump
-{    
+{ 
     int osm_url_regex_len = 0;
     float general_progress = 0;
     float general_sum = 1;
