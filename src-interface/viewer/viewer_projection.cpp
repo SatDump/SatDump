@@ -156,7 +156,7 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
-                if (active_layers == 0)
+                if (active_layers == 0 && projection_layers.size() > 0)
                     ImGui::SetTooltip("No layers active for projection!");
             }
 
@@ -183,7 +183,7 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
-                if (active_layers == 0)
+                if (active_layers == 0 && projection_layers.size() > 0)
                     ImGui::SetTooltip("No layers active for projection!");
             }
             if (disable_buttons || projection_layers.size() == 0 || active_layers == 0)
