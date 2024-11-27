@@ -4,6 +4,7 @@
 
 #include "meteor/module_meteor_hrpt_decoder.h"
 #include "meteor/module_meteor_lrpt_decoder.h"
+#include "meteor/module_meteor_concat_lrpt_demod.h"
 #include "meteor/module_meteor_xband_decoder.h"
 #include "meteor/instruments/msumr/module_meteor_msumr_lrpt.h"
 #include "meteor/module_meteor_instruments.h"
@@ -31,6 +32,7 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::METEORHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::METEORLRPTDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::MeteorConcatLrptDemod);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::MeteorXBandDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::msumr::METEORMSUMRLRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::instruments::MeteorInstrumentsDecoderModule);

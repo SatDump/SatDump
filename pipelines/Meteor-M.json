@@ -206,6 +206,77 @@
             }
         }
     },
+    "meteor_m2-x_lrpt_unified": {
+        "name": "METEOR M2-x LRPT 72k (Unified)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.9e6
+            ],
+            [
+                "Backup",
+                137.1e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
+            },
+            "rs_usecheck": {
+                "type": "bool",
+                "value": true,
+                "name": "Use RS Check",
+                "description": "Discards data that fails the Reed-Solomon check\n\nIt is strongly recommended to leave this on - unless the satellite\nis transmitting bad RS codes, which may happen from time to time."
+            },
+            "fill_missing": {
+                "type": "bool",
+                "value": false,
+                "name": "Fill Missing Data",
+                "description": "Creates \"MSU-MR (Filled)\" folder, which corrects black lines\ncaused by interference or signal drop-outs"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "cadu": {
+                "meteor_concat_lrpt_demod": {
+                    "diff_decode": true,
+                    "m2x_mode": true,
+                    "symbolrate": 72e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "deframer_outsync_after": 100
+                }
+            },
+            "products": {
+                "meteor_msumr_lrpt": {
+                    "m2x_mode": true,
+                    "max_fill_lines": 50
+                }
+            }
+        }
+    },
     "meteor_m2-x_lrpt_80k": {
         "name": "METEOR M2-x LRPT 80k",
         "live": true,
