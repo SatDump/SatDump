@@ -555,19 +555,13 @@ namespace satdump
                     int timeleft;
                     switch (baseband_format)
                     {
-                    case dsp::CF_32:
+                    case dsp::CF_32: case dsp::CS_32:
                         timeleft = estimated_available / (8 * get_samplerate());
                         break;
-                    case dsp::CS_16:
+                    case dsp::CS_16: case dsp::WAV_16:
                         timeleft = estimated_available / (4 * get_samplerate());
                         break;
-                    case dsp::WAV_16:
-                        timeleft = estimated_available / (4 * get_samplerate());
-                        break;
-                    case dsp::CS_8:
-                        timeleft = estimated_available / (2 * get_samplerate());
-                        break;
-                    case dsp::CU_8:
+                    case dsp::CS_8: case dsp::CU_8:
                         timeleft = estimated_available / (2 * get_samplerate());
                         break;
                     default:

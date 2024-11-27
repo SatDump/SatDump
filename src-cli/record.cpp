@@ -24,7 +24,7 @@ int main_record(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " record [output_baseband (without extension!)] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in sources can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8/wav16/ziq] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/cu8/wav16/ziq] --dc_block --iq_swap");
         logger->error(" --source [airspy/rtlsdr/etc] --gain 20 --bias");
         logger->error("As well as --timeout in seconds");
         logger->error("Sample command :");
