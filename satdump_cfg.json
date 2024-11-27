@@ -3551,6 +3551,52 @@
                             }
                         }
                     },
+                    "Dust RGB": {
+                        "equation": "1-(3/200-cch32+cch31)*(200/10.5), (1-(7/200-cch31+cch29)*(200/14.9))^2.5, ((cch31*200+200-261)/(289-261))",
+                        "geo_correct": true,
+                        "remove_background": true,
+                        "description": "descriptions/NightMicro.md",
+                        "calib_cfg": {
+                            "cch29": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch31": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch32": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
+                    },
+                    "24hour Microphysics RGB": {
+                        "equation": "1-(3/200-cch32+cch31)*(200/10.5), (1-(7/200-cch31+cch29)*(200/6))^1.2, ((cch31*200+200-248)/(303-248))",
+                        "geo_correct": true,
+                        "remove_background": true,
+                        "description": "descriptions/NightMicro.md",
+                        "calib_cfg": {
+                            "cch29": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch31": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch32": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
+                        }
+                    },
                     "Differential Water Vapor RGB": {
                         "equation": "((cch28-cch27+0.01363636363)/0.15)^3.86548125242,((cch28-0.15068181818)/0.29545454545)^2.5,((cch27-0.12954545454)/0.1609090909)^2.5",
                         "remove_background": true,
