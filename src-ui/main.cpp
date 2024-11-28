@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/wav16] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/wav16] --dc_block --iq_swap");
     }
     else
         satdump::processing::is_processing = true;

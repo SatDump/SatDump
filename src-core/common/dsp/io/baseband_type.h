@@ -7,6 +7,7 @@ namespace dsp
 	    enum BasebandTypeEnum
     {
         CF_32,
+        CS_32,
         CS_16,
         CS_8,
         CU_8,

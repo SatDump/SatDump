@@ -17,22 +17,44 @@ HeaderInfo try_parse_header(std::string file)
     if (wav::isValidWav(wav::parseHeaderFromFileWav(file)))
     {
         logger->debug("File is wav!");
-        info.samplerate = wav::parseHeaderFromFileWav(file).samplerate;
-        if (wav::parseHeaderFromFileWav(file).bits_per_sample == 8)
-            info.type = "cu8";
-        else if (wav::parseHeaderFromFileWav(file).bits_per_sample == 16)
-            info.type = "cs16";
+        wav::WavHeader wav_header = wav::parseHeaderFromFileWav(file);
+        info.samplerate = wav_header.samplerate;
         info.valid = true;
+        if (wav_header.bits_per_sample == 8 && wav_header.audio_Format == 1)
+            info.type = "cu8";
+        else if (wav_header.bits_per_sample == 16 && wav_header.audio_Format == 1)
+            info.type = "cs16";
+        else if (wav_header.bits_per_sample == 32 && wav_header.audio_Format == 1)
+            info.type = "cs32";
+        else if (wav_header.bits_per_sample == 32 && wav_header.audio_Format == 3)
+            info.type = "cf32";
+        else
+        {
+            info.valid = false;
+            logger->warn("Unsupported WAV format! Bits per sample: %hu, Format: %hu",
+                wav_header.bits_per_sample, wav_header.audio_Format);
+        }
     }
     else if (wav::isValidRF64(wav::parseHeaderFromFileWav(file)))
     {
+        wav::RF64Header rf64_header = wav::parseHeaderFromFileRF64(file);
         logger->debug("File is RF64!");
-        info.samplerate = wav::parseHeaderFromFileRF64(file).samplerate;
-        if (wav::parseHeaderFromFileRF64(file).bits_per_sample == 8)
-            info.type = "cu8";
-        else if (wav::parseHeaderFromFileRF64(file).bits_per_sample == 16)
-            info.type = "cs16";
+        info.samplerate = rf64_header.samplerate;
         info.valid = true;
+        if (rf64_header.bits_per_sample == 8 && rf64_header.audio_Format == 1)
+            info.type = "cu8";
+        else if (rf64_header.bits_per_sample == 16 && rf64_header.audio_Format == 1)
+            info.type = "cs16";
+        else if (rf64_header.bits_per_sample == 32 && rf64_header.audio_Format == 1)
+            info.type = "cs32";
+        else if (rf64_header.bits_per_sample == 32 && rf64_header.audio_Format == 3)
+            info.type = "cf32";
+        else
+        {
+            info.valid = false;
+            logger->warn("Unsupported RF64 format! Bits per sample: %hu, Format: %hu",
+                rf64_header.bits_per_sample, rf64_header.audio_Format);
+        }
     }
 #ifdef BUILD_ZIQ
     else if (ziq::isValidZIQ(file))

@@ -983,9 +983,8 @@
                         "description": "descriptions/3b45.md",
                         "geo_correct": true
                     },
-                    "AVHRR 124 False Color": {
-                        "equation": "ch1, ch2, ch4",
-                        "individual_equalize": true,
+                    "AVHRR 124 False Color (Cloud RGB)": {
+                        "equation": "cch1, cch2, 1-cch4",
                         "description": "descriptions/124.md",
                         "geo_correct": true,
                         "project": {
@@ -998,6 +997,23 @@
                                 "scalar_y": -0.087890625,
                                 "width": 4096,
                                 "height": 2048
+                            }
+                        },
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 203,
+                                "max": 323
                             }
                         }
                     },
@@ -1029,11 +1045,27 @@
                             }
                         }
                     },
-                    "Day Microphysics": {
-                        "equation": "cch1, cch3a^2.5,cch4",
+                    "Day Microphysics (Metop)": {
+                        "equation": "cch1, cch3a, cch4",
                         "description": "descriptions/DayMicro.md",
                         "geo_correct": true,
-                        "individual_equalize": true
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch3a": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 0.7
+                            },
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 203,
+                                "max": 323
+                            }
+                        }
                     },
                     "Day Cloud Convection": {
                         "equation": "cch1^0.58823529411,cch1^0.58823529411,1-cch4",
@@ -3505,7 +3537,6 @@
                     "Night Microphysics": {
                         "equation": "1-(3/200-cch32+cch31)*(200/10.5), 1-(7/200-cch31+cch20)*(200/9.9), ((cch31*200+200-243.7)/(293.2-243.7))",
                         "geo_correct": true,
-                        "remove_background": true,
                         "description": "descriptions/NightMicro.md",
                         "calib_cfg": {
                             "cch20": {
@@ -3524,7 +3555,93 @@
                                 "max": 400
                             }
                         }
-                    }
+                    },
+                    "Dust RGB": {
+                        "equation": "(((cch32-cch31)+0.0173913043478261)/0.0260869565217391), ((cch31-cch29)/0.0652173913043478)^0.4, ((cch31-0.395652173913043)/0.121739130434783)",
+                        "geo_correct": true,
+                        "description": "descriptions/NightMicro.md",
+                        "calib_cfg": {
+                            "cch29": {
+                                "type": "temperature",
+                                "min": 170,
+                                "max": 400
+                            },
+                            "cch31": {
+                                "type": "temperature",
+                                "min": 170,
+                                "max": 400
+                            },
+                            "cch32": {
+                                "type": "temperature",
+                                "min": 170,
+                                "max": 400
+                            }
+                        }
+                    },
+                    "24hour Microphysics RGB": {
+                        "equation": "((cch32-cch31)+0.0173913043478261)/0.0260869565217391, ((cch31-cch29)/0.0260869565217391)^0.833333333333333, (cch31+0.339130434782609)/0.239130434782609",
+                        "geo_correct": true,
+                        "description": "descriptions/NightMicro.md",
+                        "calib_cfg": {
+                            "cch29": {
+                                "type": "temperature",
+                                "min": 170,
+                                "max": 400
+                            },
+                            "cch31": {
+                                "type": "temperature",
+                                "min": 170,
+                                "max": 400
+                            },
+                            "cch32": {
+                                "type": "temperature",
+                                "min": 170,
+                                "max": 400
+                            }
+                        }
+                    },
+                    "Differential Water Vapor RGB": {
+                        "equation": "((cch28-cch27+0.01363636363)/0.15)^3.86548125242,((cch28-0.15068181818)/0.29545454545)^2.5,((cch27-0.12954545454)/0.1609090909)^2.5",
+                        "invert": true,
+                        "calib_cfg": {
+                            "cch27": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 400
+                            },
+                            "cch28": {
+                                "type": "temperature",
+                                "min": 180,
+                                "max": 400
+                            }
+                        }
+                    },
+                    "6.7µm Calibrated Water Vapor": {
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                        "autogen": false,
+                         //"description": "descriptions/cal_wv.md",
+                         "channels": "cch27",
+                         "calib_cfg": {
+                             "cch27": {
+                                 "type": "radiance",
+                                 "min": 0,
+                                 "max": 5.2
+                             }
+                         } 
+                     },
+                     "7.35µm Calibrated Water Vapor": {
+                         "lut": "lut/cal/star_abi_wv_8-10.png",
+                         "autogen": false,
+                          //"description": "descriptions/cal_wv.md",
+                          "channels": "cch28",
+                          "calib_cfg": {
+                              "cch28": {
+                                  "type": "radiance",
+                                  "min": 0,
+                                  "max": 23.2
+                              }
+                          } 
+                     }
                 }
             },
             "mersi1": {
@@ -4402,7 +4519,6 @@
                     },
                     "Differential Water Vapor RGB": {
                         "equation": "((cch11-cch12+0.01363636363)/0.15)^3.86548125242,((cch11-0.15068181818)/0.29545454545)^2.5,((cch12-0.12954545454)/0.1609090909)^2.5",
-                        "remove_background": true,
                         "invert": true,
                         "calib_cfg": {
                             "cch12": {
