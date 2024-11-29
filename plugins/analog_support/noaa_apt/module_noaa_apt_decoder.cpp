@@ -179,12 +179,12 @@ namespace noaa_apt
                 if (is_stereo)
                 {
                     for (int i = 0; i < buffer_size / 2; i++)
-                        input_stream->writeBuf[i] = s16_buf[i * 2] / 65535.0;
+                        input_stream->writeBuf[i] = s16_buf[i * 2] / 32767.0f;
                     input_stream->swap(buffer_size / 2);
                 }
                 else
                 {
-                    volk_16i_s32f_convert_32f_u((float *)input_stream->writeBuf, (const int16_t *)s16_buf, 65535, buffer_size);
+                    volk_16i_s32f_convert_32f_u((float *)input_stream->writeBuf, (const int16_t *)s16_buf, 32767, buffer_size);
                     input_stream->swap(buffer_size);
                 }
 

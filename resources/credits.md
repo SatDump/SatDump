@@ -48,11 +48,13 @@ First time here? See the reference documents below to get started using SatDump.
 - [SDR++](https://github.com/AlexandreRouma/SDRPlusPlus), for the DSP stream implementation (thanks Ryzerth for the tip back then!) and a few other things, such as the SpyServer client
 
 ### Libraries linked against
+- [curl](https://curl.se/), for HTTP(S) support
 - [fftw3](http://fftw.org/), used for all FFT operations
+- [hdf5](https://github.com/HDFGroup/hdf5), for supporting official products and services like GeoNetCast
 - [jemalloc](https://jemalloc.net/), for memory allocation optimization on Linux and macOS
 - [libpng](https://github.com/glennrp/libpng), for PNG image loading/saving
 - [nng](https://github.com/nanomsg/nng), for network stuff
-- [PortAudio](https://www.portaudio.com/), used for audio output for NOAA APT
+- [PortAudio](https://www.portaudio.com/), used for audio output
 - [Volk](https://github.com/gnuradio/volk), to simplify SIMD utilization
 - [zlib](https://github.com/madler/zlib), required by libpng
 
@@ -77,6 +79,7 @@ First time here? See the reference documents below to get started using SatDump.
 ### Fonts
 - [Roboto](https://fonts.google.com/specimen/Roboto), for default font
 - [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
+- [Liberation Serif](https://www.fontsquirrel.com/fonts/liberation-serif), for Solaris Motif theme
 - [Perfect DOS VGA 437](https://www.dafont.com/perfect-dos-vga-437.font), for Phosphor theme
 - [PX Sans Nouveaux](https://www.dafont.com/px-sans-nouveaux.font), for Windows 98 theme
 *3270 Nerd Font and Roboto have been merged into a single font.ttf*

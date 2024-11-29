@@ -111,7 +111,7 @@ namespace noaa_apt
                     qua->output_stream->readBuf[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 0.68, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 32767, dat_size);
 
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);

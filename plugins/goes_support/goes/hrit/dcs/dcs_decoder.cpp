@@ -298,18 +298,18 @@ namespace goes
                         std::getline(degree_stream, degree_str, ' ');
                         this_dcp->lat = std::stof(degree_str);
                         std::getline(degree_stream, degree_str, ' ');
-                        this_dcp->lat += std::stof(degree_str) / 60.0f;
+                        this_dcp->lat += (std::stof(degree_str) / 60.0f) * (this_dcp->lat > 0 ? 1 : -1);
                         std::getline(degree_stream, degree_str, ' ');
-                        this_dcp->lat += std::stof(degree_str) / 3600.0f;
+                        this_dcp->lat += (std::stof(degree_str) / 3600.0f) * (this_dcp->lat > 0 ? 1 : -1);
 
                         // Longitude
                         degree_stream = std::stringstream(hads_tokens[6]);
                         std::getline(degree_stream, degree_str, ' ');
                         this_dcp->lon = std::stof(degree_str);
                         std::getline(degree_stream, degree_str, ' ');
-                        this_dcp->lon += std::stof(degree_str) / 60.0f;
+                        this_dcp->lon += (std::stof(degree_str) / 60.0f) * (this_dcp->lon > 0 ? 1 : -1);
                         std::getline(degree_stream, degree_str, ' ');
-                        this_dcp->lon += std::stof(degree_str) / 3600.0f;
+                        this_dcp->lon += (std::stof(degree_str) / 3600.0f) * (this_dcp->lon > 0 ? 1 : -1);
 
                         this_dcp->description = hads_tokens[9];
 

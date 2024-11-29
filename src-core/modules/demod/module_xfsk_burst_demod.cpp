@@ -144,7 +144,7 @@ namespace demod
                 continue;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)agc2->output_stream->readBuf, 65535 * 0.2, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)agc2->output_stream->readBuf, 65535 * 0.2, dat_size); //TODO - 65535 is incorrect; use 32767 and fix percent appropriately
 
             audio_sink->push_samples(output_wav_buffer, dat_size);
 

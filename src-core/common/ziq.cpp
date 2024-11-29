@@ -83,7 +83,7 @@ namespace ziq
         }
         else if (cfg.bits_per_sample == 16)
         {
-            volk_32f_s32f_convert_16i(buffer_i16, (float *)input, 65535, size * 2);
+            volk_32f_s32f_convert_16i(buffer_i16, (float *)input, 32767, size * 2);
 
             if (cfg.is_compressed)
             {
@@ -286,7 +286,7 @@ namespace ziq
                 stream.read((char *)buffer_i16, size * 2 * sizeof(int16_t));
             }
 
-            volk_16i_s32f_convert_32f_u((float *)output, (const int16_t *)buffer_i16, 65535, size * 2);
+            volk_16i_s32f_convert_32f_u((float *)output, (const int16_t *)buffer_i16, 32767, size * 2);
         }
         else if (cfg.bits_per_sample == 32)
         {
