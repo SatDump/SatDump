@@ -334,7 +334,7 @@ namespace satdump
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Enable All"))
+            if (ImGui::Button("All"))
             {
                 for (auto &lay : projection_layers)
                     lay.enabled = true;
@@ -342,7 +342,7 @@ namespace satdump
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Disable All"))
+            if (ImGui::Button("None"))
             {
                 for (auto &lay : projection_layers)
                     lay.enabled = false;
