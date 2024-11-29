@@ -248,7 +248,7 @@ namespace eos
                     else if (i == 6)
                         modis_products.images.push_back({"MODIS-13H", "13H", image});
                     else if (i == 7)
-                        modis_products.images.push_back({"MODIS-14L", "13L", image});
+                        modis_products.images.push_back({"MODIS-14L", "14L", image});
                     else if (i == 8)
                         modis_products.images.push_back({"MODIS-14H", "14H", image});
                     else

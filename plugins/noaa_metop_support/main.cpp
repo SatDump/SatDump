@@ -14,6 +14,7 @@
 
 #include "instruments/avhrr/avhrr_calibrator.h"
 #include "instruments/mhs/mhs_calibrator.h"
+#include "noaa/instruments/hirs/hirs_calibrator.h"
 #include "metop/instruments/iasi/iasi_img_calibrator.h"
 
 class NOAAMetOpSupport : public satdump::Plugin
@@ -50,6 +51,8 @@ public:
             evt.calibrators.push_back(std::make_shared<NoaaMHSCalibrator>(evt.calib, evt.products));
         else if (evt.id == "metop_iasi_img")
             evt.calibrators.push_back(std::make_shared<metop::iasi::MetOpIASIImagingCalibrator>(evt.calib, evt.products));
+        else if (evt.id == "noaa_hirs")
+            evt.calibrators.push_back(std::make_shared<NoaaHIRSCalibrator>(evt.calib, evt.products));
     }
 };
 

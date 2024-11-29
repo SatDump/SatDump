@@ -481,8 +481,14 @@ namespace goes
                 fileo.close();
             }
             // Check if this is DCS data
-            else if (write_dcs && primary_header.file_type_code == 130)
-                saveLRITFile(file, directory + "/DCS");
+            else if (primary_header.file_type_code == 130)
+            {
+                int offset = primary_header.total_header_length;
+                if (parse_dcs && (file.vcid != 32 || !processDCS(&file.lrit_data.data()[offset], file.lrit_data.size() - offset)))
+                    saveLRITFile(file, directory + "/DCS/Unknown");
+                if (write_dcs)
+                    saveLRITFile(file, directory + "/DCS_LRIT");
+            }
             // Otherwise, write as generic, unknown stuff. This should not happen
             // Do not write if already saving LRIT data
             else if (write_unknown && !write_lrit)

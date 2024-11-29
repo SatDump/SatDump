@@ -280,8 +280,8 @@ namespace noaa_metop
                     }
                 }
                 calib_out["vars"]["perLine_perChannel"].push_back(ln);
-                calib_out["wavenumbers"] = calib["wavenumber"];
             }
+            calib_out["wavenumbers"] = calib["wavenumber"];
         }
         // NOAA specific functions
         double MHSReader::get_timestamp(int pkt, int offset, int /*ms_scale*/)

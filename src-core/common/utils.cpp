@@ -126,9 +126,10 @@ int perform_http_request(std::string url_str, std::string &result, std::string a
             else
                 logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
         }
+        else
+            ret = 0;
 
         curl_easy_cleanup(curl);
-        ret = 0;
 
         if (chunk != NULL)
             curl_slist_free_all(chunk);
@@ -178,9 +179,10 @@ int perform_http_request_post(std::string url_str, std::string &result, std::str
             else
                 logger->error("curl_easy_perform() failed: %s", curl_easy_strerror(res));
         }
+        else
+            ret = 0;
 
         curl_easy_cleanup(curl);
-        ret = 0;
 
         if (chunk != NULL)
             curl_slist_free_all(chunk);

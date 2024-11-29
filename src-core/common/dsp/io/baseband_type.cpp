@@ -31,6 +31,7 @@ namespace dsp
 
     static const std::vector<BasebandType> play_fwd_lut = {
         CF_32,
+        CS_32,
         CS_16,
         CS_8,
         CU_8,
@@ -44,6 +45,7 @@ namespace dsp
 
     static const std::vector<BasebandType> record_fwd_lut = {
         CF_32,
+        CS_32,
         CS_16,
         CS_8,
         WAV_16,
@@ -67,6 +69,9 @@ namespace dsp
         {
         case CF_32:
             return "cf32";
+            break;
+        case CS_32:
+            return "cs32";
             break;
         case CS_16:
             return "cs16";
@@ -97,7 +102,9 @@ namespace dsp
 
     void BasebandType::from_string(const std::string &s)
     {
-        if (s == "cs16" || s == "s16")
+        if (s == "cs32" || s == "s32")
+            type = CS_32;
+        else if (s == "cs16" || s == "s16")
             type = CS_16;
         else if (s == "cs8" || s == "s8")
             type = CS_8;
@@ -124,6 +131,7 @@ namespace dsp
         int selected = play_rev_lut.at(*this);
         bool ret = ImGui::Combo(label, &selected,
             "cf32\0"
+            "cs32\0"
             "cs16\0"
             "cs8\0"
             "cu8\0"
@@ -147,6 +155,7 @@ namespace dsp
         int selected = record_rev_lut.at(*this);
         bool ret = ImGui::Combo(label, &selected,
             "cf32\0"
+            "cs32\0"
             "cs16\0"
             "cs8\0"
             "wav16\0"

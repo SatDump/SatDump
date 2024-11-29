@@ -21,6 +21,12 @@ namespace cpp_compos
                                       std::vector<double> *final_timestamps = nullptr,
                                       float *progress = nullptr)
     {
+        if (!img_pro->has_proj_cfg())
+        {
+            logger->error("This composite requires projection info");
+            return image::Image();
+        }
+
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         image::Image img_background;

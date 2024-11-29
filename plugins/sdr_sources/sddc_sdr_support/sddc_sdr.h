@@ -4,7 +4,7 @@
 #include "lib/libsddc/libsddc.h"
 #include "logger.h"
 #include "common/rimgui.h"
-#include "common/dsp/rational_resampler.h"
+#include "common/dsp/resamp/rational_resampler.h"
 
 class SDDCSource : public dsp::DSPSampleSource
 {

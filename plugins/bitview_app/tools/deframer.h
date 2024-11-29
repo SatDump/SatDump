@@ -15,6 +15,9 @@ namespace satdump
         int deframer_syncword_size = 32;
         int deframer_syncword_framesize = 8192;
         int deframer_current_frames = 0;
+        int deframer_threshold = 0;
+        bool deframer_byte_aligned = false;
+        bool deframer_soft_bits_in = false;
 
         bool should_process = false;
 
@@ -29,6 +32,9 @@ namespace satdump
             ImGui::InputText("Syncword", &deframer_syncword);
             ImGui::InputInt("Syncword Size", &deframer_syncword_size);
             ImGui::InputInt("Frame Size (Bits)", &deframer_syncword_framesize);
+            ImGui::InputInt("Threshold", &deframer_threshold);
+            ImGui::Checkbox("Byte Aligned", &deframer_byte_aligned);
+            ImGui::Checkbox("Soft Bits In", &deframer_soft_bits_in);
 
             if (ImGui::Button("DeframeTest"))
                 should_process = true;
@@ -58,11 +64,20 @@ namespace satdump
             tmpnam(name);
             std::string tmpfile = name;
             std::ofstream file_out(tmpfile, std::ios::binary);
-            def::SimpleDeframer def_test(0x1acffc1d, deframer_syncword_size, deframer_syncword_framesize, 0);
 
+            char *syncword_endptr;
+            uint64_t syncword = strtoull(deframer_syncword.c_str(), &syncword_endptr, 16);
+            if (*syncword_endptr != 0)
+            {
+                logger->error("Cannot parse syncword!");
+                return;
+            }
+
+            def::SimpleDeframer def_test(syncword, deframer_syncword_size, deframer_syncword_framesize,
+                deframer_threshold, deframer_byte_aligned, deframer_soft_bits_in);
             deframer_current_frames = 0;
-
             size_t current_ptr = 0;
+
             while (current_ptr < size)
             {
                 size_t csize = std::min<size_t>(8192, size - current_ptr);

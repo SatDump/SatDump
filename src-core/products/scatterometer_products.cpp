@@ -97,14 +97,15 @@ namespace satdump
 
             { // Warp first
                 satdump::warp::WarpOperation operation;
-                operation.input_image = make_scatterometer_grayscale(products, cfg1);
+                image::Image input_image = make_scatterometer_grayscale(products, cfg1);
+                operation.input_image = &input_image;
                 operation.output_rgba = true;
                 nlohmann::json proj_cfg = products.get_proj_cfg(cfg1.channel);
                 proj_cfg["metadata"]["tle"] = products.get_tle();
                 proj_cfg["metadata"]["timestamps"] = products.get_timestamps(cfg1.channel);
                 operation.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
-                                                                                     operation.input_image.width(),
-                                                                                     operation.input_image.height());
+                                                                                     operation.input_image->width(),
+                                                                                     operation.input_image->height());
                 operation.output_width = 2048 * 4;
                 operation.output_height = 1024 * 4;
 
@@ -113,14 +114,15 @@ namespace satdump
 
             { // Warp second
                 satdump::warp::WarpOperation operation;
-                operation.input_image = make_scatterometer_grayscale(products, cfg2);
+                image::Image input_image = make_scatterometer_grayscale(products, cfg2);
+                operation.input_image = &input_image;
                 operation.output_rgba = true;
                 nlohmann::json proj_cfg = products.get_proj_cfg(cfg2.channel);
                 proj_cfg["metadata"]["tle"] = products.get_tle();
                 proj_cfg["metadata"]["timestamps"] = products.get_timestamps(cfg2.channel);
                 operation.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
-                                                                                     operation.input_image.width(),
-                                                                                     operation.input_image.height());
+                                                                                     operation.input_image->width(),
+                                                                                     operation.input_image->height());
                 operation.output_width = 2048 * 4;
                 operation.output_height = 1024 * 4;
 

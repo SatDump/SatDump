@@ -18,6 +18,7 @@ namespace aws
 
         // Statuses
         instrument_status_t sterna_status = DECODING;
+        instrument_status_t navatt_status = DECODING;
 
     public:
         AWSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

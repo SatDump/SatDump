@@ -149,7 +149,7 @@ void RtlSdrSource::set_ppm()
     while (attempts < 20 && rtlsdr_set_freq_correction(rtlsdr_dev_obj, ppm) < 0)
         attempts++;
     if (attempts == 20)
-        logger->warn("Error setting RTL-SDR PPM Correction after 20 attempts!");
+        logger->warn("Unable to set RTL-SDR PPM Correction!");
     else if (attempts == 0)
         logger->debug("Set RTL-SDR PPM Correction to %d", ppm);
     else
@@ -278,9 +278,15 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
 {
     if (is_started)
     {
-        for (int i = 0; i < 20 && rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency) < 0; i++)
-            ;
-        logger->debug("Set RTL-SDR frequency to %d", frequency);
+        int attempts = 0;
+        while (attempts < 20 && rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency) < 0)
+            attempts++;
+        if (attempts == 20)
+            logger->warn("Unable to set RTL-SDR frequency!");
+        else if (attempts == 0)
+            logger->debug("Set RTL-SDR frequency to %d", frequency);
+        else
+            logger->debug("Set RTL-SDR frequency to %d (%d attempts!)", frequency, attempts + 1);
     }
     DSPSampleSource::set_frequency(frequency);
 }

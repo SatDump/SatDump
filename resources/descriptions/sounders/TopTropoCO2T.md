@@ -5,7 +5,10 @@ A color temperature scale enhancement is then used to enable easier analysis.
 
 ### Appearance
 
-Low temperature shows as blue, as the temperature increases the color turns to yellow and red.
+Low temperature shows as blue, as the temperature increases the color turns to red.
+
+Minimum temperature is 213 K (-60 °C), and maximum temperature is 243 K (-30 °C).
+
 
 ### Intended usage
 
