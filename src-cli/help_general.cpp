@@ -4,12 +4,6 @@
 
 void help_general()
 {
-    // We don't wanna spam with init this time around
-    logger->set_level(slog::LOG_ERROR);
-    satdump::initSatdump();
-    completeLoggerInit();
-    logger->set_level(slog::LOG_TRACE);
-
 	logger->error("");
 	logger->error("Visit: www.satdump.org");
 	logger->error("");
@@ -38,5 +32,5 @@ void help_general()
 	logger->info("version of satdump");
 	logger->debug("	- Usage: satdump version");
 	logger->debug("	- info: Display the current version of SatDump. Also visible above");
-
+	exit(0);
 }

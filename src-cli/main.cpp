@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     }
     //////////////
 	//////////////
-    else if ((std::string(argv[1]) == "-h") or (std::string(argv[1]) == "help"))
+    else if ((std::string(argv[1]) == "-h") || (std::string(argv[1]) == "help"))
     {
         help_general();
     }
