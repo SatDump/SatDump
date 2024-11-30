@@ -334,20 +334,28 @@ namespace satdump
             }
 
             ImGui::SameLine();
+            if (active_layers == projection_layers.size())
+                style::beginDisabled();
             if (ImGui::Button("All"))
             {
                 for (auto &lay : projection_layers)
                     lay.enabled = true;
                 logger->info("Enabled all layers for projection");
             }
+            if (active_layers == projection_layers.size())
+                style::endDisabled();
 
             ImGui::SameLine();
+            if (active_layers == 0)
+                style::beginDisabled();
             if (ImGui::Button("None"))
             {
                 for (auto &lay : projection_layers)
                     lay.enabled = false;
                 logger->info("Disabled all layers for projection");
             }
+            if (active_layers == 0)
+                style::endDisabled();
 
             if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
             {
