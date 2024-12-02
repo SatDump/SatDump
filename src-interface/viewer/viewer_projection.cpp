@@ -27,8 +27,14 @@ namespace satdump
 
     void ViewerApplication::drawProjectionPanel()
     {
-        bool disable_buttons = projections_are_generating;
-        bool disable_add_layer = is_opening_layer;
+        bool disable_buttons = projections_are_generating || projections_loading_new_layer;
+        int active_layers = 0;
+        projection_layers_mtx.lock();
+        for (auto &lay : projection_layers)
+            if (lay.enabled)
+                active_layers++;
+        projection_layers_mtx.unlock();
+        
         if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Text("Output image : ");
@@ -119,7 +125,7 @@ namespace satdump
             ImGui::Separator();
             ImGui::Spacing();
 
-            if (disable_buttons || projection_layers.size() == 0)
+            if (disable_buttons || active_layers == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
             {
@@ -150,6 +156,8 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
+                if (active_layers == 0)
+                    ImGui::SetTooltip("No layers active for projection!");
             }
 
             ImGui::Spacing();
@@ -175,8 +183,10 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
+                if (active_layers == 0)
+                    ImGui::SetTooltip("No layers active for projection!");
             }
-            if (disable_buttons || projection_layers.size() == 0)
+            if (disable_buttons || active_layers == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Layers"))
@@ -197,13 +207,14 @@ namespace satdump
 
             ImGui::Text("Layers :");
 
-            if (disable_add_layer)
+            if (disable_buttons)
                 style::beginDisabled();
 
             ImGui::SameLine();
             ImGuiStyle &imguistyle = ImGui::GetStyle();
-            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) +
-                                                                   ImGui::CalcTextSize("Add Layer").x + imguistyle.FramePadding.x * 2.0));
+            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ((projections_loading_new_layer ? 16.0 * ui_scale + imguistyle.ItemSpacing.x : 0) + 
+                                                                  ImGui::CalcTextSize("Add Layer").x + ImGui::CalcTextSize("All").x + ImGui::CalcTextSize("None").x +
+                                                                  imguistyle.FramePadding.x * 6 + imguistyle.ItemSpacing.x * 2));
 
             if (projections_loading_new_layer)
             {
@@ -214,7 +225,7 @@ namespace satdump
             if (ImGui::Button("Add Layer##button"))
                 ImGui::OpenPopup("Add Layer##popup", ImGuiPopupFlags_None);
 
-            if (disable_add_layer)
+            if (disable_buttons)
                 style::endDisabled();
 
             {
@@ -281,7 +292,9 @@ namespace satdump
                                     logger->info("Generating tile map");
                                     image::Image timemap = downloadTileMap(mapurl, projection_osm_lat1, projection_osm_lon1, projection_osm_lat2, projection_osm_lon2, projection_osm_zoom);
 
+                                    projection_layers_mtx.lock();
                                     projection_layers.push_front({"Tile Map", timemap});
+                                    projection_layers_mtx.unlock();
                                 }
                                 catch (std::exception &e)
                                 {
@@ -295,7 +308,9 @@ namespace satdump
                                 {
                                     ProjectionLayer newlayer = satdump::loadExternalLayer(cfg);
                                     newlayer.name = projection_new_layer_name;
+                                    projection_layers_mtx.lock();
                                     projection_layers.push_front(newlayer);
+                                    projection_layers_mtx.unlock();
                                 }
                                 catch (std::exception &e)
                                 {
@@ -321,8 +336,36 @@ namespace satdump
                 }
             }
 
+            ImGui::SameLine();
+            projection_layers_mtx.lock();
+            if (active_layers == projection_layers.size())
+                style::beginDisabled();
+            if (ImGui::Button("All"))
+            {
+                for (auto &lay : projection_layers)
+                    lay.enabled = true;
+                logger->info("Enabled all layers for projection");
+            }
+            if (active_layers == projection_layers.size())
+                style::endDisabled();
+
+            ImGui::SameLine();
+
+            if (active_layers == 0)
+                style::beginDisabled();
+            if (ImGui::Button("None"))
+            {
+                for (auto &lay : projection_layers)
+                    lay.enabled = false;
+                logger->info("Disabled all layers for projection");
+            }
+            if (active_layers == 0)
+                style::endDisabled();
+            projection_layers_mtx.unlock();
+
             if (ImGui::BeginListBox("##projectionslistbox", ImVec2(ImGui::GetWindowWidth(), 300 * ui_scale)))
             {
+                projection_layers_mtx.lock();
                 for (int i = 0; i < (int)projection_layers.size(); i++)
                 {
                     ImGui::PushID(i);
@@ -335,11 +378,6 @@ namespace satdump
                     ImGui::Text("%s", label.c_str());
                     ImGui::PopTextWrapPos();
 
-                    int active_layers = 0;
-                    for (auto &lay : projection_layers)
-                        if (lay.enabled)
-                            active_layers++;
-
                     if (settings::advanced_mode)
                     {
                         ImGui::SameLine(ImGui::GetWindowWidth() - 100 * ui_scale);
@@ -350,9 +388,6 @@ namespace satdump
                     ImGui::SameLine(ImGui::GetWindowWidth() - 70 * ui_scale);
                     ImGui::SetCursorPosY(ImGui::GetCursorPos().y - 2 * ui_scale);
                     ImGui::Checkbox(std::string("##enablelayer" + layer.name + std::to_string(i)).c_str(), &layer.enabled);
-
-                    if (active_layers < 1)
-                        layer.enabled = true;
 
                     {
                         if (disable_buttons)
@@ -434,14 +469,15 @@ namespace satdump
                     ImGui::PopID();
                     ImGui::Separator();
                 }
+                projection_layers_mtx.unlock();
                 ImGui::EndListBox();
             }
-            if (!(disable_buttons || disable_add_layer))
+            if (!disable_buttons)
                 style::beginDisabled();
 
             ImGui::ProgressBar((general_progress + (progress_pointer == nullptr ? 0 : *(progress_pointer))) / general_sum);
 
-            if (!(disable_buttons || disable_add_layer))
+            if (!disable_buttons)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Overlay##viewerpojoverlay"))
