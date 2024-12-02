@@ -125,7 +125,7 @@ namespace satdump
             ImGui::Separator();
             ImGui::Spacing();
 
-            if (disable_buttons || projection_layers.size() == 0 || active_layers == 0)
+            if (disable_buttons || active_layers == 0)
                 style::beginDisabled();
             if (ImGui::Button("Generate Projection"))
             {
@@ -156,7 +156,7 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
-                if (active_layers == 0 && projection_layers.size() > 0)
+                if (active_layers == 0)
                     ImGui::SetTooltip("No layers active for projection!");
             }
 
@@ -183,10 +183,10 @@ namespace satdump
                     ImGui::SetTooltip("Generating, please wait...");
                 if (projection_layers.size() == 0)
                     ImGui::SetTooltip("No layers loaded!");
-                if (active_layers == 0 && projection_layers.size() > 0)
+                if (active_layers == 0)
                     ImGui::SetTooltip("No layers active for projection!");
             }
-            if (disable_buttons || projection_layers.size() == 0 || active_layers == 0)
+            if (disable_buttons || active_layers == 0)
                 style::endDisabled();
         }
         if (ImGui::CollapsingHeader("Layers"))
@@ -370,11 +370,6 @@ namespace satdump
                     ImGui::PushTextWrapPos(ImGui::GetContentRegionMax().x - 70 * ui_scale);
                     ImGui::Text("%s", label.c_str());
                     ImGui::PopTextWrapPos();
-
-                    active_layers = 0;
-                    for (auto &lay : projection_layers)
-                        if (lay.enabled)
-                            active_layers++;
 
                     if (settings::advanced_mode)
                     {
