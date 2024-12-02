@@ -104,8 +104,8 @@ namespace satdump
         double projection_osm_lon1 = -180.0;
         double projection_osm_lat2 = 85.0511;
         double projection_osm_lon2 = 180.0;
-        bool is_opening_layer = false;
 
+        std::mutex projection_layers_mtx;
         std::deque<ProjectionLayer> projection_layers;
 
         int selected_external_type = 0;
