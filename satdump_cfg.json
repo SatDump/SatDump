@@ -1304,6 +1304,37 @@
                             }
                         }
                     },
+                    "Shortwave Window Band": {
+                        "channels": "cch3b",
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 190,
+                                "max": 400
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_7.png",
+                        "borders_color": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "autogen": true
+                    },
+                    "Shortwave Window Band (Transparent)": {
+                        "channels": "cch3b",
+                        "description": "descriptions/ABISW.md",
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 190,
+                                "max": 400
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_7_transparent.png",
+                        "autogen": false
+                    },
                     "NO enhancement": {
                         "lut": "lut/cal/WXtoImg-NO.png",
                         "description": "descriptions/NO.md",
@@ -1906,6 +1937,37 @@
                                 "max": 333.15
                             }
                         }
+                    },
+                    "Shortwave Window Band": {
+                        "channels": "cch4",
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 190,
+                                "max": 400
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_7.png",
+                        "borders_color": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "autogen": true
+                    },
+                    "Shortwave Window Band (Transparent)": {
+                        "channels": "cch4",
+                        "description": "descriptions/ABISW.md",
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 190,
+                                "max": 400
+                            }
+                        },
+                        "lut": "lut/cal/abi_ir_7_transparent.png",
+                        "autogen": false
                     },
                     "NO enhancement": {
                         "lut": "lut/cal/WXtoImg-NO.png",
