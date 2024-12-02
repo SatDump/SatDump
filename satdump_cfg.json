@@ -1293,6 +1293,17 @@
                         },
                         "autogen": false
                     },
+                    "CIRA IR 3.75µm": {
+                        "lut": "lut/cal/CIRA_IR37-80+60.png",
+                        "channels": "cch3b",
+                        "calib_cfg": {
+                            "cch3b": {
+                                "type": "temperature",
+                                "min": 193.15,
+                                "max": 333.15
+                            }
+                        }
+                    },
                     "NO enhancement": {
                         "lut": "lut/cal/WXtoImg-NO.png",
                         "description": "descriptions/NO.md",
@@ -1884,6 +1895,17 @@
                             }
                         },
                         "autogen": false
+                    },
+                    "CIRA IR 3.75µm": {
+                        "lut": "lut/cal/CIRA_IR37-80+60.png",
+                        "channels": "cch4",
+                        "calib_cfg": {
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 193.15,
+                                "max": 333.15
+                            }
+                        }
                     },
                     "NO enhancement": {
                         "lut": "lut/cal/WXtoImg-NO.png",
