@@ -178,6 +178,9 @@ namespace satdump
             ImGui::TableSetColumnIndex(1);
             widgets::AzElInput("##reqel", &rot_current_req_pos.el, !rotator_tracking);
 
+            rot_current_req_pos.az = std::clamp(rot_current_req_pos.az, az_limits[0], az_limits[1]);
+            rot_current_req_pos.el = std::clamp(rot_current_req_pos.el, el_limits[0], el_limits[1]);
+
             if (rotator_arrowkeys_enable && !rotator_tracking)
             {
                 if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
