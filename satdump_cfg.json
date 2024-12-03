@@ -2015,6 +2015,35 @@
                         "lut": "lut/cal/abi_ir_7_transparent.png",
                         "autogen": false
                     },
+                    "Split Window Difference": {
+                        "channels": "cch5, cch6",
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 400
+                            },
+                            "cch6": {
+                                "type": "temperature",
+                                "min": 150,
+                                "max": 400
+                            }
+                        },
+                        "vars": {
+                            "minval": -7,
+                            "maxval": 7,
+                            "input_range": 250, //250
+                            "lut": "lut/cal/IR12-IR108-7+7.png"
+                        },
+                        "lua": "scripted_compos/split_difference.lua",
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": false
+                    },
                     "NO enhancement": {
                         "lut": "lut/cal/WXtoImg-NO.png",
                         "description": "descriptions/NO.md",
