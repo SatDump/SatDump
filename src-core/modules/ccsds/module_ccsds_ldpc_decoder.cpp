@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
+#include "common/codings/soft_reader.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
 #include "core/exception.h"
@@ -123,13 +124,12 @@ namespace ccsds
         phase_t phase;
         bool swap;
 
+        SoftSymbolReader symbol_reader(data_in, input_fifo, input_data_type, d_parameters);
+
         while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
         {
             // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)soft_buffer, d_ldpc_frame_size);
-            else
-                input_fifo->read((uint8_t *)soft_buffer, d_ldpc_frame_size);
+            symbol_reader.readSoftSymbols(soft_buffer, d_ldpc_frame_size);
 
             // if (d_iq_invert)
             // rotate_soft((int8_t *)soft_buffer, d_ldpc_frame_size, PHASE_0, true);

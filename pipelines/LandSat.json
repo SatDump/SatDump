@@ -53,7 +53,8 @@
                     "ldpc_iterations": 10,
                     "internal_stream": true,
                     "internal_cadu_size": 8272,
-                    "internal_asm": "0x352EF853"
+                    "internal_asm": "0x352EF853",
+                    "hard_symbols": true
                 }
             },
             "products": {
