@@ -28,6 +28,6 @@ inline double spectral_radiance_to_radiance(double L, double wavenumber)
 //// Experimental
 //////////////////////////////////////////////////////////////////////
 
+double cos_sol_za(double timestamp, double dlat, double dlon);
 double calculate_sun_irradiance_interval(double low_wav, double high_wav);
-
 double radiance_to_reflectance(double irradiance, double radiance, time_t ltime, float lat, float lon);

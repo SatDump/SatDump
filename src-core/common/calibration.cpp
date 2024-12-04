@@ -153,6 +153,14 @@ namespace
     }
 }
 
+double cos_sol_za(double timestamp, double dlat, double dlon)
+{
+    time_t time_int = timestamp;
+    std::tm t_read = *gmtime(&time_int);
+    return cos_sol_za(t_read.tm_year + 1900, t_read.tm_mon + 1, t_read.tm_mday,
+        t_read.tm_hour, t_read.tm_min, dlat, dlon);
+}
+
 // cos(80deg)
 #define cos80 0.173648178
 

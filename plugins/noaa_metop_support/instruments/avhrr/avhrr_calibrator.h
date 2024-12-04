@@ -2,6 +2,8 @@
 
 #include "products/image_products.h"
 #include "nlohmann/json.hpp"
+#include "common/projection/sat_proj/sat_proj.h"
+#include "common/projection/reprojector.h"
 
 class NoaaAVHRR3Calibrator : public satdump::ImageProducts::CalibratorBase
 {
@@ -11,6 +13,9 @@ private:
     double crossover[3];
     bool per_line;
     int factor;
+
+    std::vector<double> timestamps;
+    std::shared_ptr<satdump::SatelliteProjection> proj;
 
     double calc_rad(int channel, int pos_y, int px_val)
     {
@@ -37,6 +42,8 @@ private:
 public:
     NoaaAVHRR3Calibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
     {
+        timestamps = products->get_timestamps();
+        proj = satdump::get_sat_proj(products->get_proj_cfg(), products->get_tle(), timestamps);
     }
 
     void init()
@@ -50,19 +57,34 @@ public:
         factor = pow(2, 10-d_products->bit_depth);
     }
 
-    double compute(int channel, int /*pos_x*/, int pos_y, int px_val)
+    double compute(int channel, int pos_x, int pos_y, int px_val)
     {
         if (channel > 5 || px_val == 0)
             return CALIBRATION_INVALID_VALUE;
         if (channel < 3)
         {
-            int px = px_val * factor;
             if (!perChannel[channel].contains("slope_lo"))
                 return CALIBRATION_INVALID_VALUE;
+
+            // Calculate Albedo per the KLM
+            int px = px_val * factor;
+            double albedo;
             if (px <= crossover[channel])
-                return (perChannel[channel]["slope_lo"].get<double>() * px + perChannel[channel]["int_lo"].get<double>()) / 100.0;
+                albedo = (perChannel[channel]["slope_lo"].get<double>() * px + perChannel[channel]["int_lo"].get<double>()) / 100.0;
             else
-                return (perChannel[channel]["slope_hi"].get<double>() * px + perChannel[channel]["int_hi"].get<double>()) / 100.0;
+                albedo = (perChannel[channel]["slope_hi"].get<double>() * px + perChannel[channel]["int_hi"].get<double>()) / 100.0;
+
+            // Get the cosine of the solar zenith angle
+            geodetic::geodetic_coords_t coords;
+            if (proj->get_position(pos_x, pos_y, coords))
+                return CALIBRATION_INVALID_VALUE;
+
+            coords.toDegs();
+            double cos_solar_zenith_angle = cos_sol_za(timestamps[pos_y], coords.lat, coords.lon);
+            if (cos_solar_zenith_angle == 0)
+                return CALIBRATION_INVALID_VALUE;
+
+            return albedo / cos_solar_zenith_angle;
         }
         else
         {
