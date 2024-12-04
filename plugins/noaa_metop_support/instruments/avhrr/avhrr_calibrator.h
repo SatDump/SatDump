@@ -43,7 +43,8 @@ public:
     NoaaAVHRR3Calibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
     {
         timestamps = products->get_timestamps();
-        proj = satdump::get_sat_proj(products->get_proj_cfg(), products->get_tle(), timestamps);
+        if(!timestamps.empty())
+            proj = satdump::get_sat_proj(products->get_proj_cfg(), products->get_tle(), timestamps);
     }
 
     void init()
@@ -63,7 +64,7 @@ public:
             return CALIBRATION_INVALID_VALUE;
         if (channel < 3)
         {
-            if (!perChannel[channel].contains("slope_lo"))
+            if (!perChannel[channel].contains("slope_lo") || timestamps.empty())
                 return CALIBRATION_INVALID_VALUE;
 
             // Calculate Albedo per the KLM
@@ -81,9 +82,13 @@ public:
 
             coords.toDegs();
             double cos_solar_zenith_angle = cos_sol_za(timestamps[pos_y], coords.lat, coords.lon);
-            if (cos_solar_zenith_angle == 0)
+
+            // Cannot calculate when the sun is too low
+            // Using a cut-off of 87.5 deg
+            if (cos_solar_zenith_angle < 0.04361938736)
                 return CALIBRATION_INVALID_VALUE;
 
+            // Normalize albedo by the cosine of the solar zenith angle
             return albedo / cos_solar_zenith_angle;
         }
         else
