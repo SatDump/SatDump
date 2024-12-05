@@ -466,7 +466,7 @@ namespace noaa
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = avg_overflowless_timestamps(timestamp_filtering::filter_timestamps_width_cfg(hirs_reader.timestamps, loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json"))));
+                dataset.timestamp = get_median(hirs_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 

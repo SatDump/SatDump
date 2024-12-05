@@ -101,22 +101,6 @@ double avg_overflowless(std::vector<T> const &v)
     return mean;
 }
 
-template <typename T>
-double avg_overflowless_timestamps(std::vector<T> const &v)
-{
-    T n = 0;
-    double mean = 0.0;
-    for (auto x : v)
-    {
-        if (x != -1)
-        {
-            double delta = x - mean;
-            mean += delta / ++n;
-        }
-    }
-    return mean;
-}
-
 std::vector<std::string> splitString(std::string input, char del);
 
 template <typename T>
