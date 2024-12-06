@@ -91,8 +91,11 @@ namespace nc2pro
             image_out.longitude = hdf5_get_float_attr(file, "goes_imager_projection", "longitude_of_projection_origin");
             image_out.goes_sat = hdf5_get_string_attr_FILE_fixed(file, "platform_ID");
             image_out.time_coverage_start = hdf5_get_string_attr_FILE_fixed(file, "time_coverage_start");
-            image_out.calibration_scale = hdf5_get_float_attr(file, "x", "scale_factor");
-            image_out.calibration_offset = hdf5_get_float_attr(file, "y", "add_offset");
+            image_out.calibration_scale = hdf5_get_float_attr(file, "Rad", "scale_factor");
+            image_out.calibration_offset = hdf5_get_float_attr(file, "Rad", "add_offset");
+            int bit_depth = hdf5_get_float_attr(file, "Rad", "sensor_band_bit_depth");
+
+            image_out.calibration_scale /= pow(2, 14 - bit_depth);
 
             if (!H5Lexists(file, "Rad", H5P_DEFAULT))
                 goto close;
@@ -126,10 +129,10 @@ namespace nc2pro
             H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)img.raw_data());
 
             for (size_t i = 0; i < img.size(); i++)
-                if (img.get(i) == (image_out.channel == 2 ? 4095 : 1023))
+                if (img.get(i) == (pow(2, bit_depth) - 1))
                     img.set(i, 0);
                 else
-                    img.set(i, img.get(i) << (image_out.channel == 2 ? 4 : 6));
+                    img.set(i, img.get(i) << (16 - bit_depth));
 
             image_out.img = img;
 
@@ -312,10 +315,7 @@ namespace nc2pro
         satdump::ImageProducts abi_products;
         abi_products.instrument_name = "abi";
         abi_products.has_timestamps = false;
-        abi_products.bit_depth = 10;
-
-        double calibration_scale[16];
-        double calibration_offset[16];
+        abi_products.bit_depth = 14;
 
         int largest_width = 0, largest_height = 0;
         ParsedGOESRABI largestImg;
@@ -347,8 +347,6 @@ namespace nc2pro
             else if (img.goes_sat == "G19")
                 satellite = "GOES-19";
 
-            calibration_scale[img.channel - 1] = img.calibration_scale;
-            calibration_offset[img.channel - 1] = img.calibration_offset;
             center_longitude = img.longitude;
         }
 
@@ -380,7 +378,7 @@ namespace nc2pro
             abi_products.set_proj_cfg(proj_cfg);
         }
 
-#if 0
+#if 1
         const float goes_abi_wavelength_table[16] = {
             470,
             640,
@@ -420,10 +418,10 @@ namespace nc2pro
 
         nlohmann::json calib_cfg;
         calib_cfg["calibrator"] = "mtg_nc_fci";
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < all_images.size(); i++)
         {
-            calib_cfg["vars"]["scale"][i] = calibration_scale[i];
-            calib_cfg["vars"]["offset"][i] = calibration_offset[i];
+            calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
+            calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
         }
         abi_products.set_calibration(calib_cfg);
 
@@ -433,6 +431,7 @@ namespace nc2pro
             abi_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_RADIANCE);
             abi_products.set_wavenumber(ii2, 1e7 / goes_abi_wavelength_table[all_images[i].channel - 1]);
             abi_products.set_calibration_default_radiance_range(ii2, goes_abi_radiance_ranges_table[all_images[i].channel - 1][0], goes_abi_radiance_ranges_table[all_images[i].channel - 1][1]);
+            ii2++;
         }
 #endif
 

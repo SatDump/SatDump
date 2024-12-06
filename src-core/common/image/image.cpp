@@ -27,9 +27,12 @@ namespace image
 
     Image &Image::operator=(const Image &img)
     {
-        // Copy contents of the image over
-        init(img.d_depth, img.d_width, img.d_height, img.d_channels);
-        memcpy(d_data, img.d_data, img.data_size * img.type_size);
+        if (img.d_data != nullptr)
+        {
+            // Copy contents of the image over
+            init(img.d_depth, img.d_width, img.d_height, img.d_channels);
+            memcpy(d_data, img.d_data, img.data_size * img.type_size);
+        }
         copy_meta(img);
         return *this;
     }
@@ -206,7 +209,7 @@ namespace image
             return image16;
         }
 
-        throw satdump_exception("Error in to16bits()"); // This should never happen
+        throw satdump_exception("Error in to8bits()"); // This should never happen
     }
 
     Image Image::to_depth(int bit_depth)
