@@ -52,7 +52,9 @@
                 }
             },
             "products": {
-                "aws_instruments": {}
+                "aws_instruments": {
+                    "use_ephemeris": true
+                }
             }
         }
     }
