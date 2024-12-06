@@ -1,5 +1,7 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include "products/image_products.h"
 #include "nlohmann/json.hpp"
 

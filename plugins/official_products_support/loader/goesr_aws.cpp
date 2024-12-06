@@ -81,7 +81,7 @@ namespace satdump
                 {
 
                     std::string path = content_node->first_node("Key")->value();
-                    std::string stem = std::filesystem::path(path).stem();
+                    std::string stem = std::filesystem::path(path).stem().string();
 
                     time_t timestamp = 0;
                     int mode = -1;

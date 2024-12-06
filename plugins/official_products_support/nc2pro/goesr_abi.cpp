@@ -221,7 +221,7 @@ namespace nc2pro
 
         std::vector<std::string> files_to_parse; //= {nc_file};
         {
-            auto ori_splt = splitString(std::filesystem::path(nc_file).stem(), '_');
+            auto ori_splt = splitString(std::filesystem::path(nc_file).stem().string(), '_');
             if (ori_splt.size() != 6)
                 throw satdump_exception("Invalid GOES-R filename!");
             auto ori_splt2 = splitString(ori_splt[1], '-');
@@ -237,7 +237,7 @@ namespace nc2pro
                     goto skip_this;
 
                 {
-                    std::string cleanname = std::filesystem::path(path).stem();
+                    std::string cleanname = std::filesystem::path(path).stem().string();
                     auto splt = splitString(cleanname, '_');
 
                     if (splt.size() == 6 &&
