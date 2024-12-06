@@ -334,9 +334,10 @@ namespace nc2pro
                 largest_height = img.img.height();
                 waslarger = true;
             }
-            img.img.clear();
+
             if (waslarger)
                 largestImg = img;
+            img.img.clear();
 
             if (img.goes_sat == "G16")
                 satellite = "GOES-16";
