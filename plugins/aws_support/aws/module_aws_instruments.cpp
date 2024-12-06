@@ -11,6 +11,9 @@
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 
+#define AWS_SCID 104
+#define AWS_NORAD 60543
+
 namespace aws
 {
     AWSInstrumentsDecoderModule::AWSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -41,20 +44,20 @@ namespace aws
 
             // Parse this transport frame
             ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
-            aws_scids.push_back(vcdu.spacecraft_id);
 
-            if (vcdu.vcid == 2) // Stored S/C Sciente telemetry dataa
+            if (vcdu.spacecraft_id == AWS_SCID)
+                aws_scids.push_back(vcdu.spacecraft_id);
+
+            if (vcdu.vcid == 2) // Dump
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     if (pkt.header.apid == 100)
-                        sterna_reader.work(pkt);
+                        sterna_dump_reader.work(pkt);
                     else if (pkt.header.apid == 51)
                         navatt_reader.work(pkt);
             }
-
-
-            if (vcdu.vcid == 3) // DDB service
+            else if (vcdu.vcid == 3) //  DB
             {
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
@@ -78,9 +81,6 @@ namespace aws
         int scid = most_common(aws_scids.begin(), aws_scids.end(), 0);
         aws_scids.clear();
 
-#define AWS_SCID 104
-#define AWS_NORAD 60543
-
         std::string sat_name = "Unknown AWS";
         if (scid == AWS_SCID)
             sat_name = "AWS";
@@ -103,7 +103,7 @@ namespace aws
             logger->info("Name  : " + sat_name);
         }
 
-        // Sterna
+        // Sterna DB
         {
             sterna_status = SAVING;
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA";
@@ -123,7 +123,7 @@ namespace aws
             sterna_products.set_timestamps(sterna_reader.timestamps);
 
             nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
-            if (getValueOrDefault(d_parameters["use_ephemeris"], false))
+            if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
             sterna_products.set_proj_cfg(proj_cfg);
 
@@ -136,20 +136,37 @@ namespace aws
             sterna_status = DONE;
         }
 
-        // NAVATT
+        // Sterna Dump
         {
-            navatt_status = SAVING;
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/NAVATT";
+            sterna_dump_status = SAVING;
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA_Dump";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            logger->info("----------- NAVATT");
-            logger->info("Lines : " + std::to_string(navatt_reader.lines));
+            logger->info("----------- STERNA Dump");
+            logger->info("Lines : " + std::to_string(sterna_dump_reader.lines));
 
-            saveJsonFile(directory + "/NAVATT-Telemetry.json", navatt_reader.dump_telemetry());
+            satdump::ImageProducts sterna_dump_products;
+            sterna_dump_products.instrument_name = "sterna";
+            sterna_dump_products.has_timestamps = true;
+            sterna_dump_products.set_tle(satellite_tle);
+            sterna_dump_products.bit_depth = 16;
+            sterna_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            sterna_dump_products.set_timestamps(sterna_dump_reader.timestamps);
 
-            navatt_status = DONE;
+            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
+            if (d_parameters["use_ephemeris"].get<bool>())
+                proj_cfg["ephemeris"] = navatt_reader.getEphem();
+            sterna_dump_products.set_proj_cfg(proj_cfg);
+
+            for (int i = 0; i < 19; i++)
+                sterna_dump_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), sterna_dump_reader.getChannel(i)});
+
+            sterna_dump_products.save(directory);
+            dataset.products_list.push_back("STERNA_Dump");
+
+            sterna_dump_status = DONE;
         }
 
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
@@ -171,7 +188,7 @@ namespace aws
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("AWS");
+            ImGui::Text("Sterna");
             ImGui::TableSetColumnIndex(1);
             ImGui::TextColored(style::theme.green, "%d", sterna_reader.lines);
             ImGui::TableSetColumnIndex(2);
@@ -179,16 +196,17 @@ namespace aws
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("NAVATT");
+            ImGui::Text("Sterna Dump");
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextColored(style::theme.green, "%d", navatt_reader.lines);
+            ImGui::TextColored(style::theme.green, "%d", sterna_dump_reader.lines);
             ImGui::TableSetColumnIndex(2);
-            drawStatus(navatt_status);
+            drawStatus(sterna_dump_status);
 
             ImGui::EndTable();
         }
 
         ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+
         ImGui::End();
     }
 

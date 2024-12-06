@@ -14,11 +14,12 @@ namespace aws
 
         // Readers
         sterna::SternaReader sterna_reader;
+        sterna::SternaReader sterna_dump_reader;
         navatt::NavAttReader navatt_reader;
 
         // Statuses
         instrument_status_t sterna_status = DECODING;
-        instrument_status_t navatt_status = DECODING;
+        instrument_status_t sterna_dump_status = DECODING;
 
     public:
         AWSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
