@@ -150,6 +150,14 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
 
     rotator_handler = std::make_shared<rotator::RotctlHandler>();
 
+    if (settings["tracking"].contains("rotator_type"))
+    {
+        auto options = rotator::getRotatorHandlerOptions();
+        for (auto &opt : options)
+            if (opt.name == settings["tracking"]["rotator_type"].get<std::string>())
+                rotator_handler = opt.construct();
+    }
+
     if (rotator_handler)
     {
         try
