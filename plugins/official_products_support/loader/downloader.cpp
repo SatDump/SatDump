@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "core/style.h"
 #include "common/dsp_source_sink/format_notated.h"
-#include <stdexcept>
 
 namespace widgets
 {
@@ -43,9 +42,6 @@ namespace widgets
 
     int FileDownloaderWidget::download_file(std::string url_str, std::string output_file, std::string added_header)
     {
-        if (is_downloading)
-            throw std::runtime_error("Already downloading file. Not starting second download.");
-
         is_downloading = true;
         file_downloading = output_file;
 

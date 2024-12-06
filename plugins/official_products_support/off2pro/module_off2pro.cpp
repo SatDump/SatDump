@@ -10,6 +10,8 @@
 #include "../nc2pro/sc3_olci.h"
 #include "../nc2pro/sc3_slstr.h"
 
+#include "../nc2pro/goesr_abi.h"
+
 namespace off2pro
 {
     Off2ProModule::Off2ProModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -117,6 +119,10 @@ namespace off2pro
                      identifier[554] == 'M' &&
                      identifier[555] == 'E')
                 nat2pro::decodeGOMENat(nat_file, pro_output_file);
+
+            // TODO REMOVE
+            else if (1)
+                nc2pro::process_goesr_abi(source_off_file, pro_output_file);
 
             else
                 logger->error("Unknown File Type!");
