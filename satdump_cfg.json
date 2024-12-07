@@ -138,12 +138,30 @@
             "value": "png",
             "name": "Product Image Format",
             "options": [
-                [ "png", "PNG Image (*.png)" ],
-                [ "tif", "TIFF Image (*.tif, *.tiff)" ],
-                [ "j2k", "JPEG 2000 Image (*.j2k)" ],
-                [ "jpg", "JPEG Image (*.jpg, *.jpeg)" ],
-                [ "pbm", "PBM Image (*.pbm, *.pgm)" ],
-                [ "qoi", "Quite OK Image (*.qoi)" ]
+                [
+                    "png",
+                    "PNG Image (*.png)"
+                ],
+                [
+                    "tif",
+                    "TIFF Image (*.tif, *.tiff)"
+                ],
+                [
+                    "j2k",
+                    "JPEG 2000 Image (*.j2k)"
+                ],
+                [
+                    "jpg",
+                    "JPEG Image (*.jpg, *.jpeg)"
+                ],
+                [
+                    "pbm",
+                    "PBM Image (*.pbm, *.pgm)"
+                ],
+                [
+                    "qoi",
+                    "Quite OK Image (*.qoi)"
+                ]
             ],
             "description": "Image format for raw image products\n\n - png: PNG Image (recommended)\n - j2k: JPEG 2000\n - jpg: JPEG Image (not recommended; may result\n   in low-quality composites and projections)\n - pbm : Really fast, but will result is very big files\n - qoi: A very fast image format with compression.\n   8-bit only!"
         },
@@ -152,12 +170,30 @@
             "value": "png",
             "name": "Processed Image Format",
             "options": [
-                [ "png", "PNG Image (*.png)" ],
-                [ "tif", "TIFF Image (*.tif, *.tiff)" ],
-                [ "j2k", "JPEG 2000 Image (*.j2k)" ],
-                [ "jpg", "JPEG Image (*.jpg, *.jpeg)" ],
-                [ "pbm", "PBM Image (*.pbm, *.pgm)" ],
-                [ "qoi", "Quite OK Image (*.qoi)" ]
+                [
+                    "png",
+                    "PNG Image (*.png)"
+                ],
+                [
+                    "tif",
+                    "TIFF Image (*.tif, *.tiff)"
+                ],
+                [
+                    "j2k",
+                    "JPEG 2000 Image (*.j2k)"
+                ],
+                [
+                    "jpg",
+                    "JPEG Image (*.jpg, *.jpeg)"
+                ],
+                [
+                    "pbm",
+                    "PBM Image (*.pbm, *.pgm)"
+                ],
+                [
+                    "qoi",
+                    "Quite OK Image (*.qoi)"
+                ]
             ],
             "description": "Default format for processed images\n\nDoes not apply to raw image products or images\ntransmitted in an already viewable format"
         },
@@ -334,14 +370,29 @@
             "name": "Image Filename Template",
             "manual": true,
             "options": [
-                [ "$i_$c", "Default" ],
-                [ "$i_$y-$M-$d_$h-$m-$sZ_$c", "Detailed" ],
-                [ "$y$M$d$h$m_$O_$C", "Compact Detailed" ],
-                [ "$y-$M-$d $h$m UTC - $o", "Satellite and Time"],
-                [ "Z_SATDUMP_C_----_$y$M$d$h$m$s_$O_$I_$a", "WMO"]
+                [
+                    "$i_$c",
+                    "Default"
+                ],
+                [
+                    "$i_$y-$M-$d_$h-$m-$sZ_$c",
+                    "Detailed"
+                ],
+                [
+                    "$y$M$d$h$m_$O_$C",
+                    "Compact Detailed"
+                ],
+                [
+                    "$y-$M-$d $h$m UTC - $o",
+                    "Satellite and Time"
+                ],
+                [
+                    "Z_SATDUMP_C_----_$y$M$d$h$m$s_$O_$I_$a",
+                    "WMO"
+                ]
             ],
             "description": "Template used when saving images in the viewer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $C - composite/channel name (caps)\n - $a - composite/channel name (abbreviated)\n - $i - instrument name\n - $I - instrument name (caps)\n - $o - satellite/object\n - $O - satellite/object (caps)"
-      }
+        }
     },
     // TLE settings
     "tle_settings": {
@@ -350,6 +401,7 @@
         ],
         "url_template": "http://www.celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
         "tles_to_fetch": [
+            6235, // NOAA-2
             29499, // MetOp-A
             // 38771, // MetOp-B
             // 43689, // MetOp-C
@@ -531,13 +583,13 @@
                         "equation": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
                         "white_balance": true,
                         "individual_equalize": true,
-                        "description" : "descriptions/543b.md"
+                        "description": "descriptions/543b.md"
                     },
                     "Day Microphysics": {
                         "equation": "ch1,ch4^2.5, ch9",
                         "white_balance": true,
                         "individual_equalize": true,
-                        "description" : "descriptions/DayMicro.md"
+                        "description": "descriptions/DayMicro.md"
                     },
                     "Differential Water Vapor RGB": {
                         "equation": "((cch6-cch5+0.01363636363)/0.15)^3.86548125242,((cch6-0.15068181818)/0.29545454545)^2.5,((cch5-0.12954545454)/0.1609090909)^2.5",
@@ -558,25 +610,25 @@
                     },
                     "Night Microphysics": {
                         "equation": "1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
-                        "description" : "descriptions/NightMicro.md",
+                        "description": "descriptions/NightMicro.md",
                         "remove_background": true,
                         "calib_cfg": {
-                        "cch4": {
-                            "type": "temperature",
-                            "min": 200,
-                            "max": 400
-                        },
-                        "cch9": {
-                            "type": "temperature",
-                            "min": 200,
-                            "max": 400
-                        },
-                        "cch10": {
-                            "type": "temperature",
-                            "min": 200,
-                            "max": 400
+                            "cch4": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch9": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            },
+                            "cch10": {
+                                "type": "temperature",
+                                "min": 200,
+                                "max": 400
+                            }
                         }
-                    }
                     },
                     "Water Vapor Blend": {
                         "equation": "ch7 ==  0 ? 0 : 1-ch7, ch6 ==  0 ? 0 : 1-ch6, ch5 ==  0 ? 0 : 1-ch5",
@@ -584,7 +636,7 @@
                         "individual_equalize": true
                     },
                     "6.25µm Calibrated Water Vapor": {
-                       "lut": "lut/cal/star_abi_wv_8-10.png",
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
                         //"description": "descriptions/cal_wv.md",
                         "channels": "cch5",
                         "calib_cfg": {
@@ -593,44 +645,44 @@
                                 "min": 0,
                                 "max": 5.2
                             }
-                        } 
+                        }
                     },
                     "6.25µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch5",
-                         "calib_cfg": {
-                             "cch5": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch5",
+                        "calib_cfg": {
+                            "cch5": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
                     "7.35µm Calibrated Water Vapor": {
                         "lut": "lut/cal/star_abi_wv_8-10.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch6",
-                         "calib_cfg": {
-                             "cch6": {
-                                 "type": "radiance",
-                                 "min": 0,
-                                 "max": 23.2
-                             }
-                         } 
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch6",
+                        "calib_cfg": {
+                            "cch6": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 23.2
+                            }
+                        }
                     },
                     "7.35µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch6",
-                         "calib_cfg": {
-                             "cch6": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch6",
+                        "calib_cfg": {
+                            "cch6": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
                     "Split Water Vapor": {
                         "channels": "cch5, cch6",
                         "remove_background": true,
@@ -726,7 +778,7 @@
                         "autogen": false,
                         "description": "descriptions/CloudTopIR.md",
                         "lut": "lut/cal/CloudTopIR.png",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch9": {
                                 "type": "temperature",
@@ -740,7 +792,7 @@
                         "autogen": false,
                         "description": "descriptions/NO.md",
                         "channels": "cch9",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch9": {
                                 "type": "radiance",
@@ -751,7 +803,7 @@
                     },
                     "ZA enhancement": {
                         "channels": "cch9",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch9": {
                                 "type": "radiance",
@@ -788,7 +840,7 @@
                             }
                         },
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "BD enhancement": {
                         "channels": "cch9",
@@ -802,7 +854,7 @@
                         "description": "descriptions/BD.md",
                         "lut": "lut/cal/WXtoImg-BD.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "CC enhancement": {
                         "channels": "cch9",
@@ -816,7 +868,7 @@
                         "description": "descriptions/CC.md",
                         "lut": "lut/cal/WXtoImg-CC.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "EC enhancement": {
                         "channels": "cch9",
@@ -830,7 +882,7 @@
                         "description": "descriptions/EC.md",
                         "lut": "lut/cal/WXtoImg-EC.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "HE enhancement": {
                         "channels": "cch9",
@@ -844,7 +896,7 @@
                         "description": "descriptions/HE.md",
                         "lut": "lut/cal/WXtoImg-HE.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "HF enhancement": {
                         "channels": "cch9",
@@ -858,7 +910,7 @@
                         "description": "descriptions/HF.md",
                         "lut": "lut/cal/WXtoImg-HF.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "JF enhancement": {
                         "channels": "cch9",
@@ -872,7 +924,7 @@
                         "description": "descriptions/JF.md",
                         "lut": "lut/cal/WXtoImg-JF.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "JJ enhancement": {
                         "channels": "cch9",
@@ -886,7 +938,7 @@
                         "description": "descriptions/JJ.md",
                         "lut": "lut/cal/WXtoImg-JJ.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "TA enhancement": {
                         "channels": "cch9",
@@ -900,7 +952,7 @@
                         "description": "descriptions/TA.md",
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "Color convection longwave IR": {
                         "channels": "cch10",
@@ -921,7 +973,7 @@
                         "description": "descriptions/Snow.md",
                         "individual_equalize": true,
                         "white_balance": true,
-                        "remove_background":true,
+                        "remove_background": true,
                         "autogen": false
                     },
                     "NDVI": {
@@ -941,7 +993,7 @@
                         "lua": "scripted_compos/ndvi.lua",
                         "description": "descriptions/NDVI.md",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     }
                 }
             },
@@ -2782,9 +2834,9 @@
                         "draw_map_overlay": true,
                         "lut": "lut/goes/abi/L2/lst.png",
                         "borders_color": [
-                          0.45,
-                          0.45,
-                          0.45
+                            0.45,
+                            0.45,
+                            0.45
                         ]
                     },
                     "Land Surface Temperature (tmbates)": {
@@ -2798,9 +2850,9 @@
                         "draw_map_overlay": true,
                         "lut": "lut/goes/abi/L2/sst.png",
                         "borders_color": [
-                          0.45,
-                          0.45,
-                          0.45
+                            0.45,
+                            0.45,
+                            0.45
                         ]
                     },
                     "Sea Surface Temperature (tmbates)": {
@@ -3175,7 +3227,7 @@
                         "white_balance": true,
                         "description": "descriptions/FireTempRGB.md"
                     },
-                                        "Night Fog Difference": {
+                    "Night Fog Difference": {
                         "channels": "cch13, cch7",
                         "remove_background": true,
                         "draw_map_overlay": true,
@@ -3772,53 +3824,53 @@
                     "6.7µm Calibrated Water Vapor": {
                         "lut": "lut/cal/star_abi_wv_8-10.png",
                         "autogen": false,
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch27",
-                         "calib_cfg": {
-                             "cch27": {
-                                 "type": "radiance",
-                                 "min": 0,
-                                 "max": 5.2
-                             }
-                         } 
-                     },
-                     "6.7µm Calibrated Water Vapor (RAMSDIS)": {
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch27",
+                        "calib_cfg": {
+                            "cch27": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 5.2
+                            }
+                        }
+                    },
+                    "6.7µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch27",
-                         "calib_cfg": {
-                             "cch27": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
-                     "7.35µm Calibrated Water Vapor": {
-                         "lut": "lut/cal/star_abi_wv_8-10.png",
-                         "autogen": false,
-                          //"description": "descriptions/cal_wv.md",
-                          "channels": "cch28",
-                          "calib_cfg": {
-                              "cch28": {
-                                  "type": "radiance",
-                                  "min": 0,
-                                  "max": 23.2
-                              }
-                          } 
-                     },
-                     "7.35µm Calibrated Water Vapor (RAMSDIS)": {
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch27",
+                        "calib_cfg": {
+                            "cch27": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
+                    "7.35µm Calibrated Water Vapor": {
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                        "autogen": false,
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch28",
+                        "calib_cfg": {
+                            "cch28": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 23.2
+                            }
+                        }
+                    },
+                    "7.35µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch28",
-                         "calib_cfg": {
-                             "cch28": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     }
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch28",
+                        "calib_cfg": {
+                            "cch28": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    }
                 }
             },
             "mersi1": {
@@ -4493,53 +4545,53 @@
                     },
                     "6.25µm Calibrated Water Vapor": {
                         "lut": "lut/cal/star_abi_wv_8-10.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch12",
-                         "calib_cfg": {
-                             "cch12": {
-                                 "type": "radiance",
-                                 "min": 0,
-                                 "max": 5.2
-                             }
-                         } 
-                     },
-                     "6.25µm Calibrated Water Vapor (RAMSDIS)": {
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch12",
+                        "calib_cfg": {
+                            "cch12": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 5.2
+                            }
+                        }
+                    },
+                    "6.25µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch12",
-                         "calib_cfg": {
-                             "cch12": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
-                     "7.35µm Calibrated Water Vapor": {
-                         "lut": "lut/cal/star_abi_wv_8-10.png",
-                          //"description": "descriptions/cal_wv.md",
-                          "channels": "cch11",
-                          "calib_cfg": {
-                              "cch11": {
-                                  "type": "radiance",
-                                  "min": 0,
-                                  "max": 23.2
-                              }
-                          } 
-                     },
-                     "7.35µm Calibrated Water Vapor (RAMSDIS)": {
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch12",
+                        "calib_cfg": {
+                            "cch12": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
+                    "7.35µm Calibrated Water Vapor": {
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch11",
+                        "calib_cfg": {
+                            "cch11": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 23.2
+                            }
+                        }
+                    },
+                    "7.35µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch11",
-                         "calib_cfg": {
-                             "cch11": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
-                     "Split Water Vapor": {
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch11",
+                        "calib_cfg": {
+                            "cch11": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
+                    "Split Water Vapor": {
                         "channels": "cch12, cch11",
                         "draw_map_overlay": true,
                         "calib_cfg": {
@@ -5323,7 +5375,7 @@
                     "True Color": {
                         "equation": "(cch3^0.9)-0.05, (cch2^0.9), (cch1^0.9)",
                         "white_balance": true,
-                        "remove_background":true,
+                        "remove_background": true,
                         "description": "descriptions/TrueColor.md",
                         "autogen": false
                     },
@@ -5333,7 +5385,7 @@
                         "equalize": true,
                         "autogen": false,
                         "description": "descriptions/221.md",
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "AVHRR 3a21 False Color": {
                         "equation": "ch7, ch4, ch3",
@@ -5341,7 +5393,7 @@
                         "equalize": true,
                         "description": "descriptions/3a21.md",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "AVHRR 124 False Color": {
                         "equation": "ch3, ch4, 1-ch14",
@@ -5349,7 +5401,7 @@
                         "individual_equalize": true,
                         "description": "descriptions/124.md",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "AVHRR 543b IR False Color": {
                         "equation": "1-ch15, 1-ch14, 1-ch9",
@@ -5357,7 +5409,7 @@
                         "individual_equalize": true,
                         "description": "descriptions/543b.md",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "AVHRR 3b45 IR False Color": {
                         "equation": "1-ch9, 1-ch14, 1-ch15",
@@ -5365,13 +5417,13 @@
                         "individual_equalize": true,
                         "description": "descriptions/3b45.md",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "Cloud Phase RGB": {
                         "equation": "cch7, cch8, cch3",
                         "autogen": false,
                         "description": "descriptions/CloudPhase.md",
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "Cloud Type RGB": {
                         "equation": "cch6^1.5, cch3^0.75, cch7",
@@ -5381,57 +5433,57 @@
                         "white_balance": true
                     },
                     "6.25µm Calibrated Water Vapor": {
-                       "lut": "lut/cal/star_abi_wv_8-10.png",
-                       "autogen": false,
+                        "lut": "lut/cal/star_abi_wv_8-10.png",
+                        "autogen": false,
                         //"description": "descriptions/cal_wv.md",
                         "channels": "cch10",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch10": {
                                 "type": "radiance",
                                 "min": 0,
                                 "max": 5.2
                             }
-                        } 
+                        }
                     },
                     "6.25µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch10",
-                         "calib_cfg": {
-                             "cch10": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch10",
+                        "calib_cfg": {
+                            "cch10": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
                     "7.35µm Calibrated Water Vapor": {
                         "lut": "lut/cal/star_abi_wv_8-10.png",
                         "autogen": false,
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch11",
-                         "remove_background":true,
-                         "calib_cfg": {
-                             "cch11": {
-                                 "type": "radiance",
-                                 "min": 0,
-                                 "max": 23.2
-                             }
-                         } 
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch11",
+                        "remove_background": true,
+                        "calib_cfg": {
+                            "cch11": {
+                                "type": "radiance",
+                                "min": 0,
+                                "max": 23.2
+                            }
+                        }
                     },
                     "7.35µm Calibrated Water Vapor (RAMSDIS)": {
                         "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                         //"description": "descriptions/cal_wv.md",
-                         "channels": "cch11",
-                         "calib_cfg": {
-                             "cch11": {
-                                 "type": "temperature",
-                                 "min": 165.15,
-                                 "max": 328.15
-                             }
-                         } 
-                     },
+                        //"description": "descriptions/cal_wv.md",
+                        "channels": "cch11",
+                        "calib_cfg": {
+                            "cch11": {
+                                "type": "temperature",
+                                "min": 165.15,
+                                "max": 328.15
+                            }
+                        }
+                    },
                     "Split Water Vapor": {
                         "channels": "cch10, cch11",
                         "remove_background": true,
@@ -5467,7 +5519,7 @@
                         "autogen": false,
                         "description": "descriptions/CloudTopIR.md",
                         "lut": "lut/cal/CloudTopIR.png",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch14": {
                                 "type": "temperature",
@@ -5481,7 +5533,7 @@
                         "autogen": false,
                         "description": "descriptions/NO.md",
                         "channels": "cch14",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch14": {
                                 "type": "radiance",
@@ -5492,7 +5544,7 @@
                     },
                     "ZA enhancement": {
                         "channels": "cch14",
-                        "remove_background":true,
+                        "remove_background": true,
                         "calib_cfg": {
                             "cch14": {
                                 "type": "radiance",
@@ -5529,7 +5581,7 @@
                             }
                         },
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "BD enhancement": {
                         "channels": "cch14",
@@ -5543,7 +5595,7 @@
                         "description": "descriptions/BD.md",
                         "lut": "lut/cal/WXtoImg-BD.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "CC enhancement": {
                         "channels": "cch14",
@@ -5557,7 +5609,7 @@
                         "description": "descriptions/CC.md",
                         "lut": "lut/cal/WXtoImg-CC.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "EC enhancement": {
                         "channels": "cch14",
@@ -5571,7 +5623,7 @@
                         "description": "descriptions/EC.md",
                         "lut": "lut/cal/WXtoImg-EC.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "HE enhancement": {
                         "channels": "cch14",
@@ -5585,7 +5637,7 @@
                         "description": "descriptions/HE.md",
                         "lut": "lut/cal/WXtoImg-HE.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "HF enhancement": {
                         "channels": "cch14",
@@ -5599,7 +5651,7 @@
                         "description": "descriptions/HF.md",
                         "lut": "lut/cal/WXtoImg-HF.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "JF enhancement": {
                         "channels": "cch14",
@@ -5613,7 +5665,7 @@
                         "description": "descriptions/JF.md",
                         "lut": "lut/cal/WXtoImg-JF.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "JJ enhancement": {
                         "channels": "cch14",
@@ -5627,7 +5679,7 @@
                         "description": "descriptions/JJ.md",
                         "lut": "lut/cal/WXtoImg-JJ.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "TA enhancement": {
                         "channels": "cch14",
@@ -5641,7 +5693,7 @@
                         "description": "descriptions/TA.md",
                         "lut": "lut/cal/WXtoImg-TA.png",
                         "autogen": false,
-                        "remove_background":true
+                        "remove_background": true
                     },
                     "Night Microphysics": {
                         "equation": "1-(3/200-cch15+cch14)*(200/10.5), 1-(7/200-cch14+cch9)*(200/9.9), ((cch14*200+200-243.7)/(293.2-243.7))",
