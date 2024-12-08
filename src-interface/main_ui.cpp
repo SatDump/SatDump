@@ -198,7 +198,10 @@ namespace satdump
             ImGui::End();
 
             if (settings::show_imgui_demo)
+            {
                 ImGui::ShowDemoWindow();
+                ImPlot::ShowDemoWindow();
+            }
         }
 
         // Render toasts on top of everything, at the end of your code!

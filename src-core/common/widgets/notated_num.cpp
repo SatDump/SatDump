@@ -25,6 +25,13 @@ namespace widgets
         std::regex regexp(units, std::regex_constants::icase);
         display_val = std::regex_replace(display_val, regexp, "");
 
+        // Sanity check
+        if (display_val.empty())
+        {
+            display_val = last_display;
+            return;
+        }
+
         // Get order of magnitude suffix, if present
         T multiplier = 1;
         bool had_suffix = true;

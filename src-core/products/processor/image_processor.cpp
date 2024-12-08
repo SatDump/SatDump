@@ -33,16 +33,16 @@ namespace satdump
         //        if (!op.target_prj_info.contains("br_lat"))
         //            op.target_prj_info["br_lat"] = -90;
 
-        op.img = img;
+        op.img = &img;
         proj_cfg["metadata"] = metadata;
         proj_cfg["metadata"]["tle"] = img_products.get_tle();
         proj_cfg["metadata"]["timestamps"] = timestamps;
 
-        image::set_metadata_proj_cfg(op.img, proj_cfg);
+        image::set_metadata_proj_cfg(*op.img, proj_cfg);
 
         if (op.target_prj_info.contains("auto") && op.target_prj_info["auto"].get<bool>())
         {
-            auto bounds = reprojection::determineProjectionBounds(op.img);
+            auto bounds = reprojection::determineProjectionBounds(*op.img);
             logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
             reprojection::tryAutoTuneProjection(bounds, op.target_prj_info);
             logger->debug("%d, %d\n%s", op.output_width, op.output_height, op.target_prj_info.dump(4).c_str());
@@ -62,7 +62,7 @@ namespace satdump
 
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
-                image::equalize(op.img);
+                image::equalize(*op.img);
 
         image::Image retimg = reprojection::reproject(op);
 
@@ -154,12 +154,11 @@ namespace satdump
                             geo_correct = false;
                             corrected_stuff.clear();
                         }
+
+                        image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
                     }
 
                     image::save_img(rgb_image, product_path + "/" + name);
-                    if (geo_correct)
-                        image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
-
                     overlay_handler.set_config(compo.value());
                     corrected_overlay_handler.set_config(compo.value());
                     if (overlay_handler.enabled())
@@ -214,6 +213,10 @@ namespace satdump
                             image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected_map");
                         }
                     }
+
+                    // Free memory
+                    if (geo_correct)
+                        rgb_image_corr.clear();
 
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {

@@ -76,8 +76,9 @@ int main(int /*argc*/, char *argv[])
     satdump::warp::WarpOperation operation_t;
     std::vector<double> final_tt;
     nlohmann::json final_mtd;
-    operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
-    operation_t.input_image = operation_t.input_image.to16bits();
+    image::Image input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
+    input_image = input_image.to16bits();
+    operation_t.input_image = &input_image;
     // operation_t.input_image.median_blur();
     nlohmann::json proj_cfg = img_pro.get_proj_cfg(); // loadJsonFile(argv[2]);
     proj_cfg["metadata"] = final_mtd;
@@ -85,8 +86,8 @@ int main(int /*argc*/, char *argv[])
     proj_cfg["metadata"]["timestamps"] = final_tt;
     printf("%s\n", final_mtd.dump(4).c_str());
     operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
-                                                                           operation_t.input_image.width(),
-                                                                           operation_t.input_image.height());
+                                                                           operation_t.input_image->width(),
+                                                                           operation_t.input_image->height());
     operation_t.output_width = 2048 * 2;  // 10;
     operation_t.output_height = 1024 * 2; // 10;
     operation_t.output_rgba = true;

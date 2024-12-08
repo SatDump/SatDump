@@ -108,6 +108,7 @@ namespace satdump
 
         void render()
         {
+            ImGui::SeparatorText("Core Settings");
             if (ImGui::CollapsingHeader("User Interface"))
             {
                 if (ImGui::BeginTable("##satdumpuisettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
@@ -208,11 +209,16 @@ namespace satdump
                 }
             }
 
-            for (auto &plugin_hdl : config::plugin_config_handlers)
+            if (config::plugin_config_handlers.size() > 0)
             {
-                if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
+                ImGui::SeparatorText("Plugin Settings");
+                for (auto &plugin_hdl : config::plugin_config_handlers)
                 {
-                    plugin_hdl.render();
+                    if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
+                    {
+                        plugin_hdl.render();
+                    }
                 }
             }
 

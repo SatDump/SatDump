@@ -27,6 +27,12 @@ namespace satdump
         ImGui::Begin("Archive Loader", _open);
 
         ImGui::BeginTabBar("##archiveloadertabbar");
+        if (ImGui::BeginTabItem("GOES-R AWS"))
+        {
+            ImVec2 wsize = ImGui::GetWindowSize();
+            renderGOESRAWS(wsize);
+            ImGui::EndTabItem();
+        }
         if (ImGui::BeginTabItem("EUMETSAT"))
         {
             ImVec2 wsize = ImGui::GetWindowSize();

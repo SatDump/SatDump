@@ -37,7 +37,7 @@ namespace satdump
             std::sort(gcps_curr.begin(), gcps_curr.end(),
                       [&operation_t](auto &el1, auto &el2)
                       {
-                          return el1.y * operation_t.input_image.width() + el1.x < el2.y * operation_t.input_image.width() + el2.x;
+                          return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x;
                       });
             {
                 std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
@@ -133,8 +133,8 @@ namespace satdump
 
             if (scfg.y_start < 0)
                 scfg.y_start = 0;
-            if (scfg.y_end > (int)operation_t.input_image.height())
-                scfg.y_end = operation_t.input_image.height();
+            if (scfg.y_end > (int)operation_t.input_image->height())
+                scfg.y_end = operation_t.input_image->height();
         }
 
         std::vector<satdump::projection::GCP> filter_gcps_position(std::vector<satdump::projection::GCP> gcps, double max_distance)
@@ -212,8 +212,8 @@ namespace satdump
                 };
 
                 // Calculate start / end
-                int y_start = (segment / nsegs) * operation_t.input_image.height();
-                int y_end = ((segment + 1) / nsegs) * operation_t.input_image.height();
+                int y_start = (segment / nsegs) * operation_t.input_image->height();
+                int y_end = ((segment + 1) / nsegs) * operation_t.input_image->height();
 
                 // Isolate GCPs for this segment
                 std::vector<satdump::projection::GCP> gcps_curr;
@@ -233,7 +233,7 @@ namespace satdump
                 std::sort(gcps_curr.begin(), gcps_curr.end(),
                           [&operation_t](auto &el1, auto &el2)
                           {
-                              return el1.y * operation_t.input_image.width() + el1.x < el2.y * operation_t.input_image.width() + el2.x;
+                              return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x;
                           });
                 {
                     std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
@@ -274,14 +274,14 @@ namespace satdump
 
         WarpResult performSmartWarp(WarpOperation operation_t, float *progress)
         {
-            if (operation_t.input_image.size() == 0)
+            if (operation_t.input_image->size() == 0)
                 throw satdump_exception("Can't warp an empty image!");
 
             WarpResult result; // Final output
 
             // Prepare crop area, and check it can fit in RAM
             satdump::warp::WarpCropSettings crop_set = choseCropArea(operation_t);
-            int nchannels = operation_t.output_rgba ? 4 : operation_t.input_image.channels();
+            int nchannels = operation_t.output_rgba ? 4 : operation_t.input_image->channels();
 
             ensureMemoryLimit(crop_set, operation_t, nchannels, MAX_IMAGE_RAM_USAGE);
 
@@ -317,8 +317,9 @@ namespace satdump
             for (auto &segmentCfg : segmentConfigs)
             {
                 // Copy operation for the segment Warp
+                image::Image segment_image = operation_t.input_image->crop_to(0, segmentCfg.y_start, operation_t.input_image->width(), segmentCfg.y_end);
                 auto operation = operation_t;
-                operation.input_image.crop(0, segmentCfg.y_start, operation.input_image.width(), segmentCfg.y_end);
+                operation.input_image = &segment_image;
                 operation.shift_lon = segmentCfg.shift_lon;
                 operation.shift_lat = segmentCfg.shift_lat;
                 operation.ground_control_points = segmentCfg.gcps;

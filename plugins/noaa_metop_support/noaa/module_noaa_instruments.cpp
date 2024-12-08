@@ -204,7 +204,7 @@ namespace noaa
                         avhrr_products.set_calibration(avhrr_reader.calib_out);
                         for (int n = 0; n < 3; n++)
                         {
-                            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
                             avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                         }
                         for (int c = 0; c < 6; c++)
@@ -451,7 +451,7 @@ namespace noaa
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = avg_overflowless_timestamps(timestamp_filtering::filter_timestamps_width_cfg(hirs_reader.timestamps, loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json"))));
+                dataset.timestamp = get_median(hirs_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 

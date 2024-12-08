@@ -223,7 +223,7 @@ namespace metop
                 avhrr_products.set_calibration(avhrr_reader.calib_out);
                 for (int n = 0; n < 3; n++)
                 {
-                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
                     avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                 }
                 for (int c = 0; c < 6; c++)

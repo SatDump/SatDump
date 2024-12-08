@@ -97,9 +97,9 @@ namespace meteor
         return rpktpos;
     }
 
-    inline void handleFramesType1(std::vector<std::vector<uint8_t>> vf1, std::ofstream &data_out, std::mutex &writeMtx)
+    inline void handleFrames(std::vector<std::vector<uint8_t>> &vf1, std::ofstream &data_out, std::mutex &writeMtx, int type)
     {
-        for (auto kfrm : vf1)
+        for (auto &kfrm : vf1)
         {
             memmove(&kfrm[4], &kfrm[0], (15040 * 4) - 4);
 
@@ -116,8 +116,24 @@ namespace meteor
                         ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 |
                         ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
 
-            memmove(&final_frames[1][0], &final_frames[1][1], 15040 - 1);
-            memmove(&final_frames[3][0], &final_frames[3][1], 15040 - 1);
+            if (type == 1)
+            {
+                memmove(&final_frames[1][0], &final_frames[1][1], 15040 - 1);
+                memmove(&final_frames[3][0], &final_frames[3][1], 15040 - 1);
+            }
+            else if (type == 2)
+            {
+                memmove(&final_frames[0][0], &final_frames[0][1], 15040 - 1);
+                memmove(&final_frames[2][0], &final_frames[2][1], 15040 - 1);
+
+                memmove(&final_frames[1][0], &final_frames[1][1], 15040 - 1);
+                memmove(&final_frames[3][0], &final_frames[3][1], 15040 - 1);
+            }
+            else if (type == 3)
+            {
+                memmove(&final_frames[0][0], &final_frames[0][1], 15040 - 1);
+                memmove(&final_frames[2][0], &final_frames[2][1], 15040 - 1);
+            }
 
             writeMtx.lock();
             // 120320. x4 = 481280 !!
@@ -126,45 +142,6 @@ namespace meteor
             data_out.write((char *)final_frames[1], 15040);
             data_out.write((char *)final_frames[3], 15040);
             writeMtx.unlock();
-
-            logger->info("FRAME_1");
-        }
-    }
-
-    inline void handleFramesType2(std::vector<std::vector<uint8_t>> vf2, std::ofstream &data_out, std::mutex &writeMtx)
-    {
-        for (auto kfrm : vf2)
-        {
-            memmove(&kfrm[4], &kfrm[0], (15040 * 4) - 4);
-
-            uint8_t final_frames[4][15040];
-            for (int o = 0; o < 4; o++)
-                for (int c = 0; c < 15040; c++)
-                    final_frames[o][c] =
-                        ((kfrm[c * 4 + 0] >> (7 - o)) & 1) << 7 |
-                        ((kfrm[c * 4 + 0] >> (3 - o)) & 1) << 6 |
-                        ((kfrm[c * 4 + 1] >> (7 - o)) & 1) << 5 |
-                        ((kfrm[c * 4 + 1] >> (3 - o)) & 1) << 4 |
-                        ((kfrm[c * 4 + 2] >> (7 - o)) & 1) << 3 |
-                        ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
-                        ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 |
-                        ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
-
-            memmove(&final_frames[0][0], &final_frames[0][1], 15040 - 1);
-            memmove(&final_frames[2][0], &final_frames[2][1], 15040 - 1);
-
-            memmove(&final_frames[1][0], &final_frames[1][1], 15040 - 1);
-            memmove(&final_frames[3][0], &final_frames[3][1], 15040 - 1);
-
-            writeMtx.lock();
-            // 120320. x4 = 481280 !!
-            data_out.write((char *)final_frames[0], 15040);
-            data_out.write((char *)final_frames[2], 15040);
-            data_out.write((char *)final_frames[1], 15040);
-            data_out.write((char *)final_frames[3], 15040);
-            writeMtx.unlock();
-
-            logger->info("FRAME_2");
         }
     }
 
@@ -198,6 +175,10 @@ namespace meteor
         // 20230901_191942_METEOR-M2 3.hard
         def::SimpleDeframer kmssbpsk_deframer2_1(0x3fcf0fc03ccc30, 56, 481280, 0, false);
         def::SimpleDeframer kmssbpsk_deframer2_2(0x3fcf0fc03ccc30, 56, 481280, 0, false);
+
+        // 20241030_002029_METEOR-M2 4.dat
+        def::SimpleDeframer kmssbpsk_deframer3_1(0x3ece1a912d8974, 56, 481280, 0, false);
+        def::SimpleDeframer kmssbpsk_deframer3_2(0x3ece1a912d8974, 56, 481280, 0, false);
 
         std::mutex writeMtx;
 
@@ -253,13 +234,16 @@ namespace meteor
 
                     std::vector<std::vector<uint8_t>> vf1_1 = kmssbpsk_deframer1_1.work(rpkt_buffer_1, rpktpos_1);
                     std::vector<std::vector<uint8_t>> vf2_1 = kmssbpsk_deframer2_1.work(rpkt_buffer_1, rpktpos_1);
+                    std::vector<std::vector<uint8_t>> vf3_1 = kmssbpsk_deframer3_1.work(rpkt_buffer_1, rpktpos_1);
 
-                    handleFramesType1(vf1_1, data_out, writeMtx);
-                    handleFramesType2(vf2_1, data_out, writeMtx);
+                    handleFrames(vf1_1, data_out, writeMtx, 1);
+                    handleFrames(vf2_1, data_out, writeMtx, 2);
+                    handleFrames(vf3_1, data_out, writeMtx, 3);
 
                     writeMtx.lock();
                     frame_count += vf1_1.size();
                     frame_count += vf2_1.size();
+                    frame_count += vf3_1.size();
                     writeMtx.unlock();
                 }
                 // #pragma omp section
@@ -277,13 +261,16 @@ namespace meteor
 
                     std::vector<std::vector<uint8_t>> vf1_2 = kmssbpsk_deframer1_2.work(rpkt_buffer_2, rpktpos_2);
                     std::vector<std::vector<uint8_t>> vf2_2 = kmssbpsk_deframer2_2.work(rpkt_buffer_2, rpktpos_2);
+                    std::vector<std::vector<uint8_t>> vf3_2 = kmssbpsk_deframer3_2.work(rpkt_buffer_2, rpktpos_2);
 
-                    handleFramesType1(vf1_2, data_out, writeMtx);
-                    handleFramesType2(vf2_2, data_out, writeMtx);
+                    handleFrames(vf1_2, data_out, writeMtx, 1);
+                    handleFrames(vf2_2, data_out, writeMtx, 2);
+                    handleFrames(vf3_2, data_out, writeMtx, 3);
 
                     writeMtx.lock();
                     frame_count += vf1_2.size();
                     frame_count += vf2_2.size();
+                    frame_count += vf3_2.size();
                     writeMtx.unlock();
                 }
             }
