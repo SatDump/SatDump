@@ -24,13 +24,13 @@ namespace meteor
     namespace msumr
     {
         void createMSUMRProduct(satdump::ImageProducts &product, double timestamp, int norad, int msumr_serial_number,
-            nlohmann::json &calib_cfg, uint8_t lrpt_channels)
+                                nlohmann::json &calib_cfg, uint8_t lrpt_channels)
         {
             product.bit_depth = 8;
             product.instrument_name = "msu_mr";
             product.has_timestamps = true;
             product.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-            product.needs_correlation = true;
+            //   product.needs_correlation = true;
             product.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, timestamp));
             if (msumr_serial_number == 0) // M2
                 product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
@@ -50,7 +50,7 @@ namespace meteor
                     break;
                 }
             }
-                    
+
             if (has_calib)
             {
                 product.set_calibration(calib_cfg);
@@ -173,7 +173,7 @@ namespace meteor
                             }
 
                             for (int channel = 0; channel < 6; channel++)
-                                calibration_info[channel].push_back({ words10_bits[channel * 2] , words10_bits[channel * 2 + 1] });
+                                calibration_info[channel].push_back({words10_bits[channel * 2], words10_bits[channel * 2 + 1]});
                         }
                     }
                 }
@@ -200,7 +200,8 @@ namespace meteor
             {
                 std::string override_sat = d_parameters["satellite_number"];
                 std::transform(override_sat.begin(), override_sat.end(), override_sat.begin(),
-                    [](unsigned char c) { return std::toupper(c); });
+                               [](unsigned char c)
+                               { return std::toupper(c); });
 
                 if (override_sat == "M2")
                     msumr_serial_number = 0;
@@ -214,7 +215,7 @@ namespace meteor
                     msumr_serial_number = 4;
                 else if (override_sat != "AUTO")
                     logger->warn("Invalid METEOR satellite \"%s\" provided. Using transmitted ID!",
-                        d_parameters["satellite_number"].get<std::string>().c_str());
+                                 d_parameters["satellite_number"].get<std::string>().c_str());
             }
 
             std::string sat_name = "Unknown Meteor";
@@ -266,7 +267,7 @@ namespace meteor
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                 {
-                    msumr_images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8 });
+                    msumr_images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
                     lrpt_channels |= 1 << i;
                     nlohmann::json channel_views = nlohmann::json::array();
                     channel_views[0] = nlohmann::json::array();
@@ -333,11 +334,13 @@ namespace meteor
                                     for (size_t j = 1; j < i - last_good_view; j++)
                                     {
                                         calib_cfg["vars"]["views"][channel][0][last_good_view + j] = (int)((int)calib_cfg["vars"]["views"][channel][0][last_good_view] +
-                                            ((int)calib_cfg["vars"]["views"][channel][0][i] -
-                                                (int)calib_cfg["vars"]["views"][channel][0][last_good_view]) * ((double)j / double(i - last_good_view)));
+                                                                                                           ((int)calib_cfg["vars"]["views"][channel][0][i] -
+                                                                                                            (int)calib_cfg["vars"]["views"][channel][0][last_good_view]) *
+                                                                                                               ((double)j / double(i - last_good_view)));
                                         calib_cfg["vars"]["views"][channel][1][last_good_view + j] = (int)((int)calib_cfg["vars"]["views"][channel][1][last_good_view] +
-                                            ((int)calib_cfg["vars"]["views"][channel][1][i] -
-                                                (int)calib_cfg["vars"]["views"][channel][1][last_good_view]) * ((double)j / double(i - last_good_view)));
+                                                                                                           ((int)calib_cfg["vars"]["views"][channel][1][i] -
+                                                                                                            (int)calib_cfg["vars"]["views"][channel][1][last_good_view]) *
+                                                                                                               ((double)j / double(i - last_good_view)));
                                     }
                                 }
                                 last_good_view = i;

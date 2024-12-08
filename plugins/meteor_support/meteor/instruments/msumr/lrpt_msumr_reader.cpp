@@ -18,7 +18,9 @@ namespace meteor
                 {
                     segments[i] = new Segment[SEG_CNT];
                     firstSeg[i] = 4294967295;
+                    lastSeg[i] = 0;
                     rollover[i] = lastSeq[i] = offset[i] = lastSeg[i] = lines[i] = 0;
+                    offset[i] = 0;
                 }
 
                 // Fetch current day
@@ -102,8 +104,28 @@ namespace meteor
 
                 if (first == -1 || last == -1 || offsett == -1)
                 {
-                    firstSeg_l = firstSeg[channel];
-                    lastSeg_l = lastSeg[channel];
+                    int max_offset = 0;
+                    for (int i = 0; i < 6; i++)
+                        if (max_offset < offset[i])
+                            max_offset = offset[i];
+
+                    firstSeg_l = firstSeg[channel] + offset[channel] * 14;
+                    for (int i = 0; i < 6; i++)
+                        if (firstSeg[i] + offset[i] * 14 < firstSeg_l)
+                            firstSeg_l = firstSeg[i] + offset[i] * 14;
+                    firstSeg_l -= offset[channel] * 14;
+
+                    if (firstSeg[channel] == 4294967295)
+                        firstSeg_l = 0;
+
+                    lastSeg_l = lastSeg[channel] + offset[channel] * 14;
+                    for (int i = 0; i < 6; i++)
+                        if (lastSeg[i] + offset[i] * 14 > lastSeg_l)
+                            lastSeg_l = lastSeg[i] + offset[i] * 14;
+                    lastSeg_l -= offset[channel] * 14;
+
+                    if (lastSeg[channel] == 0)
+                        lastSeg_l = 0;
                 }
                 else
                 {
@@ -246,5 +268,5 @@ namespace meteor
                 return {commonFirstScan, commonLastScan, commonOffsetScan};
             }
         } // namespace lrpt
-    }     // namespace msumr
+    } // namespace msumr
 } // namespace meteor
