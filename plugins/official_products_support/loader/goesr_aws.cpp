@@ -77,6 +77,9 @@ namespace satdump
                 rapidxml::xml_document<> doc;
                 doc.parse<0>((char *)result.c_str());
 
+                if (doc.first_node("ListBucketResult") == 0)
+                    throw satdump_exception("XML missing ListBucketResult!");
+
                 for (rapidxml::xml_node<> *content_node = doc.first_node("ListBucketResult")->first_node("Contents"); content_node; content_node = content_node->next_sibling())
                 {
 
