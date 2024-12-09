@@ -1,10 +1,9 @@
 #define _USE_MATH_DEFINES
-#include "mtg_fci.h"
 
 #include "libs/rapidxml.hpp"
 #include "common/utils.h"
 
-#include <hdf5.h>
+#include "hdf5_utils.h"
 #include <H5LTpublic.h>
 #include "common/image/image.h"
 #include <filesystem>
@@ -38,15 +37,11 @@ namespace nc2pro
         double perspective_point_height;
         double calibration_scale;
         double calibration_offset;
+        double kappa;
         time_t timestamp;
         std::string goes_sat;
         std::string time_coverage_start;
     };
-
-    int hdf5_get_int(hid_t &file, std::string path);
-    float hdf5_get_float_attr(hid_t &file, std::string path, std::string attr);
-    std::string hdf5_get_string_attr_FILE(hid_t &file, std::string attr);
-    std::string hdf5_get_string_attr_FILE_fixed(hid_t &file, std::string attr);
 
     ParsedGOESRABI parse_goes_abi_netcdf_fulldisk(std::vector<uint8_t> data)
     {
@@ -93,6 +88,7 @@ namespace nc2pro
             image_out.time_coverage_start = hdf5_get_string_attr_FILE_fixed(file, "time_coverage_start");
             image_out.calibration_scale = hdf5_get_float_attr(file, "Rad", "scale_factor");
             image_out.calibration_offset = hdf5_get_float_attr(file, "Rad", "add_offset");
+            image_out.kappa = hdf5_get_float(file, "kappa0");
             int bit_depth = hdf5_get_float_attr(file, "Rad", "sensor_band_bit_depth");
 
             image_out.calibration_scale /= pow(2, 14 - bit_depth);
@@ -335,9 +331,9 @@ namespace nc2pro
                 waslarger = true;
             }
 
+            img.img.clear();
             if (waslarger)
                 largestImg = img;
-            img.img.clear();
 
             if (img.goes_sat == "G16")
                 satellite = "GOES-16";
@@ -418,20 +414,26 @@ namespace nc2pro
         };
 
         nlohmann::json calib_cfg;
-        calib_cfg["calibrator"] = "mtg_nc_fci";
+        calib_cfg["calibrator"] = "goes_nc_abi";
         for (int i = 0; i < all_images.size(); i++)
         {
             calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
             calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
+            calib_cfg["vars"]["kappa"][i] = all_images[i].kappa;
         }
         abi_products.set_calibration(calib_cfg);
 
         int ii2 = 0;
         for (int i = 0; i < all_images.size(); i++)
         {
-            abi_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_RADIANCE);
-            abi_products.set_wavenumber(ii2, 1e7 / goes_abi_wavelength_table[all_images[i].channel - 1]);
+            if(all_images[i].kappa > 0)
+                abi_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_REFLECTANCE);
+            else
+                abi_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_RADIANCE);
+
             abi_products.set_calibration_default_radiance_range(ii2, goes_abi_radiance_ranges_table[all_images[i].channel - 1][0], goes_abi_radiance_ranges_table[all_images[i].channel - 1][1]);
+
+            abi_products.set_wavenumber(ii2, 1e7 / goes_abi_wavelength_table[all_images[i].channel - 1]);
             ii2++;
         }
 #endif

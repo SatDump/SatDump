@@ -1,10 +1,9 @@
 #define _USE_MATH_DEFINES
 #include "sc3_slstr.h"
+#include "hdf5_utils.h"
+#include <H5LTpublic.h>
 
 #include "common/utils.h"
-
-#include <hdf5.h>
-#include <H5LTpublic.h>
 #include "common/image/image.h"
 #include <filesystem>
 #include "logger.h"
@@ -20,8 +19,6 @@
 
 namespace nc2pro
 {
-    std::string hdf5_get_string_attr_FILE_fixed(hid_t &file, std::string attr);
-
     struct ParseOLCIChannel
     {
         image::Image img;

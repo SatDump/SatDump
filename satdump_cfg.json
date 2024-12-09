@@ -2477,6 +2477,33 @@
                         ],
                         "autogen": true
                     },
+                    "ABI Visible False Color": {
+                        "equation": "cch2^0.45454545454,(cch2^0.45454545454)*0.45+(cch3^0.45454545454)*0.1+(cch1^0.45454545454)*0.45,cch1^0.45454545454",
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "calib_cfg": {
+                            "cch1": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cch3": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            }
+                        },
+                        "autogen": true
+                    },
                     "ABI False Color IR Merge": {
                         "channels": "ch2, ch13",
                         "cpp": "goes_abi_false_color_ir_merge",
@@ -2520,6 +2547,33 @@
                             1.0
                         ],
                         "autogen": false
+                    },
+                    "Day Cloud Phase Distinction": {
+                        "equation": "1-cch13, cch2, cch5",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cch2": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 0.78
+                            },
+                            "cch5": {
+                                "type": "albedo",
+                                "min": 0.01,
+                                "max": 0.59
+                            },
+                            "cch13": {
+                                "type": "temperature",
+                                "min": 219.65,
+                                "max": 280.65
+                            }
+                        },
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
                     },
                     "ABI Split Window Difference": {
                         "channels": "cch13, cch15",

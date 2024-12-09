@@ -5,6 +5,7 @@
 #include "off2pro/module_off2pro.h"
 
 #include "nc2pro/fci_nc_calibrator.h"
+#include "nc2pro/abi_nc_calibrator.h"
 
 //////////
 
@@ -45,6 +46,8 @@ public:
         //
         else if (evt.id == "mtg_nc_fci")
             evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.calib, evt.products));
+        else if (evt.id == "goes_nc_abi")
+            evt.calibrators.push_back(std::make_shared<nc2pro::ABINcCalibrator>(evt.calib, evt.products));
     }
 };
 
