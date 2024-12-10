@@ -48,6 +48,7 @@ namespace demod
 
         snr = 0;
         peak_snr = 0;
+        progress_log_interval = satdump::config::main_cfg["satdump_general"]["progress_log_interval"]["value"].get<int>();
 
         showWaterfall = satdump::config::main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
     }
