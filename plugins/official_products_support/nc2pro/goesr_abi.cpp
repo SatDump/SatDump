@@ -10,9 +10,6 @@
 #include "logger.h"
 #include <array>
 #include "products/image_products.h"
-#include "libs/miniz/miniz.h"
-
-#include "common/projection/projs2/proj_json.h"
 #include "common/calibration.h"
 
 #include "nlohmann/json_utils.h"

@@ -72,7 +72,7 @@ namespace satdump
             std::string result;
             while (perform_http_request(url_req, result) != 1)
             {
-                printf("\nURL WAS : %s\n", url_req.c_str());
+                logger->trace("\nURL WAS : %s\n", url_req.c_str());
 
                 rapidxml::xml_document<> doc;
                 doc.parse<0>((char *)result.c_str());
@@ -176,6 +176,8 @@ namespace satdump
         if (ImGui::Button("Refresh##archiveloader_refresh"))
             updateGOESRAWS();
 
+        ImGui::TextUnformatted("Date: ");
+        ImGui::SameLine();
         request_time.draw();
         ImGui::SameLine();
         if (ImGui::Button("Current##archiveloader_setcurrenttime"))

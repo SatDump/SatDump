@@ -10,10 +10,11 @@
 
 namespace widgets
 {
-    DateTimePicker::DateTimePicker(std::string d_id, double input_time)
+    DateTimePicker::DateTimePicker(std::string id, double input_time, bool date_only)
     {
         start_edit = false;
-        this->d_id = d_id;
+        d_id = id;
+        d_date_only = date_only;
         handle_input(input_time);
     }
     DateTimePicker::~DateTimePicker()
@@ -93,14 +94,18 @@ namespace widgets
 
             draw_list->AddRectFilled(ImVec2(start_position.x, start_position.y),
                 ImVec2(start_position.x + date_width, start_position.y + slash_size.y + (6 * ui_scale)), input_background, style.ChildRounding);
-            draw_list->AddRectFilled(ImVec2(start_position.x + date_width + (10 * ui_scale), start_position.y),
-                ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_background, style.ChildRounding);
+            if(!d_date_only)
+                draw_list->AddRectFilled(ImVec2(start_position.x + date_width + (10 * ui_scale), start_position.y),
+                    ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_background, style.ChildRounding);
+
             if (style.FrameBorderSize != 0.0f)
             {
                 draw_list->AddRect(ImVec2(start_position.x, start_position.y),
                     ImVec2(start_position.x + date_width, start_position.y + slash_size.y + (6 * ui_scale)), input_border, style.ChildRounding);
-                draw_list->AddRect(ImVec2(start_position.x + date_width + (10 * ui_scale), start_position.y),
-                    ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_border, style.ChildRounding);
+
+                if (!d_date_only)
+                    draw_list->AddRect(ImVec2(start_position.x + date_width + (10 * ui_scale), start_position.y),
+                        ImVec2(start_position.x + date_width + (10 * ui_scale) + time_width, start_position.y + slash_size.y + (6 * ui_scale)), input_border, style.ChildRounding);
             }
 
             //Date
@@ -165,87 +170,91 @@ namespace widgets
             ImGui::SameLine(0.0, 16.0 * ui_scale);
 
             //Time
-            if (auto_advance)
+            if (!d_date_only)
             {
-                ImGui::SetKeyboardFocusHere();
-                auto_advance = false;
-            }
-            if (ImGui::InputScalar(std::string(":" + d_id + "hour").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_hour, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
-            {
-                if (timestamp.tm_hour == 0)
-                    start_edit = true;
-                else if (timestamp.tm_hour > 9 || start_edit)
-                    auto_advance = true;
-            }
-            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
-                start_edit = false;
-            if (ImGui::IsItemDeactivatedAfterEdit())
-            {
-                if (timestamp.tm_hour > 23)
-                    timestamp.tm_hour = 23;
-                if (timestamp.tm_hour < 0)
-                    timestamp.tm_hour = 0;
-                start_edit = false;
-            }
-            ImGui::SameLine();
+                if (auto_advance)
+                {
+                    ImGui::SetKeyboardFocusHere();
+                    auto_advance = false;
+                }
+                if (ImGui::InputScalar(std::string(":" + d_id + "hour").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_hour, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+                {
+                    if (timestamp.tm_hour == 0)
+                        start_edit = true;
+                    else if (timestamp.tm_hour > 9 || start_edit)
+                        auto_advance = true;
+                }
+                if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
+                    start_edit = false;
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    if (timestamp.tm_hour > 23)
+                        timestamp.tm_hour = 23;
+                    if (timestamp.tm_hour < 0)
+                        timestamp.tm_hour = 0;
+                    start_edit = false;
+                }
+                ImGui::SameLine();
 
-            if (auto_advance)
-            {
-                ImGui::SetKeyboardFocusHere();
-                auto_advance = false;
-            }
-            if (ImGui::InputScalar(std::string(":" + d_id + "min").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_min, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
-            {
-                if (timestamp.tm_min == 0)
-                    start_edit = true;
-                else if (timestamp.tm_min > 9 || start_edit)
-                    auto_advance = true;
-            }
-            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
-                start_edit = false;
-            if (ImGui::IsItemDeactivatedAfterEdit())
-            {
-                if (timestamp.tm_min > 59)
-                    timestamp.tm_min = 59;
-                if (timestamp.tm_min < 0)
-                    timestamp.tm_min = 0;
-                start_edit = false;
-            }
-            ImGui::SameLine();
+                if (auto_advance)
+                {
+                    ImGui::SetKeyboardFocusHere();
+                    auto_advance = false;
+                }
+                if (ImGui::InputScalar(std::string(":" + d_id + "min").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_min, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+                {
+                    if (timestamp.tm_min == 0)
+                        start_edit = true;
+                    else if (timestamp.tm_min > 9 || start_edit)
+                        auto_advance = true;
+                }
+                if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
+                    start_edit = false;
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    if (timestamp.tm_min > 59)
+                        timestamp.tm_min = 59;
+                    if (timestamp.tm_min < 0)
+                        timestamp.tm_min = 0;
+                    start_edit = false;
+                }
+                ImGui::SameLine();
 
-            if (auto_advance)
-            {
-                ImGui::SetKeyboardFocusHere();
-                auto_advance = false;
-            }
-            if (ImGui::InputScalar(std::string("." + d_id + "sec").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_sec, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
-            {
-                if (timestamp.tm_sec == 0)
-                    start_edit = true;
-                else if (timestamp.tm_sec > 9 || start_edit)
-                    auto_advance = true;
-            }
-            if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
-                start_edit = false;
-            if (ImGui::IsItemDeactivatedAfterEdit())
-            {
-                if (timestamp.tm_sec > 59)
-                    timestamp.tm_sec = 59;
-                if (timestamp.tm_sec < 0)
-                    timestamp.tm_sec = 0;
-                start_edit = false;
-            }
-            ImGui::PopItemWidth();
-            ImGui::SameLine();
+                if (auto_advance)
+                {
+                    ImGui::SetKeyboardFocusHere();
+                    auto_advance = false;
+                }
+                if (ImGui::InputScalar(std::string("." + d_id + "sec").c_str(), ImGuiDataType_S32, (void*)&timestamp.tm_sec, (void*)NULL, (void*)NULL, "%02d", ImGuiInputTextFlags_NoHorizontalScroll))
+                {
+                    if (timestamp.tm_sec == 0)
+                        start_edit = true;
+                    else if (timestamp.tm_sec > 9 || start_edit)
+                        auto_advance = true;
+                }
+                if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && (ImGui::IsKeyPressed(ImGuiKey_Backspace) || ImGui::IsKeyPressed(ImGuiKey_Delete))))
+                    start_edit = false;
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    if (timestamp.tm_sec > 59)
+                        timestamp.tm_sec = 59;
+                    if (timestamp.tm_sec < 0)
+                        timestamp.tm_sec = 0;
+                    start_edit = false;
+                }
+                ImGui::PopItemWidth();
+                ImGui::SameLine();
 
-            if (auto_advance)
-            {
-                ImGui::SetKeyboardFocusHere();
-                auto_advance = false;
+                if (auto_advance)
+                {
+                    ImGui::SetKeyboardFocusHere();
+                    auto_advance = false;
+                }
+                ImGui::PushItemWidth(digit_size.x * 4);
+                ImGui::InputInt(std::string(d_id + "dsec").c_str(), &seconds_decimal, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll);
+                ImGui::PopItemWidth();
             }
-            ImGui::PushItemWidth(digit_size.x * 4);
-            ImGui::InputInt(std::string(d_id + "dsec").c_str(), &seconds_decimal, 0, 0, ImGuiInputTextFlags_NoHorizontalScroll);
-            ImGui::PopItemWidth();
+            
             ImGui::SameLine();
             ImGui::PopStyleVar(4);
             ImGui::PopStyleColor();

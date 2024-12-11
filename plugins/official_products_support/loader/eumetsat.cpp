@@ -164,6 +164,8 @@ namespace satdump
         if (ImGui::Button("Refresh##archiveloader_refresh"))
             updateEUMETSAT();
 
+        ImGui::TextUnformatted("Date: ");
+        ImGui::SameLine();
         request_time.draw();
         ImGui::SameLine();
         if (ImGui::Button("Current##archiveloader_setcurrenttime"))

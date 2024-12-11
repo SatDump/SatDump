@@ -10,9 +10,7 @@ namespace satdump
     class ArchiveLoader
     {
     private:
-        bool first_run = true;
         widgets::DateTimePicker request_time;
-
         widgets::FileDownloaderWidget file_downloader;
 
     private: // GOES-R AWS
