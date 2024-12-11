@@ -20,11 +20,6 @@
 
 #include "core/exception.h"
 
-extern "C"
-{
-    void register_MTG_FILTER();
-}
-
 namespace nc2pro
 {
     struct ParsedGOESRABI
@@ -43,7 +38,7 @@ namespace nc2pro
         std::string time_coverage_start;
     };
 
-    ParsedGOESRABI parse_goes_abi_netcdf_fulldisk(std::vector<uint8_t> data)
+    ParsedGOESRABI parse_goes_abi_netcdf(std::vector<uint8_t> data)
     {
         ParsedGOESRABI image_out;
 
@@ -283,7 +278,7 @@ namespace nc2pro
             }
 
             logger->info("Processing " + f);
-            all_images.push_back(parse_goes_abi_netcdf_fulldisk(nat_file));
+            all_images.push_back(parse_goes_abi_netcdf(nat_file));
         }
 
         if (prod_timestamp == 0)

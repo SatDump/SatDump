@@ -11,23 +11,35 @@ namespace nc2pro
     class ABINcCalibrator : public satdump::ImageProducts::CalibratorBase
     {
     private:
-        double calibration_scale[16];
-        double calibration_offset[16];
-        double calibration_kappa[16];
-        int channel_lut[16];
+        double *calibration_scale;
+        double *calibration_offset;
+        double *calibration_kappa;
+        int *channel_lut;
 
     public:
         ABINcCalibrator(nlohmann::json calib, satdump::ImageProducts* products) : satdump::ImageProducts::CalibratorBase(calib, products)
         {
-            for (int i = 0; i < 16; i++)
+            size_t num_channels = products->images.size();
+            calibration_scale = new double[num_channels];
+            calibration_offset = new double[num_channels];
+            calibration_kappa = new double[num_channels];
+            channel_lut = new int[num_channels];
+
+            for (int i = 0; i < num_channels; i++)
             {
                 calibration_scale[i] = calib["vars"]["scale"][i];
                 calibration_offset[i] = calib["vars"]["offset"][i];
                 calibration_kappa[i] = calib["vars"]["kappa"][i];
-            }
-
-            for (int i = 0; i < products->images.size(); i++)
                 channel_lut[i] = std::stoi(products->images[i].channel_name) - 1;
+            }
+        }
+
+        ~ABINcCalibrator()
+        {
+            delete[] calibration_scale;
+            delete[] calibration_offset;
+            delete[] calibration_kappa;
+            delete[] channel_lut;
         }
 
         void init()

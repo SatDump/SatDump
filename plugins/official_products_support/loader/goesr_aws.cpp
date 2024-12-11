@@ -17,11 +17,11 @@ namespace satdump
         "GOES-16 Mesoscale 1",
         "GOES-16 Mesoscale 2",
         "GOES-17 Full Disk",
-        "GOES-17 CONUS",
+        "GOES-17 PACUS",
         "GOES-17 Mesoscale 1",
         "GOES-17 Mesoscale 2",
         "GOES-18 Full Disk",
-        "GOES-18 CONUS",
+        "GOES-18 PACUS",
         "GOES-18 Mesoscale 1",
         "GOES-18 Mesoscale 2",
         "GOES-19 Full Disk",
@@ -151,7 +151,7 @@ namespace satdump
         }
         catch (std::exception &e)
         {
-            logger->error("Error updating FD list! %s", e.what());
+            logger->error("Error updating GOES Sector list! %s", e.what());
         }
     }
 
