@@ -375,7 +375,6 @@ namespace noaa
                     satdump::ImageProducts amsu_products;
                     amsu_products.instrument_name = "amsu_a";
                     amsu_products.has_timestamps = true;
-                    // amsu_products.needs_correlation = true;
                     amsu_products.bit_depth = 16;
                     amsu_products.set_tle(satellite_tle);
                     amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
