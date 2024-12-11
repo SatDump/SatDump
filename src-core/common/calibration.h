@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <map>
+#include <ctime>
 
 #define c1 1.1910427e-05
 #define c2 1.4387752
