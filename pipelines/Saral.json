@@ -1,0 +1,29 @@
+{
+    "saral_dump": {
+        "name": "Saral X-Band Dump",
+        "frequencies": [],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 16e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.004
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
+    }
+}
