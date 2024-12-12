@@ -19,7 +19,7 @@
             "soft": {
                 "pm_demod": {
                     // "resample_after_pll": true,
-                    "symbolrate": 323e3,
+                    "symbolrate": 400e3,
                     "pll_bw": 0.002,
                     "rrc_alpha": 0.35,
                     "costas_bw": 0.001,
@@ -30,7 +30,7 @@
                 "ccsds_turbo_decoder": {
                     "turbo_rate": "1/4",
                     "turbo_base": 1115,
-                    "turbo_iters": 5
+                    "turbo_iters": 2
                 }
             },
             "products": {}
