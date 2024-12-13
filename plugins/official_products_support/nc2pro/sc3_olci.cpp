@@ -58,7 +58,7 @@ namespace nc2pro
 
         H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)o.img.raw_data());
 
-        for (int i = 0; i < o.img.size(); i++)
+        for (size_t i = 0; i < o.img.size(); i++)
             if (o.img.get(i) == 65535)
                 o.img.set(i, 0);
 

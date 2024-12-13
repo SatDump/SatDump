@@ -7,7 +7,7 @@
 
 namespace nat2pro
 {
-    void decodeMHSNat(std::vector<uint8_t> nat_file, std::string pro_output_file)
+    void decodeMHSNat(std::vector<uint8_t> &nat_file, std::string pro_output_file)
     {
         int image_width = 90;
         std::vector<uint16_t> mhs_data[5];

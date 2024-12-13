@@ -53,6 +53,20 @@ namespace nc2pro
         return val;
     }
 
+    double hdf5_get_double_attr_FILE(hid_t& file, std::string attr)
+    {
+        double val;
+        if (file < 0)
+            return -1e6;
+
+        hid_t att = H5Aopen(file, attr.c_str(), H5P_DEFAULT);
+        hid_t att_type = H5Aget_type(att);
+        H5Aread(att, att_type, &val);
+        H5Tclose(att_type);
+        H5Aclose(att);
+        return val;
+    }
+
     std::string hdf5_get_string_attr_FILE(hid_t &file, std::string attr)
     {
         std::string val;

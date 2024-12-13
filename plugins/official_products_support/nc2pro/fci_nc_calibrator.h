@@ -24,7 +24,7 @@ namespace nc2pro
                 calibration_offset[i] = calib["vars"]["offset"][i];
             }
 
-            for (int i = 0; i < products->images.size(); i++)
+            for (size_t i = 0; i < products->images.size(); i++)
                 channel_lut[i] = std::stoi(products->images[i].channel_name) - 1;
         }
 

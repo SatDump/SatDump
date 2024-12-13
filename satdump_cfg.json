@@ -3079,6 +3079,34 @@
                 "handler": "image_handler",
                 "name": "AMI",
                 "rgb_composites": {
+                    "AMI Natural Color": {
+                        "equation": "cchNR016,cchVI008,cchVI006",
+                        "remove_background": true,
+                        "draw_map_overlay": true,
+                        "calib_cfg": {
+                            "cchNR016": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cchVI008": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            },
+                            "cchVI006": {
+                                "type": "albedo",
+                                "min": 0,
+                                "max": 1
+                            }
+                        },
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "autogen": true
+                    },
                     "MCIR": {
                         "channels": "cchIR105",
                         "cpp": "underlay_with_clouds",

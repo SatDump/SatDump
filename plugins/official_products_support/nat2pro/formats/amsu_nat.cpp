@@ -7,7 +7,7 @@
 
 namespace nat2pro
 {
-    void decodeAMSUNat(std::vector<uint8_t> nat_file, std::string pro_output_file)
+    void decodeAMSUNat(std::vector<uint8_t> &nat_file, std::string pro_output_file)
     {
         int image_width = 30;
         std::vector<uint16_t> amsu_data[15];

@@ -38,7 +38,7 @@ namespace nat2pro
         return *((double *)sw);
     }
 
-    void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
+    void decodeMSGNat(std::vector<uint8_t> &msg_file, std::string pro_output_file)
     {
         uint8_t *buf = msg_file.data();
 

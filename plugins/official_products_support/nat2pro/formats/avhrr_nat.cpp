@@ -7,7 +7,7 @@
 
 namespace nat2pro
 {
-    void decodeAVHRRNat(std::vector<uint8_t> nat_file, std::string pro_output_file)
+    void decodeAVHRRNat(std::vector<uint8_t> &nat_file, std::string pro_output_file)
     {
         int image_width = 0;
         std::vector<uint16_t> avhrr_data[6];
