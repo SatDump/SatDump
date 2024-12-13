@@ -55,7 +55,7 @@ namespace nc2pro
 
     double hdf5_get_double_attr_FILE(hid_t& file, std::string attr)
     {
-        double val;
+        double val = 0.0;
         if (file < 0)
             return -1e6;
 
