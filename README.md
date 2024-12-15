@@ -308,7 +308,9 @@ sudo make install
 ### Raspberry Pi
 
 In case you are building Satdump on Raspberry Pi 3 (any revision) and older. 
+
 It's required to run ```make -j1``` instead of ```make -j 'nproc'```. 
+
 Else the system will crash during compilation.
 
 ### Android
