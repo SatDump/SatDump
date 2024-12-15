@@ -978,18 +978,6 @@
                     },
                     "NDVI": {
                         "channels": "cch1, cch2",
-                        "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
-                            "cch2": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            }
-                        },
                         "lua": "scripted_compos/ndvi.lua",
                         "description": "descriptions/NDVI.md",
                         "autogen": false,
@@ -1057,6 +1045,7 @@
                         "equation": "cch1, cch2, 1-cch4",
                         "description": "descriptions/124.md",
                         "geo_correct": true,
+                        "individual_equalize": true,
                         "project": {
                             "draw_map_overlay": true,
                             "config": {
@@ -1070,16 +1059,6 @@
                             }
                         },
                         "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
-                            "cch2": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
                             "cch4": {
                                 "type": "temperature",
                                 "min": 203,
@@ -1119,16 +1098,12 @@
                         "equation": "cch1, cch3a, cch4",
                         "description": "descriptions/DayMicro.md",
                         "geo_correct": true,
+                        "equalize": true,
                         "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
                             "cch3a": {
-                                "type": "albedo",
+                                "type": "radiance",
                                 "min": 0,
-                                "max": 0.7
+                                "max": 1.4
                             },
                             "cch4": {
                                 "type": "temperature",
@@ -1140,11 +1115,6 @@
                     "Day Cloud Convection": {
                         "equation": "cch1^0.58823529411,cch1^0.58823529411,1-cch4",
                         "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
                             "cch4": {
                                 "type": "temperature",
                                 "min": 203,
@@ -1246,16 +1216,6 @@
                     "NDVI": {
                         "channels": "cch1, cch2",
                         "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
-                            "cch2": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            }
                         },
                         "lua": "scripted_compos/ndvi.lua",
                         "description": "descriptions/NDVI.md",
@@ -1265,16 +1225,6 @@
                     "NDWI": {
                         "channels": "cch2, cch3a",
                         "calib_cfg": {
-                            "cch2": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
-                            "cch3a": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            }
                         },
                         "lua": "scripted_compos/ndwi.lua",
                         "description": "descriptions/NDWI.md",
@@ -2486,21 +2436,6 @@
                             1.0
                         ],
                         "calib_cfg": {
-                            "cch1": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
-                            "cch2": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
-                            "cch3": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            }
                         },
                         "autogen": true
                     },
@@ -2747,11 +2682,6 @@
                             1.0
                         ],
                         "calib_cfg": {
-                            "cch2": {
-                                "type": "albedo",
-                                "min": 0,
-                                "max": 1
-                            },
                             "cch13": {
                                 "type": "temperature",
                                 "min": 203,
