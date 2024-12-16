@@ -306,6 +306,10 @@ sudo make install
 ./satdump-ui
 ```
 
+### Raspberry Pi
+
+In case you are using RPi3 (any revision) and older. Run ```make -j1 ``` instead of ```make -j`nproc` ``` otherwise the system will crash.
+  
 ### Android
 
 On Android, the preferred source is F-Droid.
