@@ -225,7 +225,7 @@ namespace demod
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+            if ((time(NULL) - lastTime) >= progress_log_interval)
             {
                 lastTime = time(NULL);
                 logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
