@@ -1,0 +1,25 @@
+{
+    "mtg_s_band_link": {
+        "name": "MTG S-band TLM link",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 16.38e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.01,
+                    "subcarrier_offset": 64e3
+                }
+            }
+        }
+    }
+}
