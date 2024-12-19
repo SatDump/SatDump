@@ -28,11 +28,11 @@ namespace noaa
 
             void calc_space(uint16_t *samples, uint8_t channel)
             {
-                space[channel] = calc_avg(samples, 48)*8;
+                space[channel] = calc_avg(samples, 48)>>3;
             }
             void calc_bb(uint16_t *samples, uint8_t channel)
             {
-                blackbody[channel] = calc_avg(samples, 56)*8;
+                blackbody[channel] = calc_avg(samples, 56)>>3;
             }
             bool is_ready()
             {
