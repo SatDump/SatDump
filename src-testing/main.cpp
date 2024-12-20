@@ -12,75 +12,91 @@
 
 #include "logger.h"
 
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "common/ccsds/ccsds_tm/demuxer.h"
-#include <fstream>
-#include "common/simple_deframer.h"
-
 #include "common/image/image.h"
 #include "common/image/processing.h"
 #include "common/image/io.h"
 
-#include <cstring>
-
-#include "common/repack.h"
-
-#include "common/image/bayer/bayer.h"
-
-#include "common/codings/reedsolomon/reedsolomon.h"
+#include "common/projection/thinplatespline.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream data_in(argv[1], std::ios::binary);
+    image::Image img1, img2, img3, imgf;
 
-    uint8_t cadu[1279];
+    logger->info("Loading 3");
+    image::load_img(img3, argv[1]);
+    logger->info("Loading 2");
+    image::load_img(img2, argv[2]);
+    logger->info("Loading 1");
+    image::load_img(img1, argv[3]);
 
-    ccsds::ccsds_tm::Demuxer vcid_demuxer(1109, false);
+    logger->info("Process");
+    imgf.init(img1.depth(), img1.width(), img2.height(), 3);
 
-    std::ofstream test_t("/tmp/test.bin");
+    satdump::projection::VizGeorefSpline2D spline_roll_pitch_ch2 = satdump::projection::VizGeorefSpline2D(2);
+    satdump::projection::VizGeorefSpline2D spline_roll_pitch_ch3 = satdump::projection::VizGeorefSpline2D(2);
 
-    reedsolomon::ReedSolomon rs_check(reedsolomon::RS223);
-
-    while (!data_in.eof())
+    struct testp
     {
-        // Read buffer
-        data_in.read((char *)&cadu, 1279);
+        double x;
+        double shift_x;
+        double shift_y;
+    };
 
-        // Check RS
-        int errors[5];
-        rs_check.decode_interlaved(cadu, true, 5, errors);
-        if (errors[0] < 0 || errors[1] < 0 || errors[2] < 0 || errors[3] < 0 || errors[4] < 0)
-            continue;
+    std::vector<testp> points_ch2 = {
+        {72, -3, 1},
+        {7981, -2, -4},
+    };
 
-        // Parse this transport frame
-        ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
+    std::vector<testp> points_ch3 = {
+        {26, 2, -13},
+        {7849, -1, 6}, //-12},
+    };
 
-        printf("VCID %d\n", vcdu.vcid);
+    for (auto item : points_ch2)
+    {
+        double rp_v[2] = {item.shift_x, item.shift_y};
+        spline_roll_pitch_ch2.add_point(item.x, item.x, rp_v);
+    }
 
-        if (vcdu.vcid == 1)
+    for (auto item : points_ch3)
+    {
+        double rp_v[2] = {item.shift_x, item.shift_y};
+        spline_roll_pitch_ch3.add_point(item.x, item.x, rp_v);
+    }
+
+    spline_roll_pitch_ch2.solve();
+    spline_roll_pitch_ch3.solve();
+
+    double pvars[2];
+
+    for (size_t x = 0; x < img1.width(); x++)
+    {
+        for (size_t y = 0; y < img1.height(); y++)
         {
-            auto pkts = vcid_demuxer.work(cadu);
+            size_t x2_2, y2_2;
+            spline_roll_pitch_ch2.get_point(x, x, pvars);
+            x2_2 = x - pvars[0];
+            y2_2 = y - pvars[1];
 
-            for (auto pkt : pkts)
-            {
-                printf("APID %d \n", pkt.header.apid);
-                if (pkt.header.apid == 1031)
-                {
-                    // 1027 ?
-                    // 1028 ?
-                    // 1031 !!!!!
-                    // 1032 !!!!!
+            if (x2_2 < 0 || y2_2 < 0 || x2_2 >= img1.width() || y2_2 >= img1.height())
+                continue;
 
-                    //  printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
+            size_t x2_3, y2_3;
+            spline_roll_pitch_ch3.get_point(x, x, pvars);
+            x2_3 = x - pvars[0];
+            y2_3 = y - pvars[1];
 
-                    pkt.payload.resize(1000);
+            if (x2_3 < 0 || y2_3 < 0 || x2_3 >= img1.width() || y2_3 >= img1.height())
+                continue;
 
-                    test_t.write((char *)pkt.header.raw, 6);
-                    test_t.write((char *)pkt.payload.data(), pkt.payload.size());
-                }
-            }
+            imgf.set(0, x, y, img2.get(0, x2_2, y2_2)); // img3.get(0, x2_3, y2_3));
+            imgf.set(1, x, y, img3.get(0, x2_3, y2_3)); // img2.get(0, x2_2, y2_2));
+            imgf.set(2, x, y, img1.get(0, x, y));
         }
     }
+
+    logger->info("Saving");
+    image::save_img(imgf, argv[4]);
 }

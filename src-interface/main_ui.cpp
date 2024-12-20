@@ -15,6 +15,7 @@
 #include "status_logger_sink.h"
 
 #include "imgui/implot/implot.h"
+#include "imgui/implot3d/implot3d.h"
 
 // #define ENABLE_DEBUG_MAP
 #ifdef ENABLE_DEBUG_MAP
@@ -42,6 +43,7 @@ namespace satdump
     void initMainUI()
     {
         ImPlot::CreateContext();
+        ImPlot3D::CreateContext();
 
         audio::registerSinks();
         offline::setup();
@@ -201,6 +203,7 @@ namespace satdump
             {
                 ImGui::ShowDemoWindow();
                 ImPlot::ShowDemoWindow();
+                ImPlot3D::ShowDemoWindow();
             }
         }
 
