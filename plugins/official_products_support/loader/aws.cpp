@@ -146,10 +146,9 @@ namespace satdump
                 string_stream << std::setfill('0') << std::setw(2) << timeinfo_struct.tm_hour;
             }
 
-            for (int hour = 0; hour < 24; hour++)
-                queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
-                    std::string("?list-type=2&prefix=AMI%2FL1B%2F" + aws_options[aws_selected_dataset].pathid +
-                    "%2F" + yearmonth + "%2F" + date + "%2F" + std::to_string(hour)), &ArchiveLoader::parseGK2ATimestamp);
+            queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
+                std::string("?list-type=2&prefix=AMI%2FL1B%2F" + aws_options[aws_selected_dataset].pathid +
+                "%2F" + yearmonth + "%2F" + date), &ArchiveLoader::parseGK2ATimestamp);
         }
         catch (std::exception &e)
         {
@@ -213,20 +212,9 @@ namespace satdump
                 std::stringstream().swap(string_stream);
             }
 
-            for (int hour = 0; hour < 24; hour++)
-            {
-                for (int min = 0; min < 60; min += 10)
-                {
-                    string_stream << std::setfill('0') << std::setw(2) << hour << std::setw(2) << min;
-                    std::string hourminute = string_stream.str();
-                    std::stringstream().swap(string_stream);
-
-                    queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
-                        std::string("?list-type=2&prefix=" + aws_options[aws_selected_dataset].pathid +
-                            "%2F" + year + "%2F" + month + "%2F" + date + "%2F" + hourminute),
-                        &ArchiveLoader::parseHimawariTimestamp);
-                }
-            }
+            queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
+                std::string("?list-type=2&prefix=" + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" + month + "%2F" + date),
+                &ArchiveLoader::parseHimawariTimestamp);
         }
         catch (std::exception& e)
         {
