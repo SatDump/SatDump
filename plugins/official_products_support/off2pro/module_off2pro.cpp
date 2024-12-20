@@ -12,6 +12,7 @@
 
 #include "../nc2pro/goesr_abi.h"
 #include "../nc2pro/gk2a_ami.h"
+#include "../hsd2pro/himawari_ahi.h"
 
 namespace off2pro
 {
@@ -58,6 +59,14 @@ namespace off2pro
                 nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
             else
                 logger->error("Unknown .nc file type!");
+        }
+        else if (source_off_path.extension() == ".bz2")
+        {
+            std::string prefix = source_off_path.stem().string().substr(0, 4);
+            if (prefix == "HS_H")
+                hsd2pro::process_himawari_ahi(source_off_file, pro_output_file, &progress);
+            else
+                logger->error("Unknown .bz2 file type!");
         }
         // Otherwise, for now assume it's a .nat
         else

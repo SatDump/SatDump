@@ -2932,6 +2932,18 @@
                 "handler": "image_handler",
                 "name": "AHI",
                 "rgb_composites": {
+                    "AHI Visible False Color": {
+                        "equation": "cch3^0.45454545454,(cch2^0.45454545454)*0.93+(cch4^0.45454545454)*0.07,cch1^0.45454545454",
+                        "draw_map_overlay": true,
+                        "borders_color": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "calib_cfg": {
+                        },
+                        "autogen": true
+                    },
                     "AHI False Color (WIP)": {
                         "channels": "ch3, ch13",
                         "cpp": "goes_abi_false_color",

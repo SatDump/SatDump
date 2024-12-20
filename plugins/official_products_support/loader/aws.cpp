@@ -10,7 +10,7 @@
 
 namespace satdump
 {
-    void ArchiveLoader::queryAWS(std::string url_host, std::string url_path, std::vector<AwsElement>& aws_list, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &))
+    void ArchiveLoader::queryAWS(std::string url_host, std::string url_path, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &))
     {
         std::string url_req = url_host + url_path;
         std::string result;
@@ -33,22 +33,7 @@ namespace satdump
                 time_t timestamp = 0;
                 std::string channel;
                 (this->*parseTimestamp)(stem, timestamp, channel);
-
-                std::string timestampstr = timestamp_to_string(timestamp);
-                //   printf("New File %s - Channel %d\n", timestampstr.c_str(), channel);
-
-                bool existed = false;
-                for (auto &v : aws_list)
-                {
-                    if (v.timestamp == timestampstr)
-                    {
-                        v.channels.insert_or_assign(channel, url_host + path);
-                        existed = true;
-                        break;
-                    }
-                }
-                if (!existed)
-                    aws_list.push_back({ timestampstr, {{channel, url_host + path}} });
+                aws_list[timestamp_to_string(timestamp)].insert(url_host + path);
             }
 
             // Continuation
@@ -111,7 +96,7 @@ namespace satdump
 
             queryAWS(std::string("https://noaa-") + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/",
                 std::string("?list-type=2&prefix=") + aws_options[aws_selected_dataset].pathid + "%2F" + std::to_string(year) + "%2F" +
-                std::to_string(dofy), aws_list, &ArchiveLoader::parseGOESTimestamp);
+                std::to_string(dofy), &ArchiveLoader::parseGOESTimestamp);
         }
         catch (std::exception &e)
         {
@@ -164,12 +149,75 @@ namespace satdump
             for (int hour = 0; hour < 24; hour++)
                 queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
                     std::string("?list-type=2&prefix=AMI%2FL1B%2F" + aws_options[aws_selected_dataset].pathid +
-                    "%2F" + yearmonth + "%2F" + date + "%2F" + std::to_string(hour)),
-                    aws_list, &ArchiveLoader::parseGK2ATimestamp);
+                    "%2F" + yearmonth + "%2F" + date + "%2F" + std::to_string(hour)), &ArchiveLoader::parseGK2ATimestamp);
         }
         catch (std::exception &e)
         {
             logger->error("Error updating GK-2A Sector list! %s", e.what());
+        }
+    }
+
+    void ArchiveLoader::parseHimawariTimestamp(std::string filename, time_t &timestamp, std::string &channel)
+    {
+        std::tm timeS;
+        int channel_int;
+
+        memset(&timeS, 0, sizeof(std::tm));
+        if (sscanf(filename.c_str(), "HS_H%*d_%4d%2d%2d_%2d%2d_B%2d_%*4c_R%*2d_S%*4d.DAT",
+            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &channel_int) == 6)
+        {
+            channel = std::to_string(channel_int);
+            timeS.tm_year -= 1900;
+            timeS.tm_mon--;
+
+            timestamp = timegm(&timeS);
+        }
+    }
+
+    void ArchiveLoader::updateHimawariAWS()
+    {
+        try
+        {
+            aws_list.clear();
+
+            std::string year, month, date;
+            std::stringstream string_stream;
+            {
+                time_t tttime = request_time.get();
+                struct tm timeinfo_struct;
+#ifdef _WIN32
+                memcpy(&timeinfo_struct, gmtime(&tttime), sizeof(struct tm));
+#else
+                gmtime_r(&tttime, &timeinfo_struct);
+#endif
+
+                year = std::to_string(timeinfo_struct.tm_year + 1900);
+                string_stream << std::setfill('0') << std::setw(2) << timeinfo_struct.tm_mon + 1;
+                month = string_stream.str();
+                std::stringstream().swap(string_stream);
+                string_stream << std::setfill('0') << std::setw(2) << timeinfo_struct.tm_mday;
+                date = string_stream.str();
+                std::stringstream().swap(string_stream);
+            }
+
+            for (int hour = 0; hour < 24; hour++)
+            {
+                for (int min = 0; min < 60; min += 10)
+                {
+                    string_stream << std::setfill('0') << std::setw(2) << hour << std::setw(2) << min;
+                    std::string hourminute = string_stream.str();
+                    std::stringstream().swap(string_stream);
+
+                    queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
+                        std::string("?list-type=2&prefix=" + aws_options[aws_selected_dataset].pathid +
+                            "%2F" + year + "%2F" + month + "%2F" + date + "%2F" + hourminute),
+                        &ArchiveLoader::parseHimawariTimestamp);
+                }
+            }
+        }
+        catch (std::exception& e)
+        {
+            logger->error("Error updating Himawari Sector list! %s", e.what());
         }
     }
 
@@ -215,10 +263,10 @@ namespace satdump
             for (auto &str : aws_list)
             {
                 ImGui::TableNextColumn();
-                ImGui::Text("%s", str.timestamp.c_str());
+                ImGui::Text("%s", str.first.c_str());
 
                 ImGui::TableNextColumn();
-                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.timestamp).c_str()))
+                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.first).c_str()))
                 {
                     auto func = [this, str](int)
                     {
@@ -226,13 +274,13 @@ namespace satdump
                         {
                             std::string l_download_path;
                             bool success = true;
-                            for (auto &c : str.channels)
+                            for (auto &c : str.second)
                             {
                                 std::string download_path = products_download_and_process_directory + "/" +
-                                                            std::filesystem::path(c.second).stem().string() +
-                                                            std::filesystem::path(c.second).extension().string();
+                                    std::filesystem::path(c).stem().string() +
+                                    std::filesystem::path(c).extension().string();
 
-                                if (file_downloader.download_file(c.second, download_path, "") == 1)
+                                if (file_downloader.download_file(c, download_path, "") == 1)
                                 {
                                     success = false;
                                     break;

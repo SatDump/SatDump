@@ -15,12 +15,6 @@ namespace satdump
         widgets::FileDownloaderWidget file_downloader;
 
     private: // AWS
-        struct AwsElement
-        {
-            std::string timestamp;
-            std::map<std::string, std::string> channels; // Channel, URL
-        };
-
         struct AwsOptions
         {
             std::string name;
@@ -48,19 +42,25 @@ namespace satdump
             {"GOES-19 Mesoscale 2", "goes19", "ABI-L1b-RadM", &ArchiveLoader::updateGOESRAWS},
             {"GK-2A Full Disk", "gk2a-pds", "FD", &ArchiveLoader::updateGK2AAWS},
             {"GK-2A Local Area", "gk2a-pds", "LA", &ArchiveLoader::updateGK2AAWS},
+            {"Himawari-9 Full Disk", "himawari9", "AHI-L1b-FLDK", &ArchiveLoader::updateHimawariAWS},
+            {"Himawari-9 Japan", "himawari9", "AHI-L1b-Japan", &ArchiveLoader::updateHimawariAWS},
+            {"Himawari-9 Target", "himawari9", "AHI-L1b-Target", &ArchiveLoader::updateHimawariAWS}
         };
 
         int aws_selected_dataset = 0;
-        std::vector<AwsElement> aws_list;
+        std::map<std::string, std::set<std::string>> aws_list; //Timestamp, URL Set
 
         void renderAWS(ImVec2 wsize);
-        void queryAWS(std::string url_host, std::string url_path, std::vector<AwsElement> &aws_list, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &));
+        void queryAWS(std::string url_host, std::string url_path, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &));
 
         void parseGOESTimestamp(std::string filename, time_t &timestamp, std::string &channel);
         void updateGOESRAWS();
 
         void parseGK2ATimestamp(std::string filename, time_t &timestamp, std::string &channel);
         void updateGK2AAWS();
+
+        void parseHimawariTimestamp(std::string filename, time_t &timestamp, std::string &channel);
+        void updateHimawariAWS();
 
     private: // EUMETSAT
         int eumetsat_selected_dataset = 0;
