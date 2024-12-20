@@ -162,15 +162,28 @@ namespace satdump
         std::tm timeS;
         int channel_int;
 
+        char subtime[3] = { 0 };
+        char region[3] = { 0 };
+
         memset(&timeS, 0, sizeof(std::tm));
-        if (sscanf(filename.c_str(), "HS_H%*d_%4d%2d%2d_%2d%2d_B%2d_%*4c_R%*2d_S%*4d.DAT",
-            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &channel_int) == 6)
+        if (sscanf(filename.c_str(), "HS_H%*d_%4d%2d%2d_%2d%2d_B%2d_%2c%2c_R%*2d_S%*4d.DAT",
+            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &channel_int, region, subtime) == 8)
         {
             channel = std::to_string(channel_int);
             timeS.tm_year -= 1900;
             timeS.tm_mon--;
-
             timestamp = timegm(&timeS);
+
+            // Himawari does not have the actual time listed in the file name - it is rounded to the last 10 minutes
+            // Estimate the correct time
+            int subtime_int = strtol(subtime, nullptr, 10);
+            if (subtime_int != 0)
+            {
+                if (region[0] == 'J')
+                    timestamp += (subtime_int - 1) * 150;
+                else
+                    timestamp += subtime_int * 150;
+            }
         }
     }
 

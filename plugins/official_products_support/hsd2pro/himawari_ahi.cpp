@@ -53,6 +53,7 @@ namespace hsd2pro
         uint8_t *decomp_dest = new uint8_t[buffer_size];
         int bz2_result;
 
+        // Decompress
         do
         {
             dest_length = buffer_size - dest_offset;
@@ -63,8 +64,10 @@ namespace hsd2pro
             dest_offset += dest_length;
         } while (bz2_result == 0 && data.size() > source_offset);
 
-        std::vector<uint8_t>().swap(data); //Free up memory
+        //Free up memory
+        std::vector<uint8_t>().swap(data);
 
+        // Process if decompression was successful
         if (bz2_result == BZ_OK)
         {
             // Load starting offset of all 12 HSD blocks
@@ -136,6 +139,7 @@ namespace hsd2pro
                 image_out.header_parsed = true;
             }
 
+            // Get the image itself
             for (size_t i = 0; i < num_columns * num_lines_per_segment; i++)
             {
                 uint16_t px_val = decomp_dest[block_offsets[HSD_DATA_BLOCK] + (i * 2) + 1] << 8 | decomp_dest[block_offsets[HSD_DATA_BLOCK] + (i * 2)];
@@ -145,6 +149,7 @@ namespace hsd2pro
             }
         }
 
+        // Handle errors on decompression
         else if (bz2_result == BZ_MEM_ERROR)
             logger->error("Bzip2 Memory Error!");
         else if (bz2_result == BZ_OUTBUFF_FULL)
