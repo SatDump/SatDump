@@ -266,7 +266,7 @@ namespace meteor
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                 {
-                    msumr_images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
+                    msumr_images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, {}, 8 });
                     lrpt_channels |= 1 << i;
                     nlohmann::json channel_views = nlohmann::json::array();
                     channel_views[0] = nlohmann::json::array();
@@ -298,6 +298,7 @@ namespace meteor
 
             createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels);
             msumr_products.images.swap(msumr_images);
+            msumr_products.set_timestamps(msureader.timestamps);
             msumr_products.save(directory);
             msumr_products.images.clear(); // Free up memory
 
@@ -359,8 +360,9 @@ namespace meteor
                 {
                     image::Image img = msureader.getChannel(i, max_fill_lines);
                     if (img.size() > 0)
-                        filled_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, msureader.timestamps, 8});
+                        filled_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, {}, 8});
                 }
+                filled_products.set_timestamps(msureader.timestamps);
                 filled_products.save(fill_directory);
                 dataset.products_list.push_back("MSU-MR (Filled)");
             }
