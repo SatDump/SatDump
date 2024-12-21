@@ -146,18 +146,37 @@ void AaroniaSource::start()
 {
     DSPSampleSource::start();
 
-    AARTSAAPI_Open(&aaronia_handle);
+    if (AARTSAAPI_Open(&aaronia_handle) != AARTSAAPI_OK)
+        throw satdump_exception("Could not open AARTSAAPI handle!");
 
     if (AARTSAAPI_RescanDevices(&aaronia_handle, 2000) != AARTSAAPI_OK)
         throw satdump_exception("Could not scan for Aaronia Devices!");
 
-    // if (AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", 0, &aaronia_dinfo) != AARTSAAPI_OK)
-    for (uint64_t i = 0; AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6eco", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
-        goto got_device;
-    throw satdump_exception("Could not enum Aaronia Devices!");
-got_device:
+    bool foundDevice = false;
+    std::wstring device_type;
 
-    if (AARTSAAPI_OpenDevice(&aaronia_handle, &aaronia_device, L"spectranv6eco/raw", aaronia_dinfo.serialNumber) != AARTSAAPI_OK)
+    // Try to find the ECO first
+    for (uint64_t i = 0; !foundDevice && AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6eco", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
+    {
+        device_type  = L"spectranv6eco";
+        foundDevice  = true;
+    }
+    // If no ECO was found we try the PLUS next
+    if (!foundDevice)
+    {
+        for (uint64_t i = 0; !foundDevice && AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
+        {
+            device_type = L"spectranv6";
+            foundDevice = true;
+        }
+    }
+    // No ECO and no PLUS found
+    if (!foundDevice)
+        throw satdump_exception("Could not find any Aaronia device (Spectran V6 Eco nor Spectran V6 Plus)!");
+
+    std::wstring devString = device_type + L"/raw";
+
+    if (AARTSAAPI_OpenDevice(&aaronia_handle, &aaronia_device, devString.c_str(), aaronia_dinfo.serialNumber) != AARTSAAPI_OK)
         throw satdump_exception("Could not open Aaronia Device!");
 
     is_started = true;
@@ -348,18 +367,30 @@ std::vector<dsp::SourceDescriptor> AaroniaSource::getAvailableSources()
     std::vector<dsp::SourceDescriptor> results;
 
     AARTSAAPI_Handle h;
-    AARTSAAPI_Open(&h);
+    if (AARTSAAPI_Open(&h) != AARTSAAPI_OK){
+        logger->error("Could not open AARTSAAPI handle");
+        return results;
+    }
 
     if (AARTSAAPI_RescanDevices(&h, 2000) != AARTSAAPI_OK)
         logger->error("Could not scan for Aaronia Devices");
 
     AARTSAAPI_DeviceInfo dinfo;
 
+    // Enumerate ECO first
     for (uint64_t i = 0; AARTSAAPI_EnumDevice(&h, L"spectranv6eco", i, &dinfo) == AARTSAAPI_OK; i++)
     {
         std::stringstream ss;
+        ss << std::hex << dinfo.serialNumber; 
+        results.push_back({"aaronia", "Spectran V6 ECO " + ss.str(), std::to_string(i)});
+    }
+
+    // Then enumerate PLUS next
+    for (uint64_t i = 0; AARTSAAPI_EnumDevice(&h, L"spectranv6", i, &dinfo) == AARTSAAPI_OK; i++)
+    {
+        std::stringstream ss;
         ss << std::hex << dinfo.serialNumber;
-        results.push_back({"aaronia", "Spectran V6 " + ss.str(), std::to_string(i)});
+        results.push_back({"aaronia", "Spectran V6 PLUS" + ss.str(), std::to_string(i)});
     }
 
     AARTSAAPI_Close(&h);
