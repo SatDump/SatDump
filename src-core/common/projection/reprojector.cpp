@@ -70,16 +70,21 @@ namespace satdump
 
         image::Image reproject(ReprojectionOperation &op, float *progress)
         {
-            image::Image result_img;
-
-            if (op.img.size() == 0)
+            if (op.img->size() == 0)
                 throw satdump_exception("Can't reproject an empty image!");
-            if (!image::has_metadata_proj_cfg(op.img))
+            if (!image::has_metadata_proj_cfg(*op.img))
                 throw satdump_exception("Can't reproject an image with no proj config!");
 
-            if (op.img.depth() != 16)
-                op.img = op.img.to16bits(); // TODOIMG for now can only project 16-bits
-            result_img.init(16, op.output_width, op.output_height, 4);
+            // TODOIMG for now can only project 16-bits
+            image::Image op_img16;
+            if (op.img->depth() != 16)
+            {
+                op_img16 = op.img->to16bits();
+                image::set_metadata(op_img16, image::get_metadata(*op.img));
+                op.img = &op_img16;
+            }
+
+            image::Image result_img(16, op.output_width, op.output_height, 4);
 
             // Attempt to init target proj
             proj::projection_t trg_proj;
@@ -104,7 +109,7 @@ namespace satdump
             bool src_proj_err = false;
             try
             {
-                src_proj = image::get_metadata_proj_cfg(op.img);
+                src_proj = image::get_metadata_proj_cfg(*op.img);
             }
             catch (std::exception &)
             {
@@ -122,7 +127,7 @@ namespace satdump
                             continue;
                         if (proj::projection_perform_fwd(&src_proj, lon, lat, &x2, &y2))
                             continue;
-                        transposePixel(op.img, result_img, x2, y2, x, y);
+                        transposePixel(*op.img, result_img, x2, y2, x, y);
                     }
                     if (progress != nullptr)
                         *progress = float(x) / float(result_img.width());
@@ -136,7 +141,7 @@ namespace satdump
                 { // This is garbage, but robust to noise garbage!
                     logger->info("Using old algorithm...!");
 
-                    auto src_proj_cfg = image::get_metadata_proj_cfg(op.img);
+                    auto src_proj_cfg = image::get_metadata_proj_cfg(*op.img);
 
                     // Init
                     std::function<std::pair<int, int>(float, float, int, int)> projectionFunction = setupProjectionFunction(result_img.width(),
@@ -167,13 +172,13 @@ namespace satdump
                         std::shared_ptr<SatelliteProjection> sat_proj_src = get_sat_proj(src_proj_cfg, tle, timestamps);
                         bool direction = false;
 
-                        double ratio_x = round((double)sat_proj_src->img_size_x / (double)op.img.width());
-                        double ratio_y = round((double)sat_proj_src->img_size_y / (double)op.img.height());
+                        double ratio_x = round((double)sat_proj_src->img_size_x / (double)op.img->width());
+                        double ratio_y = round((double)sat_proj_src->img_size_y / (double)op.img->height());
 
-                        for (int currentScan = 0; currentScan < (int)op.img.height(); currentScan++)
+                        for (int currentScan = 0; currentScan < (int)op.img->height(); currentScan++)
                         {
                             // Now compute each pixel's lat / lon and plot it
-                            for (double px = 0; px < op.img.width() - 1; px += 1)
+                            for (double px = 0; px < op.img->width() - 1; px += 1)
                             {
                                 geodetic::geodetic_coords_t coords1, coords2, coords3;
                                 bool ret1 = sat_proj_src->get_position(px * ratio_x, currentScan * ratio_y, coords1);
@@ -189,18 +194,18 @@ namespace satdump
                                 std::pair<float, float> map_cc2 = projectionFunction(coords2.lat, coords2.lon, result_img.height(), result_img.width());
 
                                 std::vector<double> color = {0, 0, 0, 0};
-                                if (op.img.channels() >= 3)
+                                if (op.img->channels() >= 3)
                                 {
-                                    color[0] = op.img.getf(0, currentScan * op.img.width() + int(px));
-                                    color[1] = op.img.getf(1, currentScan * op.img.width() + int(px));
-                                    color[2] = op.img.getf(2, currentScan * op.img.width() + int(px));
+                                    color[0] = op.img->getf(0, currentScan * op.img->width() + int(px));
+                                    color[1] = op.img->getf(1, currentScan * op.img->width() + int(px));
+                                    color[2] = op.img->getf(2, currentScan * op.img->width() + int(px));
                                     color[3] = 1;
                                 }
                                 else
                                 {
-                                    color[0] = op.img.getf(currentScan * op.img.width() + int(px));
-                                    color[1] = op.img.getf(currentScan * op.img.width() + int(px));
-                                    color[2] = op.img.getf(currentScan * op.img.width() + int(px));
+                                    color[0] = op.img->getf(currentScan * op.img->width() + int(px));
+                                    color[1] = op.img->getf(currentScan * op.img->width() + int(px));
+                                    color[2] = op.img->getf(currentScan * op.img->width() + int(px));
                                     color[3] = 1;
                                 }
 
@@ -225,7 +230,7 @@ namespace satdump
                             }
 
                             if (progress != nullptr)
-                                *progress = float(currentScan) / float(op.img.height());
+                                *progress = float(currentScan) / float(op.img->height());
                             // logger->critical("%d/%d", currentScan, image.height());
                         }
                     }
@@ -233,11 +238,11 @@ namespace satdump
                 else
                 {
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(op.img), op.img.width(), op.img.height());
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(*op.img), op.img->width(), op.img->height());
                     operation.input_image = op.img;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
-                    int l_width = std::max<int>(op.img.width(), 512) * 10;
+                    int l_width = std::max<int>(op.img->width(), 512) * 10;
                     operation.output_width = l_width;
                     operation.output_height = l_width / 2;
 
@@ -327,7 +332,7 @@ namespace satdump
                 }
 
                 // Check for GCPs near the poles. If any is close, it means this segment needs to be handled as a pole!
-                for (auto gcp : gcps)
+                for (auto &gcp : gcps)
                 {
                     auto south_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(-90, 0, 0));
                     auto north_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(90, 0, 0));

@@ -18,7 +18,8 @@ namespace meteor
     namespace instruments
     {
         MeteorInstrumentsDecoderModule::MeteorInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : ProcessingModule(input_file, output_file_hint, parameters),
+            bism_reader(getValueOrDefault<int>(parameters["year_override"], -1))
         {
         }
 
@@ -40,22 +41,11 @@ namespace meteor
             def::SimpleDeframer mtvza_deframer2(0x38fb456a, 32, 248 * 8, 0, false);
             def::SimpleDeframer bism_deframer(0x71DE2CD8, 32, 88 * 8, 0, false);
 
-            time_t current_time = d_parameters.contains("start_timestamp")
-                                      ? (d_parameters["start_timestamp"].get<double>() != -1
-                                             ? d_parameters["start_timestamp"].get<double>()
-                                             : time(0))
-                                      : time(0);
-
-            time_t currentDay = current_time + 3 * 3600.0;       // Moscow Time
-            time_t dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
-
             std::vector<double> msumr_timestamps;
             std::vector<uint8_t> msumr_ids;
 
             nlohmann::json msu_mr_telemetry;
             nlohmann::json msu_mr_telemetry_calib;
-
-            // std::ofstream file_out("idk_bism.bin");
 
             while (!data_in.eof())
             {
@@ -65,6 +55,20 @@ namespace meteor
                 std::vector<std::vector<uint8_t>> msumr_frames;
                 std::vector<std::vector<uint8_t>> mtvza_frames, mtvza_frames2;
                 std::vector<std::vector<uint8_t>> bism_frames;
+
+                // BIS-M Deframing
+                {
+                    std::vector<uint8_t> bism_data;
+                    bism_data.insert(bism_data.end(), &cadu[7 - 1], &cadu[7 - 1] + 4);
+                    bism_data.insert(bism_data.end(), &cadu[263 - 1], &cadu[263 - 1] + 4);
+                    bism_data.insert(bism_data.end(), &cadu[519 - 1], &cadu[519 - 1] + 4);
+                    bism_data.insert(bism_data.end(), &cadu[775 - 1], &cadu[775 - 1] + 4);
+                    bism_frames = bism_deframer.work(bism_data.data(), bism_data.size());
+                }
+
+                // BIS-M Processing
+                for (std::vector<uint8_t> &frame : bism_frames)
+                    bism_reader.work(frame.data());
 
                 // MSU-MR Deframing
                 {
@@ -80,12 +84,22 @@ namespace meteor
                 for (std::vector<uint8_t> msumr_frame : msumr_frames)
                 {
                     msumr_reader.work(msumr_frame.data());
-                    double timestamp = dayValue + (msumr_frame[8]) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
-                    timestamp -= 3 * 3600.0;
-                    msumr_timestamps.push_back(timestamp);
-                    mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
-                    msumr_ids.push_back(msumr_frame[12] >> 4);
 
+                    time_t bism_day = bism_reader.get_last_day_moscow();
+                    if (bism_day != 0)
+                    {
+                        double timestamp = bism_day + (msumr_frame[8]) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
+                        timestamp -= 3 * 3600.0;
+                        msumr_timestamps.push_back(timestamp);
+                        mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
+                    }
+                    else
+                    {
+                        msumr_timestamps.push_back(-1);
+                        mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = -1;
+                    }
+
+                    msumr_ids.push_back(msumr_frame[12] >> 4);
                     parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_timestamps.size() - 1, msumr_frame.data());
                 }
 
@@ -105,22 +119,6 @@ namespace meteor
                     mtvza_reader.work(frame.data());
                 for (std::vector<uint8_t> &frame : mtvza_frames2)
                     mtvza_reader2.work(frame.data());
-
-                // BIS-M Deframing
-                {
-                    std::vector<uint8_t> bism_data;
-                    bism_data.insert(bism_data.end(), &cadu[7 - 1], &cadu[7 - 1] + 4);
-                    bism_data.insert(bism_data.end(), &cadu[263 - 1], &cadu[263 - 1] + 4);
-                    bism_data.insert(bism_data.end(), &cadu[519 - 1], &cadu[519 - 1] + 4);
-                    bism_data.insert(bism_data.end(), &cadu[775 - 1], &cadu[775 - 1] + 4);
-                    bism_frames = bism_deframer.work(bism_data.data(), bism_data.size());
-                }
-
-                // BIS-M Processing
-                // for (std::vector<uint8_t> &frame : bism_frames)
-                {
-                    // TODO
-                }
 
                 progress = data_in.tellg();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -301,6 +299,23 @@ namespace meteor
                 mtvza_status = DONE;
             }
 
+            // BIS-M
+            {
+                logger->info("----------- BIS-M");
+                logger->info("Frames : %d", bism_reader.get_lines());
+
+#ifdef BISM_FULL_DUMP
+                bism_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/BIS-M";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                bism_reader.save(directory);
+#endif
+                bism_status = DONE;
+            }
+
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
@@ -336,6 +351,14 @@ namespace meteor
                                        : mtvza_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mtvza_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("BIS-M");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(style::theme.green, "%d", bism_reader.get_lines());
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(bism_status);
 
                 ImGui::EndTable();
             }

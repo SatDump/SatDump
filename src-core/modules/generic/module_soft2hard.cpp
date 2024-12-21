@@ -76,7 +76,7 @@ namespace generic
 
                     if (bytes_in_buf == 256)
                     {
-                         diff.decode(byte_buffer, 256);
+                        // diff.decode(byte_buffer, 256);
                         if (output_data_type == DATA_FILE)
                             data_out.write((char *)byte_buffer, 256);
                         else

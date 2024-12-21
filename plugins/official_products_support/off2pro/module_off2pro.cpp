@@ -10,6 +10,10 @@
 #include "../nc2pro/sc3_olci.h"
 #include "../nc2pro/sc3_slstr.h"
 
+#include "../nc2pro/goesr_abi.h"
+#include "../nc2pro/gk2a_ami.h"
+#include "../hsd2pro/himawari_ahi.h"
+
 namespace off2pro
 {
     Off2ProModule::Off2ProModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
@@ -23,6 +27,7 @@ namespace off2pro
         std::string pro_output_file = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
 
         filesize = getFilesize(source_off_file);
+        std::filesystem::path source_off_path(source_off_file);
 
         std::vector<std::string> product_paths;
 
@@ -45,6 +50,24 @@ namespace off2pro
             else
                 logger->error("Unknown EUMETSAT file type! " + eum_id);
         }
+        else if (source_off_path.extension() == ".nc")
+        {
+            std::string prefix = source_off_path.stem().string().substr(0, 14);
+            if (prefix == "OR_ABI-L1b-Rad")
+                nc2pro::process_goesr_abi(source_off_file, pro_output_file, &progress);
+            else if(prefix == "gk2a_ami_le1b_")
+                nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
+            else
+                logger->error("Unknown .nc file type!");
+        }
+        else if (source_off_path.extension() == ".bz2")
+        {
+            std::string prefix = source_off_path.stem().string().substr(0, 4);
+            if (prefix == "HS_H")
+                hsd2pro::process_himawari_ahi(source_off_file, pro_output_file, &progress);
+            else
+                logger->error("Unknown .bz2 file type!");
+        }
         // Otherwise, for now assume it's a .nat
         else
         {
@@ -52,14 +75,14 @@ namespace off2pro
             std::vector<uint8_t> nat_file;
             {
                 std::ifstream input_file(source_off_file, std::ios::binary);
-                uint8_t byte;
-                while (!input_file.eof())
-                {
-                    input_file.read((char *)&byte, 1);
-                    nat_file.push_back(byte);
-                    progress++;
-                }
+                input_file.seekg(0, std::ios::end);
+                const size_t nat_size = input_file.tellg();
+                nat_file.resize(nat_size);
+                input_file.seekg(0, std::ios::beg);
+                input_file.read((char*)&nat_file[0], nat_size);
+                input_file.close();
             }
+            progress = 1;
 
             char *identifier = (char *)&nat_file[0];
 

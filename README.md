@@ -46,7 +46,7 @@ Quick-Start :
 ```
 Usage : satdump [pipeline_id] [input_level] [input_file] [output_file_or_directory] [additional options as required]
 Extra options (examples. Any parameter used in modules can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/cu8] --dc_block --iq_swap
 Sample command :
 satdump metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format cs16
 ```
@@ -58,7 +58,7 @@ You can find a list of Satellite pipelines and their parameters [Here](https://d
 ```
 Usage : satdump live [pipeline_id] [output_file_or_directory] [additional options as required]
 Extra options (examples. Any parameter used in modules or sources can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/w8] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/w8] --dc_block --iq_swap
   --source [airspy/rtlsdr/etc] --gain 20 --bias
 As well as --timeout in seconds
 Sample command :
@@ -72,7 +72,7 @@ You can find a list of all SDR Options [Here](https://docs.satdump.org/sdr_optio
 ```
 Usage : satdump record [output_baseband (without extension!)] [additional options as required]
 Extra options (examples. Any parameter used in sources can be used here) :
-  --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8/w16] --dc_block --iq_swap
+  --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/cu8/w16] --dc_block --iq_swap
   --source [airspy/rtlsdr/etc] --gain 20 --bias
 As well as --timeout in seconds
 Sample command :
@@ -306,6 +306,10 @@ sudo make install
 ./satdump-ui
 ```
 
+### Raspberry Pi
+
+In case you are using RPi3 (any revision) and older. Run ```make -j1 ``` instead of ```make -j`nproc` ``` otherwise the system will crash.
+  
 ### Android
 
 On Android, the preferred source is F-Droid.

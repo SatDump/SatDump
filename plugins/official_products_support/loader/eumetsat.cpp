@@ -113,7 +113,7 @@ namespace satdump
                 //            saveJsonFile("test.json", respj);
                 if (respj.contains("products"))
                 {
-                    for (int i = 0; i < respj["products"].size(); i++)
+                    for (size_t i = 0; i < respj["products"].size(); i++)
                     {
                         auto &prod = respj["products"][i];
 
@@ -152,7 +152,7 @@ namespace satdump
 
         if (ImGui::BeginCombo("##archiveloader_dataset", eumetsat_products[eumetsat_selected_dataset].name.c_str()))
         {
-            for (int i = 0; i < eumetsat_products.size(); i++)
+            for (int i = 0; i < (int)eumetsat_products.size(); i++)
                 if (ImGui::Selectable(eumetsat_products[i].name.c_str(), eumetsat_selected_dataset == i))
                 {
                     eumetsat_selected_dataset = i;
@@ -164,12 +164,16 @@ namespace satdump
         if (ImGui::Button("Refresh##archiveloader_refresh"))
             updateEUMETSAT();
 
+        ImGui::TextUnformatted("Date: ");
+        ImGui::SameLine();
         request_time.draw();
         ImGui::SameLine();
         if (ImGui::Button("Current##archiveloader_setcurrenttime"))
             request_time.set(time(0));
 
-        ImGui::BeginChild("##archiveloader_subwindow", {wsize.x - 50 * ui_scale, wsize.y - 190 * ui_scale}, false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        float target_height = wsize.y - 260 * ui_scale;
+        ImGui::BeginChild("##archiveloader_subwindow", {ImGui::GetContentRegionAvail().x, target_height < 5 * ui_scale ? 5 * ui_scale : target_height },
+            false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
         if (ImGui::BeginTable("##archiveloadertable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableSetupColumn("##archiveloadertable_name", ImGuiTableColumnFlags_None);
@@ -218,7 +222,9 @@ namespace satdump
                         //logger->trace("\n%s\n", nat_link.c_str());
 
                         std::string download_path = products_download_and_process_directory + "/" + file_name;
-                        std::string process_path = products_download_and_process_directory + "/" + std::filesystem::path(file_name).stem().string();
+                        std::string process_path = (download_location && output_selection.isValid() ?
+                            output_selection.getPath() : products_download_and_process_directory) +
+                            "/" + std::filesystem::path(file_name).stem().string();
 
                         auto func = [this, nat_link, download_path, process_path](int)
                         {
@@ -249,7 +255,5 @@ namespace satdump
         ImGui::EndChild();
         if (should_disable)
             style::endDisabled();
-
-        file_downloader.render();
     }
 }

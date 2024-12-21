@@ -223,7 +223,7 @@ namespace metop
                 avhrr_products.set_calibration(avhrr_reader.calib_out);
                 for (int n = 0; n < 3; n++)
                 {
-                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
                     avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                 }
                 for (int c = 0; c < 6; c++)
@@ -424,18 +424,19 @@ namespace metop
                 logger->info("Lines (AMSU A1) : " + std::to_string(amsu_reader.linesA1));
                 logger->info("Lines (AMSU A2) : " + std::to_string(amsu_reader.linesA2));
 
+                amsu_reader.correlate();
+
                 satdump::ImageProducts amsu_products;
                 amsu_products.instrument_name = "amsu_a";
                 amsu_products.has_timestamps = true;
-                amsu_products.needs_correlation = true;
                 amsu_products.set_tle(satellite_tle);
                 amsu_products.bit_depth = 16;
                 amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                // amsu_products.set_timestamps(mhs_reader.timestamps);
+                amsu_products.set_timestamps(amsu_reader.common_timestamps);
                 amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
 
                 for (int i = 0; i < 15; i++)
-                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
+                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i)});
 
                 // calib
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));

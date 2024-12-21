@@ -9,7 +9,7 @@
 
 namespace nat2pro
 {
-    void decodeIASINat(std::vector<uint8_t> nat_file, std::string pro_output_file)
+    void decodeIASINat(std::vector<uint8_t> &nat_file, std::string pro_output_file)
     {
         int image_width = 60;
         std::vector<uint16_t> iasi_data[8700];

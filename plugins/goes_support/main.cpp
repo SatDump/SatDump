@@ -1,6 +1,7 @@
 #include "core/plugin.h"
 #include "logger.h"
 #include "core/module.h"
+#include "core/config.h"
 
 #include "goes/gvar/module_gvar_decoder.h"
 #include "goes/gvar/module_gvar_image_decoder.h"
@@ -15,6 +16,8 @@
 #include "geo_false_color.h"
 #include "geo_false_color_ir_merge.h"
 
+#include "goes/hrit/dcs/dcs_settings.h"
+
 class GOESSupport : public satdump::Plugin
 {
 public:
@@ -28,6 +31,8 @@ public:
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
         satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
+        satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
+        goes::hrit::initDcsConfig();
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -41,6 +46,11 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::GOESNSDDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::SDImageDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::instruments::GOESRInstrumentsDecoderModule);
+    }
+
+    static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
+    {
+        evt.plugin_config_handlers.push_back({"GOES HRIT DCS Parser", goes::hrit::renderDcsConfig, goes::hrit::saveDcsConfig });
     }
 
     // static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)

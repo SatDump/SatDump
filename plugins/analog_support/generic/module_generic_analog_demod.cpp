@@ -144,7 +144,7 @@ namespace generic_analog
                     work_buffer_float[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 65535 * 0.68, nout);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)work_buffer_float, 32767, nout);
 
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, nout, 1);
             if (enable_audio && play_audio)
@@ -172,7 +172,7 @@ namespace generic_analog
                     qua->output_stream->readBuf[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 0.68, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 32767, dat_size);
 
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
             if (enable_audio && play_audio)

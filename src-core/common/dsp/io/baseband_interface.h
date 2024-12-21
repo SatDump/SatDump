@@ -35,9 +35,10 @@ namespace dsp
         BasebandType format;
 
         // Buffers
-        int16_t *buffer_i16;
-        int8_t *buffer_i8;
-        uint8_t *buffer_u8;
+        int32_t *buffer_s32 = nullptr;
+        int16_t *buffer_s16 = nullptr;
+        int8_t *buffer_s8 = nullptr;
+        uint8_t *buffer_u8 = nullptr;
 
 #ifdef BUILD_ZIQ
         std::shared_ptr<ziq::ziq_reader> ziqReader;
@@ -50,16 +51,16 @@ namespace dsp
     public:
         BasebandReader()
         {
-            buffer_i16 = create_volk_buffer<int16_t>(STREAM_BUFFER_SIZE * 2);
-            buffer_i8 = create_volk_buffer<int8_t>(STREAM_BUFFER_SIZE * 2);
-            buffer_u8 = create_volk_buffer<uint8_t>(STREAM_BUFFER_SIZE * 2);
         }
 
         ~BasebandReader()
         {
-            volk_free(buffer_i16);
-            volk_free(buffer_i8);
-            volk_free(buffer_u8);
+            if (buffer_s8 != nullptr)
+                volk_free(buffer_s8);
+            if (buffer_s16 != nullptr)
+                volk_free(buffer_s16);
+            if (buffer_s32 != nullptr)
+                volk_free(buffer_s32);
         }
 
         // Set the file you want to work on
@@ -80,7 +81,53 @@ namespace dsp
                 is_rf64 |= wav::isValidRF64(wav::parseHeaderFromFileWav(file_path));
             }
 
-            this->format = format;
+            if (this->format != format)
+            {
+                // Free old buffer
+                if (this->format == CS_8 && buffer_s8 != nullptr)
+                {
+                    volk_free(buffer_s8);
+                    buffer_s8 = nullptr;
+                }
+                else if (this->format == CU_8 && buffer_u8 != nullptr)
+                {
+                    volk_free(buffer_u8);
+                    buffer_u8 = nullptr;
+                }
+                else if ((this->format == CS_16 || this->format == WAV_16) && buffer_s16 != nullptr)
+                {
+                    volk_free(buffer_s16);
+                    buffer_s16 = nullptr;
+                }
+                else if (this->format == CS_32 && buffer_s32 != nullptr)
+                {
+                    volk_free(buffer_s32);
+                    buffer_s32 = nullptr;
+                }
+#ifdef BUILD_ZIQ2
+                else if (this->format == ZIQ2 && buffer_s8 != nullptr)
+                {
+                    volk_free(buffer_s8);
+                    buffer_s8 = nullptr;
+                }
+#endif
+
+                // Alloc new buffer
+                if (format == CS_8)
+                    buffer_s8 = create_volk_buffer<int8_t>(STREAM_BUFFER_SIZE * 2);
+                else if (format == CU_8)
+                    buffer_u8 = create_volk_buffer<uint8_t>(STREAM_BUFFER_SIZE * 2);
+                else if (format == CS_16 || format == WAV_16)
+                    buffer_s16 = create_volk_buffer<int16_t>(STREAM_BUFFER_SIZE * 2);
+                else if (format == CS_32)
+                    buffer_s32 = create_volk_buffer<int32_t>(STREAM_BUFFER_SIZE * 2);
+#ifdef BUILD_ZIQ2
+                else if (format == ZIQ2)
+                    buffer_s8 = create_volk_buffer<int8_t>(STREAM_BUFFER_SIZE * 2);
+#endif
+                this->format = format;
+            }
+
             input_file = std::ifstream(file_path, std::ios::binary);
 
 #ifdef BUILD_ZIQ
@@ -126,15 +173,19 @@ namespace dsp
                 input_file.read((char *)output_buffer, buffer_size * sizeof(complex_t));
                 break;
 
-            case WAV_16:
-            case CS_16:
-                input_file.read((char *)buffer_i16, buffer_size * sizeof(int16_t) * 2);
-                volk_16i_s32f_convert_32f_u((float *)output_buffer, (const int16_t *)buffer_i16, 65535, buffer_size * 2);
+            case CS_32:
+                input_file.read((char*)buffer_s32, buffer_size * sizeof(int32_t) * 2);
+                volk_32i_s32f_convert_32f_u((float *)output_buffer, (const int32_t*)buffer_s32, 2147483647, buffer_size * 2);
+                break;
+
+            case WAV_16: case CS_16:
+                input_file.read((char*)buffer_s16, buffer_size * sizeof(int16_t) * 2);
+                volk_16i_s32f_convert_32f_u((float *)output_buffer, (const int16_t*)buffer_s16, 32767, buffer_size * 2);
                 break;
 
             case CS_8:
-                input_file.read((char *)buffer_i8, buffer_size * sizeof(int8_t) * 2);
-                volk_8i_s32f_convert_32f_u((float *)output_buffer, (const int8_t *)buffer_i8, 127, buffer_size * 2);
+                input_file.read((char *)buffer_s8, buffer_size * sizeof(int8_t) * 2);
+                volk_8i_s32f_convert_32f_u((float *)output_buffer, (const int8_t *)buffer_s8, 127, buffer_size * 2);
                 break;
 
             case CU_8:
@@ -222,6 +273,10 @@ namespace dsp
                 samplesize = sizeof(complex_t);
                 break;
 
+            case CS_32:
+                samplesize = sizeof(int32_t) * 2;
+                break;
+
             case WAV_16:
             case CS_16:
                 samplesize = sizeof(int16_t) * 2;
@@ -255,190 +310,6 @@ namespace dsp
                 return input_file.eof();
             else
                 return false;
-        }
-    };
-
-    class BasebandWriter
-    {
-    private:
-        std::mutex rec_mutex;
-
-        BasebandType d_sample_format;
-
-        std::ofstream output_file;
-
-        uint64_t current_size_out = 0;
-        uint64_t current_size_out_raw = 0;
-
-        int8_t *buffer_s8;
-        int16_t *buffer_s16;
-
-        int bit_depth = 0;
-
-#ifdef BUILD_ZIQ
-        ziq::ziq_cfg ziqcfg;
-        std::shared_ptr<ziq::ziq_writer> ziqWriter;
-#endif
-
-        float *mag_buffer = nullptr;
-
-        std::unique_ptr<WavWriter> wav_writer;
-
-        bool should_work = false;
-
-    public:
-        BasebandWriter()
-        {
-            buffer_s8 = create_volk_buffer<int8_t>(STREAM_BUFFER_SIZE * 2);
-            buffer_s16 = create_volk_buffer<int16_t>(STREAM_BUFFER_SIZE * 2);
-        }
-
-        ~BasebandWriter()
-        {
-            volk_free(buffer_s8);
-            volk_free(buffer_s16);
-            if (mag_buffer != nullptr)
-                volk_free(mag_buffer);
-        }
-
-        void set_output_sample_type(BasebandType sample_format)
-        {
-            d_sample_format = sample_format;
-        }
-
-        std::string start_recording(std::string path_without_ext, uint64_t samplerate, int depth = 0, bool override_filename = false) // Depth is only for compressed non-raw formats
-        {
-            rec_mutex.lock();
-
-            bit_depth = depth;
-
-            std::string finalt;
-            if (d_sample_format == CF_32)
-                finalt = path_without_ext + ".cf32";
-            else if (d_sample_format == CS_16)
-                finalt = path_without_ext + ".cs16";
-            else if (d_sample_format == CS_8)
-                finalt = path_without_ext + ".cs8";
-            else if (d_sample_format == WAV_16)
-                finalt = path_without_ext + ".wav";
-#ifdef BUILD_ZIQ
-            else if (d_sample_format == ZIQ)
-                finalt = path_without_ext + ".ziq";
-#endif
-#ifdef BUILD_ZIQ2
-            else if (d_sample_format == ZIQ2)
-                finalt = path_without_ext + ".ziq";
-#endif
-            if (override_filename)
-                finalt = path_without_ext;
-
-            current_size_out = 0;
-            current_size_out_raw = 0;
-
-            output_file = std::ofstream(finalt, std::ios::binary);
-
-            if (d_sample_format == WAV_16)
-            {
-                wav_writer = std::make_unique<WavWriter>(output_file);
-                wav_writer->write_header(samplerate, 2);
-            }
-
-#ifdef BUILD_ZIQ
-            if (d_sample_format == ZIQ)
-            {
-                ziqcfg.is_compressed = true;
-                ziqcfg.bits_per_sample = depth;
-                ziqcfg.samplerate = samplerate;
-                ziqcfg.annotation = "";
-
-                ziqWriter = std::make_shared<ziq::ziq_writer>(ziqcfg, output_file);
-            }
-#endif
-#ifdef BUILD_ZIQ2
-            if (d_sample_format == ZIQ2)
-            {
-                int sz = ziq2::ziq2_write_file_hdr((uint8_t *)buffer_s8, samplerate);
-                output_file.write((char *)buffer_s8, sz);
-
-                if (mag_buffer == nullptr)
-                    mag_buffer = create_volk_buffer<float>(STREAM_BUFFER_SIZE);
-            }
-#endif
-
-            should_work = true;
-            rec_mutex.unlock();
-
-            return finalt;
-        }
-
-        uint64_t get_written()
-        {
-            return current_size_out;
-        }
-
-        uint64_t get_written_raw()
-        {
-            return current_size_out_raw;
-        }
-
-        void stop_recording()
-        {
-            if (d_sample_format == WAV_16)
-                wav_writer->finish_header(get_written());
-
-            rec_mutex.lock();
-            should_work = false;
-            current_size_out = 0;
-            current_size_out_raw = 0;
-            output_file.close();
-            rec_mutex.unlock();
-        }
-
-        void feed_samples(complex_t *samples, int nsamples)
-        {
-            if (nsamples <= 0 || !should_work)
-                return;
-
-            rec_mutex.lock();
-            if (should_work)
-            {
-                if (d_sample_format == CF_32)
-                {
-                    output_file.write((char *)samples, nsamples * sizeof(complex_t));
-                    current_size_out += nsamples * sizeof(complex_t);
-                }
-                else if (d_sample_format == CS_16 || d_sample_format == WAV_16)
-                {
-                    volk_32f_s32f_convert_16i(buffer_s16, (float *)samples, 65535, nsamples * 2);
-                    output_file.write((char *)buffer_s16, nsamples * sizeof(int16_t) * 2);
-                    current_size_out += nsamples * sizeof(int16_t) * 2;
-                }
-                else if (d_sample_format == CS_8)
-                {
-                    volk_32f_s32f_convert_8i(buffer_s8, (float *)samples, 127, nsamples * 2);
-                    output_file.write((char *)buffer_s8, nsamples * sizeof(int8_t) * 2);
-                    current_size_out += nsamples * sizeof(int8_t) * 2;
-                }
-#ifdef BUILD_ZIQ
-                else if (d_sample_format == ZIQ)
-                {
-                    current_size_out += ziqWriter->write(samples, nsamples);
-                    current_size_out_raw += (ziqcfg.bits_per_sample / 4) * nsamples;
-                }
-#endif
-#ifdef BUILD_ZIQ2
-                else if (d_sample_format == ZIQ2)
-                {
-                    int sz = ziq2::ziq2_write_iq_pkt((uint8_t *)buffer_s8, samples, mag_buffer, nsamples, bit_depth);
-                    output_file.write((char *)buffer_s8, sz);
-                    current_size_out += sz;
-                }
-#endif
-
-                output_file.flush();
-            }
-
-            rec_mutex.unlock();
         }
     };
 }

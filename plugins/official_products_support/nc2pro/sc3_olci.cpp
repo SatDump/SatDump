@@ -2,9 +2,6 @@
 #include "sc3_olci.h"
 
 #include "common/utils.h"
-
-#include <hdf5.h>
-#include <H5LTpublic.h>
 #include "common/image/image.h"
 #include <filesystem>
 #include "logger.h"
@@ -17,25 +14,11 @@
 
 #include "nlohmann/json_utils.h"
 #include "resources.h"
+#include "hdf5_utils.h"
+#include <H5LTpublic.h>
 
 namespace nc2pro
 {
-    std::string hdf5_get_string_attr_FILE_fixed(hid_t &file, std::string attr)
-    {
-        std::string val;
-
-        if (file < 0)
-            return "";
-        hid_t att = H5Aopen(file, attr.c_str(), H5P_DEFAULT);
-        hid_t att_type = H5Aget_type(att);
-        char str[10000];
-        H5Aread(att, att_type, &str);
-        val = std::string(str);
-        H5Tclose(att_type);
-        H5Aclose(att);
-        return val;
-    }
-
     struct ParseOLCIChannel
     {
         image::Image img;
@@ -75,7 +58,7 @@ namespace nc2pro
 
         H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)o.img.raw_data());
 
-        for (int i = 0; i < o.img.size(); i++)
+        for (size_t i = 0; i < o.img.size(); i++)
             if (o.img.get(i) == 65535)
                 o.img.set(i, 0);
 

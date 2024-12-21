@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleGetInfoString</key>
-  <string>1.2.2</string>
+  <string>1.2.3</string>
   <key>CFBundleExecutable</key>
   <string>satdump-ui</string>
   <key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
   <key>NSHighResolutionCapable</key>
   <true/>
   <key>CFBundleShortVersionString</key>
-  <string>1.2.2</string>
+  <string>1.2.3</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>

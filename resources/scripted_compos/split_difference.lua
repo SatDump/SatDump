@@ -25,6 +25,7 @@ function process()
             --perform Difference, scaling to minval, maxval
             local difference = (cch0-cch1-numerator)/denominator
 
+
             --range convert from 0-1 to 0-255
             local lutval = difference*255
 

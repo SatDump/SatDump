@@ -1,0 +1,50 @@
+{
+    "tropics_link": {
+        "name": "TROPICS S-Band Dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2252.5e6
+            ]
+        ],
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.8,
+                    "pll_bw": 0.006,
+                    "costas_max_offset": 100e3
+                } /*
+                "fsk_demod": {
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5
+                }*/
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 2072,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": false,
+                    "nrzm": true,
+                    "rs_i": 0
+                }
+            }
+        }
+    }
+}

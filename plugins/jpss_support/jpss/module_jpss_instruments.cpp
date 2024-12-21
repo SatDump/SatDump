@@ -301,7 +301,6 @@ namespace jpss
                 satdump::ImageProducts viirs_products;
                 viirs_products.instrument_name = "viirs";
                 viirs_products.has_timestamps = true;
-                viirs_products.needs_correlation = true;
                 viirs_products.set_tle(satellite_tle);
                 viirs_products.bit_depth = 16;
                 viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
@@ -321,7 +320,6 @@ namespace jpss
                 satdump::ImageProducts viirs_dnb_products;
                 viirs_dnb_products.instrument_name = "viirs_dnb";
                 viirs_dnb_products.has_timestamps = true;
-                viirs_dnb_products.needs_correlation = true;
                 viirs_dnb_products.set_tle(satellite_tle);
                 viirs_dnb_products.bit_depth = 16;
                 viirs_dnb_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
@@ -492,8 +490,102 @@ namespace jpss
             ImGui::End();
         }
 
+        inline bool vectorContains(std::vector<double> v, double f)
+        {
+            for (auto &c : v)
+                if (c == f)
+                    return true;
+            return false;
+        }
+
         void JPSSInstrumentsDecoderModule::process_viirs_channels()
         {
+            {
+                std::vector<double> timestamps;
+                for (int i = 0; i < 5; i++)
+                    for (auto &seg : viirs_reader_imaging[i].segments)
+                        if (!vectorContains(timestamps, seg.timestamp))
+                            timestamps.push_back(seg.timestamp);
+                for (int i = 0; i < 16; i++)
+                    for (auto &seg : viirs_reader_moderate[i].segments)
+                        if (!vectorContains(timestamps, seg.timestamp))
+                            timestamps.push_back(seg.timestamp);
+                for (int i = 0; i < 3; i++)
+                    for (auto &seg : viirs_reader_dnb[i].segments)
+                        if (!vectorContains(timestamps, seg.timestamp))
+                            timestamps.push_back(seg.timestamp);
+                std::sort(timestamps.begin(), timestamps.end());
+
+                for (int i = 0; i < 5; i++)
+                {
+                    auto &r = viirs_reader_imaging[i];
+                    std::vector<viirs::VIIRS_Segment> oldSegments = r.segments;
+                    r.segments.clear();
+
+                    for (auto &time : timestamps)
+                    {
+                        bool contains = false;
+                        for (auto &seg : oldSegments)
+                        {
+                            if (seg.timestamp == time)
+                            {
+                                r.segments.push_back(seg);
+                                contains = true;
+                            }
+                        }
+
+                        if (!contains)
+                            r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
+                    }
+                }
+
+                for (int i = 0; i < 16; i++)
+                {
+                    auto &r = viirs_reader_moderate[i];
+                    std::vector<viirs::VIIRS_Segment> oldSegments = r.segments;
+                    r.segments.clear();
+
+                    for (auto &time : timestamps)
+                    {
+                        bool contains = false;
+                        for (auto &seg : oldSegments)
+                        {
+                            if (seg.timestamp == time)
+                            {
+                                r.segments.push_back(seg);
+                                contains = true;
+                            }
+                        }
+
+                        if (!contains)
+                            r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
+                    }
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    auto &r = viirs_reader_dnb[i];
+                    std::vector<viirs::VIIRS_Segment> oldSegments = r.segments;
+                    r.segments.clear();
+
+                    for (auto &time : timestamps)
+                    {
+                        bool contains = false;
+                        for (auto &seg : oldSegments)
+                        {
+                            if (seg.timestamp == time)
+                            {
+                                r.segments.push_back(seg);
+                                contains = true;
+                            }
+                        }
+
+                        if (!contains)
+                            r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
+                    }
+                }
+            }
+
             // Differential decoding for M5, M3, M2, M1
             logger->info("Diff M5...");
             viirs_reader_moderate[5 - 1].differentialDecode(viirs_reader_moderate[4 - 1], 1);

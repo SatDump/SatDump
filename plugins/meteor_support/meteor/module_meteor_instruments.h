@@ -3,6 +3,7 @@
 #include "core/module.h"
 #include "instruments/msumr/msumr_reader.h"
 #include "instruments/mtvza/mtvza_reader.h"
+#include "instruments/bism/bism_reader.h"
 
 namespace meteor
 {
@@ -17,10 +18,12 @@ namespace meteor
             // Readers
             msumr::MSUMRReader msumr_reader;
             mtvza::MTVZAReader mtvza_reader, mtvza_reader2;
+            bism::BISMReader bism_reader;
 
             // Statuses
             instrument_status_t msumr_status = DECODING;
             instrument_status_t mtvza_status = DECODING;
+            instrument_status_t bism_status = DECODING;
 
         public:
             MeteorInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
@@ -33,5 +36,5 @@ namespace meteor
             static std::vector<std::string> getParameters();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace amsu
-} // namespace Meteor
+    } // namespace instruments
+} // namespace meteor

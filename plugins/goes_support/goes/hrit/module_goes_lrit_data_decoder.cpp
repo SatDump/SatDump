@@ -4,7 +4,6 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-#include "common/utils.h"
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
 
@@ -15,14 +14,40 @@ namespace goes
         GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
                                                                                                                                                 write_images(parameters["write_images"].get<bool>()),
                                                                                                                                                 write_emwin(parameters["write_emwin"].get<bool>()),
+                                                                                                                                                write_dcs(parameters["write_dcs"].get<bool>()),
                                                                                                                                                 write_messages(parameters["write_messages"].get<bool>()),
                                                                                                                                                 write_unknown(parameters["write_unknown"].get<bool>()),
                                                                                                                                                 max_fill_lines(parameters["max_fill_lines"].get<int>()),
                                                                                                                                                 productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
             fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
-            write_dcs = parameters.contains("write_dcs") ? parameters["write_dcs"].get<bool>() : false;
+            parse_dcs = parameters.contains("parse_dcs") ? parameters["parse_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
+
+            if (parse_dcs && parameters.contains("tracked_addresses") && parameters["tracked_addresses"].is_string())
+            {
+                std::string tracked_address_str = parameters["tracked_addresses"];
+                std::string tracked_address_token;
+                tracked_address_str.erase(std::remove_if(tracked_address_str.begin(), tracked_address_str.end(), ::isspace), tracked_address_str.end());
+                std::stringstream tracked_address_stream(tracked_address_str);
+
+                while (std::getline(tracked_address_stream, tracked_address_token, ','))
+                {
+                    if (tracked_address_token.empty())
+                        continue;
+
+                    try
+                    {
+                        filtered_dcps.insert(std::stoul(tracked_address_token, nullptr, 16));
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->warn("Invalid Tracked Address Parameter! Will not filter DCP data. Error: %s", e.what());
+                        filtered_dcps.clear();
+                        break;
+                    }
+                }
+            }
         }
 
         std::vector<ModuleDataType> GOESLRITDataDecoderModule::getInputTypes()
@@ -63,13 +88,20 @@ namespace goes
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+            if (write_images && !std::filesystem::exists(directory + "/IMAGES/Unknown"))
+                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
+            if (parse_dcs && !std::filesystem::exists(directory + "/DCS"))
+                std::filesystem::create_directory(directory + "/DCS");
+            if (write_dcs && !std::filesystem::exists(directory + "/DCS_LRIT"))
+                std::filesystem::create_directory(directory + "/DCS_LRIT");
 
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
             time_t lastTime = 0;
-
             uint8_t cadu[1024];
+
+            initDCS();
 
             logger->info("Demultiplexing and deframing...");
 
@@ -216,9 +248,6 @@ namespace goes
                 }
             };
 
-            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
-                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
-
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read buffer
@@ -322,6 +351,9 @@ namespace goes
                 ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
             ImGui::End();
+
+            if (streamingInput && parse_dcs)
+                drawDCSUI();
         }
 
         std::string GOESLRITDataDecoderModule::getID()

@@ -7,6 +7,8 @@ They are all byte-aligned, so if you do not want to be,
 shifting would have to be done beforehand.
 */
 
+#include <iostream>
+
 int repackBytesTo10bits(uint8_t *bytes, int byte_length, uint16_t *words)
 {
     int bpos = 0;

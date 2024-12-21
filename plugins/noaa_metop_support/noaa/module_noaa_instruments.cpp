@@ -204,7 +204,7 @@ namespace noaa
                         avhrr_products.set_calibration(avhrr_reader.calib_out);
                         for (int n = 0; n < 3; n++)
                         {
-                            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_REFLECTANCE);
+                            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
                             avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
                         }
                         for (int c = 0; c < 6; c++)
@@ -260,6 +260,21 @@ namespace noaa
                     hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                     hirs_products.set_timestamps(hirs_reader.timestamps);
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/HIRS.json"));
+                    if (calib_coefs.contains(sat_name))
+                    {
+                        hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
+                        hirs_products.set_calibration(hirs_reader.calib_out);
+                        for (int n = 0; n < 19; n++)
+                            hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);
+                        hirs_products.set_calibration_type(19, hirs_products.CALIB_REFLECTANCE);
+                            
+                        for (int c = 0; c < 20; c++)
+                            hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                    }
+                    else
+                        logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
 
                     for (int i = 0; i < 20; i++)
                         hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
@@ -370,18 +385,19 @@ namespace noaa
                     logger->info("Lines A1: " + std::to_string(amsu_reader.linesA1));
                     logger->info("Lines A2: " + std::to_string(amsu_reader.linesA2));
 
+                    amsu_reader.correlate();
+
                     satdump::ImageProducts amsu_products;
                     amsu_products.instrument_name = "amsu_a";
                     amsu_products.has_timestamps = true;
-                    amsu_products.needs_correlation = true;
                     amsu_products.bit_depth = 16;
                     amsu_products.set_tle(satellite_tle);
                     amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    // amsu_products.set_timestamps(amsu_reader.timestamps);
+                    amsu_products.set_timestamps(amsu_reader.common_timestamps);
                     amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), i < 2 ? amsu_reader.timestamps_A2 : amsu_reader.timestamps_A1});
+                        amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i)});
 
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
@@ -451,7 +467,7 @@ namespace noaa
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = avg_overflowless_timestamps(timestamp_filtering::filter_timestamps_width_cfg(hirs_reader.timestamps, loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json"))));
+                dataset.timestamp = get_median(hirs_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
@@ -463,6 +479,7 @@ namespace noaa
                 }
 
                 // HIRS
+                /*
                 {
                     hirs_status = SAVING;
                     std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HIRS";
@@ -488,6 +505,44 @@ namespace noaa
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");
 
+                    hirs_status = DONE;
+                }
+                */
+                               {
+                    hirs_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HIRS";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directories(directory);
+                    logger->info("----------- HIRS");
+                    logger->info("Lines : " + std::to_string(hirs_reader.line));
+                    if (hirs_reader.sync < hirs_reader.line * 28)
+                        logger->error("(HIRS) Possible filter wheel synchronization loss detected! Radiometric data may be invalid.");
+                    satdump::ImageProducts hirs_products;
+                    hirs_products.instrument_name = "hirs";
+                    hirs_products.bit_depth = 13;
+                    hirs_products.set_tle(satellite_tle);
+                    hirs_products.has_timestamps = true;
+                    hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    hirs_products.set_timestamps(hirs_reader.timestamps);
+                    hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
+                    nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/HIRS.json"));
+                    if (calib_coefs.contains(sat_name))
+                    {
+                        hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
+                        hirs_products.set_calibration(hirs_reader.calib_out);
+                        for (int n = 0; n < 19; n++)
+                            hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);
+                        hirs_products.set_calibration_type(19, hirs_products.CALIB_REFLECTANCE);
+                            
+                        for (int c = 0; c < 20; c++)
+                            hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                    }
+                    else
+                        logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+                    for (int i = 0; i < 20; i++)
+                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
+                    hirs_products.save(directory);
+                    dataset.products_list.push_back("HIRS");
                     hirs_status = DONE;
                 }
 

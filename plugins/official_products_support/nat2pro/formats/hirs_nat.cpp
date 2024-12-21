@@ -7,7 +7,7 @@
 
 namespace nat2pro
 {
-    void decodeHIRSNat(std::vector<uint8_t> nat_file, std::string pro_output_file)
+    void decodeHIRSNat(std::vector<uint8_t> &nat_file, std::string pro_output_file)
     {
         int image_width = 56;
         std::vector<uint16_t> hirs_data[20];

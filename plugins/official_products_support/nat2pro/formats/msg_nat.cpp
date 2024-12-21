@@ -38,7 +38,7 @@ namespace nat2pro
         return *((double *)sw);
     }
 
-    void decodeMSGNat(std::vector<uint8_t> msg_file, std::string pro_output_file)
+    void decodeMSGNat(std::vector<uint8_t> &msg_file, std::string pro_output_file)
     {
         uint8_t *buf = msg_file.data();
 
@@ -326,9 +326,9 @@ namespace nat2pro
         }
 
         seviri_products.set_calibration(calib_cfg);
-        seviri_products.set_calibration_type(0, satdump::ImageProducts::CALIB_REFLECTANCE);
-        seviri_products.set_calibration_type(1, satdump::ImageProducts::CALIB_REFLECTANCE);
-        seviri_products.set_calibration_type(2, satdump::ImageProducts::CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(0, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(1, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(2, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
         seviri_products.set_calibration_type(3, satdump::ImageProducts::CALIB_RADIANCE);
         seviri_products.set_calibration_type(4, satdump::ImageProducts::CALIB_RADIANCE);
         seviri_products.set_calibration_type(5, satdump::ImageProducts::CALIB_RADIANCE);
@@ -337,7 +337,7 @@ namespace nat2pro
         seviri_products.set_calibration_type(8, satdump::ImageProducts::CALIB_RADIANCE);
         seviri_products.set_calibration_type(9, satdump::ImageProducts::CALIB_RADIANCE);
         seviri_products.set_calibration_type(10, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(11, satdump::ImageProducts::CALIB_REFLECTANCE);
+        seviri_products.set_calibration_type(11, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
 
         seviri_products.set_calibration_default_radiance_range(9, 30, 120);
         seviri_products.set_calibration_default_radiance_range(10, 30, 120);

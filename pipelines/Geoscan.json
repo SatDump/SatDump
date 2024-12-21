@@ -96,7 +96,7 @@
                 "xfsk_burst_demod": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
-                    "satellite_norad": 98894,
+                    "satellite_norad": 61785,
                     "satellite_frequency": 436.20e6
                 }
             },
@@ -151,7 +151,7 @@
                 "xfsk_burst_demod": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
-                    "satellite_norad": 98788,
+                    "satellite_norad": 61782,
                     "satellite_frequency": 437.73e6
                 }
             },
@@ -206,7 +206,7 @@
                 "xfsk_burst_demod": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
-                    "satellite_norad": 98789,
+                    "satellite_norad": 61749,
                     "satellite_frequency": 436.87e6
                 }
             },
@@ -261,7 +261,7 @@
                 "xfsk_burst_demod": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
-                    "satellite_norad": 98794,
+                    "satellite_norad": 61746,
                     "satellite_frequency": 436.835e6
                 }
             },
@@ -316,7 +316,7 @@
                 "xfsk_burst_demod": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
-                    "satellite_norad": 98793,
+                    "satellite_norad": 61755,
                     "satellite_frequency": 435.43e6
                 }
             },

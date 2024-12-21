@@ -11,60 +11,45 @@ namespace noaa_metop
     {
         AMSUReader::AMSUReader()
         {
-            for (int i = 0; i < 15; i++)
-                channels[i].resize(30);
+            amsu_a1_dat.resize(1);
+            amsu_a2_dat.resize(1);
         }
 
         AMSUReader::~AMSUReader()
         {
-            for (int i = 0; i < 15; i++)
-                channels[i].clear();
-            timestamps_A1.clear();
-            timestamps_A2.clear();
         }
 
         void AMSUReader::work_A1(uint8_t *buffer)
         {
-            for (int n = 2; n < 15; n++)
-                channels[n].resize(channels[n].size() + 30);
+
             for (int i = 0; i < 1020; i += 34)
-            {
                 for (int j = 0; j < 13; j++)
-                {
-                    channels[j + 2][30 * linesA1 + i / 34] = (buffer[i + 16 + 2 * j] << 8) | buffer[16 + i + 2 * j + 1];
-                }
-            }
-            linesA1++;
+                    amsu_a1_dat[linesA1].channels[j][i / 34] = (buffer[i + 16 + 2 * j] << 8) | buffer[16 + i + 2 * j + 1];
 
             // calibration
             for (int c = 0; c < 26; c += 2)
-                calibration_views_A1[c / 2].push_back(view_pair{static_cast<uint16_t>((((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1214 + c] << 8) | buffer[1215 + c])) / 2),
-                                                                static_cast<uint16_t>((((buffer[1036 + c] << 8) | buffer[1037 + c]) + ((buffer[1062 + c] << 8) | buffer[1063 + c])) / 2)});
-            // temperatures
+                amsu_a1_dat[linesA1].calibration_views_A1[c / 2] = view_pair{static_cast<uint16_t>((((buffer[1188 + c] << 8) | buffer[1189 + c]) + ((buffer[1214 + c] << 8) | buffer[1215 + c])) / 2),
+                                                                             static_cast<uint16_t>((((buffer[1036 + c] << 8) | buffer[1037 + c]) + ((buffer[1062 + c] << 8) | buffer[1063 + c])) / 2)};
+            //  temperatures
             for (int n = 0; n < 90; n += 2)
-                temperature_counts_A1[n / 2].push_back((buffer[1088 + n] << 8) | buffer[1089 + n]);
+                amsu_a1_dat[linesA1].temperature_counts_A1[n / 2] = (buffer[1088 + n] << 8) | buffer[1089 + n];
         }
 
         void AMSUReader::work_A2(uint8_t *buffer)
         {
-            for (int n = 0; n < 2; n++)
-                channels[n].resize(channels[n].size() + 30);
-
             for (int i = 0; i < 240; i += 8)
             {
-                channels[0][30 * linesA2 + i / 8] = buffer[i + 12] << 8 | buffer[13 + i];
-                channels[1][30 * linesA2 + i / 8] = buffer[i + 14] << 8 | buffer[14 + i];
+                amsu_a2_dat[linesA2].channels[0][i / 8] = buffer[i + 12] << 8 | buffer[13 + i];
+                amsu_a2_dat[linesA2].channels[1][i / 8] = buffer[i + 14] << 8 | buffer[14 + i];
             }
-
-            linesA2++;
 
             // calibration
             for (int c = 0; c < 4; c += 2)
-                calibration_views_A2[c / 2].push_back(view_pair{static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
-                                                                static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)});
+                amsu_a2_dat[linesA2].calibration_views_A2[c / 2] = view_pair{static_cast<uint16_t>((((buffer[304 + c] << 8) | buffer[305 + c]) + ((buffer[308 + c] << 8) | buffer[309 + c])) / 2),
+                                                                             static_cast<uint16_t>((((buffer[252 + c] << 8) | buffer[253 + c]) + ((buffer[256 + c] << 8) | buffer[257 + c])) / 2)};
             // temperatures
             for (int n = 0; n < 38; n += 2)
-                temperature_counts_A2[n / 2].push_back((buffer[260 + n] << 8) | buffer[261 + n]);
+                amsu_a2_dat[linesA2].temperature_counts_A2[n / 2] = (buffer[260 + n] << 8) | buffer[261 + n];
         }
 
         void AMSUReader::work_noaa(uint8_t *buffer)
@@ -100,19 +85,23 @@ namespace noaa_metop
             for (std::vector<uint8_t> frame : amsuA2Data)
             {
                 work_A2(frame.data());
-                if (contains(timestamps_A2, last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0)))
-                    timestamps_A2.push_back(-1);
+                if (contains(amsu_a2_dat, last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0)))
+                    amsu_a2_dat[linesA2].timestamp = -1;
                 else
-                    timestamps_A2.push_back(last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0));
+                    amsu_a2_dat[linesA2].timestamp = last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0);
+                amsu_a2_dat.resize(amsu_a2_dat.size() + 1);
+                linesA2++;
             }
 
             for (std::vector<uint8_t> frame : amsuA1Data)
             {
                 work_A1(frame.data());
-                if (contains(timestamps_A1, last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0)))
-                    timestamps_A1.push_back(-1);
+                if (contains(amsu_a1_dat, last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0)))
+                    amsu_a1_dat[linesA1].timestamp = -1;
                 else
-                    timestamps_A1.push_back(last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0));
+                    amsu_a1_dat[linesA1].timestamp = last_TIP_timestamp + (last_TIP_timestamp != -1 ? 8 * lines_since_timestamp : 0);
+                amsu_a1_dat.resize(amsu_a1_dat.size() + 1);
+                linesA1++;
             }
         }
 
@@ -120,7 +109,7 @@ namespace noaa_metop
         {
             if (packet.header.apid == 39)
             {
-                if (packet.payload.size() < 2096)
+                if (packet.payload.size() != 2096)
                     return;
                 std::vector<uint8_t> filtered;
                 for (unsigned int i = 13; i < packet.payload.size() - 2; i += 2)
@@ -133,11 +122,13 @@ namespace noaa_metop
                     }
                 }
                 work_A1(filtered.data());
-                timestamps_A1.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+                amsu_a1_dat[linesA1].timestamp = ccsds::parseCCSDSTimeFull(packet, 10957);
+                amsu_a1_dat.resize(amsu_a1_dat.size() + 1);
+                linesA1++;
             }
             else if (packet.header.apid == 40)
             {
-                if (packet.payload.size() < 1136)
+                if (packet.payload.size() != 1136)
                     return;
                 std::vector<uint8_t> filtered;
                 for (unsigned int i = 13; i < packet.payload.size() - 2; i += 2)
@@ -150,13 +141,16 @@ namespace noaa_metop
                     }
                 }
                 work_A2(filtered.data());
-                timestamps_A2.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+                amsu_a2_dat[linesA2].timestamp = ccsds::parseCCSDSTimeFull(packet, 10957);
+                amsu_a2_dat.resize(amsu_a2_dat.size() + 1);
+                linesA2++;
             }
         }
+
         void AMSUReader::calibrate(nlohmann::json calib_coefs)
         {
             calib = calib_coefs;
-            //calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
+            // calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
             calib_out["calibrator"] = "noaa_mhs";
 
             double temps_A1[45];
@@ -174,7 +168,7 @@ namespace noaa_metop
                     temps_A1[i] = 0;
                     for (int j = 0; j < 4; j++)
                     {
-                        uint16_t count = temperature_counts_A1[i][l];
+                        uint16_t count = amsu_a1_dat[l].temperature_counts_A1[i];
                         temps_A1[i] += calib["A1"]["instrument_temp_coefs"][i][j].get<double>() * pow(count / 2, j);
                     }
                 }
@@ -209,7 +203,7 @@ namespace noaa_metop
 
                     double Rc = temperature_to_radiance(2.73 + calib["A1"]["cold_corr"][PLL][c].get<double>(), calib["all"]["wavenumber"][c + 2].get<double>());
 
-                    double G = (calibration_views_A1[c][l].blackbody - calibration_views_A1[c][l].space) / (Rw - Rc);
+                    double G = (amsu_a1_dat[l].calibration_views_A1[c].blackbody - amsu_a1_dat[l].calibration_views_A1[c].space) / (Rw - Rc);
 
                     double u = extrapolate(
                         {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][0].get<double>(), calib["A1"]["u"][PLL][0][c].get<double>()},
@@ -217,8 +211,8 @@ namespace noaa_metop
                         {calib[calib["all"]["module"][c + 2].get<std::string>()]["u_temps"][index][2].get<double>(), calib["A1"]["u"][PLL][2][c].get<double>()},
                         temps_A1[calib["A1"]["instrument_temerature_sensor_id"][calib["A1"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
 
-                    ln[c + 2]["a0"] = Rw - (calibration_views_A1[c][l].blackbody / G) + u * (calibration_views_A1[c][l].blackbody * calibration_views_A1[c][l].space) / (G * G);
-                    ln[c + 2]["a1"] = 1 / G - u * (calibration_views_A1[c][l].blackbody + calibration_views_A1[c][l].space) / (G * G);
+                    ln[c + 2]["a0"] = Rw - (amsu_a1_dat[l].calibration_views_A1[c].blackbody / G) + u * (amsu_a1_dat[l].calibration_views_A1[c].blackbody * amsu_a1_dat[l].calibration_views_A1[c].space) / (G * G);
+                    ln[c + 2]["a1"] = 1 / G - u * (amsu_a1_dat[l].calibration_views_A1[c].blackbody + amsu_a1_dat[l].calibration_views_A1[c].space) / (G * G);
                     ln[c + 2]["a2"] = u / (G * G);
                 }
 
@@ -238,8 +232,8 @@ namespace noaa_metop
                     temps_A2[i] = 0;
                     for (int j = 0; j < 4; j++)
                     {
-                        uint16_t count = temperature_counts_A2[i][l];
-                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>() * pow(count/2, j);
+                        uint16_t count = amsu_a2_dat[l].temperature_counts_A2[i];
+                        temps_A2[i] += calib["A2"]["instrument_temp_coefs"][i][j].get<double>() * pow(count / 2, j);
                     }
                 }
 
@@ -264,7 +258,7 @@ namespace noaa_metop
 
                     double Rc = temperature_to_radiance(2.73 + calib["A2"]["cold_corr"][c].get<double>(), calib["all"]["wavenumber"][c].get<double>());
 
-                    double G = (calibration_views_A2[c][l].blackbody - calibration_views_A2[c][l].space) / (Rw - Rc);
+                    double G = (amsu_a2_dat[l].calibration_views_A2[c].blackbody - amsu_a2_dat[l].calibration_views_A2[c].space) / (Rw - Rc);
 
                     double u = extrapolate(
                         {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][0].get<double>(), calib["A2"]["u"][0][c].get<double>()},
@@ -272,8 +266,8 @@ namespace noaa_metop
                         {calib["A2"]["u_temps"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()][2].get<double>(), calib["A2"]["u"][2][c].get<double>()},
                         temps_A2[calib["A2"]["instrument_temerature_sensor_id"][calib["A2"]["instrument_temerature_sensor_backup"].get<bool>()].get<int>()]);
 
-                    calib_out["vars"]["perLine_perChannel"][l][c]["a0"] = Rw - (calibration_views_A2[c][l].blackbody / G) + u * (calibration_views_A2[c][l].blackbody * calibration_views_A2[c][l].space) / (G * G);
-                    calib_out["vars"]["perLine_perChannel"][l][c]["a1"] = 1 / G - u * (calibration_views_A2[c][l].blackbody + calibration_views_A2[c][l].space) / (G * G);
+                    calib_out["vars"]["perLine_perChannel"][l][c]["a0"] = Rw - (amsu_a2_dat[l].calibration_views_A2[c].blackbody / G) + u * (amsu_a2_dat[l].calibration_views_A2[c].blackbody * amsu_a2_dat[l].calibration_views_A2[c].space) / (G * G);
+                    calib_out["vars"]["perLine_perChannel"][l][c]["a1"] = 1 / G - u * (amsu_a2_dat[l].calibration_views_A2[c].blackbody + amsu_a2_dat[l].calibration_views_A2[c].space) / (G * G);
                     calib_out["vars"]["perLine_perChannel"][l][c]["a2"] = u / (G * G);
                 }
             }
@@ -282,6 +276,80 @@ namespace noaa_metop
             // ##############
 
             calib_out["wavenumbers"] = calib["all"]["wavenumber"];
+        }
+
+        void AMSUReader::correlate()
+        {
+            std::vector<double> all_timestamps;
+
+            for (auto &f : amsu_a1_dat)
+            {
+                bool contains = false;
+                for (auto &t : all_timestamps)
+                    if (t == f.timestamp)
+                        contains = true;
+                if (!contains)
+                    all_timestamps.push_back(f.timestamp);
+            }
+
+            for (auto &f : amsu_a2_dat)
+            {
+                bool contains = false;
+                for (auto &t : all_timestamps)
+                    if (t == f.timestamp)
+                        contains = true;
+                if (!contains)
+                    all_timestamps.push_back(f.timestamp);
+            }
+
+            std::sort(all_timestamps.begin(), all_timestamps.end());
+
+            std::vector<a1_data_t> amsu_a1_ndat;
+            std::vector<a2_data_t> amsu_a2_ndat;
+
+            for (auto &t : all_timestamps)
+            {
+                bool had = false;
+                for (auto &f : amsu_a1_dat)
+                    if (f.timestamp == t)
+                    {
+                        amsu_a1_ndat.push_back(f);
+                        had = true;
+                    }
+                if (!had)
+                    amsu_a1_ndat.push_back(a1_data_t());
+
+                had = false;
+                for (auto &f : amsu_a2_dat)
+                    if (f.timestamp == t)
+                    {
+                        amsu_a2_ndat.push_back(f);
+                        had = true;
+                    }
+                if (!had)
+                    amsu_a2_ndat.push_back(a2_data_t());
+            }
+
+            amsu_a1_dat = amsu_a1_ndat;
+            amsu_a2_dat = amsu_a2_ndat;
+            common_timestamps = all_timestamps;
+            linesA1 = amsu_a1_dat.size();
+            linesA2 = amsu_a2_dat.size();
+        }
+
+        image::Image AMSUReader::getChannel(int channel)
+        {
+            image::Image img(16, 30, (channel < 2 ? linesA2 : linesA1), 1);
+            if (channel < 2)
+                for (int l = 0; l < linesA2; l++)
+                    for (int c = 0; c < 30; c++)
+                        img.set(l * 30 + c, amsu_a2_dat[l].channels[channel][c]);
+            else
+                for (int l = 0; l < linesA1; l++)
+                    for (int c = 0; c < 30; c++)
+                        img.set(l * 30 + c, amsu_a1_dat[l].channels[channel - 2][c]);
+            img.mirror(true, false);
+            return img;
         }
     }
 }

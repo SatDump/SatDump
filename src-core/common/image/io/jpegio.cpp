@@ -33,7 +33,7 @@ namespace image
             abort();
 
         // Huge thanks to https://gist.github.com/PhirePhly/3080633
-        unsigned char *jpeg_decomp = NULL;
+        unsigned char *jpeg_decomp[1] = { nullptr };
         jpeg_error_struct_l jerr;
         jpeg_decompress_struct cinfo;
 
@@ -44,7 +44,7 @@ namespace image
         if (setjmp(jerr.setjmp_buffer))
         {
             // Free memory
-            delete[] jpeg_decomp;
+            delete[] jpeg_decomp[0];
             fclose(fp);
             return;
         }
@@ -57,37 +57,33 @@ namespace image
         jpeg_start_decompress(&cinfo);
 
         // Init output buffer
-        jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height * cinfo.num_components];
+        jpeg_decomp[0] = new unsigned char[cinfo.image_width * cinfo.num_components];
+
+        // Init SatDump image
+        img.init(8, cinfo.image_width, cinfo.image_height, cinfo.num_components);
 
         // Decompress
         while (cinfo.output_scanline < cinfo.output_height)
         {
-            unsigned char *buffer_array[1];
-            buffer_array[0] = jpeg_decomp + (cinfo.output_scanline) * cinfo.image_width * cinfo.num_components;
-            jpeg_read_scanlines(&cinfo, buffer_array, 1);
+            jpeg_read_scanlines(&cinfo, jpeg_decomp, 1);
+            for (int i = 0; i < (int)cinfo.image_width; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    img.set(c, ((cinfo.output_scanline - 1) * cinfo.image_width) + i, jpeg_decomp[0][i * cinfo.num_components + c]);
         }
 
         // Cleanup
         jpeg_finish_decompress(&cinfo);
         jpeg_destroy_decompress(&cinfo);
 
-        // Init CImg image
-        img.init(8, cinfo.image_width, cinfo.image_height, cinfo.num_components);
-
-        // Copy over
-        for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-            for (int c = 0; c < cinfo.num_components; c++)
-                img.set(c, i, jpeg_decomp[i * cinfo.num_components + c]);
-
         // Free memory
-        delete[] jpeg_decomp;
+        delete[] jpeg_decomp[0];
         fclose(fp);
     }
 
     void load_jpeg(Image &img, uint8_t *buffer, int size)
     {
         // Huge thanks to https://gist.github.com/PhirePhly/3080633
-        unsigned char *jpeg_decomp = NULL;
+        unsigned char *jpeg_decomp[1] = { nullptr };
         jpeg_error_struct_l jerr;
         jpeg_decompress_struct cinfo;
 
@@ -98,7 +94,7 @@ namespace image
         if (setjmp(jerr.setjmp_buffer))
         {
             // Free memory
-            delete[] jpeg_decomp;
+            delete[] jpeg_decomp[0];
             return;
         }
 
@@ -110,30 +106,26 @@ namespace image
         jpeg_start_decompress(&cinfo);
 
         // Init output buffer
-        jpeg_decomp = new unsigned char[cinfo.image_width * cinfo.image_height * cinfo.num_components];
+        jpeg_decomp[0] = new unsigned char[cinfo.image_width * cinfo.num_components];
+
+        // Init SatDump image
+        img.init(8, cinfo.image_width, cinfo.image_height, cinfo.num_components);
 
         // Decompress
         while (cinfo.output_scanline < cinfo.output_height)
         {
-            unsigned char *buffer_array[1];
-            buffer_array[0] = jpeg_decomp + (cinfo.output_scanline) * cinfo.image_width * cinfo.num_components;
-            jpeg_read_scanlines(&cinfo, buffer_array, 1);
+            jpeg_read_scanlines(&cinfo, jpeg_decomp, 1);
+            for (int i = 0; i < (int)cinfo.image_width; i++)
+                for (int c = 0; c < cinfo.num_components; c++)
+                    img.set(c, ((cinfo.output_scanline - 1) * cinfo.image_width) + i, jpeg_decomp[0][i * cinfo.num_components + c]);
         }
 
         // Cleanup
         jpeg_finish_decompress(&cinfo);
         jpeg_destroy_decompress(&cinfo);
 
-        // Init CImg image
-        img.init(8, cinfo.image_width, cinfo.image_height, cinfo.num_components);
-
-        // Copy over
-        for (int i = 0; i < (int)cinfo.image_width * (int)cinfo.image_height; i++)
-            for (int c = 0; c < cinfo.num_components; c++)
-                img.set(c, i, jpeg_decomp[i * cinfo.num_components + c]);
-
         // Free memory
-        delete[] jpeg_decomp;
+        delete[] jpeg_decomp[0];
     }
 
     void save_jpeg(Image &img, std::string file)

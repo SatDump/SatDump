@@ -1,10 +1,9 @@
 #define _USE_MATH_DEFINES
 #include "sc3_slstr.h"
+#include "hdf5_utils.h"
+#include <H5LTpublic.h>
 
 #include "common/utils.h"
-
-#include <hdf5.h>
-#include <H5LTpublic.h>
 #include "common/image/image.h"
 #include <filesystem>
 #include "logger.h"
@@ -20,8 +19,6 @@
 
 namespace nc2pro
 {
-    std::string hdf5_get_string_attr_FILE_fixed(hid_t &file, std::string attr);
-
     struct ParseOLCIChannel
     {
         image::Image img;
@@ -61,7 +58,7 @@ namespace nc2pro
 
         H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)o.img.raw_data());
 
-        for (int i = 0; i < o.img.size(); i++)
+        for (size_t i = 0; i < o.img.size(); i++)
             if (o.img.get(i) == 65535)
                 o.img.set(i, 0);
 
