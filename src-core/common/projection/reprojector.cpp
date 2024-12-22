@@ -237,12 +237,13 @@ namespace satdump
                 }
                 else
                 {
+                    auto prj_cfg = image::get_metadata_proj_cfg(*op.img);
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(image::get_metadata_proj_cfg(*op.img), op.img->width(), op.img->height());
+                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(prj_cfg, op.img->width(), op.img->height());
                     operation.input_image = op.img;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
-                    int l_width = std::max<int>(op.img->width(), 512) * 10;
+                    int l_width = prj_cfg.contains("f_width") ? prj_cfg["f_width"].get<int>() : std::max<int>(op.img->width(), 512) * 10;
                     operation.output_width = l_width;
                     operation.output_height = l_width / 2;
 

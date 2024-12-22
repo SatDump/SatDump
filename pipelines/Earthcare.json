@@ -1,0 +1,36 @@
+{
+    "earthcare_dump": {
+        "name": "EarthCare X-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 60e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 75e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0189
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "qpsk_swap_iq": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+            },
+            "products": {
+                "earthcare_instruments": {}
+            }
+        }
+    }
+}

@@ -251,6 +251,12 @@ if(PLUGIN_METEOSAT OR PLUGINS_ALL)
   add_subdirectory(meteosat_support)
 endif()
 
+option(PLUGIN_EARTHCARE "Enable the EarthCARE support plugin" OFF)
+
+if(PLUGIN_EARTHCARE OR PLUGINS_ALL)
+  add_subdirectory(earthcare_support)
+endif()
+
 # add_subdirectory(sample)
 option(PLUGIN_GVAR_EXTENDED "Enable the GVAR Extended plugin" OFF)
 
