@@ -3,6 +3,7 @@
 #include "core/module.h"
 
 #include "instruments/msi/msi_reader.h"
+#include "instruments/atlid/atlid_reader.h"
 
 namespace earthcare
 {
@@ -16,9 +17,11 @@ namespace earthcare
 
             // Readers
             msi::MSIReader msi_reader;
+            atlid::ATLIDReader atlid_reader;
 
             // Statuses
             instrument_status_t msi_status = DECODING;
+            instrument_status_t atlid_status = DECODING;
 
         public:
             EarthCAREInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

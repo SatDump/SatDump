@@ -19,18 +19,6 @@ namespace earthcare
         {
         }
 
-        double parseCUC(uint8_t *dat)
-        {
-            double seconds = dat[1] << 24 |
-                             dat[2] << 16 |
-                             dat[3] << 8 |
-                             dat[4];
-            double fseconds = dat[5] << 16 |
-                              dat[6] << 8 |
-                              dat[7];
-            return seconds + fseconds / 16777215.0 + 3657 * 24 * 3600;
-        }
-
         void MSIReader::work(ccsds::CCSDSPacket &pkt)
         {
             if (pkt.payload.size() < 802)
@@ -51,7 +39,7 @@ namespace earthcare
 
             if (id == 7)
             {
-                logger->info("%f - %s", currentTime, timestamp_to_string(currentTime).c_str());
+                //  logger->info("%f - %s", currentTime, timestamp_to_string(currentTime).c_str());
                 lines++;
                 timestamps.push_back(currentTime);
             }

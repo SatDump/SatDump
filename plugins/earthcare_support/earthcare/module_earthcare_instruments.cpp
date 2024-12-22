@@ -11,10 +11,7 @@
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 
-extern "C"
-{
-#include "libs/aec/szlib.h"
-}
+#include "common/image/io.h"
 
 namespace earthcare
 {
@@ -58,9 +55,21 @@ namespace earthcare
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid5.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
-                    { // 1792, 1793, 1794,
+                    {
                         if (pkt.header.apid == 1100)
                             msi_reader.work(pkt);
+                        // else
+                        //     logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
+                    }
+                }
+
+                if (vcdu.vcid == 6) // ATLID VCID
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid6.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    {
+                        if (pkt.header.apid == 1228)
+                            atlid_reader.work(pkt);
                         // else
                         //     logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
                     }
@@ -119,6 +128,23 @@ namespace earthcare
                 msi_status = DONE;
             }
 
+            // ATLID
+            {
+                atlid_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/ATLID";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- ATLID");
+                logger->info("Lines : " + std::to_string(atlid_reader.lines));
+
+                auto img = atlid_reader.getChannel();
+                image::save_png(img, directory + "/ATLID.png");
+
+                atlid_status = DONE;
+            }
+
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
@@ -143,6 +169,14 @@ namespace earthcare
                 ImGui::TextColored(style::theme.green, "%d", msi_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(msi_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("ATLID");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(style::theme.green, "%d", atlid_reader.lines);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(atlid_status);
 
                 ImGui::EndTable();
             }
