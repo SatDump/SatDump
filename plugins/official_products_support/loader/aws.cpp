@@ -10,7 +10,7 @@
 
 namespace satdump
 {
-    void ArchiveLoader::queryAWS(std::string url_host, std::string url_path, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &))
+    void ArchiveLoader::queryAWS(std::string url_host, std::string url_path, std::string filter, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &))
     {
         std::string url_req = url_host + url_path;
         std::string result;
@@ -29,6 +29,9 @@ namespace satdump
 
                 std::string path = content_node->first_node("Key")->value();
                 std::string stem = std::filesystem::path(path).stem().string();
+
+                if (filter != "" && stem.find(filter) == std::string::npos)
+                    continue;
 
                 time_t timestamp = 0;
                 std::string channel;
@@ -96,7 +99,7 @@ namespace satdump
 
             queryAWS(std::string("https://noaa-") + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/",
                 std::string("?list-type=2&prefix=") + aws_options[aws_selected_dataset].pathid + "%2F" + std::to_string(year) + "%2F" +
-                std::to_string(dofy), &ArchiveLoader::parseGOESTimestamp);
+                std::to_string(dofy), aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseGOESTimestamp);
         }
         catch (std::exception &e)
         {
@@ -148,7 +151,7 @@ namespace satdump
 
             queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
                 std::string("?list-type=2&prefix=AMI%2FL1B%2F" + aws_options[aws_selected_dataset].pathid +
-                "%2F" + yearmonth + "%2F" + date), &ArchiveLoader::parseGK2ATimestamp);
+                "%2F" + yearmonth + "%2F" + date), aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseGK2ATimestamp);
         }
         catch (std::exception &e)
         {
@@ -214,7 +217,7 @@ namespace satdump
 
             queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
                 std::string("?list-type=2&prefix=" + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" + month + "%2F" + date),
-                &ArchiveLoader::parseHimawariTimestamp);
+                aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseHimawariTimestamp);
         }
         catch (std::exception& e)
         {
