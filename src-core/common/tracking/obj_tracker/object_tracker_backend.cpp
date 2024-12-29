@@ -18,7 +18,7 @@ namespace satdump
 
             general_mutex.lock();
 
-            double current_time = getTime();
+            double current_time = getTime() + tracking_time_offset;
 
             if (tracking_mode == TRACKING_HORIZONS)
             {

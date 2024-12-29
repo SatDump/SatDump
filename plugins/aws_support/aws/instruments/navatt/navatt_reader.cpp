@@ -57,7 +57,7 @@ namespace aws
             double ephem_vy = get_float(&dat[49]);
             double ephem_vz = get_float(&dat[53]);
 
-            logger->info("NAVATT! %s", timestamp_to_string(ephem_timestamp).c_str());
+            // logger->info("NAVATT! %s", timestamp_to_string(ephem_timestamp).c_str());
 
 #if 0
             // double atti_timestamp = get_timestamp(&dat[33]);

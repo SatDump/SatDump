@@ -249,6 +249,8 @@ namespace satdump
         ImGui::Checkbox("Arrow Keys Control", &rotator_arrowkeys_enable);
         if (rotator_arrowkeys_enable)
             ImGui::InputDouble("Arrow Keys Control Increment", &rotator_arrowkeys_increment);
+
+        ImGui::InputDouble("Time Offset", &tracking_time_offset);
     }
 
     nlohmann::json ObjectTracker::getRotatorConfig()

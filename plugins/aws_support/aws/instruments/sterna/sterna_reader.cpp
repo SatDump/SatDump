@@ -29,7 +29,11 @@ namespace aws
             double fseconds = dat[5] << 16 |
                               dat[6] << 8 |
                               dat[7];
-            return seconds + fseconds / 16777215.0 + 3657 * 24 * 3600;
+            double timestamp = seconds + fseconds / 16777215.0 + 3657 * 24 * 3600;
+            if (timestamp > 0)
+                return timestamp;
+            else
+                return -1;
         }
 
         void SternaReader::work(ccsds::CCSDSPacket &pkt)
@@ -49,7 +53,10 @@ namespace aws
                     lines++;
 
                     double timestamp = parseCUC(wip_full_pkt.data() + 191);
-                    timestamps.push_back(timestamp);
+                    if (crc.check(pkt))
+                        timestamps.push_back(timestamp);
+                    else
+                        timestamps.push_back(-1);
                 }
                 wip_full_pkt.clear();
 
@@ -72,7 +79,10 @@ namespace aws
                     lines++;
 
                     double timestamp = parseCUC(wip_full_pkt.data() + 191);
-                    timestamps.push_back(timestamp);
+                    if (crc.check(pkt))
+                        timestamps.push_back(timestamp);
+                    else
+                        timestamps.push_back(-1);
 
                     //                    printf("%d - ", int(wip_full_pkt[44] << 8 | wip_full_pkt[45]));
                     //                    printf("%d - ", int(wip_full_pkt[46] << 8 | wip_full_pkt[47]));

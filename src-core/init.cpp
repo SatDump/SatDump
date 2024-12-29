@@ -16,6 +16,8 @@
 
 #include "common/dsp/buffer.h"
 
+#include "products2/products.h"
+
 namespace satdump
 {
     SATDUMP_DLL std::string user_path;
@@ -36,7 +38,7 @@ namespace satdump
 #ifdef _WIN32
         if (std::filesystem::exists("satdump_cfg.json"))
             user_path = "./config";
-        else 
+        else
             user_path = std::string(getenv("APPDATA")) + "/satdump";
 #elif __ANDROID__
         user_path = ".";
@@ -54,9 +56,8 @@ namespace satdump
         catch (std::exception &e)
         {
             logger->critical("Error loading SatDump config! SatDump will now exit. Error:\n%s", e.what());
-            if(is_gui)
-                pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" +
-                    std::string(e.what()), pfd::choice::ok, pfd::icon::error);
+            if (is_gui)
+                pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" + std::string(e.what()), pfd::choice::ok, pfd::icon::error);
             exit(1);
         }
 
@@ -124,6 +125,7 @@ namespace satdump
 
         // Products
         registerProducts();
+        products::registerProducts();
 
         // Set DSP buffer sizes if they have been changed
         if (config::main_cfg.contains("advanced_settings"))

@@ -417,6 +417,9 @@ namespace image
         double x_diff = rx - x;
         double y_diff = ry - y;
 
+        if (x_diff == 0 && y_diff == 0)
+            return get(cc, rx, ry);
+
         size_t index = (y * d_width + x);
         size_t max_index = d_width * d_height;
 

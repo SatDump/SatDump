@@ -11,92 +11,65 @@
  **********************************************************************/
 
 #include "logger.h"
-
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "common/ccsds/ccsds_tm/demuxer.h"
-#include <fstream>
-#include "common/simple_deframer.h"
-
-#include "common/image/image.h"
-#include "common/image/processing.h"
+#include "products2/image_products.h"
 #include "common/image/io.h"
+#include "common/image/processing.h"
 
-#include <cstring>
-
-#include "common/repack.h"
-
-#include "common/image/bayer/bayer.h"
-
-#include "common/codings/reedsolomon/reedsolomon.h"
+#include "products2/image/product_equation.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream data_in(argv[1], std::ios::binary);
+    satdump::products::ImageProducts products;
+    products.load(argv[1]);
 
-    uint8_t cadu[1279];
+#if 0
+    image::Image ch1, ch9;
+    ch1 = products.get_channel_image("19").image;
+    ch9 = products.get_channel_image("10").image;
 
-    ccsds::ccsds_tm::Demuxer vcid_demuxer(1109, false);
+    image::Image rgbimg(ch1.depth(), ch1.width(), ch1.height(), 3);
 
-    std::ofstream test_t("/tmp/test.bin");
+    satdump::ChannelTransform ch1t = products.get_channel_image("19").ch_transform;
+    satdump::ChannelTransform ch9t = products.get_channel_image("10").ch_transform;
 
-    reedsolomon::ReedSolomon rs_check(reedsolomon::RS223);
+    // ch1t.init_affine(0.95, 1, 0, -1);
+    // ch1t.init_affine_slantx(0.93, 1, 2.8, 4,
+    //                         145.0 / 2.0,
+    //                         6.0 / (145.0 / 2.0));
 
-    std::vector<uint16_t> msi_channel;
+    printf("TYPE IS %f\n", ch1t.getType());
 
-    while (!data_in.eof())
+    image::equalize(ch1, true);
+    image::equalize(ch9, true);
+
+    for (double x = 0; x < rgbimg.width(); x++)
     {
-        // Read buffer
-        data_in.read((char *)&cadu, 1279);
-
-        // Check RS
-        int errors[5];
-        rs_check.decode_interlaved(cadu, true, 5, errors);
-        if (errors[0] < 0 || errors[1] < 0 || errors[2] < 0 || errors[3] < 0 || errors[4] < 0)
-            continue;
-
-        // Parse this transport frame
-        ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
-
-        // printf("VCID %d\n", vcdu.vcid);
-
-        if (vcdu.vcid == 6)
+        for (double y = 0; y < rgbimg.height(); y++)
         {
-            auto pkts = vcid_demuxer.work(cadu);
+            double ch1_x = x, ch1_y = y;
+            double ch9_x = x, ch9_y = y;
 
-            for (auto pkt : pkts)
-            {
-                // printf("APID %d \n", pkt.header.apid);
-                if (pkt.header.apid == 1228)
-                {
-                    // 1027 ?
-                    // 1028 ?
-                    // 1031 !!!!!
-                    // 1032 !!!!!
+            ch1t.forward(&ch9_x, &ch9_y);
+            ch9t.reverse(&ch9_x, &ch9_y);
+            // ch9_y += ((ch9_x - (145.0 / 2.0)) / (145.0 / 2.0)) * 11;
 
-                    printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
+            //  printf("%f %f - %f %f\n", ch1_x, ch1_y, ch9_x, ch9_y);
 
-                    pkt.payload.resize(3000);
-
-                    int id = pkt.payload[23];
-
-                    if (id == 0)
-                    {
-                        test_t.write((char *)pkt.header.raw, 6);
-                        test_t.write((char *)pkt.payload.data(), pkt.payload.size());
-
-                        for (int i = 0; i < 218; i++)
-                        {
-                            uint16_t val = pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1];
-                            msi_channel.push_back(val);
-                        }
-                    }
-                }
-            }
+            rgbimg.set(0, x, y, ch1.get_pixel_bilinear(0, ch1_x, ch1_y));
+            rgbimg.set(1, x, y, ch1.get_pixel_bilinear(0, ch1_x, ch1_y));
+            if (ch9_x > 0 && ch9_x < ch9.width() && ch9_y > 0 && ch9_y < ch9.height())
+                rgbimg.set(2, x, y, ch9.get_pixel_bilinear(0, ch9_x, ch9_y));
         }
     }
 
-    image::Image img(msi_channel.data(), 16, 218, msi_channel.size() / 218, 1);
-    image::save_png(img, "test_earthcare.png");
+    // image::equalize(rgbimg, true);
+#endif
+
+    auto rgbimg = satdump::products::generate_equation_product_composite(&products, "ch19, ch10, ch1");
+
+    image::equalize(rgbimg, true);
+
+    image::save_img(rgbimg, argv[2]);
 }

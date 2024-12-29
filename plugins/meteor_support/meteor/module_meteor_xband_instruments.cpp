@@ -5,7 +5,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "meteor.h"
-#include "products/image_products.h"
+#include "products2/image_products.h"
 #include "common/tracking/tle.h"
 #include "products/dataset.h"
 #include "resources.h"
@@ -227,6 +227,7 @@ namespace meteor
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = time(0); // avg_overflowless(msumr_timestamps);
 
+#if 0
                 // MTVZA
                 {
                     mtvza_status = SAVING;
@@ -254,6 +255,7 @@ namespace meteor
 
                     mtvza_status = DONE;
                 }
+#endif // TODOREWORK
 
                 dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
             }
@@ -381,20 +383,20 @@ namespace meteor
                     logger->info("----------- KMSS MSU-100 1");
                     logger->info("Lines : " + std::to_string(kmss_lines));
 
-                    satdump::ImageProducts kmss_products;
+                    satdump::products::ImageProducts kmss_products;
                     kmss_products.instrument_name = "kmss_msu100";
-                    kmss_products.has_timestamps = true;
-                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    kmss_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-                    kmss_products.set_timestamps(timestamps);
+                    //                    kmss_products.has_timestamps = true; // TODOREWORK
+                    //                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    //                    kmss_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                    //                    kmss_products.set_timestamps(timestamps);
                     kmss_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
 
                     for (int i = 0; i < 3; i++)
                     {
                         auto img = image::Image(msu100_1_dat[i].data(), 16, 8000, kmss_lines, 1);
-                        correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 0, i, img);
+                        //                        correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 0, i, img);
                         msu100_1_dat[i].clear();
-                        kmss_products.images.push_back({"MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img});
+                        kmss_products.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, 0, 0)});
                     }
 
                     kmss_products.save(directory);
@@ -414,20 +416,20 @@ namespace meteor
                     logger->info("----------- KMSS MSU-100 2");
                     logger->info("Lines : " + std::to_string(kmss_lines));
 
-                    satdump::ImageProducts kmss_products;
+                    satdump::products::ImageProducts kmss_products;
                     kmss_products.instrument_name = "kmss_msu100";
-                    kmss_products.has_timestamps = true;
-                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    kmss_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
-                    kmss_products.set_timestamps(timestamps);
+                    //                    kmss_products.has_timestamps = true; // TODOREWORK
+                    //                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    //                    kmss_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                    //                    kmss_products.set_timestamps(timestamps);
                     kmss_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")));
 
                     for (int i = 0; i < 3; i++)
                     {
                         auto img = image::Image(msu100_2_dat[i].data(), 16, 8000, kmss_lines, 1);
-                        correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 1, i, img);
+                        //                        correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 1, i, img);
                         msu100_2_dat[i].clear();
-                        kmss_products.images.push_back({"MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img});
+                        kmss_products.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, 0, 0)});
                     }
 
                     kmss_products.save(directory);

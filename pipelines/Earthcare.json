@@ -32,5 +32,53 @@
                 "earthcare_instruments": {}
             }
         }
+    },
+    "swarm_dump": {
+        "name": "SWARM S-Band Dump",
+        "live": false,
+        "live_cfg": [],
+        "frequencies": [],
+        "parameters": {
+            "samplerate": {
+                "value": 60e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2.98e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0189
+                }
+            },
+            "cadu": {
+                // "soft2hard": {}
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                     "qpsk_swap_iq": true,
+                    "oqpsk_delay": true,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 5,
+                    "rs_type": "rs239"
+                }
+                /*"ccsds_conv_concat_decoder": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 10232,
+                    "nrzm": false,
+                    "derandomize": true,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "rs_type": "rs223",
+                    "rs_i": 5
+                }*/
+            },
+            "products": {
+                "earthcare_instruments": {}
+            }
+        }
     }
 }

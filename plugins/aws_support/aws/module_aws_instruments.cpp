@@ -4,12 +4,14 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "products/image_products.h"
+#include "products2/image_products.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
 #include "products/dataset.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
+
+#include "common/tracking/tle.h"
 
 #define AWS_SCID 104
 #define AWS_NORAD 60543
@@ -103,6 +105,7 @@ namespace aws
             logger->info("Name  : " + sat_name);
         }
 
+#if 0
         // Sterna DB
         {
             sterna_status = SAVING;
@@ -168,6 +171,81 @@ namespace aws
 
             sterna_dump_status = DONE;
         }
+#else
+        // Sterna Dump
+        {
+            sterna_dump_status = SAVING;
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA_Dump";
+
+            if (!std::filesystem::exists(directory))
+                std::filesystem::create_directory(directory);
+
+            logger->info("----------- STERNA Dump");
+            logger->info("Lines : " + std::to_string(sterna_dump_reader.lines));
+
+            satdump::products::ImageProducts sterna_dump_products;
+            sterna_dump_products.instrument_name = "sterna";
+            //  sterna_dump_products.has_timestamps = true;
+            //  sterna_dump_products.set_tle(satellite_tle);
+            //  sterna_dump_products.bit_depth = 16;
+            //  sterna_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            //  sterna_dump_products.set_timestamps(sterna_dump_reader.timestamps);
+
+            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
+            if (d_parameters["use_ephemeris"].get<bool>())
+                proj_cfg["ephemeris"] = navatt_reader.getEphem();
+            proj_cfg["timestamps"] = sterna_dump_reader.timestamps;
+            sterna_dump_products.set_proj_cfg(proj_cfg);
+
+            // Channels are aligned by groups. 1 to 8 / 9 / 10 to 15 / 16 to 19
+            satdump::ChannelTransform tran[19];
+            double halfscan = 145.0 / 2.0;
+            for (auto &v : tran)
+                v.init_affine(1, 1, 0, 0);
+            tran[8].init_affine_slantx(1, 1, -6.5, 0, halfscan, 11.0 / halfscan);
+            tran[10] = tran[11] = tran[12] = tran[13] = tran[14] = tran[9].init_affine_slantx(0.92, 1, -0.5, 5, halfscan, 11.0 / halfscan);
+            tran[15] = tran[16] = tran[17] = tran[18].init_affine_slantx(0.93, 1, 2.8, 4, halfscan, 6.0 / halfscan);
+
+            // TODOREWORK
+            double mws_freqs[19] = {
+                50.3e9,
+                52.8e9,
+                53.246e9,
+                53.596e9,
+                54.4e9,
+                54.94e9,
+                55.5e9,
+                57.290344e9,
+                89e9,
+                165.5e9,
+                176.311e9,
+                178.811e9,
+                180.311e9,
+                181.511e9,
+                182.311e9,
+                325.15e9,
+                325.15e9,
+                325.15e9,
+                325.15e9,
+            };
+
+            for (int i = 0; i < 19; i++)
+            {
+                sterna_dump_products.images.push_back({i,
+                                                       "STERNA-" + std::to_string(i + 1),
+                                                       std::to_string(i + 1),
+                                                       sterna_dump_reader.getChannel(i),
+                                                       16,
+                                                       tran[i]});
+                sterna_dump_products.set_channel_frequency(i, mws_freqs[i]);
+            }
+
+            sterna_dump_products.save(directory);
+            dataset.products_list.push_back("STERNA_Dump");
+
+            sterna_dump_status = DONE;
+        }
+#endif
 
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
     }

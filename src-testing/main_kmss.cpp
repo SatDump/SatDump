@@ -45,13 +45,13 @@ int main(int argc, char *argv[])
     };
 
     std::vector<testp> points_ch2 = {
-        {72, -3, 1},
-        {7981, -2, -4},
+        {72, -3 + 7, 1 - 1},
+        {7981, -2 + 9 - 1, -4 + 4 - 9},
     };
 
     std::vector<testp> points_ch3 = {
-        {26, 2, -13},
-        {7849, -1, 6}, //-12},
+        {26, 2 - 4, -13 + 11},
+        {7849, -1 - 1, 6 - 9}, //-12},
     };
 
     for (auto item : points_ch2)
@@ -91,8 +91,8 @@ int main(int argc, char *argv[])
             if (x2_3 < 0 || y2_3 < 0 || x2_3 >= img1.width() || y2_3 >= img1.height())
                 continue;
 
-            imgf.set(0, x, y, img2.get(0, x2_2, y2_2)); // img3.get(0, x2_3, y2_3));
-            imgf.set(1, x, y, img3.get(0, x2_3, y2_3)); // img2.get(0, x2_2, y2_2));
+            imgf.set(1, x, y, img2.get(0, x2_2, y2_2)); // img3.get(0, x2_3, y2_3));
+            imgf.set(0, x, y, img3.get(0, x2_3, y2_3)); // img2.get(0, x2_2, y2_2));
             imgf.set(2, x, y, img1.get(0, x, y));
         }
     }
