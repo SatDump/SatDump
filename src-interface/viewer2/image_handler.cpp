@@ -28,6 +28,12 @@ namespace satdump
                     image::equalize(img, true);
                     image_view.update(img);
                 };
+                if (wip_thread)
+                {
+                    if (wip_thread->joinable())
+                        wip_thread->join();
+                    wip_thread.reset();
+                }
                 wip_thread = std::make_shared<std::thread>(fun);
             }
             ImGui::ProgressBar(progress);
