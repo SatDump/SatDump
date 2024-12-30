@@ -85,29 +85,29 @@ namespace satdump
     {
         if (std::filesystem::exists(path) || path.find("http") == 0)
         {
-            std::shared_ptr<products::Products> products = products::loadProducts(path);
+            std::shared_ptr<products::Product> product = products::loadProduct(path);
 
             // Get instrument settings
             nlohmann::ordered_json instrument_viewer_settings;
-            if (config::main_cfg["viewer"]["instruments"].contains(products->instrument_name))
-                instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][products->instrument_name];
+            if (config::main_cfg["viewer"]["instruments"].contains(product->instrument_name))
+                instrument_viewer_settings = config::main_cfg["viewer"]["instruments"][product->instrument_name];
             else
-                logger->error("Unknown instrument : %s!", products->instrument_name.c_str());
+                logger->error("Unknown instrument : %s!", product->instrument_name.c_str());
 
             // Init Handler
             std::string handler_id;
             if (instrument_viewer_settings.contains("handler"))
                 handler_id = instrument_viewer_settings["handler"].get<std::string>();
-            else if (products->contents["type"] == "image")
+            else if (product->contents["type"] == "image")
                 handler_id = "image_handler";
-            else if (products->contents["type"] == "radiation")
+            else if (product->contents["type"] == "radiation")
                 handler_id = "radiation_handler";
-            else if (products->contents["type"] == "scatterometer")
+            else if (product->contents["type"] == "scatterometer")
                 handler_id = "scatterometer_handler";
-            logger->debug("Using handler %s for instrument %s", handler_id.c_str(), products->instrument_name.c_str());
+            logger->debug("Using handler %s for instrument %s", handler_id.c_str(), product->instrument_name.c_str());
             std::shared_ptr<ViewerHandler2> handler = viewer_handlers_registry2[handler_id]();
 
-            handler->products = products.get();
+            handler->product = product.get();
             handler->instrument_cfg = instrument_viewer_settings;
             handler->init();
 
@@ -123,7 +123,7 @@ namespace satdump
 
             // Push products and handler
             product_handler_mutex.lock();
-            products_and_handlers.push_back(std::make_shared<ProductsHandler2>(products, handler, dataset_name));
+            products_and_handlers.push_back(std::make_shared<ProductsHandler2>(product, handler, dataset_name));
             product_handler_mutex.unlock();
         }
     }

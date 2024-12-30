@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../app.h"
-#include "products2/products.h"
+#include "products2/product.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/pfd/widget.h"
@@ -21,7 +21,7 @@ namespace satdump
         TreeDrawer tree_local;
 
     public:
-        products::Products *products;
+        products::Product *product;
         nlohmann::ordered_json instrument_cfg;
 
         virtual void init() = 0;
@@ -54,7 +54,7 @@ namespace satdump
 
         struct ProductsHandler2
         {
-            std::shared_ptr<products::Products> products;
+            std::shared_ptr<products::Product> products;
             std::shared_ptr<ViewerHandler2> handler;
             std::string dataset_name = "";
 
@@ -62,7 +62,7 @@ namespace satdump
 
             ProductsHandler2() {}
 
-            ProductsHandler2(std::shared_ptr<products::Products> products,
+            ProductsHandler2(std::shared_ptr<products::Product> products,
                              std::shared_ptr<ViewerHandler2> handler,
                              std::string dataset_name)
                 : products(products),

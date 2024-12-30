@@ -1,4 +1,4 @@
-#include "image_products.h"
+#include "image_product.h"
 #include "logger.h"
 #include "core/config.h"
 #include "common/utils.h"
@@ -9,7 +9,7 @@ namespace satdump
 {
     namespace products
     {
-        void ImageProducts::save(std::string directory)
+        void ImageProduct::save(std::string directory)
         {
             type = "image";
 
@@ -73,12 +73,12 @@ namespace satdump
                 savemtx.unlock();
             }
 
-            Products::save(directory);
+            Product::save(directory);
         }
 
-        void ImageProducts::load(std::string file)
+        void ImageProduct::load(std::string file)
         {
-            Products::load(file);
+            Product::load(file);
             std::string directory = std::filesystem::path(file).parent_path().string();
 
             if (contents.contains("save_as_matrix"))
@@ -191,7 +191,7 @@ namespace satdump
             }
         }
 
-        ImageProducts::~ImageProducts()
+        ImageProduct::~ImageProduct()
         {
         }
     }

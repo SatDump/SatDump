@@ -6,9 +6,9 @@
 
 namespace aws
 {
-    namespace sterna
+    namespace mws
     {
-        class SternaReader
+        class MWSReader
         {
         private:
             std::vector<uint16_t> channels[19];
@@ -16,8 +16,8 @@ namespace aws
             AWSCRC crc;
 
         public:
-            SternaReader();
-            ~SternaReader();
+            MWSReader();
+            ~MWSReader();
             int lines;
             std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);

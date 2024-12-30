@@ -3,7 +3,7 @@
 #include "viewer.h"
 
 #include "logger.h"
-#include "products2/image_products.h"
+#include "products2/image_product.h"
 #include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/style.h"
@@ -26,7 +26,7 @@ namespace satdump
         std::shared_ptr<std::thread> wip_thread;
 
         // Products
-        products::ImageProducts *products;
+        products::ImageProduct *product;
 
         // The Rest
         void init();

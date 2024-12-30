@@ -16,7 +16,7 @@
 
 #include "common/dsp/buffer.h"
 
-#include "products2/products.h"
+#include "products2/product.h"
 
 namespace satdump
 {

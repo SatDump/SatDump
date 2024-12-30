@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/module.h"
-#include "instruments/sterna/sterna_reader.h"
+#include "instruments/mws/mws_reader.h"
 #include "instruments/navatt/navatt_reader.h"
 
 namespace aws
@@ -13,13 +13,13 @@ namespace aws
         std::atomic<uint64_t> progress;
 
         // Readers
-        sterna::SternaReader sterna_reader;
-        sterna::SternaReader sterna_dump_reader;
+        mws::MWSReader mws_reader;
+        mws::MWSReader mws_dump_reader;
         navatt::NavAttReader navatt_reader;
 
         // Statuses
-        instrument_status_t sterna_status = DECODING;
-        instrument_status_t sterna_dump_status = DECODING;
+        instrument_status_t mws_status = DECODING;
+        instrument_status_t mws_dump_status = DECODING;
 
     public:
         AWSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

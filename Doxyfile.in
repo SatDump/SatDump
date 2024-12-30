@@ -4,6 +4,7 @@ INPUT                  = src-core/common/image \
                          src-core/common/geodetic \
                          src-core/common/ccsds \
                          src-core/common/lrit \
-                         src-core/common/mpeg_ts
+                         src-core/common/mpeg_ts \
+                         src-core/products2
 EXCLUDE                = src-core/common/image/font_lib src-core/common/image/font
 RECURSIVE              = YES

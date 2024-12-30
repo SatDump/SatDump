@@ -8,7 +8,7 @@ namespace satdump
 {
     void ImageViewerHandler2::init()
     {
-        products = (products::ImageProducts *)ViewerHandler2::products;
+        product = (products::ImageProduct *)ViewerHandler2::product;
     }
 
     ImageViewerHandler2::~ImageViewerHandler2()
@@ -24,7 +24,8 @@ namespace satdump
             {
                 auto fun = [this]()
                 {
-                    auto img = products::generate_equation_product_composite(products, equation, &progress);
+                    logger->critical("PID %llu", getpid());
+                    auto img = products::generate_equation_product_composite(product, equation, &progress);
                     image::equalize(img, true);
                     image_view.update(img);
                 };
@@ -38,7 +39,7 @@ namespace satdump
             }
             ImGui::ProgressBar(progress);
 
-            for (auto &ch : products->images)
+            for (auto &ch : product->images)
             {
                 ImGui::Separator();
                 ImGui::Text("Channel %s", ch.channel_name.c_str());

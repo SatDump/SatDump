@@ -39,74 +39,97 @@ namespace satdump
             return tokens;
         }
 
-        image::Image generate_equation_product_composite(ImageProducts *products, std::string equation, float *progess)
+        image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progess)
         {
+            // Get required variables & number of output channels
             int nout_channels = 0;
             auto tokens = get_required_tokens(equation, &nout_channels);
 
+            // We can't handle over 4
             if (nout_channels > 4)
                 throw satdump_exception("Can't have more than 4 output channels!");
 
+            // Handles variables for each input channel
             struct TokenS
             {
-                image::Image &img;
-                ChannelTransform &transform;
-                double px = 0, py = 0;
-                double v = 0;
+                image::Image &img;            // Channel image
+                ChannelTransform &transform;  // Channel transform
+                double px = 0, py = 0;        // Chanel X/Y to be transformed
+                double v = 0;                 // Channel value passed to muParser
+                size_t width = 0, height = 0; // Channel width/height for bounds checks
+                double maxval = 0;            // Maxval to convert to double
 
                 TokenS(image::Image &img, ChannelTransform &transform) : img(img), transform(transform) {}
             };
 
-            std::vector<std::shared_ptr<TokenS>> tkts;
+            // Setup expression parser
+            size_t ntkts = 0;
+            TokenS **tkts = new TokenS *[tokens.size()];
             mu::Parser equParser;
             equParser.SetExpr(equation);
 
+            // Iterate through tokens to set them up
             for (auto &tkt : tokens)
             {
                 if (tkt.find("ch") == 0 && tkt.size() > 2)
-                {
+                { // Raw channel case
                     std::string index = tkt.substr(2);
                     logger->trace("Needs channel " + index);
-                    auto &h = products->get_channel_image(index);
-                    auto nt = std::make_shared<TokenS>(h.image, h.ch_transform);
+                    auto &h = product->get_channel_image(index);
+                    auto nt = new TokenS(h.image, h.ch_transform);
+                    nt->width = h.image.width();
+                    nt->height = h.image.height();
+                    nt->maxval = h.image.maxval();
                     equParser.DefineVar(tkt, &nt->v);
-                    tkts.push_back(nt);
+                    tkts[ntkts++] = nt;
                 }
-                else
+                else // Abort if we can't recognize token
                     throw satdump_exception("Token " + tkt + " is invalid!");
             }
 
-            std::shared_ptr<TokenS> rtkt = tkts[0];
+            // Select reference channel, setup output
+            TokenS *rtkt = tkts[0];
             image::Image out(rtkt->img.depth(),
                              rtkt->img.width(),
                              rtkt->img.height(),
                              nout_channels);
 
-            for (size_t x = 0; x < out.width(); x++)
+            size_t x, y, i, c;
+            for (y = 0; y < rtkt->height; y++)
             {
-                for (size_t y = 0; y < out.height(); y++)
+                for (x = 0; x < rtkt->width; x++)
                 {
-                    // Update raw values
-                    for (auto &t : tkts)
+                    // Update raw values, apply transforms if needed
+                    for (i = 0; i < ntkts; i++)
                     {
+                        TokenS *t = tkts[i];
                         t->px = x, t->py = y;
                         rtkt->transform.forward(&t->px, &t->py);
                         t->transform.reverse(&t->px, &t->py);
-                        if (t->px > 0 && t->px < t->img.width() && t->py > 0 && t->py < t->img.height())
-                            t->v = (double)t->img.get_pixel_bilinear(0, t->px, t->py) / (double)t->img.maxval();
+                        if (t->px > 0 && t->px < t->width && t->py > 0 && t->py < t->height)
+                            t->v = (((t->px - (uint32_t)t->px) == 0 && (t->py - (uint32_t)t->py) == 0)
+                                        ? (double)t->img.get(0, t->px, t->py)
+                                        : (double)t->img.get_pixel_bilinear(0, t->px, t->py)) /
+                                   t->maxval; // TODOREWORK optimize
+                        else
+                            t->v = 0; // TODOREWORK DETECT AND CROP
                     }
 
-                    // Do the math
+                    // Run the parser
                     double *equOut = equParser.Eval(nout_channels);
 
                     // Set output
-                    for (int c = 0; c < nout_channels; c++)
+                    for (c = 0; c < nout_channels; c++)
                         out.setf(c, x, y, out.clampf(equOut[c]));
                 }
 
                 if (progess != nullptr)
-                    *progess = (float)x / (float)out.width();
+                    *progess = (float)y / (float)rtkt->height;
             }
+
+            // Free up tokens
+            for (int i = 0; i < ntkts; i++)
+                delete tkts[i];
 
             return out;
         }

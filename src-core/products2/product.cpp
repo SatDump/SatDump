@@ -1,4 +1,4 @@
-#include "products.h"
+#include "product.h"
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
@@ -6,13 +6,13 @@
 #include "common/utils.h"
 #include "core/exception.h"
 
-#include "image_products.h"
+#include "image_product.h"
 
 namespace satdump
 {
     namespace products
     {
-        void Products::save(std::string directory)
+        void Product::save(std::string directory)
         {
             contents["instrument"] = instrument_name;
             contents["type"] = type;
@@ -24,7 +24,7 @@ namespace satdump
             out_file.close();
         }
 
-        void Products::load(std::string file)
+        void Product::load(std::string file)
         {
             // Read file
             std::vector<uint8_t> cbor_data;
@@ -54,10 +54,10 @@ namespace satdump
             type = contents["type"].get<std::string>();
         }
 
-        std::shared_ptr<Products> loadProducts(std::string path)
+        std::shared_ptr<Product> loadProduct(std::string path)
         {
-            std::shared_ptr<Products> final_products;
-            Products raw_products;
+            std::shared_ptr<Product> final_products;
+            Product raw_products;
 
             if (std::filesystem::is_directory(path) ||
                 (path.find("http") == 0 && path.find(".cbor") == std::string::npos))
@@ -65,28 +65,28 @@ namespace satdump
 
             raw_products.load(path);
 
-            if (products_loaders.count(raw_products.type) > 0)
-                return products_loaders[raw_products.type].loadFromFile(path);
+            if (product_loaders.count(raw_products.type) > 0)
+                return product_loaders[raw_products.type].loadFromFile(path);
             else
             {
-                final_products = std::make_shared<Products>();
+                final_products = std::make_shared<Product>();
                 final_products->load(path);
                 return final_products;
             }
         }
 
-        std::map<std::string, RegisteredProducts> products_loaders;
+        std::map<std::string, RegisteredProduct> product_loaders;
 
         void registerProducts()
         {
-            products_loaders.clear();
-            products_loaders.emplace("image", RegisteredProducts{PRODUCTS_LOADER_FUN(ImageProducts), /*process_image_products*/ [](satdump::products::Products *, std::string)
-                                                                 { logger->error("NO PROCESSOR!"); }});
+            product_loaders.clear();
+            product_loaders.emplace("image", RegisteredProduct{PRODUCT_LOADER_FUN(ImageProduct), /*process_image_products*/ [](satdump::products::Product *, std::string)
+                                                               { logger->error("NO PROCESSOR!"); }});
             //  products_loaders.emplace("radiation", RegisteredProducts{PRODUCTS_LOADER_FUN(RadiationProducts), process_radiation_products});
             //  products_loaders.emplace("scatterometer", RegisteredProducts{PRODUCTS_LOADER_FUN(ScatterometerProducts), process_scatterometer_products});
 
             // Plugins!
-            eventBus->fire_event<RegisterProductsEvent>({products_loaders});
+            eventBus->fire_event<RegisterProductsEvent>({product_loaders});
         }
     }
 }

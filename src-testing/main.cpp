@@ -11,17 +11,19 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "products2/image_products.h"
+#include "products2/image_product.h"
 #include "common/image/io.h"
 #include "common/image/processing.h"
 
 #include "products2/image/product_equation.h"
 
+#include "common/utils.h"
+
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    satdump::products::ImageProducts products;
+    satdump::products::ImageProduct products;
     products.load(argv[1]);
 
 #if 0
@@ -67,9 +69,13 @@ int main(int argc, char *argv[])
     // image::equalize(rgbimg, true);
 #endif
 
-    auto rgbimg = satdump::products::generate_equation_product_composite(&products, "ch19, ch10, ch1");
+    double start_time = getTime();
+    auto rgbimg = satdump::products::generate_equation_product_composite(&products, "ch3, ch2, ch1");
+    double end_time = getTime();
 
-    image::equalize(rgbimg, true);
+    printf("Time %f\n", end_time - start_time);
+
+    // image::equalize(rgbimg, true);
 
     image::save_img(rgbimg, argv[2]);
 }

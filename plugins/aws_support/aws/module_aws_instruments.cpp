@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "products2/image_products.h"
+#include "products2/image_product.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
 #include "products/dataset.h"
@@ -55,7 +55,7 @@ namespace aws
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid2.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     if (pkt.header.apid == 100)
-                        sterna_dump_reader.work(pkt);
+                        mws_dump_reader.work(pkt);
                     else if (pkt.header.apid == 51)
                         navatt_reader.work(pkt);
             }
@@ -64,7 +64,7 @@ namespace aws
                 std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid3.work(cadu);
                 for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                     if (pkt.header.apid == 100)
-                        sterna_reader.work(pkt);
+                        mws_reader.work(pkt);
                     else if (pkt.header.apid == 51)
                         navatt_reader.work(pkt);
             }
@@ -94,7 +94,7 @@ namespace aws
         // Products dataset
         satdump::ProductDataSet dataset;
         dataset.satellite_name = sat_name;
-        dataset.timestamp = get_median(sterna_reader.timestamps);
+        dataset.timestamp = get_median(mws_reader.timestamps);
 
         std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
 
@@ -108,100 +108,100 @@ namespace aws
 #if 0
         // Sterna DB
         {
-            sterna_status = SAVING;
+            mws_status = SAVING;
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
             logger->info("----------- STERNA");
-            logger->info("Lines : " + std::to_string(sterna_reader.lines));
+            logger->info("Lines : " + std::to_string(mws_reader.lines));
 
-            satdump::ImageProducts sterna_products;
-            sterna_products.instrument_name = "sterna";
-            sterna_products.has_timestamps = true;
-            sterna_products.set_tle(satellite_tle);
-            sterna_products.bit_depth = 16;
-            sterna_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            sterna_products.set_timestamps(sterna_reader.timestamps);
+            satdump::ImageProducts mws_products;
+            mws_products.instrument_name = "sterna";
+            mws_products.has_timestamps = true;
+            mws_products.set_tle(satellite_tle);
+            mws_products.bit_depth = 16;
+            mws_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            mws_products.set_timestamps(mws_reader.timestamps);
 
             nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
             if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
-            sterna_products.set_proj_cfg(proj_cfg);
+            mws_products.set_proj_cfg(proj_cfg);
 
             for (int i = 0; i < 19; i++)
-                sterna_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), sterna_reader.getChannel(i)});
+                mws_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), mws_reader.getChannel(i)});
 
-            sterna_products.save(directory);
+            mws_products.save(directory);
             dataset.products_list.push_back("STERNA");
 
-            sterna_status = DONE;
+            mws_status = DONE;
         }
 
         // Sterna Dump
         {
-            sterna_dump_status = SAVING;
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA_Dump";
+            mws_dump_status = SAVING;
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/mws_Dump";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
             logger->info("----------- STERNA Dump");
-            logger->info("Lines : " + std::to_string(sterna_dump_reader.lines));
+            logger->info("Lines : " + std::to_string(mws_dump_reader.lines));
 
-            satdump::ImageProducts sterna_dump_products;
-            sterna_dump_products.instrument_name = "sterna";
-            sterna_dump_products.has_timestamps = true;
-            sterna_dump_products.set_tle(satellite_tle);
-            sterna_dump_products.bit_depth = 16;
-            sterna_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            sterna_dump_products.set_timestamps(sterna_dump_reader.timestamps);
+            satdump::ImageProducts mws_dump_products;
+            mws_dump_products.instrument_name = "sterna";
+            mws_dump_products.has_timestamps = true;
+            mws_dump_products.set_tle(satellite_tle);
+            mws_dump_products.bit_depth = 16;
+            mws_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            mws_dump_products.set_timestamps(mws_dump_reader.timestamps);
 
             nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
             if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
-            sterna_dump_products.set_proj_cfg(proj_cfg);
+            mws_dump_products.set_proj_cfg(proj_cfg);
 
             for (int i = 0; i < 19; i++)
-                sterna_dump_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), sterna_dump_reader.getChannel(i)});
+                mws_dump_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), mws_dump_reader.getChannel(i)});
 
-            sterna_dump_products.save(directory);
-            dataset.products_list.push_back("STERNA_Dump");
+            mws_dump_products.save(directory);
+            dataset.products_list.push_back("mws_Dump");
 
-            sterna_dump_status = DONE;
+            mws_dump_status = DONE;
         }
 #else
         // Sterna Dump
         {
-            sterna_dump_status = SAVING;
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA_Dump";
+            mws_dump_status = SAVING;
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWS_Dump";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            logger->info("----------- STERNA Dump");
-            logger->info("Lines : " + std::to_string(sterna_dump_reader.lines));
+            logger->info("----------- MWS Dump");
+            logger->info("Lines : " + std::to_string(mws_dump_reader.lines));
 
-            satdump::products::ImageProducts sterna_dump_products;
-            sterna_dump_products.instrument_name = "sterna";
-            //  sterna_dump_products.has_timestamps = true;
-            //  sterna_dump_products.set_tle(satellite_tle);
-            //  sterna_dump_products.bit_depth = 16;
-            //  sterna_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            //  sterna_dump_products.set_timestamps(sterna_dump_reader.timestamps);
+            satdump::products::ImageProduct mws_dump_product;
+            mws_dump_product.instrument_name = "aws_mws";
+            //  mws_dump_products.has_timestamps = true;
+            //  mws_dump_products.set_tle(satellite_tle);
+            //  mws_dump_products.bit_depth = 16;
+            //  mws_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+            //  mws_dump_products.set_timestamps(mws_dump_reader.timestamps);
 
-            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
+            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json")); // TODOREWORK RENAME
             if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
-            proj_cfg["timestamps"] = sterna_dump_reader.timestamps;
-            sterna_dump_products.set_proj_cfg(proj_cfg);
+            proj_cfg["timestamps"] = mws_dump_reader.timestamps;
+            mws_dump_product.set_proj_cfg(proj_cfg);
 
             // Channels are aligned by groups. 1 to 8 / 9 / 10 to 15 / 16 to 19
             satdump::ChannelTransform tran[19];
             double halfscan = 145.0 / 2.0;
             for (auto &v : tran)
-                v.init_affine(1, 1, 0, 0);
+                v.init_none();
             tran[8].init_affine_slantx(1, 1, -6.5, 0, halfscan, 11.0 / halfscan);
             tran[10] = tran[11] = tran[12] = tran[13] = tran[14] = tran[9].init_affine_slantx(0.92, 1, -0.5, 5, halfscan, 11.0 / halfscan);
             tran[15] = tran[16] = tran[17] = tran[18].init_affine_slantx(0.93, 1, 2.8, 4, halfscan, 6.0 / halfscan);
@@ -231,19 +231,19 @@ namespace aws
 
             for (int i = 0; i < 19; i++)
             {
-                sterna_dump_products.images.push_back({i,
-                                                       "STERNA-" + std::to_string(i + 1),
-                                                       std::to_string(i + 1),
-                                                       sterna_dump_reader.getChannel(i),
-                                                       16,
-                                                       tran[i]});
-                sterna_dump_products.set_channel_frequency(i, mws_freqs[i]);
+                mws_dump_product.images.push_back({i,
+                                                   "STERNA-" + std::to_string(i + 1),
+                                                   std::to_string(i + 1),
+                                                   mws_dump_reader.getChannel(i),
+                                                   16,
+                                                   tran[i]});
+                mws_dump_product.set_channel_frequency(i, mws_freqs[i]);
             }
 
-            sterna_dump_products.save(directory);
-            dataset.products_list.push_back("STERNA_Dump");
+            mws_dump_product.save(directory);
+            dataset.products_list.push_back("MWS_Dump");
 
-            sterna_dump_status = DONE;
+            mws_dump_status = DONE;
         }
 #endif
 
@@ -266,19 +266,19 @@ namespace aws
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Sterna");
+            ImGui::Text("MWS");
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextColored(style::theme.green, "%d", sterna_reader.lines);
+            ImGui::TextColored(style::theme.green, "%d", mws_reader.lines);
             ImGui::TableSetColumnIndex(2);
-            drawStatus(sterna_status);
+            drawStatus(mws_status);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Sterna Dump");
+            ImGui::Text("MWS Dump");
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextColored(style::theme.green, "%d", sterna_dump_reader.lines);
+            ImGui::TextColored(style::theme.green, "%d", mws_dump_reader.lines);
             ImGui::TableSetColumnIndex(2);
-            drawStatus(sterna_dump_status);
+            drawStatus(mws_dump_status);
 
             ImGui::EndTable();
         }
