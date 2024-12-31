@@ -16,7 +16,7 @@ namespace satdump
 
     SATDUMP_DLL2 extern std::shared_ptr<RecorderApplication> recorder_app;
     SATDUMP_DLL2 extern std::shared_ptr<ViewerApplication> viewer_app;
-    SATDUMP_DLL2 extern std::shared_ptr<ViewerApplication2> viewer_app2;
+    SATDUMP_DLL2 extern std::shared_ptr<viewer::ViewerApplication> viewer_app2;
 
     void initMainUI();
     void exitMainUI();

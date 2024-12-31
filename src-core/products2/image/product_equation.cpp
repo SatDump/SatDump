@@ -1,6 +1,7 @@
 #include "product_equation.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
+#include "common/image/meta.h"
 
 namespace satdump
 {
@@ -52,6 +53,7 @@ namespace satdump
             // Handles variables for each input channel
             struct TokenS
             {
+                int ch_idx;                   // Channel ID, absolute
                 image::Image &img;            // Channel image
                 ChannelTransform &transform;  // Channel transform
                 double px = 0, py = 0;        // Chanel X/Y to be transformed
@@ -77,6 +79,7 @@ namespace satdump
                     logger->trace("Needs channel " + index);
                     auto &h = product->get_channel_image(index);
                     auto nt = new TokenS(h.image, h.ch_transform);
+                    nt->ch_idx = h.abs_index;
                     nt->width = h.image.width();
                     nt->height = h.image.height();
                     nt->maxval = h.image.maxval();
@@ -126,6 +129,10 @@ namespace satdump
                 if (progess != nullptr)
                     *progess = (float)y / (float)rtkt->height;
             }
+
+            // Add metadata
+            if (product->has_proj_cfg())
+                image::set_metadata_proj_cfg(out, product->get_proj_cfg(rtkt->ch_idx));
 
             // Free up tokens
             for (int i = 0; i < ntkts; i++)

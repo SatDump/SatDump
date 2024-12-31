@@ -71,13 +71,15 @@ namespace satdump
 
             /**
              * @brief Get geo projection config in the product, if present
-             * @param channel TODOREWORK
+             * @param channel channel absolute index TODOREWORK
              * @return projection config as JSON object
              */
             nlohmann::ordered_json get_proj_cfg(int channel)
             {
                 // TODO CHANNEL SPECIFICS
-                return contents["projection_cfg"];
+                auto cfg = contents["projection_cfg"];
+                cfg["transform"] = get_channel_image(channel).ch_transform;
+                return cfg;
             }
 
             /**

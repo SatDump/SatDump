@@ -12,6 +12,7 @@ namespace satdump
     {
         /**
          * @brief Generate a simple composite from an image product
+         * TODOREWORK : document selection of best settings. Max bit depth, size, etc
          *
          * @param product the image product to utilize
          * @param equation equation string to generate the composite with

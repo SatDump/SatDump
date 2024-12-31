@@ -1,10 +1,12 @@
 #pragma once
 
-struct TreeDrawer
+#include "imgui/imgui_internal.h"
+
+struct TreeDrawerToClean
 {
 
     const ImColor TreeLineColor = ImColor(128, 128, 128, 255); // ImGui::GetColorU32(ImGuiCol_Text);
-    float SmallOffsetX = 11.0f;                                // for now, a hardcoded value; should take into account tree indent size
+    float SmallOffsetX = 11.0f - 22;                           // for now, a hardcoded value; should take into account tree indent size
 
     ImDrawList *drawList;
 

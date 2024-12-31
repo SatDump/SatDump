@@ -17,20 +17,14 @@
 #include "imgui/implot/implot.h"
 #include "imgui/implot3d/implot3d.h"
 
-// #define ENABLE_DEBUG_MAP
-#ifdef ENABLE_DEBUG_MAP
-#include "common/widgets/image_view.h"
-float lat = 0, lon = 0, lat1 = 0, lon1 = 0;
-int zoom = 0;
-image::Image<uint8_t> img(800, 400, 3);
-ImageViewWidget ivw;
-#endif
+// TODOREWORK
+#include "viewer2/handler.h"
 
 namespace satdump
 {
     SATDUMP_DLL2 std::shared_ptr<RecorderApplication> recorder_app;
     SATDUMP_DLL2 std::shared_ptr<ViewerApplication> viewer_app;
-    SATDUMP_DLL2 std::shared_ptr<ViewerApplication2> viewer_app2;
+    SATDUMP_DLL2 std::shared_ptr<viewer::ViewerApplication> viewer_app2;
     std::vector<std::shared_ptr<Application>> other_apps;
 
     SATDUMP_DLL2 bool update_ui = true;
@@ -56,11 +50,11 @@ namespace satdump
         credits_md.set_md(credits_markdown);
 
         registerViewerHandlers();
-        registerViewerHandlers2();
+        viewer::registerHandlers();
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();
-        viewer_app2 = std::make_shared<ViewerApplication2>();
+        viewer_app2 = std::make_shared<viewer::ViewerApplication>();
         open_recorder = satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("start_recorder_device");
 
         eventBus->fire_event<AddGUIApplicationEvent>({other_apps});
@@ -176,32 +170,6 @@ namespace satdump
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
-#ifdef ENABLE_DEBUG_MAP
-                if (ImGui::BeginTabItem("Map"))
-                {
-                    tileMap tm;
-                    ImGui::SetNextItemWidth(120);
-                    ImGui::InputFloat("Latitude", &lat);
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(120);
-                    ImGui::InputFloat("Longitude", &lon);
-                    ImGui::SetNextItemWidth(120);
-                    ImGui::InputFloat("Latitude##1", &lat1);
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(120);
-                    ImGui::InputFloat("Longitude##1", &lon1);
-                    ImGui::SetNextItemWidth(250);
-                    ImGui::SliderInt("Zoom", &zoom, 0, 19);
-                    if (ImGui::Button("Get tile from server"))
-                    {
-                        // mapTile tl(tm.downloadTile(tm.coorToTile({lat, lon}, zoom), zoom));
-                        img = tm.getMapImage({lat, lon}, {lat1, lon1}, zoom);
-                        ivw.update(img);
-                    }
-                    ivw.draw(ImVec2(800, 400));
-                    ImGui::EndTabItem();
-                }
-#endif
             }
             ImGui::EndTabBar();
             ImGuiUtils_SendCurrentWindowToBack();
