@@ -14,7 +14,7 @@ namespace satdump
             struct DragDropWip
             {
                 std::shared_ptr<Handler> drag;
-                std::function<void()> del;
+                std::function<void(std::shared_ptr<Handler>)> del;
             };
 
             tree_local.start();
@@ -33,13 +33,13 @@ namespace satdump
                     // TODOREWORK CLEANUP
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
-                        auto del = [this, handler]()
+                        auto del = [this](std::shared_ptr<Handler> handler)
                         {
-                            logger->error("Delete!!!!");
+                            logger->error("Delete!!!! " + handler->getName());
                             delSubHandler(handler);
                         };
-                        DragDropWip *d = new DragDropWip({handler, del});
-                        ImGui::SetDragDropPayload("VIEWER_HANDLER", d, sizeof(DragDropWip));
+                        DragDropWip d({handler, del});
+                        ImGui::SetDragDropPayload("VIEWER_HANDLER", &d, sizeof(DragDropWip));
 
                         ImGui::Text("%s", handler->getName().c_str());
                         ImGui::EndDragDropSource();
@@ -51,10 +51,9 @@ namespace satdump
                         {
                             IM_ASSERT(payload->DataSize == sizeof(DragDropWip));
                             const DragDropWip *payload_n = (const DragDropWip *)payload->Data;
-                            logger->info("Handler " + handler->getName() + " got drag");
+                            logger->info("Handler " + handler->getName() + " got drag of " + payload_n->drag->getName());
                             handler->addSubHandler(payload_n->drag);
-                            payload_n->del();
-                            delete payload_n;
+                            payload_n->del(payload_n->drag);
                         }
                         ImGui::EndDragDropTarget();
                     }
