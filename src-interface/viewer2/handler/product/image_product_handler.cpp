@@ -8,7 +8,8 @@ namespace satdump
 {
     namespace viewer
     {
-        void ImageProductHandler::init()
+        ImageProductHandler::ImageProductHandler(std::shared_ptr<products::Product> p)
+            : ProductHandler(p)
         {
             product = (products::ImageProduct *)ProductHandler::product.get();
         }
@@ -19,7 +20,7 @@ namespace satdump
 
         void ImageProductHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("Image"))
+            if (ImGui::CollapsingHeader("ImageProduct TODOREWORK"))
             {
                 ImGui::InputText("##equation", &equation);
                 if (ImGui::Button("Apply"))
@@ -29,7 +30,7 @@ namespace satdump
                         //  logger->critical("PID %llu", getpid());
                         auto img = products::generate_equation_product_composite(product, equation, &progress);
                         image::equalize(img, true);
-                        image_view.update(img);
+                        img_handler.updateImage(img); //  image_view.update(img);
                     };
                     if (wip_thread)
                     {
@@ -48,11 +49,13 @@ namespace satdump
                     ch.ch_transform.render();
                 }
             }
+
+            img_handler.drawMenu();
         }
 
         void ImageProductHandler::drawContents(ImVec2 win_size)
         {
-            image_view.draw(win_size);
+            img_handler.drawContents(win_size); //  image_view.draw(win_size);
         }
     }
 }

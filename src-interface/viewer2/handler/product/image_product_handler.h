@@ -4,7 +4,6 @@
 
 #include "logger.h"
 #include "products2/image_product.h"
-#include "common/widgets/image_view.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/style.h"
 // #include "libs/ctpl/ctpl_stl.h"
@@ -13,6 +12,8 @@
 // TODOREWORK?
 #include <thread>
 
+#include "../image/image_handler.h"
+
 namespace satdump
 {
     namespace viewer
@@ -20,9 +21,10 @@ namespace satdump
         class ImageProductHandler : public ProductHandler
         {
         public:
+            ImageProductHandler(std::shared_ptr<products::Product> p);
             ~ImageProductHandler();
 
-            ImageViewWidget image_view;
+            ImageHandler img_handler;
 
             std::string equation;
             float progress = 0;
@@ -33,14 +35,13 @@ namespace satdump
             products::ImageProduct *product;
 
             // The Rest
-            void init();
             void drawMenu();
             void drawContents(ImVec2 win_size);
 
             std::string getName() { return product->instrument_name; }
 
             static std::string getID() { return "image_product_handler"; }
-            static std::shared_ptr<Handler> getInstance() { return std::make_shared<ImageProductHandler>(); }
+            static std::shared_ptr<Handler> getInstance() { return std::make_shared<ImageProductHandler>(nullptr); }
         };
     }
 }

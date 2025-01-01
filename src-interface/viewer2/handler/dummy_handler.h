@@ -9,7 +9,6 @@ namespace satdump
         class DummyHandler : public Handler
         { // TODOREWORK PRIVATE DELETE STUFF
         public:
-            void init() {}
             void drawMenu() {}
             void drawContents(ImVec2 win_size) {}
 

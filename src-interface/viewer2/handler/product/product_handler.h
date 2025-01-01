@@ -10,6 +10,9 @@ namespace satdump
         class ProductHandler : public Handler
         {
         public:
+            ProductHandler(std::shared_ptr<products::Product> p)
+                : product(p) {}
+
             std::shared_ptr<products::Product> product;
             nlohmann::ordered_json instrument_cfg;
 

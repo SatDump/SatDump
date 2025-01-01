@@ -44,16 +44,12 @@ namespace satdump
 
                 if (ImGui::Button("Load KMSS"))
                 {
-                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>();
-                    prod_h->product = products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor");
-                    prod_h->init();
+                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
                     master_handler->addSubHandler(prod_h);
                 }
                 else if (ImGui::Button("Load Sterna"))
                 {
-                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>();
-                    prod_h->product = products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor");
-                    prod_h->init();
+                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
                     master_handler->addSubHandler(prod_h);
                 }
                 else if (ImGui::Button("Dataset"))
@@ -61,21 +57,15 @@ namespace satdump
                     std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>();
                     dat_h->init();
                     {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>();
-                        prod_h->product = products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor");
-                        prod_h->init();
+                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
                         dat_h->instrument_products->addSubHandler(prod_h);
                     }
                     {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>();
-                        prod_h->product = products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_2/product.cbor");
-                        prod_h->init();
+                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_2/product.cbor"));
                         dat_h->instrument_products->addSubHandler(prod_h);
                     }
                     {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>();
-                        prod_h->product = products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor");
-                        prod_h->init();
+                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
                         dat_h->instrument_products->addSubHandler(prod_h);
                     }
                     master_handler->addSubHandler(dat_h);

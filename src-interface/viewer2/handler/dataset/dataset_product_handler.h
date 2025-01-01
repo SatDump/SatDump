@@ -12,6 +12,7 @@ namespace satdump
         public:
             ~DatasetProductHandler();
 
+            int selected_tab = 0;
             ImFlow::ImNodeFlow grid;
 
             // The Rest

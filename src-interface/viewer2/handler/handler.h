@@ -21,7 +21,6 @@ namespace satdump
             std::vector<std::shared_ptr<Handler>> subhandlers_marked_for_del;
 
         public:
-            virtual void init() = 0;
             virtual void drawMenu() = 0;
             virtual void drawContents(ImVec2 win_size) = 0;
 

@@ -12,8 +12,48 @@ namespace satdump
         {
         }
 
+        class BlockNode : public ImFlow::BaseNode
+        {
+
+        public:
+            BlockNode()
+            {
+                setTitle("BlockNode");
+                setStyle(ImFlow::NodeStyle::green());
+                //    addIN<std::shared_ptr<NaFiFo2>>("In", 0, ImFlow::ConnectionFilter::SameType());
+                // if (blk->outputs.size() > 0)
+                //    addOUT<std::shared_ptr<NaFiFo2>>("Out", ImFlow::PinStyle::brown())->behaviour([this]()
+                //                                                                                  { return blk->get_output(0); });
+            }
+
+            ~BlockNode()
+            {
+            }
+
+            void draw() override
+            {
+                ImGui::Text("Something");
+            }
+        };
+
         void DatasetProductHandler::drawMenu()
         {
+            if (selected_tab == 0)
+            {
+            }
+            else if (selected_tab == 1)
+            {
+                if (ImGui::CollapsingHeader("Flowgraph"))
+                {
+                    if (ImGui::Button("Add Block"))
+                    {
+                        grid.addNode<BlockNode>({0, 0});
+                    }
+                }
+            }
+            else if (selected_tab == 2)
+            {
+            }
         }
 
         void DatasetProductHandler::drawContents(ImVec2 win_size)
@@ -21,6 +61,7 @@ namespace satdump
             ImGui::BeginTabBar("##datasetproducttabbar");
             if (ImGui::BeginTabItem("Presets"))
             {
+                selected_tab = 0;
                 if (ImGui::BeginListBox("##pipelineslistbox"))
                 {
                     bool is_selected = false;
@@ -56,11 +97,13 @@ namespace satdump
             }
             if (ImGui::BeginTabItem("Flowgraph"))
             {
+                selected_tab = 1;
                 grid.update();
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Code"))
             {
+                selected_tab = 2;
 
                 ImGui::EndTabItem();
             }
