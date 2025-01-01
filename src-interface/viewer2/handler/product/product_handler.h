@@ -1,6 +1,6 @@
 #pragma once
 
-#include "handler.h"
+#include "../handler.h"
 #include "products2/product.h"
 
 namespace satdump

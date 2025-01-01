@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 
 //// TODOREWORK?
-#include "image_product_handler.h"
+#include "product/image_product_handler.h"
 
 namespace satdump
 {

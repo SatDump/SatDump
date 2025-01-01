@@ -4,7 +4,7 @@
 #include "imgui/imgui.h"
 #include <mutex>
 
-#include "handler.h"
+#include "handler/handler.h"
 
 namespace satdump
 {

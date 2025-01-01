@@ -13,7 +13,8 @@ namespace satdump
             void drawMenu() {}
             void drawContents(ImVec2 win_size) {}
 
-            std::string getName() { return "!!!Dummy!!!"; }
+            std::string name = "!!!Dummy!!!";
+            std::string getName() { return name; }
 
             static std::string getID() { return "dummy"; }
             static std::shared_ptr<Handler> getInstance() { return std::make_shared<DummyHandler>(); }
