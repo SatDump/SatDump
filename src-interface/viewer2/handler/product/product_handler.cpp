@@ -48,6 +48,7 @@ namespace satdump
                 {
                     setConfig(instrument_cfg["presets"][preset_selection_curr_id]);
                     was_changed = true;
+                    preset_selection_curr_id = -1;
                 }
             }
 

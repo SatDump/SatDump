@@ -153,7 +153,7 @@ namespace satdump
 
         void ImageProductHandler::drawContents(ImVec2 win_size)
         {
-            img_handler.drawContents(win_size); //  image_view.draw(win_size);
+            img_handler.drawContents(win_size);
         }
     }
 }
