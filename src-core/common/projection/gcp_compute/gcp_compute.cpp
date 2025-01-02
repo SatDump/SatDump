@@ -34,17 +34,15 @@ namespace satdump
                 return gcps;
             }
 
-            nlohmann::ordered_json mtd = cfg.contains("metadata") ? cfg["metadata"] : nlohmann::ordered_json();
-
             TLE tle;
-            if (mtd.contains("tle"))
-                tle = mtd["tle"];
+            if (cfg.contains("tle"))
+                tle = cfg["tle"];
             else
                 throw satdump_exception("Could not get TLE!");
 
             nlohmann::ordered_json timestamps;
-            if (mtd.contains("timestamps"))
-                timestamps = mtd["timestamps"];
+            if (cfg.contains("timestamps"))
+                timestamps = cfg["timestamps"];
             else
                 throw satdump_exception("Could not get timestamps!");
 
@@ -57,10 +55,6 @@ namespace satdump
                 ratio_x = round((double)projection->img_size_x / (double)width);
             if (height != -1)
                 ratio_y = round((double)projection->img_size_y / (double)height);
-
-            int img_x_offset = 0;
-            if (mtd.contains("img_x_offset"))
-                img_x_offset = mtd["img_x_offset"];
 
             std::vector<int> values;
             if (cfg.contains("forced_gcps_x"))
@@ -89,7 +83,7 @@ namespace satdump
                 {
                     if (y % projection->gcp_spacing_y == 0 || y + 1 == (int)timestamps.size() || last_was_invalid)
                     {
-                        if (projection->get_position(x + img_x_offset, y, position))
+                        if (projection->get_position(x, y, position))
                         {
                             last_was_invalid = true;
                             continue;

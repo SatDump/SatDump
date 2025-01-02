@@ -28,7 +28,7 @@ namespace satdump
                 handler_name = product->instrument_name;
             }
 
-            // TODOREWORK, handle automated?
+            // TODOREWORK, handle automated?, Filtering what can be made per channels present?
             if (instrument_cfg.contains("presets"))
             {
                 for (auto &cfg : instrument_cfg["presets"])
