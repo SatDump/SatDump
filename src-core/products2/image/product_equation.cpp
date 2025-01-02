@@ -92,6 +92,9 @@ namespace satdump
                         throw satdump_exception("Token " + tkt + " is invalid!");
                 }
 
+                if (ntkts == 0)
+                    throw satdump_exception("No channel in equation!");
+
                 // Select reference channel, setup output
                 TokenS *rtkt = tkts[0];
                 image::Image out(rtkt->img.depth(),
