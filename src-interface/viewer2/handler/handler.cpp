@@ -41,7 +41,8 @@ namespace satdump
                         h = handler;
 
                     // TODOREWORK CLEANUP
-                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                    if (handler_can_subhandlers_be_dragged && handler->handler_can_be_dragged &&
+                        ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
                         auto del = [this](std::shared_ptr<Handler> handler)
                         {
@@ -55,7 +56,7 @@ namespace satdump
                         ImGui::EndDragDropSource();
                     }
 
-                    if (ImGui::BeginDragDropTarget())
+                    if (handler->handler_can_be_dragged_to && ImGui::BeginDragDropTarget())
                     {
                         if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("VIEWER_HANDLER"))
                         {

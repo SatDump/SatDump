@@ -36,7 +36,9 @@ namespace satdump
                     auto &ch = product->images[channel_selection_curr_id];
 
                     if (ch.wavenumber != -1)
+                    {
                         ImGui::Text("Wavenumber : %f", ch.wavenumber);
+                    }
                 }
 
                 if (needs_to_be_disabled)
@@ -58,6 +60,7 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::endDisabled();
 
+                ImGui::SameLine();
                 ImGui::ProgressBar(progress);
             }
 

@@ -28,12 +28,16 @@ namespace satdump
          * handler as a dependency.
          */
         class Handler
-        { // TODOREWORK PRIVATE DELETE STUFF
+        {
         private:
             TreeDrawerToClean tree_local;
             std::vector<std::shared_ptr<Handler>> subhandlers;
             std::mutex subhandlers_mtx;
             std::vector<std::shared_ptr<Handler>> subhandlers_marked_for_del;
+
+            bool handler_can_be_dragged = true;
+            bool handler_can_be_dragged_to = true;
+            bool handler_can_subhandlers_be_dragged = true;
 
         public:
             /**
@@ -87,6 +91,33 @@ namespace satdump
              * @param handler the handler to delete
              */
             void delSubHandler(std::shared_ptr<Handler> handler);
+
+            /**
+             * @brief Set if a handler can be dragged around in the tree
+             * @param v true to have it be draggable
+             */
+            void setCanBeDragged(bool v)
+            {
+                handler_can_be_dragged = v;
+            }
+
+            /**
+             * @brief Set if a handler can be dragged to in the tree
+             * @param v true to have it be a valid drag target
+             */
+            void setCanBeDraggedTo(bool v)
+            {
+                handler_can_be_dragged_to = v;
+            }
+
+            /**
+             * @brief Set if a handler's subhandlers can be dragged to in the tree
+             * @param v true to have them be draggable
+             */
+            void setSubHandlersCanBeDragged(bool v)
+            {
+                handler_can_subhandlers_be_dragged = v;
+            }
 
         public:
             static std::string getID(); // TODOREWORK

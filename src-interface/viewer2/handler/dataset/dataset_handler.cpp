@@ -11,6 +11,10 @@ namespace satdump
         {
             instrument_products = std::make_shared<DummyHandler>("Instruments");
             general_products = std::make_shared<DatasetProductHandler>();
+            instrument_products->setCanBeDragged(false);
+            instrument_products->setCanBeDraggedTo(false);
+            instrument_products->setSubHandlersCanBeDragged(false);
+            general_products->setCanBeDragged(false);
             addSubHandler(instrument_products);
             addSubHandler(general_products);
         }
