@@ -1,6 +1,7 @@
 #pragma once
 
 #include "product_handler.h"
+#include "../processing_handler.h"
 
 #include "logger.h"
 #include "products2/image_product.h"
@@ -18,7 +19,7 @@ namespace satdump
 {
     namespace viewer
     {
-        class ImageProductHandler : public ProductHandler
+        class ImageProductHandler : public ProductHandler, public ProcessingHandler
         {
         public:
             ImageProductHandler(std::shared_ptr<products::Product> p);
@@ -29,14 +30,23 @@ namespace satdump
             std::string equation;
             float progress = 0;
 
-            std::shared_ptr<std::thread> wip_thread;
-
             // Products
             products::ImageProduct *product;
+
+            // Auto-update in UI
+            bool needs_to_update = true;
+
+            // Channel selection
+            std::string channel_selection_box_str;
+            int channel_selection_curr_id = 0;
+
+            // Proc function
+            void do_process();
 
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
+            void drawMenuBar();
 
             std::string getName() { return product->instrument_name; }
 

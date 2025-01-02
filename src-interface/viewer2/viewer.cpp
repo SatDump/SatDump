@@ -19,7 +19,7 @@ namespace satdump
         ViewerApplication::ViewerApplication()
             : Application("viewer")
         {
-            master_handler = std::make_shared<DummyHandler>();
+            master_handler = std::make_shared<DummyHandler>("MasterHandlerViewer");
         }
 
         ViewerApplication::~ViewerApplication()
@@ -42,49 +42,99 @@ namespace satdump
                     ImGui::EndTable();
                 }
 
-                if (ImGui::Button("Load KMSS"))
-                {
-                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
-                    master_handler->addSubHandler(prod_h);
-                }
-                else if (ImGui::Button("Load Sterna"))
-                {
-                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
-                    master_handler->addSubHandler(prod_h);
-                }
-                else if (ImGui::Button("Dataset"))
-                {
-                    std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>();
-                    dat_h->init();
-                    {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
-                        dat_h->instrument_products->addSubHandler(prod_h);
-                    }
-                    {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_2/product.cbor"));
-                        dat_h->instrument_products->addSubHandler(prod_h);
-                    }
-                    {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
-                        dat_h->instrument_products->addSubHandler(prod_h);
-                    }
-                    master_handler->addSubHandler(dat_h);
-                }
-
                 if (curr_handler)
                     curr_handler->drawMenu();
             }
         }
 
-        void ViewerApplication::drawContent()
+        void ViewerApplication::drawMenuBar()
         {
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    ImGui::MenuItem("Open Dataset");
+                    ImGui::MenuItem("Open Product");
+                    ImGui::MenuItem("Open Image");
+
+                    if (ImGui::BeginMenu("Hardcoded"))
+                    {
+                        if (ImGui::MenuItem("Load KMSS"))
+                        {
+                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
+                            master_handler->addSubHandler(prod_h);
+                        }
+                        if (ImGui::MenuItem("Load Sterna"))
+                        {
+                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
+                            master_handler->addSubHandler(prod_h);
+                        }
+                        if (ImGui::MenuItem("Dataset"))
+                        {
+                            std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>();
+                            {
+                                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
+                                dat_h->instrument_products->addSubHandler(prod_h);
+                            }
+                            {
+                                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_2/product.cbor"));
+                                dat_h->instrument_products->addSubHandler(prod_h);
+                            }
+                            {
+                                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
+                                dat_h->instrument_products->addSubHandler(prod_h);
+                            }
+                            master_handler->addSubHandler(dat_h);
+                        }
+                        if (ImGui::MenuItem("Load MSUGS"))
+                        {
+                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor"));
+                            master_handler->addSubHandler(prod_h);
+                        }
+                        if (ImGui::MenuItem("Load MSUGS 2"))
+                        {
+                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/20241231_154404_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor"));
+                            master_handler->addSubHandler(prod_h);
+                        }
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Handler"))
+                {
+                    if (ImGui::BeginMenu("Add"))
+                    {
+                        ImGui::MenuItem("Dataset");
+                        ImGui::MenuItem("Projection");
+                        ImGui::EndMenu();
+                    }
+                    ImGui::EndMenu();
+                }
+
+                if (curr_handler)
+                {
+                    if (ImGui::BeginMenu("Current"))
+                    {
+                        curr_handler->drawMenuBar();
+                        ImGui::EndMenu();
+                    }
+                }
+
+                ImGui::EndMenuBar();
+            }
+        }
+
+        void ViewerApplication::drawContents()
+        {
+            ImGui::Text("No handler selected!");
         }
 
         void ViewerApplication::drawUI()
         {
             ImVec2 viewer_size = ImGui::GetContentRegionAvail();
 
-            if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
+            if (ImGui::BeginTable("##wiever_table", 2, /*ImGuiTableFlags_NoBordersInBodyUntilResize |*/ ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
             {
                 ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, viewer_size.x * panel_ratio);
                 ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, viewer_size.x * (1.0f - panel_ratio));
@@ -96,7 +146,8 @@ namespace satdump
                     panel_ratio = left_width / viewer_size.x;
                 last_width = left_width;
 
-                ImGui::BeginChild("ViewerChildPanel", {left_width, float(viewer_size.y - 10)});
+                ImGui::BeginChild("ViewerChildPanel", {left_width, float(viewer_size.y - 10)}, false, ImGuiWindowFlags_MenuBar);
+                drawMenuBar();
                 drawPanel();
                 ImGui::EndChild();
 
@@ -105,6 +156,8 @@ namespace satdump
 
                 if (curr_handler)
                     curr_handler->drawContents({float(right_width - 4), float(viewer_size.y)});
+                else
+                    drawContents();
 
                 ImGui::EndGroup();
                 ImGui::EndTable();

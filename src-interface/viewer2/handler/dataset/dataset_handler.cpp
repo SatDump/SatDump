@@ -7,11 +7,10 @@ namespace satdump
 {
     namespace viewer
     {
-        void DatasetHandler::init()
+        DatasetHandler::DatasetHandler()
         {
-            instrument_products = std::make_shared<DummyHandler>();
+            instrument_products = std::make_shared<DummyHandler>("Instruments");
             general_products = std::make_shared<DatasetProductHandler>();
-            ((DummyHandler *)instrument_products.get())->name = "Instruments";
             addSubHandler(instrument_products);
             addSubHandler(general_products);
         }

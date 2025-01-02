@@ -7,6 +7,8 @@
 #include "common/simple_deframer.h"
 #include "common/image/io.h"
 
+#include "products2/image_product.h"
+
 namespace elektro_arktika
 {
     namespace msugs
@@ -109,32 +111,92 @@ namespace elektro_arktika
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
+            // MSUVIS1 TODOREWORK
+            {
+                ////////////////////////////////////////// mtvza_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSUGS_VIS1";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                //   logger->info("----------- KMSS MSU-100 1");
+                //   logger->info("Lines : " + std::to_string(kmss_lines));
+
+                satdump::products::ImageProduct msuvis_product;
+                msuvis_product.instrument_name = "msugs_vis";
+                //                    msuvis_products.has_timestamps = true; // TODOREWORK
+                //                    msuvis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                //                    msuvis_products.set_timestamps(timestamps);
+                //     msuvis_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
+
+                msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
+
+                msuvis_product.save(directory);
+                // TODOREWORK                dataset.products_list.push_back("KMSS_MSU100_1");
+
+                ////////////////////////////////////////////////     mtvza_status = DONE;
+            }
+
+            // MSUVIS2 TODOREWORK
+            {
+                ////////////////////////////////////////// mtvza_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSUGS_VIS2";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                //   logger->info("----------- KMSS MSU-100 1");
+                //   logger->info("Lines : " + std::to_string(kmss_lines));
+
+                satdump::products::ImageProduct msuvis_product;
+                msuvis_product.instrument_name = "msugs_vis";
+                //                    msuvis_products.has_timestamps = true; // TODOREWORK
+                //                    msuvis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                //                    msuvis_products.set_timestamps(timestamps);
+                //     msuvis_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
+
+                msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+
+                msuvis_product.save(directory);
+                // TODOREWORK                dataset.products_list.push_back("KMSS_MSU100_1");
+
+                ////////////////////////////////////////////////     mtvza_status = DONE;
+            }
+
+#if 0
             channels_statuses[0] = channels_statuses[1] = channels_statuses[2] = PROCESSING;
             image::Image image1 = vis1_reader.getImage();
             image::Image image2 = vis2_reader.getImage();
             image::Image image3 = vis3_reader.getImage();
 
-            image1.crop(0, 1421, 12008, 1421 + 12008);
+            //     image1.crop(0, 1421, 12008, 1421 + 12008);
             channels_statuses[0] = SAVING;
             image::save_img(image1, directory + "/MSU-GS-1");
             channels_statuses[0] = DONE;
 
-            image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
+            //     image2.crop(0, 1421 + 1804, 12008, 1421 + 1804 + 12008);
             channels_statuses[1] = SAVING;
             image::save_img(image2, directory + "/MSU-GS-2");
             channels_statuses[1] = DONE;
 
-            image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
+            //    image3.crop(0, 1421 + 3606, 12008, 1421 + 3606 + 12008);
             channels_statuses[2] = SAVING;
             image::save_img(image3, directory + "/MSU-GS-3");
             channels_statuses[2] = DONE;
+#endif
 
             for (int i = 0; i < 7; i++)
             {
                 channels_statuses[3 + i] = PROCESSING;
                 logger->info("Channel IR " + std::to_string(i + 4) + "...");
                 image::Image img = infr_reader.getImage(i);
-                img.crop(183, 3294);
+                //        img.crop(183, 3294);
                 channels_statuses[3 + i] = SAVING;
                 image::save_img(img, directory + "/MSU-GS-" + std::to_string(i + 4));
                 channels_statuses[3 + i] = DONE;

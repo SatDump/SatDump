@@ -19,13 +19,14 @@ namespace satdump
 
         protected:
             const std::string app_id;
-            virtual void drawUI();
+            void drawUI();
 
             float panel_ratio = 0.23;
             float last_width = -1.0f;
 
-            virtual void drawPanel();
-            virtual void drawContent();
+            void drawPanel();
+            void drawContents();
+            void drawMenuBar();
 
             std::shared_ptr<Handler> curr_handler;
             std::shared_ptr<Handler> master_handler;

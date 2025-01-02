@@ -12,6 +12,8 @@ namespace satdump
             : ProductHandler(p)
         {
             product = (products::ImageProduct *)ProductHandler::product.get();
+            for (auto &img : product->images)
+                channel_selection_box_str += "Channel " + img.channel_name + '\0';
         }
 
         ImageProductHandler::~ImageProductHandler()
@@ -20,37 +22,89 @@ namespace satdump
 
         void ImageProductHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("ImageProduct TODOREWORK"))
+            bool needs_to_be_disabled = is_processing;
+
+            if (ImGui::CollapsingHeader("Channels"))
             {
+                if (needs_to_be_disabled)
+                    style::beginDisabled();
+
+                needs_to_update |= ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str());
+
+                if (channel_selection_curr_id != -1)
+                {
+                    auto &ch = product->images[channel_selection_curr_id];
+
+                    if (ch.wavenumber != -1)
+                        ImGui::Text("Wavenumber : %f", ch.wavenumber);
+                }
+
+                if (needs_to_be_disabled)
+                    style::endDisabled();
+            }
+
+            if (ImGui::CollapsingHeader("Equation"))
+            {
+                if (needs_to_be_disabled)
+                    style::beginDisabled();
+
                 ImGui::InputText("##equation", &equation);
                 if (ImGui::Button("Apply"))
                 {
-                    auto fun = [this]()
-                    {
-                        //  logger->critical("PID %llu", getpid());
-                        auto img = products::generate_equation_product_composite(product, equation, &progress);
-                        image::equalize(img, true);
-                        img_handler.updateImage(img); //  image_view.update(img);
-                    };
-                    if (wip_thread)
-                    {
-                        if (wip_thread->joinable())
-                            wip_thread->join();
-                        wip_thread.reset();
-                    }
-                    wip_thread = std::make_shared<std::thread>(fun);
+                    channel_selection_curr_id = -1;
+                    needs_to_update = true;
                 }
-                ImGui::ProgressBar(progress);
 
-                for (auto &ch : product->images)
+                if (needs_to_be_disabled)
+                    style::endDisabled();
+
+                ImGui::ProgressBar(progress);
+            }
+
+            if (ImGui::CollapsingHeader("ImageProduct Advanced"))
+            {
+                if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
                 {
-                    ImGui::Separator();
-                    ImGui::Text("Channel %s", ch.channel_name.c_str());
-                    ch.ch_transform.render();
+                    for (auto &ch : product->images)
+                    {
+                        std::string id = "Channel " + ch.channel_name;
+                        if (ImGui::BeginTabItem(id.c_str()))
+                        {
+                            ch.ch_transform.render();
+                            ImGui::EndTabItem();
+                        }
+                    }
+                    ImGui::EndTabBar();
                 }
             }
 
+            /// TODOREWORK UPDATE
+            if (needs_to_update)
+            {
+                asyncProcess();
+                needs_to_update = false;
+            }
+
             img_handler.drawMenu();
+        }
+
+        void ImageProductHandler::do_process()
+        {
+            if (channel_selection_curr_id == -1)
+            {
+                auto img = products::generate_equation_product_composite(product, equation, &progress);
+                img_handler.updateImage(img);
+            }
+            else
+            {
+                auto img = product->images[channel_selection_curr_id].image; // TODOREWORK MAKE FUNCTION TO GET SINGLE CHANNEL
+                img_handler.updateImage(img);
+            }
+        }
+
+        void ImageProductHandler::drawMenuBar()
+        {
+            img_handler.drawMenuBar();
         }
 
         void ImageProductHandler::drawContents(ImVec2 win_size)

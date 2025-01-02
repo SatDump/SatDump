@@ -10,7 +10,7 @@ namespace elektro_arktika
         class MSUVISReader
         {
         private:
-            unsigned short *imageBuffer;
+            unsigned short *imageBuffer1, *imageBuffer2;
             unsigned short msuLineBuffer[12044];
 
         public:
@@ -20,7 +20,8 @@ namespace elektro_arktika
             MSUVISReader();
             ~MSUVISReader();
             void pushFrame(uint8_t *data, int offset);
-            image::Image getImage();
+            image::Image getImage1();
+            image::Image getImage2();
         };
     } // namespace msugs
 } // namespace elektro_arktika

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../handler.h"
+#include "../processing_handler.h"
 
 #include "logger.h"
 #include "common/widgets/image_view.h"
@@ -9,22 +10,39 @@ namespace satdump
 {
     namespace viewer
     {
-        class ImageHandler : public Handler
+        class ImageHandler : public Handler, public ProcessingHandler
         {
         public:
             ImageHandler();
             ~ImageHandler();
 
+            bool imgview_needs_update = false;
+            bool has_second_image = false;
+            image::Image image, curr_image;
             ImageViewWidget image_view;
 
-            void updateImage(image::Image &img)
+            image::Image &get_current_img() { return has_second_image ? curr_image : image; }
+
+            void updateImage(image::Image &img) // TODOREWORK
             {
-                image_view.update(img);
+                image = img;
+                process();
             }
+
+            // All params
+            bool equalize_img = false;
+            bool equalize_perchannel_img = false;
+            bool white_balance_img = false;
+            bool normalize_img = false;
+            bool median_blur_img = false;
+
+            // Proc function
+            void do_process();
 
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
+            void drawMenuBar();
 
             std::string getName() { return "ImageTODOREWORK"; }
 

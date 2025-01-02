@@ -8,6 +8,16 @@ namespace satdump
 {
     namespace viewer
     {
+        inline ImGuiTreeNodeFlags nodeFlags(std::shared_ptr<Handler> &h, bool sec)
+        {
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
+            if (!h->hasSubhandlers())
+                flags |= ImGuiTreeNodeFlags_Leaf;
+            if (sec)
+                flags |= ImGuiTreeNodeFlags_Selected;
+            return flags;
+        }
+
         void Handler::drawTreeMenu(std::shared_ptr<Handler> &h)
         {
             // TODOREWORK CLEANUP
