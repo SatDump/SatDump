@@ -149,20 +149,15 @@ namespace satdump
                                                                                                                             op.target_prj_info,
                                                                                                                             {});
 
-                    nlohmann::json mtd = src_proj_cfg.contains("metadata") ? src_proj_cfg["metadata"] : nlohmann::json();
-                    int img_x_offset = 0;
-                    if (mtd.contains("img_offset_x"))
-                        img_x_offset = mtd["img_offset_x"];
-
                     TLE tle;
-                    if (mtd.contains("tle"))
-                        tle = mtd["tle"];
+                    if (src_proj_cfg.contains("tle"))
+                        tle = src_proj_cfg["tle"];
                     else
                         throw satdump_exception("Reproj : Could not get TLE!");
 
                     nlohmann::ordered_json timestamps;
-                    if (mtd.contains("timestamps"))
-                        timestamps = mtd["timestamps"];
+                    if (src_proj_cfg.contains("timestamps"))
+                        timestamps = src_proj_cfg["timestamps"];
                     else
                         throw satdump_exception("Reproj : Could not get timestamps!");
 
@@ -183,7 +178,7 @@ namespace satdump
                                 geodetic::geodetic_coords_t coords1, coords2, coords3;
                                 bool ret1 = sat_proj_src->get_position(px * ratio_x, currentScan * ratio_y, coords1);
                                 bool ret2 = sat_proj_src->get_position((px + 1) * ratio_x, currentScan * ratio_y, coords2);
-                                sat_proj_src->get_position((px - img_x_offset) * ratio_x, (currentScan + 1) * ratio_y, coords3);
+                                sat_proj_src->get_position(px * ratio_x, (currentScan + 1) * ratio_y, coords3);
 
                                 if (ret1 || ret2)
                                     continue;
