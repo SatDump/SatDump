@@ -9,32 +9,39 @@ namespace satdump
     {
         std::vector<std::string> get_required_tokens(std::string equation, int *numout = nullptr)
         {
-            mu::Parser rgbParser;
-            int outValsCnt = 0;
-
             std::vector<std::string> tokens;
 
-            while (true)
+            try
             {
-                try
+                mu::Parser rgbParser;
+                int outValsCnt = 0;
+
+                while (true)
                 {
-                    rgbParser.SetExpr(equation);
-                    rgbParser.Eval(outValsCnt);
-                    if (numout != nullptr)
-                        *numout = outValsCnt;
-                }
-                catch (mu::ParserError &e)
-                {
-                    if (e.GetCode() == mu::ecUNASSIGNABLE_TOKEN)
+                    try
                     {
-                        std::string token = e.GetToken();
-                        rgbParser.DefineConst(token, 1);
-                        tokens.push_back(token);
-                        continue;
+                        rgbParser.SetExpr(equation);
+                        rgbParser.Eval(outValsCnt);
+                        if (numout != nullptr)
+                            *numout = outValsCnt;
                     }
-                    throw e;
+                    catch (mu::ParserError &e)
+                    {
+                        if (e.GetCode() == mu::ecUNASSIGNABLE_TOKEN)
+                        {
+                            std::string token = e.GetToken();
+                            rgbParser.DefineConst(token, 1);
+                            tokens.push_back(token);
+                            continue;
+                        }
+                        throw e;
+                    }
+                    break;
                 }
-                break;
+            }
+            catch (mu::ParserError &e)
+            {
+                throw satdump_exception(e.GetMsg());
             }
 
             return tokens;
