@@ -93,15 +93,22 @@ namespace satdump
 
         void ImageProductHandler::do_process()
         {
-            if (channel_selection_curr_id == -1)
+            try
             {
-                auto img = products::generate_equation_product_composite(product, equation, &progress);
-                img_handler.updateImage(img);
+                if (channel_selection_curr_id == -1)
+                {
+                    auto img = products::generate_equation_product_composite(product, equation, &progress);
+                    img_handler.updateImage(img);
+                }
+                else
+                {
+                    auto img = product->images[channel_selection_curr_id].image; // TODOREWORK MAKE FUNCTION TO GET SINGLE CHANNEL
+                    img_handler.updateImage(img);
+                }
             }
-            else
+            catch (std::exception &e)
             {
-                auto img = product->images[channel_selection_curr_id].image; // TODOREWORK MAKE FUNCTION TO GET SINGLE CHANNEL
-                img_handler.updateImage(img);
+                logger->error("Could not process image! %s", e.what());
             }
         }
 

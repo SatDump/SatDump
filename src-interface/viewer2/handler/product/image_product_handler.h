@@ -27,9 +27,6 @@ namespace satdump
 
             ImageHandler img_handler;
 
-            std::string equation;
-            float progress = 0;
-
             // Products
             products::ImageProduct *product;
 
@@ -39,6 +36,10 @@ namespace satdump
             // Channel selection
             std::string channel_selection_box_str;
             int channel_selection_curr_id = 0;
+
+            // Equation
+            std::string equation;
+            float progress = 0;
 
             // Proc function
             void do_process();

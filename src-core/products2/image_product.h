@@ -101,8 +101,7 @@ namespace satdump
                 for (auto &img : images)
                     if (img.abs_index == index)
                         return img;
-                printf("Product Channel Index %d is not present!\n", index); // TODOREWORK
-                throw satdump_exception("TODO");
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
             }
 
             /**
@@ -115,8 +114,7 @@ namespace satdump
                 for (auto &img : images)
                     if (img.channel_name == name)
                         return img;
-                printf("Product Channel Name %s is not present!\n", name.c_str()); // TODOREWORK
-                throw satdump_exception("TODO");
+                throw satdump_exception("Product Channel Name " + name + " is not present!");
             }
 
             /**

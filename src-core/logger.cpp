@@ -156,7 +156,7 @@ namespace slog
     {
         int suffix = 0;
         std::string log_path = path + ".log";
-        while(std::filesystem::exists(log_path))
+        while (std::filesystem::exists(log_path))
         {
             suffix++;
             log_path = path + "-" + std::to_string(suffix) + ".log";
@@ -214,7 +214,7 @@ namespace slog
 
         size_t size = vsnprintf((char *)output.c_str(), output.size(), fmt.c_str(), args);
 
-        if (output.size() <= size)
+        if (size <= output.size())
         {
             log(lvl, output);
         }
@@ -254,7 +254,7 @@ namespace slog
     void Logger::add_sink(std::shared_ptr<LoggerSink> sink)
     {
         sink_mtx.lock();
-        for (LogMsg& msg : init_log_buffer)
+        for (LogMsg &msg : init_log_buffer)
             sink->receive(msg);
         sinks.push_back(sink);
         sink_mtx.unlock();
@@ -263,8 +263,8 @@ namespace slog
     void Logger::del_sink(std::shared_ptr<LoggerSink> sink)
     {
         sink_mtx.lock();
-        auto it = std::find_if(sinks.begin(), sinks.end(), [&sink](std::shared_ptr<LoggerSink>& c)
-            { return sink.get() == c.get(); });
+        auto it = std::find_if(sinks.begin(), sinks.end(), [&sink](std::shared_ptr<LoggerSink> &c)
+                               { return sink.get() == c.get(); });
         if (it != sinks.end())
             sinks.erase(it);
         sink_mtx.unlock();
@@ -300,18 +300,18 @@ void initFileSink()
 {
     try
     {
-        //Make sure the user folder is created
+        // Make sure the user folder is created
         if (!std::filesystem::exists(std::filesystem::path(satdump::user_path + "/")))
             std::filesystem::create_directories(std::filesystem::path(satdump::user_path + "/"));
 
-        //Clear old logs
+        // Clear old logs
         char timebuffer[16];
         struct tm *timeinfo;
         time_t current_time = time(NULL);
         timeinfo = localtime(&current_time);
         strftime(timebuffer, sizeof(timebuffer), "%Y%m%d", timeinfo);
         int delete_before = atoi(timebuffer) - 2;
-        for (const auto& user_file : std::filesystem::directory_iterator(satdump::user_path + "/"))
+        for (const auto &user_file : std::filesystem::directory_iterator(satdump::user_path + "/"))
         {
             std::string file_name = user_file.path().filename().string();
             if (file_name.size() < 26)
@@ -321,7 +321,7 @@ void initFileSink()
                 std::filesystem::remove(user_file);
         }
 
-        //Create new log
+        // Create new log
         strftime(timebuffer, sizeof(timebuffer), "%Y%m%dT%H%M%S", timeinfo);
         file_sink = std::make_shared<slog::FileSink>(satdump::user_path + "/satdump-" + std::string(timebuffer));
         logger->add_sink(file_sink);
