@@ -67,11 +67,11 @@ namespace satdump
 
         void ImageHandler::setConfig(nlohmann::json p)
         {
-            equalize_img = getValueOrDefault(p["equalize"], equalize_img);
-            equalize_perchannel_img = getValueOrDefault(p["invidiual_equalize"], equalize_perchannel_img);
-            white_balance_img = getValueOrDefault(p["white_balance"], white_balance_img);
-            normalize_img = getValueOrDefault(p["normalize"], normalize_img);
-            median_blur_img = getValueOrDefault(p["median_blur"], median_blur_img);
+            equalize_img = getValueOrDefault(p["equalize"], false);
+            equalize_perchannel_img = getValueOrDefault(p["invidiual_equalize"], false);
+            white_balance_img = getValueOrDefault(p["white_balance"], false);
+            normalize_img = getValueOrDefault(p["normalize"], false);
+            median_blur_img = getValueOrDefault(p["median_blur"], false);
         }
 
         nlohmann::json ImageHandler::getConfig()

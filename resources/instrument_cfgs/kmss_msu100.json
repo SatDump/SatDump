@@ -13,8 +13,7 @@
             "name": "321",
             "equation": "ch3, ch2, ch1",
             "image": {
-                "median_blur": true,
-                "equalize": false
+                "median_blur": true
             }
         },
         {
