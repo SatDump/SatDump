@@ -28,6 +28,9 @@ namespace satdump
         private:
             std::string handler_name;
 
+            std::string preset_selection_box_str;
+            int preset_selection_curr_id = -1;
+
         public:
             /**
              * @brief Constructor
@@ -39,9 +42,10 @@ namespace satdump
 
             std::string getName() { return handler_name; }
 
-            // Presets
-            std::string preset_selection_box_str;
-            int preset_selection_curr_id = -1;
+            /**
+             * @brief Draw preset selection menu
+             * @return if one was selected
+             */
             bool renderPresetMenu();
 
             std::shared_ptr<products::Product> product;
