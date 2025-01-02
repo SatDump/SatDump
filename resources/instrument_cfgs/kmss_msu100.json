@@ -1,0 +1,25 @@
+{
+    "name": "MSU-100",
+    "presets": [
+        {
+            "name": "Channel 1 Equalized",
+            "channel": "1",
+            "image": {
+                "median_blur": true,
+                "equalize": true
+            }
+        },
+        {
+            "name": "321",
+            "equation": "ch3, ch2, ch1",
+            "image": {
+                "median_blur": true,
+                "equalize": false
+            }
+        },
+        {
+            "name": "331",
+            "equation": "ch3, ch3, ch1"
+        }
+    ]
+}

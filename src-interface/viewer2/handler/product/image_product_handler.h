@@ -49,7 +49,8 @@ namespace satdump
             void drawContents(ImVec2 win_size);
             void drawMenuBar();
 
-            std::string getName() { return product->instrument_name; }
+            void setConfig(nlohmann::json p);
+            nlohmann::json getConfig();
 
             static std::string getID() { return "image_product_handler"; }
             static std::shared_ptr<Handler> getInstance() { return std::make_shared<ImageProductHandler>(nullptr); }

@@ -45,6 +45,8 @@ namespace satdump
                     style::endDisabled();
             }
 
+            needs_to_update |= renderPresetMenu(); // TODOREWORK move in top drawMenu?
+
             if (ImGui::CollapsingHeader("Equation"))
             {
                 if (needs_to_be_disabled)
@@ -89,6 +91,38 @@ namespace satdump
             }
 
             img_handler.drawMenu();
+        }
+
+        void ImageProductHandler::setConfig(nlohmann::json p)
+        {
+            if (p.contains("equation"))
+            {
+                equation = p["equation"];
+                channel_selection_curr_id = -1;
+            }
+            else if (p.contains("channel"))
+            {
+                for (int i = 0; i < product->images.size(); i++)
+                    if (product->images[i].channel_name == p["channel"].get<std::string>())
+                        channel_selection_curr_id = i;
+            }
+
+            if (p.contains("image"))
+                img_handler.setConfig(p["image"]);
+        }
+
+        nlohmann::json ImageProductHandler::getConfig()
+        {
+            nlohmann::json p;
+
+            if (channel_selection_curr_id == -1)
+                p["equation"] = equation;
+            else
+                p["channel"] = product->images[channel_selection_curr_id].channel_name;
+
+            p["image"] = img_handler.getConfig();
+
+            return p;
         }
 
         void ImageProductHandler::do_process()

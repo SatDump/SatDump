@@ -44,6 +44,9 @@ namespace satdump
             void drawContents(ImVec2 win_size);
             void drawMenuBar();
 
+            void setConfig(nlohmann::json p);
+            nlohmann::json getConfig();
+
             std::string getName() { return "ImageTODOREWORK"; }
 
             static std::string getID() { return "image_handler"; }

@@ -53,8 +53,12 @@ namespace satdump
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    ImGui::MenuItem("Open Dataset");
-                    ImGui::MenuItem("Open Product");
+                    ImGui::MenuItem("Open Dataset (.json)");
+
+                    if (ImGui::MenuItem("Open Product (.cbor)"))
+                    {
+                    }
+
                     ImGui::MenuItem("Open Image");
 
                     if (ImGui::BeginMenu("Hardcoded"))

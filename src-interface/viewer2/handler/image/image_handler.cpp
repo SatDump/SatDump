@@ -6,6 +6,8 @@
 #include "common/image/io.h" // TODOREWORK
 #include "common/image/processing.h"
 
+#include "nlohmann/json_utils.h"
+
 namespace satdump
 {
     namespace viewer
@@ -61,6 +63,26 @@ namespace satdump
         void ImageHandler::drawContents(ImVec2 win_size)
         {
             image_view.draw(win_size);
+        }
+
+        void ImageHandler::setConfig(nlohmann::json p)
+        {
+            equalize_img = getValueOrDefault(p["equalize"], equalize_img);
+            equalize_perchannel_img = getValueOrDefault(p["invidiual_equalize"], equalize_perchannel_img);
+            white_balance_img = getValueOrDefault(p["white_balance"], white_balance_img);
+            normalize_img = getValueOrDefault(p["normalize"], normalize_img);
+            median_blur_img = getValueOrDefault(p["median_blur"], median_blur_img);
+        }
+
+        nlohmann::json ImageHandler::getConfig()
+        {
+            nlohmann::json p;
+            p["equalize"] = equalize_img;
+            p["invidiual_equalize"] = equalize_perchannel_img;
+            p["white_balance"] = white_balance_img;
+            p["normalize"] = normalize_img;
+            p["median_blur"] = median_blur_img;
+            return p;
         }
 
         void ImageHandler::do_process()

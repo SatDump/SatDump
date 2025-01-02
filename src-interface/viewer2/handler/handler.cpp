@@ -109,6 +109,11 @@ namespace satdump
             subhandlers_mtx.unlock();
         }
 
+        nlohmann::json Handler::getConfig()
+        {
+            return {};
+        }
+
         std::map<std::string, std::function<std::shared_ptr<Handler>()>> viewer_handlers_registry;
 
         void registerHandlers()

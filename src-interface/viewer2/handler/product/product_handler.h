@@ -25,9 +25,24 @@ namespace satdump
          */
         class ProductHandler : public Handler
         {
+        private:
+            std::string handler_name;
+
         public:
-            ProductHandler(std::shared_ptr<products::Product> p)
-                : product(p) {}
+            /**
+             * @brief Constructor
+             * @param p product to handle
+             * @param dataset_mode if true, only displays the instrument name,
+             * otherwise adds timestamp and source name for clarity
+             */
+            ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode = false);
+
+            std::string getName() { return handler_name; }
+
+            // Presets
+            std::string preset_selection_box_str;
+            int preset_selection_curr_id = -1;
+            bool renderPresetMenu();
 
             std::shared_ptr<products::Product> product;
             nlohmann::ordered_json instrument_cfg;

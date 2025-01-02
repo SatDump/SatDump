@@ -11,6 +11,7 @@
 #include <functional>
 #include "tree.h"
 #include "imgui/imgui.h"
+#include "nlohmann/json.hpp"
 
 namespace satdump
 {
@@ -118,6 +119,18 @@ namespace satdump
             {
                 handler_can_subhandlers_be_dragged = v;
             }
+
+            /**
+             * @brief Optional, allows setting a configuration/state from JSON
+             * @param p JSON object
+             */
+            virtual void setConfig(nlohmann::json p) {}
+
+            /**
+             * @brief Optional, allows getting a configuration/state as JSON
+             * @return JSON object
+             */
+            virtual nlohmann::json getConfig();
 
         public:
             static std::string getID(); // TODOREWORK
