@@ -64,81 +64,88 @@ namespace satdump
                 TokenS(image::Image &img, ChannelTransform &transform) : img(img), transform(transform) {}
             };
 
-            // Setup expression parser
-            size_t ntkts = 0;
-            TokenS **tkts = new TokenS *[tokens.size()];
-            mu::Parser equParser;
-            equParser.SetExpr(equation);
-
-            // Iterate through tokens to set them up
-            for (auto &tkt : tokens)
+            try
             {
-                if (tkt.find("ch") == 0 && tkt.size() > 2)
-                { // Raw channel case
-                    std::string index = tkt.substr(2);
-                    logger->trace("Needs channel " + index);
-                    auto &h = product->get_channel_image(index);
-                    auto nt = new TokenS(h.image, h.ch_transform);
-                    nt->ch_idx = h.abs_index;
-                    nt->width = h.image.width();
-                    nt->height = h.image.height();
-                    nt->maxval = h.image.maxval();
-                    equParser.DefineVar(tkt, &nt->v);
-                    tkts[ntkts++] = nt;
-                }
-                else // Abort if we can't recognize token
-                    throw satdump_exception("Token " + tkt + " is invalid!");
-            }
+                // Setup expression parser
+                size_t ntkts = 0;
+                TokenS **tkts = new TokenS *[tokens.size()];
+                mu::Parser equParser;
+                equParser.SetExpr(equation);
 
-            // Select reference channel, setup output
-            TokenS *rtkt = tkts[0];
-            image::Image out(rtkt->img.depth(),
-                             rtkt->img.width(),
-                             rtkt->img.height(),
-                             nout_channels);
-
-            size_t x, y, i, c;
-            for (y = 0; y < rtkt->height; y++)
-            {
-                for (x = 0; x < rtkt->width; x++)
+                // Iterate through tokens to set them up
+                for (auto &tkt : tokens)
                 {
-                    // Update raw values, apply transforms if needed
-                    for (i = 0; i < ntkts; i++)
+                    if (tkt.find("ch") == 0 && tkt.size() > 2)
+                    { // Raw channel case
+                        std::string index = tkt.substr(2);
+                        logger->trace("Needs channel " + index);
+                        auto &h = product->get_channel_image(index);
+                        auto nt = new TokenS(h.image, h.ch_transform);
+                        nt->ch_idx = h.abs_index;
+                        nt->width = h.image.width();
+                        nt->height = h.image.height();
+                        nt->maxval = h.image.maxval();
+                        equParser.DefineVar(tkt, &nt->v);
+                        tkts[ntkts++] = nt;
+                    }
+                    else // Abort if we can't recognize token
+                        throw satdump_exception("Token " + tkt + " is invalid!");
+                }
+
+                // Select reference channel, setup output
+                TokenS *rtkt = tkts[0];
+                image::Image out(rtkt->img.depth(),
+                                 rtkt->img.width(),
+                                 rtkt->img.height(),
+                                 nout_channels);
+
+                size_t x, y, i, c;
+                for (y = 0; y < rtkt->height; y++)
+                {
+                    for (x = 0; x < rtkt->width; x++)
                     {
-                        TokenS *t = tkts[i];
-                        t->px = x, t->py = y;
-                        rtkt->transform.forward(&t->px, &t->py);
-                        t->transform.reverse(&t->px, &t->py);
-                        if (t->px > 0 && t->px < t->width && t->py > 0 && t->py < t->height)
-                            t->v = (((t->px - (uint32_t)t->px) == 0 && (t->py - (uint32_t)t->py) == 0)
-                                        ? (double)t->img.get(0, t->px, t->py)
-                                        : (double)t->img.get_pixel_bilinear(0, t->px, t->py)) /
-                                   t->maxval; // TODOREWORK optimize
-                        else
-                            t->v = 0; // TODOREWORK DETECT AND CROP
+                        // Update raw values, apply transforms if needed
+                        for (i = 0; i < ntkts; i++)
+                        {
+                            TokenS *t = tkts[i];
+                            t->px = x, t->py = y;
+                            rtkt->transform.forward(&t->px, &t->py);
+                            t->transform.reverse(&t->px, &t->py);
+                            if (t->px > 0 && t->px < t->width && t->py > 0 && t->py < t->height)
+                                t->v = (((t->px - (uint32_t)t->px) == 0 && (t->py - (uint32_t)t->py) == 0)
+                                            ? (double)t->img.get(0, t->px, t->py)
+                                            : (double)t->img.get_pixel_bilinear(0, t->px, t->py)) /
+                                       t->maxval; // TODOREWORK optimize
+                            else
+                                t->v = 0; // TODOREWORK DETECT AND CROP
+                        }
+
+                        // Run the parser
+                        double *equOut = equParser.Eval(nout_channels);
+
+                        // Set output
+                        for (c = 0; c < nout_channels; c++)
+                            out.setf(c, x, y, out.clampf(equOut[c]));
                     }
 
-                    // Run the parser
-                    double *equOut = equParser.Eval(nout_channels);
-
-                    // Set output
-                    for (c = 0; c < nout_channels; c++)
-                        out.setf(c, x, y, out.clampf(equOut[c]));
+                    if (progess != nullptr)
+                        *progess = (float)y / (float)rtkt->height;
                 }
 
-                if (progess != nullptr)
-                    *progess = (float)y / (float)rtkt->height;
+                // Add metadata
+                if (product->has_proj_cfg())
+                    image::set_metadata_proj_cfg(out, product->get_proj_cfg(rtkt->ch_idx));
+
+                // Free up tokens
+                for (int i = 0; i < ntkts; i++)
+                    delete tkts[i];
+
+                return out;
             }
-
-            // Add metadata
-            if (product->has_proj_cfg())
-                image::set_metadata_proj_cfg(out, product->get_proj_cfg(rtkt->ch_idx));
-
-            // Free up tokens
-            for (int i = 0; i < ntkts; i++)
-                delete tkts[i];
-
-            return out;
+            catch (mu::ParserError &e)
+            {
+                throw satdump_exception(e.GetMsg());
+            }
         }
     }
 }
