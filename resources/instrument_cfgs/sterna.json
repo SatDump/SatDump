@@ -1,0 +1,12 @@
+{
+    "name": "Microwave Radiometer",
+    "presets": [
+        {
+            "name": "MWR 325 GHz Water Vapor",
+            "equation": "ch19, ch18, ch17",
+            "image": {
+                "individual_equalize": true
+            }
+        }
+    ]
+}
