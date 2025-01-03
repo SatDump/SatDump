@@ -167,15 +167,29 @@ namespace satdump
                 // TODOREWORK Load more than just image products
                 if (std::filesystem::path(path).extension().string() == ".cbor")
                 {
-                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
-                    master_handler->addSubHandler(prod_h);
+                    try
+                    {
+                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
+                        master_handler->addSubHandler(prod_h);
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Error loading product! Maybe not a valid product? Details : %s", e.what());
+                    }
                 }
                 else if (std::filesystem::path(path).extension().string() == ".json")
                 {
-                    products::DataSet dataset;
-                    dataset.load(path);
-                    std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
-                    master_handler->addSubHandler(dat_h);
+                    try
+                    {
+                        products::DataSet dataset;
+                        dataset.load(path);
+                        std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
+                        master_handler->addSubHandler(dat_h);
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Error loading dataset! Maybe not a valid dataset? Details : %s", e.what());
+                    }
                 }
             };
             file_open_thread = std::thread(fun);
