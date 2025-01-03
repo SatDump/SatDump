@@ -32,6 +32,7 @@ public:
         // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
         satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
+        satdump::eventBus->register_handler<goes::hrit::GOESLRITDataDecoderModule::DCPUpdateEvent>(goes::hrit::GOESLRITDataDecoderModule::updateDCPs);
         goes::hrit::initDcsConfig();
     }
 

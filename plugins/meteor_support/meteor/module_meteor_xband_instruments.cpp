@@ -243,7 +243,7 @@ namespace meteor
                     mtvza_products.instrument_name = "mtvza";
                     mtvza_products.has_timestamps = true;
                     mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                    mtvza_products.set_tle(satdump::general_tle_registry->get_from_norad(norad));
                     mtvza_products.set_timestamps(timestamps);
                     mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")));
 
@@ -387,7 +387,7 @@ namespace meteor
                     kmss_product.instrument_name = "kmss_msu100";
                     //                    kmss_products.has_timestamps = true; // TODOREWORK
                     //                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    //                    kmss_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                    //                    kmss_products.set_tle(satdump::general_tle_registry->get_from_norad(norad));
                     //                    kmss_products.set_timestamps(timestamps);
                     kmss_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
 
@@ -416,6 +416,7 @@ namespace meteor
                     logger->info("----------- KMSS MSU-100 2");
                     logger->info("Lines : " + std::to_string(kmss_lines));
 
+<<<<<<< HEAD
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
                     //                    kmss_products.has_timestamps = true; // TODOREWORK
@@ -423,6 +424,15 @@ namespace meteor
                     //                    kmss_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                     //                    kmss_products.set_timestamps(timestamps);
                     kmss_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")));
+=======
+                    satdump::ImageProducts kmss_products;
+                    kmss_products.instrument_name = "kmss_msu100";
+                    kmss_products.has_timestamps = true;
+                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    kmss_products.set_tle(satdump::general_tle_registry->get_from_norad(norad));
+                    kmss_products.set_timestamps(timestamps);
+                    kmss_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")));
+>>>>>>> master
 
                     for (int i = 0; i < 3; i++)
                     {

@@ -276,6 +276,7 @@ namespace goes
             }
 
             data_in.close();
+            satdump::taskScheduler->del_task("goes_dcp_updater");
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != -1)

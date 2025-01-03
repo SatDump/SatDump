@@ -34,6 +34,7 @@ namespace satdump
 {
     SATDUMP_DLL std::map<std::string, std::shared_ptr<satdump::Plugin>> loaded_plugins;
     SATDUMP_DLL std::shared_ptr<EventBus> eventBus = std::make_shared<EventBus>();
+    SATDUMP_DLL std::shared_ptr<TaskScheduler> taskScheduler = std::make_shared<TaskScheduler>();
 };
 
 #ifdef __ANDROID__

@@ -186,7 +186,7 @@ namespace meteor
                 msumr_products.bit_depth = 10;
                 msumr_products.has_timestamps = true;
                 msumr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                msumr_products.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp));
+                msumr_products.set_tle(satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp));
 
                 std::vector<double> filter_timestamps = msumr_timestamps;
                 double last = 0;
@@ -280,7 +280,7 @@ namespace meteor
                 mtvza_products.instrument_name = "mtvza";
                 mtvza_products.has_timestamps = true;
                 mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                mtvza_products.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp));
+                mtvza_products.set_tle(satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp));
                 mtvza_products.set_timestamps(mreader.timestamps);
 
                 if (msumr_serial_number == 2)

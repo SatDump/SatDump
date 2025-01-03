@@ -51,6 +51,9 @@
 #include "implot3d.h"
 #include "implot3d_internal.h"
 
+// Needed for Windows
+#include <cmath>
+
 #ifndef IMGUI_DISABLE
 
 //-----------------------------------------------------------------------------

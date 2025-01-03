@@ -41,4 +41,12 @@ public:
             if (std::string(typeid(T).name()) == h.first)                          // Check struct type is the same
                 h.second((void *)&evt);                                            // Fire handler up
     }
+
+    // Used by task scheduler
+    void fire_event(void *evt, std::string evt_name)
+    {
+        for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
+            if (evt_name == h.first)                                               // Check struct type is the same
+                h.second(evt);                                                     // Fire handler up
+    }
 };

@@ -765,9 +765,9 @@ namespace noaa_apt
             }
 
             if(d_parameters.contains("start_timestamp"))
-                satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, d_parameters["start_timestamp"]);
+                satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, d_parameters["start_timestamp"]);
             else
-                satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+                satellite_tle = satdump::general_tle_registry->get_from_norad(norad);
 
             // SATELLITE ID
             {

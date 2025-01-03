@@ -113,7 +113,7 @@ namespace earthcare
                 satdump::ImageProducts msi_products;
                 msi_products.instrument_name = "earthcare_msi";
                 msi_products.has_timestamps = true;
-                msi_products.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp));
+                msi_products.set_tle(satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp));
                 msi_products.bit_depth = 16;
                 msi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 msi_products.set_timestamps(msi_reader.timestamps);
