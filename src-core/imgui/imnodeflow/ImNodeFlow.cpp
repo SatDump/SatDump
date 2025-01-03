@@ -205,8 +205,6 @@ namespace ImFlow {
     // -----------------------------------------------------------------------------------------------------------------
     // HANDLER
 
-    int ImNodeFlow::m_instances = 0;
-
     bool ImNodeFlow::on_selected_node() {
         return std::any_of(m_nodes.begin(), m_nodes.end(),
                            [](const auto &n) { return n.second->isSelected() && n.second->isHovered(); });

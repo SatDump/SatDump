@@ -270,14 +270,12 @@ namespace ImFlow
      */
     class ImNodeFlow
     {
-    private:
-        static int m_instances;
     public:
         /**
          * @brief <BR>Instantiate a new editor with default name.
          * <BR> Editor name will be "FlowGrid + the number of editors"
          */
-        ImNodeFlow() : ImNodeFlow("FlowGrid" + std::to_string(m_instances)) {}
+        ImNodeFlow() : ImNodeFlow("FlowGrid" + std::to_string((intptr_t)this)) {}
 
         /**
          * @brief <BR>Instantiate a new editor with given name
@@ -286,7 +284,6 @@ namespace ImFlow
          */
         explicit ImNodeFlow(std::string name) :m_name(std::move(name))
         {
-            m_instances++;
             m_context.config().extra_window_wrapper = true;
             m_context.config().color = m_style.colors.background;
         }
