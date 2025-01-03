@@ -173,11 +173,11 @@ namespace eos
 
             std::optional<satdump::TLE> satellite_tle;
             if (d_satellite == AQUA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad_time(27424, dataset.timestamp);
+                satellite_tle = satdump::general_tle_registry->get_from_norad_time(27424, dataset.timestamp);
             else if (d_satellite == TERRA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad_time(25994, dataset.timestamp);
+                satellite_tle = satdump::general_tle_registry->get_from_norad_time(25994, dataset.timestamp);
             else if (d_satellite == AURA)
-                satellite_tle = satdump::general_tle_registry.get_from_norad_time(28376, dataset.timestamp);
+                satellite_tle = satdump::general_tle_registry->get_from_norad_time(28376, dataset.timestamp);
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
             {

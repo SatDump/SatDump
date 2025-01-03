@@ -72,7 +72,7 @@ namespace satdump
                     if (satellite_object != nullptr)
                         predict_destroy_orbital_elements(satellite_object);
 
-                    auto &tle = general_tle_registry[current_satellite_id];
+                    auto &tle = (*general_tle_registry)[current_satellite_id];
 
                     satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
                     updateNextPass(current_time);

@@ -12,9 +12,9 @@
 
 namespace satdump
 {
-    TLERegistry general_tle_registry;
+    std::shared_ptr<TLERegistry> general_tle_registry = std::make_shared<TLERegistry>();
 
-    int parseTLEStream(std::istream &inputStream, TLERegistry &new_registry)
+    int parseTLEStream(std::istream &inputStream, std::shared_ptr<TLERegistry> new_registry)
     {
         std::string this_line;
         std::deque<std::string> tle_lines;
@@ -69,18 +69,18 @@ namespace satdump
                     continue;
                 }
 
-                new_registry.push_back({norad, tle_lines[0], tle_lines[1], tle_lines[2]});
+                new_registry->push_back({norad, tle_lines[0], tle_lines[1], tle_lines[2]});
                 tle_lines.clear();
                 total_lines++;
             }
         }
 
         // Sort and remove duplicates
-        sort(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+        sort(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
              { return a.name < b.name; });
-        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+        new_registry->erase(std::unique(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
                                        { return a.norad == b.norad; }),
-                           new_registry.end());
+                           new_registry->end());
 
         return total_lines;
     }
@@ -101,7 +101,7 @@ namespace satdump
         std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
         std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
         bool success = true;
-        TLERegistry new_registry;
+        std::shared_ptr<TLERegistry> new_registry = std::make_shared<TLERegistry>();
 
         for (auto &url_str : urls_to_fetch)
         {
@@ -166,11 +166,11 @@ namespace satdump
 
             if (!success)
             {
-                std::optional<TLE> old_tle = general_tle_registry.get_from_norad(norad);
+                std::optional<TLE> old_tle = general_tle_registry->get_from_norad(norad);
                 if (old_tle.has_value())
                 {
                     logger->warn("Error updating TLE for %d. Using old record", norad);
-                    new_registry.push_back(old_tle.value());
+                    new_registry->push_back(old_tle.value());
                 }
                 else
                     logger->error("Error updating TLE for %d. Ignoring!", norad);
@@ -178,7 +178,7 @@ namespace satdump
         }
 
         std::ofstream outfile(path, std::ios::trunc);
-        for (TLE &tle : new_registry)
+        for (TLE &tle : *new_registry)
             outfile << tle.name << std::endl
                     << tle.line1 << std::endl
                     << tle.line2 << std::endl
@@ -187,45 +187,61 @@ namespace satdump
         general_tle_registry = new_registry;
         config::main_cfg["user"]["tles_last_updated"] = time(NULL);
         config::saveUserConfig();
-        logger->info("%zu TLEs loaded!", new_registry.size());
+        logger->info("%zu TLEs loaded!", new_registry->size());
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
     void autoUpdateTLE(std::string path)
     {
         std::string update_setting = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_update_interval"]["value"], "1 day");
-        time_t next_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+        time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
         bool honor_setting = true;
+        time_t update_interval;
+
         if (update_setting == "Never")
             honor_setting = false;
         else if (update_setting == "4 hours")
-            next_update += 14400;
+            update_interval = 14400;
         else if (update_setting == "1 day")
-            next_update += 86400;
+            update_interval = 86400;
         else if (update_setting == "3 days")
-            next_update += 259200;
+            update_interval = 259200;
         else if (update_setting == "7 days")
-            next_update += 604800;
+            update_interval = 604800;
         else if (update_setting == "14 days")
-            next_update += 1209600;
+            update_interval = 1209600;
         else
         {
             logger->error("Invalid TLE Auto-update interval: %s", update_setting.c_str());
             honor_setting = false;
         }
 
-        if ((honor_setting && time(NULL) > next_update) || satdump::general_tle_registry.size() == 0)
+        // Update now, if needed
+        time_t now = time(NULL);
+        if ((honor_setting && now > last_update + update_interval) || satdump::general_tle_registry->size() == 0)
+        {
             updateTLEFile(path);
+            last_update = now;
+        }
+
+        // Schedule updates while running
+        if (honor_setting)
+        {
+            eventBus->register_handler<AutoUpdateTLEsEvent>([](AutoUpdateTLEsEvent evt) { updateTLEFile(evt.path); });
+            std::shared_ptr<AutoUpdateTLEsEvent> evt = std::make_shared<AutoUpdateTLEsEvent>();
+            evt->path = path;
+            taskScheduler->add_task<AutoUpdateTLEsEvent>("auto_tle_update", evt, last_update, update_interval);
+        }
     }
 
     void loadTLEFileIntoRegistry(std::string path)
     {
         logger->info("Loading TLEs from " + path);
         std::ifstream tle_file(path);
-        TLERegistry new_registry;
+        std::shared_ptr<TLERegistry> new_registry = std::make_shared<TLERegistry>();
         parseTLEStream(tle_file, new_registry);
         tle_file.close();
-        logger->info("%zu TLEs loaded!", new_registry.size());
+        logger->info("%zu TLEs loaded!", new_registry->size());
         general_tle_registry = new_registry;
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }

@@ -274,7 +274,7 @@ namespace satdump
             }
 
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("NORAD ID %d", general_tle_registry[current_satellite_id].norad);
+                ImGui::SetTooltip("NORAD ID %d", (*general_tle_registry)[current_satellite_id].norad);
         }
 
         if (backend_needs_update)

@@ -83,7 +83,7 @@ namespace wsfm
         dataset.satellite_name = sat_name;
         dataset.timestamp = get_median(mwi_reader.timestamps);
 
-        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
+        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
         // Satellite ID
         {

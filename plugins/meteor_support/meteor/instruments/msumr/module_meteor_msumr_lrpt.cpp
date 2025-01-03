@@ -30,7 +30,7 @@ namespace meteor
             product.instrument_name = "msu_mr";
             product.has_timestamps = true;
             product.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-            product.set_tle(satdump::general_tle_registry.get_from_norad_time(norad, timestamp));
+            product.set_tle(satdump::general_tle_registry->get_from_norad_time(norad, timestamp));
             if (msumr_serial_number == 0) // M2
                 product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
             else if (msumr_serial_number == 3) // M2-3
