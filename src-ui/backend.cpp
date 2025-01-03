@@ -35,8 +35,8 @@ void funcRebuildFonts()
 
 void funcSetMousePos(int x, int y)
 {
-	glfwSetCursorPos(window, x, y);
-	ImGui_ImplGlfw_CursorPosCallback(window, x, y);
+    glfwSetCursorPos(window, x, y);
+    ImGui_ImplGlfw_CursorPosCallback(window, x, y);
 }
 
 std::pair<int, int> funcBeginFrame()

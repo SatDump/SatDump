@@ -36,6 +36,10 @@ namespace satdump
     struct TLEsUpdatedEvent
     {
     };
+    struct AutoUpdateTLEsEvent
+    {
+        std::string path;
+    };
 
     // TLE Registry class, which simply extends a std::vector with some QOL functions
     class TLERegistry : public std::vector<TLE>
@@ -45,7 +49,7 @@ namespace satdump
         std::optional<TLE> get_from_norad_time(int norad, time_t timestamp);
     };
 
-    SATDUMP_DLL extern TLERegistry general_tle_registry;
+    SATDUMP_DLL extern std::shared_ptr<TLERegistry> general_tle_registry;
 
     int parseTLEStream(std::istream &inputStream, TLERegistry &new_registry); // Helper - Takes an input stream and parses out the valid TLEs
     void updateTLEFile(std::string path);                                     // Updates the TLE file now based on the URLs in the config

@@ -1,3 +1,6 @@
+#define NOMINMAX
+#include <cmath>
+
 #include "scheduler.h"
 #include "logger.h"
 #include "imgui/imgui.h"
@@ -17,7 +20,10 @@ namespace satdump
         if (!has_tle)
             return;
 
+        // Thread Safety
         upcoming_satellite_passes_mtx.lock();
+        auto tle_registry = general_tle_registry;
+        int num_objects = std::min(tle_registry->size(), satoptions.size()); // These can temporarily get out of sync on update
 
         if (autotrack_engaged)
             style::beginDisabled();
@@ -30,9 +36,9 @@ namespace satdump
         ImGui::SetNextItemWidth(200 * ui_scale);
         if (ImGui::BeginListBox("##trackingavailablesatsbox"))
         {
-            for (int i = 0; i < (int)satoptions.size(); i++)
-                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](TrackedObject &c)
-                                 { return c.norad == general_tle_registry[i].norad; }) == enabled_satellites.end())
+            for (int i = 0; i < num_objects; i++)
+                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i, &tle_registry](TrackedObject &c)
+                                 { return c.norad == (*tle_registry)[i].norad; }) == enabled_satellites.end())
                     if (availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch))
                     {
                         if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
@@ -40,10 +46,10 @@ namespace satdump
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
                         {
-                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](TrackedObject &t)
-                                                   { return t.norad == general_tle_registry[i].norad; });
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i, &tle_registry](TrackedObject &t)
+                                                   { return t.norad == (*tle_registry)[i].norad; });
                             if (it == enabled_satellites.end())
-                                enabled_satellites.push_back({general_tle_registry[i].norad});
+                                enabled_satellites.push_back({(*tle_registry)[i].norad});
                         }
                     }
             ImGui::EndListBox();
@@ -53,15 +59,15 @@ namespace satdump
         ImGui::BeginGroup();
         if (ImGui::Button(">>>"))
         {
-            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](TrackedObject &t)
-                                   { return t.norad == general_tle_registry[tracking_sats_menu_selected_1].norad; });
+            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, &tle_registry](TrackedObject &t)
+                                   { return t.norad == (*tle_registry)[tracking_sats_menu_selected_1].norad; });
             if (it == enabled_satellites.end())
-                enabled_satellites.push_back({general_tle_registry[tracking_sats_menu_selected_1].norad});
+                enabled_satellites.push_back({(*tle_registry)[tracking_sats_menu_selected_1].norad});
         }
         if (ImGui::Button("<<<"))
         {
-            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this](TrackedObject &t)
-                                   { return t.norad == general_tle_registry[tracking_sats_menu_selected_2].norad; });
+            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, &tle_registry](TrackedObject &t)
+                                   { return t.norad == (*tle_registry)[tracking_sats_menu_selected_2].norad; });
             if (it != enabled_satellites.end())
                 enabled_satellites.erase(it);
         }
@@ -75,9 +81,9 @@ namespace satdump
         ImGui::SetNextItemWidth(200 * ui_scale);
         if (ImGui::BeginListBox("##trackingselectedsatsbox"))
         {
-            for (int i = 0; i < (int)satoptions.size(); i++)
-                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i](TrackedObject &c)
-                                 { return c.norad == general_tle_registry[i].norad; }) != enabled_satellites.end())
+            for (int i = 0; i < num_objects; i++)
+                if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i, &tle_registry](TrackedObject &c)
+                                 { return c.norad == (*tle_registry)[i].norad; }) != enabled_satellites.end())
                     if (selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch))
                     {
                         if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
@@ -85,8 +91,8 @@ namespace satdump
 
                         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
                         {
-                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [this, i](TrackedObject &t)
-                                                   { return t.norad == general_tle_registry[i].norad; });
+                            auto it = std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i, &tle_registry](TrackedObject &t)
+                                                   { return t.norad == (*tle_registry)[i].norad; });
                             if (it != enabled_satellites.end())
                                 enabled_satellites.erase(it);
                         }
@@ -161,7 +167,10 @@ namespace satdump
                         double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
                         double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
-                        std::string name = general_tle_registry.get_from_norad(norad)->name;
+                        std::string name = "NORAD " + norad;
+                        std::optional<TLE> this_tle = tle_registry->get_from_norad(norad);
+                        if(this_tle.has_value())
+                            name = this_tle->name;
 
                         if (cpass_xs < 0)
                             cpass_xs = 0;
@@ -241,7 +250,7 @@ namespace satdump
             for (auto &cpass : enabled_satellites)
             {
                 int dl_pos = 0;
-                std::optional<satdump::TLE> thisTLE = general_tle_registry.get_from_norad(cpass.norad);
+                std::optional<satdump::TLE> thisTLE = tle_registry->get_from_norad(cpass.norad);
                 std::string object_name = (thisTLE.has_value() ? thisTLE->name : "NORAD #" + std::to_string(cpass.norad));
                 for (auto &downlink : cpass.downlinks)
                 {
@@ -372,7 +381,7 @@ namespace satdump
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("%s", general_tle_registry.get_from_norad(cpass.norad)->name.c_str());
+                ImGui::Text("%s", tle_registry->get_from_norad(cpass.norad)->name.c_str());
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.2f", cpass.max_elevation);
             }
@@ -429,7 +438,7 @@ namespace satdump
                         double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
                         double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
-                        std::string name = general_tle_registry.get_from_norad(norad)->name;
+                        std::string name = general_tle_registry->get_from_norad(norad)->name;
 
                         if (cpass_xs < 0)
                             cpass_xs = 0;

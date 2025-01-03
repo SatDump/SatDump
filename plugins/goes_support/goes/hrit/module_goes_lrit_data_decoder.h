@@ -45,9 +45,11 @@ namespace goes
             std::mutex ui_dcs_mtx;
             std::shared_ptr<DCSMessage> focused_dcs_message = nullptr;
             std::deque<std::shared_ptr<DCSMessage>> ui_dcs_messages;
-            std::map<std::string, std::string> shef_codes;
-            std::map<uint32_t, std::shared_ptr<DCP>> dcp_list;
             std::set<uint32_t> filtered_dcps;
+
+            inline static std::map<std::string, std::string> shef_codes;
+            inline static std::map<uint32_t, std::shared_ptr<DCP>> dcp_list;
+            inline static std::mutex dcp_mtx;
 
             enum CustomFileParams
             {
@@ -70,10 +72,12 @@ namespace goes
 
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
+            void initDCS();
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
 
-            void initDCS();
+            static void loadDCPs();
+
             bool processDCS(uint8_t *data, size_t size);
             void drawDCSUI();
 
@@ -90,6 +94,12 @@ namespace goes
             std::vector<ModuleDataType> getOutputTypes();
 
         public:
+            struct DCPUpdateEvent
+            {
+            };
+
+            static void updateDCPs(DCPUpdateEvent);
+
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
             static std::vector<std::string> getParameters();

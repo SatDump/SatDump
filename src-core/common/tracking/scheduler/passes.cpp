@@ -9,7 +9,7 @@ namespace satdump
     {
         std::vector<SatellitePass> passes;
         predict_observer_t *observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt * DEG_TO_RAD);
-        auto tle = general_tle_registry.get_from_norad(norad);
+        auto tle = general_tle_registry->get_from_norad(norad);
         if (!tle.has_value())
         {
             logger->warn("NORAD #%d is not available! Skipping pass calculation", norad);

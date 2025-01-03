@@ -259,11 +259,13 @@ namespace satdump
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
+                // Save OpenCL Device selection
                 satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
                 satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
                 opencl::resetOCLContext();
 #endif
 
+                // Most general settings
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
                     satdump::config::main_cfg["user_interface"][p.first]["value"] = p.second.getValue();
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
@@ -271,14 +273,23 @@ namespace satdump
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
                     satdump::config::main_cfg["satdump_directories"][p.first]["value"] = p.second.getValue();
 
+                // Theme
                 satdump::config::main_cfg["user_interface"]["theme"]["value"] = themes[selected_theme];
 
+                // Plugin Settings
                 for (auto &plugin_hdl : config::plugin_config_handlers)
                     plugin_hdl.save();
 
+                // Re-initialize auto TLE update
+                taskScheduler->del_task("auto_tle_update");
+                autoUpdateTLE(user_path + "/satdump_tles.txt");
+
+                // Save config files
                 config::saveUserConfig();
                 if (advanced_mode)
                     savePipelines();
+
+                // Clean up
                 advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
                 saved_message.set_message(style::theme.green, "Settings saved");
                 satdump::update_ui = true;
