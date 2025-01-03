@@ -1,0 +1,36 @@
+{
+    "name": "MHS",
+    "presets": [
+        {
+            "name": "421",
+            "equation": "ch4, ch2, ch1",
+            "image": {
+                "individual_equalize": true
+            }
+        }
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "min": 0.013,
+                "max": 0.022
+            },
+            "2": {
+                "min": 0.039,
+                "max": 0.068
+            },
+            "3": {
+                "min": 0.0713,
+                "max": 0.0868
+            },
+            "4": {
+                "min": 0.059,
+                "max": 0.090
+            },
+            "5": {
+                "min": 0.060,
+                "max": 0.096
+            }
+        }
+    }
+}

@@ -1,4 +1,5 @@
 #include "image_product_handler.h"
+#include "nlohmann/json_utils.h"
 
 #include "imgui/imgui_stdlib.h"
 #include "products2/image/product_equation.h"
@@ -144,6 +145,8 @@ namespace satdump
                         channel_selection_curr_id = i;
             }
 
+            channel_calibrated = getValueOrDefault(p["channel_calibrated"], false);
+
             if (p.contains("calibration_ranges"))
             {
                 auto &r = p["calibration_ranges"];
@@ -170,6 +173,8 @@ namespace satdump
                 p["equation"] = equation;
             else
                 p["channel"] = product->images[channel_selection_curr_id].channel_name;
+
+            p["channel_calibrated"] = channel_calibrated;
 
             for (int i = 0; i < product->images.size(); i++)
             {
