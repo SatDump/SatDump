@@ -50,7 +50,6 @@
 
 #include "implot3d.h"
 #include "implot3d_internal.h"
-#include <cmath>
 
 #ifndef IMGUI_DISABLE
 

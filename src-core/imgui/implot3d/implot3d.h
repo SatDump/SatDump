@@ -35,6 +35,7 @@
 
 #pragma once
 #include "imgui/imgui.h"
+#include <cmath>
 #ifndef IMGUI_DISABLE
 
 //-----------------------------------------------------------------------------
