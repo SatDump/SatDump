@@ -9,6 +9,7 @@
 #include "image/channel_transform.h"
 
 #include "common/physics_constants.h"
+#include "image/calibration_units.h" // TODOREWORK MOVE!!!! + Convertion
 
 namespace satdump
 {
@@ -44,6 +45,7 @@ namespace satdump
              * @param bit_depth Image bit depth
              * @param ch_transform Channel transform to reference field
              * @param wavenumber Wavenumber
+             * @param calibration_unit optional, calibration output channel unit. Can therefore vary per channel!
              */
             struct ImageHolder
             {
@@ -54,12 +56,14 @@ namespace satdump
                 int bit_depth = 16;
                 ChannelTransform ch_transform = ChannelTransform().init_none();
                 double wavenumber = -1;
+                std::string calibration_unit = "None";
             };
 
             std::vector<ImageHolder> images;
 
             bool save_as_matrix = false;
 
+        public:
             /**
              * @brief Set geo projection config in the product
              * @param cfg projection config. Must contain all applicable metadata
@@ -104,6 +108,28 @@ namespace satdump
                 return contents.contains("projection_cfg");
             }
 
+        public:
+            void set_calibration(std::string calibrator, nlohmann::json cfg)
+            {
+                contents["calibration"] = cfg;
+                contents["calibration"]["calibrator"] = calibrator;
+            }
+
+            std::pair<std::string, nlohmann::json> get_calibration()
+            {
+                return {contents["calibration"]["calibrator"], contents["calibration"]};
+            }
+
+            /**
+             * @brief Check if calibration info is present
+             * @return true if present
+             */
+            bool has_calibration()
+            {
+                return contents.contains("calibration");
+            }
+
+        public:
             /**
              * @brief Get image channel by absolute ID
              * @param index absolute channel index
@@ -131,6 +157,35 @@ namespace satdump
             }
 
             /**
+             * @brief Get image channel raw ID by name
+             * @param name channel name
+             * @return the image channel ID (NOT abs_id!!)
+             */
+            int get_channel_image_idx(std::string name)
+            {
+                for (int i = 0; i < images.size(); i++)
+                    if (images[i].channel_name == name)
+                        return i;
+                throw satdump_exception("Product Channel Name " + name + " is not present!");
+            }
+
+            /**
+             * @brief Get raw channel count
+             * @param idx channel index (NOT abs_idx!!!)
+             * @param x position in image
+             * @param y position in image
+             */
+            inline int get_raw_channel_val(int idx, int x, int y)
+            {
+                auto &i = images[idx];
+                int depth_diff = i.bit_depth - i.image.depth();
+                if (depth_diff > 0)
+                    return i.image.get(0, x, y) << depth_diff;
+                else
+                    return i.image.get(0, x, y) >> -depth_diff;
+            }
+
+            /**
              * @brief Set channel wavenumber
              * @param index absolute channel index
              * @param wavenumber wavenumber value
@@ -143,8 +198,7 @@ namespace satdump
                         img.wavenumber = wavenumber;
                         return;
                     }
-                // logger->error("Product Channel Index %d is not present!", index); // TODOREWORK
-                throw satdump_exception("TODO");
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
             }
 
             /**
@@ -155,6 +209,22 @@ namespace satdump
             void set_channel_frequency(int index, double frequency)
             {
                 set_channel_wavenumber(index, frequency / SPEED_OF_LIGHT_M_S);
+            }
+
+            /**
+             * @brief Set channel calibration unit
+             * @param index absolute channel index
+             * @param unit unit as a string
+             */
+            void set_channel_unit(int index, std::string unit)
+            {
+                for (auto &img : images)
+                    if (img.abs_index == index)
+                    {
+                        img.calibration_unit = unit;
+                        return;
+                    }
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
             }
 
         public:

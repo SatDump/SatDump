@@ -57,4 +57,27 @@ namespace image
         else
             return nlohmann::json();
     }
+
+    bool has_metadata_calib_cfg(Image &img)
+    {
+        return img.metadata_obj != nullptr && get_metadata(img).contains("calib_cfg");
+    }
+
+    void set_metadata_calib_cfg(Image &img, nlohmann::json calib_cfg)
+    {
+        if (img.metadata_obj == nullptr)
+            img.metadata_obj = (nlohmann::json *)new nlohmann::json();
+
+        satdump::reprojection::rescaleProjectionScalarsIfNeeded(calib_cfg, img.width(), img.height());
+
+        (*((nlohmann::json *)img.metadata_obj))["calib_cfg"] = calib_cfg;
+    }
+
+    nlohmann::json get_metadata_calib_cfg(const Image &img)
+    {
+        if (img.metadata_obj != nullptr && get_metadata(img).contains("calib_cfg"))
+            return (*((nlohmann::json *)img.metadata_obj))["calib_cfg"];
+        else
+            return nlohmann::json();
+    }
 }

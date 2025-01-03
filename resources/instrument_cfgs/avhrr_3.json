@@ -1,0 +1,37 @@
+{
+    "name": "AVHRR/3",
+    "presets": [
+        {
+            "name": "221",
+            "equation": "ch2, ch2, ch1"
+        }
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "min": 0,
+                "max": 46.203
+            },
+            "2": {
+                "min": 0,
+                "max": 97.0507
+            },
+            "3a": {
+                "min": 0,
+                "max": 5.41665
+            },
+            "3b": {
+                "min": 0.05,
+                "max": 1
+            },
+            "4": {
+                "min": 30,
+                "max": 120
+            },
+            "5": {
+                "min": 30,
+                "max": 120
+            }
+        }
+    }
+}

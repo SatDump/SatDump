@@ -50,9 +50,21 @@ namespace satdump
                     was_changed = true;
                     preset_selection_curr_id = -1;
                 }
+                ImGui::SameLine();
+                if (ImGui::Button("Default"))
+                {
+                    tryApplyDefaultPreset();
+                    was_changed = true;
+                }
             }
 
             return was_changed;
+        }
+
+        void ProductHandler::tryApplyDefaultPreset()
+        {
+            if (instrument_cfg.contains("default"))
+                setConfig(instrument_cfg["default"]);
         }
     }
 }

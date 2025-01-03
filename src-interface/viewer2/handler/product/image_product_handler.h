@@ -15,6 +15,8 @@
 
 #include "../image/image_handler.h"
 
+#include "products2/image/image_calibrator.h"
+
 namespace satdump
 {
     namespace viewer
@@ -29,6 +31,7 @@ namespace satdump
 
             // Products
             products::ImageProduct *product;
+            std::shared_ptr<products::ImageCalibrator> img_calibrator;
 
             // Auto-update in UI
             bool needs_to_update = true;
@@ -36,6 +39,11 @@ namespace satdump
             // Channel selection
             std::string channel_selection_box_str;
             int channel_selection_curr_id = 0;
+
+            bool images_can_be_calibrated = false;
+            bool channel_calibrated = false;
+            std::vector<double> channel_calibrated_range_min;
+            std::vector<double> channel_calibrated_range_max;
 
             // Equation
             std::string equation;

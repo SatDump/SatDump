@@ -48,6 +48,12 @@ namespace satdump
              */
             bool renderPresetMenu();
 
+            /**
+             * @brief Attempts to a apply a default preset if present in the
+             * configuration
+             */
+            void tryApplyDefaultPreset();
+
             std::shared_ptr<products::Product> product;
             nlohmann::ordered_json instrument_cfg;
 

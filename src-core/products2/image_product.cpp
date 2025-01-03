@@ -54,6 +54,8 @@ namespace satdump
 
                 if (images[c].wavenumber != -1)
                     contents["images"][c]["wavenumber"] = images[c].wavenumber;
+                if (images[c].calibration_unit != "None")
+                    contents["images"][c]["calibration_unit"] = images[c].calibration_unit;
                 //// META
 
                 savemtx.unlock();
@@ -153,6 +155,8 @@ namespace satdump
 
                 if (contents["images"][c].contains("wavenumber"))
                     img_holder.wavenumber = contents["images"][c]["wavenumber"];
+                if (contents["images"][c].contains("calibration_unit"))
+                    img_holder.calibration_unit = contents["images"][c]["calibration_unit"];
                 //// META
 
                 if (!save_as_matrix)

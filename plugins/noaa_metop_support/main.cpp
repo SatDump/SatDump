@@ -17,6 +17,10 @@
 #include "noaa/module_noaa_dsb_decoder.h"
 #include "noaa/module_noaa_instruments.h"
 
+#include "products2/image/image_calibrator.h"
+#include "instruments/avhrr/avhrr_calibrator2.h"
+#include "instruments/mhs/mhs_calibrator2.h"
+
 class NOAAMetOpSupport : public satdump::Plugin
 {
 public:
@@ -29,6 +33,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler2);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -53,6 +58,18 @@ public:
             evt.calibrators.push_back(std::make_shared<metop::iasi::MetOpIASIImagingCalibrator>(evt.calib, evt.products));
         else if (evt.id == "noaa_hirs")
             evt.calibrators.push_back(std::make_shared<NoaaHIRSCalibrator>(evt.calib, evt.products));
+    }
+
+    static void provideImageCalibratorHandler2(const satdump::products::RequestImageCalibratorEvent &evt)
+    {
+        if (evt.id == "noaa_avhrr3")
+            evt.calibrators.push_back(std::make_shared<noaa_metop::NoaaAVHRR3Calibrator>(evt.products, evt.calib));
+        else if (evt.id == "noaa_mhs" || evt.id == "noaa_amsu")
+            evt.calibrators.push_back(std::make_shared<noaa_metop::NoaaMHSCalibrator>(evt.products, evt.calib));
+        //   else if (evt.id == "metop_iasi_img")
+        //       evt.calibrators.push_back(std::make_shared<metop::iasi::MetOpIASIImagingCalibrator>(evt.calib, evt.products));
+        //   else if (evt.id == "noaa_hirs")
+        //       evt.calibrators.push_back(std::make_shared<NoaaHIRSCalibrator>(evt.calib, evt.products));
     }
 };
 

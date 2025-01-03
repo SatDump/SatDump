@@ -81,6 +81,8 @@ namespace satdump
                             openProductOrDataset("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
                         if (ImGui::MenuItem("Load MSUGS 2"))
                             openProductOrDataset("/home/alan/Downloads/20241231_154404_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
+                        if (ImGui::MenuItem("Load MetOp"))
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
 
                         ImGui::EndMenu();
                     }

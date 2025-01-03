@@ -40,6 +40,13 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::endDisabled();
 
+                if (image_calib_valid)
+                {
+                    ImGui::Text("Calibration Unit %s", image_calib.unit.c_str());
+                    ImGui::Text("Calibration Min %f", image_calib.min);
+                    ImGui::Text("Calibration Max %f", image_calib.max);
+                }
+
                 if (needs_to_update)
                     asyncProcess();
             }
@@ -48,6 +55,20 @@ namespace satdump
             {
                 image_view.update(get_current_img());
                 imgview_needs_update = false;
+
+                image_view.mouseCallback = [this](int x, int y)
+                {
+                    auto &img = get_current_img();
+                    ImGui::BeginTooltip(); // TODOREWORK
+                    additionalMouseCallback(x, y);
+                    ImGui::Text("Raw : %d", img.get(0, x, y));
+                    if (image_calib_valid && image.channels() == 1)
+                    {
+                        double val = image_calib.getVal(img.getf(0, x, y));
+                        ImGui::Text("Unit : %f %s", val, image_calib.unit.c_str());
+                    }
+                    ImGui::EndTooltip();
+                };
             }
         }
 
@@ -85,6 +106,12 @@ namespace satdump
             return p;
         }
 
+        void ImageHandler::updateImage(image::Image &img) // TODOREWORK
+        {
+            image = img;
+            process();
+        }
+
         void ImageHandler::do_process()
         {
             bool image_needs_processing = equalize_img |
@@ -113,6 +140,19 @@ namespace satdump
 
             has_second_image = image_needs_processing;
             imgview_needs_update = true;
+
+            auto &im = get_current_img();
+            if (image::has_metadata_proj_cfg(im))
+            {
+                logger->critical(image::get_metadata_proj_cfg(im).dump(4));
+            }
+
+            image_calib_valid = false;
+            if (image::has_metadata_calib_cfg(im))
+            {
+                image_calib = image::get_metadata_calib_cfg(im);
+                image_calib_valid = true;
+            }
         }
     }
 }

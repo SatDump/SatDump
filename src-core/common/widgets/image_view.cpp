@@ -158,14 +158,14 @@ void ImageViewWidget::draw(ImVec2 win_size)
             if (autoFitNextFrame)
             {
                 ImPlot::SetupAxes(nullptr, nullptr,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_AutoFit,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_AutoFit);
+                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | ImPlotAxisFlags_AutoFit,
+                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | ImPlotAxisFlags_AutoFit);
                 autoFitNextFrame = false;
             }
             else
                 ImPlot::SetupAxes(nullptr, nullptr,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoGridLines);
+                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/,
+                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/);
 
             for (auto &chunk : img_chunks)
                 ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id,

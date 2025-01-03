@@ -14,6 +14,36 @@ namespace satdump
             product = (products::ImageProduct *)ProductHandler::product.get();
             for (auto &img : product->images)
                 channel_selection_box_str += "Channel " + img.channel_name + '\0';
+
+            // TODOREWORK
+            if (product->has_calibration())
+                img_calibrator = products::get_calibrator_from_product(product);
+            if (img_calibrator)
+                images_can_be_calibrated = true;
+
+            img_handler.additionalMouseCallback = [this](int x, int y)
+            {
+                if (is_processing)
+                    return;
+
+                if (channel_selection_curr_id != -1)
+                    ImGui::Text("Count : %d", product->get_raw_channel_val(channel_selection_curr_id, x, y));
+
+                if (!channel_calibrated && img_calibrator && channel_selection_curr_id != -1)
+                {
+                    double val = img_calibrator->compute(channel_selection_curr_id, x, y);
+                    ImGui::Text("Unit : %f %s", val, product->images[channel_selection_curr_id].calibration_unit.c_str());
+                }
+            };
+
+            // TODOREWORK Calib range init
+            if (images_can_be_calibrated)
+            {
+                channel_calibrated_range_min.resize(product->images.size(), 0);
+                channel_calibrated_range_max.resize(product->images.size(), 100);
+            }
+
+            tryApplyDefaultPreset();
         }
 
         ImageProductHandler::~ImageProductHandler()
@@ -31,13 +61,20 @@ namespace satdump
 
                 needs_to_update |= ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str());
 
+                if (channel_selection_curr_id != -1 && images_can_be_calibrated)
+                {
+                    needs_to_update |= ImGui::Checkbox("Calibrated TODOREWORK", &channel_calibrated);
+                    needs_to_update |= ImGui::InputDouble("Range Min", &channel_calibrated_range_min[channel_selection_curr_id]);
+                    needs_to_update |= ImGui::InputDouble("Range Max", &channel_calibrated_range_max[channel_selection_curr_id]);
+                }
+
                 if (channel_selection_curr_id != -1)
                 {
                     auto &ch = product->images[channel_selection_curr_id];
 
                     if (ch.wavenumber != -1)
                     {
-                        ImGui::Text("Wavenumber : %f", ch.wavenumber);
+                        ImGui::Text("Wavenumber : %f cm\u207b\u00b9", ch.wavenumber);
                     }
                 }
 
@@ -107,6 +144,20 @@ namespace satdump
                         channel_selection_curr_id = i;
             }
 
+            if (p.contains("calibration_ranges"))
+            {
+                auto &r = p["calibration_ranges"];
+                for (int i = 0; i < product->images.size(); i++)
+                {
+                    auto &name = product->images[i].channel_name;
+                    if (r.contains(name))
+                    {
+                        channel_calibrated_range_min[i] = r[name]["min"];
+                        channel_calibrated_range_max[i] = r[name]["max"];
+                    }
+                }
+            }
+
             if (p.contains("image"))
                 img_handler.setConfig(p["image"]);
         }
@@ -119,6 +170,14 @@ namespace satdump
                 p["equation"] = equation;
             else
                 p["channel"] = product->images[channel_selection_curr_id].channel_name;
+
+            for (int i = 0; i < product->images.size(); i++)
+            {
+                auto &r = p["calibration_ranges"];
+                auto &name = product->images[i].channel_name;
+                r[name]["min"] = channel_calibrated_range_min[i];
+                r[name]["max"] = channel_calibrated_range_max[i];
+            }
 
             p["image"] = img_handler.getConfig();
 
@@ -136,7 +195,10 @@ namespace satdump
                 }
                 else
                 {
-                    auto img = product->images[channel_selection_curr_id].image; // TODOREWORK MAKE FUNCTION TO GET SINGLE CHANNEL
+                    auto img = channel_calibrated ? products::generate_calibrated_product_channel(product, product->images[channel_selection_curr_id].channel_name,
+                                                                                                  channel_calibrated_range_min[channel_selection_curr_id],
+                                                                                                  channel_calibrated_range_max[channel_selection_curr_id], "", &progress)
+                                                  : product->images[channel_selection_curr_id].image; // TODOREWORK MAKE FUNCTION TO GET SINGLE CHANNEL
                     img_handler.updateImage(img);
                 }
             }
