@@ -1,3 +1,6 @@
+#define NOMINMAX
+#include <cmath>
+
 #include "scheduler.h"
 #include "logger.h"
 #include "imgui/imgui.h"
@@ -20,7 +23,7 @@ namespace satdump
         // Thread Safety
         upcoming_satellite_passes_mtx.lock();
         auto tle_registry = general_tle_registry;
-        int num_objects = min(tle_registry->size(), satoptions.size()); // These can temporarily get out of sync on update
+        int num_objects = std::min(tle_registry->size(), satoptions.size()); // These can temporarily get out of sync on update
 
         if (autotrack_engaged)
             style::beginDisabled();
