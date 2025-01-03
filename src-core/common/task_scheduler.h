@@ -1,4 +1,10 @@
 #pragma once
+
+/**
+ * @file task_scheduler.h
+ */
+
+#include <string>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
