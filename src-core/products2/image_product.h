@@ -52,7 +52,7 @@ namespace satdump
                 std::string channel_name;
                 image::Image image;
                 int bit_depth = 16;
-                ChannelTransform ch_transform;
+                ChannelTransform ch_transform = ChannelTransform().init_none();
                 double wavenumber = -1;
             };
 
@@ -64,9 +64,22 @@ namespace satdump
              * @brief Set geo projection config in the product
              * @param cfg projection config. Must contain all applicable metadata
              */
-            void set_proj_cfg(nlohmann::ordered_json cfg)
+            void set_proj_cfg(nlohmann::json cfg)
             {
                 contents["projection_cfg"] = cfg;
+            }
+
+            /**
+             * @brief Set geo projection config in the product, with a TLE and timestamps
+             * @param cfg projection config.
+             * @param tle the TLE
+             * @param timestamps the timestamps
+             */
+            void set_proj_cfg_tle_timestamps(nlohmann::json cfg, nlohmann::json tle, nlohmann::json timestamps)
+            {
+                contents["projection_cfg"] = cfg;
+                contents["projection_cfg"]["tle"] = tle;
+                contents["projection_cfg"]["timestamps"] = timestamps;
             }
 
             /**
@@ -74,7 +87,7 @@ namespace satdump
              * @param channel channel absolute index TODOREWORK
              * @return projection config as JSON object
              */
-            nlohmann::ordered_json get_proj_cfg(int channel)
+            nlohmann::json get_proj_cfg(int channel)
             {
                 // TODO CHANNEL SPECIFICS
                 auto cfg = contents["projection_cfg"];

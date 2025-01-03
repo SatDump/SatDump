@@ -8,16 +8,19 @@
 #include "metop.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "products/image_products.h"
-#include "products/radiation_products.h"
-#include "products/scatterometer_products.h"
-#include "products/dataset.h"
+// #include "products/image_products.h"
+// #include "products/radiation_products.h"
+// #include "products/scatterometer_products.h"
+// #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/image/io.h"
 #include "common/image/processing.h"
 #include "common/calibration.h"
+
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 
 namespace metop
 {
@@ -171,7 +174,7 @@ namespace metop
                 norad = METOP_C_NORAD;
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(avhrr_reader.timestamps);
 
@@ -210,28 +213,24 @@ namespace metop
                 else
                     logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
-                satdump::ImageProducts avhrr_products;
+                satdump::products::ImageProduct avhrr_products;
                 avhrr_products.instrument_name = "avhrr_3";
-                avhrr_products.has_timestamps = true;
-                avhrr_products.set_tle(satellite_tle);
-                avhrr_products.bit_depth = 10;
-                avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                avhrr_products.set_timestamps(avhrr_reader.timestamps);
-                avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+                avhrr_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), satellite_tle, avhrr_reader.timestamps);
 
-                // calib
-                avhrr_products.set_calibration(avhrr_reader.calib_out);
-                for (int n = 0; n < 3; n++)
-                {
-                    avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
-                    avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
-                }
-                for (int c = 0; c < 6; c++)
-                    avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                /* // calib
+                 avhrr_products.set_calibration(avhrr_reader.calib_out);
+                 for (int n = 0; n < 3; n++)
+                 {
+                     avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
+                     avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                 }
+                 for (int c = 0; c < 6; c++)
+                     avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                */
 
                 std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
                 for (int i = 0; i < 6; i++)
-                    avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
+                    avhrr_products.images.push_back({i, "AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i), 10});
 
                 avhrr_products.save(directory);
                 dataset.products_list.push_back("AVHRR");
@@ -250,19 +249,14 @@ namespace metop
                 logger->info("----------- MHS");
                 logger->info("Lines : " + std::to_string(mhs_reader.line));
 
-                satdump::ImageProducts mhs_products;
+                satdump::products::ImageProduct mhs_products;
                 mhs_products.instrument_name = "mhs";
-                mhs_products.has_timestamps = true;
-                mhs_products.set_tle(satellite_tle);
-                mhs_products.bit_depth = 16;
-                mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                mhs_products.set_timestamps(mhs_reader.timestamps);
-                mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
+                mhs_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")), satellite_tle, mhs_reader.timestamps);
 
                 for (int i = 0; i < 5; i++)
-                    mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i)});
+                    mhs_products.images.push_back({i, "MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i), 10});
 
-                nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
+                /*nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
                 if (calib_coefs.contains(sat_name))
                 {
                     mhs_reader.calibrate(calib_coefs[sat_name]);
@@ -276,14 +270,14 @@ namespace metop
                 else
                     logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
 
-                saveJsonFile(directory + "/MHS_tlm.json", mhs_reader.dump_telemetry(calib_coefs[sat_name]));
+                saveJsonFile(directory + "/MHS_tlm.json", mhs_reader.dump_telemetry(calib_coefs[sat_name]));*/
                 mhs_products.save(directory);
                 dataset.products_list.push_back("MHS");
 
                 mhs_status = DONE;
             }
 
-            // ASCAT
+            /*// ASCAT
             {
                 ascat_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/ASCAT";
@@ -343,7 +337,7 @@ namespace metop
                 dataset.products_list.push_back("ASCAT");
 
                 ascat_status = DONE;
-            }
+            }*/
 
             // IASI
             {
@@ -371,40 +365,31 @@ namespace metop
                     iasi_imaging = image::bowtie::correctGenericBowTie(iasi_imaging, 1, scanHeight, alpha, beta); // Bowtie.... As IASI scans per IFOV
 
                     // Test! TODO : Cleanup!!
-                    satdump::ImageProducts iasi_img_products;
+                    satdump::products::ImageProduct iasi_img_products;
                     iasi_img_products.instrument_name = "iasi_img";
-                    iasi_img_products.has_timestamps = true;
-                    iasi_img_products.set_tle(satellite_tle);
-                    iasi_img_products.bit_depth = 16;
-                    iasi_img_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_IFOV;
-                    iasi_img_products.set_timestamps(iasi_reader_img.timestamps_ifov);
-                    iasi_img_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")));
-                    iasi_img_products.images.push_back({"IASI-IMG", "1", iasi_imaging});
+                    iasi_img_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")), satellite_tle, iasi_reader_img.timestamps_ifov);
+                    iasi_img_products.images.push_back({0, "IASI-IMG", "1", iasi_imaging, 16});
 
-                    nlohmann::json calib_cfg;
+                    /*nlohmann::json calib_cfg;
                     calib_cfg["calibrator"] = "metop_iasi_img";
                     calib_cfg["vars"] = iasi_reader_img.getCalib();
                     iasi_img_products.set_calibration(calib_cfg);
                     iasi_img_products.set_calibration_type(0, iasi_img_products.CALIB_RADIANCE);
                     iasi_img_products.set_wavenumber(0, freq_to_wavenumber(26297584035088.0));
-                    iasi_img_products.set_calibration_default_radiance_range(0, -10, 180);
+                    iasi_img_products.set_calibration_default_radiance_range(0, -10, 180);*/
 
                     iasi_img_products.save(directory_img);
                     dataset.products_list.push_back("IASI-IMG");
                 }
                 iasi_img_status = DONE;
 
-                satdump::ImageProducts iasi_products;
+                satdump::products::ImageProduct iasi_products;
                 iasi_products.instrument_name = "iasi";
-                iasi_products.has_timestamps = true;
-                iasi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                iasi_products.set_timestamps(iasi_reader.timestamps);
-                iasi_products.set_tle(satellite_tle);
-                iasi_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi.json")));
+                iasi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi.json")), satellite_tle, iasi_reader.timestamps);
                 iasi_products.save_as_matrix = true;
 
                 for (int i = 0; i < 8461; i++)
-                    iasi_products.images.push_back({"IASI-ALL", std::to_string(i + 1), iasi_reader.getChannel(i)});
+                    iasi_products.images.push_back({i, "IASI-ALL", std::to_string(i + 1), iasi_reader.getChannel(i), 16});
 
                 iasi_products.save(directory);
                 dataset.products_list.push_back("IASI");
@@ -426,19 +411,14 @@ namespace metop
 
                 amsu_reader.correlate();
 
-                satdump::ImageProducts amsu_products;
+                satdump::products::ImageProduct amsu_products;
                 amsu_products.instrument_name = "amsu_a";
-                amsu_products.has_timestamps = true;
-                amsu_products.set_tle(satellite_tle);
-                amsu_products.bit_depth = 16;
-                amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                amsu_products.set_timestamps(amsu_reader.common_timestamps);
-                amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")));
+                amsu_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")), satellite_tle, amsu_reader.common_timestamps);
 
                 for (int i = 0; i < 15; i++)
-                    amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i)});
+                    amsu_products.images.push_back({i, "AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), 16});
 
-                // calib
+                /*// calib
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
                 if (calib_coefs.contains(sat_name))
                 {
@@ -452,7 +432,7 @@ namespace metop
                     }
                 }
                 else
-                    logger->warn("(AMSU) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+                    logger->warn("(AMSU) Calibration data for " + sat_name + " not found. Calibration will not be performed");*/
 
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");
@@ -471,17 +451,13 @@ namespace metop
                 logger->info("----------- GOME");
                 logger->info("Lines : " + std::to_string(gome_reader.lines));
 
-                satdump::ImageProducts gome_products;
+                satdump::products::ImageProduct gome_products;
                 gome_products.instrument_name = "gome";
-                gome_products.has_timestamps = true;
-                gome_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                gome_products.set_timestamps(gome_reader.timestamps);
-                gome_products.set_tle(satellite_tle);
-                gome_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json")));
+                gome_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json")), satellite_tle, gome_reader.timestamps);
                 gome_products.save_as_matrix = true;
 
                 for (int i = 0; i < gome_reader.channel_number; i++)
-                    gome_products.images.push_back({"GOME-ALL", std::to_string(i + 1), gome_reader.getChannel(i)});
+                    gome_products.images.push_back({i, "GOME-ALL", std::to_string(i + 1), gome_reader.getChannel(i), 16});
 
                 gome_products.save(directory);
                 dataset.products_list.push_back("GOME");
@@ -495,7 +471,7 @@ namespace metop
                 logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
 
-            // SEM
+            /*// SEM
             {
                 sem_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
@@ -520,7 +496,7 @@ namespace metop
                 dataset.products_list.push_back("SEM");
 
                 sem_status = DONE;
-            }
+            }*/
 
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
