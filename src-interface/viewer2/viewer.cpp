@@ -9,7 +9,7 @@
 #include "main_ui.h"
 
 #include "handler/dummy_handler.h"
-#include "handler/product/image_product_handler.h" // TODO CLEAN
+#include "handler/product/image_product_handler.h" // TODOREWORK CLEAN
 #include "handler/dataset/dataset_handler.h"
 
 namespace satdump
@@ -24,6 +24,8 @@ namespace satdump
 
         ViewerApplication::~ViewerApplication()
         {
+            if (file_open_thread.joinable())
+                file_open_thread.join();
         }
 
         void ViewerApplication::drawPanel()
@@ -49,57 +51,37 @@ namespace satdump
 
         void ViewerApplication::drawMenuBar()
         {
+            // Handle File Stuff TODOREWORK?
+            {
+                if (file_open_dialog && file_open_dialog->ready(0))
+                {
+                    std::string prod_path = (file_open_dialog->result().size() == 0 ? "" : file_open_dialog->result()[0]);
+                    delete file_open_dialog;
+                    file_open_dialog = nullptr;
+                    openProductOrDataset(prod_path);
+                }
+            }
+
             if (ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    ImGui::MenuItem("Open Dataset (.json)");
-
-                    if (ImGui::MenuItem("Open Product (.cbor)"))
-                    {
-                    }
+                    if (ImGui::MenuItem("Open Product/Dataset (.cbor/.json)") && !file_open_dialog)
+                        file_open_dialog = new pfd::open_file("Dataset/Product (.cbor/.json)", ".", {"CBOR Files", "*.cbor", "JSON Files", "*.json"}, pfd::opt::force_path); // TODOREWORK remember path?
 
                     ImGui::MenuItem("Open Image");
 
                     if (ImGui::BeginMenu("Hardcoded"))
                     {
                         if (ImGui::MenuItem("Load KMSS"))
-                        {
-                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
-                            master_handler->addSubHandler(prod_h);
-                        }
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor");
                         if (ImGui::MenuItem("Load Sterna"))
-                        {
-                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
-                            master_handler->addSubHandler(prod_h);
-                        }
-                        if (ImGui::MenuItem("Dataset"))
-                        {
-                            std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>();
-                            {
-                                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor"));
-                                dat_h->instrument_products->addSubHandler(prod_h);
-                            }
-                            {
-                                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_2/product.cbor"));
-                                dat_h->instrument_products->addSubHandler(prod_h);
-                            }
-                            {
-                                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor"));
-                                dat_h->instrument_products->addSubHandler(prod_h);
-                            }
-                            master_handler->addSubHandler(dat_h);
-                        }
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/STERNA_Dump/product.cbor");
                         if (ImGui::MenuItem("Load MSUGS"))
-                        {
-                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor"));
-                            master_handler->addSubHandler(prod_h);
-                        }
+                            openProductOrDataset("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
                         if (ImGui::MenuItem("Load MSUGS 2"))
-                        {
-                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct("/home/alan/Downloads/20241231_154404_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor"));
-                            master_handler->addSubHandler(prod_h);
-                        }
+                            openProductOrDataset("/home/alan/Downloads/20241231_154404_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
+
                         ImGui::EndMenu();
                     }
 
@@ -138,7 +120,7 @@ namespace satdump
         {
             ImVec2 viewer_size = ImGui::GetContentRegionAvail();
 
-            if (ImGui::BeginTable("##wiever_table", 2, /*ImGuiTableFlags_NoBordersInBodyUntilResize |*/ ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
+            if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
             {
                 ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, viewer_size.x * panel_ratio);
                 ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, viewer_size.x * (1.0f - panel_ratio));
@@ -166,6 +148,35 @@ namespace satdump
                 ImGui::EndGroup();
                 ImGui::EndTable();
             }
+        }
+
+        void ViewerApplication::openProductOrDataset(std::string path) // TODOREWORK
+        {
+            if (file_open_thread.joinable())
+                file_open_thread.join();
+            auto fun = [this, path]()
+            {
+                if (!std::filesystem::path(path).has_extension())
+                {
+                    logger->error("Invalid file, no extension!");
+                    return;
+                }
+
+                // TODOREWORK Load more than just image products
+                if (std::filesystem::path(path).extension().string() == ".cbor")
+                {
+                    std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
+                    master_handler->addSubHandler(prod_h);
+                }
+                else if (std::filesystem::path(path).extension().string() == ".json")
+                {
+                    products::DataSet dataset;
+                    dataset.load(path);
+                    std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
+                    master_handler->addSubHandler(dat_h);
+                }
+            };
+            file_open_thread = std::thread(fun);
         }
     }
 };

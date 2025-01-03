@@ -5,6 +5,7 @@
  */
 
 #include "../handler.h"
+#include "products2/dataset.h"
 
 namespace satdump
 {
@@ -21,11 +22,16 @@ namespace satdump
          *
          * @param instrument_products handler used to store instrument products
          * @param general_products handler used to generate dataset-based products
+         * @param dataset the dataset struct
          */
         class DatasetHandler : public Handler
         {
+        private:
+            products::DataSet dataset;
+            std::string dataset_name = "Invalid Dataset!";
+
         public:
-            DatasetHandler();
+            DatasetHandler(std::string path, products::DataSet d);
             ~DatasetHandler();
 
             std::shared_ptr<Handler> instrument_products;
@@ -36,10 +42,10 @@ namespace satdump
             void drawMenu();
             void drawContents(ImVec2 win_size);
 
-            std::string getName() { return "Dataset Test TODOREWORK"; }
+            std::string getName() { return dataset_name; }
 
             static std::string getID() { return "dataset_handler"; }
-            static std::shared_ptr<Handler> getInstance() { return std::make_shared<DatasetHandler>(); }
+            static std::shared_ptr<Handler> getInstance() { return nullptr; /*std::make_shared<DatasetHandler>();*/ }
         };
     }
 }

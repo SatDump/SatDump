@@ -6,6 +6,8 @@
 
 #include "handler/handler.h"
 
+#include "imgui/pfd/portable-file-dialogs.h"
+
 namespace satdump
 {
     namespace viewer
@@ -30,6 +32,12 @@ namespace satdump
 
             std::shared_ptr<Handler> curr_handler;
             std::shared_ptr<Handler> master_handler;
+
+            // TODOREWORK File open
+            std::thread file_open_thread;
+            pfd::open_file *file_open_dialog = nullptr;
+
+            void openProductOrDataset(std::string path);
 
         public:
             ViewerApplication();
