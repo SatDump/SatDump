@@ -1,4 +1,5 @@
 #include "dataset_product_handler.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -12,18 +13,27 @@ namespace satdump
         {
         }
 
+        int vvvv = 0; // TODOREWORK DELETE
         class BlockNode : public ImFlow::BaseNode
         {
-
         public:
+            int v = 0;
             BlockNode()
             {
-                setTitle("BlockNode");
+                v = vvvv++;
+                setTitle("BlockNode" + std::to_string(v));
                 setStyle(ImFlow::NodeStyle::green());
-                //    addIN<std::shared_ptr<NaFiFo2>>("In", 0, ImFlow::ConnectionFilter::SameType());
-                // if (blk->outputs.size() > 0)
-                //    addOUT<std::shared_ptr<NaFiFo2>>("Out", ImFlow::PinStyle::brown())->behaviour([this]()
-                //                                                                                  { return blk->get_output(0); });
+
+                if (v != 0)
+                    addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
+
+                auto fun = [this]()
+                {
+                    return (v == 0 ? "Firstin" : getInVal<std::string>("In")) + "\n" + "BlockNode" + std::to_string(v);
+                };
+
+                if (v != 3)
+                    addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
             }
 
             ~BlockNode()
@@ -33,6 +43,16 @@ namespace satdump
             void draw() override
             {
                 ImGui::Text("Something");
+            }
+
+            void eval()
+            {
+                logger->info("OutSize %d", getOuts().size());
+                if (getOuts().size() == 0)
+                {
+                    std::string vl = getInVal<std::string>("In");
+                    printf("finalout \n%s\n", vl.c_str());
+                }
             }
         };
 
@@ -48,6 +68,12 @@ namespace satdump
                     if (ImGui::Button("Add Block"))
                     {
                         grid.addNode<BlockNode>({0, 0});
+                    }
+
+                    if (ImGui::Button("Eval"))
+                    {
+                        for (auto &n : grid.getNodes())
+                            ((BlockNode *)(n.second.get()))->eval(); // printf("Node %s\n", n.second->getName().c_str());
                     }
                 }
             }
