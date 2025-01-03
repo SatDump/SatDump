@@ -31,6 +31,11 @@ namespace satdump
             std::string dataset_name = "Invalid Dataset!";
 
         public:
+            /**
+             * @brief Constructor
+             * @param path path of the dataset folder
+             * @param d dataset struct
+             */
             DatasetHandler(std::string path, products::DataSet d);
             ~DatasetHandler();
 
