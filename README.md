@@ -274,7 +274,7 @@ sudo zypper install git gcc-c++ cmake g++ pkgconf fftw3-devel libpng-devel libti
 
 If nng is not available for your distro, you will have to build it from source
 ```bash
-git clone https://github.com/nanomsg/nng.git
+git clone https://github.com/nanomsg/nng.git -b v1.9.0
 cd nng
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr ..
