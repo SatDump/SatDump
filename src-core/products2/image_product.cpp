@@ -144,7 +144,7 @@ namespace satdump
                     logger->info("Loading " + contents["images"][c]["file"].get<std::string>());
 
                 //// META
-                printf("\n%s\n", contents["images"][c].dump(4).c_str());
+                //                printf("\n%s\n", contents["images"][c].dump(4).c_str());
 
                 img_holder.filename = contents["images"][c]["file"].get<std::string>();
                 img_holder.channel_name = contents["images"][c]["name"].get<std::string>();

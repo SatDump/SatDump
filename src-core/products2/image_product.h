@@ -11,6 +11,9 @@
 #include "common/physics_constants.h"
 #include "image/calibration_units.h" // TODOREWORK MOVE!!!! + Convertion
 
+// TODOREWORK MOVE
+#include "common/calibration.h"
+
 namespace satdump
 {
     namespace products
@@ -209,6 +212,29 @@ namespace satdump
             void set_channel_frequency(int index, double frequency)
             {
                 set_channel_wavenumber(index, frequency / SPEED_OF_LIGHT_M_S);
+            }
+
+            /**
+             * @brief Get channel wavenumber
+             * @param index absolute channel index
+             * @return channel wavenumber
+             */
+            double get_channel_wavenumber(int index)
+            {
+                for (auto &img : images)
+                    if (img.abs_index == index)
+                        return img.wavenumber;
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
+            }
+
+            /**
+             * @brief Get channel frequency
+             * @param index absolute channel index
+             * @return channel frequency in Hz
+             */
+            double get_channel_frequency(int index)
+            {
+                return wavenumber_to_freq(get_channel_wavenumber(index));
             }
 
             /**

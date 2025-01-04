@@ -97,6 +97,14 @@ namespace satdump
                         ImGui::MenuItem("Projection");
                         ImGui::EndMenu();
                     }
+                    if (curr_handler && ImGui::BeginMenu("Config"))
+                    {
+                        if (ImGui::MenuItem("JSON To Clipboard"))
+                            ImGui::SetClipboardText(curr_handler->getConfig().dump(4).c_str());
+                        if (ImGui::MenuItem("JSON From Clipboard"))
+                            curr_handler->setConfig(nlohmann::json::parse(ImGui::GetClipboardText()));
+                        ImGui::EndMenu();
+                    }
                     ImGui::EndMenu();
                 }
 
