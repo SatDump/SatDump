@@ -6,9 +6,9 @@
 
 namespace aws
 {
-    namespace mws
+    namespace mwr
     {
-        class MWSReader
+        class MWRReader
         {
         private:
             std::vector<uint16_t> channels[19];
@@ -16,8 +16,8 @@ namespace aws
             AWSCRC crc;
 
         public:
-            MWSReader();
-            ~MWSReader();
+            MWRReader();
+            ~MWRReader();
             int lines;
             std::vector<double> timestamps;
             void work(ccsds::CCSDSPacket &packet);

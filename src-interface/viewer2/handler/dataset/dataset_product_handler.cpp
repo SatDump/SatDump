@@ -5,8 +5,9 @@ namespace satdump
 {
     namespace viewer
     {
-        void DatasetProductHandler::init()
+        DatasetProductHandler::DatasetProductHandler()
         {
+            editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
         }
 
         DatasetProductHandler::~DatasetProductHandler()
@@ -79,6 +80,8 @@ namespace satdump
             }
             else if (selected_tab == 2)
             {
+                if (ImGui::Button("Run"))
+                    run_lua();
             }
         }
 
@@ -130,7 +133,7 @@ namespace satdump
             if (ImGui::BeginTabItem("Code"))
             {
                 selected_tab = 2;
-
+                editor.Render("Test");
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();

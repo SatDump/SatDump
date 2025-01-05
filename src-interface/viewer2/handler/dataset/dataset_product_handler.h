@@ -3,6 +3,8 @@
 #include "imgui/imnodeflow/ImNodeFlow.h"
 #include "../handler.h"
 
+#include "TextEditor.h"
+
 namespace satdump
 {
     namespace viewer
@@ -10,13 +12,16 @@ namespace satdump
         class DatasetProductHandler : public Handler
         {
         public:
+            DatasetProductHandler();
             ~DatasetProductHandler();
 
             int selected_tab = 0;
             ImFlow::ImNodeFlow grid;
 
+            TextEditor editor;
+            void run_lua();
+
             // The Rest
-            void init();
             void drawMenu();
             void drawContents(ImVec2 win_size);
 

@@ -36,6 +36,7 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
+                needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -93,6 +94,7 @@ namespace satdump
             white_balance_img = getValueOrDefault(p["white_balance"], false);
             normalize_img = getValueOrDefault(p["normalize"], false);
             median_blur_img = getValueOrDefault(p["median_blur"], false);
+            rotate180_image = getValueOrDefault(p["rotate180_image"], false);
         }
 
         nlohmann::json ImageHandler::getConfig()
@@ -103,6 +105,7 @@ namespace satdump
             p["white_balance"] = white_balance_img;
             p["normalize"] = normalize_img;
             p["median_blur"] = median_blur_img;
+            p["rotate180_image"] = rotate180_image;
             return p;
         }
 
@@ -118,7 +121,8 @@ namespace satdump
                                           equalize_perchannel_img |
                                           white_balance_img |
                                           normalize_img |
-                                          median_blur_img;
+                                          median_blur_img |
+                                          rotate180_image;
 
             if (image_needs_processing)
             {
@@ -134,6 +138,8 @@ namespace satdump
                     image::normalize(curr_image);
                 if (median_blur_img)
                     image::median_blur(curr_image);
+                if (rotate180_image)
+                    curr_image.mirror(true, true);
             }
             else
                 curr_image.clear();

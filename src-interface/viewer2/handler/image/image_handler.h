@@ -15,6 +15,7 @@ namespace satdump
         {
         public:
             ImageHandler();
+            ImageHandler(image::Image img) { updateImage(img); }
             ~ImageHandler();
 
             bool imgview_needs_update = false;
@@ -32,6 +33,7 @@ namespace satdump
             bool white_balance_img = false;
             bool normalize_img = false;
             bool median_blur_img = false;
+            bool rotate180_image = false;
 
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;
@@ -41,7 +43,7 @@ namespace satdump
             void do_process();
 
             // Mouse callback to be added by other handlers if needed
-            std::function<void(int x, int y)> additionalMouseCallback;
+            std::function<void(int x, int y)> additionalMouseCallback = [](int, int) {};
 
             // The Rest
             void drawMenu();

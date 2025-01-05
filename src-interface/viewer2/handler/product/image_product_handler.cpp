@@ -3,7 +3,8 @@
 
 #include "imgui/imgui_stdlib.h"
 #include "products2/image/product_equation.h"
-#include "common/image/processing.h" // TODOREWORK
+#include "common/image/processing.h"               // TODOREWORK
+#include "common/dsp_source_sink/format_notated.h" // TODOREWORK
 
 namespace satdump
 {
@@ -62,21 +63,27 @@ namespace satdump
 
                 needs_to_update |= ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str());
 
-                if (channel_selection_curr_id != -1 && images_can_be_calibrated)
-                {
-                    needs_to_update |= ImGui::Checkbox("Calibrated TODOREWORK", &channel_calibrated);
-                    needs_to_update |= ImGui::InputDouble("Range Min", &channel_calibrated_range_min[channel_selection_curr_id]);
-                    needs_to_update |= ImGui::InputDouble("Range Max", &channel_calibrated_range_max[channel_selection_curr_id]);
-                }
-
                 if (channel_selection_curr_id != -1)
                 {
                     auto &ch = product->images[channel_selection_curr_id];
 
                     if (ch.wavenumber != -1)
                     {
-                        ImGui::Text("Wavenumber : %f cm\u207b\u00b9", ch.wavenumber);
+                        auto freq = product->get_channel_frequency(ch.abs_index);
+                        ImGui::SameLine();
+                        ImGui::Text("(%s)", format_notated(SPEED_OF_LIGHT_M_S / freq, "m", 2).c_str());
+                        ImGui::Text("%.3f cm\u207b\u00b9 / %s", ch.wavenumber, format_notated(freq, "Hz", 2).c_str());
                     }
+                }
+
+                if (channel_selection_curr_id != -1 && images_can_be_calibrated)
+                {
+                    needs_to_update |= ImGui::Checkbox("Calibrate", &channel_calibrated);
+                    ImGui::SetNextItemWidth(150 * ui_scale);
+                    needs_to_update |= ImGui::InputDouble("##rangemin", &channel_calibrated_range_min[channel_selection_curr_id]);
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(150 * ui_scale);
+                    needs_to_update |= ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[channel_selection_curr_id]);
                 }
 
                 if (needs_to_be_disabled)
@@ -216,6 +223,13 @@ namespace satdump
         void ImageProductHandler::drawMenuBar()
         {
             img_handler.drawMenuBar();
+            if (ImGui::MenuItem("Image To Handler"))
+            {
+                std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
+                a->setConfig(img_handler.getConfig());
+                a->updateImage(img_handler.image);
+                addSubHandler(a);
+            }
         }
 
         void ImageProductHandler::drawContents(ImVec2 win_size)

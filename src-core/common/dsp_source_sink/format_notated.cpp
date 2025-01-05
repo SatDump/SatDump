@@ -20,7 +20,22 @@ std::string format_notated(T val, std::string units, int num_decimals)
     else
         abs_val = std::abs(val);
 
-    if (abs_val < 1e3)
+    if (abs_val < 1e-6)
+    {
+        display_double = val / 1e-9;
+        display_suffix = format_spacing + "n" + units;
+    }
+    else if (abs_val < 1e-3)
+    {
+        display_double = val / 1e-6;
+        display_suffix = format_spacing + "µ" + units;
+    }
+    else if (abs_val < 1e0)
+    {
+        display_double = val / 1e-3;
+        display_suffix = format_spacing + "m" + units;
+    }
+    else if (abs_val < 1e3)
     {
         display_double = val;
         display_suffix = " " + units;
@@ -51,7 +66,7 @@ std::string format_notated(T val, std::string units, int num_decimals)
         display_suffix = format_spacing + "P" + units;
     }
 
-    if(num_decimals >= 0)
+    if (num_decimals >= 0)
         render_stream << std::setprecision(num_decimals) << std::fixed;
 
     render_stream << display_double << display_suffix;

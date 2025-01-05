@@ -8,6 +8,7 @@
 #include "common/image/io.h"
 
 #include "products2/image_product.h"
+#include "products2/dataset.h"
 
 namespace elektro_arktika
 {
@@ -40,8 +41,6 @@ namespace elektro_arktika
 
             logger->info("Demultiplexing and deframing...");
 
-            int offset = d_parameters["msugs_offset"].get<int>();
-
             while (!data_in.eof())
             {
                 // Read buffer
@@ -53,19 +52,19 @@ namespace elektro_arktika
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis1_reader.pushFrame(&frame[0], offset);
+                        vis1_reader.pushFrame(&frame[0]);
                 }
                 else if (vcid == 3)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis2_reader.pushFrame(&frame[0], offset);
+                        vis2_reader.pushFrame(&frame[0]);
                 }
                 else if (vcid == 5)
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis3_reader.pushFrame(&frame[0], offset);
+                        vis3_reader.pushFrame(&frame[0]);
                 }
                 else if (vcid == 4)
                 {
@@ -99,6 +98,14 @@ namespace elektro_arktika
 
             // data_unknown.close();
             data_in.close();
+
+            // TODOREWORK satelliteID
+            std::string sat_name = "ELEKTRO-L";
+
+            // Products dataset
+            satdump::products::DataSet dataset;
+            dataset.satellite_name = sat_name;
+            dataset.timestamp = get_median(vis1_reader.timestamps);
 
             logger->info("----------- MSU-GS");
             logger->info("MSU-GS CH1 Lines        : " + std::to_string(vis1_reader.frames));
@@ -135,7 +142,7 @@ namespace elektro_arktika
                 msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
 
                 msuvis_product.save(directory);
-                // TODOREWORK                dataset.products_list.push_back("KMSS_MSU100_1");
+                dataset.products_list.push_back("MSUGS_VIS1");
 
                 ////////////////////////////////////////////////     mtvza_status = DONE;
             }
@@ -164,7 +171,7 @@ namespace elektro_arktika
                 msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
 
                 msuvis_product.save(directory);
-                // TODOREWORK                dataset.products_list.push_back("KMSS_MSU100_1");
+                dataset.products_list.push_back("MSUGS_VIS2");
 
                 ////////////////////////////////////////////////     mtvza_status = DONE;
             }
@@ -202,38 +209,7 @@ namespace elektro_arktika
                 channels_statuses[3 + i] = DONE;
             }
 
-            /*
-            logger->info("221 Composite...");
-            {
-                image::Image<uint16_t> image221(image1.width(), std::max<int>(image1.height(), image2.height()), 3);
-                {
-                    image221.draw_image(0, image2, 0, 0);
-                    image221.draw_image(1, image2, 0, 0);
-                    image221.draw_image(2, image1, 0, 0);
-                }
-                image221.white_balance();
-                WRITE_IMAGE(image221, directory + "/MSU-GS-RGB-221");
-            }
-
-            logger->info("Natural Color Composite...");
-            {
-                image::Image<uint16_t> imageNC(image1.width(), std::max<int>(image1.height(), std::max<int>(image2.height(), image3.height())), 3);
-                {
-                    imageNC.draw_image(0, image3, 0, 0);
-                    imageNC.draw_image(1, image2, 0, 0);
-                    imageNC.draw_image(2, image1, 0, 0);
-
-                    image::HueSaturation hueTuning;
-                    hueTuning.hue[image::HUE_RANGE_YELLOW] = -45.0 / 180.0;
-                    hueTuning.hue[image::HUE_RANGE_RED] = 90.0 / 180.0;
-                    hueTuning.overlap = 100.0 / 100.0;
-                    image::hue_saturation(imageNC, hueTuning);
-
-                    imageNC.white_balance();
-                }
-                WRITE_IMAGE(imageNC, directory + "/MSU-GS-RGB-NC");
-            }
-            */
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void MSUGSDecoderModule::drawUI(bool window)

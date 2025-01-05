@@ -211,7 +211,7 @@ namespace satdump
              */
             void set_channel_frequency(int index, double frequency)
             {
-                set_channel_wavenumber(index, frequency / SPEED_OF_LIGHT_M_S);
+                set_channel_wavenumber(index, freq_to_wavenumber(frequency));
             }
 
             /**

@@ -8,6 +8,7 @@ namespace elektro_arktika
         {
             imageBuffer1 = new unsigned short[17200 * 6004];
             imageBuffer2 = new unsigned short[17200 * 6004];
+            timestamps.resize(17200, -1);
             frames = 0;
         }
 
@@ -17,9 +18,9 @@ namespace elektro_arktika
             delete[] imageBuffer2;
         }
 
-        void MSUVISReader::pushFrame(uint8_t *data, int offset)
+        void MSUVISReader::pushFrame(uint8_t *data)
         {
-            int counter = (data[8] << 8 | data[9]) + offset;
+            int counter = (data[8] << 8 | data[9]);
 
             if (counter >= 17200)
                 return;
@@ -43,6 +44,17 @@ namespace elektro_arktika
                 imageBuffer1[counter * 6004 + i] = msuLineBuffer[i * 2 + 0] << 6;
                 imageBuffer2[counter * 6004 + i] = msuLineBuffer[i * 2 + 1] << 6;
             }
+
+            uint64_t data_time = data[10] << 32 |
+                                 data[11] << 24 |
+                                 data[12] << 16 |
+                                 data[13] << 8 |
+                                 data[14];
+            //  data_time = 0;
+            double timestamp = data_time / 256.0; //.56570155902006;
+            timestamp += 1735204808.2837029;
+            timestamp -= 1800 + 88;
+            timestamps[counter] = timestamp;
 
             frames++;
         }

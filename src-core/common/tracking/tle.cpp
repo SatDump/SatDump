@@ -79,8 +79,8 @@ namespace satdump
         sort(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
              { return a.name < b.name; });
         new_registry->erase(std::unique(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
-                                       { return a.norad == b.norad; }),
-                           new_registry->end());
+                                        { return a.norad == b.norad; }),
+                            new_registry->end());
 
         return total_lines;
     }
@@ -227,7 +227,8 @@ namespace satdump
         // Schedule updates while running
         if (honor_setting)
         {
-            eventBus->register_handler<AutoUpdateTLEsEvent>([](AutoUpdateTLEsEvent evt) { updateTLEFile(evt.path); });
+            eventBus->register_handler<AutoUpdateTLEsEvent>([](AutoUpdateTLEsEvent evt)
+                                                            { updateTLEFile(evt.path); });
             std::shared_ptr<AutoUpdateTLEsEvent> evt = std::make_shared<AutoUpdateTLEsEvent>();
             evt->path = path;
             taskScheduler->add_task<AutoUpdateTLEsEvent>("auto_tle_update", evt, last_update, update_interval);
@@ -311,7 +312,7 @@ namespace satdump
         // Get the cookie
         std::string post_fields = "identity=" + sc_login + "&password=" + sc_passw;
         curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "");
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string)"SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
         curl_easy_setopt(curl, CURLOPT_URL, "https://www.space-track.org/ajaxauth/login");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_fields.c_str());
 
@@ -343,13 +344,16 @@ namespace satdump
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
 
+        std::string final_url = "https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" +
+                                std::to_string(norad) + "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
         std::string result;
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, NULL);
         curl_easy_setopt(curl, CURLOPT_POST, 0);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-        curl_easy_setopt(curl, CURLOPT_URL, std::string("https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" +
-            std::to_string(norad) + "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show").c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, final_url.c_str());
+
+        logger->trace("Request URL : %s", final_url.c_str());
 
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)

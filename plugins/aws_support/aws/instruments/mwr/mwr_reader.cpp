@@ -1,4 +1,4 @@
-#include "mws_reader.h"
+#include "mwr_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 
@@ -6,15 +6,15 @@
 
 namespace aws
 {
-    namespace mws
+    namespace mwr
     {
-        MWSReader::MWSReader()
+        MWRReader::MWRReader()
         {
             lines = 0;
             timestamps.resize(2, -1);
         }
 
-        MWSReader::~MWSReader()
+        MWRReader::~MWRReader()
         {
             for (int i = 0; i < 19; i++)
                 channels[i].clear();
@@ -36,7 +36,7 @@ namespace aws
                 return -1;
         }
 
-        void MWSReader::work(ccsds::CCSDSPacket &pkt)
+        void MWRReader::work(ccsds::CCSDSPacket &pkt)
         {
             if (pkt.payload.size() < 19)
                 return;
@@ -93,7 +93,7 @@ namespace aws
             }
         }
 
-        image::Image MWSReader::getChannel(int channel)
+        image::Image MWRReader::getChannel(int channel)
         {
             auto img = image::Image(channels[channel].data(), 16, 145, lines, 1);
             img.mirror(true, false);

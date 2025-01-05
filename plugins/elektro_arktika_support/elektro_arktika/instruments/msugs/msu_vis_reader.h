@@ -15,11 +15,12 @@ namespace elektro_arktika
 
         public:
             int frames;
+            std::vector<double> timestamps;
 
         public:
             MSUVISReader();
             ~MSUVISReader();
-            void pushFrame(uint8_t *data, int offset);
+            void pushFrame(uint8_t *data);
             image::Image getImage1();
             image::Image getImage2();
         };
