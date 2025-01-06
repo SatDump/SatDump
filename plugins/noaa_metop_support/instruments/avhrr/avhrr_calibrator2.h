@@ -1,7 +1,5 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
-
 #include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 
