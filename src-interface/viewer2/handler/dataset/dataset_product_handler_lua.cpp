@@ -1,6 +1,11 @@
 #include "dataset_product_handler.h"
 #include "logger.h"
 
+// TODOREWORK
+#include "common/projection/warp/warp.h"
+#include "common/projection/gcp_compute/gcp_compute.h"
+#include "common/projection/projs2/proj_json.h"
+
 #include "libs/sol2/sol.hpp"
 
 //
@@ -11,10 +16,6 @@
 #include "common/projection/reprojector.h"
 
 #include "../image/image_handler.h"
-
-#include "common/projection/warp/warp.h"
-#include "common/projection/gcp_compute/gcp_compute.h"
-#include "common/projection/projs2/proj_json.h"
 
 SOL_BASE_CLASSES(satdump::viewer::ImageHandler, satdump::viewer::Handler);
 SOL_DERIVED_CLASSES(satdump::viewer::Handler, satdump::viewer::ImageHandler);
