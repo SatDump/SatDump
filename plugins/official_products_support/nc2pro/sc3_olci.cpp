@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #include "sc3_olci.h"
 
 #include "common/utils.h"

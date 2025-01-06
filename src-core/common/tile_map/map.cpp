@@ -1,5 +1,4 @@
 #include "map.h"
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/utils.h"

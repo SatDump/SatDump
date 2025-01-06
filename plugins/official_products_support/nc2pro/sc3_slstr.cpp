@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #include "sc3_slstr.h"
 #include "hdf5_utils.h"
 #include <H5LTpublic.h>

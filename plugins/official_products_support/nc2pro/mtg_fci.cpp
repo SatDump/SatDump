@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #include "mtg_fci.h"
 
 #include "libs/rapidxml.hpp"
