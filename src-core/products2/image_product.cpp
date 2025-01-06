@@ -5,6 +5,11 @@
 #include "common/image/io.h"
 #include "common/image/image_utils.h"
 
+#ifdef __ANDROID__
+#include <android_native_app_glue.h>
+extern struct android_app *g_App;
+#endif
+
 namespace satdump
 {
     namespace products
