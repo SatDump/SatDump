@@ -21,6 +21,7 @@ protected:
     int port = 1234;
     int gain = 10;
     bool lna_agc_enabled = false;
+    bool tuner_agc_enabled = false;
     bool bias = false;
 
     void set_gains();

@@ -29,6 +29,7 @@ protected:
     bool changed_agc = true;
     bool bias_enabled = false;
     bool lna_agc_enabled = false;
+    bool tuner_agc_enabled = false;
 
     void set_gains();
     void set_bias();

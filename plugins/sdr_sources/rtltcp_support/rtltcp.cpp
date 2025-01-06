@@ -8,10 +8,20 @@ void RTLTCPSource::set_gains()
         return;
 
     client.setAGCMode(lna_agc_enabled);
-    logger->debug("Set RTL-TCP AGC to %d", (int)lna_agc_enabled);
+    logger->debug("Set RTL-TCP LNA AGC to %d", (int)lna_agc_enabled);
 
-    client.setGain(gain * 10);
-    logger->debug("Set RTL-TCP Gain to %d", gain * 10);
+    if (tuner_agc_enabled)
+    {
+        client.setGainMode(0);
+        logger->debug("Set RTL-TCP Tuner AGC to %d", 1);
+    }
+    else
+    {
+        client.setGainMode(1);
+        logger->debug("Set RTL-TCP Tuner AGC to %d", 0);
+        client.setGain(gain * 10);
+        logger->debug("Set RTL-TCP Gain to %d", gain * 10);
+    }
 }
 
 void RTLTCPSource::set_bias()
@@ -35,10 +45,18 @@ void RTLTCPSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
 
+    // Convert legacy AGC setting to new (was not used for RTL-TCP before, but it was for USB)
+    if (d_settings.contains("agc"))
+    {
+        lna_agc_enabled = tuner_agc_enabled = getValueOrDefault(d_settings["agc"], false);
+        d_settings.erase("agc");
+    }
+
     ip_address = getValueOrDefault(d_settings["ip_address"], ip_address);
     port = getValueOrDefault(d_settings["port"], port);
     gain = getValueOrDefault(d_settings["gain"], gain);
     lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
+    tuner_agc_enabled = getValueOrDefault(d_settings["tuner_agc"], lna_agc_enabled);
     bias = getValueOrDefault(d_settings["bias"], bias);
     ppm_widget.set(getValueOrDefault(d_settings["ppm_correction"], ppm_widget.get()));
 
@@ -56,6 +74,7 @@ nlohmann::json RTLTCPSource::get_settings()
     d_settings["port"] = port;
     d_settings["gain"] = gain;
     d_settings["lna_agc"] = lna_agc_enabled;
+    d_settings["tuner_agc"] = tuner_agc_enabled;
     d_settings["bias"] = bias;
     d_settings["ppm_correction"] = ppm_widget.get();
 
@@ -161,8 +180,15 @@ void RTLTCPSource::drawControlUI()
         set_ppm();
 
     bool gain_changed = false;
+
+    if (tuner_agc_enabled)
+        style::beginDisabled();
     gain_changed |= widgets::SteppedSliderInt("Gain", &gain, 0, 49);
-    gain_changed |= ImGui::Checkbox("AGC", &lna_agc_enabled);
+    if (tuner_agc_enabled)
+        style::endDisabled();
+
+    gain_changed |= ImGui::Checkbox("LNA AGC", &lna_agc_enabled);
+    gain_changed |= ImGui::Checkbox("Tuner AGC", &tuner_agc_enabled);
     if (gain_changed)
         set_gains();
 
