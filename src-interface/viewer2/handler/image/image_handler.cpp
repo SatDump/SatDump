@@ -8,6 +8,9 @@
 
 #include "nlohmann/json_utils.h"
 
+// TODOREWORK
+#include "common/projection/reprojector.h"
+
 namespace satdump
 {
     namespace viewer
@@ -37,6 +40,9 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
+
+                if (image_overlay_valib)
+                    needs_to_update |= overlay_handler.drawUI(); // TODOREWORK
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -112,6 +118,7 @@ namespace satdump
         void ImageHandler::updateImage(image::Image &img) // TODOREWORK
         {
             image = img;
+            image_overlay_valib = image::has_metadata_proj_cfg(image); // TODOREWORK
             process();
         }
 
@@ -122,7 +129,8 @@ namespace satdump
                                           white_balance_img |
                                           normalize_img |
                                           median_blur_img |
-                                          rotate180_image;
+                                          rotate180_image |
+                                          overlay_handler.enabled();
 
             if (image_needs_processing)
             {
@@ -140,6 +148,11 @@ namespace satdump
                     image::median_blur(curr_image);
                 if (rotate180_image)
                     curr_image.mirror(true, true);
+                if (image_overlay_valib && overlay_handler.enabled())
+                {
+                    auto pfunc = reprojection::setupProjectionFunction(image.width(), image.height(), image::get_metadata_proj_cfg(image), rotate180_image);
+                    overlay_handler.apply(curr_image, pfunc);
+                }
             }
             else
                 curr_image.clear();

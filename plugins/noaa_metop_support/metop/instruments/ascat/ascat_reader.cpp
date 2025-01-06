@@ -74,7 +74,7 @@ namespace metop
                     channels_img[channel][lines[channel] * 256 + i] = value / 100;
                 }
 
-                timestamps[channel].push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+                timestamps[channel].push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);
 
                 // Frame counter
                 lines[channel]++;
@@ -97,7 +97,7 @@ namespace metop
                     noise_channels[channel][noise_lines[channel]][i] = value;
                 }
 
-                noise_timestamps[channel].push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+                noise_timestamps[channel].push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);
 
                 // Frame counter
                 noise_lines[channel]++;

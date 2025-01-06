@@ -5,6 +5,8 @@
 
 #include "TextEditor.h"
 
+#include "dataset_handler.h"
+
 namespace satdump
 {
     namespace viewer
@@ -14,6 +16,8 @@ namespace satdump
         public:
             DatasetProductHandler();
             ~DatasetProductHandler();
+
+            DatasetHandler *dataset_handler;
 
             int selected_tab = 0;
             ImFlow::ImNodeFlow grid;

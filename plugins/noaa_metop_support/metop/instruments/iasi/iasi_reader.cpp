@@ -75,9 +75,9 @@ namespace metop
                 }
 
                 if (cnt1)
-                    timestamps[lines + 1] = ccsds::parseCCSDSTimeFull(packet, 10957);
+                    timestamps[lines + 1] = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
                 else
-                    timestamps[lines + 0] = ccsds::parseCCSDSTimeFull(packet, 10957);
+                    timestamps[lines + 0] = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
             }
 
             // Frame counter

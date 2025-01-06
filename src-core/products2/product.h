@@ -32,6 +32,11 @@ namespace satdump
             std::string type;
 
         public:
+            Product() {}
+            Product(Product const &) = delete;
+            void operator=(Product const &x) = delete;
+
+        public:
             /**
              * @brief Set product timestamp, optional. This is usually the rough creation time / acquisition time
              * @param timestamp UNIX timestamp

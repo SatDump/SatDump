@@ -122,7 +122,7 @@ namespace noaa_metop
                     }
                 }
                 work_A1(filtered.data());
-                amsu_a1_dat[linesA1].timestamp = ccsds::parseCCSDSTimeFull(packet, 10957);
+                amsu_a1_dat[linesA1].timestamp = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
                 amsu_a1_dat.resize(amsu_a1_dat.size() + 1);
                 linesA1++;
             }
@@ -141,7 +141,7 @@ namespace noaa_metop
                     }
                 }
                 work_A2(filtered.data());
-                amsu_a2_dat[linesA2].timestamp = ccsds::parseCCSDSTimeFull(packet, 10957);
+                amsu_a2_dat[linesA2].timestamp = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
                 amsu_a2_dat.resize(amsu_a2_dat.size() + 1);
                 linesA2++;
             }

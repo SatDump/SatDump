@@ -15,6 +15,7 @@ namespace satdump
         {
             instrument_products = std::make_shared<DummyHandler>("Instruments");
             general_products = std::make_shared<DatasetProductHandler>();
+            ((DatasetProductHandler *)general_products.get())->dataset_handler = this;
             instrument_products->setCanBeDragged(false);
             instrument_products->setCanBeDraggedTo(false);
             instrument_products->setSubHandlersCanBeDragged(false);
@@ -27,8 +28,10 @@ namespace satdump
             // TODOREWORK Load more than just image products
             for (auto &p : dataset.products_list)
             {
-                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path + "/" + p));
+                auto prod = products::loadProduct(path + "/" + p);
+                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(prod);
                 instrument_products->addSubHandler(prod_h);
+                all_products.push_back(prod);
             }
         }
 

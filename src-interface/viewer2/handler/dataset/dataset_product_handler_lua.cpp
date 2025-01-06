@@ -20,6 +20,9 @@
 SOL_BASE_CLASSES(satdump::viewer::ImageHandler, satdump::viewer::Handler);
 SOL_DERIVED_CLASSES(satdump::viewer::Handler, satdump::viewer::ImageHandler);
 
+// SOL_BASE_CLASSES(satdump::products::ImageProduct, satdump::products::Product);
+// SOL_DERIVED_CLASSES(satdump::products::Product, satdump::products::ImageProduct);
+
 namespace satdump
 {
     namespace viewer
@@ -37,7 +40,7 @@ namespace satdump
                 lua.open_libraries(sol::lib::math);
 
                 // Product
-                auto product_type = lua.new_usertype<products::Product>("Product", sol::constructors<std::shared_ptr<products::Product>()>());
+                auto product_type = lua.new_usertype<products::Product>("Product", sol::constructors<products::Product()>());
                 product_type["instrument_name"] = &products::Product::instrument_name;
                 product_type["type"] = &products::Product::type;
                 product_type["set_product_timestamp"] = &products::Product::set_product_timestamp;
@@ -51,7 +54,7 @@ namespace satdump
                 lua["loadProduct"] = &products::loadProduct;
 
                 // ImageProduct
-                auto image_product_type = lua.new_usertype<products::ImageProduct>("ImageProduct", sol::constructors<std::shared_ptr<products::ImageProduct>()>(), sol::base_classes, sol::bases<products::Product>());
+                auto image_product_type = lua.new_usertype<products::ImageProduct>("ImageProduct", sol::constructors<products::ImageProduct()>(), sol::base_classes, sol::bases<products::Product>());
 
                 lua["generate_equation_product_composite"] = sol::overload(
                     // (image::Image(*)(products::ImageProduct *, std::string))(&products::generate_equation_product_composite)
@@ -83,7 +86,9 @@ namespace satdump
                                                                                                 // sol::constructors<std::shared_ptr<ImageHandler>(), std::shared_ptr<ImageHandler>(image::Image)>(),
                                                                                                 sol::call_constructor,
                                                                                                 sol::factories([](image::Image img)
-                                                                                                               { return std::make_shared<ImageHandler>(img); }),
+                                                                                                               { return std::make_shared<ImageHandler>(img); },
+                                                                                                               [](std::shared_ptr<Handler> h)
+                                                                                                               { return std::dynamic_pointer_cast<ImageHandler>(h); }),
                                                                                                 sol::base_classes, sol::bases<Handler>());
                 // image_type["depth"] = &image::Image::depth;
 
@@ -120,6 +125,15 @@ namespace satdump
                     image::set_metadata_proj_cfg(result.output_image, src_proj);
 
                     return result.output_image;
+                };
+
+                lua["get_instrument_products"] = [this](std::string v, int index)
+                {
+                    std::vector<products::Product *> pro;
+                    for (auto &h : dataset_handler->all_products)
+                        if (h->instrument_name == v)
+                            pro.push_back(h.get());
+                    return index < pro.size() ? pro[index] : nullptr;
                 };
 
                 // Run

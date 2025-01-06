@@ -97,7 +97,7 @@ namespace metop
             if (counter == 15)
             {
                 lines++;
-                timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+                timestamps.push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);
             }
 
             for (int band = 0; band < 6; band++)

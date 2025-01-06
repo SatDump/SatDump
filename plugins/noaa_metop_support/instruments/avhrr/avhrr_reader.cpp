@@ -27,7 +27,7 @@ namespace noaa_metop
             if (packet.payload.size() < 12960)
                 return;
 
-            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+            timestamps.push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);
 
             // Convert AVHRR payload into 10-bits values
             repackBytesTo10bits(&packet.payload[14], 12944, avhrr_buffer);

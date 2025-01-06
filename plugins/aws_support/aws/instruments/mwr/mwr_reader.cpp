@@ -53,7 +53,7 @@ namespace aws
                     lines++;
 
                     double timestamp = parseCUC(wip_full_pkt.data() + 191);
-                    if (crc.check(pkt))
+                    if (ccsds::crcCheckCCITT(pkt))
                         timestamps.push_back(timestamp);
                     else
                         timestamps.push_back(-1);
@@ -79,7 +79,7 @@ namespace aws
                     lines++;
 
                     double timestamp = parseCUC(wip_full_pkt.data() + 191);
-                    if (crc.check(pkt))
+                    if (ccsds::crcCheckCCITT(pkt))
                         timestamps.push_back(timestamp);
                     else
                         timestamps.push_back(-1);

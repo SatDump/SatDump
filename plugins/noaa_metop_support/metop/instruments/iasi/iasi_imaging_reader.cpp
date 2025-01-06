@@ -36,7 +36,7 @@ namespace metop
                         ir_channel[(lines * 64 + i) * (36 * 64) + (36 * 64 - 1) - ((counter - 1) * 64 + y)] = iasi_buffer[y * 64 + i] << 4;
 
                 if (counter <= 30)
-                    timestamps_ifov[lines * 30 + (counter - 1)] = ccsds::parseCCSDSTimeFull(packet, 10957);
+                    timestamps_ifov[lines * 30 + (counter - 1)] = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
             }
 
             // Frame counter

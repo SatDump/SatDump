@@ -157,7 +157,7 @@ namespace noaa_metop
 
             double a, b;
             double R[5], Tk[5], WTk = 0, Wk = 0, Tw;
-            std::array<double, 24> Tth;                            
+            std::array<double, 24> Tth;
 
             // weighed average of the samples, as described by the NOAA KLM User's Guide equation 7.6.6-3
             std::vector<uint16_t> conv_views[5][2];
@@ -411,7 +411,7 @@ namespace noaa_metop
         {
             if (packet.payload.size() < 1302)
                 return;
-            timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
+            timestamps.push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);
 
             work(&packet.payload[14]);
         }

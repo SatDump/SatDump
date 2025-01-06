@@ -6,6 +6,7 @@
 
 #include "../handler.h"
 #include "products2/dataset.h"
+#include "products2/product.h"
 
 namespace satdump
 {
@@ -41,6 +42,7 @@ namespace satdump
 
             std::shared_ptr<Handler> instrument_products;
             std::shared_ptr<Handler> general_products;
+            std::vector<std::shared_ptr<products::Product>> all_products;
 
             // The Rest
             void init();

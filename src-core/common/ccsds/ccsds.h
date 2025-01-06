@@ -52,4 +52,20 @@ namespace ccsds
      * @param header pointer to a CCSDS header in a buffer
      */
     CCSDSHeader parseCCSDSHeader(uint8_t *header);
+
+    /**
+     * @brief Check a CCSDS Packet's CCITT CRC (if present)
+     *
+     * @param pkt Space Packet
+     * @return true if valid
+     */
+    bool crcCheckCCITT(CCSDSPacket &pkt);
+
+    /**
+     * @brief Check a CCSDS Packet's Verical Parity (if present)
+     *
+     * @param pkt Space Packet
+     * @return true if valid
+     */
+    bool crcCheckVerticalParity(CCSDSPacket &pkt);
 } // namespace ccsds

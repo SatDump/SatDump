@@ -14,27 +14,23 @@ namespace satdump
         {
         }
 
-        int vvvv = 0; // TODOREWORK DELETE
-        class BlockNode : public ImFlow::BaseNode
+#if 0
+         class BlockNode : public ImFlow::BaseNode
         {
         public:
-            int v = 0;
             BlockNode()
             {
-                v = vvvv++;
-                setTitle("BlockNode" + std::to_string(v));
+                setTitle("BlockSource");
                 setStyle(ImFlow::NodeStyle::green());
 
-                if (v != 0)
-                    addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
+                addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
 
                 auto fun = [this]()
                 {
                     return (v == 0 ? "Firstin" : getInVal<std::string>("In")) + "\n" + "BlockNode" + std::to_string(v);
                 };
 
-                if (v != 3)
-                    addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
+                addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
             }
 
             ~BlockNode()
@@ -56,6 +52,108 @@ namespace satdump
                 }
             }
         };
+#endif
+
+        class BlockSourceNode : public ImFlow::BaseNode
+        {
+        public:
+            BlockSourceNode()
+            {
+                setTitle("BlockSource");
+                setStyle(ImFlow::NodeStyle::green());
+
+                auto fun = [this]()
+                {
+                    return "val = 6\n";
+                };
+
+                addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
+            }
+
+            ~BlockSourceNode()
+            {
+            }
+
+            void draw() override
+            {
+                ImGui::Text("Something");
+            }
+
+            std::string eval()
+            {
+                logger->info("OutSize %d", getOuts().size());
+            }
+        };
+
+        class BlockSinkNode : public ImFlow::BaseNode
+        {
+        public:
+            std::function<std::string()> fun = [this]()
+            {
+                return getInVal<std::string>("In") + "print(val)\n";
+            };
+
+            BlockSinkNode()
+            {
+                setTitle("BlockSink");
+                setStyle(ImFlow::NodeStyle::green());
+
+                addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
+
+                //   addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
+            }
+
+            ~BlockSinkNode()
+            {
+            }
+
+            void draw() override
+            {
+                ImGui::Text("Something");
+            }
+
+            std::string eval()
+            {
+                logger->info("OutSize %d", getOuts().size());
+                return fun();
+            }
+        };
+
+        class BlockMidNode : public ImFlow::BaseNode
+        {
+        public:
+            std::function<std::string()> fun = [this]()
+            {
+                return getInVal<std::string>("In") + "val = val + 1\n";
+            };
+
+            BlockMidNode()
+            {
+                setTitle("BlockMid");
+                setStyle(ImFlow::NodeStyle::green());
+
+                addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
+
+                addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
+            }
+
+            ~BlockMidNode()
+            {
+            }
+
+            void draw() override
+            {
+                ImGui::Text("Something");
+            }
+
+            std::string eval()
+            {
+                logger->info("OutSize %d", getOuts().size());
+                return fun();
+            }
+        };
+
+        std::shared_ptr<BlockSinkNode> final_node = 0;
 
         void DatasetProductHandler::drawMenu()
         {
@@ -66,15 +164,16 @@ namespace satdump
             {
                 if (ImGui::CollapsingHeader("Flowgraph"))
                 {
-                    if (ImGui::Button("Add Block"))
-                    {
-                        grid.addNode<BlockNode>({0, 0});
-                    }
+                    if (ImGui::Button("Add BlockSource"))
+                        grid.addNode<BlockSourceNode>({0, 0});
+                    if (ImGui::Button("Add BlockSink"))
+                        final_node = grid.addNode<BlockSinkNode>({0, 0});
+                    if (ImGui::Button("Add BlockMid"))
+                        grid.addNode<BlockMidNode>({0, 0});
 
                     if (ImGui::Button("Eval"))
                     {
-                        for (auto &n : grid.getNodes())
-                            ((BlockNode *)(n.second.get()))->eval(); // printf("Node %s\n", n.second->getName().c_str());
+                        editor.SetText(final_node->eval());
                     }
                 }
             }
