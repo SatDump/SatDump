@@ -89,17 +89,20 @@ namespace satdump
         try
         {
             aws_list.clear();
-            int year, dofy;
+            std::string year, dofy;
             {
                 time_t tttime = request_time.get();
                 std::tm *timeReadable = gmtime(&tttime);
-                year = timeReadable->tm_year + 1900;
-                dofy = timeReadable->tm_yday + 1;
+                year = std::to_string(timeReadable->tm_year + 1900);
+
+                std::stringstream string_stream;
+                string_stream << std::setfill('0') << std::setw(3) << timeReadable->tm_yday + 1;
+                dofy = string_stream.str();
             }
 
             queryAWS(std::string("https://noaa-") + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/",
-                std::string("?list-type=2&prefix=") + aws_options[aws_selected_dataset].pathid + "%2F" + std::to_string(year) + "%2F" +
-                std::to_string(dofy), aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseGOESTimestamp);
+                std::string("?list-type=2&prefix=") + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" +
+                dofy, aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseGOESTimestamp);
         }
         catch (std::exception &e)
         {
