@@ -1,6 +1,5 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 #define M_HALFPI M_PI_2
 #define M_TWOPI (M_PI * 2)

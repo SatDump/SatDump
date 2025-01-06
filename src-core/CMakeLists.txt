@@ -34,7 +34,7 @@ if(MSVC OR BUILD_MSVC)
     target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
 else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
-    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/satdump/")
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_FULL_LIBDIR}/satdump/")
 endif()
 
 # We have to... For MSVC

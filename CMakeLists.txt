@@ -83,8 +83,13 @@ else()
 endif()
 
 if(MSVC OR BUILD_MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
-    add_compile_definitions(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+    add_compile_definitions(
+        _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+        _USE_MATH_DEFINES
+        _CRT_SECURE_NO_WARNINGS
+        _WINSOCK_DEPRECATED_NO_WARNINGS
+        _CRT_NONSTDC_NO_WARNINGS
+    )
 
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
