@@ -63,7 +63,7 @@ public:
         }
     }
 
-    bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
+    bool get_position(double x, double y, geodetic::geodetic_coords_t &pos)
     {
         if (x >= image_width)
             return 1;
@@ -90,7 +90,7 @@ public:
         if (ifov_count == 1)
             currentIfovOffset = 0;
         double ifov_x = int(final_x) % ifov_x_size;
-        double ifov_y = (ifov_y_size - 1) - (y % ifov_y_size);
+        double ifov_y = (ifov_y_size - 1) - (int(y) % ifov_y_size);
 
         geodetic::euler_coords_t satellite_pointing;
         satellite_pointing.roll = -(((ifov_x - (ifov_x_size / 2)) / ifov_x_size) * ifov_x_scan_angle) + currentIfovOffset + roll_offset;
@@ -176,7 +176,7 @@ public:
         }
     }
 
-    bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
+    bool get_position(double x, double y, geodetic::geodetic_coords_t &pos)
     {
         if (x >= image_width)
             return 1;
@@ -204,7 +204,7 @@ public:
         if (ifov_count == 1)
             currentIfovOffset = 0;
         double ifov_x = int(final_x) % ifov_x_size;
-        double ifov_y = (ifov_y_size - 1) - (y % ifov_y_size);
+        double ifov_y = (ifov_y_size - 1) - (int(y) % ifov_y_size);
 
         geodetic::euler_coords_t satellite_pointing;
         satellite_pointing.roll = -(((ifov_x - (ifov_x_size / 2)) / ifov_x_size) * ifov_x_scan_angle) + currentIfovOffset + roll_offset;

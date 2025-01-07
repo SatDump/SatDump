@@ -3,6 +3,7 @@
 
 // TODOREWORK
 #include "common/projection/warp/warp.h"
+#include "common/projection/warp/warp_bkd.h"
 #include "common/projection/gcp_compute/gcp_compute.h"
 #include "common/projection/projs2/proj_json.h"
 
@@ -14,6 +15,7 @@
 #include "products2/image_product.h"
 #include "common/image/io.h"
 #include "common/projection/reprojector.h"
+#include "common/image/processing.h"
 
 #include "../image/image_handler.h"
 
@@ -101,6 +103,7 @@ namespace satdump
 
                 lua["warp_image_test"] = [](image::Image img)
                 {
+                    image::equalize(img);
                     auto prj_cfg = image::get_metadata_proj_cfg(img);
                     warp::WarpOperation operation;
                     operation.ground_control_points = satdump::gcp_compute::compute_gcps(prj_cfg, img.width(), img.height());
@@ -113,7 +116,14 @@ namespace satdump
 
                     logger->trace("Warping size %dx%d", l_width, l_width / 2);
 
+#if 1
                     satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation);
+#else
+                    warp::ImageWarper wrapper;
+                    wrapper.op = operation;
+                    wrapper.update();
+                    satdump::warp::WarpResult result = wrapper.warp();
+#endif
 
                     auto src_proj = proj::projection_t();
                     src_proj.type = proj::ProjType_Equirectangular;

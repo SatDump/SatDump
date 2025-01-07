@@ -37,7 +37,7 @@ namespace satdump
                 sat_tracker = std::make_shared<satdump::SatelliteTracker>(tle);
         }
 
-        virtual bool get_position(int x, int y, geodetic::geodetic_coords_t &pos) = 0;
+        virtual bool get_position(double x, double y, geodetic::geodetic_coords_t &pos) = 0;
     };
 
     /* Warning, this does not check for image bounds! */
@@ -48,7 +48,7 @@ namespace satdump
 
     public:
         StandardSatProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw);
-        bool get_position(int x, int y, geodetic::geodetic_coords_t &pos);
+        bool get_position(double x, double y, geodetic::geodetic_coords_t &pos);
     };
 
     struct RequestSatProjEvent

@@ -4,19 +4,24 @@
 // #include "logger.h"
 #include "core/exception.h"
 
+#include "products2/image/channel_transform.h"
+
+// TODOREWORK
+#include "logger.h"
+
 namespace satdump
 {
     namespace gcp_compute
     {
-        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, int width, int height)
+        std::vector<satdump::projection::GCP> compute_gcps(nlohmann::ordered_json cfg, int /*width*/, int /*height*/)
         {
             if (cfg["type"] == "normal_gcps")
             {
-                double ratio_x = 1, ratio_y = 1;
-                if (width != -1 && cfg.contains("width"))
-                    ratio_x = round(cfg["width"].get<double>() / (double)width);
-                if (height != -1 && cfg.contains("height"))
-                    ratio_y = round(cfg["height"].get<double>() / (double)height);
+                //                double ratio_x = 1, ratio_y = 1;
+                //                if (width != -1 && cfg.contains("width"))
+                //                    ratio_x = round(cfg["width"].get<double>() / (double)width);
+                //                if (height != -1 && cfg.contains("height"))
+                //                    ratio_y = round(cfg["height"].get<double>() / (double)height);
 
                 std::vector<satdump::projection::GCP> gcps;
                 int gcpn = cfg["gcp_cnt"];
@@ -24,8 +29,8 @@ namespace satdump
                 for (int i = 0; i < gcpn; i++)
                 {
                     satdump::projection::GCP gcp;
-                    gcp.x = gcps_cfg[i]["x"].get<double>() / ratio_x;
-                    gcp.y = gcps_cfg[i]["y"].get<double>() / ratio_y;
+                    gcp.x = gcps_cfg[i]["x"].get<double>(); /// ratio_x;
+                    gcp.y = gcps_cfg[i]["y"].get<double>(); /// ratio_y;
                     gcp.lon = gcps_cfg[i]["lon"];
                     gcp.lat = gcps_cfg[i]["lat"];
                     gcps.push_back(gcp);
@@ -50,11 +55,19 @@ namespace satdump
 
             std::shared_ptr<SatelliteProjection> projection = get_sat_proj(cfg, tle, timestamps);
 
-            double ratio_x = 1, ratio_y = 1;
-            if (width != -1)
-                ratio_x = round((double)projection->img_size_x / (double)width);
-            if (height != -1)
-                ratio_y = round((double)projection->img_size_y / (double)height);
+            //            double ratio_x = 1, ratio_y = 1;
+            //            if (width != -1)
+            //                ratio_x = round((double)projection->img_size_x / (double)width);
+            //            if (height != -1)
+            //                ratio_y = round((double)projection->img_size_y / (double)height);
+
+            ChannelTransform transform;
+            transform.init_none();
+            if (cfg.contains("transform"))
+            {
+                transform = cfg["transform"];
+                logger->critical("TODOREWORK TRANSFORM INIT");
+            }
 
             std::vector<int> values;
             if (cfg.contains("forced_gcps_x"))
@@ -83,7 +96,10 @@ namespace satdump
                 {
                     if (y % projection->gcp_spacing_y == 0 || y + 1 == (int)timestamps.size() || last_was_invalid)
                     {
-                        if (projection->get_position(x, y, position))
+                        double fx = x, fy = y;
+                        transform.forward(&fx, &fy);
+
+                        if (projection->get_position(fx, fy, position))
                         {
                             last_was_invalid = true;
                             continue;
@@ -93,7 +109,7 @@ namespace satdump
                             continue; // Check for NAN
 
                         // logger->trace("%f %f %f %f", (double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat);
-                        gcps.push_back({(double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat});
+                        gcps.push_back({(double)x, (double)y, (double)position.lon, (double)position.lat});
                     }
 
                     last_was_invalid = false;

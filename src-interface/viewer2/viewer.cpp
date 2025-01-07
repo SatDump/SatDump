@@ -74,13 +74,13 @@ namespace satdump
                     if (ImGui::BeginMenu("Hardcoded"))
                     {
                         if (ImGui::MenuItem("Load KMSS"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/KMSS_MSU100_1/product.cbor");
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/dataset.json");
                         if (ImGui::MenuItem("Load Sterna"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/MWR_Dump/product.cbor");
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/dataset.json");
                         if (ImGui::MenuItem("Load MSUGS"))
                             openProductOrDataset("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
                         if (ImGui::MenuItem("Load MSUGS 2"))
-                            openProductOrDataset("/home/alan/Downloads/20241231_154404_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/20250104_071415_ELEKTRO-L_3_dat/dataset.json");
                         if (ImGui::MenuItem("Load MetOp"))
                             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
                         if (ImGui::MenuItem("Load L3"))

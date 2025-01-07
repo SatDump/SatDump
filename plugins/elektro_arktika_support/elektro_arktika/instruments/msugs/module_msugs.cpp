@@ -10,6 +10,10 @@
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 
+#include "nlohmann/json_utils.h"
+#include "common/tracking/tle.h"
+#include "resources.h"
+
 namespace elektro_arktika
 {
     namespace msugs
@@ -164,7 +168,8 @@ namespace elektro_arktika
                 //                    msuvis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 //                    msuvis_products.set_timestamps(timestamps);
-                //     msuvis_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
+                msuvis_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/elektro_l3_msugs_vis2.json")),
+                                                           satdump::general_tle_registry->get_from_norad(44903), vis1_reader.timestamps);
 
                 msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
                 msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});

@@ -196,8 +196,7 @@ namespace aws
             nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json")); // TODOREWORK RENAME
             if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
-            proj_cfg["timestamps"] = mwr_dump_reader.timestamps;
-            mwr_dump_product.set_proj_cfg(proj_cfg);
+            mwr_dump_product.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, mwr_dump_reader.timestamps);
 
             // Channels are aligned by groups. 1 to 8 / 9 / 10 to 15 / 16 to 19
             satdump::ChannelTransform tran[19];

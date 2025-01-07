@@ -59,7 +59,7 @@ public:
         }
     }
 
-    bool get_position(int x, int y, geodetic::geodetic_coords_t &pos)
+    bool get_position(double x, double y, geodetic::geodetic_coords_t &pos)
     {
         if (x >= image_width)
             return 1;

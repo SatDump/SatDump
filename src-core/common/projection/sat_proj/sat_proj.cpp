@@ -55,7 +55,7 @@ namespace satdump
         }
     }
 
-    bool StandardSatProj::get_position(int x, int y, geodetic::geodetic_coords_t &pos)
+    bool StandardSatProj::get_position(double x, double y, geodetic::geodetic_coords_t &pos)
     {
         return proj::projection_perform_inv(&p, x, y, &pos.lon, &pos.lat);
     }

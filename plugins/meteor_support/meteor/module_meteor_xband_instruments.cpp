@@ -22,94 +22,6 @@ namespace meteor
             d_instrument_mode = parseDumpType(parameters);
         }
 
-        namespace
-        {
-            struct Point
-            {
-                double x;
-                double y;
-            };
-
-            Point rotate_point(double cx, double cy, double angle, Point p)
-            {
-                double s = sin(angle);
-                double c = cos(angle);
-
-                // translate point back to origin:
-                p.x -= cx;
-                p.y -= cy;
-
-                // rotate point
-                double xnew = p.x * c - p.y * s;
-                double ynew = p.x * s + p.y * c;
-
-                // translate point back:
-                p.x = xnew + cx;
-                p.y = ynew + cy;
-                return p;
-            }
-
-            void processSingleKMSSImage(image::Image &img, int xo, int yo, double rotate = 0)
-            {
-                logger->info("Correcting KMSS image channel...");
-
-                image::Image cimg = img;
-                img.fill(0);
-                img.draw_image(0, cimg, xo, yo);
-
-                if (rotate != 0)
-                {
-                    for (double y = 0; y < cimg.height(); y++)
-                    {
-                        for (double x = 0; x < cimg.width(); x++)
-                        {
-                            auto point = rotate_point(4000, y, rotate * 0.01745329, {x, y});
-                            if (point.x < 0)
-                                point.x = 0;
-                            if (point.y < 0)
-                                point.y = 0;
-                            if (point.x > img.width() - 1)
-                                point.x = img.width() - 1;
-                            if (point.y > img.height() - 1)
-                                point.y = img.height() - 1;
-                            cimg.set(0, x, y, img.get_pixel_bilinear(0, point.x, point.y));
-                        }
-                    }
-
-                    img = cimg;
-                }
-            }
-
-            void correctKMSSImage(std::string sat_num, int kmss, int channel, image::Image &img)
-            {
-                if (sat_num == "M2-2")
-                {
-                    if (kmss == 0)
-                    {
-                        if (channel == 0)
-                            processSingleKMSSImage(img, -2, 3);
-                        else if (channel == 1)
-                            processSingleKMSSImage(img, -4, 1);
-                        else if (channel == 2)
-                            processSingleKMSSImage(img, 0, 0, -0.18);
-                    }
-                    else if (kmss == 1)
-                    {
-                        if (channel == 0)
-                            processSingleKMSSImage(img, -12, 7);
-                        else if (channel == 1)
-                            processSingleKMSSImage(img, -10, -7, 0.16);
-                        else if (channel == 2)
-                            processSingleKMSSImage(img, 0, 0);
-                    }
-                }
-                else
-                {
-                    logger->error("Can't align KMSS channels, unsupported satellite. Please report!");
-                }
-            }
-        }
-
         void MeteorXBandInstrumentsDecoderModule::process()
         {
             filesize = getFilesize(d_input_file);
@@ -302,7 +214,12 @@ namespace meteor
 
                             if (last_subsecond_cnt != -1)
                             {
-                                double timestamp = (1704067200 - 3600 * 24 - 3600 * 3) + double(idk_value) * 65536 + double(seconds_value) + double(last_subsecond_cnt) / 16777216.0;
+                                double offset = 0;
+                                if (norad == 44387)
+                                    offset = 1704067200 - 3600 * 24 - 3600 * 3;
+                                else if (norad == 59051)
+                                    offset = 1704067200 - 3600 * 24 - 3600 * 3 - 3600 * 24 * 3107;
+                                double timestamp = offset + double(idk_value) * 65536 + double(seconds_value) + double(last_subsecond_cnt) / 16777216.0;
                                 logger->trace("%s - %d", timestamp_to_string(timestamp).c_str(), idk_value);
                                 timestamps.push_back(timestamp);
                             }
@@ -370,7 +287,7 @@ namespace meteor
                 // Products dataset
                 satdump::ProductDataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = time(0); // avg_overflowless(msumr_timestamps);
+                dataset.timestamp = get_median(timestamps);
 
                 // KMSS1
                 {
@@ -385,16 +302,11 @@ namespace meteor
 
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
-                    //                    kmss_products.has_timestamps = true; // TODOREWORK
-                    //                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    //                    kmss_products.set_tle(satdump::general_tle_registry->get_from_norad(norad));
-                    //                    kmss_products.set_timestamps(timestamps);
-                    kmss_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
+                    kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
 
                     for (int i = 0; i < 3; i++)
                     {
                         auto img = image::Image(msu100_1_dat[i].data(), 16, 8000, kmss_lines, 1);
-                        //                        correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 0, i, img);
                         msu100_1_dat[i].clear();
                         kmss_product.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, 0, 0)});
                     }
@@ -418,16 +330,11 @@ namespace meteor
 
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
-                    //                    kmss_products.has_timestamps = true; // TODOREWORK
-                    //                    kmss_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    //                    kmss_products.set_tle(satdump::general_tle_registry->get_from_norad(norad));
-                    //                    kmss_products.set_timestamps(timestamps);
-                    kmss_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")));
+                    kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
 
                     for (int i = 0; i < 3; i++)
                     {
                         auto img = image::Image(msu100_2_dat[i].data(), 16, 8000, kmss_lines, 1);
-                        //                        correctKMSSImage(d_parameters["satellite_number"].get<std::string>(), 1, i, img);
                         msu100_2_dat[i].clear();
                         kmss_product.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, 0, 0)});
                     }
