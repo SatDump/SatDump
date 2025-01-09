@@ -61,6 +61,9 @@ namespace satdump
                     *progess = (float)y / (float)height;
             }
 
+            // Add metadata
+            if (product->has_proj_cfg())
+                image::set_metadata_proj_cfg(out, product->get_proj_cfg(product->images[channel_id].abs_index));
             image::set_metadata_calib_cfg(out, calib_handler);
 
             return out;

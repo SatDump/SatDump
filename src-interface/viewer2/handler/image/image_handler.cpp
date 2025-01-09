@@ -13,10 +13,12 @@
 #include "common/widgets/json_editor.h"
 
 // TODOREWORK
+#include "common/projection/projs2/proj_json.h"
 #include "common/projection/warp/warp.h"
 #include "common/projection/warp/warp_bkd.h"
+#include "projection/raytrace/gcp_compute.h"
+
 #include "common/projection/gcp_compute/gcp_compute.h"
-#include "common/projection/projs2/proj_json.h"
 
 namespace satdump
 {
@@ -50,6 +52,7 @@ namespace satdump
 
                 ImGui::Separator();
                 needs_to_update |= ImGui::Checkbox("Warp Image", &warp_image);
+                needs_to_update |= ImGui::Checkbox("Old GCP Math", &old_gcp_math);
 
                 if (image_overlay_valib)
                 {
@@ -171,7 +174,9 @@ namespace satdump
                 {
                     auto prj_cfg = image::get_metadata_proj_cfg(image);
                     warp::WarpOperation operation;
-                    operation.ground_control_points = satdump::gcp_compute::compute_gcps(prj_cfg, 0, 0); // img.width(), img.height());
+                    prj_cfg["width"] = image.width();                                                                                                    // TODOREWORK move to metadata already?
+                    prj_cfg["height"] = image.height();                                                                                                  // TODOREWORK move to metadata already?
+                    operation.ground_control_points = old_gcp_math ? satdump::gcp_compute::compute_gcps(prj_cfg) : satdump::proj::compute_gcps(prj_cfg); // img.width(), img.height());
                     operation.input_image = &curr_image;
                     operation.output_rgba = true;
                     // TODO : CHANGE!!!!!!
@@ -190,8 +195,8 @@ namespace satdump
                     satdump::warp::WarpResult result = wrapper.warp();
 #endif
 
-                    auto src_proj = proj::projection_t();
-                    src_proj.type = proj::ProjType_Equirectangular;
+                    auto src_proj = ::proj::projection_t();
+                    src_proj.type = ::proj::ProjType_Equirectangular;
                     src_proj.proj_offset_x = result.top_left.lon;
                     src_proj.proj_offset_y = result.top_left.lat;
                     src_proj.proj_scalar_x = (result.bottom_right.lon - result.top_left.lon) / double(result.output_image.width());
@@ -203,7 +208,27 @@ namespace satdump
 
                 if (image_overlay_valib && overlay_handler.enabled())
                 {
-                    auto pfunc = reprojection::setupProjectionFunction(curr_image.width(), curr_image.height(), image::get_metadata_proj_cfg(curr_image), rotate180_image);
+                    //  auto pfunc = reprojection::setupProjectionFunction(curr_image.width(), curr_image.height(), image::get_metadata_proj_cfg(curr_image), rotate180_image);
+                    auto cfg = image::get_metadata_proj_cfg(curr_image);
+                    cfg["width"] = curr_image.width();
+                    cfg["height"] = curr_image.height();
+                    proj::Projection p = cfg;
+                    p.init(1, 0);
+                    bool rotate = rotate180_image;
+                    auto pfunc = [p, rotate](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                    {
+                        double x, y;
+                        if (p.forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                            return {-1, -1};
+                        else
+                        {
+                            if (rotate)
+                                return {w - 1 - x, h - 1 - y};
+                            else
+                                return {x, y};
+                        }
+                    };
+
                     overlay_handler.clear_cache();
                     overlay_handler.apply(curr_image, pfunc);
                 }

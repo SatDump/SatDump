@@ -2,6 +2,7 @@ PROJECT_NAME           = SatDump
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/documentation/
 INPUT                  = src-core/common/ccsds \
                          src-core/products2 \
-                         src-interface/viewer2
+                         src-interface/viewer2 \
+                         src-core/projection \
 EXCLUDE                = src-core/common/image/font_lib src-core/common/image/font
 RECURSIVE              = YES

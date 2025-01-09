@@ -27,6 +27,55 @@ namespace image
         }
     }
 
+    void Image::draw_image_alpha(Image image, int x0, int y0)
+    {
+        if (image.d_depth != d_depth)
+            throw satdump_exception("draw_image_alpha bit depth must be the same!");
+        if (image.channels() != 2 && image.channels() != 4)
+            throw satdump_exception("draw_image_alpha input channel count must be 2 or 4!");
+
+        // Get min height and width, mostly for safety
+        int width = std::min<int>(d_width, x0 + image.width()) - x0;
+        int height = std::min<int>(d_height, y0 + image.height()) - y0;
+
+        double a = 0;
+        if (image.channels() == 2 && d_channels <= 2)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (y + y0 >= 0 && x + x0 >= 0)
+                    {
+                        a = image.getf(1, x, y);
+                        a = image.get(0, x, y) * a + (1.0 - a) * get(0, x + x0, (y + y0));
+                        set(0, x + x0, (y + y0), clamp(a));
+                    }
+                }
+            }
+        }
+        else if (image.channels() == 4 && d_channels >= 3)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        if (y + y0 >= 0 && x + x0 >= 0)
+                        {
+                            a = image.getf(3, x, y);
+                            a = image.get(c, x, y) * a + (1.0 - a) * get(c, x + x0, (y + y0));
+                            set(c, x + x0, (y + y0), clamp(a));
+                        }
+                    }
+                }
+            }
+        }
+        else
+            throw satdump_exception("draw_image_alpha has an invalid input/output configuration!");
+    }
+
     void Image::draw_pixel(size_t x, size_t y, std::vector<double> color)
     {
         if (color.size() < (size_t)d_channels)

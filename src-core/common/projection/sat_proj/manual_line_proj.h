@@ -103,7 +103,7 @@ public:
     {
         if (x >= image_width)
             return 1;
-        if (y >= (int)timestamps.size())
+        if (y >= (int)timestamps.size() || y < 0)
             return 1;
 
         double timestamp = timestamps[y];

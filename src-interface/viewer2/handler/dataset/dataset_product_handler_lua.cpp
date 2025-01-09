@@ -19,6 +19,8 @@
 
 #include "../image/image_handler.h"
 
+#include "projection/reprojector.h"
+
 SOL_BASE_CLASSES(satdump::viewer::ImageHandler, satdump::viewer::Handler);
 SOL_DERIVED_CLASSES(satdump::viewer::Handler, satdump::viewer::ImageHandler);
 
@@ -60,8 +62,12 @@ namespace satdump
 
                 lua["generate_equation_product_composite"] = sol::overload(
                     // (image::Image(*)(products::ImageProduct *, std::string))(&products::generate_equation_product_composite)
-                    [](products::ImageProduct *p, std::string c)
-                    { return products::generate_equation_product_composite(p, c); });
+                    [](products::Product *p, std::string c)
+                    { if(!p)
+                    throw sol::error("Invalid pointer!");
+                    if(p->type != "image")
+                    throw sol::error("Invalid product type!");
+                                                return products::generate_equation_product_composite((products::ImageProduct*)p, c); });
                 lua["generate_calibrated_product_channel"] = sol::overload(
                     // (image::Image(*)(products::ImageProduct *, std::string, double, double))(&products::generate_calibrated_product_channel)
                     [](products::ImageProduct *p, std::string c, double a, double b)
@@ -79,6 +85,9 @@ namespace satdump
                 image_type["size"] = &image::Image::size;
 
                 image_type["draw_image"] = &image::Image::draw_image;
+                image_type["draw_image_alpha"] = &image::Image::draw_image_alpha;
+                image_type["to_rgba"] = &image::Image::to_rgba;
+                lua["img_equalize"] = &image::equalize;
 
                 lua["image_load_img"] = (void (*)(image::Image &, std::string))(&image::load_img);
                 lua["image_save_img"] = (void (*)(image::Image &, std::string))(&image::save_img);
@@ -125,8 +134,8 @@ namespace satdump
                     satdump::warp::WarpResult result = wrapper.warp();
 #endif
 
-                    auto src_proj = proj::projection_t();
-                    src_proj.type = proj::ProjType_Equirectangular;
+                    auto src_proj = ::proj::projection_t();
+                    src_proj.type = ::proj::ProjType_Equirectangular;
                     src_proj.proj_offset_x = result.top_left.lon;
                     src_proj.proj_offset_y = result.top_left.lat;
                     src_proj.proj_scalar_x = (result.bottom_right.lon - result.top_left.lon) / double(result.output_image.width());
@@ -144,6 +153,22 @@ namespace satdump
                         if (h->instrument_name == v)
                             pro.push_back(h.get());
                     return index < pro.size() ? pro[index] : nullptr;
+                };
+
+                lua["reproject_to_img"] = [](image::Image img1, image::Image img2)
+                {
+                    proj::ReprojectionOperation op;
+                    op.img = &img1;
+                    op.output_width = img2.width();
+                    op.output_height = img2.height();
+                    op.target_prj_info = image::get_metadata_proj_cfg(img2);
+                    op.target_prj_info["width"] = img2.width();
+                    op.target_prj_info["height"] = img2.height();
+                    auto cfg = image::get_metadata_proj_cfg(*op.img);
+                    cfg["width"] = img1.width();
+                    cfg["height"] = img1.height();
+                    image::set_metadata_proj_cfg(*op.img, cfg);
+                    return proj::reproject(op);
                 };
 
                 // Run

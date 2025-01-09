@@ -38,6 +38,7 @@ namespace satdump
             bool median_blur_img = false;
             bool rotate180_image = false;
 
+            bool old_gcp_math = false;
             bool warp_image = false;
 
             // Proj/Calib TODOREWORK
