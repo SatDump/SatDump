@@ -8,13 +8,18 @@
 #include "jpss.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "products/products.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+// #include "products/products.h"
+// #include "products/image_products.h" TODOREWORK
+// #include "products/dataset.h"
 #include "resources.h"
 #include "common/calibration.h"
 #include "nlohmann/json_utils.h"
 #include "common/image/io.h"
+#include "instruments/viirs/viirs_viewang.h"
+
+#include "products2/image_product.h"
+#include "products2/dataset.h"
+#include "common/tracking/tle.h"
 
 namespace jpss
 {
@@ -162,7 +167,7 @@ namespace jpss
                 norad = JPSS4_NORAD;
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(atms_reader.timestamps);
 
@@ -186,37 +191,28 @@ namespace jpss
                 logger->info("----------- ATMS");
                 logger->info("Lines : " + std::to_string(atms_reader.lines));
 
-                satdump::ImageProducts atms_products;
+                satdump::products::ImageProduct atms_products;
                 atms_products.instrument_name = "atms";
-                atms_products.has_timestamps = true;
-                atms_products.set_tle(satellite_tle);
-                atms_products.bit_depth = 16;
-                atms_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                atms_products.set_timestamps(atms_reader.timestamps);
                 auto proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss_atms.json"));
                 if (d_parameters["use_ephemeris"].get<bool>())
                     proj_cfg["ephemeris"] = att_ephem.getEphem();
-                atms_products.set_proj_cfg(proj_cfg);
+                atms_products.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, atms_reader.timestamps);
 
                 for (int i = 0; i < 22; i++)
-                    atms_products.images.push_back({"ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i)});
+                    atms_products.images.push_back({i, "ATMS-" + std::to_string(i + 1), std::to_string(i + 1), atms_reader.getChannel(i), 16});
 
                 nlohmann::json calib_coefs = loadCborFile(resources::getResourcePath("calibration/ATMS.cbor"));
                 if (calib_coefs.contains(sat_name))
                 {
                     atms::ATMS_SDR_CC sdr_cc = calib_coefs[sat_name];
                     nlohmann::json calib_cfg;
-                    calib_cfg["calibrator"] = "jpss_atms";
                     calib_cfg["vars"] = atms_reader.getCalib();
                     calib_cfg["sdr_cc"] = calib_coefs[sat_name];
-                    atms_products.set_calibration(calib_cfg);
+                    atms_products.set_calibration("jpss_atms", calib_cfg);
                     for (int c = 0; c < 22; c++)
                     {
-                        atms_products.set_calibration_type(c, atms_products.CALIB_RADIANCE);
-                        atms_products.set_wavenumber(c, freq_to_wavenumber(sdr_cc.centralFrequency[c]));
-                        atms_products.set_calibration_default_radiance_range(c,
-                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][0].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])),
-                                                                             temperature_to_radiance(calib_coefs["default_ranges"][c][1].get<double>(), freq_to_wavenumber(sdr_cc.centralFrequency[c])));
+                        atms_products.set_channel_unit(c, CALIBRATION_RADIANCE_UNIT);
+                        atms_products.set_channel_frequency(c, sdr_cc.centralFrequency[c]);
                     }
                 }
                 else
@@ -298,41 +294,29 @@ namespace jpss
                 const float beta = 0.52333; // 1.0 - alpha;
 
                 // Normal channels
-                satdump::ImageProducts viirs_products;
+                satdump::products::ImageProduct viirs_products;
                 viirs_products.instrument_name = "viirs";
-                viirs_products.has_timestamps = true;
-                viirs_products.set_tle(satellite_tle);
-                viirs_products.bit_depth = 16;
-                viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
 
-                nlohmann::json proj_cfg;
+                nlohmann::json proj_cfg_all;
                 if (scid == SNPP_SCID)
-                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs.json"));
+                    proj_cfg_all = loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs.json"));
                 else if (scid == JPSS1_SCID)
-                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs.json"));
+                    proj_cfg_all = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs.json"));
                 else if (scid == JPSS2_SCID)
-                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs.json"));
+                    proj_cfg_all = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs.json"));
+
+                auto proj_cfg = proj_cfg_all["proj"];
+                auto norm_cfg = proj_cfg_all["normal"];
+                auto dnb_cfg = proj_cfg_all["dnb"];
+
                 if (d_parameters["use_ephemeris"].get<bool>())
                     proj_cfg["ephemeris"] = att_ephem.getEphem();
-                viirs_products.set_proj_cfg(proj_cfg);
+                viirs_products.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, viirs_reader_imaging[0].timestamps); // All the same now. Merge to a single "timestamps"?
 
-                // DNB channels
-                satdump::ImageProducts viirs_dnb_products;
-                viirs_dnb_products.instrument_name = "viirs_dnb";
-                viirs_dnb_products.has_timestamps = true;
-                viirs_dnb_products.set_tle(satellite_tle);
-                viirs_dnb_products.bit_depth = 16;
-                viirs_dnb_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-
-                if (scid == SNPP_SCID)
-                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/npp_viirs_dnb.json"));
-                else if (scid == JPSS1_SCID)
-                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss1_viirs_dnb.json"));
-                else if (scid == JPSS2_SCID)
-                    proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/jpss2_viirs_dnb.json"));
-                if (d_parameters["use_ephemeris"].get<bool>())
-                    proj_cfg["ephemeris"] = att_ephem.getEphem();
-                viirs_dnb_products.set_proj_cfg(proj_cfg);
+                auto points_viirs_normal_ch = viirs::calculateVIIRSViewAnglePoints(false, getValueOrDefault(norm_cfg["is_n20"], false),
+                                                                                   norm_cfg["scan_angle"], getValueOrDefault(norm_cfg["roll_offset"], 0.0)); // TODOREWORK
+                auto points_viirs_dnb_ch = viirs::calculateVIIRSViewAnglePoints(true, getValueOrDefault(dnb_cfg["is_n20"], false),
+                                                                                dnb_cfg["scan_angle"], getValueOrDefault(dnb_cfg["roll_offset"], 0.0)); // TODOREWORK
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -343,11 +327,10 @@ namespace jpss
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_imaging_status[i] = SAVING;
 
-                        viirs_products.images.push_back({"VIIRS-I" + std::to_string(i + 1),
+                        viirs_products.images.push_back({i, "VIIRS-I" + std::to_string(i + 1),
                                                          "i" + std::to_string(i + 1),
-                                                         viirs_image,
-                                                         viirs_reader_imaging[i].timestamps,
-                                                         viirs_reader_imaging[i].channelSettings.zoneHeight});
+                                                         viirs_image, 16,
+                                                         satdump::ChannelTransform().init_affine_interpx(1, 1, 0, 0, points_viirs_normal_ch)});
                     }
                     viirs_imaging_status[i] = DONE;
                 }
@@ -361,11 +344,10 @@ namespace jpss
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_moderate_status[i] = SAVING;
 
-                        viirs_products.images.push_back({"VIIRS-M" + std::to_string(i + 1),
+                        viirs_products.images.push_back({i + 5, "VIIRS-M" + std::to_string(i + 1),
                                                          "m" + std::to_string(i + 1),
-                                                         viirs_image,
-                                                         viirs_reader_moderate[i].timestamps,
-                                                         viirs_reader_moderate[i].channelSettings.zoneHeight});
+                                                         viirs_image, 16,
+                                                         satdump::ChannelTransform().init_affine_interpx(2, 2, 0, 0, points_viirs_normal_ch)});
                     }
                     viirs_moderate_status[i] = DONE;
                 }
@@ -375,40 +357,35 @@ namespace jpss
                 {
                     logger->info("DNB...");
 
-                    viirs_dnb_products.images.push_back({"VIIRS-DNB",
-                                                         "dnb",
-                                                         viirs_reader_dnb[0].getImage(),
-                                                         viirs_reader_dnb[0].timestamps,
-                                                         viirs_reader_dnb[0].channelSettings.zoneHeight});
+                    viirs_products.images.push_back({21, "VIIRS-DNB",
+                                                     "dnb",
+                                                     viirs_reader_dnb[0].getImage(), 16,
+                                                     satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
                 }
 
                 if (viirs_reader_dnb[1].segments.size() > 0)
                 {
                     logger->info("DNB MGS...");
 
-                    viirs_dnb_products.images.push_back({"VIIRS-DNB-MGS",
-                                                         "dnbmgs",
-                                                         viirs_reader_dnb[1].getImage(),
-                                                         viirs_reader_dnb[1].timestamps,
-                                                         viirs_reader_dnb[1].channelSettings.zoneHeight});
+                    viirs_products.images.push_back({22, "VIIRS-DNB-MGS",
+                                                     "dnbmgs",
+                                                     viirs_reader_dnb[1].getImage(), 16,
+                                                     satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
                 }
 
                 if (viirs_reader_dnb[2].segments.size() > 0)
                 {
                     logger->info("DNB LGS...");
 
-                    viirs_dnb_products.images.push_back({"VIIRS-DNB-LGS",
-                                                         "dnblgs",
-                                                         viirs_reader_dnb[2].getImage(),
-                                                         viirs_reader_dnb[2].timestamps,
-                                                         viirs_reader_dnb[2].channelSettings.zoneHeight});
+                    viirs_products.images.push_back({23, "VIIRS-DNB-LGS",
+                                                     "dnblgs",
+                                                     viirs_reader_dnb[2].getImage(), 16,
+                                                     satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
                 }
                 viirs_dnb_status = DONE;
 
                 viirs_products.save(directory);
-                viirs_dnb_products.save(directory_dnb);
                 dataset.products_list.push_back("VIIRS");
-                dataset.products_list.push_back("VIIRS-DNB");
             }
 
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
@@ -537,6 +514,7 @@ namespace jpss
                         if (!contains)
                             r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
                     }
+                    r.timestamps = timestamps;
                 }
 
                 for (int i = 0; i < 16; i++)
@@ -560,6 +538,7 @@ namespace jpss
                         if (!contains)
                             r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
                     }
+                    r.timestamps = timestamps;
                 }
 
                 for (int i = 0; i < 3; i++)
@@ -583,6 +562,7 @@ namespace jpss
                         if (!contains)
                             r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
                     }
+                    r.timestamps = timestamps;
                 }
             }
 

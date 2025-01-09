@@ -15,11 +15,7 @@ namespace jpss
     {
         const double BEAM_COUNTS2DEG = 360.0 / (2 << 15);
 
-        void JpssATMSCalibrator::init()
-        {
-        }
-
-        double JpssATMSCalibrator::compute(int channel, int pos_x, int pos_y, int px_val)
+        double JpssATMSCalibrator::compute(int channel, int pos_x, int pos_y, uint32_t px_val)
         {
             int scnt = px_val;                                             // Scene counts
             int ich = channel;                                             // Channel ID

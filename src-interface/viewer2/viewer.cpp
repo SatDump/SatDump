@@ -85,6 +85,10 @@ namespace satdump
                             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
                         if (ImGui::MenuItem("Load L3"))
                             openProductOrDataset("/data_ssd/ELEKTRO-L3/20250104_071415_ELEKTRO-L 3.dat_OUT/dataset.json");
+                        if (ImGui::MenuItem("Load JPSS-1"))
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
+                        if (ImGui::MenuItem("Load JPSS-2"))
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
 
                         ImGui::EndMenu();
                     }

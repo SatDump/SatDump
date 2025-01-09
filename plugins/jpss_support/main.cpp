@@ -19,8 +19,8 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
-        satdump::eventBus->register_handler<satdump::RequestSatProjEvent>(provideSatProjHandler);
-        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::proj::RequestSatelliteRaytracerEvent>(provideSatProjHandler);
+        satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -28,16 +28,16 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, jpss::instruments::JPSSInstrumentsDecoderModule);
     }
 
-    static void provideSatProjHandler(const satdump::RequestSatProjEvent &evt)
+    static void provideSatProjHandler(const satdump::proj::RequestSatelliteRaytracerEvent &evt)
     {
         if (evt.id == "viirs_single_line")
-            evt.projs.push_back(std::make_shared<VIIRSNormalLineSatProj>(evt.cfg, evt.tle, evt.timestamps_raw));
+            evt.r.push_back(std::make_shared<jpss::VIIRSNormalLineSatProj>(evt.cfg));
     }
 
-    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    static void provideImageCalibratorHandler(const satdump::products::RequestImageCalibratorEvent &evt)
     {
         if (evt.id == "jpss_atms")
-            evt.calibrators.push_back(std::make_shared<jpss::atms::JpssATMSCalibrator>(evt.calib, evt.products));
+            evt.calibrators.push_back(std::make_shared<jpss::atms::JpssATMSCalibrator>(evt.products, evt.calib));
     }
 };
 

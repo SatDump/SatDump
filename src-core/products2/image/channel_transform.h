@@ -7,6 +7,8 @@
 #include "nlohmann/json.hpp"
 #include "core/exception.h"
 
+#include "common/projection/thinplatespline.h" // TODOREWORK Move to here?
+
 namespace satdump
 {
     /**
@@ -30,6 +32,7 @@ namespace satdump
      * - 1, None : Does nothing, use if no transform is required between channels
      * - 2, Affine : ax + b form applied on both axis, meant for simple translations and resolution changes
      * - 3, Affine Slant X : Combines the affine transform and a shift in y identical at any point in x
+     * - 4, Affine + Arbtitrary interpolation on the X axis (eg, for VIIRS with discountinuties between channels)
      */
     class ChannelTransform
     {
@@ -40,6 +43,7 @@ namespace satdump
             TYPE_NONE = 1,
             TYPE_AFFINE = 2,
             TYPE_AFFINE_SLANTX = 3,
+            TYPE_AFFINE_INTERPX = 4,
         };
 
     private:
@@ -52,6 +56,10 @@ namespace satdump
 
         double slantx_center;
         double slantx_ampli;
+
+        std::vector<std::pair<double, double>> interpx_points;
+        std::shared_ptr<projection::VizGeorefSpline2D> interpx_fwd_interpolator;
+        std::shared_ptr<projection::VizGeorefSpline2D> interpx_rev_interpolator;
 
     public:
         /**
@@ -80,12 +88,24 @@ namespace satdump
          */
         ChannelTransform &init_affine_slantx(double a_x, double a_y, double b_x, double b_y, double slantx_center, double slantx_ampli);
 
+        /**
+         * @brief Initialize an AFFINE_INTERPX transform
+         * @param a_x affine a for x axis
+         * @param a_y affine a for y axis
+         * @param b_x affine b for x axis
+         * @param b_y affine b for y axis
+         * @param interpx_points points for x axis interpolation
+         */
+        ChannelTransform &init_affine_interpx(double a_x, double a_y, double b_x, double b_y, std::vector<std::pair<double, double>> interpx_points);
+
     public:
         friend void to_json(nlohmann::json &j, const ChannelTransform &v)
         {
             j["type"] = (int)v.d_type;
 
-            if (v.d_type == TYPE_AFFINE || v.d_type == TYPE_AFFINE_SLANTX)
+            if (v.d_type == TYPE_AFFINE ||
+                v.d_type == TYPE_AFFINE_SLANTX ||
+                v.d_type == TYPE_AFFINE_INTERPX)
             {
                 j["ax"] = v.affine_a_x;
                 j["ay"] = v.affine_a_y;
@@ -98,13 +118,20 @@ namespace satdump
                 j["slantx_center"] = v.slantx_center;
                 j["slantx_ampli"] = v.slantx_ampli;
             }
+
+            if (v.d_type == TYPE_AFFINE_INTERPX)
+            {
+                j["interpx_points"] = v.interpx_points; // v.fwd_interpolator.get_points();
+            }
         }
 
         friend void from_json(const nlohmann::json &j, ChannelTransform &v)
         {
             v.d_type = (transform_type_t)j["type"].get<int>();
 
-            if (v.d_type == TYPE_AFFINE || v.d_type == TYPE_AFFINE_SLANTX)
+            if (v.d_type == TYPE_AFFINE ||
+                v.d_type == TYPE_AFFINE_SLANTX ||
+                v.d_type == TYPE_AFFINE_INTERPX)
             {
                 v.affine_a_x = j["ax"];
                 v.affine_a_y = j["ay"];
@@ -116,6 +143,23 @@ namespace satdump
             {
                 v.slantx_center = j["slantx_center"];
                 v.slantx_ampli = j["slantx_ampli"];
+            }
+
+            if (v.d_type == TYPE_AFFINE_INTERPX)
+            {
+                v.interpx_points = j["interpx_points"].get<std::vector<std::pair<double, double>>>();
+
+                v.interpx_fwd_interpolator = std::make_shared<projection::VizGeorefSpline2D>(1);
+                v.interpx_rev_interpolator = std::make_shared<projection::VizGeorefSpline2D>(1);
+
+                for (auto &p : v.interpx_points)
+                {
+                    v.interpx_fwd_interpolator->add_point(p.first, p.first, &p.second);
+                    v.interpx_rev_interpolator->add_point(p.second, p.second, &p.first);
+                }
+
+                v.interpx_fwd_interpolator->solve();
+                v.interpx_rev_interpolator->solve();
             }
         }
 
@@ -152,6 +196,12 @@ namespace satdump
                 *x = *x * affine_a_x + affine_b_x;
                 *y = *y * affine_a_y + affine_b_y;
             }
+            else if (d_type == TYPE_AFFINE_INTERPX)
+            {
+                *x = *x * affine_a_x + affine_b_x;
+                *y = *y * affine_a_y + affine_b_y;
+                interpx_fwd_interpolator->get_point(*x, *x, x);
+            }
             else if (d_type == TYPE_INVALID)
                 throw satdump_exception("Invalid Channel Transform!\n");
         }
@@ -175,6 +225,12 @@ namespace satdump
                 *x = (*x - affine_b_x) / affine_a_x;
                 *y = (*y - affine_b_y) / affine_a_y;
                 *y += (*x - slantx_center) * slantx_ampli;
+            }
+            else if (d_type == TYPE_AFFINE_INTERPX)
+            {
+                interpx_rev_interpolator->get_point(*x, *x, x);
+                *x = (*x - affine_b_x) / affine_a_x;
+                *y = (*y - affine_b_y) / affine_a_y;
             }
             else if (d_type == TYPE_INVALID)
                 throw satdump_exception("Invalid Channel Transform!\n");

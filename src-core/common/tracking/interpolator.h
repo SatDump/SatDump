@@ -39,14 +39,23 @@ public:
 class LinearInterpolator
 {
 private:
-    const std::vector<std::pair<double, double>> xy;
+    std::vector<std::pair<double, double>> xy;
 
 public:
-    LinearInterpolator(std::vector<std::pair<double, double>> xy)
-        : xy(xy)
+    LinearInterpolator() {}
+
+    LinearInterpolator(std::vector<std::pair<double, double>> xy) { set_points(xy); }
+
+    void set_points(std::vector<std::pair<double, double>> p)
     {
-        std::sort(xy.begin(), xy.end(), [](auto &el1, auto &el2)
+        std::sort(p.begin(), p.end(), [](auto &el1, auto &el2)
                   { return el1.first < el2.first; });
+        this->xy = p;
+    }
+
+    std::vector<std::pair<double, double>> get_points() const
+    {
+        return xy;
     }
 
     double interpolate(double xvalue)

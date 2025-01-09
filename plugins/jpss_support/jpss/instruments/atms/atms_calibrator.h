@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products/image_products.h"
+#include "products2/image/image_calibrator.h"
 #include "atms_structs.h"
 
 namespace jpss
@@ -8,7 +8,7 @@ namespace jpss
     namespace atms
     {
         // ATMS Calibration, based on the algorithm published in the ADL software
-        class JpssATMSCalibrator : public satdump::ImageProducts::CalibratorBase
+        class JpssATMSCalibrator : public satdump::products::ImageCalibrator
         {
         private:
             ATMS_SDR_CC atmsSdrCoeffsPtr;
@@ -21,14 +21,14 @@ namespace jpss
             double calculate_avg_cold_cnt(int pos_y, int ich);
 
         public:
-            JpssATMSCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
+            JpssATMSCalibrator(satdump::products::ImageProduct *p, nlohmann::json c)
+                : satdump::products::ImageCalibrator(p, c)
             {
-                d_vars = calib["vars"];
-                atmsSdrCoeffsPtr = calib["sdr_cc"];
+                d_vars = d_cfg["vars"];
+                atmsSdrCoeffsPtr = d_cfg["sdr_cc"];
             }
 
-            void init();
-            double compute(int channel, int pos_x, int pos_y, int px_val);
+            double compute(int channel, int pos_x, int pos_y, uint32_t px_val);
         };
     }
 }
