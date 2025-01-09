@@ -2,7 +2,42 @@
     "name": "MWR",
     "presets": [
         {
-            "name": "MWR 325 GHz Water Vapor",
+            "name": "MHS 221",
+            "equation": "ch10, ch10, ch9",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "MHS 421",
+            "equation": "ch15, ch10, ch9",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "ATMS False Color",
+            "equation": "ch9, ch10, ch11",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "Microwave Airmass",
+            "equation": "ch15, ch14, ch13",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "MWR 325 GHz + 89 GHz Blend",
+            "equation": "ch9,ch11,ch19",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "MWR 325 GHz Airmass",
             "equation": "ch19, ch18, ch17",
             "image": {
                 "individual_equalize": true
