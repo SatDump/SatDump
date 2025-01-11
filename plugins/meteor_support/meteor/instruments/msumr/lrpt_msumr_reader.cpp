@@ -16,29 +16,22 @@ namespace meteor
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    segments[i] = new Segment[SEG_CNT];
-                    firstSeg[i] = 4294967295;
-                    lastSeg[i] = 0;
-                    rollover[i] = lastSeq[i] = offset[i] = lastSeg[i] = lines[i] = 0;
-                    offset[i] = 0;
+                    firstSeg[i] = offset[i] = 4294967295;
+                    rollover[i] = lastSeq[i] = lastSeg[i] = lines[i] = 0;
                 }
 
-                // Fetch current day
+                // Fetch current day, moscow time.
+                // Only used for old M2 LRPT
                 time_t currentDay = time(0) + 3 * 3600.0;
-                dayValue = currentDay - (currentDay % 86400); // Requires the day to be known from another source
+                dayValue = currentDay - (currentDay % 86400);
             }
 
             MSUMRReader::~MSUMRReader()
             {
-                for (int i = 0; i < 6; i++)
-                    delete[] segments[i];
             }
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
             {
-                // if (packet.payload.size() - 1 != packet.header.packet_length)
-                //     return;
-
                 int currentChannel = -1;
 
                 if (packet.header.apid == 64)
@@ -63,87 +56,157 @@ namespace meteor
                     return;
 
                 uint16_t sequence = packet.header.packet_sequence_count;
-                uint32_t mcuNumber = newSeg.MCUN;
+                uint32_t mcu_count = newSeg.MCUN / 14;
 
-                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 13926 && sequence < 2458) // 15% threshold at each end
+                // Detect sequence count rollover. 15% threshold at each end
+                // to prevent false positives
+                if (lastSeq[currentChannel] > sequence && lastSeq[currentChannel] > 13926 && sequence < 2458)
                 {
                     rollover[currentChannel] += 16384;
                 }
 
-                if (offset[currentChannel] == 0)
+                // Extrapolate the offset, which is what the sequence counter was when this
+                // channel first appeared after sequence count 0
+                if (offset[currentChannel] == 4294967295)
                 {
-                    uint32_t mcu_count = mcuNumber / 14;
-                    offset[currentChannel] = (sequence + (mcu_count > sequence ? 16384 : 0) - mcu_count + rollover[currentChannel]) % 43 % 14;
-                    if (offset[currentChannel] == 0)
-                        offset[currentChannel] = 14;
+                    uint32_t mcu_seq = sequence + (mcu_count > sequence ? 16384 : 0) - mcu_count;
+                    offset[currentChannel] = (mcu_seq + rollover[currentChannel]) % 43;
                 }
 
-                uint32_t id = ((sequence + rollover[currentChannel] - offset[currentChannel]) / 43 * 14) + mcuNumber / 14;
+                // Transmission loop is 43 packets long (14 segments per line * 3 channels + 1 telemetry packet)
+                // Based on that assumption, computing the ID here effectively makes a new sequence unique per
+                // channel that is continuous from the end of one line to the beginning of another
+                uint32_t id = ((sequence + rollover[currentChannel] - offset[currentChannel]) / 43) * 14 + mcu_count;
+                uint32_t new_firstSeg = (firstSeg[currentChannel] > id ? id : firstSeg[currentChannel]);
+                uint32_t new_lastSeg = (lastSeg[currentChannel] < id ? id : lastSeg[currentChannel]);
 
-                if (id >= SEG_CNT)
+                // Ensures data errors do not try to generate images that are too tall. This limits LRPT image
+                // height to 11428 px [(20000/14) * 8], which is significantly taller than LRPT physically can be.
+                // Unless you get another satellite to tag along and continuously receive it. In which case, can we
+                // be friends?
+                if (new_lastSeg - new_firstSeg > SEG_CNT)
                     return;
 
-                if (lastSeg[currentChannel] < id)
-                {
-                    lastSeg[currentChannel] = id;
-                }
-
-                if (firstSeg[currentChannel] > id)
-                {
-                    firstSeg[currentChannel] = id;
-                }
-
+                firstSeg[currentChannel] = new_firstSeg;
+                lastSeg[currentChannel] = new_lastSeg;
                 lastSeq[currentChannel] = sequence;
                 segments[currentChannel][id] = newSeg;
             }
 
-            image::Image MSUMRReader::getChannel(int channel, size_t max_correct, int32_t first, int32_t last, int32_t offsett)
+            image::Image MSUMRReader::getChannel(int channel, size_t max_correct)
             {
-                uint32_t firstSeg_l;
-                uint32_t lastSeg_l;
+                uint32_t firstSeg_line = 4294967295;
+                uint32_t firstSeg_beforeLowestOffset = 4294967295;
+                uint32_t firstSeg_afterLowestOffset = 4294967295;
 
-                if (first == -1 || last == -1 || offsett == -1)
+                uint32_t lastSeg_line = 0;
+                uint32_t lastSeg_beforeLowestOffset = 0;
+                uint32_t lastSeg_afterLowestOffset = 0;
+
+                int channel_with_lowest_offset = 6;
+                int channel_lowest_transmitted = 6;
+
+                // Check all channels for alignment info
+                for (int i = 0; i < 6; i++)
                 {
-                    int max_offset = 0;
-                    for (int i = 0; i < 6; i++)
-                        if (max_offset < offset[i])
-                            max_offset = offset[i];
+                    // Get the lowest channel transmitted
+                    if (channel_lowest_transmitted == 6)
+                        channel_lowest_transmitted = i;
 
-                    firstSeg_l = firstSeg[channel] + offset[channel] * 14;
-                    for (int i = 0; i < 6; i++)
-                        if (firstSeg[i] + offset[i] * 14 < firstSeg_l)
-                            firstSeg_l = firstSeg[i] + offset[i] * 14;
-                    firstSeg_l -= offset[channel] * 14;
-
-                    if (firstSeg[channel] == 4294967295)
-                        firstSeg_l = 0;
-
-                    lastSeg_l = lastSeg[channel] + offset[channel] * 14;
-                    for (int i = 0; i < 6; i++)
-                        if (lastSeg[i] + offset[i] * 14 > lastSeg_l)
-                            lastSeg_l = lastSeg[i] + offset[i] * 14;
-                    lastSeg_l -= offset[channel] * 14;
-
-                    if (lastSeg[channel] == 0)
-                        lastSeg_l = 0;
-                }
-                else
-                {
-                    firstSeg_l = ((first + (offsett - (offset[channel]))) * 14);
-                    lastSeg_l = ((last + (offsett - (offset[channel]))) * 14);
+                    // Find the point where the satellite's channel loop restarts (used for alignment)
+                    if (offset[i] < (channel_with_lowest_offset == 6 ? 43 : offset[channel_with_lowest_offset]))
+                        channel_with_lowest_offset = i;
                 }
 
-                firstSeg_l -= firstSeg_l % 14;
-                lastSeg_l -= lastSeg_l % 14;
+                // Check all channels for first/last segment
+                for (int i = 0; i < 6; i++)
+                {
+                    // Not a valid channel
+                    if (offset[i] == 4294967295)
+                        continue;
 
-                lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
+                    // Determine first and last segment
+                    if (firstSeg[i] < firstSeg_line)
+                        firstSeg_line = firstSeg[i];
+                    if (lastSeg[i] > lastSeg_line)
+                        lastSeg_line = lastSeg[i];
+
+                    // Determine first and last segment before lowest offset (if applicable)
+                    if (i < channel_with_lowest_offset)
+                    {
+                        if (firstSeg[i] < firstSeg_beforeLowestOffset)
+                            firstSeg_beforeLowestOffset = firstSeg[i];
+                        if (lastSeg[i] > lastSeg_beforeLowestOffset)
+                            lastSeg_beforeLowestOffset = lastSeg[i];
+                    }
+
+                    // Determine first and last segment on/after lowest offset (if applicable)
+                    else
+                    {
+                        if (firstSeg[i] < firstSeg_afterLowestOffset)
+                            firstSeg_afterLowestOffset = firstSeg[i];
+                        if (lastSeg[i] > lastSeg_afterLowestOffset)
+                            lastSeg_afterLowestOffset = lastSeg[i];
+                    }
+                }
+
+                // Channels transmitted before the one with the lowest offset need to be shifted down relative to those
+                // at/after the lowest offset. There are two ways to do this: either start selecting one row above the
+                // top on channels before the one with the lowest offset, or start selecting one row below the top for
+                // channels at/after the one with the lowest offset. Relative to each other these actions are the same.
+                // However, the correct direction must be chosen to avoid cutting off a rows or appending an extra one.
+                // Similar logic works at the end, but this one is just for cropping correctly.
+                if (channel_lowest_transmitted != channel_with_lowest_offset)
+                {
+                    bool first_shift_direction = ((firstSeg_beforeLowestOffset - firstSeg_beforeLowestOffset % 14) >=
+                        (firstSeg_afterLowestOffset - firstSeg_afterLowestOffset % 14));
+                    bool last_shift_direction = ((lastSeg_beforeLowestOffset - lastSeg_beforeLowestOffset % 14) <
+                        (lastSeg_afterLowestOffset - lastSeg_afterLowestOffset % 14));
+
+                    if (channel < channel_with_lowest_offset)
+                    {
+                        if (first_shift_direction)
+                            firstSeg_line -= 14;
+                        if (last_shift_direction)
+                            lastSeg_line -= 14;
+                    }
+                    else
+                    {
+                        if (!first_shift_direction)
+                            firstSeg_line += 14;
+                        if (!last_shift_direction)
+                            lastSeg_line += 14;
+                    }
+                }
+
+                // One line after the last line due to the loops below
+                // (first line is included; last is not, so make the upper bound one past the end)
+                lastSeg_line += 14;
+
+                // Check if the current channel has any data
+                if (firstSeg[channel] == 4294967295)
+                    firstSeg_line = 0;
+                if (lastSeg[channel] == 0)
+                    lastSeg_line = 0;
+
+                // Get first segment of first/last line
+                // Huzzah! The variable finally matches its namesake.
+                firstSeg_line -= firstSeg_line % 14;
+                lastSeg_line -= lastSeg_line % 14;
+
+                // Initialize image info
+                // Width  = 8 px per MCU * 14 MCUs wide per segment * 14 segments per line = 1568
+                // Height = 8 px per MCU *  1 MCUs high per segment
+                lines[channel] = ((lastSeg_line - firstSeg_line) / 14) * 8;
                 image::Image ret(8, 1568, lines[channel], 1);
 
                 std::set<uint32_t> bad_px;
                 uint32_t index = 0;
-                if (lastSeg_l != 0)
+                if (lastSeg_line != 0)
                     timestamps.clear();
-                for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
+
+                // Build the image from its constituent segments
+                for (uint32_t x = firstSeg_line; x < lastSeg_line; x += 14)
                 {
                     std::vector<double> line_timestamps;
                     for (uint32_t i = 0; i < 8; i++)
@@ -180,6 +243,7 @@ namespace meteor
                     timestamps.push_back(most_common(line_timestamps.begin(), line_timestamps.end(), -1.0));
                 }
 
+                // Fill missing data, if requested
                 if (max_correct > 0 && ret.size() > 0)
                 {
                     logger->info("Filling missing data in channel %d...", channel + 1);
@@ -250,22 +314,6 @@ namespace meteor
                 }
 
                 return ret;
-            }
-
-            std::array<int32_t, 3> MSUMRReader::correlateChannels(int channel1, int channel2)
-            {
-                int commonFirstScan = std::max(firstSeg[channel1] / 14, firstSeg[channel2] / 14);
-                int commonLastScan = std::min(lastSeg[channel1] / 14, lastSeg[channel2] / 14);
-                int commonOffsetScan = std::max(offset[channel1], offset[channel2]);
-                return {commonFirstScan, commonLastScan, commonOffsetScan};
-            }
-
-            std::array<int32_t, 3> MSUMRReader::correlateChannels(int channel1, int channel2, int channel3)
-            {
-                int commonFirstScan = std::max(firstSeg[channel1] / 14, std::max(firstSeg[channel2] / 14, firstSeg[channel3] / 14));
-                int commonLastScan = std::min(lastSeg[channel1] / 14, std::min(lastSeg[channel2] / 14, lastSeg[channel3] / 14));
-                int commonOffsetScan = std::max(offset[channel1], std::max(offset[channel2], offset[channel3]));
-                return {commonFirstScan, commonLastScan, commonOffsetScan};
             }
         } // namespace lrpt
     } // namespace msumr

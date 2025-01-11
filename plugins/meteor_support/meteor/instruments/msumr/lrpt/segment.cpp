@@ -19,13 +19,8 @@ namespace meteor
                               // day_time == 0 && us_time == 0;
             }
 
-            Segment::Segment(uint8_t* data, int length, bool partial, bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode),
-                                                                                             partial(partial)
+            Segment::Segment(uint8_t* data, int length, bool partial, bool meteorm2x_mode) : partial(partial)
             {
-                // buffer = new bool[length * 8];
-                buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool *p)
-                                               { delete[] p; });
-
                 if (length - 14 <= 0)
                 {
                     valid = false;
@@ -55,21 +50,23 @@ namespace meteor
                 }
             }
 
-            Segment::Segment() : meteorm2x_mode(false), // We don't care if invalid
-                                 partial(true)
+            Segment::Segment() : partial(true),
+                                 valid(false)
             {
-                valid = false;
             }
 
             Segment::~Segment()
             {
-                // delete[] buffer;
             }
 
             void Segment::decode(uint8_t *data, int length)
             {
                 // std::cout << "START " << length << std::endl;
                 // std::cout << "DC SEGBUFLEN " << length << std::endl;
+
+                std::shared_ptr<bool> buffer = std::shared_ptr<bool>(new bool[length * 8], [](bool* p)
+                    { delete[] p; });
+
                 convertToArray(buffer.get(), data, length);
                 length = length * 8;
                 std::array<int64_t, 64> qTable = GetQuantizationTable((float)QF);
