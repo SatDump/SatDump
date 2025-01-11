@@ -32,9 +32,6 @@ namespace meteor
 
             void MSUMRReader::work(ccsds::CCSDSPacket &packet)
             {
-                // if (packet.payload.size() - 1 != packet.header.packet_length)
-                //     return;
-
                 int currentChannel = -1;
 
                 if (packet.header.apid == 64)
@@ -98,71 +95,118 @@ namespace meteor
 
             image::Image MSUMRReader::getChannel(int channel, size_t max_correct)
             {
-                uint32_t firstSeg_l = 4294967295;
-                uint32_t lastSeg_l = 0;
-                int lowest_offset = 6;
-                int lowest_channel = 6;
+                uint32_t firstSeg_line = 4294967295;
+                uint32_t firstSeg_beforeLowestOffset = 4294967295;
+                uint32_t firstSeg_afterLowestOffset = 4294967295;
 
-                // Check all channels for first/last segment and alignment info
+                uint32_t lastSeg_line = 0;
+                uint32_t lastSeg_beforeLowestOffset = 0;
+                uint32_t lastSeg_afterLowestOffset = 0;
+
+                int channel_with_lowest_offset = 6;
+                int channel_lowest_transmitted = 6;
+
+                // Check all channels for alignment info
+                for (int i = 0; i < 6; i++)
+                {
+                    // Get the lowest channel transmitted
+                    if (channel_lowest_transmitted == 6)
+                        channel_lowest_transmitted = i;
+
+                    // Find the point where the satellite's channel loop restarts (used for alignment)
+                    if (offset[i] < (channel_with_lowest_offset == 6 ? 43 : offset[channel_with_lowest_offset]))
+                        channel_with_lowest_offset = i;
+                }
+
+                // Check all channels for first/last segment
                 for (int i = 0; i < 6; i++)
                 {
                     // Not a valid channel
                     if (offset[i] == 4294967295)
                         continue;
 
-                    // Get the lowest channel transmitted
-                    if (lowest_channel == 6)
-                        lowest_channel = i;
-
-                    // Find the point where the satellite's channel loop restarts (used for alignment)
-                    if (offset[i] < (lowest_offset == 6 ? 43 : offset[lowest_offset]))
-                        lowest_offset = i;
-
                     // Determine first and last segment
-                    if (firstSeg[i] < firstSeg_l)
-                        firstSeg_l = firstSeg[i];
-                    if (lastSeg[i] > lastSeg_l)
-                        lastSeg_l = lastSeg[i];
+                    if (firstSeg[i] < firstSeg_line)
+                        firstSeg_line = firstSeg[i];
+                    if (lastSeg[i] > lastSeg_line)
+                        lastSeg_line = lastSeg[i];
+
+                    // Determine first and last segment before lowest offset (if applicable)
+                    if (i < channel_with_lowest_offset)
+                    {
+                        if (firstSeg[i] < firstSeg_beforeLowestOffset)
+                            firstSeg_beforeLowestOffset = firstSeg[i];
+                        if (lastSeg[i] > lastSeg_beforeLowestOffset)
+                            lastSeg_beforeLowestOffset = lastSeg[i];
+                    }
+
+                    // Determine first and last segment on/after lowest offset (if applicable)
+                    else
+                    {
+                        if (firstSeg[i] < firstSeg_afterLowestOffset)
+                            firstSeg_afterLowestOffset = firstSeg[i];
+                        if (lastSeg[i] > lastSeg_afterLowestOffset)
+                            lastSeg_afterLowestOffset = lastSeg[i];
+                    }
                 }
 
-                // Align channel to others based on channel loop order. Only needed if the first channel transmitted
-                // does not have the lowest offset. This happens when the first or second channel in the loop was
-                // first transmitted in the previous sequence run.
-                if (lowest_channel != lowest_offset)
+                // Channels transmitted before the one with the lowest offset need to be shifted down relative to those
+                // at/after the lowest offset. There are two ways to do this: either start selecting one row above the
+                // top on channels before the one with the lowest offset, or start selecting one row below the top for
+                // channels at/after the one with the lowest offset. Relative to each other these actions are the same.
+                // However, the correct direction must be chosen to avoid cutting off a rows or appending an extra one.
+                // Similar logic works at the end, but this one is just for cropping correctly.
+                if (channel_lowest_transmitted != channel_with_lowest_offset)
                 {
-                    if (channel < lowest_offset)
-                        firstSeg_l -= 14;
+                    bool first_shift_direction = ((firstSeg_beforeLowestOffset - firstSeg_beforeLowestOffset % 14) >=
+                        (firstSeg_afterLowestOffset - firstSeg_afterLowestOffset % 14));
+                    bool last_shift_direction = ((lastSeg_beforeLowestOffset - lastSeg_beforeLowestOffset % 14) <
+                        (lastSeg_afterLowestOffset - lastSeg_afterLowestOffset % 14));
+
+                    if (channel < channel_with_lowest_offset)
+                    {
+                        if (first_shift_direction)
+                            firstSeg_line -= 14;
+                        if (last_shift_direction)
+                            lastSeg_line -= 14;
+                    }
                     else
-                        lastSeg_l += 14;
+                    {
+                        if (!first_shift_direction)
+                            firstSeg_line += 14;
+                        if (!last_shift_direction)
+                            lastSeg_line += 14;
+                    }
                 }
 
                 // One line after the last line due to the loops below
-                // (first line is included; last is not, make the upper bound one past the end)
-                lastSeg_l += 14;
+                // (first line is included; last is not, so make the upper bound one past the end)
+                lastSeg_line += 14;
 
                 // Check if the current channel has any data
                 if (firstSeg[channel] == 4294967295)
-                    firstSeg_l = 0;
+                    firstSeg_line = 0;
                 if (lastSeg[channel] == 0)
-                    lastSeg_l = 0;
+                    lastSeg_line = 0;
 
                 // Get first segment of first/last line
-                firstSeg_l -= firstSeg_l % 14;
-                lastSeg_l -= lastSeg_l % 14;
+                // Huzzah! The variable finally matches its namesake.
+                firstSeg_line -= firstSeg_line % 14;
+                lastSeg_line -= lastSeg_line % 14;
 
                 // Initialize image info
                 // Width  = 8 px per MCU * 14 MCUs wide per segment * 14 segments per line = 1568
                 // Height = 8 px per MCU *  1 MCUs high per segment
-                lines[channel] = ((lastSeg_l - firstSeg_l) / 14) * 8;
+                lines[channel] = ((lastSeg_line - firstSeg_line) / 14) * 8;
                 image::Image ret(8, 1568, lines[channel], 1);
 
                 std::set<uint32_t> bad_px;
                 uint32_t index = 0;
-                if (lastSeg_l != 0)
+                if (lastSeg_line != 0)
                     timestamps.clear();
 
                 // Build the image from its constituent segments
-                for (uint32_t x = firstSeg_l; x < lastSeg_l; x += 14)
+                for (uint32_t x = firstSeg_line; x < lastSeg_line; x += 14)
                 {
                     std::vector<double> line_timestamps;
                     for (uint32_t i = 0; i < 8; i++)
