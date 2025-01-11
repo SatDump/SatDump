@@ -12,9 +12,6 @@ namespace meteor
         {
             class Segment
             {
-            private:
-                bool meteorm2x_mode;
-
             public:
                 uint16_t day_time;
                 uint32_t ms_time;

@@ -19,8 +19,7 @@ namespace meteor
                               // day_time == 0 && us_time == 0;
             }
 
-            Segment::Segment(uint8_t* data, int length, bool partial, bool meteorm2x_mode) : meteorm2x_mode(meteorm2x_mode),
-                                                                                             partial(partial)
+            Segment::Segment(uint8_t* data, int length, bool partial, bool meteorm2x_mode) : partial(partial)
             {
                 if (length - 14 <= 0)
                 {
@@ -51,10 +50,9 @@ namespace meteor
                 }
             }
 
-            Segment::Segment() : meteorm2x_mode(false), // We don't care if invalid
-                                 partial(true)
+            Segment::Segment() : partial(true),
+                                 valid(false)
             {
-                valid = false;
             }
 
             Segment::~Segment()
