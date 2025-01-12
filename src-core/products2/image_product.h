@@ -9,7 +9,7 @@
 #include "image/channel_transform.h"
 
 #include "common/physics_constants.h"
-#include "image/calibration_units.h" // TODOREWORK MOVE!!!! + Convertion
+#include "image/calibration_units.h" // TODOREWORK MOVE!!!! + Conversion
 
 // TODOREWORK MOVE
 #include "common/calibration.h"
@@ -48,7 +48,8 @@ namespace satdump
              * @param bit_depth Image bit depth
              * @param ch_transform Channel transform to reference field
              * @param wavenumber Wavenumber
-             * @param calibration_unit optional, calibration output channel unit. Can therefore vary per channel!
+             * @param calibration_type optiona, calibration output type, goes hand-in-hand with unit, but do note
+             * a calibration type enforces a specific unit! If this isn't a standard ID, specify your unit here instead
              */
             struct ImageHolder
             {
@@ -59,7 +60,7 @@ namespace satdump
                 int bit_depth = 16;
                 ChannelTransform ch_transform = ChannelTransform().init_none();
                 double wavenumber = -1;
-                std::string calibration_unit = "None";
+                std::string calibration_type = "";
             };
 
             std::vector<ImageHolder> images;
@@ -99,6 +100,8 @@ namespace satdump
                 // TODO CHANNEL SPECIFICS
                 auto cfg = contents["projection_cfg"];
                 cfg["transform"] = get_channel_image(channel).ch_transform;
+                cfg["width"] = get_channel_image(channel).image.width();
+                cfg["height"] = get_channel_image(channel).image.height();
                 return cfg;
             }
 
@@ -240,14 +243,16 @@ namespace satdump
             /**
              * @brief Set channel calibration unit
              * @param index absolute channel index
-             * @param unit unit as a string
+             * @param type type of calibration (ID). If non-standard,
+             * this can be an arbitrary string such as the unit instead
              */
-            void set_channel_unit(int index, std::string unit)
+            void set_channel_unit(int index, std::string type_or_unit)
             {
+                // TODOREWORK, may want to enforce unit automatically?
                 for (auto &img : images)
                     if (img.abs_index == index)
                     {
-                        img.calibration_unit = unit;
+                        img.calibration_type = type;
                         return;
                     }
                 throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");

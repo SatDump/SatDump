@@ -21,11 +21,23 @@
 
 #include "common/utils.h"
 
-#include "libs/sol2/sol.hpp"
+#include "projection/reprojector.h"
 
-#include "common/projection/reprojector.h"
+#include "nlohmann/json_utils.h"
 
-using namespace satdump;
+#include "common/projection/projs2/proj_json.h"
+
+#include "common/image/meta.h"
+
+#include "common/projection/warp/warp.h"
+#include "common/projection/warp/warp_bkd.h"
+#include "projection/raytrace/gcp_compute.h"
+
+#include "common/overlay_handler.h"
+
+#include "normal_line_xy_proj.h"
+
+#include "core/plugin.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,83 +48,152 @@ int main(int argc, char *argv[])
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
-    try
+    auto v = [](const satdump::proj::RequestSatelliteRaytracerEvent &evt)
     {
-        sol::state lua;
+        logger->info("REGISTER!!!! " + evt.id);
+        if (evt.id == "normal_single_xy_line")
+        {
+            try
+            {
+                logger->info("CALLED!");
+                evt.r.push_back(std::make_shared<satdump::proj::NormalLineXYSatProj>(evt.cfg));
+            }
+            catch (std::exception &e)
+            {
+                logger->error(e.what());
+                throw e;
+            }
+        }
+    };
+    satdump::eventBus->register_handler<satdump::proj::RequestSatelliteRaytracerEvent>(v);
 
-        lua.open_libraries(sol::lib::base);
-        lua.open_libraries(sol::lib::string);
-        lua.open_libraries(sol::lib::math);
+    satdump::products::ImageProduct pro;
+    pro.load(argv[1]);
 
-        // Product
-        auto product_type = lua.new_usertype<products::Product>("Product", sol::constructors<std::shared_ptr<products::Product>()>());
-        product_type["instrument_name"] = &products::Product::instrument_name;
-        product_type["type"] = &products::Product::type;
-        product_type["set_product_timestamp"] = &products::Product::set_product_timestamp;
-        product_type["has_product_timestamp"] = &products::Product::has_product_timestamp;
-        product_type["get_product_timestamp"] = &products::Product::get_product_timestamp;
-        product_type["set_product_source"] = &products::Product::set_product_source;
-        product_type["has_product_source"] = &products::Product::has_product_source;
-        product_type["save"] = &products::Product::save;
-        product_type["load"] = &products::Product::load;
+    auto proj_cfg = loadJsonFile(argv[2]);
+    auto old_cfg = pro.get_proj_cfg(0);
 
-        //     lua["loadProduct"] = sol::overload( &products::loadProduct, [](products::ImageProduct*p, std::string equ) { &products::loadProduct} ); ;
+    if (old_cfg.contains("tle"))
+        proj_cfg["tle"] = old_cfg["tle"];
+    if (old_cfg.contains("ephemeris"))
+        proj_cfg["ephemeris"] = old_cfg["ephemeris"];
+    if (old_cfg.contains("timestamps"))
+        proj_cfg["timestamps"] = old_cfg["timestamps"];
+    pro.set_proj_cfg(proj_cfg);
 
-        // ImageProduct
-        auto image_product_type = lua.new_usertype<products::ImageProduct>("ImageProduct", sol::constructors<std::shared_ptr<products::ImageProduct>()>(), sol::base_classes, sol::bases<products::Product>());
+    pro.get_channel_image("2").ch_transform.init_affine_slantx(1.0008, 1, -8, -1789.5, 0, 0.0047);
 
-        lua["generate_equation_product_composite"] = sol::overload(
-            // (image::Image(*)(products::ImageProduct *, std::string))(&products::generate_equation_product_composite)
-            [](products::ImageProduct *p, std::string c)
-            { return products::generate_equation_product_composite(p, c); });
-        lua["generate_calibrated_product_channel"] = sol::overload(
-            // (image::Image(*)(products::ImageProduct *, std::string, double, double))(&products::generate_calibrated_product_channel)
-            [](products::ImageProduct *p, std::string c, double a, double b)
-            { return products::generate_calibrated_product_channel(p, c, a, b); },
-            [](products::ImageProduct *p, std::string c, double a, double b, std::string u)
-            { return products::generate_calibrated_product_channel(p, c, a, b, u); });
+    auto img = satdump::products::generate_equation_product_composite(&pro, "ch1 * 0 + ch2, ch2, ch1");
 
-        // Image
-        sol::usertype<image::Image> image_type = lua.new_usertype<image::Image>("Image", sol::constructors<image::Image(), image::Image(int, size_t, size_t, int)>());
+    {
+        auto prj_cfg = image::get_metadata_proj_cfg(img);
+        satdump::warp::WarpOperation operation;
+        prj_cfg["width"] = img.width();
+        prj_cfg["height"] = img.height();
+        operation.ground_control_points = satdump::proj::compute_gcps(prj_cfg);
+        operation.input_image = &img;
+        operation.output_rgba = true;
 
-        image_type["depth"] = &image::Image::depth;
-        image_type["width"] = &image::Image::width;
-        image_type["height"] = &image::Image::height;
-        image_type["channels"] = &image::Image::channels;
-        image_type["size"] = &image::Image::size;
+        int l_width = prj_cfg.contains("f_width") ? prj_cfg["f_width"].get<int>() : std::max<int>(img.width(), 512) * 15;
+        operation.output_width = l_width;
+        operation.output_height = l_width / 2;
 
-        image_type["draw_image"] = &image::Image::draw_image;
+        logger->trace("Warping size %dx%d", l_width, l_width / 2);
 
-        lua["image_load_img"] = (void (*)(image::Image &, std::string))(&image::load_img);
-        lua["image_save_img"] = (void (*)(image::Image &, std::string))(&image::save_img);
+#if 0
+        satdump::warp::WarpResult result = satdump::warp::performSmartWarp(operation);
+#else
+        satdump::warp::ImageWarper wrapper;
+        wrapper.op = operation;
+        wrapper.update();
+        satdump::warp::WarpResult result = wrapper.warp();
+#endif
 
-        // Run
-        lua.script_file("../src-testing/test.lua");
+        auto src_proj = ::proj::projection_t();
+        src_proj.type = ::proj::ProjType_Equirectangular;
+        src_proj.proj_offset_x = result.top_left.lon;
+        src_proj.proj_offset_y = result.top_left.lat;
+        src_proj.proj_scalar_x = (result.bottom_right.lon - result.top_left.lon) / double(result.output_image.width());
+        src_proj.proj_scalar_y = (result.bottom_right.lat - result.top_left.lat) / double(result.output_image.height());
 
-        image::Image img = lua["final_img"];
+        image::set_metadata_proj_cfg(result.output_image, src_proj);
+        img = result.output_image;
+    }
 
-        satdump::reprojection::ReprojectionOperation op;
+    // Reproj to GEOS
+    {
+        double mult = 4;
+
+        int width = 2784 * mult, /* 5424,*/ height = 2784 * mult; // 5424;
+        proj_cfg["type"] = "geos";
+        proj_cfg["lon0"] = 76;
+        proj_cfg["sweep_x"] = false; // should_sweep_x;
+
+        //  proj_cfg["scalar_x"] = 2004.0594276757981;
+        //  proj_cfg["scalar_y"] = -2004.0594276757981;
+        //  proj_cfg["offset_x"] = -5433005.108429089;
+        //  proj_cfg["offset_y"] = 5433005.108429089;
+
+        proj_cfg["scalar_x"] = 4000.643016144421 / mult;
+        proj_cfg["scalar_y"] = -4000.643016144421 / mult;
+        proj_cfg["offset_x"] = -5568895.078473034;
+        proj_cfg["offset_y"] = 5568895.078473034;
+
+        proj_cfg["width"] = width;
+        proj_cfg["height"] = height;
+        proj_cfg["altitude"] = 35786023.00;
+
+        satdump::proj::ReprojectionOperation op;
         op.img = &img;
-        op.output_width = 2048 * 4;
-        op.output_height = 1024 * 4;
-        nlohmann::json cfg;
-        double projections_equirectangular_tl_lon = -180;
-        double projections_equirectangular_tl_lat = 90;
-        double projections_equirectangular_br_lon = 180;
-        double projections_equirectangular_br_lat = -90;
-        cfg["type"] = "equirec";
-        cfg["offset_x"] = projections_equirectangular_tl_lon;
-        cfg["offset_y"] = projections_equirectangular_tl_lat;
-        cfg["scalar_x"] = (projections_equirectangular_br_lon - projections_equirectangular_tl_lon) / double(op.output_width);
-        cfg["scalar_y"] = (projections_equirectangular_br_lat - projections_equirectangular_tl_lat) / double(op.output_height);
-        cfg["scale_x"] = 0.016;
-        cfg["scale_y"] = 0.016;
-        op.target_prj_info = cfg;
-        auto img2 = reprojection::reproject(op);
-        image::save_img(img2, "test_lua2.png");
+        op.output_height = height;
+        op.output_width = width;
+        op.target_prj_info = proj_cfg;
+
+        auto icfg = image::get_metadata_proj_cfg(img);
+        icfg["width"] = img.width();
+        icfg["height"] = img.height();
+        image::set_metadata_proj_cfg(img, icfg);
+
+        img = satdump::proj::reproject(op);
     }
-    catch (sol::error &e)
+
+    for (size_t v = 0; v < img.width() * img.height(); v++)
+        img.set(3, v, 65535);
+
+#if 0
+    image::Image img2;
+    // image::load_img(img2, "/home/alan/Downloads/SatDump_NEWPRODS/250104_1015/250104_1015_3.jpg");
+    // image::load_img(img2, "/home/alan/Downloads/SatDump_NEWPRODS/2nd_electro/250104_1600/250104_1600_3.jpg");
+    image::load_img(img2, "/home/alan/Downloads/SatDump_NEWPRODS/3rd_electro/250104_1300/250104_1300_3.jpg");
+    img2 = img2.to16bits();
+    img2.resize_bilinear(img.width(), img.height());
+    img.draw_image(0, img2);
+#endif
+
     {
-        logger->error(e.what());
+        OverlayHandler overlay_handler;
+
+        auto cfg = image::get_metadata_proj_cfg(img);
+        //        cfg["width"] = img.width();
+        //        cfg["height"] = img.height();
+        satdump::proj::Projection p = cfg;
+        p.init(1, 0);
+
+        auto pfunc = [p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+        {
+            double x, y;
+            if (p.forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                return {-1, -1};
+            else
+                return {x, y};
+        };
+
+        overlay_handler.draw_map_overlay = true;
+        // overlay_handler.draw_shores_overlay = true;
+        overlay_handler.draw_latlon_overlay = true;
+        // overlay_handler.clear_cache();
+        overlay_handler.apply(img, pfunc);
     }
+
+    image::save_img(img, argv[3]);
 }

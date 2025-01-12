@@ -32,3 +32,5 @@ inline double spectral_radiance_to_radiance(double L, double wavenumber)
 double calculate_sun_irradiance_interval(double low_wav, double high_wav);
 
 double radiance_to_reflectance(double irradiance, double radiance, time_t ltime, float lat, float lon);
+
+double compensate_radiance_for_sun(double radiance, time_t ltime, float lat, float lon);

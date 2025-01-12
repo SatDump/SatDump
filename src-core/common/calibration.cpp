@@ -181,3 +181,31 @@ double radiance_to_reflectance(double irradiance, double radiance, time_t ltime,
         return -999.99; // CALIBRATION_INVALID_VALUE; // 0.05;    // cos80;
     return /*100.0 **/ radiance / tr / cos_sza;
 }
+
+// TODOREWORK clean all this stuff up
+double compensate_radiance_for_sun(double radiance, time_t ltime, float lat, float lon)
+{
+    // if (chnum != 1 && chnum != 2 && chnum != 3 && chnum != 12)
+    //     return CALIBRATION_INVALID_VALUE;
+
+    std::tm t_read = *gmtime(&ltime);
+
+    int year = t_read.tm_year + 1900;
+    int month = t_read.tm_mon + 1;
+    int day = t_read.tm_mday;
+    int hour = t_read.tm_hour;
+    int minute = t_read.tm_min;
+
+    int jd = jday(year, month, day);
+    double esd = 1.0 - 0.0167 * cos(2.0 * M_PI * (jd - 3) / 365.0);
+    double oneoveresdsquare = 1.0 / (esd * esd);
+    // double torad[4] = {20.76 * oneoveresdsquare, 23.24 * oneoveresdsquare,
+    //                    19.85 * oneoveresdsquare, 25.11 * oneoveresdsquare};
+
+    double tr = oneoveresdsquare; // (chnum < 4) ? torad[chnum - 1] : torad[3];
+    double cos_sza = cos_sol_za(year, month, day, hour, minute, lat, lon);
+    // Use cos(80°) as lower bound, to avoid division by zero
+    if (cos_sza < 0.01) // cos80)
+        return -999.99; // CALIBRATION_INVALID_VALUE; // 0.05;    // cos80;
+    return /*100.0 **/ radiance / tr / cos_sza;
+}

@@ -44,6 +44,9 @@ namespace satdump
             bool channel_calibrated = false;
             std::vector<double> channel_calibrated_range_min;
             std::vector<double> channel_calibrated_range_max;
+            std::vector<std::string> channel_calibrated_output_units;
+            std::string channel_calibrated_combo_str;
+            int channel_calibrated_combo_curr_id = 0;
 
             // Equation
             std::string equation;

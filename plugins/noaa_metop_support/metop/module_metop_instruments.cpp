@@ -221,7 +221,7 @@ namespace metop
                 for (int i = 0; i < 6; i++)
                 {
                     avhrr_products.images.push_back({i, "AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i), 10});
-                    avhrr_products.set_channel_unit(i, CALIBRATION_RADIANCE_UNIT);
+                    avhrr_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
                     avhrr_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
                 }
 
@@ -252,7 +252,7 @@ namespace metop
                 for (int i = 0; i < 5; i++)
                 {
                     mhs_products.images.push_back({i, "MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i), 16});
-                    mhs_products.set_channel_unit(i, CALIBRATION_RADIANCE_UNIT);
+                    mhs_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
                 }
 
                 nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
@@ -366,13 +366,11 @@ namespace metop
                     iasi_img_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")), satellite_tle, iasi_reader_img.timestamps_ifov);
                     iasi_img_products.images.push_back({0, "IASI-IMG", "1", iasi_imaging, 16});
 
-                    /*nlohmann::json calib_cfg;
-                    calib_cfg["calibrator"] = "metop_iasi_img";
+                    nlohmann::json calib_cfg;
                     calib_cfg["vars"] = iasi_reader_img.getCalib();
-                    iasi_img_products.set_calibration(calib_cfg);
-                    iasi_img_products.set_calibration_type(0, iasi_img_products.CALIB_RADIANCE);
-                    iasi_img_products.set_wavenumber(0, freq_to_wavenumber(26297584035088.0));
-                    iasi_img_products.set_calibration_default_radiance_range(0, -10, 180);*/
+                    iasi_img_products.set_calibration("metop_iasi_img", calib_cfg);
+                    iasi_img_products.set_channel_unit(0, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    iasi_img_products.set_channel_wavenumber(0, freq_to_wavenumber(26297584035088.0));
 
                     iasi_img_products.save(directory_img);
                     dataset.products_list.push_back("IASI-IMG");
@@ -414,7 +412,7 @@ namespace metop
                 for (int i = 0; i < 15; i++)
                 {
                     amsu_products.images.push_back({i, "AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), 16});
-                    amsu_products.set_channel_unit(i, CALIBRATION_RADIANCE_UNIT);
+                    amsu_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
                 }
 
                 // calib

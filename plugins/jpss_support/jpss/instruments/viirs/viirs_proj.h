@@ -43,7 +43,7 @@ namespace jpss
             }
         }
 
-        bool get_position(double x, double y, geodetic::geodetic_coords_t &pos)
+        bool get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
             if (y >= (int)timestamps.size())
                 return 1;

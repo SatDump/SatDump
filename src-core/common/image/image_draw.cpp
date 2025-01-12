@@ -6,7 +6,7 @@ namespace image
     void Image::draw_image(int c, Image image, int x0, int y0)
     {
         if (image.d_depth != d_depth)
-            throw satdump_exception("draw_image bit depth must be the same!");
+            throw satdump_exception("draw_image bit depth must be the same! " + std::to_string(d_depth) + " != " + std::to_string(image.depth()));
 
         // Get min height and width, mostly for safety
         int width = std::min<int>(d_width, x0 + image.width()) - x0;

@@ -3,25 +3,28 @@
 #include "logger.h"
 #include "common/image/meta.h"
 
+#include "products2/image/image_calibrator.h"
+
 namespace satdump
 {
     namespace products
     {
+
         std::vector<std::string> get_required_tokens(std::string equation, int *numout = nullptr)
         {
             std::vector<std::string> tokens;
 
             try
             {
-                mu::Parser rgbParser;
+                mu::Parser equParser;
                 int outValsCnt = 0;
 
                 while (true)
                 {
                     try
                     {
-                        rgbParser.SetExpr(equation);
-                        rgbParser.Eval(outValsCnt);
+                        equParser.SetExpr(equation);
+                        equParser.Eval(outValsCnt);
                         if (numout != nullptr)
                             *numout = outValsCnt;
                     }
@@ -30,7 +33,7 @@ namespace satdump
                         if (e.GetCode() == mu::ecUNASSIGNABLE_TOKEN)
                         {
                             std::string token = e.GetToken();
-                            rgbParser.DefineConst(token, 1);
+                            equParser.DefineConst(token, 1);
                             tokens.push_back(token);
                             continue;
                         }
@@ -47,7 +50,7 @@ namespace satdump
             return tokens;
         }
 
-        image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progess)
+        image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progress)
         {
             // Get required variables & number of output channels
             int nout_channels = 0;
@@ -138,8 +141,8 @@ namespace satdump
                             out.setf(c, x, y, out.clampf(equOut[c]));
                     }
 
-                    if (progess != nullptr)
-                        *progess = (float)y / (float)rtkt->height;
+                    if (progress != nullptr)
+                        *progress = (float)y / (float)rtkt->height;
                 }
 
                 // Add metadata

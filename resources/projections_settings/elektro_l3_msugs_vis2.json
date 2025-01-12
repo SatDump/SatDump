@@ -1,15 +1,17 @@
 {
     "type": "normal_single_xy_line",
-    "scan_angle_x": 10,
-    "scan_angle_y": 10,
+    "scan_angle_x": 9.56,
+    "scan_angle_y": 27.37,
     "invert_scan_x": false,
     "invert_scan_y": false,
-    "roll_offset": 0,
-    "pitch_offset": 0,
-    "yaw_offset": 0,
+    "roll_offset": -4.945,
+    "pitch_offset": -2.405, //-2.40
+    "yaw_offset": 90,
     "timestamp_offset": 0.0,
     "image_height": 17200,
     "image_width": 6004,
-    "gcp_spacing_x": 100,
-    "gcp_spacing_y": 100
+    "gcp_spacing_x": 200,
+    "gcp_spacing_y": 200,
+    //
+    "slant_sc": -20
 }

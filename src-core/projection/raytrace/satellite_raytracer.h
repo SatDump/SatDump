@@ -43,9 +43,10 @@ namespace satdump
              * @param x pixel position
              * @param y pixel position
              * @param pos output geodetic position
+             * @param otime optionally, timestamp of the position
              * @return true on error
              */
-            virtual bool get_position(double x, double y, geodetic::geodetic_coords_t &pos) = 0;
+            virtual bool get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime = nullptr) = 0;
         };
 
         /**

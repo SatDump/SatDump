@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products/image_products.h"
+#include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 #include "common/calibration.h"
 
@@ -8,24 +8,24 @@ namespace metop
 {
     namespace iasi
     {
-        class MetOpIASIImagingCalibrator : public satdump::ImageProducts::CalibratorBase
+        class MetOpIASIImagingCalibrator : public satdump::products::ImageCalibrator
         {
         private:
             nlohmann::json d_vars;
             double wavenum;
 
         public:
-            MetOpIASIImagingCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
+            MetOpIASIImagingCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
             {
-                d_vars = calib["vars"];
-                wavenum = products->get_wavenumber(0);
+                d_vars = d_cfg["vars"];
+                wavenum = d_pro->get_channel_wavenumber(0);
             }
 
             void init()
             {
             }
 
-            double compute(int /* channel */, int /* pos_x */, int pos_y, int px_val)
+            double compute(int /* channel */, int /* pos_x */, int pos_y, uint32_t px_val)
             {
                 int fpos_y = pos_y / 64;
                 // int fpos_x = pos_x / 64;

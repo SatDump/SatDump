@@ -72,7 +72,7 @@ namespace proj
         return false;
     }
 
-    bool projection_tpers_fwd(projection_t *proj, double lam, double phi, double *x, double *y)
+    bool projection_tpers_fwd(const projection_t *proj, double lam, double phi, double *x, double *y)
     {
         projection_tpers_t *ptr = (projection_tpers_t *)proj->proj_dat;
 
@@ -130,7 +130,7 @@ namespace proj
         return false;
     }
 
-    bool projection_tpers_inv(projection_t *proj, double x, double y, double *lam, double *phi)
+    bool projection_tpers_inv(const projection_t *proj, double x, double y, double *lam, double *phi)
     {
         projection_tpers_t *ptr = (projection_tpers_t *)proj->proj_dat;
 

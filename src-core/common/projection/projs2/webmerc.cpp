@@ -17,7 +17,7 @@ namespace proj
         return false;
     }
 
-    bool projection_webmerc_fwd(projection_t *proj, double lam, double phi, double *x, double *y)
+    bool projection_webmerc_fwd(const projection_t *proj, double lam, double phi, double *x, double *y)
     {
         // projection_webmerc_t *ptr = (projection_webmerc_t *)proj->proj_dat;
 
@@ -27,7 +27,7 @@ namespace proj
         return false;
     }
 
-    bool projection_webmerc_inv(projection_t *proj, double x, double y, double *lam, double *phi)
+    bool projection_webmerc_inv(const projection_t *proj, double x, double y, double *lam, double *phi)
     {
         // projection_webmerc_t *ptr = (projection_webmerc_t *)proj->proj_dat;
 

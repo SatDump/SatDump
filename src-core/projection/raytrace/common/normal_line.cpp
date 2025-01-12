@@ -42,7 +42,7 @@ namespace satdump
             }
         }
 
-        bool NormalLineRaytracer::get_position(double x, double y, geodetic::geodetic_coords_t &pos)
+        bool NormalLineRaytracer::get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
             // if (x >= image_width)
             //     return 1;
@@ -55,6 +55,8 @@ namespace satdump
 
             if (timestamp == -1)
                 return 1;
+            if (otime != nullptr)
+                *otime = timestamp;
 
             auto pos_curr = sat_positions[iy];
             bool ascending = sat_ascendings[iy];
@@ -129,7 +131,7 @@ namespace satdump
             }
         }
 
-        bool NormalLineRaytracerOld::get_position(double x, double y, geodetic::geodetic_coords_t &pos)
+        bool NormalLineRaytracerOld::get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
             // if (x >= image_width)
             //     return 1;
@@ -142,6 +144,8 @@ namespace satdump
 
             if (timestamp == -1)
                 return 1;
+            if (otime != nullptr)
+                *otime = timestamp;
 
             geodetic::geodetic_coords_t pos_curr = sat_positions[iy];
             double az_angle = az_angles[iy];

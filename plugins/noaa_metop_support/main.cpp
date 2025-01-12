@@ -54,8 +54,7 @@ public:
             evt.calibrators.push_back(std::make_shared<NoaaAVHRR3Calibrator>(evt.calib, evt.products));
         else if (evt.id == "noaa_mhs" || evt.id == "noaa_amsu")
             evt.calibrators.push_back(std::make_shared<NoaaMHSCalibrator>(evt.calib, evt.products));
-        else if (evt.id == "metop_iasi_img")
-            evt.calibrators.push_back(std::make_shared<metop::iasi::MetOpIASIImagingCalibrator>(evt.calib, evt.products));
+
         else if (evt.id == "noaa_hirs")
             evt.calibrators.push_back(std::make_shared<NoaaHIRSCalibrator>(evt.calib, evt.products));
     }
@@ -66,8 +65,8 @@ public:
             evt.calibrators.push_back(std::make_shared<noaa_metop::NoaaAVHRR3Calibrator>(evt.products, evt.calib));
         else if (evt.id == "noaa_mhs" || evt.id == "noaa_amsu")
             evt.calibrators.push_back(std::make_shared<noaa_metop::NoaaMHSCalibrator>(evt.products, evt.calib));
-        //   else if (evt.id == "metop_iasi_img")
-        //       evt.calibrators.push_back(std::make_shared<metop::iasi::MetOpIASIImagingCalibrator>(evt.calib, evt.products));
+        else if (evt.id == "metop_iasi_img")
+            evt.calibrators.push_back(std::make_shared<metop::iasi::MetOpIASIImagingCalibrator>(evt.products, evt.calib));
         //   else if (evt.id == "noaa_hirs")
         //       evt.calibrators.push_back(std::make_shared<NoaaHIRSCalibrator>(evt.calib, evt.products));
     }

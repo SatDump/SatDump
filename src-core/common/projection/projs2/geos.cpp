@@ -52,7 +52,7 @@ namespace proj
         return false;
     }
 
-    bool projection_geos_fwd(projection_t *proj, double lam, double phi, double *x, double *y)
+    bool projection_geos_fwd(const projection_t *proj, double lam, double phi, double *x, double *y)
     {
         projection_geos_t *ptr = (projection_geos_t *)proj->proj_dat;
 
@@ -91,7 +91,7 @@ namespace proj
         return false;
     }
 
-    bool projection_geos_inv(projection_t *proj, double x, double y, double *lam, double *phi)
+    bool projection_geos_inv(const projection_t *proj, double x, double y, double *lam, double *phi)
     {
         projection_geos_t *ptr = (projection_geos_t *)proj->proj_dat;
 

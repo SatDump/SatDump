@@ -181,7 +181,7 @@ namespace satdump
          * @param x coordinate to be transformed
          * @param y coordinate to be transformed
          */
-        inline void forward(double *x, double *y)
+        inline void forward(double *x, double *y) const
         {
             if (d_type == TYPE_NONE)
                 ;
@@ -211,7 +211,7 @@ namespace satdump
          * @param x coordinate to be transformed
          * @param y coordinate to be transformed
          */
-        inline void reverse(double *x, double *y)
+        inline void reverse(double *x, double *y) const
         {
             if (d_type == TYPE_NONE)
                 ;

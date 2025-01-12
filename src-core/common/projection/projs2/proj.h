@@ -79,7 +79,7 @@ namespace proj
     Lat/Lon should be in degrees.
     Returns true if an error occurred, false on success.
     */
-    bool projection_perform_fwd(projection_t *proj, double lon, double lat, double *x, double *y);
+    bool projection_perform_fwd(const projection_t *proj, double lon, double lat, double *x, double *y);
 
     /*
     Perform an inverse projection.
@@ -87,5 +87,5 @@ namespace proj
     Lat/Lon will be in degrees.
     Returns true if an error occurred, false on success.
     */
-    bool projection_perform_inv(projection_t *proj, double x, double y, double *lon, double *lat);
+    bool projection_perform_inv(const projection_t *proj, double x, double y, double *lon, double *lat);
 }

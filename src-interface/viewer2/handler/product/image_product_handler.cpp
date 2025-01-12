@@ -6,6 +6,8 @@
 #include "common/image/processing.h"               // TODOREWORK
 #include "common/dsp_source_sink/format_notated.h" // TODOREWORK
 
+#include "products2/image/calibration_units.h" // TODOREWORK
+
 namespace satdump
 {
     namespace viewer
@@ -34,7 +36,7 @@ namespace satdump
                 if (!channel_calibrated && img_calibrator && channel_selection_curr_id != -1)
                 {
                     double val = img_calibrator->compute(channel_selection_curr_id, x, y);
-                    ImGui::Text("Unit : %f %s", val, product->images[channel_selection_curr_id].calibration_unit.c_str());
+                    ImGui::Text("Unit : %f %s", val, product->images[channel_selection_curr_id].calibration_type.c_str());
                 }
             };
 
@@ -43,6 +45,14 @@ namespace satdump
             {
                 channel_calibrated_range_min.resize(product->images.size(), 0);
                 channel_calibrated_range_max.resize(product->images.size(), 100);
+
+                if (channel_selection_curr_id != -1)
+                {
+                    channel_calibrated_output_units = calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type);
+                    channel_calibrated_combo_str.clear();
+                    for (auto &u : channel_calibrated_output_units)
+                        channel_calibrated_combo_str += calibration::getUnitInfo(u).name + '\0';
+                }
             }
 
             tryApplyDefaultPreset();
@@ -61,7 +71,18 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                needs_to_update |= ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str());
+                if (ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str()))
+                {
+                    if (channel_selection_curr_id != -1)
+                    { // TODOREWORK dedup
+                        channel_calibrated_output_units = calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type);
+                        channel_calibrated_combo_str.clear();
+                        for (auto &u : channel_calibrated_output_units)
+                            channel_calibrated_combo_str += calibration::getUnitInfo(u).name + '\0';
+                    }
+
+                    needs_to_update = true;
+                }
 
                 if (channel_selection_curr_id != -1)
                 {
@@ -84,6 +105,7 @@ namespace satdump
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(150 * ui_scale);
                     needs_to_update |= ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[channel_selection_curr_id]);
+                    needs_to_update |= ImGui::Combo("Unit##calibunit", &channel_calibrated_combo_curr_id, channel_calibrated_combo_str.c_str());
                 }
 
                 if (needs_to_be_disabled)
@@ -209,7 +231,8 @@ namespace satdump
                 {
                     auto img = channel_calibrated ? products::generate_calibrated_product_channel(product, product->images[channel_selection_curr_id].channel_name,
                                                                                                   channel_calibrated_range_min[channel_selection_curr_id],
-                                                                                                  channel_calibrated_range_max[channel_selection_curr_id], "", &progress)
+                                                                                                  channel_calibrated_range_max[channel_selection_curr_id],
+                                                                                                  channel_calibrated_output_units[channel_calibrated_combo_curr_id], &progress)
                                                   : product->images[channel_selection_curr_id].image; // TODOREWORK MAKE FUNCTION TO GET SINGLE CHANNEL
                     img_handler.updateImage(img);
                 }

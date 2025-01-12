@@ -102,9 +102,12 @@ namespace satdump
              * @param x pixel position
              * @param y pixel position
              * @param pos output geodetic position
+             * @param otime pixel timestamp, MUST be set to -1 before passing
+             * to this function. No guarantee the underlaying projection supports
+             * this, must be checked before use
              * @return true on error
              */
-            bool inverse(double x, double y, geodetic::geodetic_coords_t &pos);
+            bool inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime = nullptr);
 
         public:
             void to_json(nlohmann::json &j) const;

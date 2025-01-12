@@ -2,6 +2,8 @@
 #include "common/image/meta.h"
 #include "core/plugin.h"
 
+#include "calibration_units.h"
+
 namespace satdump
 {
     namespace products
@@ -32,8 +34,8 @@ namespace satdump
 
             if (!calibrator)
                 throw satdump_exception("Calibrator could not be setup!");
-            if (output_unit != "")
-                throw satdump_exception("Non-default unit not supported yet!");
+            //            if (output_unit != "")
+            //                throw satdump_exception("Non-default unit not supported yet!");
 
             auto &ori = product->images[channel_id];
             image::Image out(ori.image.depth(),
@@ -41,8 +43,13 @@ namespace satdump
                              ori.image.height(),
                              1);
 
+            calibration::UnitConverter converter; // TODOREWORK cleanup this whole file?
+            converter.set_proj(product->get_proj_cfg(product->get_channel_image(channel_name).abs_index));
+            converter.set_wavenumber(product->get_channel_image(channel_name).wavenumber);
+            converter.set_conversion(ori.calibration_type, output_unit);
+
             image::ImgCalibHandler calib_handler;
-            calib_handler.unit = ori.calibration_unit;
+            calib_handler.unit = output_unit; // ori.calibration_unit;
             calib_handler.min = range_min;
             calib_handler.max = range_max;
             calib_handler = nlohmann::json(calib_handler); // Force re-parse to populate offset/scalar
@@ -54,6 +61,7 @@ namespace satdump
                 for (x = 0; x < width; x++)
                 {
                     val = calibrator->compute(channel_id, x, y);
+                    val = converter.convert(x, y, val);
                     out.setf(0, x, y, out.clampf(calib_handler.setVal(val)));
                 }
 

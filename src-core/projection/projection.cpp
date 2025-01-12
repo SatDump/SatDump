@@ -172,7 +172,7 @@ namespace satdump
             return 0;
         }
 
-        bool Projection::inverse(double x, double y, geodetic::geodetic_coords_t &pos)
+        bool Projection::inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
             // Run channel transform, might do nothing if no transform is needed
             transform.forward(&x, &y);
@@ -184,7 +184,7 @@ namespace satdump
             }
             else if (inv_type == PROJ_RAYTRACER)
             {
-                return raytracer->get_position(x, y, pos);
+                return raytracer->get_position(x, y, pos, otime);
             }
             else
             {

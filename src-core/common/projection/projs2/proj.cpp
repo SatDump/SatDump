@@ -51,7 +51,7 @@ namespace proj
             free(proj->proj_dat);
     }
 
-    bool projection_perform_fwd(projection_t *proj, double lon, double lat, double *x, double *y)
+    bool projection_perform_fwd(const projection_t *proj, double lon, double lat, double *x, double *y)
     {
         /* Convert to radians */
         lon *= DEG2RAD;
@@ -110,7 +110,7 @@ namespace proj
         return false;
     }
 
-    bool projection_perform_inv(projection_t *proj, double x, double y, double *lon, double *lat)
+    bool projection_perform_inv(const projection_t *proj, double x, double y, double *lon, double *lat)
     {
         /* Apply scalars & offsets */
         x = x * proj->proj_scalar_x + proj->proj_offset_x;

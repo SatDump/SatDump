@@ -211,7 +211,7 @@ namespace jpss
                     atms_products.set_calibration("jpss_atms", calib_cfg);
                     for (int c = 0; c < 22; c++)
                     {
-                        atms_products.set_channel_unit(c, CALIBRATION_RADIANCE_UNIT);
+                        atms_products.set_channel_unit(c, CALIBRATION_ID_EMISSIVE_RADIANCE);
                         atms_products.set_channel_frequency(c, sdr_cc.centralFrequency[c]);
                     }
                 }
