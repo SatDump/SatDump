@@ -3,13 +3,13 @@
 #include "logger.h"
 #include "common/image/meta.h"
 
+#include "common/utils.h"
 #include "products2/image/image_calibrator.h"
 
 namespace satdump
 {
     namespace products
     {
-
         std::vector<std::string> get_required_tokens(std::string equation, int *numout = nullptr)
         {
             std::vector<std::string> tokens;
@@ -50,8 +50,56 @@ namespace satdump
             return tokens;
         }
 
+        // Calibrated channels config
+        struct CalibChannelCfg
+        {
+            bool valid;
+            std::string token;
+            std::string channel;
+            std::string unit;
+            double min;
+            double max;
+        };
+
+        // Example :
+        // cch2=(2,sun_angle_compensated_reflective_radiance,0,50);cch1=(1,sun_angle_compensated_reflective_radiance,0,50); cch2, cch2, cch1
+        CalibChannelCfg tryParse(std::string str)
+        {
+            CalibChannelCfg c;
+            c.valid = false;
+
+            c.token = str.substr(0, str.find_first_of('='));
+            std::string parenthesis = str.substr(str.find_first_of('(') + 1, str.find_first_of(')') - str.find_first_of('(') - 1);
+            auto parts = splitString(parenthesis, ',');
+
+            if (parts.size() == 4)
+            {
+                c.channel = parts[0];
+                c.unit = parts[1];
+                c.min = std::stod(parts[2]);
+                c.max = std::stod(parts[3]);
+                c.valid = true;
+            }
+
+            return c;
+        }
+
         image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progress)
         {
+            // See if we ave some setup string present
+            std::map<std::string, CalibChannelCfg> calib_cfgs;
+            if (equation.find(';') != std::string::npos)
+            {
+                auto split_cfg = splitString(equation, ';');
+                equation = split_cfg[split_cfg.size() - 1];
+                for (auto &cfg : split_cfg)
+                {
+                    auto pcfg = tryParse(cfg);
+                    if (pcfg.valid)
+                        calib_cfgs.emplace(pcfg.token, pcfg);
+                }
+            }
+
             // Get required variables & number of output channels
             int nout_channels = 0;
             auto tokens = get_required_tokens(equation, &nout_channels);
@@ -79,6 +127,7 @@ namespace satdump
                 // Setup expression parser
                 size_t ntkts = 0;
                 TokenS **tkts = new TokenS *[tokens.size()];
+                image::Image *other_images = new image::Image[tokens.size()];
                 mu::Parser equParser;
                 equParser.SetExpr(equation);
 
@@ -95,6 +144,22 @@ namespace satdump
                         nt->width = h.image.width();
                         nt->height = h.image.height();
                         nt->maxval = h.image.maxval();
+                        equParser.DefineVar(tkt, &nt->v);
+                        tkts[ntkts++] = nt;
+                    }
+                    else if (calib_cfgs.count(tkt))
+                    {
+                        auto &c = calib_cfgs[tkt];
+                        std::string index = calib_cfgs[tkt].channel;
+                        logger->trace("Needs calibrated channel " + index + " as " + c.unit);
+                        auto &h = product->get_channel_image(index);
+                        other_images[ntkts] = generate_calibrated_product_channel(product, index, c.min, c.max, c.unit, progress); // TODOREWORK handle progress?
+                        auto &image = other_images[ntkts];
+                        auto nt = new TokenS(image, h.ch_transform);
+                        nt->ch_idx = h.abs_index;
+                        nt->width = image.width();
+                        nt->height = image.height();
+                        nt->maxval = image.maxval();
                         equParser.DefineVar(tkt, &nt->v);
                         tkts[ntkts++] = nt;
                     }
@@ -152,6 +217,7 @@ namespace satdump
                 // Free up tokens
                 for (int i = 0; i < ntkts; i++)
                     delete tkts[i];
+                delete[] other_images;
 
                 return out;
             }
