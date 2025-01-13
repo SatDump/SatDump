@@ -252,7 +252,7 @@ namespace satdump
                 for (auto &img : images)
                     if (img.abs_index == index)
                     {
-                        img.calibration_type = type;
+                        img.calibration_type = type_or_unit;
                         return;
                     }
                 throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
