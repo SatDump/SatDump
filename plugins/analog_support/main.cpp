@@ -19,7 +19,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
-        satdump::eventBus->register_handler<satdump::RequestSatProjEvent>(provideSatProjHandler);
+        satdump::eventBus->register_handler<satdump::proj::RequestSatelliteRaytracerEvent>(provideSatProjHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -30,10 +30,10 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, generic_analog::GenericAnalogDemodModule);
     }
 
-    static void provideSatProjHandler(const satdump::RequestSatProjEvent &evt)
+    static void provideSatProjHandler(const satdump::proj::RequestSatelliteRaytracerEvent &evt)
     {
         if (evt.id == "noaa_apt_single_line")
-            evt.projs.push_back(std::make_shared<NOAA_APT_SatProj>(evt.cfg, evt.tle, evt.timestamps_raw));
+            evt.r.push_back(std::make_shared<noaa_apt::NOAA_APT_SatProj>(evt.cfg));
     }
 };
 

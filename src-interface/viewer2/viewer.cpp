@@ -89,6 +89,8 @@ namespace satdump
                             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
                         if (ImGui::MenuItem("Load JPSS-2"))
                             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
+                        if (ImGui::MenuItem("Load APT"))
+                            openProductOrDataset("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
 
                         ImGui::EndMenu();
                     }
