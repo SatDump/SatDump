@@ -9,13 +9,14 @@
 #include "lrpt_msumr_reader.h"
 #include "imgui/imgui.h"
 #include "../../meteor.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include <ctime>
-#include "products/dataset.h"
+#include "products2/dataset.h"
 #include "resources.h"
 #include "common/utils.h"
 #include "nlohmann/json_utils.h"
 #include "msumr_tlm.h"
+#include "common/tracking/tle.h"
 
 #define BUFFER_SIZE 8192
 
@@ -23,22 +24,19 @@ namespace meteor
 {
     namespace msumr
     {
-        void createMSUMRProduct(satdump::ImageProducts &product, double timestamp, int norad, int msumr_serial_number,
-                                nlohmann::json &calib_cfg, uint8_t lrpt_channels)
+        void createMSUMRProduct(satdump::products::ImageProduct &product, double timestamp, int norad, int msumr_serial_number,
+                                nlohmann::json &calib_cfg, uint8_t lrpt_channels, std::vector<double> &timestamps)
         {
-            product.bit_depth = 8;
             product.instrument_name = "msu_mr";
-            product.has_timestamps = true;
-            product.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
-            product.set_tle(satdump::general_tle_registry->get_from_norad_time(norad, timestamp));
+            auto tle = satdump::general_tle_registry->get_from_norad_time(norad, timestamp);
             if (msumr_serial_number == 0) // M2
-                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+                product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")), tle, timestamps);
             else if (msumr_serial_number == 3) // M2-3
-                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")));
+                product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_msumr_lrpt.json")), tle, timestamps);
             else if (msumr_serial_number == 4) // M2-4
-                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr_lrpt.json")));
+                product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr_lrpt.json")), tle, timestamps);
             else // Default to M2
-                product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")));
+                product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")), tle, timestamps);
 
             bool has_calib = false;
             for (auto &this_temp : calib_cfg["vars"]["temps"])
@@ -52,48 +50,42 @@ namespace meteor
 
             if (has_calib)
             {
-                product.set_calibration(calib_cfg);
+                product.set_calibration("meteor_msumr", calib_cfg);
                 int next_channel = 0;
                 if ((1 << 0) & lrpt_channels)
                 {
-                    product.set_calibration_type(next_channel, satdump::ImageProducts::CALIB_REFLECTANCE);
-                    product.set_wavenumber(next_channel, 0);
-                    product.set_calibration_default_radiance_range(next_channel, 0, 1);
+                    product.set_channel_unit(next_channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                    product.set_channel_wavenumber(next_channel, 0);
                     next_channel++;
                 }
                 if ((1 << 1) & lrpt_channels)
                 {
-                    product.set_calibration_type(next_channel, satdump::ImageProducts::CALIB_REFLECTANCE);
-                    product.set_wavenumber(next_channel, 0);
-                    product.set_calibration_default_radiance_range(next_channel, 0, 1);
+                    product.set_channel_unit(next_channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                    product.set_channel_wavenumber(next_channel, 0);
                     next_channel++;
                 }
                 if ((1 << 2) & lrpt_channels)
                 {
-                    product.set_calibration_type(next_channel, satdump::ImageProducts::CALIB_REFLECTANCE);
-                    product.set_wavenumber(next_channel, 0);
-                    product.set_calibration_default_radiance_range(next_channel, 0, 1);
+                    product.set_channel_unit(next_channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                    product.set_channel_wavenumber(next_channel, 0);
                     next_channel++;
                 }
                 if ((1 << 3) & lrpt_channels)
                 {
-                    product.set_calibration_type(next_channel, satdump::ImageProducts::CALIB_RADIANCE);
-                    product.set_wavenumber(next_channel, 2695.9743);
-                    product.set_calibration_default_radiance_range(next_channel, 0.05, 1);
+                    product.set_channel_unit(next_channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    product.set_channel_wavenumber(next_channel, 2695.9743);
                     next_channel++;
                 }
                 if ((1 << 4) & lrpt_channels)
                 {
-                    product.set_calibration_type(next_channel, satdump::ImageProducts::CALIB_RADIANCE);
-                    product.set_wavenumber(next_channel, 925.4075);
-                    product.set_calibration_default_radiance_range(next_channel, 30, 120);
+                    product.set_channel_unit(next_channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    product.set_channel_wavenumber(next_channel, 925.4075);
                     next_channel++;
                 }
                 if ((1 << 5) & lrpt_channels)
                 {
-                    product.set_calibration_type(next_channel, satdump::ImageProducts::CALIB_RADIANCE);
-                    product.set_wavenumber(next_channel, 839.8979);
-                    product.set_calibration_default_radiance_range(next_channel, 30, 120);
+                    product.set_channel_unit(next_channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    product.set_channel_wavenumber(next_channel, 839.8979);
                     next_channel++;
                 }
             }
@@ -178,7 +170,7 @@ namespace meteor
                                 }
 
                                 for (int channel = 0; channel < 6; channel++)
-                                    calibration_info[channel].push_back({ words10_bits[channel * 2], words10_bits[channel * 2 + 1] });
+                                    calibration_info[channel].push_back({words10_bits[channel * 2], words10_bits[channel * 2 + 1]});
                             }
                         }
                     }
@@ -265,15 +257,15 @@ namespace meteor
             calib_cfg["vars"]["views"] = nlohmann::json::array();
             calib_cfg["vars"]["temps"] = nlohmann::json::array();
 
-            satdump::ImageProducts msumr_products;
-            std::vector<satdump::ImageProducts::ImageHolder> msumr_images;
+            satdump::products::ImageProduct msumr_products;
+            std::vector<satdump::products::ImageProduct::ImageHolder> msumr_images;
             for (int i = 0; i < 6; i++)
             {
                 image::Image img = msureader.getChannel(i);
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                 {
-                    msumr_images.push_back({ "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, {}, 8 });
+                    msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 8});
                     lrpt_channels |= 1 << i;
                     nlohmann::json channel_views = nlohmann::json::array();
                     channel_views[0] = nlohmann::json::array();
@@ -303,14 +295,13 @@ namespace meteor
                     calib_cfg["vars"]["temps"].push_back(msu_mr_telemetry_calib[telemetry_timestamps[this_timestamp]]);
             }
 
-            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels);
             msumr_products.images.swap(msumr_images);
-            msumr_products.set_timestamps(msureader.timestamps);
+            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps);
             msumr_products.save(directory);
             msumr_products.images.clear(); // Free up memory
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(msureader.timestamps);
             dataset.products_list.push_back("MSU-MR");
@@ -361,15 +352,14 @@ namespace meteor
                     }
                 }
 
-                satdump::ImageProducts filled_products;
-                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels);
+                satdump::products::ImageProduct filled_products;
                 for (int i = 0; i < 6; i++)
                 {
                     image::Image img = msureader.getChannel(i, max_fill_lines);
                     if (img.size() > 0)
-                        filled_products.images.push_back({"MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, {}, 8});
+                        filled_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 8});
                 }
-                filled_products.set_timestamps(msureader.timestamps);
+                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps);
                 filled_products.save(fill_directory);
                 dataset.products_list.push_back("MSU-MR (Filled)");
             }

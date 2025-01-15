@@ -172,6 +172,7 @@ namespace satdump
 
                 if (image_proj_valid && warp_image)
                 {
+                    curr_image = curr_image.to16bits();
                     auto prj_cfg = image::get_metadata_proj_cfg(image);
                     warp::WarpOperation operation;
                     prj_cfg["width"] = image.width();                                                                                                    // TODOREWORK move to metadata already?

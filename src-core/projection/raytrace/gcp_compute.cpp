@@ -1,6 +1,8 @@
 #include "gcp_compute.h"
 #include "core/exception.h"
 
+// #include "logger.h"
+
 namespace satdump
 {
     namespace proj
@@ -100,7 +102,7 @@ namespace satdump
                                 continue;
                             }
 
-                            // logger->trace("%f %f %f %f", (double)x / ratio_x, (double)y / ratio_y, (double)position.lon, (double)position.lat);
+                            // logger->trace("%f %f %f %f", (double)x, (double)y, (double)position.lon, (double)position.lat);
                             gcps.push_back({(double)x, (double)y, (double)position.lon, (double)position.lat});
                         }
 
