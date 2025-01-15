@@ -17,16 +17,17 @@ namespace satdump
                 instrument_cfg = loadJsonFile(resources::getResourcePath(config_path));
                 if (instrument_cfg.contains("name"))
                     handler_name = instrument_cfg["name"];
-                if (!dataset_mode && p->has_product_source())
-                    handler_name = p->get_product_source() + " " + handler_name;
-                if (!dataset_mode && p->has_product_timestamp())
-                    handler_name += timestamp_to_string(p->get_product_timestamp());
             }
             else
             {
                 logger->warn("Couldn't open instrument configuration at " + config_path + ". Expect degraded experience.");
                 handler_name = product->instrument_name;
             }
+
+            if (!dataset_mode && p->has_product_source())
+                handler_name = p->get_product_source() + " " + handler_name;
+            if (!dataset_mode && p->has_product_timestamp())
+                handler_name += timestamp_to_string(p->get_product_timestamp());
 
             // TODOREWORK, handle automated?, Filtering what can be made per channels present?
             if (instrument_cfg.contains("presets"))

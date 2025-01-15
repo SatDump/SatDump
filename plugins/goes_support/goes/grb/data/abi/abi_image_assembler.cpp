@@ -83,7 +83,7 @@ namespace goes
 
             // Scale image to full bit depth
             for (size_t i = 0; i < block.size(); i++)
-                block.set(i, block.get(i) << 16 - products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].bit_depth);
+                block.set(i, block.get(i) << (16 - products::ABI::ABI_CHANNEL_PARAMS[abi_product.channel].bit_depth));
 
             // Fill
             full_image.draw_image(0, block, header.left_x_coord, header.left_y_coord + header.row_offset_image_block);

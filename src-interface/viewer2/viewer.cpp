@@ -91,6 +91,8 @@ namespace satdump
                             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
                         if (ImGui::MenuItem("Load APT"))
                             openProductOrDataset("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
+                        if (ImGui::MenuItem("Load GOES"))
+                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
 
                         ImGui::EndMenu();
                     }

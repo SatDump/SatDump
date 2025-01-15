@@ -135,6 +135,12 @@ namespace satdump
                 return contents.contains("calibration");
             }
 
+            // TODOREWORK DOCUMENT
+            nlohmann::json get_calibration_raw()
+            {
+                return contents.contains("calibration") ? contents["calibration"] : nlohmann::json();
+            }
+
         public:
             /**
              * @brief Get image channel by absolute ID

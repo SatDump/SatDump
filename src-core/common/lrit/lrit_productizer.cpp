@@ -1,5 +1,5 @@
 #include "lrit_productizer.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "common/utils.h"
 #include <filesystem>
 #include "logger.h"
@@ -71,12 +71,12 @@ namespace lrit
     }
 
     // This will most probably get moved over to each
-    inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
+    inline void addCalibrationInfoFunc(satdump::products::ImageProduct &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
     {
         if (image_data_function_record)
         {
-            // Default, to not crash the viewer on no calib
-            pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+            // Default, to not crash the viewer on no calib TODOREWORK not needed?
+            // pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
 
             if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
             {
@@ -94,9 +94,9 @@ namespace lrit
                     {10, 120},    // 10700,
                     {20, 90},     // 13300,
                 };
-                pro.set_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
-                if (std::stoi(channel) > 1)
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][0], goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][1]);
+                pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
+                // TODOREWORK DELETE                if (std::stoi(channel) > 1)
+                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][0], goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
             else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
@@ -136,9 +136,9 @@ namespace lrit
                     {20, 150},    // 12300,
                     {20, 150},    // 13300,
                 };
-                pro.set_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
-                if (std::stoi(channel) > 6)
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, goes_abi_radiance_ranges_table[std::stoi(channel) - 1][0], goes_abi_radiance_ranges_table[std::stoi(channel) - 1][1]);
+                pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
+                // TODOREWORK DELETE                if (std::stoi(channel) > 6)
+                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, goes_abi_radiance_ranges_table[std::stoi(channel) - 1][0], goes_abi_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
             else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
@@ -178,28 +178,28 @@ namespace lrit
                     {20, 150},    // 12400,
                     {20, 150},    // 13300,
                 };
-                pro.set_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
-                if (std::stoi(channel) > 6)
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, hima_ahi_radiance_ranges_table[std::stoi(channel) - 1][0], hima_ahi_radiance_ranges_table[std::stoi(channel) - 1][1]);
+                pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
+                // TODOREWORK DELETE                if (std::stoi(channel) > 6)
+                //  pro.set_calibration_default_radiance_range(pro.images.size() - 1, hima_ahi_radiance_ranges_table[std::stoi(channel) - 1][0], hima_ahi_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
             else if (instrument_id == "ami")
             {
                 double wavelength_nm = std::stod(channel.substr(2, channel.size() - 1)) * 100;
-                pro.set_wavenumber(pro.images.size() - 1, 1e7 / wavelength_nm);
-                if (channel == "IR105")
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 10, 120);
-                else if (channel == "IR123")
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 20, 150);
-                else if (channel == "SW038")
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0.01, 2.20);
-                else if (channel == "WV069")
-                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0, 16);
+                pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / wavelength_nm);
+                // TODOREWORK DELETE                                if (channel == "IR105")
+                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 10, 120);
+                //                else if (channel == "IR123")
+                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 20, 150);
+                //                else if (channel == "SW038")
+                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0.01, 2.20);
+                //                else if (channel == "WV069")
+                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0, 16);
             }
             else
-                pro.set_wavenumber(pro.images.size() - 1, -1);
+                pro.set_channel_wavenumber(pro.images.size() - 1, -1);
 
-            if (instrument_id == "ahi")
-                printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
+            //                // TODOREWORK DELETE                            if (instrument_id == "ahi")
+            //                printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
 
             auto lines = splitString(image_data_function_record->datas, '\n');
             if (lines.size() < 4)
@@ -233,11 +233,9 @@ namespace lrit
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "generic_xrit";
-
                         calib_cfg[channel] = lut;
-                        pro.set_calibration(calib_cfg);
-                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                        pro.set_calibration("generic_xrit", calib_cfg);
+                        pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_ALBEDO);
                     }
                     else if (lines[1] == "_NAME:=toa_brightness_temperature")
                     {
@@ -252,11 +250,9 @@ namespace lrit
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "generic_xrit";
-
                         calib_cfg[channel] = lut;
-                        pro.set_calibration(calib_cfg);
-                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                        pro.set_calibration("generic_xrit", calib_cfg);
+                        pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_EMISSIVE_RADIANCE);
                     }
                 }
 
@@ -280,12 +276,11 @@ namespace lrit
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
 
                         calib_cfg[channel] = lut;
-                        pro.set_calibration(calib_cfg);
-                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                        pro.set_calibration("generic_xrit", calib_cfg);
+                        pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_ALBEDO);
                     }
                     else if (lines[2] == "_UNIT:=KELVIN")
                     {
@@ -300,12 +295,11 @@ namespace lrit
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
 
                         calib_cfg[channel] = lut;
-                        pro.set_calibration(calib_cfg);
-                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                        pro.set_calibration("generic_xrit", calib_cfg);
+                        pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_EMISSIVE_RADIANCE);
                     }
                 }
 
@@ -330,13 +324,12 @@ namespace lrit
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
                         calib_cfg["to_complete"] = true;
 
                         calib_cfg[channel] = lut;
-                        pro.set_calibration(calib_cfg);
-                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_REFLECTANCE);
+                        pro.set_calibration("generic_xrit", calib_cfg);
+                        pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_ALBEDO);
                     }
                     else if (lines[2].find("_UNIT:=KELVIN") != std::string::npos)
                     {
@@ -351,20 +344,19 @@ namespace lrit
 
                         nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                        calib_cfg["calibrator"] = "generic_xrit";
                         calib_cfg["bits_for_calib"] = bits_for_calib;
                         calib_cfg["to_complete"] = true;
 
                         calib_cfg[channel] = lut;
-                        pro.set_calibration(calib_cfg);
-                        pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
+                        pro.set_calibration("generic_xrit", calib_cfg);
+                        pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_EMISSIVE_RADIANCE);
                     }
                 }
             }
         }
     }
 
-    inline void attemptToGenerateComposites(satdump::ImageProducts *pro, std::string pro_path)
+    /*inline void attemptToGenerateComposites(satdump::products::ImageProduct *pro, std::string pro_path)
     {
         try
         {
@@ -429,7 +421,8 @@ namespace lrit
         // Unload everything
         for (int i = 0; i < (int)pro->images.size(); i++)
             pro->images[i].image.clear();
-    }
+    }*/
+    // TODOREWORK THIS MAKE WORK AGAIN!
 
     void LRITProductizer::compositeThreadFunc()
     {
@@ -446,7 +439,7 @@ namespace lrit
             if (queue_size > 0)
             {
                 compo_queue_mtx.lock();
-                satdump::ImageProducts *pro = (satdump::ImageProducts *)compo_queue[0].first;
+                satdump::products::ImageProduct *pro = (satdump::products::ImageProduct *)compo_queue[0].first;
                 std::string directory_path = compo_queue[0].second;
                 compo_queue.erase(compo_queue.begin());
                 compo_queue_mtx.unlock();
@@ -463,7 +456,7 @@ namespace lrit
                             pro->contents["autocomposite_cache_done"] = filecache[directory_path_rel]["compos"];
 
                         // Try to generate compos
-                        attemptToGenerateComposites(pro, directory_path);
+                        // TODOREWORK                        attemptToGenerateComposites(pro, directory_path);
 
                         // Write those we just generated to not redo them more than once...
                         if (pro->contents.contains("autocomposite_cache_done"))
@@ -532,10 +525,8 @@ namespace lrit
                 sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
             {
                 constexpr double k = 624597.0334223134;
-                double scalar_x = image_navigation_record->column_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k :
-                    image_navigation_record->column_scalar;
-                double scalar_y = image_navigation_record->line_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k :
-                    image_navigation_record->line_scalar;
+                double scalar_x = image_navigation_record->column_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k : image_navigation_record->column_scalar;
+                double scalar_y = image_navigation_record->line_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k : image_navigation_record->line_scalar;
 
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = sat_pos;
@@ -551,7 +542,7 @@ namespace lrit
         }
 
         // To forward to composites if we actually produced products
-        satdump::ImageProducts *pro = nullptr;
+        satdump::products::ImageProduct *pro = nullptr;
 
         // Check if the image already exists, this can happen when GOES goes (laugh please, pretty please) wrong.
         // If it does, we append a number and do NOT overwrite.
@@ -574,7 +565,7 @@ namespace lrit
             // Products are loaded without loading images.
             if (std::filesystem::exists(pro_f_path))
             {
-                pro = new satdump::ImageProducts();
+                pro = new satdump::products::ImageProduct();
                 pro->d_no_not_save_images = true;
                 pro->d_no_not_load_images = true;
                 pro->load(pro_f_path);
@@ -585,9 +576,9 @@ namespace lrit
                         contains = true;
 
                 if (!contains)
-                    pro->images.push_back({filename, channel, image::Image()});
+                    pro->images.push_back({pro->images.size(), filename, channel, image::Image(), bit_depth}); // TODO check index system?
 
-                if (!pro->has_proj_cfg())
+                if (!pro->has_proj_cfg()) // TODOREWORK recheck this logic!
                 {
                     if (proj_cfg.size() > 0)
                     {
@@ -597,8 +588,8 @@ namespace lrit
                 }
                 else
                 {
-                    if (pro->get_proj_cfg().contains("width") && proj_cfg.contains("width"))
-                        if (proj_cfg["width"].get<int>() > pro->get_proj_cfg()["width"].get<int>())
+                    if (pro->get_proj_cfg(0).contains("width") && proj_cfg.contains("width"))
+                        if (proj_cfg["width"].get<int>() > pro->get_proj_cfg(0)["width"].get<int>())
                             pro->set_proj_cfg(proj_cfg);
                 }
 
@@ -609,21 +600,21 @@ namespace lrit
             // Otherwise, create a new product with the current single channel we have.
             else
             {
-                pro = new satdump::ImageProducts();
+                pro = new satdump::products::ImageProduct();
                 pro->d_no_not_save_images = true;
                 pro->instrument_name = instrument_id;
                 pro->set_product_source(satellite);
                 pro->set_product_timestamp(timestamp);
-                pro->has_timestamps = true;
-                pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
-                pro->set_timestamps({(double)timestamp});
-                pro->bit_depth = bit_depth;
+                // TODOREWORK                pro->has_timestamps = true;
+                //                pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
+                //                pro->set_timestamps({(double)timestamp});
+                //                pro->bit_depth = bit_depth;
                 if (proj_cfg.size() > 0)
                 {
                     pro->set_proj_cfg(proj_cfg);
                     // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
-                pro->images.push_back({filename, channel, image::Image()});
+                pro->images.push_back({pro->images.size(), filename, channel, image::Image(), bit_depth});
 
                 addCalibrationInfoFunc(*pro, image_data_function_record, channel, instrument_id);
 

@@ -3,7 +3,6 @@
 #include <string>
 #include "common/image/image.h"
 #include "lrit_file.h"
-// #include "products/image_products.h"
 #include <thread>
 #include <mutex>
 

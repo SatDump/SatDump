@@ -3,6 +3,7 @@
 #include "core/plugin.h"
 
 #include "calibration_units.h"
+#include "common/lrit/generic_xrit_calibrator.h"
 
 namespace satdump
 {
@@ -19,9 +20,9 @@ namespace satdump
             std::vector<std::shared_ptr<ImageCalibrator>> calibrators;
             satdump::eventBus->fire_event<RequestImageCalibratorEvent>({id, calibrators, p, cfg});
 
-            // if (id == "noaa_avhrr3")
-            //     return std::make_shared<NoaaAVHRR3Calibrator>(p, cfg);
-            if (calibrators.size() > 0)
+            if (id == "generic_xrit")
+                return std::make_shared<lrit::GenericxRITCalibrator>(p, cfg);
+            else if (calibrators.size() > 0)
                 return calibrators[0];
             else
                 throw satdump_exception("No calibrator found for " + id + "!");

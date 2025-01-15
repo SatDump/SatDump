@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products/image_products.h"
+#include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 #include "common/calibration.h"
 #include "common/projection/thinplatespline.h"
@@ -9,41 +9,40 @@
 
 namespace lrit
 {
-
-    class GenericxRITCalibrator : public satdump::ImageProducts::CalibratorBase
+    class GenericxRITCalibrator : public satdump::products::ImageCalibrator
     {
     private:
         nlohmann::json calib_cfg;
         std::vector<double> wavenumbers;
-        std::vector<satdump::ImageProducts::calib_type_t> calib_type_map;
+        std::vector<bool> calib_type_map;
         std::vector<int> new_max_val;
         int product_bit_depth;
 
         std::vector<std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>> lut_for_channels;
 
     public:
-        GenericxRITCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
+        GenericxRITCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
         {
-            calib_cfg = calib;
-            wavenumbers = calib["wavenumbers"].get<std::vector<double>>();
-            for (size_t i = 0; i < d_products->images.size(); i++)
+            calib_cfg = d_cfg;
+            for (size_t i = 0; i < d_pro->images.size(); i++)
             {
-                calib_type_map.push_back(d_products->get_calibration_type(i));
+                wavenumbers.push_back(d_pro->images[i].wavenumber);
+                calib_type_map.push_back(d_pro->images[i].calibration_type == CALIBRATION_ID_EMISSIVE_RADIANCE);
 
-                product_bit_depth = pow(2, d_products->bit_depth) - 1;
+                product_bit_depth = pow(2, d_pro->images[i].bit_depth) - 1;
                 if (!calib_cfg["bits_for_calib"].is_null())
                     new_max_val.push_back(pow(2, calib_cfg["bits_for_calib"].get<int>()) - 1);
                 else
                     new_max_val.push_back(product_bit_depth);
             }
 
-            for (size_t i = 0; i < d_products->images.size(); i++)
+            for (size_t i = 0; i < d_pro->images.size(); i++)
             {
                 try
                 {
                     if (calib_cfg.contains("to_complete") && calib_cfg["to_complete"].get<bool>())
                     {
-                        std::vector<std::pair<int, float>> llut = calib_cfg[d_products->images[i].channel_name];
+                        std::vector<std::pair<int, float>> llut = calib_cfg[d_pro->images[i].channel_name];
                         std::shared_ptr<satdump::projection::VizGeorefSpline2D> spline = std::make_shared<satdump::projection::VizGeorefSpline2D>(1);
                         bool is_first = true;
                         for (auto &v : llut)
@@ -65,7 +64,7 @@ namespace lrit
                     }
                     else
                     {
-                        std::vector<std::pair<int, float>> llut = calib_cfg[d_products->images[i].channel_name];
+                        std::vector<std::pair<int, float>> llut = calib_cfg[d_pro->images[i].channel_name];
                         std::unordered_map<int, float> flut;
                         for (auto &v : llut)
                             flut.emplace(v.first, v.second);
@@ -79,18 +78,14 @@ namespace lrit
             }
         }
 
-        void init()
-        {
-        }
-
-        double compute(int channel, int /*pos_x*/, int /*pos_y*/, int px_val)
+        double compute(int channel, int /*pos_x*/, int /*pos_y*/, uint32_t px_val)
         {
             if (new_max_val[channel] != product_bit_depth)
                 px_val = double(px_val / (double)product_bit_depth) * new_max_val[channel];
 
             try
             {
-                if (calib_type_map[channel] == d_products->CALIB_REFLECTANCE)
+                if (calib_type_map[channel] == 0)
                 {
                     if (px_val == product_bit_depth)
                         return CALIBRATION_INVALID_VALUE;
@@ -105,7 +100,7 @@ namespace lrit
                     else
                         return CALIBRATION_INVALID_VALUE;
                 }
-                else if (calib_type_map[channel] == d_products->CALIB_RADIANCE)
+                else if (calib_type_map[channel]) // TODOREWORK? More calib types?
                 {
                     if (px_val == 0)
                         return CALIBRATION_INVALID_VALUE;
