@@ -24,7 +24,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
-        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -39,10 +39,10 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::MeteorQPSKKmssDecoderModule);
     }
 
-    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    static void provideImageCalibratorHandler(const satdump::products::RequestImageCalibratorEvent &evt)
     {
         if (evt.id == "meteor_msumr")
-            evt.calibrators.push_back(std::make_shared<MeteorMsuMrCalibrator>(evt.calib, evt.products));
+            evt.calibrators.push_back(std::make_shared<meteor::MeteorMsuMrCalibrator>(evt.products, evt.calib));
     }
 };
 

@@ -10,7 +10,7 @@
 #include "common/ccsds/ccsds_aos/demuxer.h"
 // #include "products/image_products.h"
 // #include "products/radiation_products.h" TODOREWORK
-// #include "products/scatterometer_products.h"
+// #include "products/scatterometer_products.h" TODOREWORK ASCAT
 // #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
@@ -422,7 +422,7 @@ namespace metop
                     calib_coefs[sat_name]["all"] = calib_coefs["all"];
                     amsu_reader.calibrate(calib_coefs[sat_name]);
                     amsu_products.set_calibration("noaa_amsu", amsu_reader.calib_out);
-                    for (int i = 0; i < 15; i++)
+                    for (int i = 0; i < 15; i++) 
                         amsu_products.set_channel_wavenumber(i, calib_coefs["all"]["wavenumber"][i]);
                 }
                 else

@@ -4,11 +4,12 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "products/image_products.h"
-#include "products/radiation_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+// #include "products/radiation_products.h" TODOREWORK
+#include "products2/dataset.h"
 #include "resources.h"
 #include "common/projection/timestamp_filtering.h"
+#include "common/tracking/tle.h"
 
 namespace noaa
 {
@@ -139,7 +140,7 @@ namespace noaa
                 }
 
                 // Products dataset
-                satdump::ProductDataSet dataset;
+                satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = get_median(avhrr_reader.timestamps);
 
@@ -188,27 +189,23 @@ namespace noaa
                     logger->info("Lines : " + std::to_string(avhrr_reader.lines));
 
                     // product generation
-                    satdump::ImageProducts avhrr_products;
+                    satdump::products::ImageProduct avhrr_products;
                     avhrr_products.instrument_name = "avhrr_3";
-                    avhrr_products.has_timestamps = true;
-                    avhrr_products.bit_depth = 10;
-                    avhrr_products.set_tle(satellite_tle);
-                    avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    avhrr_products.set_timestamps(avhrr_reader.timestamps); // Has to be filtered!
 
-                    // calibration
+                    std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
+
+                    // calibration / images
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
                     if (calib_coefs.contains(sat_name))
                     {
                         avhrr_reader.calibrate(calib_coefs[sat_name]);
-                        avhrr_products.set_calibration(avhrr_reader.calib_out);
-                        for (int n = 0; n < 3; n++)
+                        avhrr_products.set_calibration("noaa_avhrr3", avhrr_reader.calib_out);
+                        for (int i = 0; i < 6; i++)
                         {
-                            avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
-                            avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                            avhrr_products.images.push_back({i, "AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i), 10});
+                            avhrr_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
+                            avhrr_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
                         }
-                        for (int c = 0; c < 6; c++)
-                            avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
                     }
                     else
                         logger->warn("(AVHRR) Calibration data for " + sat_name + " not found. Calibration will not be performed");
@@ -226,11 +223,7 @@ namespace noaa
                     if (is_gac)
                         proj_settings["image_width"] = 409;
 
-                    avhrr_products.set_proj_cfg(proj_settings);
-
-                    std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
-                    for (int i = 0; i < 6; i++)
-                        avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i)});
+                    avhrr_products.set_proj_cfg_tle_timestamps(proj_settings, satellite_tle, avhrr_reader.timestamps);
 
                     avhrr_products.save(directory);
                     dataset.products_list.push_back("AVHRR");
@@ -252,32 +245,24 @@ namespace noaa
                     if (hirs_reader.sync < hirs_reader.line * 28)
                         logger->error("(HIRS) Possible filter wheel synchronization loss detected! Radiometric data may be invalid.");
 
-                    satdump::ImageProducts hirs_products;
+                    satdump::products::ImageProduct hirs_products;
                     hirs_products.instrument_name = "hirs";
-                    hirs_products.bit_depth = 13;
-                    hirs_products.set_tle(satellite_tle);
-                    hirs_products.has_timestamps = true;
-                    hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    hirs_products.set_timestamps(hirs_reader.timestamps);
-                    hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
+                    hirs_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")), satellite_tle, hirs_reader.timestamps);
+
+                    for (int i = 0; i < 20; i++)
+                        hirs_products.images.push_back({i, "HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i), 13});
+
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/HIRS.json"));
                     if (calib_coefs.contains(sat_name))
                     {
                         hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
-                        hirs_products.set_calibration(hirs_reader.calib_out);
+                        hirs_products.set_calibration("noaa_hirs", hirs_reader.calib_out);
                         for (int n = 0; n < 19; n++)
-                            hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);
-                        hirs_products.set_calibration_type(19, hirs_products.CALIB_REFLECTANCE);
-                            
-                        for (int c = 0; c < 20; c++)
-                            hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                            hirs_products.set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                        hirs_products.set_channel_unit(19, CALIBRATION_ID_REFLECTIVE_RADIANCE);
                     }
                     else
                         logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
-
-
-                    for (int i = 0; i < 20; i++)
-                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
 
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");
@@ -285,35 +270,35 @@ namespace noaa
                     hirs_status = DONE;
                 }
 
-                // SEM
-                {
-                    sem_status = SAVING;
-                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
-                    if (!std::filesystem::exists(directory))
-                        std::filesystem::create_directory(directory);
+                /*                // SEM
+                                {
+                                    sem_status = SAVING;
+                                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
+                                    if (!std::filesystem::exists(directory))
+                                        std::filesystem::create_directory(directory);
 
-                    logger->info("----------- SEM");
-                    logger->info("Sample counts from selected channels :");
-                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
-                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
-                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
-                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
-                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
+                                    logger->info("----------- SEM");
+                                    logger->info("Sample counts from selected channels :");
+                                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
+                                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
+                                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
+                                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
+                                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
 
-                    satdump::RadiationProducts sem_products;
-                    sem_products.instrument_name = "sem";
-                    sem_products.set_tle(satellite_tle);
-                    for (int i = 0; i < 62; i++)
-                    {
-                        sem_products.channel_counts.push_back(sem_reader.getChannel(i));
-                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
-                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
-                    }
+                                    satdump::RadiationProducts sem_products;
+                                    sem_products.instrument_name = "sem";
+                                    sem_products.set_tle(satellite_tle);
+                                    for (int i = 0; i < 62; i++)
+                                    {
+                                        sem_products.channel_counts.push_back(sem_reader.getChannel(i));
+                                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
+                                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
+                                    }
 
-                    sem_products.save(directory);
-                    dataset.products_list.push_back("SEM");
-                    sem_status = DONE;
-                }
+                                    sem_products.save(directory);
+                                    dataset.products_list.push_back("SEM");
+                                    sem_status = DONE;
+                                }*/
 
                 // telemetry
                 {
@@ -338,29 +323,24 @@ namespace noaa
                     logger->info("----------- MHS");
                     logger->info("Lines : " + std::to_string(mhs_reader.line));
 
-                    satdump::ImageProducts mhs_products;
+                    satdump::products::ImageProduct mhs_products;
                     mhs_products.instrument_name = "mhs";
-                    mhs_products.has_timestamps = true;
-                    mhs_products.bit_depth = 16;
-                    mhs_products.set_tle(satellite_tle);
-                    mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    mhs_products.set_timestamps(mhs_reader.timestamps);
 
                     for (int i = 0; i < 5; i++)
-                        mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i)});
+                        mhs_products.images.push_back({i, "MHS-" + std::to_string(i + 1), std::to_string(i + 1), mhs_reader.getChannel(i), 16});
 
-                    mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")));
+                    mhs_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/noaa_19_mhs.json")), satellite_tle, mhs_reader.timestamps);
 
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
                     if (calib_coefs.contains(sat_name))
                     {
                         mhs_reader.calibrate(calib_coefs[sat_name]);
-                        mhs_products.set_calibration(mhs_reader.calib_out);
-                        for (int c = 0; c < 5; c++)
+                        mhs_products.set_calibration("noaa_mhs", mhs_reader.calib_out);
+                        for (int i = 0; i < 5; i++)
                         {
-                            mhs_products.set_calibration_type(c, mhs_products.CALIB_RADIANCE);
-                            mhs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                            mhs_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                            mhs_products.set_channel_wavenumber(i, calib_coefs[sat_name]["wavenumber"][i]);
                         }
                     }
                     else
@@ -387,17 +367,12 @@ namespace noaa
 
                     amsu_reader.correlate();
 
-                    satdump::ImageProducts amsu_products;
+                    satdump::products::ImageProduct amsu_products;
                     amsu_products.instrument_name = "amsu_a";
-                    amsu_products.has_timestamps = true;
-                    amsu_products.bit_depth = 16;
-                    amsu_products.set_tle(satellite_tle);
-                    amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    amsu_products.set_timestamps(amsu_reader.common_timestamps);
-                    amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")));
+                    amsu_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/noaa_amsu.json")), satellite_tle, amsu_reader.common_timestamps);
 
                     for (int i = 0; i < 15; i++)
-                        amsu_products.images.push_back({"AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i)});
+                        amsu_products.images.push_back({i, "AMSU-A-" + std::to_string(i + 1), std::to_string(i + 1), amsu_reader.getChannel(i), 16});
 
                     // calibration
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
@@ -405,11 +380,11 @@ namespace noaa
                     {
                         calib_coefs[sat_name]["all"] = calib_coefs["all"];
                         amsu_reader.calibrate(calib_coefs[sat_name]);
-                        amsu_products.set_calibration(amsu_reader.calib_out);
-                        for (int c = 0; c < 15; c++)
+                        amsu_products.set_calibration("noaa_amsu", amsu_reader.calib_out);
+                        for (int i = 0; i < 15; i++)
                         {
-                            amsu_products.set_calibration_type(c, amsu_products.CALIB_RADIANCE);
-                            amsu_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                            amsu_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                            amsu_products.set_channel_wavenumber(i, calib_coefs["all"]["wavenumber"][i]);
                         }
                     }
                     else
@@ -465,7 +440,7 @@ namespace noaa
                 }
 
                 // Products dataset
-                satdump::ProductDataSet dataset;
+                satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = get_median(hirs_reader.timestamps);
 
@@ -508,73 +483,73 @@ namespace noaa
                     hirs_status = DONE;
                 }
                 */
-                               {
+                {
                     hirs_status = SAVING;
                     std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/HIRS";
+
                     if (!std::filesystem::exists(directory))
                         std::filesystem::create_directories(directory);
+
                     logger->info("----------- HIRS");
                     logger->info("Lines : " + std::to_string(hirs_reader.line));
+
                     if (hirs_reader.sync < hirs_reader.line * 28)
                         logger->error("(HIRS) Possible filter wheel synchronization loss detected! Radiometric data may be invalid.");
-                    satdump::ImageProducts hirs_products;
+
+                    satdump::products::ImageProduct hirs_products;
                     hirs_products.instrument_name = "hirs";
-                    hirs_products.bit_depth = 13;
-                    hirs_products.set_tle(satellite_tle);
-                    hirs_products.has_timestamps = true;
-                    hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    hirs_products.set_timestamps(hirs_reader.timestamps);
-                    hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
+                    hirs_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")), satellite_tle, hirs_reader.timestamps);
+
+                    for (int i = 0; i < 20; i++)
+                        hirs_products.images.push_back({i, "HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i), 13});
+
                     nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/HIRS.json"));
                     if (calib_coefs.contains(sat_name))
                     {
                         hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
-                        hirs_products.set_calibration(hirs_reader.calib_out);
+                        hirs_products.set_calibration("noaa_hirs", hirs_reader.calib_out);
                         for (int n = 0; n < 19; n++)
-                            hirs_products.set_calibration_type(n, hirs_products.CALIB_RADIANCE);
-                        hirs_products.set_calibration_type(19, hirs_products.CALIB_REFLECTANCE);
-                            
-                        for (int c = 0; c < 20; c++)
-                            hirs_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                            hirs_products.set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                        hirs_products.set_channel_unit(19, CALIBRATION_ID_REFLECTIVE_RADIANCE);
                     }
                     else
                         logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
-                    for (int i = 0; i < 20; i++)
-                        hirs_products.images.push_back({"HIRS-" + std::to_string(i + 1), std::to_string(i + 1), hirs_reader.getChannel(i)});
+
                     hirs_products.save(directory);
                     dataset.products_list.push_back("HIRS");
+
                     hirs_status = DONE;
                 }
 
-                // SEM
-                {
-                    sem_status = SAVING;
-                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
-                    if (!std::filesystem::exists(directory))
-                        std::filesystem::create_directory(directory);
+                /* // SEM
+                 {
+                     sem_status = SAVING;
+                     std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
+                     if (!std::filesystem::exists(directory))
+                         std::filesystem::create_directory(directory);
 
-                    logger->info("----------- SEM");
-                    logger->info("Sample counts from selected channels :");
-                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
-                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
-                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
-                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
-                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
+                     logger->info("----------- SEM");
+                     logger->info("Sample counts from selected channels :");
+                     logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
+                     logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
+                     logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
+                     logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
+                     logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
 
-                    satdump::RadiationProducts sem_products;
-                    sem_products.instrument_name = "sem";
-                    sem_products.set_tle(satellite_tle);
-                    for (int i = 0; i < 62; i++)
-                    {
-                        sem_products.channel_counts.push_back(sem_reader.getChannel(i));
-                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
-                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
-                    }
+                     satdump::RadiationProducts sem_products;
+                     sem_products.instrument_name = "sem";
+                     sem_products.set_tle(satellite_tle);
+                     for (int i = 0; i < 62; i++)
+                     {
+                         sem_products.channel_counts.push_back(sem_reader.getChannel(i));
+                         sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
+                         sem_products.set_channel_name(i, sem_reader.channel_names[i]);
+                     }
 
-                    sem_products.save(directory);
-                    dataset.products_list.push_back("SEM");
-                    sem_status = DONE;
-                }
+                     sem_products.save(directory);
+                     dataset.products_list.push_back("SEM");
+                     sem_status = DONE;
+                 } TODOREWORK */
 
                 // telemetry
                 {
