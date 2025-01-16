@@ -7,6 +7,7 @@
 #include "common/dsp_source_sink/format_notated.h" // TODOREWORK
 
 #include "products2/image/calibration_units.h" // TODOREWORK
+#include "common/widgets/json_editor.h"
 
 namespace satdump
 {
@@ -137,6 +138,12 @@ namespace satdump
             {
                 if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
                 {
+                    if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
+                    {
+                        widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");
+                        ImGui::EndTabItem();
+                    }
+
                     for (auto &ch : product->images)
                     {
                         std::string id = "Channel " + ch.channel_name;

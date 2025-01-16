@@ -576,7 +576,7 @@ namespace lrit
                         contains = true;
 
                 if (!contains)
-                    pro->images.push_back({pro->images.size(), filename, channel, image::Image(), bit_depth}); // TODO check index system?
+                    pro->images.push_back({(int)pro->images.size(), filename, channel, image::Image(), bit_depth}); // TODO check index system?
 
                 if (!pro->has_proj_cfg()) // TODOREWORK recheck this logic!
                 {
@@ -614,7 +614,7 @@ namespace lrit
                     pro->set_proj_cfg(proj_cfg);
                     // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                 }
-                pro->images.push_back({pro->images.size(), filename, channel, image::Image(), bit_depth});
+                pro->images.push_back({(int)pro->images.size(), filename, channel, image::Image(), bit_depth});
 
                 addCalibrationInfoFunc(*pro, image_data_function_record, channel, instrument_id);
 

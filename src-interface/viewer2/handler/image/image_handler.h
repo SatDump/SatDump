@@ -7,9 +7,6 @@
 #include "common/widgets/image_view.h"
 #include "common/image/meta.h"
 
-// TODOREWORK REWRITE OVERLAY STUFF
-#include "common/overlay_handler.h"
-
 namespace satdump
 {
     namespace viewer
@@ -38,17 +35,9 @@ namespace satdump
             bool median_blur_img = false;
             bool rotate180_image = false;
 
-            bool old_gcp_math = false;
-            bool warp_image = false;
-
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;
             image::ImgCalibHandler image_calib;
-
-            bool image_overlay_valib = false;
-            OverlayHandler overlay_handler;
-
-            bool image_proj_valid = false;
 
             // Proc function
             void do_process();
