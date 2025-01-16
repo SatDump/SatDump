@@ -28,9 +28,11 @@ namespace widgets
 			ImGui::TextUnformatted("Type:");
 			ImGui::SameLine();
 			ImGui::Combo("##Type", &selected, "Object\0Array\0String\0Integer\0Double\0Boolean\0\0");
-			ImGuiStyle& style = ImGui::GetStyle();
-			ImGui::SetCursorPos({ (ImGui::GetContentRegionAvail().x / 2) - ((ImGui::CalcTextSize("Add").x + ImGui::CalcTextSize("Cancel").x +
-				style.ItemSpacing.x + style.FramePadding.x * 4) / 2), ImGui::GetCursorPosY() + 5.0f * ui_scale });
+			ImGuiStyle &style = ImGui::GetStyle();
+			ImGui::SetCursorPos({(ImGui::GetContentRegionAvail().x / 2) - ((ImGui::CalcTextSize("Add").x + ImGui::CalcTextSize("Cancel").x +
+																			style.ItemSpacing.x + style.FramePadding.x * 4) /
+																		   2),
+								 ImGui::GetCursorPosY() + 5.0f * ui_scale});
 
 			if (ImGui::Button("Add"))
 			{
@@ -105,14 +107,14 @@ namespace widgets
 	}
 
 	template <typename T>
-	void JSONTreeEditor(T& json, const char* id, bool allow_add)
+	void JSONTreeEditor(T &json, const char *id, bool allow_add)
 	{
 		ImGui::PushID(id);
 		int array_index = 0;
 		float start_pos = ImGui::GetCursorPosX();
 		bool delete_item = false;
 
-		for (auto jsonItem = json.begin(); jsonItem != json.end(); )
+		for (auto jsonItem = json.begin(); jsonItem != json.end();)
 		{
 			std::string this_key;
 			if (json.is_array())
@@ -195,8 +197,7 @@ namespace widgets
 
 				ImGui::SetNextItemWidth(400 * ui_scale + start_pos - ImGui::GetCursorPosX());
 				std::string val = jsonItem.value();
-				if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) :
-					ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
+				if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) : ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
 					jsonItem.value() = val;
 				delete_item = DeleteButton();
 			}
@@ -215,11 +216,11 @@ namespace widgets
 		ImGui::PopID();
 	}
 
-	bool JSONTableEditor(nlohmann::json &json, const char* id)
+	bool JSONTableEditor(nlohmann::json &json, const char *id)
 	{
 		ImGui::PushID(id);
 		ImVec2 start_pos = ImGui::GetCursorPos();
-		ImGui::SetCursorPos({ start_pos.x + 3 * ui_scale, start_pos.y + 10 * ui_scale });
+		ImGui::SetCursorPos({start_pos.x + 3 * ui_scale, start_pos.y + 10 * ui_scale});
 		ImGui::AlignTextToFramePadding();
 		ImGui::TextUnformatted(id);
 		ImGui::SameLine();
@@ -234,7 +235,7 @@ namespace widgets
 				int array_index = 0;
 				bool delete_item = false;
 
-				for (auto jsonItem = json.begin(); jsonItem != json.end(); )
+				for (auto jsonItem = json.begin(); jsonItem != json.end();)
 				{
 					std::string this_key;
 					if (json.is_array())
@@ -285,8 +286,7 @@ namespace widgets
 					else if (jsonItem.value().is_string())
 					{
 						std::string val = jsonItem.value();
-						if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) :
-							ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
+						if (val.find("\n") == std::string::npos ? ImGui::InputText(std::string("##" + this_key).c_str(), &val) : ImGui::InputTextMultiline(std::string("##" + this_key).c_str(), &val))
 							jsonItem.value() = val;
 						delete_item = DeleteButton();
 					}
@@ -311,5 +311,6 @@ namespace widgets
 		return ret;
 	}
 
-	template void JSONTreeEditor(nlohmann::ordered_json&, const char*, bool);
+	template void JSONTreeEditor(nlohmann::ordered_json &, const char *, bool);
+	template void JSONTreeEditor(nlohmann::json &, const char *, bool);
 }
