@@ -8,10 +8,8 @@
 #include "metop.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-// #include "products/image_products.h"
 // #include "products/radiation_products.h" TODOREWORK
 // #include "products/scatterometer_products.h" TODOREWORK ASCAT
-// #include "products/dataset.h"
 #include "common/tracking/tle.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"

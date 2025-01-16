@@ -314,9 +314,9 @@ namespace jpss
                 viirs_products.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, viirs_reader_imaging[0].timestamps); // All the same now. Merge to a single "timestamps"?
 
                 auto points_viirs_normal_ch = viirs::calculateVIIRSViewAnglePoints(false, getValueOrDefault(norm_cfg["is_n20"], false),
-                                                                                   norm_cfg["scan_angle"], getValueOrDefault(norm_cfg["roll_offset"], 0.0)); // TODOREWORK
+                                                                                   norm_cfg["scan_angle"], getValueOrDefault(norm_cfg["roll_offset"], 0.0));
                 auto points_viirs_dnb_ch = viirs::calculateVIIRSViewAnglePoints(true, getValueOrDefault(dnb_cfg["is_n20"], false),
-                                                                                dnb_cfg["scan_angle"], getValueOrDefault(dnb_cfg["roll_offset"], 0.0)); // TODOREWORK
+                                                                                dnb_cfg["scan_angle"], getValueOrDefault(dnb_cfg["roll_offset"], 0.0));
 
                 for (int i = 0; i < 5; i++)
                 {

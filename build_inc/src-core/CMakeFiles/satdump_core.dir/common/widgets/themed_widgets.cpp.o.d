@@ -1,0 +1,34 @@
+src-core/CMakeFiles/satdump_core.dir/common/widgets/themed_widgets.cpp.o: \
+  /home/alan/Documents/SatDump/src-core/common/widgets/themed_widgets.cpp \
+  /home/alan/Documents/SatDump/src-core/common/widgets/themed_widgets.h \
+  /home/alan/Documents/SatDump/src-core/./imgui/imgui.h \
+  /home/alan/Documents/SatDump/src-core/./imgui/imconfig.h \
+  /usr/lib/llvm-19/lib/clang/19/include/float.h \
+  /usr/lib/llvm-19/lib/clang/19/include/stdarg.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stdarg_header_macro.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stdarg___gnuc_va_list.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stdarg_va_list.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stdarg_va_arg.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stdarg___va_copy.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stdarg_va_copy.h \
+  /usr/lib/llvm-19/lib/clang/19/include/stddef.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_header_macro.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_ptrdiff_t.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_size_t.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_wchar_t.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_null.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_nullptr_t.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_max_align_t.h \
+  /usr/lib/llvm-19/lib/clang/19/include/__stddef_offsetof.h \
+  /usr/include/string.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/features.h /usr/include/features-time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/stdc-predef.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+  /usr/include/strings.h /usr/include/assert.h

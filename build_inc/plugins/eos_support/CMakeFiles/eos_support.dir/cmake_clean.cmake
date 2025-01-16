@@ -1,0 +1,40 @@
+file(REMOVE_RECURSE
+  "../libeos_support.pdb"
+  "../libeos_support.so"
+  "CMakeFiles/eos_support.dir/link.d"
+  "CMakeFiles/eos_support.dir/aqua/instruments/airs/airs_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/aqua/instruments/airs/airs_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/aqua/instruments/amsu/amsu_a1_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/aqua/instruments/amsu/amsu_a1_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/aqua/instruments/amsu/amsu_a2_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/aqua/instruments/amsu/amsu_a2_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/aqua/instruments/ceres/ceres_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/aqua/instruments/ceres/ceres_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/aqua/instruments/gbad/gbad_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/aqua/instruments/gbad/gbad_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/aqua/module_aqua_db_decoder.cpp.o"
+  "CMakeFiles/eos_support.dir/aqua/module_aqua_db_decoder.cpp.o.d"
+  "CMakeFiles/eos_support.dir/aura/instruments/omi/omi_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/aura/instruments/omi/omi_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/calibrator/modis_calibrator.cpp.o"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/calibrator/modis_calibrator.cpp.o.d"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/calibrator/modis_calibrator_temps.cpp.o"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/calibrator/modis_calibrator_temps.cpp.o.d"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/calibrator/modis_calibrator_utils.cpp.o"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/calibrator/modis_calibrator_utils.cpp.o.d"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/modis_histmatch.cpp.o"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/modis_histmatch.cpp.o.d"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/modis_reader.cpp.o"
+  "CMakeFiles/eos_support.dir/eos/instruments/modis/modis_reader.cpp.o.d"
+  "CMakeFiles/eos_support.dir/eos/module_eos_instruments.cpp.o"
+  "CMakeFiles/eos_support.dir/eos/module_eos_instruments.cpp.o.d"
+  "CMakeFiles/eos_support.dir/main.cpp.o"
+  "CMakeFiles/eos_support.dir/main.cpp.o.d"
+  "CMakeFiles/eos_support.dir/terra/module_terra_db_demod.cpp.o"
+  "CMakeFiles/eos_support.dir/terra/module_terra_db_demod.cpp.o.d"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/eos_support.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

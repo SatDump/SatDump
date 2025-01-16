@@ -7,7 +7,7 @@
 #include "products2/image_product.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
-#include "products/dataset.h"
+#include "products2/dataset.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 
@@ -92,7 +92,7 @@ namespace aws
             norad = AWS_NORAD;
 
         // Products dataset
-        satdump::ProductDataSet dataset;
+        satdump::products::DataSet dataset;
         dataset.satellite_name = sat_name;
         dataset.timestamp = get_median(mwr_reader.timestamps);
         if (dataset.timestamp == -1)
@@ -107,33 +107,67 @@ namespace aws
             logger->info("Name  : " + sat_name);
         }
 
-#if 0
+        // TODOREWORK
+        double mwr_freqs[19] = {
+            50.3e9,
+            52.8e9,
+            53.246e9,
+            53.596e9,
+            54.4e9,
+            54.94e9,
+            55.5e9,
+            57.290344e9,
+            89e9,
+            165.5e9,
+            176.311e9,
+            178.811e9,
+            180.311e9,
+            181.511e9,
+            182.311e9,
+            325.15e9,
+            325.15e9,
+            325.15e9,
+            325.15e9,
+        };
+
+        // Channels are aligned by groups. 1 to 8 / 9 / 10 to 15 / 16 to 19
+        satdump::ChannelTransform tran[19];
+        double halfscan = 145.0 / 2.0;
+        for (auto &v : tran)
+            v.init_none();
+        tran[8].init_affine_slantx(1, 1, -6.5, 0, halfscan, 11.0 / halfscan);
+        tran[10] = tran[11] = tran[12] = tran[13] = tran[14] = tran[9].init_affine_slantx(0.92, 1, -0.5, 5, halfscan, 11.0 / halfscan);
+        tran[15] = tran[16] = tran[17] = tran[18].init_affine_slantx(0.93, 1, 2.8, 4, halfscan, 6.0 / halfscan);
+
         // Sterna DB
         {
             mwr_status = SAVING;
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/STERNA";
+            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWR";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
-            logger->info("----------- STERNA");
+            logger->info("----------- MWR");
             logger->info("Lines : " + std::to_string(mwr_reader.lines));
 
-            satdump::ImageProducts mwr_products;
-            mwr_products.instrument_name = "sterna";
-            mwr_products.has_timestamps = true;
-            mwr_products.set_tle(satellite_tle);
-            mwr_products.bit_depth = 16;
-            mwr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            mwr_products.set_timestamps(mwr_reader.timestamps);
+            satdump::products::ImageProduct mwr_products;
+            mwr_products.instrument_name = "aws_mwr";
 
-            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
+            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_mwr.json"));
             if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
-            mwr_products.set_proj_cfg(proj_cfg);
+            mwr_products.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, mwr_reader.timestamps);
 
             for (int i = 0; i < 19; i++)
-                mwr_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), mwr_reader.getChannel(i)});
+            {
+                mwr_products.images.push_back({i,
+                                               "MWR-" + std::to_string(i + 1),
+                                               std::to_string(i + 1),
+                                               mwr_reader.getChannel(i),
+                                               16,
+                                               tran[i]});
+                mwr_products.set_channel_frequency(i, mwr_freqs[i]);
+            }
 
             mwr_products.save(directory);
             dataset.products_list.push_back("STERNA");
@@ -141,39 +175,6 @@ namespace aws
             mwr_status = DONE;
         }
 
-        // Sterna Dump
-        {
-            mwr_dump_status = SAVING;
-            std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/mwr_Dump";
-
-            if (!std::filesystem::exists(directory))
-                std::filesystem::create_directory(directory);
-
-            logger->info("----------- STERNA Dump");
-            logger->info("Lines : " + std::to_string(mwr_dump_reader.lines));
-
-            satdump::ImageProducts mwr_dump_products;
-            mwr_dump_products.instrument_name = "sterna";
-            mwr_dump_products.has_timestamps = true;
-            mwr_dump_products.set_tle(satellite_tle);
-            mwr_dump_products.bit_depth = 16;
-            mwr_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            mwr_dump_products.set_timestamps(mwr_dump_reader.timestamps);
-
-            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json"));
-            if (d_parameters["use_ephemeris"].get<bool>())
-                proj_cfg["ephemeris"] = navatt_reader.getEphem();
-            mwr_dump_products.set_proj_cfg(proj_cfg);
-
-            for (int i = 0; i < 19; i++)
-                mwr_dump_products.images.push_back({"STERNA-" + std::to_string(i + 1), std::to_string(i + 1), mwr_dump_reader.getChannel(i)});
-
-            mwr_dump_products.save(directory);
-            dataset.products_list.push_back("mwr_Dump");
-
-            mwr_dump_status = DONE;
-        }
-#else
         // Sterna Dump
         {
             mwr_dump_status = SAVING;
@@ -187,48 +188,11 @@ namespace aws
 
             satdump::products::ImageProduct mwr_dump_product;
             mwr_dump_product.instrument_name = "aws_mwr";
-            //  mwr_dump_products.has_timestamps = true;
-            //  mwr_dump_products.set_tle(satellite_tle);
-            //  mwr_dump_products.bit_depth = 16;
-            //  mwr_dump_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            //  mwr_dump_products.set_timestamps(mwr_dump_reader.timestamps);
 
-            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_sterna.json")); // TODOREWORK RENAME
+            nlohmann::json proj_cfg = loadJsonFile(resources::getResourcePath("projections_settings/aws_mwr.json"));
             if (d_parameters["use_ephemeris"].get<bool>())
                 proj_cfg["ephemeris"] = navatt_reader.getEphem();
             mwr_dump_product.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, mwr_dump_reader.timestamps);
-
-            // Channels are aligned by groups. 1 to 8 / 9 / 10 to 15 / 16 to 19
-            satdump::ChannelTransform tran[19];
-            double halfscan = 145.0 / 2.0;
-            for (auto &v : tran)
-                v.init_none();
-            tran[8].init_affine_slantx(1, 1, -6.5, 0, halfscan, 11.0 / halfscan);
-            tran[10] = tran[11] = tran[12] = tran[13] = tran[14] = tran[9].init_affine_slantx(0.92, 1, -0.5, 5, halfscan, 11.0 / halfscan);
-            tran[15] = tran[16] = tran[17] = tran[18].init_affine_slantx(0.93, 1, 2.8, 4, halfscan, 6.0 / halfscan);
-
-            // TODOREWORK
-            double mwr_freqs[19] = {
-                50.3e9,
-                52.8e9,
-                53.246e9,
-                53.596e9,
-                54.4e9,
-                54.94e9,
-                55.5e9,
-                57.290344e9,
-                89e9,
-                165.5e9,
-                176.311e9,
-                178.811e9,
-                180.311e9,
-                181.511e9,
-                182.311e9,
-                325.15e9,
-                325.15e9,
-                325.15e9,
-                325.15e9,
-            };
 
             for (int i = 0; i < 19; i++)
             {
@@ -246,7 +210,6 @@ namespace aws
 
             mwr_dump_status = DONE;
         }
-#endif
 
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
     }

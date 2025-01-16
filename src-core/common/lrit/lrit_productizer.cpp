@@ -95,8 +95,6 @@ namespace lrit
                     {20, 90},     // 13300,
                 };
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
-                // TODOREWORK DELETE                if (std::stoi(channel) > 1)
-                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][0], goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
             else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
@@ -137,8 +135,6 @@ namespace lrit
                     {20, 150},    // 13300,
                 };
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
-                // TODOREWORK DELETE                if (std::stoi(channel) > 6)
-                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, goes_abi_radiance_ranges_table[std::stoi(channel) - 1][0], goes_abi_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
             else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
@@ -179,8 +175,6 @@ namespace lrit
                     {20, 150},    // 13300,
                 };
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
-                // TODOREWORK DELETE                if (std::stoi(channel) > 6)
-                //  pro.set_calibration_default_radiance_range(pro.images.size() - 1, hima_ahi_radiance_ranges_table[std::stoi(channel) - 1][0], hima_ahi_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
             else if (instrument_id == "ami")
             {
@@ -198,8 +192,8 @@ namespace lrit
             else
                 pro.set_channel_wavenumber(pro.images.size() - 1, -1);
 
-            //                // TODOREWORK DELETE                            if (instrument_id == "ahi")
-            //                printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
+            // if (instrument_id == "ahi")
+            // printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
 
             auto lines = splitString(image_data_function_record->datas, '\n');
             if (lines.size() < 4)
@@ -605,10 +599,6 @@ namespace lrit
                 pro->instrument_name = instrument_id;
                 pro->set_product_source(satellite);
                 pro->set_product_timestamp(timestamp);
-                // TODOREWORK                pro->has_timestamps = true;
-                //                pro->timestamp_type = satdump::ImageProducts::TIMESTAMP_SINGLE_IMAGE;
-                //                pro->set_timestamps({(double)timestamp});
-                //                pro->bit_depth = bit_depth;
                 if (proj_cfg.size() > 0)
                 {
                     pro->set_proj_cfg(proj_cfg);

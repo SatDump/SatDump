@@ -15,9 +15,6 @@ namespace satdump
             image_width = cfg["image_width"].get<int>();
             scan_angle = cfg["scan_angle"].get<float>();
 
-            // TODOREWORK            gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
-            // TODOREWORK            gcp_spacing_y = cfg["gcp_spacing_y"].get<int>();
-
             timestamp_offset = getValueOrDefault(cfg["timestamp_offset"], 0.0);
             invert_scan = getValueOrDefault(cfg["invert_scan"], false);
             rotate_yaw = getValueOrDefault(cfg["rotate_yaw"], false);
@@ -28,9 +25,6 @@ namespace satdump
 
             yaw_offset_asc = getValueOrDefault(cfg["yaw_offset_asc"], 0.0);
             yaw_offset_des = getValueOrDefault(cfg["yaw_offset_des"], 0.0);
-
-            // TODOREWORK            img_size_x = image_width;
-            // TODOREWORK            img_size_y = timestamps.size();
 
             for (int i = 0; i < (int)timestamps.size(); i++)
             {
@@ -44,8 +38,6 @@ namespace satdump
 
         bool NormalLineRaytracer::get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
-            // if (x >= image_width)
-            //     return 1;
             if (y >= timestamps.size() || y < 0)
                 return 1;
 
@@ -102,9 +94,6 @@ namespace satdump
             image_width = cfg["image_width"].get<int>();
             scan_angle = cfg["scan_angle"].get<float>();
 
-            // TODOREWORK            gcp_spacing_x = cfg["gcp_spacing_x"].get<int>();
-            // TODOREWORK            gcp_spacing_y = cfg["gcp_spacing_y"].get<int>();
-
             timestamp_offset = getValueOrDefault(cfg["timestamp_offset"], 0.0);
             invert_scan = getValueOrDefault(cfg["invert_scan"], false);
             rotate_yaw = getValueOrDefault(cfg["rotate_yaw"], false);
@@ -115,9 +104,6 @@ namespace satdump
 
             yaw_offset_asc = getValueOrDefault(cfg["yaw_offset_asc"], 0.0);
             yaw_offset_des = getValueOrDefault(cfg["yaw_offset_des"], 0.0);
-
-            // TODOREWORK            img_size_x = image_width;
-            // TODOREWORK            img_size_y = timestamps.size();
 
             for (int i = 0; i < (int)timestamps.size(); i++)
             {
@@ -133,8 +119,6 @@ namespace satdump
 
         bool NormalLineRaytracerOld::get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
-            // if (x >= image_width)
-            //     return 1;
             if (y >= (int)timestamps.size() || y < 0)
                 return 1;
 
