@@ -117,6 +117,7 @@ namespace lrit
                     13300,
                 };
                 const float goes_abi_radiance_ranges_table[16][2] = {
+                    // TODOREWORK DELETE
                     {0, 1},
                     {0, 1},
                     {0, 1},
@@ -157,6 +158,7 @@ namespace lrit
                     13300,
                 };
                 const float hima_ahi_radiance_ranges_table[16][2] = {
+                    // TODOREWORK DELETE
                     {0, 1},
                     {0, 1},
                     {0, 1},

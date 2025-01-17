@@ -1,9 +1,12 @@
 #include "formats.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 #include "metop_nat.h"
+
+#include "common/utils.h"
+#include "common/tracking/tle.h"
 
 namespace nat2pro
 {
@@ -14,6 +17,10 @@ namespace nat2pro
         int number_of_lines = 0;
         int all_gcps = 0;
         nlohmann::json gcps_all;
+
+        std::vector<double> timestamps;
+
+        std::string sat_id = "M00";
 
         size_t current_ptr = 0;
         while (current_ptr < nat_file.size())
@@ -27,6 +34,7 @@ namespace nat2pro
             {
                 std::string full_header(&nat_file[current_ptr + 20], &nat_file[current_ptr + 20] + main_header.record_size - 20);
                 printf("%s\n", full_header.c_str());
+                sat_id = full_header.substr(664 - 20 + 32, 3);
             }
 
             /*if (main_header.record_class == 2)
@@ -76,6 +84,8 @@ namespace nat2pro
                     }
                 }
 
+                timestamps.push_back(main_header.record_start_time);
+
                 if ((number_of_lines - 1) % 50 == 0)
                 {
                     double lat_first = get_deg_latlon(&nat_file[current_ptr + 20538 + 0]);
@@ -112,8 +122,8 @@ namespace nat2pro
                         // logger->trace("%f %f", lon, lat);
                     }
 
-                    logger->info("%d %d %d %f %f %f %f %d", (int)main_header.record_class, (int)main_header.record_size, (int)main_header.record_subclass_version,
-                                 lon_first, lat_first, lon_last, lat_last, ch3a);
+                    logger->info("%d %d %d %f %f %f %f %d - %s", (int)main_header.record_class, (int)main_header.record_size, (int)main_header.record_subclass_version,
+                                 lon_first, lat_first, lon_last, lat_last, ch3a, timestamp_to_string(main_header.record_start_time).c_str());
                 }
             }
 
@@ -121,41 +131,61 @@ namespace nat2pro
         }
 
         {
-            satdump::ImageProducts avhrr_products;
+            std::string sat_name = "Unknown MetOp";
+            if (sat_id == "M02")
+                sat_name = "MetOp-A";
+            else if (sat_id == "M01")
+                sat_name = "MetOp-B";
+            else if (sat_id == "M03")
+                sat_name = "MetOp-C";
+
+            int norad = 0;
+            if (sat_id == "M01")
+                norad = 29499;
+            else if (sat_id == "M02")
+                norad = 38771;
+            else if (sat_id == "M03")
+                norad = 43689;
+
+            satdump::products::ImageProduct avhrr_products;
             avhrr_products.instrument_name = "avhrr_3";
+            avhrr_products.set_product_source(sat_name);
+            avhrr_products.set_product_timestamp(get_median(timestamps));
             // avhrr_products.has_timestamps = true;
             // avhrr_products.set_tle(satellite_tle);
-            avhrr_products.bit_depth = 16;
+            // avhrr_products.bit_depth = 16;
             // avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
             // avhrr_products.set_timestamps(avhrr_reader.timestamps);
             // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
+#if 1
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, avhrr_products.get_product_timestamp());
+            avhrr_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), satellite_tle, timestamps);
+#else
             nlohmann::json proj_cfg;
-            proj_cfg["type"] = "normal_gcps";
+            proj_cfg["type"] = "gcps_timestamps";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
+            proj_cfg["timestamps"] = timestamps;
             avhrr_products.set_proj_cfg(proj_cfg);
+// TODOREWORK switch to GCPs again!
+#endif
 
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)
-                avhrr_products.images.push_back({"AVHRR-" + names[i], names[i], image::Image(avhrr_data[i].data(), 16, image_width, number_of_lines, 1)});
+                avhrr_products.images.push_back({i, "AVHRR-" + names[i], names[i], image::Image(avhrr_data[i].data(), 16, image_width, number_of_lines, 1)});
 
             // calibration
             nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AVHRR.json"));
 
             // calib
             nlohmann::json calib_cfg;
-            calib_cfg["calibrator"] = "metop_avhrr_nat";
-            for (int p = 0; p < 6; p++)
-                calib_cfg["wavenumbers"][p] = calib_coefs["MetOp-B"]["channels"][p]["wavnb"].get<double>();
-            avhrr_products.set_calibration(calib_cfg);
-            for (int n = 0; n < 3; n++)
+            avhrr_products.set_calibration("metop_avhrr_nat", calib_cfg);
+            for (int n = 0; n < 6; n++)
             {
-                avhrr_products.set_calibration_type(n, avhrr_products.CALIB_RADIANCE);
-                avhrr_products.set_calibration_type(n + 3, avhrr_products.CALIB_RADIANCE);
+                avhrr_products.set_channel_unit(n, n < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
+                avhrr_products.set_channel_wavenumber(n, calib_coefs["MetOp-B"]["channels"][n]["wavnb"]); // TODOREWORK, pull proper sat
             }
-            for (int c = 0; c < 6; c++)
-                avhrr_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
 
             if (!std::filesystem::exists(pro_output_file))
                 std::filesystem::create_directories(pro_output_file);

@@ -11,7 +11,7 @@
 #include "products2/image/channel_transform.h"
 #include "raytrace/satellite_raytracer.h"
 #include "common/projection/projs2/proj_json.h"
-#include "common/projection/projs/tps_transform.h"
+#include "tps/latlontps_proj.h"
 
 namespace satdump
 {
@@ -67,9 +67,7 @@ namespace satdump
             std::shared_ptr<SatelliteRaytracer> raytracer;
             ChannelTransform transform;
             ::proj::projection_t std_proj;
-            std::shared_ptr<satdump::projection::VizGeorefSpline2D> tps_fwd;
-            double tps_fwd_shift_lon = 0, tps_fwd_shift_lat = 0;
-            double tps_fwd_xy[2];
+            std::shared_ptr<satdump::proj::LatLonTpsProjHelper> tps_fwd;
 
         public:
             Projection();

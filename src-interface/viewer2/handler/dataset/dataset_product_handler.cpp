@@ -1,6 +1,8 @@
 #include "dataset_product_handler.h"
 #include "logger.h"
 
+#include "imgui/imnodes/imnodes.h"
+
 namespace satdump
 {
     namespace viewer
@@ -8,152 +10,29 @@ namespace satdump
         DatasetProductHandler::DatasetProductHandler()
         {
             editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+
+            // TODOREWORK
+            if (ImNodes::GetCurrentContext() == nullptr)
+                ImNodes::CreateContext();
         }
 
         DatasetProductHandler::~DatasetProductHandler()
         {
         }
 
-#if 0
-         class BlockNode : public ImFlow::BaseNode
+        namespace
         {
-        public:
-            BlockNode()
+            class FlowchartNode
             {
-                setTitle("BlockSource");
-                setStyle(ImFlow::NodeStyle::green());
-
-                addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
-
-                auto fun = [this]()
-                {
-                    return (v == 0 ? "Firstin" : getInVal<std::string>("In")) + "\n" + "BlockNode" + std::to_string(v);
-                };
-
-                addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
-            }
-
-            ~BlockNode()
-            {
-            }
-
-            void draw() override
-            {
-                ImGui::Text("Something");
-            }
-
-            void eval()
-            {
-                logger->info("OutSize %d", getOuts().size());
-                if (getOuts().size() == 0)
-                {
-                    std::string vl = getInVal<std::string>("In");
-                    printf("finalout \n%s\n", vl.c_str());
-                }
-            }
-        };
-#endif
-
-        class BlockSourceNode : public ImFlow::BaseNode
-        {
-        public:
-            BlockSourceNode()
-            {
-                setTitle("BlockSource");
-                setStyle(ImFlow::NodeStyle::green());
-
-                auto fun = [this]()
-                {
-                    return "val = 6\n";
-                };
-
-                addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
-            }
-
-            ~BlockSourceNode()
-            {
-            }
-
-            void draw() override
-            {
-                ImGui::Text("Something");
-            }
-
-            std::string eval()
-            {
-                logger->info("OutSize %d", getOuts().size());
-            }
-        };
-
-        class BlockSinkNode : public ImFlow::BaseNode
-        {
-        public:
-            std::function<std::string()> fun = [this]()
-            {
-                return getInVal<std::string>("In") + "print(val)\n";
             };
 
-            BlockSinkNode()
+            class FlowchartManager
             {
-                setTitle("BlockSink");
-                setStyle(ImFlow::NodeStyle::green());
-
-                addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
-
-                //   addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
-            }
-
-            ~BlockSinkNode()
-            {
-            }
-
-            void draw() override
-            {
-                ImGui::Text("Something");
-            }
-
-            std::string eval()
-            {
-                logger->info("OutSize %d", getOuts().size());
-                return fun();
-            }
-        };
-
-        class BlockMidNode : public ImFlow::BaseNode
-        {
-        public:
-            std::function<std::string()> fun = [this]()
-            {
-                return getInVal<std::string>("In") + "val = val + 1\n";
+                std::vector<FlowchartNode> nodes;
             };
 
-            BlockMidNode()
-            {
-                setTitle("BlockMid");
-                setStyle(ImFlow::NodeStyle::green());
-
-                addIN<std::string>("In", "!!invalid!!", ImFlow::ConnectionFilter::SameType());
-
-                addOUT<std::string>("Out", ImFlow::PinStyle::brown())->behaviour(fun);
-            }
-
-            ~BlockMidNode()
-            {
-            }
-
-            void draw() override
-            {
-                ImGui::Text("Something");
-            }
-
-            std::string eval()
-            {
-                logger->info("OutSize %d", getOuts().size());
-                return fun();
-            }
-        };
-
-        std::shared_ptr<BlockSinkNode> final_node = 0;
+            FlowchartManager managerTest;
+        }
 
         void DatasetProductHandler::drawMenu()
         {
@@ -164,17 +43,17 @@ namespace satdump
             {
                 if (ImGui::CollapsingHeader("Flowgraph"))
                 {
-                    if (ImGui::Button("Add BlockSource"))
-                        grid.addNode<BlockSourceNode>({0, 0});
-                    if (ImGui::Button("Add BlockSink"))
-                        final_node = grid.addNode<BlockSinkNode>({0, 0});
-                    if (ImGui::Button("Add BlockMid"))
-                        grid.addNode<BlockMidNode>({0, 0});
+                    /* if (ImGui::Button("Add BlockSource"))
+                         grid.addNode<BlockSourceNode>({0, 0});
+                     if (ImGui::Button("Add BlockSink"))
+                         final_node = grid.addNode<BlockSinkNode>({0, 0});
+                     if (ImGui::Button("Add BlockMid"))
+                         grid.addNode<BlockMidNode>({0, 0});
 
-                    if (ImGui::Button("Eval"))
-                    {
-                        editor.SetText(final_node->eval());
-                    }
+                     if (ImGui::Button("Eval"))
+                     {
+                         editor.SetText(final_node->eval());
+                     }*/
                 }
             }
             else if (selected_tab == 2)
@@ -226,7 +105,27 @@ namespace satdump
             if (ImGui::BeginTabItem("Flowgraph"))
             {
                 selected_tab = 1;
-                grid.update();
+                // grid.update();
+
+                //
+                const int hardcoded_node_id = 1;
+                ImNodes::BeginNodeEditor();
+
+                ImNodes::BeginNode(hardcoded_node_id);
+
+                ImNodes::BeginNodeTitleBar();
+                ImGui::Text("output node");
+                ImNodes::EndNodeTitleBar();
+
+                ImNodes::BeginOutputAttribute(4, 1);
+                ImGui::Text("Out1");
+                ImNodes::EndOutputAttribute();
+
+                ImNodes::EndNode();
+
+                ImNodes::EndNodeEditor();
+                //
+
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Code"))

@@ -6,57 +6,8 @@
 
 namespace satdump
 {
-    namespace warp // TODOREWORK REWRITE / MOVE OUT
-    {
-        double lon_shift(double lon, double shift);
-        void shift_latlon_by_lat(double *lat, double *lon, double shift);
-
-        void computeGCPCenter(std::vector<satdump::projection::GCP> &gcps, double &lon, double &lat);
-        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat);
-    }
-
     namespace proj
     {
-
-        namespace
-        {
-            std::shared_ptr<satdump::projection::VizGeorefSpline2D> setupTPSTransform(std::vector<projection::GCP> gcps, double &out_slat, double &out_slon)
-            { // TODOREWORK REWRITE / MOVE OUT to avoid duplication!
-                int shift_lon = 0, shift_lat = 0;
-
-                // Calculate center, and handle longitude shifting
-                {
-                    double center_lat = 0, center_lon = 0;
-                    warp::computeGCPCenter(gcps, center_lon, center_lat);
-                    shift_lon = -center_lon;
-                    shift_lat = 0;
-                }
-
-                // Check for GCPs near the poles. If any is close, it means this segment needs to be handled as a pole!
-                for (auto &gcp : gcps)
-                {
-                    auto south_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(-90, 0, 0));
-                    auto north_dis = geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcp.lat, gcp.lon, 0), geodetic::geodetic_coords_t(90, 0, 0));
-#define MIN_POLE_DISTANCE 1000 // Maximum distance at which to consider we're working over a pole
-                    if (south_dis.distance < MIN_POLE_DISTANCE)
-                    {
-                        shift_lon = 0;
-                        shift_lat = -90;
-                    }
-                    if (north_dis.distance < MIN_POLE_DISTANCE)
-                    {
-                        shift_lon = 0;
-                        shift_lat = 90;
-                    }
-                }
-
-                //                shift_lat = shift_lon = 0;
-                out_slat = shift_lat;
-                out_slon = shift_lon;
-                return warp::initTPSTransform(gcps, shift_lon, shift_lat);
-            }
-        }
-
         Projection::Projection()
         {
         }
@@ -125,15 +76,15 @@ namespace satdump
                     {
                         logger->critical("Forward on raytrace is imperfect!");
                         auto gcps = compute_gcps(d_cfg);
-                        tps_fwd = setupTPSTransform(gcps, tps_fwd_shift_lat, tps_fwd_shift_lon);
+                        tps_fwd = std::make_shared<satdump::proj::LatLonTpsProjHelper>(gcps, 1, 0);
                         fwd_type = PROJ_THINPLATESPLINE;
                     }
                 }
                 return true;
             }
-            catch (std::exception &)
+            catch (std::exception &e)
             {
-                logger->trace("Not a raytraced projection!");
+                logger->trace("Not a raytraced projection! : %s", e.what());
             }
 
             ///////////////////////////////////////////////////////////
@@ -156,10 +107,7 @@ namespace satdump
             else if (fwd_type == PROJ_THINPLATESPLINE)
             {
                 // Perform TPS
-                warp::shift_latlon_by_lat(&pos.lat, &pos.lon, tps_fwd_shift_lat);
-                tps_fwd->get_point(warp::lon_shift(pos.lon, tps_fwd_shift_lon), pos.lat, tps_fwd_xy);
-                x = tps_fwd_xy[0];
-                y = tps_fwd_xy[1];
+                tps_fwd->forward(pos, x, y);
                 return 0; // We do NOT want to run the ChannelTransform in reverse, TPS takes care of it already!
             }
             else

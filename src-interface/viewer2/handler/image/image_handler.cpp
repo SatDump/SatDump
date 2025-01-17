@@ -68,6 +68,20 @@ namespace satdump
                         double val = image_calib.getVal(img.getf(0, x, y));
                         ImGui::Text("Unit : %f %s", val, image_calib.unit.c_str());
                     }
+                    if (image_proj_valid)
+                    {
+                        geodetic::geodetic_coords_t pos;
+                        if (image_proj.inverse(x, y, pos))
+                        {
+                            ImGui::Text("Lat : Invalid!");
+                            ImGui::Text("Lon : Invalid!");
+                        }
+                        else
+                        {
+                            ImGui::Text("Lat : %f", pos.lat);
+                            ImGui::Text("Lon : %f", pos.lon);
+                        }
+                    }
                     ImGui::EndTooltip();
                 };
             }
@@ -111,6 +125,7 @@ namespace satdump
 
         void ImageHandler::updateImage(image::Image &img) // TODOREWORK
         {
+            image::set_metadata(image, {});
             image = img;
             process();
         }
@@ -147,16 +162,18 @@ namespace satdump
             has_second_image = image_needs_processing;
             imgview_needs_update = true;
 
-            auto &im = get_current_img();
-            if (image::has_metadata_proj_cfg(im))
+            image_proj_valid = false;
+            if (image::has_metadata_proj_cfg(image))
             {
-                //    logger->critical(image::get_metadata_proj_cfg(im).dump(4));
+                image_proj = image::get_metadata_proj_cfg(image);
+                image_proj.init(0, 1);
+                image_proj_valid = true;
             }
 
             image_calib_valid = false;
-            if (image::has_metadata_calib_cfg(im))
+            if (image::has_metadata_calib_cfg(image))
             {
-                image_calib = image::get_metadata_calib_cfg(im);
+                image_calib = image::get_metadata_calib_cfg(image);
                 image_calib_valid = true;
             }
         }

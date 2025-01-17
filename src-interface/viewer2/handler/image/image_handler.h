@@ -7,6 +7,8 @@
 #include "common/widgets/image_view.h"
 #include "common/image/meta.h"
 
+#include "projection/projection.h"
+
 namespace satdump
 {
     namespace viewer
@@ -38,6 +40,8 @@ namespace satdump
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;
             image::ImgCalibHandler image_calib;
+            bool image_proj_valid = false;
+            proj::Projection image_proj;
 
             // Proc function
             void do_process();

@@ -26,6 +26,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler2);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -39,8 +40,8 @@ public:
             evt.calibrators.push_back(std::make_shared<nat2pro::MHSNatCalibrator>(evt.calib, evt.products));
         else if (evt.id == "metop_amsu_nat")
             evt.calibrators.push_back(std::make_shared<nat2pro::AMSUNatCalibrator>(evt.calib, evt.products));
-        else if (evt.id == "metop_avhrr_nat")
-            evt.calibrators.push_back(std::make_shared<nat2pro::AVHRRNatCalibrator>(evt.calib, evt.products));
+        //        else if (evt.id == "metop_avhrr_nat")
+        //            evt.calibrators.push_back(std::make_shared<nat2pro::AVHRRNatCalibrator>(evt.calib, evt.products));
         else if (evt.id == "msg_nat_seviri")
             evt.calibrators.push_back(std::make_shared<nat2pro::MSGNatCalibrator>(evt.calib, evt.products));
         //
@@ -48,6 +49,12 @@ public:
             evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.calib, evt.products));
         else if (evt.id == "goes_nc_abi")
             evt.calibrators.push_back(std::make_shared<nc2pro::ABINcCalibrator>(evt.calib, evt.products));
+    }
+
+    static void provideImageCalibratorHandler2(const satdump::products::RequestImageCalibratorEvent &evt)
+    {
+        if (evt.id == "metop_avhrr_nat")
+            evt.calibrators.push_back(std::make_shared<nat2pro::AVHRRNatCalibrator>(evt.products, evt.calib));
     }
 };
 

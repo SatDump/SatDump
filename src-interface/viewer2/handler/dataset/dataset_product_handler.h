@@ -1,6 +1,5 @@
 #pragma once
 
-#include "imgui/imnodeflow/ImNodeFlow.h"
 #include "../handler.h"
 
 #include "TextEditor.h"
@@ -20,7 +19,6 @@ namespace satdump
             DatasetHandler *dataset_handler;
 
             int selected_tab = 0;
-            ImFlow::ImNodeFlow grid;
 
             TextEditor editor;
             void run_lua();

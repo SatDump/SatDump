@@ -86,6 +86,11 @@ namespace satdump
 
         image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progress)
         {
+            // Sanitize string
+            equation.erase(std::remove(equation.begin(), equation.end(), '\r'), equation.end());
+            equation.erase(std::remove(equation.begin(), equation.end(), '\n'), equation.end());
+            equation.erase(std::remove(equation.begin(), equation.end(), ' '), equation.end());
+
             // See if we ave some setup string present
             std::map<std::string, CalibChannelCfg> calib_cfgs;
             if (equation.find(';') != std::string::npos)

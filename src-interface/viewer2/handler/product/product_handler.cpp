@@ -27,7 +27,7 @@ namespace satdump
             if (!dataset_mode && p->has_product_source())
                 handler_name = p->get_product_source() + " " + handler_name;
             if (!dataset_mode && p->has_product_timestamp())
-                handler_name += timestamp_to_string(p->get_product_timestamp());
+                handler_name += " " + timestamp_to_string(p->get_product_timestamp());
 
             // TODOREWORK, handle automated?, Filtering what can be made per channels present?
             if (instrument_cfg.contains("presets"))
