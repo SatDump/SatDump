@@ -102,11 +102,19 @@ namespace satdump
                 {
                     needs_to_update |= ImGui::Checkbox("Calibrate", &channel_calibrated);
                     ImGui::SetNextItemWidth(150 * ui_scale);
-                    needs_to_update |= ImGui::InputDouble("##rangemin", &channel_calibrated_range_min[channel_selection_curr_id]);
+                    ImGui::InputDouble("##rangemin", &channel_calibrated_range_min[channel_selection_curr_id]);
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(150 * ui_scale);
-                    needs_to_update |= ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[channel_selection_curr_id]);
+                    ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[channel_selection_curr_id]);
                     needs_to_update |= ImGui::Combo("Unit##calibunit", &channel_calibrated_combo_curr_id, channel_calibrated_combo_str.c_str());
+                    needs_to_update |= ImGui::Button("Update###updatecalib");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Add To Equ###calibaddtoequation")) // TODOREWORK?
+                        equation = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" +
+                                   product->images[channel_selection_curr_id].channel_name + ", " +
+                                   channel_calibrated_output_units[channel_calibrated_combo_curr_id] + ", " +
+                                   std::to_string(channel_calibrated_range_min[channel_selection_curr_id]) + ", " +
+                                   std::to_string(channel_calibrated_range_max[channel_selection_curr_id]) + ");\n" + equation;
                 }
 
                 if (needs_to_be_disabled)
