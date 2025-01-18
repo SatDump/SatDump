@@ -121,7 +121,7 @@ namespace satdump
                     style::beginDisabled();
 
                 ImGui::SetNextItemWidth(ImGui::GetWindowSize().x - 10 * ui_scale);
-                ImGui::InputText("##equation", &equation, ImGuiInputTextFlags_Multiline);
+                ImGui::InputTextMultiline("##equation", &equation);
                 if (ImGui::Button("Apply"))
                 {
                     channel_selection_curr_id = -1;
