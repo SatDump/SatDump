@@ -2,6 +2,8 @@
 #include "libs/sol2/sol.hpp"
 #include "logger.h"
 
+#include "lua/lua_bind.h"
+
 namespace satdump
 {
     namespace viewer
@@ -23,6 +25,13 @@ namespace satdump
                 lua.open_libraries(sol::lib::math);
                 lua.open_libraries(sol::lib::table);
                 lua.open_libraries(sol::lib::io);
+
+                lua::bind_logger(lua);
+                lua::bind_image(lua);
+                lua::bind_product(lua);
+                lua::bind_geodetic(lua);
+                lua::bind_projection(lua);
+                lua::bind_handler_image(lua);
 
                 // Experimental
                 lua["add_handler_to_products"] = [this](std::shared_ptr<Handler> p) // TODO, find why THIS specifically crashes...

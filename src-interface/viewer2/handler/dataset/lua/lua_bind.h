@@ -15,5 +15,7 @@ namespace satdump
         void bind_geodetic(sol::state &lua);
 
         void bind_projection(sol::state &lua);
+
+        void bind_handler_image(sol::state &lua);
     }
 }

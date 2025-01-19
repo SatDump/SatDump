@@ -3,6 +3,9 @@
 
 #include "imgui/imnodes/imnodes.h"
 
+// TODOREWORK
+#include "lua_processor.h"
+
 namespace satdump
 {
     namespace viewer
@@ -135,6 +138,15 @@ namespace satdump
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
+        }
+
+        void DatasetProductHandler::run_lua()
+        {
+            // TODOREWORK
+            nlohmann::json t;
+            t["lua"] = editor.GetText();
+            Lua_DatasetProductProcessor proc(dataset_handler, this, t);
+            proc.process();
         }
     }
 }
