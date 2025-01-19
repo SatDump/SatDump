@@ -43,20 +43,10 @@ namespace satdump
                 lua.open_libraries(sol::lib::string);
                 lua.open_libraries(sol::lib::math);
 
-                // Product
-                auto product_type = lua.new_usertype<products::Product>("Product", sol::constructors<products::Product()>());
-                product_type["instrument_name"] = &products::Product::instrument_name;
-                product_type["type"] = &products::Product::type;
-                product_type["set_product_timestamp"] = &products::Product::set_product_timestamp;
-                product_type["has_product_timestamp"] = &products::Product::has_product_timestamp;
-                product_type["get_product_timestamp"] = &products::Product::get_product_timestamp;
-                product_type["set_product_source"] = &products::Product::set_product_source;
-                product_type["has_product_source"] = &products::Product::has_product_source;
-                product_type["save"] = &products::Product::save;
-                product_type["load"] = &products::Product::load;
+                lua.open_libraries(sol::lib::table);
+                lua.open_libraries(sol::lib::io);
 
-                lua["loadProduct"] = &products::loadProduct;
-
+               
                 // ImageProduct
                 auto image_product_type = lua.new_usertype<products::ImageProduct>("ImageProduct", sol::constructors<products::ImageProduct()>(), sol::base_classes, sol::bases<products::Product>());
 
@@ -75,23 +65,7 @@ namespace satdump
                     [](products::ImageProduct *p, std::string c, double a, double b, std::string u)
                     { return products::generate_calibrated_product_channel(p, c, a, b, u); });
 
-                // Image
-                sol::usertype<image::Image> image_type = lua.new_usertype<image::Image>("Image", sol::constructors<image::Image(), image::Image(int, size_t, size_t, int)>());
-
-                image_type["depth"] = &image::Image::depth;
-                image_type["width"] = &image::Image::width;
-                image_type["height"] = &image::Image::height;
-                image_type["channels"] = &image::Image::channels;
-                image_type["size"] = &image::Image::size;
-
-                image_type["draw_image"] = &image::Image::draw_image;
-                image_type["draw_image_alpha"] = &image::Image::draw_image_alpha;
-                image_type["to_rgba"] = &image::Image::to_rgba;
-                lua["img_equalize"] = &image::equalize;
-
-                lua["image_load_img"] = (void (*)(image::Image &, std::string))(&image::load_img);
-                lua["image_save_img"] = (void (*)(image::Image &, std::string))(&image::save_img);
-
+              
                 // ImageHandler
                 sol::usertype<ImageHandler> image_handler_type = lua.new_usertype<ImageHandler>("ImageHandler",
                                                                                                 // sol::constructors<std::shared_ptr<ImageHandler>(), std::shared_ptr<ImageHandler>(image::Image)>(),

@@ -21,6 +21,8 @@ namespace satdump
                 lua.open_libraries(sol::lib::base);
                 lua.open_libraries(sol::lib::string);
                 lua.open_libraries(sol::lib::math);
+                lua.open_libraries(sol::lib::table);
+                lua.open_libraries(sol::lib::io);
 
                 // Experimental
                 lua["add_handler_to_products"] = [this](std::shared_ptr<Handler> p) // TODO, find why THIS specifically crashes...

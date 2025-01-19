@@ -143,6 +143,15 @@ namespace satdump
                 ImGui::ProgressBar(progress);
             }
 
+            /// TODOREWORK UPDATE
+            if (needs_to_update)
+            {
+                asyncProcess();
+                needs_to_update = false;
+            }
+
+            img_handler.drawMenu();
+
             if (ImGui::CollapsingHeader("ImageProduct Advanced"))
             {
                 if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
@@ -165,15 +174,6 @@ namespace satdump
                     ImGui::EndTabBar();
                 }
             }
-
-            /// TODOREWORK UPDATE
-            if (needs_to_update)
-            {
-                asyncProcess();
-                needs_to_update = false;
-            }
-
-            img_handler.drawMenu();
         }
 
         void ImageProductHandler::setConfig(nlohmann::json p)
