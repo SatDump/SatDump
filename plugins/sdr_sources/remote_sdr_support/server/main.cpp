@@ -20,6 +20,7 @@
 #include "remote.h"
 #include "actions.h"
 #include "pkt_handler.h"
+#include "satdump_vars.h"
 
 // The TCP Server
 TCPServer *tcp_server;
@@ -35,7 +36,7 @@ bool source_is_started = false;
 int main(int argc, char *argv[])
 {
     initLogger();
-    logger->info("Starting SatDump SDR Server v" + (std::string)SATDUMP_VERSION);
+    logger->info("Starting SatDump SDR Server v" + (std::string)satdump::SATDUMP_VERSION);
 
     int port_used = 5656;
     try

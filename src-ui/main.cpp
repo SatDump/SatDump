@@ -11,6 +11,7 @@
 #include "common/cli_utils.h"
 #include "../src-core/resources.h"
 #include "common/detect_header.h"
+#include "satdump_vars.h"
 
 GLFWwindow *window;
 static volatile bool signal_caught = false;
@@ -98,13 +99,13 @@ int main(int argc, char *argv[])
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)satdump::SATDUMP_VERSION).c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
         glfwDefaultWindowHints();
         fallback_gl = true;
-        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)SATDUMP_VERSION).c_str(), nullptr, nullptr);
+        window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)satdump::SATDUMP_VERSION).c_str(), nullptr, nullptr);
         if (window == nullptr)
         {
             pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer",

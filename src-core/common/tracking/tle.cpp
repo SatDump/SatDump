@@ -9,6 +9,7 @@
 #include <fstream>
 #include <filesystem>
 #include <curl/curl.h>
+#include "satdump_vars.h"
 
 namespace satdump
 {

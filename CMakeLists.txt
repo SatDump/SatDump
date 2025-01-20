@@ -145,7 +145,6 @@ else()
     message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}")
 endif()
-add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
 
 # Used for error messages
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)

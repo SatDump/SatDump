@@ -5,7 +5,19 @@ include(CheckCSourceCompiles)
 include(CMakePushCheckState)
 include(CheckCCompilerFlag)
 
+# Set the resources path
+if(MSVC OR BUILD_MSVC)
+    set(RESOURCES_PATH "./")
+    set(LIBRARIES_PATH "./")
+else()
+    set(RESOURCES_PATH "${CMAKE_INSTALL_PREFIX}/share/satdump/")
+    set(LIBRARIES_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/satdump/")
+endif()
+
+configure_file(${CMAKE_SOURCE_DIR}/src-core/satdump_varst.cxx ${CMAKE_CURRENT_BINARY_DIR}/satdump_varst.cpp @ONLY)
+
 file(GLOB_RECURSE SatDump_core_CPPS *.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/satdump_varst.cpp
     libs/aec/*.c
     libs/predict/*.c
     libs/bzlib/*.c
@@ -27,15 +39,6 @@ find_package(PkgConfig)
 
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
 target_include_directories(satdump_core PUBLIC .)
-
-# Set the resources path
-if(MSVC OR BUILD_MSVC)
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
-    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
-else()
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
-    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_FULL_LIBDIR}/satdump/")
-endif()
 
 # We have to... For MSVC
 if(BUILD_OPENCL)

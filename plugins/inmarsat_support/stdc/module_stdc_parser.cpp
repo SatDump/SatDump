@@ -7,6 +7,7 @@
 #include "pkt_parser.h"
 #include "msg_parser.h"
 #include "egc_parser.h"
+#include "satdump_vars.h"
 
 namespace inmarsat
 {
@@ -71,7 +72,7 @@ namespace inmarsat
                         if (d_station_id != ""){
                             msg2["source"]["station_id"] = d_station_id;
                             msg2["source"]["app"]["name"] = "SatDump";
-                            msg2["source"]["app"]["version"] = (std::string)SATDUMP_VERSION;
+                            msg2["source"]["app"]["version"] = (std::string)satdump::SATDUMP_VERSION;
                         }
                         
                         std::string m = msg2.dump();

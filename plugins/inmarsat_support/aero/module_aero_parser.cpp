@@ -8,6 +8,7 @@
 #include "decode_utils.h"
 #include "common/dsp/io/wav_writer.h"
 #include "common/audio/audio_sink.h"
+#include "satdump_vars.h"
 
 #define SIGNAL_UNIT_SIZE_BYTES 12
 
@@ -87,7 +88,7 @@ namespace inmarsat
                         if (d_station_id != ""){
                             msg2["source"]["station_id"] = d_station_id;
                             msg2["source"]["app"]["name"] = "SatDump";
-                            msg2["source"]["app"]["version"] = (std::string)SATDUMP_VERSION;
+                            msg2["source"]["app"]["version"] = (std::string)satdump::SATDUMP_VERSION;
                         }
                         
                         std::string m = msg2.dump();

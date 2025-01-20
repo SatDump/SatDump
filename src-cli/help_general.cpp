@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "init.h"
 #include "help_general.h"
+#include "satdump_vars.h"
 
 void help_general()
 {
@@ -10,7 +11,7 @@ void help_general()
 	logger->info("Many usecases of SatDump CLI are cover at the following link");
 	logger->debug("www.satdump.org/posts/basic-usage/#cli-this-part-was-made-by-aang23");
 	logger->info("");
-	logger->info("This is SatDump v" + (std::string)SATDUMP_VERSION);
+	logger->info("This is SatDump v" + (std::string)satdump::SATDUMP_VERSION);
 	logger->info("Live processing");
 	logger->debug("	- Usage: satdump live + parameters");
 	logger->debug("	- info: use 'satdump live' for more information on 'live' usage and parameters");	
