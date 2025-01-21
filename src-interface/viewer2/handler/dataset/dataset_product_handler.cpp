@@ -115,16 +115,24 @@ namespace satdump
                 ImNodes::BeginNodeEditor();
 
                 ImNodes::BeginNode(hardcoded_node_id);
-
                 ImNodes::BeginNodeTitleBar();
                 ImGui::Text("output node");
                 ImNodes::EndNodeTitleBar();
-
                 ImNodes::BeginOutputAttribute(4, 1);
                 ImGui::Text("Out1");
                 ImNodes::EndOutputAttribute();
-
                 ImNodes::EndNode();
+
+                ImNodes::BeginNode(hardcoded_node_id + 1);
+                ImNodes::BeginNodeTitleBar();
+                ImGui::Text("intput node");
+                ImNodes::EndNodeTitleBar();
+                ImNodes::BeginInputAttribute(5, 1);
+                ImGui::Text("In1");
+                ImNodes::EndInputAttribute();
+                ImNodes::EndNode();
+
+                ImNodes::Link(6, 4, 5);
 
                 ImNodes::EndNodeEditor();
                 //
@@ -145,8 +153,9 @@ namespace satdump
             // TODOREWORK
             nlohmann::json t;
             t["lua"] = editor.GetText();
-            Lua_DatasetProductProcessor proc(dataset_handler, this, t);
-            proc.process();
+            DatasetProductProcessor *proc = new Lua_DatasetProductProcessor(dataset_handler, this, t);
+            proc->process();
+            delete proc;
         }
     }
 }
