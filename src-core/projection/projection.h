@@ -60,10 +60,11 @@ namespace satdump
             proj_type_t fwd_type = PROJ_INVALID;
             proj_type_t inv_type = PROJ_INVALID;
 
-        private:
+        public:
             int width = -1;
             int height = -1; // TODOREWORK do we need those?
 
+        private:
             std::shared_ptr<SatelliteRaytracer> raytracer;
             ChannelTransform transform;
             ::proj::projection_t std_proj;

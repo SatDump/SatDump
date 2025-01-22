@@ -143,11 +143,17 @@ namespace satdump
         void Projection::to_json(nlohmann::json &j) const
         {
             j = d_cfg;
+            if (height != -1)
+                j["height"] = height;
+            if (width != -1)
+                j["width"] = width;
         }
 
         void Projection::from_json(const nlohmann::json &j)
         {
             d_cfg = j; // TODOREWORK de-init?
+            height = j.contains("height") ? j["height"].get<int>() : -1;
+            width = j.contains("width") ? j["width"].get<int>() : -1;
             fwd_type = PROJ_INVALID;
             inv_type = PROJ_INVALID;
         }

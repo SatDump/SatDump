@@ -6,6 +6,8 @@
 
 #include "dataset_handler.h"
 
+#include "flowgraph/flowgraph.h"
+
 namespace satdump
 {
     namespace viewer
@@ -22,6 +24,8 @@ namespace satdump
 
             TextEditor editor;
             void run_lua();
+
+            Flowgraph flowgraph;
 
             // The Rest
             void drawMenu();

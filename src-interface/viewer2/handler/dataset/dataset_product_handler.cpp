@@ -6,6 +6,9 @@
 // TODOREWORK
 #include "lua_processor.h"
 
+#include "flowgraph/imageproduct_node.h"
+#include "flowgraph/image_nodes.h"
+
 namespace satdump
 {
     namespace viewer
@@ -17,24 +20,21 @@ namespace satdump
             // TODOREWORK
             if (ImNodes::GetCurrentContext() == nullptr)
                 ImNodes::CreateContext();
+
+            flowgraph.node_internal_registry.emplace("image_product_source", []()
+                                                     { return std::make_shared<ImageProductSource_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_product_equation", []()
+                                                     { return std::make_shared<ImageProductEquation_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_sink", []()
+                                                     { return std::make_shared<ImageSink_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_get_proj", []()
+                                                     { return std::make_shared<ImageGetProj_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_reproj", []()
+                                                     { return std::make_shared<ImageReproj_Node>(); });
         }
 
         DatasetProductHandler::~DatasetProductHandler()
         {
-        }
-
-        namespace
-        {
-            class FlowchartNode
-            {
-            };
-
-            class FlowchartManager
-            {
-                std::vector<FlowchartNode> nodes;
-            };
-
-            FlowchartManager managerTest;
         }
 
         void DatasetProductHandler::drawMenu()
@@ -46,17 +46,28 @@ namespace satdump
             {
                 if (ImGui::CollapsingHeader("Flowgraph"))
                 {
-                    /* if (ImGui::Button("Add BlockSource"))
-                         grid.addNode<BlockSourceNode>({0, 0});
-                     if (ImGui::Button("Add BlockSink"))
-                         final_node = grid.addNode<BlockSinkNode>({0, 0});
-                     if (ImGui::Button("Add BlockMid"))
-                         grid.addNode<BlockMidNode>({0, 0});
+                    for (auto &opt : flowgraph.node_internal_registry)
+                    {
+                        if (ImGui::Button(opt.first.c_str()))
+                        {
+                            flowgraph.addNode(opt.first, opt.second());
+                        }
+                    }
 
-                     if (ImGui::Button("Eval"))
-                     {
-                         editor.SetText(final_node->eval());
-                     }*/
+                    if (ImGui::Button("Get JSON"))
+                    {
+                        std::string str = flowgraph.getJSON().dump(4);
+                        ImGui::SetClipboardText(str.c_str());
+                    }
+
+                    if (ImGui::Button("Set JSON"))
+                    {
+                        auto str = ImGui::GetClipboardText();
+                        flowgraph.setJSON(nlohmann::json::parse(str));
+                    }
+
+                    if (ImGui::Button("Run"))
+                        flowgraph.run();
                 }
             }
             else if (selected_tab == 2)
@@ -109,33 +120,7 @@ namespace satdump
             {
                 selected_tab = 1;
                 // grid.update();
-
-                //
-                const int hardcoded_node_id = 1;
-                ImNodes::BeginNodeEditor();
-
-                ImNodes::BeginNode(hardcoded_node_id);
-                ImNodes::BeginNodeTitleBar();
-                ImGui::Text("output node");
-                ImNodes::EndNodeTitleBar();
-                ImNodes::BeginOutputAttribute(4, 1);
-                ImGui::Text("Out1");
-                ImNodes::EndOutputAttribute();
-                ImNodes::EndNode();
-
-                ImNodes::BeginNode(hardcoded_node_id + 1);
-                ImNodes::BeginNodeTitleBar();
-                ImGui::Text("intput node");
-                ImNodes::EndNodeTitleBar();
-                ImNodes::BeginInputAttribute(5, 1);
-                ImGui::Text("In1");
-                ImNodes::EndInputAttribute();
-                ImNodes::EndNode();
-
-                ImNodes::Link(6, 4, 5);
-
-                ImNodes::EndNodeEditor();
-                //
+                flowgraph.render();
 
                 ImGui::EndTabItem();
             }
