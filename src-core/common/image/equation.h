@@ -8,7 +8,7 @@ namespace image
     struct EquationChannel
     {
         std::string tkt;
-        image::Image img;
+        image::Image *img;
         double val[4] = {0, 0, 0, 0};
     };
 

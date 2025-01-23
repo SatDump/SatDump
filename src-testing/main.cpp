@@ -11,59 +11,19 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/utils.h"
-
-struct CalibChannelCfg
-{
-    bool valid;
-    std::string token;
-    std::string channel;
-    std::string unit;
-    double min;
-    double max;
-};
-
-CalibChannelCfg tryParse(std::string str)
-{
-    CalibChannelCfg c;
-    c.valid = false;
-
-    c.token = str.substr(0, str.find_first_of('='));
-    std::string parenthesis = str.substr(str.find_first_of('(') + 1, str.find_first_of(')') - str.find_first_of('(') - 1);
-    auto parts = splitString(parenthesis, ',');
-
-    if (parts.size() == 4)
-    {
-        c.channel = parts[0];
-        c.unit = parts[1];
-        c.min = std::stod(parts[2]);
-        c.max = std::stod(parts[3]);
-    }
-
-    return c;
-}
+#include "common/image/equation.h"
+#include "common/image/io.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::string setupEqu = "cch1=(channel_str"; // "cch1=(channel_str,unit_test,13,230)";
+    image::Image img321;
+    image::load_img(img321, "/home/alan/Downloads/testimgsave.jpg");
 
-    std::string channel = setupEqu.substr(0, setupEqu.find_first_of('='));
-    std::string parenthesis = setupEqu.substr(setupEqu.find_first_of('(') + 1, setupEqu.find_first_of(')') - setupEqu.find_first_of('(') - 1);
+    std::vector<image::EquationChannel> ch;
+    ch.push_back({"ch3,ch2,ch1", &img321});
+    auto img2 = image::generate_image_equation(ch, "ch2 * ch3, ch2 * ch3, ch1 * ch3");
 
-    logger->trace(channel);
-    logger->trace(parenthesis);
-
-    auto parts = splitString(parenthesis, ',');
-
-    if (parts.size() == 4)
-    {
-        std::string channelstr = parts[0];
-        std::string unit = parts[1];
-        double min = std::stod(parts[2]);
-        double max = std::stod(parts[3]);
-
-        logger->trace("Token " + channel + " : " + unit + " Min " + std::to_string(min) + " Max " + std::to_string(max));
-    }
+    image::save_img(img2, "/home/alan/Downloads/testimgsave_NEWEQU.jpg");
 }

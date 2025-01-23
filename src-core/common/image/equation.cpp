@@ -1,6 +1,7 @@
 #include "equation.h"
 #include "core/exception.h"
 #include "libs/muparser/muParser.h"
+#include "common/utils.h"
 
 namespace image
 {
@@ -9,9 +10,9 @@ namespace image
         if (!channels.size())
             throw satdump_exception("No channels provided!");
 
-        int width = channels[0].img.width();
-        int height = channels[0].img.height();
-        int depth = channels[0].img.depth();
+        int width = channels[0].img->width();
+        int height = channels[0].img->height();
+        int depth = channels[0].img->depth();
 
         try
         {
@@ -20,21 +21,22 @@ namespace image
 
             for (auto &p : channels)
             {
-                if (p.img.width() != width || p.img.height() != height)
+                if (p.img->width() != width || p.img->height() != height)
                     throw satdump_exception("All channels must have the same width!");
 
-                if (p.img.channels() == 1)
+                if (p.img->channels() == 1)
                 {
                     equParser.DefineVar(p.tkt, &p.val[0]);
                 }
                 else
                 {
-                    for (int i = 0; i < p.img.channels(); i++)
-                        equParser.DefineVar(p.tkt + "_" + std::to_string(i + 1), &p.val[i]);
+                    auto tkts = splitString(p.tkt, ',');
+                    for (int i = 0; i < p.img->channels(); i++)
+                        equParser.DefineVar(tkts.size() == p.img->channels() ? tkts[i] : (p.tkt + "_" + std::to_string(i + 1)), &p.val[i]);
                 }
 
-                if (p.img.depth() > depth)
-                    depth = p.img.depth();
+                if (p.img->depth() > depth)
+                    depth = p.img->depth();
             }
 
             int nout_channels;
@@ -45,8 +47,8 @@ namespace image
                 throw satdump_exception("Can't have more than 4 output channels!");
 
             image::Image out(depth,
-                             channels[0].img.width(),
-                             channels[0].img.height(),
+                             channels[0].img->width(),
+                             channels[0].img->height(),
                              nout_channels);
 
             size_t x, y, c;
@@ -56,14 +58,14 @@ namespace image
                 {
                     for (auto &p : channels)
                     {
-                        if (p.img.channels() == 1)
+                        if (p.img->channels() == 1)
                         {
-                            p.val[0] = p.img.getf(0, x, y);
+                            p.val[0] = p.img->getf(0, x, y);
                         }
                         else
                         {
-                            for (int i = 0; i < p.img.channels(); i++)
-                                p.val[i] = p.img.getf(i, x, y);
+                            for (int i = 0; i < p.img->channels(); i++)
+                                p.val[i] = p.img->getf(i, x, y);
                         }
                     }
 
