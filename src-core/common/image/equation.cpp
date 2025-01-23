@@ -2,6 +2,7 @@
 #include "core/exception.h"
 #include "libs/muparser/muParser.h"
 #include "common/utils.h"
+#include "common/image/meta.h"
 
 namespace image
 {
@@ -18,6 +19,8 @@ namespace image
         {
             mu::Parser equParser;
             equParser.SetExpr(equation);
+
+            nlohmann::json proj_cfg;
 
             for (auto &p : channels)
             {
@@ -37,6 +40,9 @@ namespace image
 
                 if (p.img->depth() > depth)
                     depth = p.img->depth();
+
+                if (image::has_metadata_proj_cfg(*p.img))
+                    proj_cfg = image::get_metadata_proj_cfg(*p.img);
             }
 
             int nout_channels;
@@ -50,6 +56,7 @@ namespace image
                              channels[0].img->width(),
                              channels[0].img->height(),
                              nout_channels);
+            image::set_metadata_proj_cfg(out, proj_cfg);
 
             size_t x, y, c;
             for (y = 0; y < height; y++)

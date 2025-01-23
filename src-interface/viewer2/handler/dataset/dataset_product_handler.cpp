@@ -8,6 +8,7 @@
 
 #include "flowgraph/imageproduct_node.h"
 #include "flowgraph/image_nodes.h"
+#include "flowgraph/datasetproc_node.h"
 
 namespace satdump
 {
@@ -33,6 +34,10 @@ namespace satdump
                                                      { return std::make_shared<ImageReproj_Node>(); });
             flowgraph.node_internal_registry.emplace("image_equation", []()
                                                      { return std::make_shared<ImageEquation_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_handler_sink", [this]()
+                                                     { return std::make_shared<ImageHandlerSink_Node>(this); });
+            flowgraph.node_internal_registry.emplace("image_equalize", []()
+                                                     { return std::make_shared<ImageEqualize_Node>(); });
         }
 
         DatasetProductHandler::~DatasetProductHandler()

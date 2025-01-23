@@ -11,19 +11,41 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/image/equation.h"
-#include "common/image/io.h"
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    image::Image img321;
-    image::load_img(img321, "/home/alan/Downloads/testimgsave.jpg");
+    uint8_t pkt[224];
 
-    std::vector<image::EquationChannel> ch;
-    ch.push_back({"ch3,ch2,ch1", &img321});
-    auto img2 = image::generate_image_equation(ch, "ch2 * ch3, ch2 * ch3, ch1 * ch3");
+    std::ifstream data_in("/home/alan/Downloads/SatDump/build/live_output/2025-01-23_15-24_elektro_ggak_1.693 GHz/elektro_ggak.cadu");
+    std::ofstream data_ou("/home/alan/Downloads/SatDump/build/live_output/2025-01-23_15-24_elektro_ggak_1.693 GHz/elektro_ggak_p.cadu");
 
-    image::save_img(img2, "/home/alan/Downloads/testimgsave_NEWEQU.jpg");
+    while (!data_in.eof())
+    {
+        data_in.read((char *)pkt, 224);
+        data_in.read((char *)pkt, 224);
+
+        int marker = pkt[4] >> 4;
+
+        if (marker == 0)
+            continue;
+        else if (marker == 2)
+            continue;
+        else if (marker == 1)
+            continue;
+        else if (marker == 4)
+            continue;
+        else if (marker == 5)
+            continue;
+        else if (marker == 7)
+            continue;
+        else if (marker == 3)
+            data_ou.write((char *)pkt, 224);
+        else if (marker == 6)
+            continue;
+
+        logger->trace(marker);
+    }
 }

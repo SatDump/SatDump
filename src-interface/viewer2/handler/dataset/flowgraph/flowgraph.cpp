@@ -133,5 +133,25 @@ namespace satdump
             logger->trace("LINK DELETE %d %d", iter->start, iter->end);
             links.erase(iter);
         }
+
+        if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+        {
+            int node_s = ImNodes::NumSelectedNodes();
+
+            if (node_s > 0)
+            {
+                std::vector<int> nodes_ids(node_s);
+                ImNodes::GetSelectedNodes(nodes_ids.data());
+
+                for (auto &id : nodes_ids)
+                {
+                    auto iter = std::find_if(
+                        nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool
+                        { return node->id == id; });
+                    logger->trace("NODE DELETE %d", id);
+                    nodes.erase(iter);
+                }
+            }
+        }
     }
 }

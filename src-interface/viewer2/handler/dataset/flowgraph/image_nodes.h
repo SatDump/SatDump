@@ -6,6 +6,7 @@
 #include "projection/projection.h"
 #include "projection/reprojector.h"
 #include "common/image/equation.h"
+#include "common/image/processing.h"
 
 namespace satdump
 {
@@ -200,6 +201,46 @@ namespace satdump
             inputs.clear();
             for (auto &c : channels)
                 inputs.push_back({c.input_name});
+        }
+    };
+
+    class ImageEqualize_Node : public NodeInternal
+    {
+    private:
+        bool per_channel = false;
+
+    public:
+        ImageEqualize_Node()
+            : NodeInternal("Equalize Image")
+        {
+            inputs.push_back({"Image"});
+            outputs.push_back({"Image"});
+        }
+
+        void process()
+        {
+            std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[0].ptr);
+            image::equalize(*img, per_channel);
+            outputs[0].ptr = img;
+
+            has_run = true;
+        }
+
+        void render()
+        {
+            ImGui::Checkbox("Per Channel", &per_channel);
+        }
+
+        nlohmann::json to_json()
+        {
+            nlohmann::json j;
+            j["per_channel"] = per_channel;
+            return j;
+        }
+
+        void from_json(nlohmann::json j)
+        {
+            per_channel = j["per_channel"];
         }
     };
 }
