@@ -32,7 +32,7 @@ namespace image
                 {
                     auto tkts = splitString(p.tkt, ',');
                     for (int i = 0; i < p.img->channels(); i++)
-                        equParser.DefineVar(tkts.size() == p.img->channels() ? tkts[i] : (p.tkt + "_" + std::to_string(i + 1)), &p.val[i]);
+                        equParser.DefineVar(tkts.size() > i ? tkts[i] : (p.tkt + "_" + std::to_string(i + 1)), &p.val[i]);
                 }
 
                 if (p.img->depth() > depth)

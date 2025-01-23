@@ -30,6 +30,15 @@ namespace satdump
         bool has_run;
 
     public:
+        std::function<void(InOutConfig, bool)> add_io_callback;
+
+        void addInputDynamic(InOutConfig cfg)
+        {
+            inputs.push_back(cfg);
+            add_io_callback(cfg, false);
+        }
+
+    public:
         void reset()
         {
             has_run = false;
@@ -75,8 +84,8 @@ namespace satdump
             const std::shared_ptr<NodeInternal> internal;
 
             bool pos_was_set = false;
-            double pos_x = 0;
-            double pos_y = 0;
+            float pos_x = 0;
+            float pos_y = 0;
 
             struct InOut
             {
@@ -97,15 +106,23 @@ namespace satdump
                     node_io.push_back({f->getNewNodeIOID(&node_io), io.name, false});
                 for (auto &io : internal->outputs)
                     node_io.push_back({f->getNewNodeIOID(&node_io), io.name, true});
+                internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out)
+                {
+                    node_io.push_back({f->getNewNodeIOID(&node_io), io.name, out});
+                };
             }
 
-            Node(nlohmann::json j, std::shared_ptr<NodeInternal> i)
+            Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i)
                 : id(j["id"]), internal_id(j["int_id"]), title(i->title), node_io(j["io"]), internal(i)
             {
                 internal->from_json(j["int_cfg"]);
+                internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out)
+                {
+                    node_io.push_back({f->getNewNodeIOID(&node_io), io.name, out});
+                };
 
-                pos_x = j.contains("pos_x") ? j["pos_x"].get<double>() : 0;
-                pos_y = j.contains("pos_y") ? j["pos_y"].get<double>() : 0;
+                pos_x = j.contains("pos_x") ? j["pos_x"].get<float>() : 0;
+                pos_y = j.contains("pos_y") ? j["pos_y"].get<float>() : 0;
             }
 
             nlohmann::json getJSON()
@@ -168,7 +185,7 @@ namespace satdump
             for (auto &n : j["nodes"].items())
             {
                 auto i = node_internal_registry[n.value()["int_id"]]();
-                nodes.push_back(std::make_shared<Node>(n.value(), i));
+                nodes.push_back(std::make_shared<Node>(this, n.value(), i));
             }
             links = j["links"];
         }

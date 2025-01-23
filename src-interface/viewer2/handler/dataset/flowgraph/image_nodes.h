@@ -5,6 +5,7 @@
 #include "common/image/meta.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
+#include "common/image/equation.h"
 
 namespace satdump
 {
@@ -121,5 +122,84 @@ namespace satdump
         void render() {}
         nlohmann::json to_json() { return {}; }
         void from_json(nlohmann::json j) {}
+    };
+
+    class ImageEquation_Node : public NodeInternal
+    {
+    private:
+        struct ChConfig
+        {
+            std::string input_name;
+            std::string tokens;
+
+            NLOHMANN_DEFINE_TYPE_INTRUSIVE(ChConfig, input_name, tokens);
+        };
+
+        std::vector<ChConfig> channels;
+        std::string equation;
+
+    public:
+        ImageEquation_Node()
+            : NodeInternal("Image Equation")
+        {
+            outputs.push_back({"Image"});
+        }
+
+        void process()
+        {
+            std::vector<image::EquationChannel> ch;
+            for (int i = 0; i < channels.size(); i++)
+            {
+                std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[i].ptr);
+                ch.push_back({channels[i].tokens, img.get()});
+                logger->warn(channels[i].tokens);
+            }
+
+            std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
+            *img_out = image::generate_image_equation(ch, equation);
+            outputs[0].ptr = img_out;
+
+            has_run = true;
+        }
+
+        void render()
+        {
+            ImGui::SetNextItemWidth(200 * ui_scale);
+            ImGui::InputTextMultiline("Equation", &equation);
+
+            for (auto &c : channels)
+            {
+                ImGui::Separator();
+                ImGui::Text(c.input_name.c_str());
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(200 * ui_scale);
+                ImGui::InputText(std::string("##input" + c.input_name).c_str(), &c.tokens);
+            }
+            ImGui::Separator();
+
+            if (ImGui::Button("Add"))
+            {
+                std::string name = "Img" + std::to_string(channels.size() + 1);
+                addInputDynamic({name});
+                channels.push_back({name, "chimg" + std::to_string(channels.size() + 1)});
+            }
+        }
+
+        nlohmann::json to_json()
+        {
+            nlohmann::json j;
+            j["equation"] = equation;
+            j["channels"] = channels;
+            return j;
+        }
+
+        void from_json(nlohmann::json j)
+        {
+            equation = j["equation"];
+            channels = j["channels"];
+            inputs.clear();
+            for (auto &c : channels)
+                inputs.push_back({c.input_name});
+        }
     };
 }
