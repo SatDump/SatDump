@@ -144,7 +144,6 @@ class MainActivity : NativeActivity(), TextWatcher {
 
         // Extract all resources to the app directory
         val aman = getAssets();
-        extractDir(aman, fdir + "/pipelines", "pipelines");
         extractDir(aman, fdir + "/resources", "resources");
         // extractDir(aman, fdir + "/plugins", "plugins");
         extractFile(aman, fdir + "/satdump_cfg.json", "satdump_cfg.json");

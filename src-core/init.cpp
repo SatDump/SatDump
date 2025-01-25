@@ -7,6 +7,7 @@
 #include "core/plugin.h"
 #include "satdump_vars.h"
 #include "core/config.h"
+#include "resources.h"
 
 #include "common/tracking/tle.h"
 #include "products/products.h"
@@ -93,10 +94,7 @@ namespace satdump
         registerModules();
 
         // Load pipelines
-        if (std::filesystem::exists("pipelines") && std::filesystem::is_directory("pipelines"))
-            loadPipelines("pipelines");
-        else
-            loadPipelines(satdump::RESPATH + "pipelines");
+        loadPipelines(resources::getResourcePath("pipelines"));
 
         // List them
         logger->debug("Registered pipelines :");
