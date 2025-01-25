@@ -33,6 +33,7 @@ namespace satdump
 
             process(pipeline.value(), input_level, input_file, output_file, parameters);
         }
+
         void process(Pipeline downlink_pipeline,
                      std::string input_level,
                      std::string input_file,
@@ -74,7 +75,7 @@ namespace satdump
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {
                     logger->info("Opening viewer!");
-                    viewer_app->loadDatasetInViewer(output_file + "/dataset.json");
+                    viewer_app2->openProductOrDataset(output_file + "/dataset.json");
                 }
             }
 

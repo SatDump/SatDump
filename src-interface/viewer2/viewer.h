@@ -37,6 +37,7 @@ namespace satdump
             std::thread file_open_thread;
             pfd::open_file *file_open_dialog = nullptr;
 
+        public:
             void openProductOrDataset(std::string path);
 
         public:
