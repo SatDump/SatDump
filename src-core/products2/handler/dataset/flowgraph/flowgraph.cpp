@@ -149,6 +149,14 @@ namespace satdump
                         nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool
                         { return node->id == id; });
                     logger->trace("NODE DELETE %d", id);
+                    for (auto &linkid : iter->get()->node_io)
+                    {
+                        auto liter = std::find_if(
+                            links.begin(), links.end(), [linkid](const Link &link) -> bool
+                            { return link.start == linkid.id || link.end == linkid.id; });
+                        if (liter != links.end())
+                            links.erase(liter);
+                    }
                     nodes.erase(iter);
                 }
             }
