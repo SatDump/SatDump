@@ -17,9 +17,6 @@
 #include "imgui/implot/implot.h"
 #include "imgui/implot3d/implot3d.h"
 
-// TODOREWORK
-#include "viewer2/handler/handler.h"
-
 namespace satdump
 {
     SATDUMP_DLL2 std::shared_ptr<RecorderApplication> recorder_app;

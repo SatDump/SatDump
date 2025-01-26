@@ -8,9 +8,9 @@
 // #include "resources.h"
 #include "main_ui.h"
 
-#include "handler/dummy_handler.h"
-#include "handler/product/image_product_handler.h" // TODOREWORK CLEAN
-#include "handler/dataset/dataset_handler.h"
+#include "products2/handler/dummy_handler.h"
+#include "products2/handler/product/image_product_handler.h" // TODOREWORK CLEAN
+#include "products2/handler/dataset/dataset_handler.h"
 
 namespace satdump
 {
