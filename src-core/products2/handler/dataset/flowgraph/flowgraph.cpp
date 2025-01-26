@@ -3,6 +3,7 @@
 #include "core/exception.h"
 
 #include "imgui/imnodes/imnodes.h"
+#include "imgui/imnodes/imnodes_internal.h"
 #include "logger.h"
 
 namespace satdump
@@ -73,6 +74,7 @@ namespace satdump
         ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
 
         ImNodes::BeginNodeEditor();
+        ImNodes::MiniMap();
 
         for (auto &n : nodes)
         {
@@ -160,6 +162,28 @@ namespace satdump
                     nodes.erase(iter);
                 }
             }
+        }
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            ImGui::OpenPopup("##popuprightclickflowgraph");
+        if (ImGui::BeginPopup("##popuprightclickflowgraph"))
+        {
+            if (ImGui::BeginMenu("Add Node"))
+            {
+                for (auto &opt : node_internal_registry)
+                {
+                    if (ImGui::MenuItem(opt.first.c_str()))
+                    {
+                        auto mpos = ImGui::GetMousePos();
+                        auto ptr = addNode(opt.first, opt.second());
+                        ptr->pos_was_set = true;
+                        ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndPopup();
         }
     }
 }

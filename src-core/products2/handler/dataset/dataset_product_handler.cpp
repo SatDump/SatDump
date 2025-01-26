@@ -121,25 +121,6 @@ namespace satdump
                 // grid.update();
                 flowgraph.render();
 
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-                    ImGui::OpenPopup("##popuprightclickflowgraph");
-                if (ImGui::BeginPopup("##popuprightclickflowgraph"))
-                {
-                    if (ImGui::BeginMenu("Add Node"))
-                    {
-                        for (auto &opt : flowgraph.node_internal_registry)
-                        {
-                            if (ImGui::MenuItem(opt.first.c_str()))
-                            {
-                                flowgraph.addNode(opt.first, opt.second());
-                            }
-                        }
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::EndPopup();
-                }
-
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Code"))
