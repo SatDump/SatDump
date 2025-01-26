@@ -1,7 +1,6 @@
 #pragma once
 
 #include "product_handler.h"
-#include "../processing_handler.h"
 
 #include "logger.h"
 #include "products2/image_product.h"
@@ -21,7 +20,7 @@ namespace satdump
 {
     namespace viewer
     {
-        class ImageProductHandler : public ProductHandler, public ProcessingHandler
+        class ImageProductHandler : public ProductHandler
         {
         public:
             ImageProductHandler(std::shared_ptr<products::Product> p);
@@ -62,6 +61,8 @@ namespace satdump
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
+
+            void saveResult(std::string directory);
 
             static std::string getID() { return "image_product_handler"; }
             static std::shared_ptr<Handler> getInstance() { return std::make_shared<ImageProductHandler>(nullptr); }

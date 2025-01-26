@@ -6,6 +6,7 @@
 
 #include "../handler.h"
 #include "products2/product.h"
+#include "../processing_handler.h"
 
 namespace satdump
 {
@@ -23,7 +24,7 @@ namespace satdump
          * @param product raw product pointer, to be cast in the inheriting class
          * @param instrument_cfg TODOREWORK instrument configuration file, for presets
          */
-        class ProductHandler : public Handler
+        class ProductHandler : public Handler, public ProcessingHandler
         {
         private:
             std::string handler_name;
@@ -31,17 +32,11 @@ namespace satdump
             std::string preset_selection_box_str;
             int preset_selection_curr_id = -1;
 
-        public:
-            /**
-             * @brief Constructor
-             * @param p product to handle
-             * @param dataset_mode if true, only displays the instrument name,
-             * otherwise adds timestamp and source name for clarity
-             */
-            ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode = false);
+        protected:
+            std::shared_ptr<products::Product> product;
+            nlohmann::ordered_json instrument_cfg;
 
-            std::string getName() { return handler_name; }
-
+        protected:
             /**
              * @brief Draw preset selection menu
              * @return if one was selected
@@ -54,8 +49,20 @@ namespace satdump
              */
             void tryApplyDefaultPreset();
 
-            std::shared_ptr<products::Product> product;
-            nlohmann::ordered_json instrument_cfg;
+        public:
+            nlohmann::json getInstrumentCfg() { return instrument_cfg; }
+            virtual void saveResult(std::string directory);
+
+        public:
+            /**
+             * @brief Constructor
+             * @param p product to handle
+             * @param dataset_mode if true, only displays the instrument name,
+             * otherwise adds timestamp and source name for clarity
+             */
+            ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode = false);
+
+            std::string getName() { return handler_name; }
 
             static std::string getID();
             static std::shared_ptr<Handler> getInstance();

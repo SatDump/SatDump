@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "common/utils.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -66,6 +67,11 @@ namespace satdump
         {
             if (instrument_cfg.contains("default"))
                 setConfig(instrument_cfg["default"]);
+        }
+
+        void ProductHandler::saveResult(std::string directory)
+        {
+            throw satdump_exception("saveResult NOT implemented for this handler!");
         }
     }
 }

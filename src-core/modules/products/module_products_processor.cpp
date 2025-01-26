@@ -4,6 +4,9 @@
 
 #include "products/processor/processor.h"
 
+#include "products2/dataset.h"
+#include "products2/product_process.h"
+
 namespace products
 {
     ProductsProcessorModule::ProductsProcessorModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -30,7 +33,22 @@ namespace products
     void ProductsProcessorModule::process()
     {
         logger->add_sink(logger_sink);
+
+#if 0 // TODOREWORK Make a process_dataset again?
         satdump::process_dataset(d_input_file);
+#else
+        satdump::products::DataSet dataset;
+        dataset.load(d_input_file);
+
+        for (auto d : dataset.products_list)
+        {
+            std::string pro_path = std::filesystem::path(d_input_file).parent_path().string() + "/" + d;
+            logger->warn("Processing product at " + pro_path);
+            auto prod = satdump::products::loadProduct(pro_path);
+            satdump::products::process_product_with_handler(prod, pro_path);
+        }
+#endif
+
         logger->del_sink(logger_sink);
     }
 

@@ -9,6 +9,8 @@
 #include "products2/image/calibration_units.h" // TODOREWORK
 #include "common/widgets/json_editor.h"
 
+#include "common/image/io.h" // TODOREWORK
+
 namespace satdump
 {
     namespace viewer
@@ -264,6 +266,16 @@ namespace satdump
             {
                 logger->error("Could not process image! %s", e.what());
             }
+        }
+
+        void ImageProductHandler::saveResult(std::string directory)
+        {
+            // TODOREWORK
+            auto &img = img_handler.get_current_img();
+            int autogen_id = 0;
+            while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
+                autogen_id++;
+            image::save_img(img, directory + "/img_" + std::to_string(autogen_id) + ".png");
         }
 
         void ImageProductHandler::drawMenuBar()
