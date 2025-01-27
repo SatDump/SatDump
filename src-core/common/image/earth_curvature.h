@@ -6,6 +6,7 @@ namespace image
 {
     namespace earth_curvature
     {
-        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table = nullptr);
+        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table = nullptr, std::vector<float> *reverse_table = nullptr);
+        image::Image perform_geometric_correction(image::Image img, bool &success, float *foward_table = nullptr, std::vector<float> *reverse_table = nullptr); // TODOREWORK VECTORS FOR BOTH
     }
 }

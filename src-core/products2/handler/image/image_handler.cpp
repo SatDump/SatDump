@@ -5,6 +5,7 @@
 
 #include "common/image/io.h" // TODOREWORK
 #include "common/image/processing.h"
+#include "common/image/earth_curvature.h"
 
 #include "nlohmann/json_utils.h"
 
@@ -37,6 +38,7 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
+                needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -57,8 +59,11 @@ namespace satdump
                 image_view.update(get_current_img());
                 imgview_needs_update = false;
 
-                image_view.mouseCallback = [this](int x, int y)
+                image_view.mouseCallback = [this](float x, float y)
                 {
+                    if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
+                        x = correct_fwd_lut[x];
+
                     auto &img = get_current_img();
                     ImGui::BeginTooltip(); // TODOREWORK
                     additionalMouseCallback(x, y);
@@ -137,7 +142,10 @@ namespace satdump
                                           white_balance_img |
                                           normalize_img |
                                           median_blur_img |
-                                          rotate180_image;
+                                          rotate180_image |
+                                          geocorrect_image;
+
+            correct_fwd_lut.clear();
 
             if (image_needs_processing)
             {
@@ -155,6 +163,15 @@ namespace satdump
                     image::median_blur(curr_image);
                 if (rotate180_image)
                     curr_image.mirror(true, true);
+
+                if (geocorrect_image)
+                { // TODOREWORK handle disabling projs, etc
+                    bool success = false;
+                    curr_image = image::earth_curvature::perform_geometric_correction(curr_image, success, nullptr, &correct_fwd_lut);
+                    if (!success)
+                        correct_fwd_lut.clear();
+                    image::set_metadata_proj_cfg(curr_image, {});
+                }
             }
             else
                 curr_image.clear();

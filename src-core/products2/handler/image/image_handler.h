@@ -36,12 +36,14 @@ namespace satdump
             bool normalize_img = false;
             bool median_blur_img = false;
             bool rotate180_image = false;
+            bool geocorrect_image = false;
 
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;
             image::ImgCalibHandler image_calib;
             bool image_proj_valid = false;
             proj::Projection image_proj;
+            std::vector<float> correct_fwd_lut; // TODOREWORK handle this better?
 
             // Proc function
             void do_process();

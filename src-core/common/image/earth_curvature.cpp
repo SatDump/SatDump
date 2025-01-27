@@ -1,5 +1,7 @@
 #include "earth_curvature.h"
 #include <cmath>
+#include "meta.h"
+#include "logger.h"
 
 namespace image
 {
@@ -11,7 +13,7 @@ namespace image
         This was mostly based off the following document :
         https://web.archive.org/web/20200110090856if_/http://ceeserver.cee.cornell.edu:80/wdp2/cee6150/Monograph/615_04_GeomCorrect_rev01.pdf
         */
-        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table)
+        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table, std::vector<float> *reverse_table)
         {
             float satellite_orbit_radius = EARTH_RADIUS + satellite_height;                                                                                        // Compute the satellite's orbit radius
             int corrected_width = round(swath / resolution_km);                                                                                                    // Compute the output image size, or number of samples from the imager
@@ -23,9 +25,9 @@ namespace image
             // Generate them
             for (int i = 0; i < corrected_width; i++)
             {
-                float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                                    // Get the satellite's angle
-                float satellite_angle = -atanf(EARTH_RADIUS * sinf(angle) / ((cosf(angle)) * EARTH_RADIUS - satellite_orbit_radius)); // Convert to an angle relative to earth
-                correction_factors[i] = image.width() * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                               // Convert that to a pixel from the original image
+                float angle = ((float(i) / float(corrected_width)) - 0.5f) * satellite_view_angle;                                  // Get the satellite's angle
+                float satellite_angle = -atanf(EARTH_RADIUS * sinf(angle) / ((cosf(angle))*EARTH_RADIUS - satellite_orbit_radius)); // Convert to an angle relative to earth
+                correction_factors[i] = image.width() * ((satellite_angle / edge_angle + 1.0f) / 2.0f);                             // Convert that to a pixel from the original image
             }
 
             Image output_image(image.depth(), corrected_width, image.height(), image.channels()); // Allocate output image
@@ -33,6 +35,9 @@ namespace image
             if (foward_table != nullptr)
                 for (int i = 0; i < (int)image.width(); i++)
                     foward_table[i] = -1;
+
+            if (reverse_table != nullptr)
+                reverse_table->resize(corrected_width, -1);
 
             for (int channel = 0; channel < image.channels(); channel++)
             {
@@ -60,6 +65,8 @@ namespace image
 
                         if (foward_table != nullptr)
                             foward_table[currPixel] = i;
+                        if (reverse_table != nullptr)
+                            (*reverse_table)[i] = currPixel;
 #else
                         int pixel_to_use = correction_factors[i];                                                                                     // Input pixel to use, will get rounder automatically
                         output_image[channel_offset_output + row * corrected_width + i] = image[channel_offset + row * image.width() + pixel_to_use]; // Copy over that pixel!
@@ -87,6 +94,42 @@ namespace image
             delete[] correction_factors;
 
             return output_image;
+        }
+
+        image::Image perform_geometric_correction(image::Image img, bool &success, float *foward_table, std::vector<float> *reverse_table)
+        {
+            if (img.width() == 0)
+                return img;
+
+            success = false;
+            if (!has_metadata_proj_cfg(img))
+                return img;
+            auto proj_cfg = get_metadata_proj_cfg(img);
+            if (!proj_cfg.contains("corr_swath"))
+                return img;
+            if (!proj_cfg.contains("corr_resol"))
+                return img;
+            if (!proj_cfg.contains("corr_altit"))
+                return img;
+
+            int width = proj_cfg.contains("corr_width") ? proj_cfg["corr_width"].get<int>() : img.width();
+            float swath = proj_cfg["corr_swath"].get<float>();
+            float resol = proj_cfg["corr_resol"].get<float>();
+            float altit = proj_cfg["corr_altit"].get<float>();
+            success = true;
+
+            resol *= float(width) / float(img.width());
+
+            if (proj_cfg.contains("corr_width"))
+            {
+                if ((int)img.width() != proj_cfg["corr_width"].get<int>())
+                {
+                    logger->debug("Image width mistmatch %d %d", proj_cfg["corr_width"].get<int>(), img.width());
+                    resol *= proj_cfg["corr_width"].get<int>() / float(img.width());
+                }
+            }
+
+            return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table, reverse_table);
         }
     }
 }
