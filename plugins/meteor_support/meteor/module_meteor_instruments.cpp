@@ -219,13 +219,23 @@ namespace meteor
                 else if (msumr_serial_number == 4)
                     msumr_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-4_msumr.json")), tle, filter_timestamps);
 
+                auto msu_cfg = loadJsonFile(resources::getResourcePath("calibration/MSU-MR.json"));
+
                 for (int i = 0; i < 6; i++)
+                {
                     msumr_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i), 10});
+                    msumr_products.set_channel_wavenumber(i, msu_cfg["wavenumbers"][i].get<double>());
+                }
 
                 nlohmann::json calib_cfg;
                 calib_cfg["vars"]["lrpt"] = false;
                 calib_cfg["vars"]["views"] = msumr_reader.calibration_info;
                 calib_cfg["vars"]["temps"] = msu_mr_telemetry_calib;
+
+                if (msu_cfg["vis"].contains(sat_name))
+                    calib_cfg["vars"]["vis"] = msu_cfg["vis"][sat_name];
+                else
+                    logger->warn("No visible calibration coefficients for this satellite yet!");
 
                 msumr_products.set_calibration("meteor_msumr", calib_cfg);
                 msumr_products.set_channel_unit(0, CALIBRATION_ID_REFLECTIVE_RADIANCE);
@@ -234,13 +244,6 @@ namespace meteor
                 msumr_products.set_channel_unit(3, CALIBRATION_ID_EMISSIVE_RADIANCE);
                 msumr_products.set_channel_unit(4, CALIBRATION_ID_EMISSIVE_RADIANCE);
                 msumr_products.set_channel_unit(5, CALIBRATION_ID_EMISSIVE_RADIANCE);
-
-                msumr_products.set_channel_wavenumber(0, 0);
-                msumr_products.set_channel_wavenumber(1, 0);
-                msumr_products.set_channel_wavenumber(2, 0);
-                msumr_products.set_channel_wavenumber(3, 2695.9743);
-                msumr_products.set_channel_wavenumber(4, 925.4075);
-                msumr_products.set_channel_wavenumber(5, 839.8979);
 
                 saveJsonFile(directory + "/telemetry.json", msu_mr_telemetry);
                 msumr_products.save(directory);

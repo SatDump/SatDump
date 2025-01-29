@@ -132,34 +132,69 @@ namespace image
             size_t d_height = h;
             int d_depth = bit_depth;
 
-            tsize_t linebytes = d_channels * d_width * (bit_depth == 16 ? sizeof(uint16_t) : sizeof(uint8_t));
-            unsigned char *buf = NULL;
-            if (TIFFScanlineSize(tif) == linebytes)
-                buf = (unsigned char *)_TIFFmalloc(linebytes);
-            else
-                buf = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
-
-            for (size_t y = 0; y < d_height; y++)
+            uint32 tile_width, tile_length;
+            if (TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tile_width) && TIFFGetField(tif, TIFFTAG_TILELENGTH, &tile_length))
             {
-                TIFFReadScanline(tif, buf, y, 0);
 
-                if (d_depth == 16)
+                unsigned char *buf = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif));
+                logger->error("%d - %d - %d - %d", tile_width, tile_length, d_channels, TIFFTileSize(tif));
+                for (size_t y = 0; y < d_height; y += tile_length)
                 {
-                    for (size_t x = 0; x < d_width; x++)
-                        for (int i = 0; i < d_channels; i++)
-                            img.set(i, y * d_width + x, ((uint16_t *)buf)[x * channels_number + i]);
-                }
-                else if (d_depth == 8)
-                {
-                    for (size_t x = 0; x < d_width; x++)
+                    for (size_t x = 0; x < d_width; x += tile_width)
                     {
-                        for (int i = 0; i < d_channels; i++)
-                            img.set(i, y * d_width + x, ((uint8_t *)buf)[x * channels_number + i]);
+                        TIFFReadTile(tif, buf, x, y, 0, 0);
+
+                        if (d_depth == 16)
+                        {
+                            for (size_t t_x = 0; t_x < tile_width; t_x++)
+                                for (size_t t_y = 0; t_y < tile_length; t_y++)
+                                    for (int i = 0; i < d_channels; i++)
+                                        if ((y + t_y) < d_height && (x + t_x) < d_width)
+                                            img.set(i, (y + t_y) * d_width + (x + t_x), ((uint16_t *)buf)[(t_y * tile_width + t_x) * channels_number + i]);
+                        }
+                        else if (d_depth == 8)
+                        {
+                            for (size_t t_x = 0; t_x < tile_width; t_x++)
+                                for (size_t t_y = 0; t_y < tile_length; t_y++)
+                                    for (int i = 0; i < d_channels; i++)
+                                        if ((y + t_y) < d_height && (x + t_x) < d_width)
+                                            img.set(i, (y + t_y) * d_width + (x + t_x), ((uint8_t *)buf)[(t_y * tile_width + t_x) * channels_number + i]);
+                        }
                     }
                 }
+                _TIFFfree(buf);
             }
+            else
+            {
+                tsize_t linebytes = d_channels * d_width * (bit_depth == 16 ? sizeof(uint16_t) : sizeof(uint8_t));
+                unsigned char *buf = NULL;
+                if (TIFFScanlineSize(tif) == linebytes)
+                    buf = (unsigned char *)_TIFFmalloc(linebytes);
+                else
+                    buf = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
 
-            _TIFFfree(buf);
+                for (size_t y = 0; y < d_height; y++)
+                {
+                    TIFFReadScanline(tif, buf, y, 0);
+
+                    if (d_depth == 16)
+                    {
+                        for (size_t x = 0; x < d_width; x++)
+                            for (int i = 0; i < d_channels; i++)
+                                img.set(i, y * d_width + x, ((uint16_t *)buf)[x * channels_number + i]);
+                    }
+                    else if (d_depth == 8)
+                    {
+                        for (size_t x = 0; x < d_width; x++)
+                        {
+                            for (int i = 0; i < d_channels; i++)
+                                img.set(i, y * d_width + x, ((uint8_t *)buf)[x * channels_number + i]);
+                        }
+                    }
+                }
+
+                _TIFFfree(buf);
+            }
 
             TIFFClose(tif);
         }

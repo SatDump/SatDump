@@ -50,6 +50,46 @@ namespace satdump
         }
     };
 
+    class ImageSource_Node : public NodeInternal
+    {
+    private:
+        std::string product_path;
+
+    public:
+        ImageSource_Node()
+            : NodeInternal("Image Source")
+        {
+            outputs.push_back({"Image"});
+        }
+
+        void process()
+        {
+            std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
+            image::load_img(*img_out, product_path);
+            outputs[0].ptr = img_out;
+
+            has_run = true;
+        }
+
+        void render()
+        {
+            ImGui::SetNextItemWidth(200 * ui_scale);
+            ImGui::InputText("Path", &product_path);
+        }
+
+        nlohmann::json to_json()
+        {
+            nlohmann::json j;
+            j["path"] = product_path;
+            return j;
+        }
+
+        void from_json(nlohmann::json j)
+        {
+            product_path = j["path"];
+        }
+    };
+
     class ImageGetProj_Node : public NodeInternal
     {
     private:

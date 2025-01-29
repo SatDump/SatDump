@@ -38,6 +38,8 @@ namespace satdump
                                                      { return std::make_shared<ImageHandlerSink_Node>(this); });
             flowgraph.node_internal_registry.emplace("image_equalize", []()
                                                      { return std::make_shared<ImageEqualize_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_source", []()
+                                                     { return std::make_shared<ImageSource_Node>(); });
         }
 
         DatasetProductHandler::~DatasetProductHandler()

@@ -25,8 +25,10 @@ namespace meteor
     namespace msumr
     {
         void createMSUMRProduct(satdump::products::ImageProduct &product, double timestamp, int norad, int msumr_serial_number,
-                                nlohmann::json &calib_cfg, uint8_t lrpt_channels, std::vector<double> &timestamps)
+                                nlohmann::json &calib_cfg, uint8_t lrpt_channels, std::vector<double> &timestamps, std::string sat_name)
         {
+            auto msu_cfg = loadJsonFile(resources::getResourcePath("calibration/MSU-MR.json"));
+
             product.instrument_name = "msu_mr";
             auto tle = satdump::general_tle_registry->get_from_norad_time(norad, timestamp);
             if (msumr_serial_number == 0) // M2
@@ -48,44 +50,52 @@ namespace meteor
                 }
             }
 
+            if (msu_cfg["vis"].contains(sat_name))
+            {
+                calib_cfg["vars"]["vis"] = msu_cfg["vis"][sat_name];
+                has_calib = true;
+            }
+            else
+                logger->warn("No visible calibration coefficients for this satellite yet!");
+
             if (has_calib)
             {
                 product.set_calibration("meteor_msumr", calib_cfg);
                 int next_channel = 0;
                 if ((1 << 0) & lrpt_channels)
                 {
-                    product.set_channel_unit(next_channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
-                    product.set_channel_wavenumber(next_channel, 0);
+                    product.set_channel_unit(0, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                    product.set_channel_wavenumber(0, msu_cfg["wavenumbers"][0].get<double>());
                     next_channel++;
                 }
                 if ((1 << 1) & lrpt_channels)
                 {
-                    product.set_channel_unit(next_channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
-                    product.set_channel_wavenumber(next_channel, 0);
+                    product.set_channel_unit(1, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                    product.set_channel_wavenumber(1, msu_cfg["wavenumbers"][1].get<double>());
                     next_channel++;
                 }
                 if ((1 << 2) & lrpt_channels)
                 {
-                    product.set_channel_unit(next_channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
-                    product.set_channel_wavenumber(next_channel, 0);
+                    product.set_channel_unit(2, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                    product.set_channel_wavenumber(2, msu_cfg["wavenumbers"][2].get<double>());
                     next_channel++;
                 }
                 if ((1 << 3) & lrpt_channels)
                 {
-                    product.set_channel_unit(next_channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
-                    product.set_channel_wavenumber(next_channel, 2695.9743);
+                    product.set_channel_unit(3, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    product.set_channel_wavenumber(3, msu_cfg["wavenumbers"][3].get<double>());
                     next_channel++;
                 }
                 if ((1 << 4) & lrpt_channels)
                 {
-                    product.set_channel_unit(next_channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
-                    product.set_channel_wavenumber(next_channel, 925.4075);
+                    product.set_channel_unit(4, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    product.set_channel_wavenumber(4, msu_cfg["wavenumbers"][4].get<double>());
                     next_channel++;
                 }
                 if ((1 << 5) & lrpt_channels)
                 {
-                    product.set_channel_unit(next_channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
-                    product.set_channel_wavenumber(next_channel, 839.8979);
+                    product.set_channel_unit(5, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    product.set_channel_wavenumber(5, msu_cfg["wavenumbers"][5].get<double>());
                     next_channel++;
                 }
             }
@@ -265,7 +275,7 @@ namespace meteor
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                 {
-                    msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 8});
+                    msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10});
                     lrpt_channels |= 1 << i;
                     nlohmann::json channel_views = nlohmann::json::array();
                     channel_views[0] = nlohmann::json::array();
@@ -296,7 +306,7 @@ namespace meteor
             }
 
             msumr_products.images.swap(msumr_images);
-            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps);
+            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
             msumr_products.save(directory);
             msumr_products.images.clear(); // Free up memory
 
@@ -357,9 +367,9 @@ namespace meteor
                 {
                     image::Image img = msureader.getChannel(i, max_fill_lines);
                     if (img.size() > 0)
-                        filled_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 8});
+                        filled_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10});
                 }
-                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps);
+                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
                 filled_products.save(fill_directory);
                 dataset.products_list.push_back("MSU-MR (Filled)");
             }

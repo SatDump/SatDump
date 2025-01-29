@@ -1,0 +1,41 @@
+{
+    "name": "MSU-MR",
+    "presets": [
+        {
+            "name": "221",
+            "equation": "ch2, ch2, ch1"
+        },
+        {
+            "name": "321 Sun Corrected",
+            "equation": "cch3=(3,sun_angle_compensated_reflective_radiance,0,10);\ncch2=(2,sun_angle_compensated_reflective_radiance,0,60);\ncch1=(1,sun_angle_compensated_reflective_radiance,0,50);\ncch3,\ncch2,\ncch1"
+        }
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "min": 0,
+                "max": 46.203
+            },
+            "2": {
+                "min": 0,
+                "max": 97.0507
+            },
+            "3": {
+                "min": 0,
+                "max": 15
+            },
+            "4": {
+                "min": 0.05,
+                "max": 1
+            },
+            "5": {
+                "min": 30,
+                "max": 120
+            },
+            "6": {
+                "min": 30,
+                "max": 120
+            }
+        }
+    }
+}
