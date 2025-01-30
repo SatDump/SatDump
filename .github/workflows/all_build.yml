@@ -24,11 +24,11 @@ jobs:
           path: vcpkg
           key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.13
 
       - name: Install mako
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
