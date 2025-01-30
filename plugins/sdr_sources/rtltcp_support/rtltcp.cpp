@@ -183,7 +183,7 @@ void RTLTCPSource::drawControlUI()
 
     if (tuner_agc_enabled)
         style::beginDisabled();
-    gain_changed |= widgets::SteppedSliderInt("Gain", &gain, 0, 49);
+    gain_changed |= widgets::SteppedSliderInt("Tuner Gain", &gain, 0, 49);
     if (tuner_agc_enabled)
         style::endDisabled();
 
