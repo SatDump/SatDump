@@ -313,7 +313,7 @@ void RtlSdrSource::drawControlUI()
 
     if (tuner_agc_enabled)
         RImGui::beginDisabled();
-    if (RImGui::SteppedSliderFloat("LNA Gain", &display_gain, (float)available_gains[0] / 10.0f,
+    if (RImGui::SteppedSliderFloat("Tuner Gain", &display_gain, (float)available_gains[0] / 10.0f,
         (float)available_gains.back() / 10.0f, gain_step, "%.1f"))
             set_gains();
     if(is_started && RImGui::IsItemDeactivatedAfterEdit())
