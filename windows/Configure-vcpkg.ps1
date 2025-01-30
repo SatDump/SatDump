@@ -61,21 +61,17 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 #Setup vcpkg
 Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
-git clone https://github.com/microsoft/vcpkg
+git clone https://github.com/microsoft/vcpkg -b 2025.01.13
 cd vcpkg
-git checkout 68d3499
 .\bootstrap-vcpkg.bat
 
 # Core packages. libxml2 is for libiio
 .\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel] hdf5
 
 # Entirely for UHD...
-if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
-{
-    .\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
-                                        boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
-                                        boost-assign boost-dll
-}
+.\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
+                                    boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
+                                    boost-assign boost-dll
 
 #Start Building Dependencies
 $null = mkdir build
@@ -92,6 +88,7 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 
 #TEMPORARY: Use an unmerged PR of LibUSB to allow setting RAW_IO on USB transferrs. This is needed to
 #           prevent sample drops on some Windows machines with USB SDRs
+#           Update Jan. 30, 2025: There's nothing more permanent than a temporary measure :-)
 Write-Output "Building libusb..."
 git clone https://github.com/HannesFranke-smartoptics/libusb -b raw_io_v2
 cd libusb\msvc
@@ -181,7 +178,7 @@ cd ..\..\..\..
 rm -recurse -force hackrf
 
 Write-Output "Building libiio..."
-git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.25
+git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.26
 cd libiio
 (Get-Content -raw CMakeLists.txt) -replace "check_symbol_exists\(libusb_get_version libusb.h HAS_LIBUSB_GETVERSION\)", "" | Set-Content -Encoding ASCII CMakeLists.txt #Needed for cross-compilation only
 $null = mkdir build
@@ -239,17 +236,18 @@ rm -recurse -force bladeRF
 if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
 {
     rm -recurse -force FX3-SDK, FX3-SDK.zip
-    Write-Output "Building UHD..."
-    git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
-    cd uhd\host
-    $null = mkdir build
-    cd build
-    cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
-    cmake --build . --config Release
-    cmake --install .
-    cd ..\..\..
-    rm -recurse -force uhd
 }
+
+Write-Output "Building UHD..."
+git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.8.0.0
+cd uhd\host
+$null = mkdir build
+cd build
+cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
+cmake --build . --config Release
+cmake --install .
+cd ..\..\..
+rm -recurse -force uhd
 
 cd ..
 rm -recurse -force build
