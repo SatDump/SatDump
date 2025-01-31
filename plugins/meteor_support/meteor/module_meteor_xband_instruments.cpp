@@ -304,11 +304,20 @@ namespace meteor
                     kmss_product.instrument_name = "kmss_msu100";
                     kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
 
+                    std::vector<satdump::ChannelTransform> transforms_def = {satdump::ChannelTransform().init_none(),
+                                                                             satdump::ChannelTransform().init_none(),
+                                                                             satdump::ChannelTransform().init_none()};
+
+                    if (sat_name == "METEOR-M2-4")
+                        transforms_def = {satdump::ChannelTransform().init_none(),
+                                          satdump::ChannelTransform().init_affine_slantx(1, 1, 4, -3.8, 4000, 0.0012),
+                                          satdump::ChannelTransform().init_affine_slantx(1, 1, -2, -2, 4000, 0.0005)};
+
                     for (int i = 0; i < 3; i++)
                     {
                         auto img = image::Image(msu100_1_dat[i].data(), 16, 8000, kmss_lines, 1);
                         msu100_1_dat[i].clear();
-                        kmss_product.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, 0, 0)});
+                        kmss_product.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, transforms_def[i]});
                     }
 
                     kmss_product.save(directory);
