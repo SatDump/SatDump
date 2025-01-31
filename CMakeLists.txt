@@ -220,7 +220,6 @@ add_subdirectory(plugins)
 
 # Install configuration
 if((NOT ANDROID) AND ENABLE_INSTALL)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/pipelines DESTINATION share/satdump)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
     install(FILES ${CMAKE_SOURCE_DIR}/satdump_cfg.json DESTINATION share/satdump)
     install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/satdump)

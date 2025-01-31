@@ -10,6 +10,8 @@ namespace satdump
     {
         bool Lua_DatasetProductProcessor::can_process()
         {
+            //TODOREWORK
+            return true;
         }
 
         void Lua_DatasetProductProcessor::process(float *progress)
