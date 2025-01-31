@@ -1,12 +1,9 @@
 #pragma once
 
 #include "../handler.h"
-
-#include "TextEditor.h"
-
 #include "dataset_handler.h"
 
-#include "flowgraph/flowgraph.h"
+#include "processor.h"
 
 namespace satdump
 {
@@ -20,12 +17,12 @@ namespace satdump
 
             DatasetHandler *dataset_handler;
 
-            int selected_tab = 0;
+            // Presets / processor list
+            std::string current_cfg;
+            std::vector<nlohmann::json> available_presets;
+            std::unique_ptr<DatasetProductProcessor> processor;
 
-            TextEditor editor;
-            void run_lua();
-
-            Flowgraph flowgraph;
+            void run();
 
             // The Rest
             void drawMenu();

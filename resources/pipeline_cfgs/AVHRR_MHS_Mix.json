@@ -1,5 +1,6 @@
 {
     "name": "AVHRR and MHS Mix TEST",
-    "processor": "flowgraph_processor",
-    "cfg": {}
+    "processor": "lua_processor",
+    "cfg": {},
+    "lua": "linfo(\"TEST\")\n"
 }

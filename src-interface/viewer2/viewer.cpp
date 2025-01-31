@@ -20,6 +20,8 @@ namespace satdump
             : Application("viewer")
         {
             master_handler = std::make_shared<DummyHandler>("MasterHandlerViewer");
+
+            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
 
         ViewerApplication::~ViewerApplication()

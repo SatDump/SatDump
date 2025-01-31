@@ -1,19 +1,19 @@
 #pragma once
 
 #include "processor.h"
-#include "TextEditor.h"
+#include "flowgraph/flowgraph.h"
 
 namespace satdump
 {
     namespace viewer
     {
-        class Lua_DatasetProductProcessor : public DatasetProductProcessor
+        class Flowgraph_DatasetProductProcessor : public DatasetProductProcessor
         {
         private:
-            TextEditor editor;
+            Flowgraph flowgraph;
 
         public:
-            Lua_DatasetProductProcessor(DatasetHandler *dh, Handler *dp, nlohmann::json p);
+            Flowgraph_DatasetProductProcessor(DatasetHandler *dh, Handler *dp, nlohmann::json p);
 
             nlohmann::json getCfg();
 

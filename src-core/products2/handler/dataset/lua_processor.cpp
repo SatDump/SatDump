@@ -8,13 +8,30 @@ namespace satdump
 {
     namespace viewer
     {
+        Lua_DatasetProductProcessor::Lua_DatasetProductProcessor(DatasetHandler *dh, Handler *dp, nlohmann::json p)
+            : DatasetProductProcessor(dh, dp, p)
+        {
+            editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+            if (p.contains("lua"))
+                editor.SetText(p["lua"].get<std::string>());
+        }
+
+        nlohmann::json Lua_DatasetProductProcessor::getCfg()
+        {
+            nlohmann::json cfg;
+            cfg["lua"] = editor.GetText();
+            cfg["cfg"] = params;
+            return cfg;
+        }
+
         bool Lua_DatasetProductProcessor::can_process()
         {
+            return true; // TODOREWORK
         }
 
         void Lua_DatasetProductProcessor::process(float *progress)
         {
-            std::string lua_code = parameters["lua"];
+            std::string lua_code = editor.GetText();
 
             try
             {
@@ -51,6 +68,11 @@ namespace satdump
             {
                 logger->error(e.what());
             }
+        }
+
+        void Lua_DatasetProductProcessor::renderUI()
+        {
+            editor.Render("LuaEditor");
         }
     }
 }

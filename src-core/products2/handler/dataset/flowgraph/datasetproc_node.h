@@ -9,10 +9,10 @@ namespace satdump
     class ImageHandlerSink_Node : public NodeInternal
     {
     private:
-        viewer::DatasetProductHandler *ptr;
+        viewer::Handler *ptr;
 
     public:
-        ImageHandlerSink_Node(viewer::DatasetProductHandler *ptr)
+        ImageHandlerSink_Node(viewer::Handler *ptr)
             : NodeInternal("Image Handler Sink"), ptr(ptr)
         {
             inputs.push_back({"Image"});

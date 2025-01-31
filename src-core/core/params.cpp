@@ -130,7 +130,7 @@ namespace satdump
                 for (std::pair<std::string, std::string> &opt : d_labeled_opts)
                     d_options_str += opt.second + '\0';
 
-                if(p_bool) // Allow manual
+                if (p_bool) // Allow manual
                     d_options_str += std::string("Custom") + '\0';
 
                 if (hasValue)
@@ -148,7 +148,7 @@ namespace satdump
                     }
                     if (i == d_labeled_opts.size())
                     {
-                        if(p_bool) // Allow Manual
+                        if (p_bool) // Allow Manual
                             d_option = i;
                         else
                             d_option = 0;

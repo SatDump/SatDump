@@ -1,0 +1,18 @@
+{
+    "name": "MSU-GS Full Disk",
+    "processor": "flowgraph_processor",
+    "cfg": {
+        "elektrol2_pos": {
+            "type": "float",
+            "value": 14.5,
+            "name": "L3 Longitude",
+            "description": "Longitude to use for projection"
+        },
+        "elektrol3_pos": {
+            "type": "float",
+            "value": -76,
+            "name": "L3 Longitude",
+            "description": "Longitude to use for projection"
+        }
+    }
+}

@@ -11,34 +11,37 @@ namespace satdump
     This is really mostly means for the user interface,
     to have a common method to represent and input
     parameters, without hardcoding them.
+    TODOREWORK DOCUMENT
     */
     namespace params
     {
-        enum ParameterType
-        {
-            PARAM_STRING,
-            PARAM_PASSWORD,
-            PARAM_INT,
-            PARAM_FLOAT,
-            PARAM_BOOL,
-            PARAM_OPTIONS,
-            PARAM_PATH,
-            PARAM_TIMESTAMP,
-            PARAM_NOTATED_INT,
-            PARAM_COLOR,
-            PARAM_BASEBAND_TYPE,
-            PARAM_LABELED_OPTIONS
-        };
-
         class EditableParameter
         {
-        public:
+        private:
+            enum ParameterType
+            {
+                PARAM_STRING,
+                PARAM_PASSWORD,
+                PARAM_INT,
+                PARAM_FLOAT,
+                PARAM_BOOL,
+                PARAM_OPTIONS,
+                PARAM_PATH,
+                PARAM_TIMESTAMP,
+                PARAM_NOTATED_INT,
+                PARAM_COLOR,
+                PARAM_BASEBAND_TYPE,
+                PARAM_LABELED_OPTIONS
+            };
+
+        private:
             ParameterType d_type;
             std::string d_name;
             int d_imgui_id;
             std::string d_id;
             std::string d_description;
 
+        private:
             // All the values we might need
             std::string p_string;
             int p_int;
@@ -56,10 +59,22 @@ namespace satdump
             std::vector<std::pair<std::string, std::string>> d_labeled_opts;
 
         public:
+            EditableParameter() {}
             EditableParameter(nlohmann::json p_json);
             void draw();
             nlohmann::json getValue();
             nlohmann::json setValue(nlohmann::json v);
+
+        public:
+            friend inline void to_json(nlohmann::json &j, const EditableParameter &v)
+            {
+                throw std::runtime_error("TODO");
+            }
+
+            friend inline void from_json(const nlohmann::json &j, EditableParameter &v)
+            {
+                v = EditableParameter(j);
+            }
         };
     }
 }
