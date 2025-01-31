@@ -24,7 +24,6 @@ echo "Making app shell..."
 mkdir -p MacApp/SatDump.app/Contents/MacOS
 mkdir -p MacApp/SatDump.app/Contents/Resources/plugins
 cp -r $GITHUB_WORKSPACE/resources MacApp/SatDump.app/Contents/Resources/resources
-cp -r $GITHUB_WORKSPACE/pipelines MacApp/SatDump.app/Contents/Resources/pipelines
 cp $GITHUB_WORKSPACE/satdump_cfg.json MacApp/SatDump.app/Contents/Resources
 cp $GITHUB_WORKSPACE/macOS/Info.plist MacApp/SatDump.app/Contents
 cp $GITHUB_WORKSPACE/macOS/Readme.rtf MacApp/Readme.rtf

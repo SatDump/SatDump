@@ -36,7 +36,6 @@ cd $BuildPath
 mkdir Release\plugins | Out-Null
 cp plugins\Release\*.dll Release\plugins
 cp -r $SourcePath\resources Release
-cp -r $SourcePath\pipelines Release
 cp $SourcePath\satdump_cfg.json Release
 cd Release
 

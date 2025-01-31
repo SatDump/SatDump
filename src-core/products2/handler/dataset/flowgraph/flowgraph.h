@@ -113,7 +113,7 @@ namespace satdump
             }
 
             Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i)
-                : id(j["id"]), internal_id(j["int_id"]), title(i->title), node_io(j["io"]), internal(i)
+                : id(j["id"]), internal_id(j["int_id"]), title(i->title), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
             {
                 internal->from_json(j["int_cfg"]);
                 internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out)

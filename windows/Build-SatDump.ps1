@@ -24,7 +24,7 @@ elseif($platform -eq "arm64-windows")
 {
     $generator = "ARM64"
     $arch = "ARM64"
-    $additional_args = "-DPLUGIN_USRP_SDR_SUPPORT=OFF", "-DPLUGIN_LIMESDR_SDR_SUPPORT=OFF"
+    $additional_args = @("-DPLUGIN_LIMESDR_SDR_SUPPORT=OFF")
 }
 else
 {

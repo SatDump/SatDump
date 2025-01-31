@@ -37,11 +37,9 @@ cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..\out\build\$($platform.
 
 #Remove old dirs
 if(Test-Path Debug\resources -ErrorAction SilentlyContinue) {rm -Recurse Debug\resources}
-if(Test-Path Debug\pipelines -ErrorAction SilentlyContinue) {rm -Recurse Debug\pipelines}
 if(Test-Path Debug\plugins -ErrorAction SilentlyContinue) {rm -Recurse Debug\plugins}
 
 cp -r ..\..\..\resources Debug
-cp -r ..\..\..\pipelines Debug
 
 mkdir Debug\plugins | Out-Null
 cp -force plugins\Debug\*.dll Debug\plugins
