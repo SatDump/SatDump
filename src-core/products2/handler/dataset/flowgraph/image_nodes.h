@@ -124,6 +124,8 @@ namespace satdump
     {
     private:
         std::string path;
+        bool processing = false;
+        float progress = 0;
 
     public:
         ImageReproj_Node()
@@ -136,6 +138,7 @@ namespace satdump
 
         void process()
         {
+            processing = true;
             std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[0].ptr);
             std::shared_ptr<proj::Projection> proj = std::static_pointer_cast<proj::Projection>(inputs[1].ptr);
 
@@ -153,14 +156,19 @@ namespace satdump
             cfg["width"] = img->width();
             cfg["height"] = img->height();
             image::set_metadata_proj_cfg(*op.img, cfg);
-            *img_out = proj::reproject(op);
+            *img_out = proj::reproject(op, &progress);
 
             outputs[0].ptr = img_out;
 
             has_run = true;
+            processing = false;
         }
 
-        void render() {}
+        void render()
+        {
+            if (processing)
+                ImGui::ProgressBar(progress, {200 * ui_scale, 0});
+        }
         nlohmann::json to_json() { return {}; }
         void from_json(nlohmann::json j) {}
     };

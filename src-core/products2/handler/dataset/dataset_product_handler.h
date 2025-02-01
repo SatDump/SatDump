@@ -2,6 +2,7 @@
 
 #include "../handler.h"
 #include "dataset_handler.h"
+#include "../processing_handler.h"
 
 #include "processor.h"
 
@@ -9,7 +10,7 @@ namespace satdump
 {
     namespace viewer
     {
-        class DatasetProductHandler : public Handler
+        class DatasetProductHandler : public Handler, public ProcessingHandler
         {
         public:
             DatasetProductHandler();
@@ -22,7 +23,8 @@ namespace satdump
             std::vector<nlohmann::json> available_presets;
             std::unique_ptr<DatasetProductProcessor> processor;
 
-            void run();
+            // Proc function
+            void do_process();
 
             // The Rest
             void drawMenu();

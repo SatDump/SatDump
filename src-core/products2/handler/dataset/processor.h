@@ -12,6 +12,7 @@ namespace satdump
         protected:
             const DatasetHandler *dataset_handler;
             const Handler *dataset_product_handler;
+            const std::string name, processor;
             //            const nlohmann::json parameters;
 
             std::map<std::string, params::EditableParameter> params; // TODOREWORK make this more dynamic...
@@ -43,13 +44,21 @@ namespace satdump
 
         public:
             DatasetProductProcessor(DatasetHandler *dh, Handler *dp, nlohmann::json p)
-                : dataset_handler(dh), dataset_product_handler(dp) //, parameters(p)
+                : dataset_handler(dh), dataset_product_handler(dp),
+                  name(p["name"]), processor(p["processor"])
             {
                 if (p.contains("cfg"))
                     params = p["cfg"];
             }
 
-            virtual nlohmann::json getCfg() = 0;
+            virtual nlohmann::json getCfg()
+            {
+                nlohmann::json cfg;
+                cfg["cfg"] = params;
+                cfg["name"] = name;
+                cfg["processor"] = processor;
+                return cfg;
+            }
 
             virtual bool can_process() = 0;
             virtual void process(float *progress = nullptr) = 0;

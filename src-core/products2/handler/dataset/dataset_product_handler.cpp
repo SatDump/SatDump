@@ -16,6 +16,7 @@ namespace satdump
         {
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MHS_Mix.json")));
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/MSUGS_Full_Disk.json")));
+            available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_as_MHS.json")));
         }
 
         DatasetProductHandler::~DatasetProductHandler()
@@ -30,8 +31,13 @@ namespace satdump
         {
             ImGui::BeginTabBar("##datasetproducttabbar");
 
+            bool proc_now = is_processing;
+
             if (ImGui::BeginTabItem("Presets"))
             {
+                if (proc_now)
+                    style::beginDisabled();
+
                 if (ImGui::BeginListBox("##processingpipelineslistbox"))
                 {
                     for (auto &p : available_presets)
@@ -53,22 +59,37 @@ namespace satdump
                     processor->renderParams();
 
                 if (ImGui::Button("Generate"))
-                    run();
+                    asyncProcess();
+
+                if (processor)
+                    ImGui::SameLine();
+                if (ImGui::Button("Get JSON"))
+                {
+                    std::string str = processor->getCfg().dump(4);
+                    ImGui::SetClipboardText(str.c_str());
+                }
+
+                if (proc_now)
+                    style::endDisabled();
 
                 ImGui::EndTabItem();
             }
 
             if (processor && ImGui::BeginTabItem("Edit"))
             {
+                if (proc_now)
+                    style::beginDisabled();
                 if (processor)
                     processor->renderUI();
+                if (proc_now)
+                    style::endDisabled();
                 ImGui::EndTabItem();
             }
 
             ImGui::EndTabBar();
         }
 
-        void DatasetProductHandler::run()
+        void DatasetProductHandler::do_process()
         {
             if (processor->can_process())
                 processor->process();

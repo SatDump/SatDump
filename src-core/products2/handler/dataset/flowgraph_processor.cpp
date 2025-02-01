@@ -40,15 +40,17 @@ namespace satdump
             flowgraph.node_internal_registry.emplace("image_source", []()
                                                      { return std::make_shared<ImageSource_Node>(); });
 
+            flowgraph.node_internal_registry.emplace("dataset_product_source", [this]()
+                                                     { return std::make_shared<DatasetProductSource_Node>(this); });
+
             if (p.contains("flowgraph"))
                 flowgraph.setJSON(p["flowgraph"]);
         }
 
         nlohmann::json Flowgraph_DatasetProductProcessor::getCfg()
         {
-            nlohmann::json cfg;
+            nlohmann::json cfg = DatasetProductProcessor::getCfg();
             cfg["flowgraph"] = flowgraph.getJSON();
-            cfg["cfg"] = params;
             return cfg;
         }
 

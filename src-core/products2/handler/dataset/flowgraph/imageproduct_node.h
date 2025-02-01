@@ -49,6 +49,9 @@ namespace satdump
     private:
         std::string equation;
 
+        bool processing = false;
+        float progress = 0;
+
     public:
         ImageProductEquation_Node()
             : NodeInternal("Image Product Equation")
@@ -59,20 +62,25 @@ namespace satdump
 
         void process()
         {
+            processing = true;
             std::shared_ptr<satdump::products::ImageProduct> img_pro = std::static_pointer_cast<satdump::products::ImageProduct>(inputs[0].ptr);
 
             std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
-            *img_out = products::generate_equation_product_composite(img_pro.get(), equation);
+            *img_out = products::generate_equation_product_composite(img_pro.get(), equation, &progress);
 
             outputs[0].ptr = img_out;
 
             has_run = true;
+            processing = false;
         }
 
         void render()
         {
             ImGui::SetNextItemWidth(200 * ui_scale);
             ImGui::InputTextMultiline("Equation", &equation);
+
+            if (processing)
+                ImGui::ProgressBar(progress, {200 * ui_scale, 0});
         }
 
         nlohmann::json to_json()

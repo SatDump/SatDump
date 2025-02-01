@@ -1,0 +1,174 @@
+{
+    "name": "AVHRR as MHS",
+    "processor": "flowgraph_processor",
+    "cfg": {},
+    "flowgraph": {
+        "links": [
+            {
+                "end": 1,
+                "id": 0,
+                "start": 0
+            },
+            {
+                "end": 4,
+                "id": 1,
+                "start": 3
+            },
+            {
+                "end": 6,
+                "id": 2,
+                "start": 5
+            },
+            {
+                "end": 8,
+                "id": 3,
+                "start": 2
+            },
+            {
+                "end": 9,
+                "id": 4,
+                "start": 7
+            },
+            {
+                "end": 11,
+                "id": 5,
+                "start": 10
+            }
+        ],
+        "nodes": [
+            {
+                "id": 0,
+                "int_cfg": {
+                    "id": "avhrr_3",
+                    "index": 0
+                },
+                "int_id": "dataset_product_source",
+                "io": [
+                    {
+                        "id": 0,
+                        "is_out": true,
+                        "name": "Product"
+                    }
+                ],
+                "pos_x": 84.0,
+                "pos_y": 209.0
+            },
+            {
+                "id": 1,
+                "int_cfg": {
+                    "equation": "cch3a=(3a,sun_angle_compensated_reflective_radiance,0,4);\ncch2=(2,sun_angle_compensated_reflective_radiance,0,60);\ncch1=(1,sun_angle_compensated_reflective_radiance,0,50);\ncch3a,\ncch2,\ncch1"
+                },
+                "int_id": "image_product_equation",
+                "io": [
+                    {
+                        "id": 1,
+                        "is_out": false,
+                        "name": "Product"
+                    },
+                    {
+                        "id": 2,
+                        "is_out": true,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 418.0,
+                "pos_y": 137.0
+            },
+            {
+                "id": 2,
+                "int_cfg": {
+                    "id": "mhs",
+                    "index": 0
+                },
+                "int_id": "dataset_product_source",
+                "io": [
+                    {
+                        "id": 3,
+                        "is_out": true,
+                        "name": "Product"
+                    }
+                ],
+                "pos_x": 98.0,
+                "pos_y": 380.0
+            },
+            {
+                "id": 3,
+                "int_cfg": {
+                    "equation": "ch1"
+                },
+                "int_id": "image_product_equation",
+                "io": [
+                    {
+                        "id": 4,
+                        "is_out": false,
+                        "name": "Product"
+                    },
+                    {
+                        "id": 5,
+                        "is_out": true,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 416.0,
+                "pos_y": 404.0
+            },
+            {
+                "id": 4,
+                "int_cfg": null,
+                "int_id": "image_get_proj",
+                "io": [
+                    {
+                        "id": 6,
+                        "is_out": false,
+                        "name": "Image"
+                    },
+                    {
+                        "id": 7,
+                        "is_out": true,
+                        "name": "Projection"
+                    }
+                ],
+                "pos_x": 754.0,
+                "pos_y": 445.0
+            },
+            {
+                "id": 5,
+                "int_cfg": null,
+                "int_id": "image_reproj",
+                "io": [
+                    {
+                        "id": 8,
+                        "is_out": false,
+                        "name": "Image"
+                    },
+                    {
+                        "id": 9,
+                        "is_out": false,
+                        "name": "Projection"
+                    },
+                    {
+                        "id": 10,
+                        "is_out": true,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 1004.0,
+                "pos_y": 305.0
+            },
+            {
+                "id": 6,
+                "int_cfg": null,
+                "int_id": "image_handler_sink",
+                "io": [
+                    {
+                        "id": 11,
+                        "is_out": false,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 1195.0,
+                "pos_y": 234.0
+            }
+        ]
+    }
+}

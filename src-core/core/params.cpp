@@ -213,7 +213,7 @@ namespace satdump
             }
         }
 
-        nlohmann::json EditableParameter::getValue()
+        nlohmann::json EditableParameter::getValue() const
         {
             nlohmann::json v;
             if (d_type == PARAM_STRING || d_type == PARAM_PASSWORD || d_type == PARAM_LABELED_OPTIONS)

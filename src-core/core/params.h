@@ -62,13 +62,43 @@ namespace satdump
             EditableParameter() {}
             EditableParameter(nlohmann::json p_json);
             void draw();
-            nlohmann::json getValue();
+            nlohmann::json getValue() const;
             nlohmann::json setValue(nlohmann::json v);
 
         public:
             friend inline void to_json(nlohmann::json &j, const EditableParameter &v)
             {
-                throw std::runtime_error("TODO");
+                std::string type = "invalid";
+                if (v.d_type == PARAM_STRING)
+                    type = "string";
+                else if (v.d_type == PARAM_PASSWORD)
+                    type = "password";
+                else if (v.d_type == PARAM_LABELED_OPTIONS)
+                    type = "labeled_options";
+                else if (v.d_type == PARAM_INT)
+                    type = "int";
+                else if (v.d_type == PARAM_FLOAT)
+                    type = "float";
+                else if (v.d_type == PARAM_BOOL)
+                    type = "bool";
+                else if (v.d_type == PARAM_OPTIONS)
+                    type = "options";
+                else if (v.d_type == PARAM_PATH)
+                    type = "path";
+                else if (v.d_type == PARAM_TIMESTAMP)
+                    type = "timestamp";
+                else if (v.d_type == PARAM_NOTATED_INT)
+                    type = "notated_int";
+                else if (v.d_type == PARAM_COLOR)
+                    type = "color";
+                else if (v.d_type == PARAM_BASEBAND_TYPE)
+                    type = "baseband_type";
+
+                j["name"] = v.d_name;
+                if (v.d_description.size() > 0)
+                    j["description"] = v.d_description;
+                j["value"] = v.getValue();
+                j["options"] = v.d_options;
             }
 
             friend inline void from_json(const nlohmann::json &j, EditableParameter &v)

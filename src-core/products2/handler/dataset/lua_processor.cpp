@@ -18,9 +18,8 @@ namespace satdump
 
         nlohmann::json Lua_DatasetProductProcessor::getCfg()
         {
-            nlohmann::json cfg;
+            nlohmann::json cfg = DatasetProductProcessor::getCfg();
             cfg["lua"] = editor.GetText();
-            cfg["cfg"] = params;
             return cfg;
         }
 
