@@ -95,7 +95,7 @@ namespace ccsds
         uint16_t crc = 0xFFFF;
 
         const int CCITT_CRC_GEN = 0x1021;
-        for (int j = 0; j < pkt.payload.size() + 6 - 2; j++)
+        for (int j = 0; j < (int)pkt.payload.size() + 6 - 2; j++)
         {
             uint8_t val = j < 6 ? pkt.header.raw[j] : pkt.payload[j - 6];
 
@@ -118,7 +118,7 @@ namespace ccsds
         uint16_t crc2 = pkt.payload[pkt.payload.size() - 2] << 8 | pkt.payload[pkt.payload.size() - 1];
 
         uint16_t checksum = 0;
-        for (int j = 0; j < (pkt.payload.size() + 6 - 2) / 2; j++)
+        for (int j = 0; j < (int)(pkt.payload.size() + 6 - 2) / 2; j++)
         {
             int j1 = j * 2 + 0;
             int j2 = j * 2 + 1;

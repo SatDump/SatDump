@@ -64,8 +64,19 @@ namespace satdump
 
             void saveResult(std::string directory);
 
-            static std::string getID() { return "image_product_handler"; }
-            static std::shared_ptr<Handler> getInstance() { return std::make_shared<ImageProductHandler>(nullptr); }
+            void addSubHandler(std::shared_ptr<Handler> handler)
+            {
+                Handler::addSubHandler(handler);
+                img_handler.addSubHandler(handler);
+            }
+
+            void delSubHandler(std::shared_ptr<Handler> handler)
+            {
+                Handler::delSubHandler(handler);
+                img_handler.delSubHandler(handler);
+            }
+
+            std::string getID() { return "image_product_handler"; }
         };
     }
 }

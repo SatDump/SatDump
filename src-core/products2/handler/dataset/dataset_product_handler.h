@@ -32,8 +32,7 @@ namespace satdump
 
             std::string getName() { return "Products"; }
 
-            static std::string getID() { return "dataset_product_handler"; }
-            static std::shared_ptr<Handler> getInstance() { return std::make_shared<DatasetProductHandler>(); }
+            std::string getID() { return "dataset_product_handler"; }
         };
     }
 }

@@ -62,7 +62,7 @@ namespace satdump
             }
 
             ///////////////////////////////////////////////////////////
-            // If this didn't work, we can attent a raytraced proj
+            // If this didn't work, we can attempt a raytraced proj
             ///////////////////////////////////////////////////////////
             try
             {

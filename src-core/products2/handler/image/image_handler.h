@@ -44,6 +44,7 @@ namespace satdump
             bool image_proj_valid = false;
             proj::Projection image_proj;
             std::vector<float> correct_fwd_lut; // TODOREWORK handle this better?
+            std::vector<float> correct_rev_lut;
 
             // Proc function
             void do_process();
@@ -61,8 +62,7 @@ namespace satdump
 
             std::string getName() { return "ImageTODOREWORK"; }
 
-            static std::string getID() { return "image_handler"; }
-            static std::shared_ptr<Handler> getInstance() { return std::make_shared<ImageHandler>(); }
+            std::string getID() { return "image_handler"; }
         };
     }
 }

@@ -18,7 +18,7 @@ namespace satdump
     {
         namespace
         {
-            std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransformFWD(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat)
+            std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransformFWD(std::vector<projection::GCP> gcps, double shift_lon, double shift_lat)
             {
                 std::shared_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_shared<projection::VizGeorefSpline2D>(2);
 
@@ -76,7 +76,7 @@ namespace satdump
                 return spline_transform;
             }
 
-            std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransformREV(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat)
+            std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransformREV(std::vector<projection::GCP> gcps, double shift_lon, double shift_lat)
             {
                 std::shared_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_shared<projection::VizGeorefSpline2D>(2);
 
@@ -161,6 +161,8 @@ namespace satdump
                     shift_lat = 90;
                 }
             }
+
+            logger->trace("Center Lat %f Lon %f", shift_lat, shift_lon);
 
             if (fwd)
                 tps_fwd = initTPSTransformFWD(gcps, shift_lon, shift_lat);

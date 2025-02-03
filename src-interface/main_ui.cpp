@@ -47,7 +47,6 @@ namespace satdump
         credits_md.set_md(credits_markdown);
 
         registerViewerHandlers();
-        viewer::registerHandlers();
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app = std::make_shared<ViewerApplication>();

@@ -64,8 +64,7 @@ namespace satdump
 
             std::string getName() { return handler_name; }
 
-            static std::string getID();
-            static std::shared_ptr<Handler> getInstance();
+            std::string getID() { return "product_handler"; };
         };
     }
 }

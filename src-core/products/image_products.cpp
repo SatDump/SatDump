@@ -897,7 +897,7 @@ namespace satdump
             }
         }
 
-        return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
+        return image::Image(); // TODOREWORK image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table);
     }
 
     std::vector<int> generate_horizontal_corr_lut(ImageProducts &product, int width)

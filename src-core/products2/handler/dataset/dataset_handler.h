@@ -51,8 +51,7 @@ namespace satdump
 
             std::string getName() { return dataset_name; }
 
-            static std::string getID() { return "dataset_handler"; }
-            static std::shared_ptr<Handler> getInstance() { return nullptr; /*std::make_shared<DatasetHandler>();*/ }
+            std::string getID() { return "dataset_handler"; }
         };
     }
 }

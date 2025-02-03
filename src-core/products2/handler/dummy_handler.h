@@ -34,8 +34,7 @@ namespace satdump
 
             std::string getName() { return name; }
 
-            static std::string getID() { return "dummy"; }
-            static std::shared_ptr<Handler> getInstance() { return std::make_shared<DummyHandler>("!!!DUMMY!!!"); }
+            std::string getID() { return "dummy"; }
         };
     }
 }

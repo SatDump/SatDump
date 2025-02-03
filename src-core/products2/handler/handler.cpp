@@ -113,14 +113,5 @@ namespace satdump
         {
             return {};
         }
-
-        std::map<std::string, std::function<std::shared_ptr<Handler>()>> viewer_handlers_registry;
-
-        void registerHandlers()
-        {
-            viewer_handlers_registry.emplace(ImageProductHandler::getID(), ImageProductHandler::getInstance);
-            //   viewer_handlers_registry.emplace(RadiationViewerHandler::getID(), RadiationViewerHandler::getInstance);
-            //   viewer_handlers_registry.emplace(ScatterometerViewerHandler::getID(), ScatterometerViewerHandler::getInstance);
-        }
     }
 }

@@ -11,6 +11,7 @@
 #include "products2/handler/dummy_handler.h"
 #include "products2/handler/product/image_product_handler.h" // TODOREWORK CLEAN
 #include "products2/handler/dataset/dataset_handler.h"
+#include "products2/handler/vector/shapefile_handler.h"
 
 namespace satdump
 {
@@ -95,6 +96,11 @@ namespace satdump
                             openProductOrDataset("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
                         if (ImGui::MenuItem("Load GOES"))
                             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
+                        if (ImGui::MenuItem("Load Shapefile"))
+                        {
+                            auto shp_h = std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp"));
+                            master_handler->addSubHandler(shp_h);
+                        }
 
                         ImGui::EndMenu();
                     }

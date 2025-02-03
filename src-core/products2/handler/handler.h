@@ -30,10 +30,12 @@ namespace satdump
          */
         class Handler
         {
-        private:
-            TreeDrawerToClean tree_local;
+        protected: // TODOREWORK?
             std::vector<std::shared_ptr<Handler>> subhandlers;
             std::mutex subhandlers_mtx;
+
+        private:
+            TreeDrawerToClean tree_local;
             std::vector<std::shared_ptr<Handler>> subhandlers_marked_for_del;
 
             bool handler_can_be_dragged = true;
@@ -85,13 +87,13 @@ namespace satdump
              * @brief Add a new subhandler
              * @param handler the handler to add
              */
-            void addSubHandler(std::shared_ptr<Handler> handler);
+            virtual void addSubHandler(std::shared_ptr<Handler> handler);
 
             /**
              * @brief Delete a subhandler
              * @param handler the handler to delete
              */
-            void delSubHandler(std::shared_ptr<Handler> handler);
+            virtual void delSubHandler(std::shared_ptr<Handler> handler);
 
             /**
              * @brief Set if a handler can be dragged around in the tree
@@ -133,11 +135,7 @@ namespace satdump
             virtual nlohmann::json getConfig();
 
         public:
-            static std::string getID(); // TODOREWORK
-            static std::shared_ptr<Handler> getInstance();
+            virtual std::string getID() = 0; // TODOREWORK
         };
-
-        extern std::map<std::string, std::function<std::shared_ptr<Handler>()>> handlers_registry; // TODOREWORK?
-        void registerHandlers();
     }
 }

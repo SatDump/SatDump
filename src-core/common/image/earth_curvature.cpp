@@ -13,7 +13,7 @@ namespace image
         This was mostly based off the following document :
         https://web.archive.org/web/20200110090856if_/http://ceeserver.cee.cornell.edu:80/wdp2/cee6150/Monograph/615_04_GeomCorrect_rev01.pdf
         */
-        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, float *foward_table, std::vector<float> *reverse_table)
+        Image correct_earth_curvature(Image &image, float satellite_height, float swath, float resolution_km, std::vector<float> *foward_table, std::vector<float> *reverse_table)
         {
             float satellite_orbit_radius = EARTH_RADIUS + satellite_height;                                                                                        // Compute the satellite's orbit radius
             int corrected_width = round(swath / resolution_km);                                                                                                    // Compute the output image size, or number of samples from the imager
@@ -33,8 +33,7 @@ namespace image
             Image output_image(image.depth(), corrected_width, image.height(), image.channels()); // Allocate output image
 
             if (foward_table != nullptr)
-                for (int i = 0; i < (int)image.width(); i++)
-                    foward_table[i] = -1;
+                foward_table->resize(image.width(), -1);
 
             if (reverse_table != nullptr)
                 reverse_table->resize(corrected_width, -1);
@@ -64,7 +63,7 @@ namespace image
                         output_image.set(channel, i, row, px);
 
                         if (foward_table != nullptr)
-                            foward_table[currPixel] = i;
+                            (*foward_table)[currPixel] = i;
                         if (reverse_table != nullptr)
                             (*reverse_table)[i] = currPixel;
 #else
@@ -82,9 +81,9 @@ namespace image
                 float last_val = 0;
                 for (int i = 0; i < (int)image.width(); i++)
                 {
-                    if (foward_table[i] == -1)
-                        foward_table[i] = last_val;
-                    last_val = foward_table[i];
+                    if ((*foward_table)[i] == -1)
+                        (*foward_table)[i] = last_val;
+                    last_val = (*foward_table)[i];
                 }
             }
 
@@ -96,7 +95,7 @@ namespace image
             return output_image;
         }
 
-        image::Image perform_geometric_correction(image::Image img, bool &success, float *foward_table, std::vector<float> *reverse_table)
+        image::Image perform_geometric_correction(image::Image img, bool &success, std::vector<float> *foward_table, std::vector<float> *reverse_table)
         {
             if (img.width() == 0)
                 return img;
