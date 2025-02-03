@@ -217,6 +217,10 @@ namespace satdump
                         logger->error("Error loading dataset! Maybe not a valid dataset? Details : %s", e.what());
                     }
                 }
+                else if (std::filesystem::path(path).extension().string() == ".shp")
+                {
+                    master_handler->addSubHandler(std::make_shared<ShapefileHandler>(path));
+                }
             };
             file_open_thread = std::thread(fun);
         }
