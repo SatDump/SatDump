@@ -77,14 +77,7 @@ namespace satdump
             tree_local.end();
 
             // Try handle deletion
-            subhandlers_mtx.lock();
-            if (subhandlers_marked_for_del.size())
-            {
-                for (auto &h : subhandlers_marked_for_del)
-                    subhandlers.erase(std::find(subhandlers.begin(), subhandlers.end(), h));
-                subhandlers_marked_for_del.clear();
-            }
-            subhandlers_mtx.unlock();
+            delSubHandlersNow();
         }
 
         bool Handler::hasSubhandlers()
@@ -102,11 +95,14 @@ namespace satdump
             subhandlers_mtx.unlock();
         }
 
-        void Handler::delSubHandler(std::shared_ptr<Handler> handler)
+        void Handler::delSubHandler(std::shared_ptr<Handler> handler, bool now)
         {
             subhandlers_mtx.lock();
             subhandlers_marked_for_del.push_back(handler);
             subhandlers_mtx.unlock();
+
+            if (now)
+                delSubHandlersNow();
         }
 
         nlohmann::json Handler::getConfig()

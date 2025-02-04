@@ -70,10 +70,10 @@ namespace satdump
                 img_handler.addSubHandler(handler);
             }
 
-            void delSubHandler(std::shared_ptr<Handler> handler)
+            void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
             {
-                Handler::delSubHandler(handler);
-                img_handler.delSubHandler(handler);
+                img_handler.delSubHandler(handler, true);
+                Handler::delSubHandler(handler, now);
             }
 
             std::string getID() { return "image_product_handler"; }

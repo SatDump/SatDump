@@ -42,6 +42,18 @@ namespace satdump
             bool handler_can_be_dragged_to = true;
             bool handler_can_subhandlers_be_dragged = true;
 
+            void delSubHandlersNow()
+            {
+                subhandlers_mtx.lock();
+                if (subhandlers_marked_for_del.size())
+                {
+                    for (auto &h : subhandlers_marked_for_del)
+                        subhandlers.erase(std::find(subhandlers.begin(), subhandlers.end(), h));
+                    subhandlers_marked_for_del.clear();
+                }
+                subhandlers_mtx.unlock();
+            }
+
         public:
             /**
              * @brief Render viewer menu left sidebar
@@ -93,7 +105,7 @@ namespace satdump
              * @brief Delete a subhandler
              * @param handler the handler to delete
              */
-            virtual void delSubHandler(std::shared_ptr<Handler> handler);
+            virtual void delSubHandler(std::shared_ptr<Handler> handler, bool now = false);
 
             /**
              * @brief Set if a handler can be dragged around in the tree
