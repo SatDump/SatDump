@@ -17,6 +17,13 @@ namespace satdump
     {
         ImageHandler::ImageHandler()
         {
+            handler_tree_icon = "\uf7e8";
+        }
+
+        ImageHandler::ImageHandler(image::Image img)
+        {
+            handler_tree_icon = "\uf7e8";
+            updateImage(img);
         }
 
         ImageHandler::~ImageHandler()

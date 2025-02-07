@@ -13,10 +13,13 @@ namespace satdump
     {
         ShapefileHandler::ShapefileHandler()
         {
+            handler_tree_icon = "\uf84c";
         }
 
         ShapefileHandler::ShapefileHandler(std::string shapefile)
         {
+            handler_tree_icon = "\uf84c";
+
             std::ifstream f(shapefile, std::ios::binary);
             file = std::make_unique<shapefile::Shapefile>(f);
             std::string db = std::filesystem::path(shapefile).parent_path().string() + "/" + std::filesystem::path(shapefile).stem().string() + ".dbf";

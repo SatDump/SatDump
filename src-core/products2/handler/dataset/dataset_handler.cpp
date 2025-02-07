@@ -33,6 +33,9 @@ namespace satdump
                 instrument_products->addSubHandler(prod_h);
                 all_products.push_back(prod);
             }
+
+            handler_tree_icon = "\uf6b7";
+            instrument_products->handler_tree_icon = "\uf970";
         }
 
         DatasetHandler::~DatasetHandler()

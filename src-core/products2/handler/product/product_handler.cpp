@@ -12,6 +12,8 @@ namespace satdump
         ProductHandler::ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode)
             : product(p)
         {
+            handler_tree_icon = "\uf713";
+
             std::string config_path = "instrument_cfgs/" + product->instrument_name + ".json";
             if (resources::resourceExists(config_path))
             {

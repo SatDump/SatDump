@@ -22,12 +22,14 @@ namespace style
     SATDUMP_DLL Theme theme;
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
-    //SATDUMP_DLL ImFont *hugeFont;
+    // SATDUMP_DLL ImFont *hugeFont;
 
     void hexToImVec4(std::string color_hex, ImVec4 *this_color)
     {
         color_hex.erase(std::remove_if(color_hex.begin(), color_hex.end(),
-            [&](const char c) { return !std::isxdigit(c); }), color_hex.end());
+                                       [&](const char c)
+                                       { return !std::isxdigit(c); }),
+                        color_hex.end());
         if (color_hex.size() != 8)
         {
             logger->debug("Invalid color code %s", color_hex.c_str());
@@ -54,7 +56,7 @@ namespace style
         {
             std::string selected_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"];
             std::string theme_path;
-            if(resources::resourceExists("themes/" + selected_theme + ".json"))
+            if (resources::resourceExists("themes/" + selected_theme + ".json"))
                 theme_path = "themes/" + selected_theme + ".json";
             else
             {
@@ -67,7 +69,7 @@ namespace style
             file >> data;
             file.close();
         }
-        catch (std::exception&)
+        catch (std::exception &)
         {
             logger->error("Failed to load any theme! Your SatDump installation may be missing critical files.");
             return;
@@ -118,10 +120,9 @@ namespace style
                 {"TabRounding", &ImGuiStyle::TabRounding},
                 {"TabBorderSize", &ImGuiStyle::TabBorderSize},
                 {"TabBarBorderSize", &ImGuiStyle::TabBarBorderSize},
-                {"SeparatorTextBorderSize", &ImGuiStyle::SeparatorTextBorderSize}
-            };
+                {"SeparatorTextBorderSize", &ImGuiStyle::SeparatorTextBorderSize}};
 
-            for (auto& style_item : data["ImGuiStyle"].items())
+            for (auto &style_item : data["ImGuiStyle"].items())
             {
                 if (!style_item.value().is_number_float())
                 {
@@ -197,7 +198,7 @@ namespace style
                 {"TableRowBgAlt", ImGuiCol_TableRowBgAlt},
             };
 
-            for (auto& color : data["ImGuiColors"].items())
+            for (auto &color : data["ImGuiColors"].items())
             {
                 if (!color.value().is_string())
                 {
@@ -235,10 +236,9 @@ namespace style
                 {"frame_bg", &Theme::frame_bg},
                 {"overlay_bg", &Theme::overlay_bg},
                 {"notification_bg", &Theme::notification_bg},
-                {"freq_highlight", &Theme::freq_highlight}
-            };
+                {"freq_highlight", &Theme::freq_highlight}};
 
-            for (auto& color : data["SatDumpColors"].items())
+            for (auto &color : data["SatDumpColors"].items())
             {
                 if (!color.value().is_string())
                 {
@@ -279,9 +279,17 @@ namespace style
     {
         ImGuiIO &io = ImGui::GetIO();
         io.Fonts->Clear();
-        const ImWchar def[] = {0x20, 0x2300, 0}; //default range
-        const ImWchar list[7][3] = { {0xf000, 0xf0ff, 0}, {0xf400, 0xf4ff, 0}, {0xf800, 0xf8ff, 0},
-            {0xfc00, 0xfcff, 0}, {0xea00, 0xeaff, 0}, {0xf200, 0xf2ff, 0} , {0x2000, 0x20ff, 0}};
+        const ImWchar def[] = {0x20, 0x2300, 0}; // default range
+        const ImWchar list[8][3] = {
+            {0xf000, 0xf0ff, 0},
+            {0xf400, 0xf4ff, 0},
+            {0xf800, 0xf8ff, 0},
+            {0xfc00, 0xfcff, 0},
+            {0xea00, 0xeaff, 0},
+            {0xf200, 0xf2ff, 0},
+            {0x2000, 0x20ff, 0},
+            {0xf500, 0xfd46, 0},
+        };
         static ImFontConfig config;
         float macos_fbs = macos_framebuffer_scale();
         float font_scaling = dpi_scaling * macos_fbs;
@@ -289,12 +297,12 @@ namespace style
         baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
         config.MergeMode = true;
 
-        for (int i = 0; i < 7; i++)
+        for (int i = 0; i < 8; i++)
             baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), theme.font_size * font_scaling, &config, list[i]);
         config.MergeMode = false;
 
-        bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), 45.0f * font_scaling);   //, &config, ranges);
-        //hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
+        bigFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), 45.0f * font_scaling); //, &config, ranges);
+        // hugeFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), 128.0f * font_scaling); //, &config, ranges);
         io.Fonts->Build();
         io.FontGlobalScale = 1 / macos_fbs;
 

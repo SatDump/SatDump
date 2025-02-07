@@ -17,7 +17,7 @@ namespace satdump
         {
         public:
             ImageHandler();
-            ImageHandler(image::Image img) { updateImage(img); }
+            ImageHandler(image::Image img);
             ~ImageHandler();
 
             bool imgview_needs_update = false;

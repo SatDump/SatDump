@@ -18,6 +18,8 @@ namespace satdump
         ImageProductHandler::ImageProductHandler(std::shared_ptr<products::Product> p)
             : ProductHandler(p)
         {
+            handler_tree_icon = "\uf71e";
+
             product = (products::ImageProduct *)ProductHandler::product.get();
             for (auto &img : product->images)
                 channel_selection_box_str += "Channel " + img.channel_name + '\0';

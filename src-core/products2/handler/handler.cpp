@@ -11,8 +11,8 @@ namespace satdump
         inline ImGuiTreeNodeFlags nodeFlags(std::shared_ptr<Handler> &h, bool sec)
         {
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
-            if (!h->hasSubhandlers())
-                flags |= ImGuiTreeNodeFlags_Leaf;
+            //  if (!h->hasSubhandlers())
+            flags |= ImGuiTreeNodeFlags_Leaf; // TODOREWORK?
             if (sec)
                 flags |= ImGuiTreeNodeFlags_Selected;
             return flags;
@@ -35,7 +35,7 @@ namespace satdump
                 ImGui::TableSetColumnIndex(0);
 
                 if (ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler)) |
-                    tree_local.node())
+                    tree_local.node(handler->handler_tree_icon))
                 {
                     if (ImGui::IsItemClicked())
                         h = handler;

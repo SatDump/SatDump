@@ -23,12 +23,13 @@ struct TreeDrawerToClean
         verticalLineEnd = verticalLineStart;
     }
 
-    bool node()
+    bool node(std::string icon)
     {
         const float HorizontalTreeLineSize = 8.0f;                                         // chosen arbitrarily
         const ImRect childRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); // RenderTree(child);
         const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
         drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), TreeLineColor);
+        drawList->AddText(ImVec2(verticalLineStart.x + HorizontalTreeLineSize * 2.0f, childRect.Min.y), TreeLineColor, icon.c_str());
         verticalLineEnd.y = midpoint;
         return false;
     }

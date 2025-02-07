@@ -34,6 +34,9 @@ namespace satdump
             std::vector<std::shared_ptr<Handler>> subhandlers;
             std::mutex subhandlers_mtx;
 
+        public:
+            std::string handler_tree_icon = "N";
+
         private:
             TreeDrawerToClean tree_local;
             std::vector<std::shared_ptr<Handler>> subhandlers_marked_for_del;
