@@ -152,7 +152,7 @@ namespace satdump
                                           normalize_img |
                                           median_blur_img |
                                           rotate180_image |
-                                          geocorrect_image | true /*OVERLAY*/;
+                                          geocorrect_image /*OVERLAY*/;
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -191,45 +191,52 @@ namespace satdump
 
             ////////////////////////
             subhandlers_mtx.lock();
-            bool image_has_overlays = true;
-
-            nlohmann::json cfg = image::get_metadata_proj_cfg(image);
-            cfg["width"] = curr_image.width();
-            cfg["height"] = curr_image.height();
-            proj::Projection p = cfg;
-            p.init(1, 0);
-
-            double rotate180 = rotate180_image;
-            auto corr_lut = correct_rev_lut;
-            auto pfunc = [p, rotate180, corr_lut](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
-            {
-                double x, y;
-                if (p.forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
-                    return {-1, -1};
-                else
-                {
-                    if (corr_lut.size() > 0)
-                    {
-                        if (x < corr_lut.size())
-                            x = corr_lut[x];
-                        else
-                            return {-1, -1};
-                    }
-
-                    if (rotate180)
-                        return {w - 1 - x, h - 1 - y};
-                    else
-                        return {x, y};
-                }
-            };
+            bool image_has_overlays = false;
 
             for (auto &h : subhandlers)
-            {
                 if (h->getID() == "shapefile_handler")
+                    image_has_overlays = true;
+
+            if (image_has_overlays)
+            {
+                nlohmann::json cfg = image::get_metadata_proj_cfg(image);
+                cfg["width"] = curr_image.width();
+                cfg["height"] = curr_image.height();
+                proj::Projection p = cfg;
+                p.init(1, 0);
+
+                double rotate180 = rotate180_image;
+                auto corr_lut = correct_rev_lut;
+                auto pfunc = [p, rotate180, corr_lut](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
-                    ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
-                    logger->critical("Drawing OVERLAY!");
-                    sh_h->draw_to_image(curr_image, pfunc);
+                    double x, y;
+                    if (p.forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                        return {-1, -1};
+                    else
+                    {
+                        if (corr_lut.size() > 0)
+                        {
+                            if (x < corr_lut.size())
+                                x = corr_lut[x];
+                            else
+                                return {-1, -1};
+                        }
+
+                        if (rotate180)
+                            return {w - 1 - x, h - 1 - y};
+                        else
+                            return {x, y};
+                    }
+                };
+
+                for (auto &h : subhandlers)
+                {
+                    if (h->getID() == "shapefile_handler")
+                    {
+                        ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
+                        logger->critical("Drawing OVERLAY!");
+                        sh_h->draw_to_image(curr_image, pfunc);
+                    }
                 }
             }
 
@@ -237,7 +244,7 @@ namespace satdump
             ////////////////////////
 
             // Update ImgView
-            has_second_image = image_needs_processing;
+            has_second_image = image_needs_processing | image_has_overlays;
             imgview_needs_update = true;
 
             image_proj_valid = false;
