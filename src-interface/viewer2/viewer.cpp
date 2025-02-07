@@ -102,6 +102,18 @@ namespace satdump
                             master_handler->addSubHandler(shp_h);
                         }
 
+                        if (ImGui::MenuItem("Load Shapefile FRA_1"))
+                        {
+                            auto shp_h = std::make_shared<ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_1.shp");
+                            master_handler->addSubHandler(shp_h);
+                        }
+
+                        if (ImGui::MenuItem("Load Shapefile FRA_2"))
+                        {
+                            auto shp_h = std::make_shared<ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_2.shp");
+                            master_handler->addSubHandler(shp_h);
+                        }
+
                         ImGui::EndMenu();
                     }
 

@@ -16,7 +16,11 @@ namespace satdump
             ShapefileHandler(std::string shapefile);
             ~ShapefileHandler();
 
+            std::string shapefile_name;
             std::unique_ptr<shapefile::Shapefile> file;
+            nlohmann::json dbf_file;
+
+            ImVec4 color_to_draw = {0, 1, 0, 1};
 
             void draw_to_image(image::Image &img, std::function<std::pair<double, double>(double, double, double, double)> projectionFunc);
 
@@ -28,7 +32,7 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
-            std::string getName() { return "ShapefileTODOREWORK"; }
+            std::string getName() { return shapefile_name; }
 
             std::string getID() { return "shapefile_handler"; }
         };
