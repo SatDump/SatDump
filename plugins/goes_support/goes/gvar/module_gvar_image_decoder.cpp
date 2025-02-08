@@ -13,8 +13,12 @@
 #include "common/image/brightness_contrast.h"
 #include "common/thread_priority.h"
 #include "common/image/io.h"
+#include <format>
 
 #define FRAME_SIZE 32786
+#define NULL nullptr
+#define size_t unsigned int
+
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -33,6 +37,262 @@ namespace goes
                                        (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
                                        (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
             return utc_filename;
+        }
+
+    /**
+     *  Gets the triple redundant header while applying majority law
+     */
+    PrimaryBlockHeader get_header(uint8_t *frame) {
+
+        uint8_t *result = (uint8_t *)malloc(30 * sizeof(uint8_t));
+
+        // Every header is 30 bytes long
+        uint8_t a[30];
+        uint8_t b[30];
+        uint8_t c[30];
+
+        // Transmitted right after each other
+        memcpy(a, frame + 8, 30);
+        memcpy(b, frame + 38, 30);
+        memcpy(c, frame + 68, 30);
+
+        // First four bits are never 1, mask 'em
+        a[0] &= 0xF;
+        b[0] &= 0xF;
+        c[0] &= 0xF;
+        
+
+        // Process each byte
+        for (int byteIndex = 0; byteIndex < 30; ++byteIndex) {
+            uint8_t majority = 0;
+
+            // Process each bit in the byte
+            for (int bitIndex = 0; bitIndex < 8; ++bitIndex) {
+                // Extract bits from each byte
+                uint8_t bit_a = (a[byteIndex] >> bitIndex) & 1;
+                uint8_t bit_b = (b[byteIndex] >> bitIndex) & 1;
+                uint8_t bit_c = (c[byteIndex] >> bitIndex) & 1;
+
+                // Count the number of 1s
+                int count_ones = bit_a + bit_b + bit_c;
+
+                // Majority rule: if at least two are 1, set the result bit
+                if (count_ones >= 2) {
+                    majority |= (1 << bitIndex);
+                }
+            }
+
+            // Store the majority byte
+            result[byteIndex] = majority;
+        }
+
+    return *((PrimaryBlockHeader *)result);
+}
+
+    /**
+     * Gets the most common counter using majority law at the bit level from a vector of counters
+     */
+    uint32_t parse_counters(const std::vector<Block>& frame_buffer) {
+        uint32_t result = 0;
+        std::vector<uint32_t> counters;
+
+        for (size_t i = 0; i < frame_buffer.size(); ++i) {
+            counters.push_back(frame_buffer[i].original_counter & 0x7FF);
+        }
+
+        const size_t majority_threshold = (counters.size() / 2) + 1;
+
+        for (int bit = 0; bit < 11; ++bit) {
+            size_t count_ones = 0;
+            for (size_t i = 0; i < counters.size(); ++i) {
+                if (counters[i] & (1 << bit)) {
+                    ++count_ones;
+                }
+            }
+            if (count_ones >= majority_threshold) {
+                result |= (1 << bit);
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Checks if the spare (Always 0) has more than 5 mismatched bits, returns true if not
+     * This helps ensure we are looking at valid data and not junk
+     */
+    bool blockIsActualData(PrimaryBlockHeader cur_block_header)
+    {  
+        uint32_t spare = cur_block_header.spare2;
+        int errors = 0;
+        for (int i = 31; i >= 0; i--)
+        {
+            bool markerBit, testBit;
+            markerBit = getBit<uint32_t>(spare, i);
+            uint32_t zero = 0;
+            testBit = getBit<uint32_t>(zero, i);
+            if (markerBit != testBit)
+                errors++;
+        }
+        // This can be adjusted to allow the spare to be more degraded than usual
+        // >5 bits should be incredibly rare after bit-level majority law, at that point
+        // the block ID is almost guaranteed to be incorrect messing the frame up anyways
+        if (errors > 5) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+        /**
+         * Decodes imagery from the frame buffer while attempting block ID recovery and counter correction
+         */
+        void GVARImageDecoderModule::process_frame_buffer(std::vector<Block> &frame_buffer) {
+            // The most common counter from this series
+            uint32_t final_counter = parse_counters(frame_buffer);
+
+            // Are we decoding a new image?
+            // If this series is 1, or 1 wasn't decoded and we are at 2, save the image
+            if (final_counter == 1 || (imageFrameCount > 2 && final_counter == 2)) { 
+                logger->info("Image start detected!");
+
+                imageFrameCount = 0;
+
+                if (isImageInProgress)
+                {
+                    if (writeImagesAync)
+                    {
+                        logger->debug("Saving Async...");
+                        isImageInProgress = false;
+                        isSavingInProgress = true;
+                        imageVectorMutex.lock();
+                        imagesVector.push_back({infraredImageReader1.getImage1(),
+                                                infraredImageReader1.getImage2(),
+                                                infraredImageReader2.getImage1(),
+                                                infraredImageReader2.getImage2(),
+                                                visibleImageReader.getImage(),
+                                                most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                                most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)});
+                        imageVectorMutex.unlock();
+                        isSavingInProgress = false;
+                    }
+                    else
+                    {
+                        logger->debug("Saving...");
+                        isImageInProgress = false;
+                        isSavingInProgress = true;
+                        GVARImages images = {infraredImageReader1.getImage1(),
+                                            infraredImageReader1.getImage2(),
+                                            infraredImageReader2.getImage1(),
+                                            infraredImageReader2.getImage2(),
+                                            visibleImageReader.getImage(),
+                                            most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                            most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
+                        writeImages(images, directory);
+                        isSavingInProgress = false;
+                    }
+
+                    scid_stats.clear();
+                    vis_width_stats.clear();
+                    ir_width_stats.clear();
+
+                    // Reset readers
+                    infraredImageReader1.startNewFullDisk();
+                    infraredImageReader2.startNewFullDisk();
+                    visibleImageReader.startNewFullDisk();
+                }
+
+            }
+            else {
+                imageFrameCount++;
+
+                // Minimum of 10 block series to write (80 VIS pixels)
+                if (imageFrameCount > 10 && !isImageInProgress)
+                    isImageInProgress = true;
+            }
+
+            // Processes all frames
+            for (int8_t i = 0; i < frame_buffer.size(); i++) {
+
+                uint8_t *current_frame = frame_buffer[i].frame;
+                PrimaryBlockHeader cur_block_header = get_header(current_frame);
+
+
+                // Tries to recover the block ID in case it is damaged within a series
+                // Junk will never pass through this, as those frames are thrown out before
+                // being added to the frame buffer
+                if (1 < i < 10 ) {
+                    uint32_t prev_counter = frame_buffer[i-1].block_id;
+                    uint32_t next_counter = frame_buffer[i+1].block_id;
+
+                    if (next_counter-prev_counter == 2) {
+                        // The previous and next blocks suggest we should be inbetween them
+                        cur_block_header.block_id = (frame_buffer[i-1].block_id)+1;
+                    }
+                }
+                
+                // Is this imagery? Blocks 1 to 10 are imagery
+                if (cur_block_header.block_id >= 1 && cur_block_header.block_id <= 10)
+                {
+                    // This is imagery, so we can parse the line information header
+                    LineDocumentationHeader line_header(&current_frame[8 + 30 * 3]);
+
+
+                    // SCID Stats
+                    scid_stats.push_back(line_header.sc_id);
+
+                    // Ensures the final counter correction didn't break, if it did, don't use it
+                    // (This should NEVER be 0)
+                    if (final_counter == 0) {
+                        // Masks first five bits, because they are NEVER 1 (Max = 1974 = 0b0000011110110110)
+                        final_counter = (line_header.relative_scan_count &= 0x7ff);
+                    }
+
+                    // Internal line counter should NEVER be over 1974. Discard frame if it is
+                    // Though we know the max in normal operations is 1354 for a full disk, so we use that instead
+                    if (final_counter > 1354)
+                        continue;
+
+                    // Is this VIS Channel 1?
+                    if (cur_block_header.block_id >= 3 && cur_block_header.block_id <= 10)
+                    {
+                        // Push width stats
+                        vis_width_stats.push_back(line_header.pixel_count);
+
+                        // Push into decoder
+                        visibleImageReader.pushFrame(current_frame, cur_block_header.block_id, final_counter);
+
+                        
+                    }
+                    // Is this IR?
+                    else if (cur_block_header.block_id == 1 || cur_block_header.block_id == 2)
+                    {
+                        // Easy way of showing an approximate progress percentage
+                        approx_progess = round(((float)final_counter / 1353.0f) * 1000.0f) / 10.0f;
+
+                        // Push frame size stats, masks first 3 bits because they are NEVER 1
+                        // Max = 6565 = 0b0001100110100101
+                        ir_width_stats.push_back(line_header.word_count &= 0x1fff);
+
+                        // Get current stats
+                        int current_words = most_common(ir_width_stats.begin(), ir_width_stats.end(), 0);
+
+                        // Safeguard
+                        if (current_words > 6565)
+                            current_words = 6530; // Default to fulldisk size
+
+                        // Is this IR Channel 1-2?
+                        if (cur_block_header.block_id == 1)
+                            infraredImageReader1.pushFrame(&current_frame[8 + 30 * 3], final_counter, current_words);
+                        else if (cur_block_header.block_id == 2)
+                            infraredImageReader2.pushFrame(&current_frame[8 + 30 * 3], final_counter, current_words);
+                    }
+                }
+            }
+
+            frame_buffer.clear();  
+
         }
 
         void GVARImageDecoderModule::writeSounder()
@@ -205,8 +465,7 @@ namespace goes
             infraredImageReader2.startNewFullDisk();
             visibleImageReader.startNewFullDisk();
 
-            nonEndCount = 0;
-            endCount = 0;
+            imageFrameCount = 0;
         }
 
         std::vector<ModuleDataType> GVARImageDecoderModule::getInputTypes()
@@ -282,6 +541,10 @@ namespace goes
 
             int last_val = 0;
 
+            // Series of consecutive imagery blocks are saved here
+            std::vector<Block> frame_buffer;
+
+
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
                 // Read a buffer
@@ -290,9 +553,15 @@ namespace goes
                 else
                     input_fifo->read((uint8_t *)frame, FRAME_SIZE);
 
-                // Parse main header
-                PrimaryBlockHeader block_header = *((PrimaryBlockHeader *)&frame[8]);
 
+                PrimaryBlockHeader block_header = get_header(frame);
+
+                // Ensures we aren't looking at junk
+                if (!blockIsActualData(block_header)) {
+                    continue;
+                }
+
+                // Sounder doesn't need special handling
                 if (block_header.block_id == 11)
                 {
                     uint8_t *sad_header = &frame[8 + 30 * 3];
@@ -311,121 +580,30 @@ namespace goes
                     }
                 }
 
-                // Is this imagery? Blocks 1 to 10 are imagery
-                if (block_header.block_id >= 1 && block_header.block_id <= 10)
+                // Are we ready to process our frame buffer?
+                // Processes if we already have a series saved (10 frames are inside the buffer)
+                // OR if the last frame we looked at was 10 (the last one)
+                if (frame_buffer.size() > 9 || (!frame_buffer.empty() && frame_buffer.back().block_id == 10))
                 {
-                    // This is imagery, so we can parse the line information header
+                    process_frame_buffer(frame_buffer);             
+                }
+
+
+                // Saves imagery blocks for processing
+                if (block_header.block_id >= 1 && block_header.block_id <= 10) {
                     LineDocumentationHeader line_header(&frame[8 + 30 * 3]);
 
-                    // SCID Stats
-                    scid_stats.push_back(line_header.sc_id);
-
-                    // Internal line counter should NEVER be over 1974. Discard frame if it is
-                    // Though we know the max in normal operations is 1354 for a full disk....
-                    // So we use that
-                    if (line_header.relative_scan_count > 1354)
-                        continue;
-
-                    // Is this VIS Channel 1?
-                    if (block_header.block_id >= 3 && block_header.block_id <= 10)
-                    {
-                        // Push width stats
-                        vis_width_stats.push_back(line_header.pixel_count);
-
-                        // Push into decoder
-                        visibleImageReader.pushFrame(frame, block_header.block_id, line_header.relative_scan_count);
-
-                        // Detect full disk end
-                        if (line_header.relative_scan_count < 2)
-                        {
-                            nonEndCount = 0;
-                            endCount += 2;
-
-                            if (endCount > 6)
-                            {
-                                logger->info("Image start detected!");
-
-                                if (isImageInProgress)
-                                {
-                                    if (writeImagesAync)
-                                    {
-                                        logger->debug("Saving Async...");
-                                        isImageInProgress = false;
-                                        isSavingInProgress = true;
-                                        imageVectorMutex.lock();
-                                        imagesVector.push_back({infraredImageReader1.getImage1(),
-                                                                infraredImageReader1.getImage2(),
-                                                                infraredImageReader2.getImage1(),
-                                                                infraredImageReader2.getImage2(),
-                                                                visibleImageReader.getImage(),
-                                                                most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                                                most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)});
-                                        imageVectorMutex.unlock();
-                                        isSavingInProgress = false;
-                                    }
-                                    else
-                                    {
-                                        logger->debug("Saving...");
-                                        isImageInProgress = false;
-                                        isSavingInProgress = true;
-                                        GVARImages images = {infraredImageReader1.getImage1(),
-                                                             infraredImageReader1.getImage2(),
-                                                             infraredImageReader2.getImage1(),
-                                                             infraredImageReader2.getImage2(),
-                                                             visibleImageReader.getImage(),
-                                                             most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                                             most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
-                                        writeImages(images, directory);
-                                        isSavingInProgress = false;
-                                    }
-
-                                    scid_stats.clear();
-                                    vis_width_stats.clear();
-                                    ir_width_stats.clear();
-
-                                    // Reset readers
-                                    infraredImageReader1.startNewFullDisk();
-                                    infraredImageReader2.startNewFullDisk();
-                                    visibleImageReader.startNewFullDisk();
-                                }
-
-                                endCount = 0;
-                            }
-                        }
-                        else
-                        {
-                            if (endCount > 0)
-                                endCount--;
-
-                            nonEndCount++;
-
-                            if (nonEndCount > 100 && !isImageInProgress)
-                                isImageInProgress = true;
-                        }
-                    }
-                    // Is this IR?
-                    else if (block_header.block_id == 1 || block_header.block_id == 2)
-                    {
-                        // Easy way of showing an approximate progress percentage
-                        approx_progess = round(((float)line_header.relative_scan_count / 1353.0f) * 1000.0f) / 10.0f;
-
-                        // Push frame size stats
-                        ir_width_stats.push_back(line_header.word_count);
-
-                        // Get current stats
-                        int current_words = most_common(ir_width_stats.begin(), ir_width_stats.end(), 0);
-
-                        // Safeguard
-                        if (current_words > 6565)
-                            current_words = 6530; // Default to fulldisk size
-
-                        // Is this IR Channel 1-2?
-                        if (block_header.block_id == 1)
-                            infraredImageReader1.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
-                        else if (block_header.block_id == 2)
-                            infraredImageReader2.pushFrame(&frame[8 + 30 * 3], line_header.relative_scan_count, current_words);
-                    }
+                    Block current_block;
+                    current_block.block_id = block_header.block_id;
+                    current_block.original_counter = line_header.relative_scan_count;
+                    current_block.frame = new uint8_t[FRAME_SIZE];
+                    std::memcpy(current_block.frame, frame, FRAME_SIZE);
+                    
+                    frame_buffer.push_back(
+                        current_block
+                    );
                 }
+
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -433,17 +611,25 @@ namespace goes
                 // Update module stats
                 module_stats["full_disk_progress"] = approx_progess;
 
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
+                    
+                if (time(NULL) % 10 == 0 && lastTime != time(NULL)) {
                     lastTime = time(NULL);
                     logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) +
-                                 "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
+                                "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
                 }
+
             }
+
+            // Ensures we don't leave frames behind
+            if (!frame_buffer.empty()) {
+                process_frame_buffer(frame_buffer);
+            }
+
 
             if (input_data_type == DATA_FILE)
                 data_in.close();
 
+            //TODO: Maybe don't write the sounder if it's empty?
             writeSounder();
 
             if (writeImagesAync)
@@ -461,12 +647,12 @@ namespace goes
                 isSavingInProgress = true;
                 // Backup images
                 GVARImages images = {infraredImageReader1.getImage1(),
-                                     infraredImageReader1.getImage2(),
-                                     infraredImageReader2.getImage1(),
-                                     infraredImageReader2.getImage2(),
-                                     visibleImageReader.getImage(),
-                                     most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                     most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
+                                    infraredImageReader1.getImage2(),
+                                    infraredImageReader2.getImage1(),
+                                    infraredImageReader2.getImage2(),
+                                    visibleImageReader.getImage(),
+                                    most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                    most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
                 // Write those
                 writeImages(images, directory);
             }
@@ -529,5 +715,5 @@ namespace goes
         {
             return std::make_shared<GVARImageDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace elektro
+    }
 }

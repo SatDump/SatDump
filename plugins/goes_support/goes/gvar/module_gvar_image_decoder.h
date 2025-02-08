@@ -24,6 +24,12 @@ namespace goes
             int sat_number;
             int vis_width;
         };
+        struct Block
+            {
+                uint8_t block_id;
+                uint32_t original_counter;
+                uint8_t *frame;
+            };
 
         namespace events
         {
@@ -76,7 +82,7 @@ namespace goes
             void writeSounder();
             void writeImagesThread();
 
-            int nonEndCount, endCount;
+            int imageFrameCount;
 
             // Stats
             std::vector<int> scid_stats;
@@ -91,6 +97,7 @@ namespace goes
             ~GVARImageDecoderModule();
             static std::string getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel);
             void process();
+            void process_frame_buffer(std::vector<Block> &frame_buffer);
             void drawUI(bool window);
             std::vector<ModuleDataType> getInputTypes();
             std::vector<ModuleDataType> getOutputTypes();
@@ -101,5 +108,5 @@ namespace goes
             static std::vector<std::string> getParameters();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace elektro_arktika
+    }
 }
