@@ -2383,7 +2383,7 @@
                 "name": "MSU-GS",
                 "rgb_composites": {
                     "AVHRR 221 False Color": {
-                        "equation": "ch2,ch2,ch1",
+                        "equation": "ch3,ch3,ch1",
                         "description": "descriptions/221.md"
                     },
                     "MSU-GS 321 False Color": {
