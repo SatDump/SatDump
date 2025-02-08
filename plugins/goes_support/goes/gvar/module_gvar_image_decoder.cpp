@@ -13,12 +13,8 @@
 #include "common/image/brightness_contrast.h"
 #include "common/thread_priority.h"
 #include "common/image/io.h"
-#include <format>
 
 #define FRAME_SIZE 32786
-#define NULL nullptr
-#define size_t unsigned int
-
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -213,7 +209,7 @@ namespace goes
             }
 
             // Processes all frames
-            for (int8_t i = 0; i < frame_buffer.size(); i++) {
+            for (size_t i = 0; i < frame_buffer.size(); i++) {
 
                 uint8_t *current_frame = frame_buffer[i].frame;
                 PrimaryBlockHeader cur_block_header = get_header(current_frame);
@@ -222,7 +218,7 @@ namespace goes
                 // Tries to recover the block ID in case it is damaged within a series
                 // Junk will never pass through this, as those frames are thrown out before
                 // being added to the frame buffer
-                if (1 < i < 10 ) {
+                if (i > 1 && i < 10 ) {
                     uint32_t prev_counter = frame_buffer[i-1].block_id;
                     uint32_t next_counter = frame_buffer[i+1].block_id;
 
