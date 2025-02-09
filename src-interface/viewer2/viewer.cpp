@@ -12,6 +12,7 @@
 #include "products2/handler/product/image_product_handler.h" // TODOREWORK CLEAN
 #include "products2/handler/dataset/dataset_handler.h"
 #include "products2/handler/vector/shapefile_handler.h"
+#include "products2/handler/projection/projection_handler.h"
 
 namespace satdump
 {
@@ -123,8 +124,10 @@ namespace satdump
                 {
                     if (ImGui::BeginMenu("Add"))
                     {
-                        ImGui::MenuItem("Dataset");
-                        ImGui::MenuItem("Projection");
+                        if (ImGui::MenuItem("Dataset"))
+                            logger->error("Dummy Menu!");
+                        if (ImGui::MenuItem("Projection"))
+                            master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
                         ImGui::EndMenu();
                     }
                     if (curr_handler && ImGui::BeginMenu("Config"))

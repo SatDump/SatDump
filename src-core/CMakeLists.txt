@@ -14,7 +14,7 @@ else()
     set(LIBRARIES_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/satdump/")
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/src-core/satdump_varst.cxx ${CMAKE_CURRENT_BINARY_DIR}/satdump_varst.cpp @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/src-core/satdump_varst.cxx ${CMAKE_CURRENT_BINARY_DIR}/satdump_varst.cpp @ONLY)
 
 file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/satdump_varst.cpp

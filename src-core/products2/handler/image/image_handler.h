@@ -20,6 +20,8 @@ namespace satdump
             ImageHandler(image::Image img);
             ~ImageHandler();
 
+            std::string image_name = "Unknown Image";
+
             bool imgview_needs_update = false;
             bool has_second_image = false;
             image::Image image, curr_image;
@@ -60,7 +62,7 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
-            std::string getName() { return "ImageTODOREWORK"; }
+            std::string getName() { return image_name; }
 
             std::string getID() { return "image_handler"; }
         };
