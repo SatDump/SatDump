@@ -128,6 +128,13 @@ namespace satdump
                             logger->error("Dummy Menu!");
                         if (ImGui::MenuItem("Projection"))
                             master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
+                        if (ImGui::MenuItem("BitView TEST"))
+                        {
+                            std::vector<std::shared_ptr<Handler>> e;
+                            eventBus->fire_event<RequestHandlersEvent>({e});
+                            if (e.size() > 0)
+                                master_handler->addSubHandler(e[0]);
+                        }
                         ImGui::EndMenu();
                     }
                     if (curr_handler && ImGui::BeginMenu("Config"))

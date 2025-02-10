@@ -17,7 +17,7 @@ namespace satdump
         size_t d_file_memory_size;
         uint8_t *d_file_memory_ptr;
         int fd;
-        char unique_id[16] = { 0 };
+        char unique_id[16] = {0};
 
     private:
         struct PartImage
@@ -42,6 +42,16 @@ namespace satdump
         bool update = false;
 
     public:
+        struct FrameDef
+        {
+            size_t ptr;
+            size_t size;
+        };
+
+        bool d_frame_mode = false;
+        std::vector<FrameDef> frames;
+
+    public:
         size_t d_bitperiod = 481280; // 256; // 481280
         int d_display_mode = 0;
 
@@ -64,6 +74,6 @@ namespace satdump
         void doDrawPlotTextures(ImPlotRect c);
 
     public:
-        std::vector<std::shared_ptr<BitContainer>> all_bit_containers;
+        void *bitview = nullptr;
     };
 }

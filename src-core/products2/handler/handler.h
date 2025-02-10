@@ -152,5 +152,10 @@ namespace satdump
         public:
             virtual std::string getID() = 0; // TODOREWORK
         };
+
+        struct RequestHandlersEvent
+        {
+            std::vector<std::shared_ptr<Handler>> &h;
+        };
     }
 }

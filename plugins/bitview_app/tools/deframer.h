@@ -74,7 +74,7 @@ namespace satdump
             }
 
             def::SimpleDeframer def_test(syncword, deframer_syncword_size, deframer_syncword_framesize,
-                deframer_threshold, deframer_byte_aligned, deframer_soft_bits_in);
+                                         deframer_threshold, deframer_byte_aligned, deframer_soft_bits_in);
             deframer_current_frames = 0;
             size_t current_ptr = 0;
 
@@ -108,7 +108,10 @@ namespace satdump
             newbitc->init_bitperiod();
             newbitc->d_is_temporary = true;
 
-            container->all_bit_containers.push_back(newbitc);
+            if (container->bitview != nullptr)
+                ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+            else
+                logger->error("Can't add container!");
         }
     };
 }

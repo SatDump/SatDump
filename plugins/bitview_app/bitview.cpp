@@ -19,90 +19,34 @@
 
 namespace satdump
 {
-    BitViewApplication::BitViewApplication()
-        : Application("bitview")
+    // TODOREWORK
+    BitViewHandler::BitViewHandler(std::shared_ptr<BitContainer> c)
+        : current_bit_container(c)
     {
+        c->bitview = this;
+        handler_tree_icon = "\uf471";
+
         all_tools.push_back(std::make_shared<DeframerTool>());
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
     }
 
-    BitViewApplication::~BitViewApplication()
+    BitViewHandler::BitViewHandler()
+    {
+        handler_tree_icon = "\uf471";
+
+        all_tools.push_back(std::make_shared<DeframerTool>());
+        all_tools.push_back(std::make_shared<DifferentialTool>());
+        all_tools.push_back(std::make_shared<Soft2HardTool>());
+        all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
+    }
+
+    BitViewHandler::~BitViewHandler()
     {
     }
 
-    void BitViewApplication::drawUI()
-    {
-        ImVec2 bitviewer_size = ImGui::GetContentRegionAvail();
-
-        if (ImGui::BeginTable("##bitviewer_table", 2, ImGuiTableFlags_NoBordersInBodyUntilResize | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
-        {
-            ImGui::TableSetupColumn("##bitpanel_v", ImGuiTableColumnFlags_None, bitviewer_size.x * panel_ratio);
-            ImGui::TableSetupColumn("##bitview", ImGuiTableColumnFlags_None, bitviewer_size.x * (1.0f - panel_ratio));
-            ImGui::TableNextColumn();
-
-            float left_width = ImGui::GetColumnWidth(0);
-            float right_width = bitviewer_size.x - left_width;
-            if (left_width != last_width && last_width != -1)
-                panel_ratio = left_width / bitviewer_size.x;
-            last_width = left_width;
-
-            ImGui::BeginChild("BitViewerChildPanel", {left_width, float(bitviewer_size.y - 10)});
-            drawPanel();
-            ImGui::EndChild();
-
-            ImGui::TableNextColumn();
-            ImGui::BeginGroup();
-            drawContents();
-            ImGui::EndGroup();
-            ImGui::EndTable();
-        }
-    }
-
-    void renderBitContainers(std::vector<std::shared_ptr<satdump::BitContainer>> &all_bit_containers, std::shared_ptr<satdump::BitContainer> &current_container)
-    {
-        for (int i = 0; i < all_bit_containers.size(); i++)
-        {
-            auto &cont = all_bit_containers[i];
-
-            if (!cont)
-                continue;
-
-            ImGui::TreeNodeEx(cont->getName().c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | (cont == current_container ? ImGuiTreeNodeFlags_Selected : 0));
-            if (ImGui::IsItemClicked())
-            {
-                current_container = cont;
-            }
-            ImGui::TreePush(std::string("##BitViewerTree" + cont->getID()).c_str());
-
-            bool del = false;
-            { // Closing button
-                ImGui::SameLine();
-                ImGui::Text("  ");
-                ImGui::SameLine();
-
-                ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
-                if (ImGui::SmallButton(std::string(u8"\uf00d##dataset" + cont->getName()).c_str()))
-                {
-                    logger->info("Closing bit container " + cont->getName());
-                    del = true;
-                }
-                ImGui::PopStyleVar();
-                ImGui::PopStyleColor(2);
-            }
-
-            renderBitContainers(cont->all_bit_containers, current_container);
-            ImGui::TreePop();
-
-            if (del)
-                cont.reset();
-        }
-    }
-
-    void BitViewApplication::drawPanel()
+    void BitViewHandler::drawMenu()
     {
         if (is_busy)
             style::beginDisabled();
@@ -113,7 +57,10 @@ namespace satdump
             {
                 try
                 {
-                    all_bit_containers.push_back(std::make_shared<BitContainer>(std::filesystem::path(select_bitfile_dialog.getPath()).stem().string(), select_bitfile_dialog.getPath()));
+                    current_bit_container = std::make_shared<BitContainer>(std::filesystem::path(select_bitfile_dialog.getPath()).stem().string() +
+                                                                               std::filesystem::path(select_bitfile_dialog.getPath()).stem().extension().string(),
+                                                                           select_bitfile_dialog.getPath());
+                    current_bit_container->bitview = this;
                 }
                 catch (std::exception &e)
                 {
@@ -122,8 +69,6 @@ namespace satdump
             }
 
             ImGui::Separator();
-
-            renderBitContainers(all_bit_containers, current_bit_container);
         }
         if (ImGui::CollapsingHeader("Control"))
         {
@@ -183,9 +128,13 @@ namespace satdump
         }
     }
 
-    void BitViewApplication::drawContents()
+    void BitViewHandler::drawMenuBar()
     {
-        ImVec2 window_size = ImGui::GetContentRegionAvail();
+    }
+
+    void BitViewHandler::drawContents(ImVec2 win_size)
+    {
+        ImVec2 window_size = win_size;
 
         if (current_bit_container)
             current_bit_container->doUpdateTextures();

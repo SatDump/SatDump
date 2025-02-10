@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app.h"
+#include "products2/handler/handler.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include <thread>
@@ -16,23 +16,19 @@
 
 namespace satdump
 {
-    class BitViewApplication : public Application
+    class BitViewHandler : public viewer::Handler
     {
     protected:
-        float panel_ratio = 0.23;
-        float last_width = -1.0f;
-
         bool is_busy = false;
 
-        void drawUI();
-        void drawPanel();
-        void drawContents();
+        void drawMenu();
+        void drawContents(ImVec2 win_size);
+        void drawMenuBar();
 
     private:
         FileSelectWidget select_bitfile_dialog = FileSelectWidget("File", "Select File", false, true);
 
         std::shared_ptr<BitContainer> current_bit_container;
-        std::vector<std::shared_ptr<BitContainer>> all_bit_containers;
 
     private:
         float process_progress = 0;
@@ -41,12 +37,18 @@ namespace satdump
         std::vector<std::shared_ptr<BitViewTool>> all_tools;
 
     public:
-        BitViewApplication();
-        ~BitViewApplication();
+        BitViewHandler();
+        BitViewHandler(std::shared_ptr<BitContainer> c);
+        ~BitViewHandler();
 
     public:
-        static std::string getID() { return "bitview"; }
-        std::string get_name() { return "BitView"; }
-        static std::shared_ptr<Application> getInstance() { return std::make_shared<BitViewApplication>(); }
+        std::string getID() { return "bitview_handler"; }
+        std::string getName()
+        {
+            if (current_bit_container)
+                return current_bit_container->getName();
+            else
+                return "BitView TODOREWORK";
+        }
     };
 };

@@ -83,7 +83,10 @@ namespace satdump
             newbitc->init_bitperiod();
             newbitc->d_is_temporary = true;
 
-            container->all_bit_containers.push_back(newbitc);
+            if (container->bitview != nullptr)
+                ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+            else
+                logger->error("Can't add container!");
         }
     };
 }

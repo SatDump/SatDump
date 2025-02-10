@@ -15,12 +15,14 @@ public:
 
     void init()
     {
-        satdump::eventBus->register_handler<satdump::AddGUIApplicationEvent>(provideAppToRegister);
+        //   satdump::eventBus->register_handler<satdump::AddGUIApplicationEvent>(provideAppToRegister);
+        satdump::eventBus->register_handler<satdump::viewer::RequestHandlersEvent>(provideAppToRegister);
     }
 
-    static void provideAppToRegister(const satdump::AddGUIApplicationEvent &evt)
+    static void provideAppToRegister(const satdump::viewer::RequestHandlersEvent &evt)
     {
-        evt.applications.push_back(std::make_shared<satdump::BitViewApplication>());
+        evt.h.push_back(std::make_shared<satdump::BitViewHandler>());
+        //        evt.applications.push_back(std::make_shared<satdump::BitViewApplication>());
     }
 };
 

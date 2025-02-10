@@ -33,7 +33,7 @@ namespace satdump
 
         // Init mmap pointers
         d_file_memory_size = getFilesize(file_path);
-        if(d_file_memory_size == 0)
+        if (d_file_memory_size == 0)
             throw satdump_exception("Empty File!");
         fd = open(file_path.c_str(), O_RDONLY);
         d_file_memory_ptr = (uint8_t *)mmap(0, d_file_memory_size, PROT_READ, MAP_SHARED, fd, 0);
