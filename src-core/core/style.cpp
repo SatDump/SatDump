@@ -236,7 +236,8 @@ namespace style
                 {"frame_bg", &Theme::frame_bg},
                 {"overlay_bg", &Theme::overlay_bg},
                 {"notification_bg", &Theme::notification_bg},
-                {"freq_highlight", &Theme::freq_highlight}};
+                {"freq_highlight", &Theme::freq_highlight},
+                {"treeview_icon", &Theme::treeview_icon}};
 
             for (auto &color : data["SatDumpColors"].items())
             {

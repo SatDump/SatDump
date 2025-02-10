@@ -71,6 +71,7 @@
     "widget_bg": "#000000FF",
     "frame_bg": "#111111FF",
     "overlay_bg": "#000000B5",
-    "freq_highlight": "#98BAE180"
+    "freq_highlight": "#98BAE180",
+    "treeview_icon": "#808080FF"
   }
 }
