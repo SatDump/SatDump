@@ -30,6 +30,7 @@
     "widget_bg": "#FFFFFFFF",
     "frame_bg": "#E6E6E6FF",
     "overlay_bg": "#FFFFFFB5",
-    "freq_highlight": "#98BAE1BF"
+    "freq_highlight": "#98BAE1BF",
+    "treeview_icon": "#000000FF"
   }
 }

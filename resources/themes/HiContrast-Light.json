@@ -63,6 +63,7 @@
     "overlay_bg": "#FFFFFFB5",
     "freq_highlight": "#98BAE1BF",
     "plot_bg": "#FFFFFFFF",
-    "fft_graduations": "#888888FF"
+    "fft_graduations": "#888888FF",
+    "treeview_icon": "#000000FF"
   }
 }
