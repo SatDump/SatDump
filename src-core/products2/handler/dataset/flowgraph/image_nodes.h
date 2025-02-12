@@ -219,7 +219,7 @@ namespace satdump
             for (auto &c : channels)
             {
                 ImGui::Separator();
-                ImGui::Text(c.input_name.c_str());
+                ImGui::Text("%s", c.input_name.c_str());
                 ImGui::SameLine();
                 ImGui::SetNextItemWidth(200 * ui_scale);
                 ImGui::InputText(std::string("##input" + c.input_name).c_str(), &c.tokens);
