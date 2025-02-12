@@ -5,6 +5,7 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/tracking/tracking.h"
 #include "common/projection/projs2/proj_json.h"
+#include "core/exception.h"
 
 namespace satdump
 {
@@ -35,6 +36,8 @@ namespace satdump
                 sat_tracker = std::make_shared<satdump::SatelliteTracker>((nlohmann::json)cfg["ephemeris"]);
             else if (tle.norad != -1)
                 sat_tracker = std::make_shared<satdump::SatelliteTracker>(tle);
+            else
+                throw satdump_exception("No Ephemeris or TLE!");
         }
 
         virtual bool get_position(double x, double y, geodetic::geodetic_coords_t &pos) = 0;
