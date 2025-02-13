@@ -46,11 +46,10 @@ namespace satdump
             };
 
             // TODOREWORK Calib range init
+            channel_calibrated_range_min.resize(product->images.size(), 0);
+            channel_calibrated_range_max.resize(product->images.size(), 100);
             if (images_can_be_calibrated)
             {
-                channel_calibrated_range_min.resize(product->images.size(), 0);
-                channel_calibrated_range_max.resize(product->images.size(), 100);
-
                 if (channel_selection_curr_id != -1)
                 {
                     channel_calibrated_output_units = calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type);
@@ -202,7 +201,7 @@ namespace satdump
                 for (int i = 0; i < product->images.size(); i++)
                 {
                     auto &name = product->images[i].channel_name;
-                    if (r.contains(name))
+                    if (r.contains(name) && r[name].contains("min") && r[name].contains("max"))
                     {
                         channel_calibrated_range_min[i] = r[name]["min"];
                         channel_calibrated_range_max[i] = r[name]["max"];
