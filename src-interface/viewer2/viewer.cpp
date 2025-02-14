@@ -71,7 +71,7 @@ namespace satdump
                 if (ImGui::BeginMenu("File"))
                 {
                     if (ImGui::MenuItem("Open Product/Dataset (.cbor/.json)") && !file_open_dialog)
-                        file_open_dialog = new pfd::open_file("Dataset/Product (.cbor/.json)", ".", {"CBOR Files", "*.cbor", "JSON Files", "*.json"}, pfd::opt::force_path); // TODOREWORK remember path?
+                        file_open_dialog = new pfd::open_file("Dataset/Product (.cbor/.json)", ".", {"CBOR Files", "*.cbor", "JSON Files", "*.json", "SHP Files", "*.shp"}, pfd::opt::force_path); // TODOREWORK remember path?
 
                     ImGui::MenuItem("Open Image");
 
