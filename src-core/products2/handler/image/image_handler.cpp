@@ -251,8 +251,8 @@ namespace satdump
             if (image::has_metadata_proj_cfg(image))
             {
                 image_proj = image::get_metadata_proj_cfg(image);
-                image_proj.init(0, 1);
-                image_proj_valid = true;
+                if (image_proj.init(0, 1))
+                    image_proj_valid = true;
             }
 
             image_calib_valid = false;
