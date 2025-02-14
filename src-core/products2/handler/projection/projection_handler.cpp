@@ -4,6 +4,9 @@
 #include "../vector/shapefile_handler.h"
 #include "../image/image_handler.h"
 
+// TODOREWORK
+#include "projection/reprojector.h"
+
 namespace satdump
 {
     namespace viewer
@@ -26,15 +29,15 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
+                projui.drawUI();
+
+                //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
+                if (ImGui::Button("TEST"))
+                    needs_to_update = true;
+
                 if (needs_to_be_disabled)
                     style::endDisabled();
             }
-
-            projui.drawUI();
-
-            //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
-            if (ImGui::Button("TEST"))
-                needs_to_update = true;
 
             /// TODOREWORK UPDATE
             if (needs_to_update)
@@ -70,6 +73,21 @@ namespace satdump
                     ImageHandler *im_h = (ImageHandler *)h.get();
                     logger->critical("Drawing IMAGE!");
                     //                    sh_h->draw_to_image(curr_image, pfunc);
+
+                    // TODOREWORK!!!!
+                    proj::ReprojectionOperation op;
+                    op.img = &im_h->get_current_img();
+                    op.target_prj_info = projui.get_proj();
+                    // op.target_prj_info["width"] = width;
+                    // op.target_prj_info["height"] = height;
+                    op.output_width = op.target_prj_info["width"];
+                    op.output_height = op.target_prj_info["height"];
+                    auto cfg = image::get_metadata_proj_cfg(*op.img);
+                    cfg["width"] = op.img->width();
+                    cfg["height"] = op.img->height();
+                    image::set_metadata_proj_cfg(*op.img, cfg);
+                    auto img = proj::reproject(op);
+                    img_handler.updateImage(img);
                 }
             }
 
