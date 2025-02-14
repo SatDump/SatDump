@@ -18,6 +18,18 @@ namespace satdump
             return flags;
         }
 
+        bool Handler::isParent(const std::shared_ptr<Handler> &dragged, const std::shared_ptr<Handler> &potential_child)
+        {
+            for (auto &s : dragged->subhandlers)
+            {
+                if (s == potential_child)
+                    return true;
+                if (isParent(dragged, s))
+                    return true;
+            }
+            return false;
+        }
+
         void Handler::drawTreeMenu(std::shared_ptr<Handler> &h)
         {
             // TODOREWORK CLEANUP
@@ -63,8 +75,15 @@ namespace satdump
                             IM_ASSERT(payload->DataSize == sizeof(DragDropWip));
                             const DragDropWip *payload_n = (const DragDropWip *)payload->Data;
                             logger->info("Handler " + handler->getName() + " got drag of " + payload_n->drag->getName());
-                            handler->addSubHandler(payload_n->drag);
-                            payload_n->del(payload_n->drag);
+                            if (!isParent(payload_n->drag, handler))
+                            {
+                                handler->addSubHandler(payload_n->drag);
+                                payload_n->del(payload_n->drag);
+                            }
+                            else
+                            {
+                                logger->error("Can't drag parent onto child handler!");
+                            }
                         }
                         ImGui::EndDragDropTarget();
                     }

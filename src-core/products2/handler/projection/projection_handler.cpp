@@ -91,15 +91,15 @@ namespace satdump
                 }
             }
 
-            for (auto &h : subhandlers)
-            {
-                if (h->getID() == "shapefile_handler")
-                {
-                    ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
-                    logger->critical("Drawing OVERLAY!");
-                    //                    sh_h->draw_to_image(curr_image, pfunc);
-                }
-            }
+            /* for (auto &h : subhandlers)
+             {
+                 if (h->getID() == "shapefile_handler")
+                 {
+                     ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
+                     logger->critical("Drawing OVERLAY!");
+                     //                    sh_h->draw_to_image(curr_image, pfunc);
+                 }
+             }*/
         }
 
         void ProjectionHandler::drawMenuBar()

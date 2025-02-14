@@ -57,6 +57,8 @@ namespace satdump
                 subhandlers_mtx.unlock();
             }
 
+            bool isParent(const std::shared_ptr<Handler> &dragged, const std::shared_ptr<Handler> &potential_child);
+
         public:
             /**
              * @brief Render viewer menu left sidebar

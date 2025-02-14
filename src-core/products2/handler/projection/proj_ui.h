@@ -96,21 +96,19 @@ namespace satdump
                 }*/
 
                 // Automatic projection settings!
-             /*   if (projection_auto_scale_mode)
-                {
-                    cfg["scale_x"] = projection_autoscale_x;
-                    cfg["scale_y"] = projection_autoscale_y;
-                }
-                else
-                {*/
-                    cfg["width"] = projections_image_width;
-                    cfg["height"] = projections_image_height;
+                /*   if (projection_auto_scale_mode)
+                   {
+                       cfg["scale_x"] = projection_autoscale_x;
+                       cfg["scale_y"] = projection_autoscale_y;
+                   }
+                   else
+                   {*/
+                cfg["width"] = projections_image_width;
+                cfg["height"] = projections_image_height;
                 //}
 
                 return cfg;
             }
-
-   
 
             void drawUI()
             {
