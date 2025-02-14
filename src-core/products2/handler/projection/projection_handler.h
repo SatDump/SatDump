@@ -2,6 +2,7 @@
 
 #include "../handler.h"
 #include "../image/image_handler.h"
+#include "proj_ui.h"
 
 namespace satdump
 {
@@ -14,6 +15,8 @@ namespace satdump
             ~ProjectionHandler();
 
             ImageHandler img_handler;
+
+            proj::ProjectionConfigUI projui;
 
             // Auto-update in UI
             bool needs_to_update = true;

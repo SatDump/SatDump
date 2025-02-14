@@ -30,6 +30,8 @@ namespace satdump
                     style::endDisabled();
             }
 
+            projui.drawUI();
+
             //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
             if (ImGui::Button("TEST"))
                 needs_to_update = true;
