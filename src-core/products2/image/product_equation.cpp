@@ -19,6 +19,8 @@ namespace satdump
             image::Image *img = (image::Image *)userdata;
             if (img->size() == 0)
                 return -1;
+            if (ch > img->channels())
+                return -1;
             if (chvalx < 0)
                 chvalx = 0;
             if (chvalx > 1)
@@ -27,6 +29,7 @@ namespace satdump
                 chvaly = 0;
             if (chvaly > 1)
                 chvaly = 1;
+
             return img->getf(ch, chvalx * (img->width() - 1), chvaly * (img->height() - 1));
         }
         ///
