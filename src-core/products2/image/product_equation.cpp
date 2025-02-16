@@ -27,7 +27,7 @@ namespace satdump
                 chvaly = 0;
             if (chvaly > 1)
                 chvaly = 1;
-            return img->getf(ch, chvalx * img->width(), chvaly * img->height());
+            return img->getf(ch, chvalx * (img->width() - 1), chvaly * (img->height() - 1));
         }
         ///
 
