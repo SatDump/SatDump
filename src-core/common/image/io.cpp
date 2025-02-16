@@ -7,6 +7,9 @@ namespace image
 {
     void load_img(Image &img, std::string file)
     {
+        if (!std::filesystem::exists(file))
+            logger->error("File " + file + " does not exist!");
+
         std::ifstream file_sigature_src(file, std::ios::binary);
         uint8_t signature[10];
         file_sigature_src.read((char *)signature, 10);

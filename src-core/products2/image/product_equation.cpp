@@ -6,48 +6,60 @@
 #include "common/utils.h"
 #include "products2/image/image_calibrator.h"
 
+#include "common/image/io.h"
+
 namespace satdump
 {
     namespace products
     {
-        std::vector<std::string> get_required_tokens(std::string equation, int *numout = nullptr)
+        /// TODOREWORK
+        // Lut apply function
+        double lutProcess(void *userdata, double chvalx, double chvaly, double ch)
         {
-            std::vector<std::string> tokens;
+            image::Image *img = (image::Image *)userdata;
+            if (img->size() == 0)
+                return -1;
+            if (chvalx < 0)
+                chvalx = 0;
+            if (chvalx > 1)
+                chvalx = 1;
+            if (chvaly < 0)
+                chvaly = 0;
+            if (chvaly > 1)
+                chvaly = 1;
+            return img->getf(ch, chvalx * img->width(), chvaly * img->height());
+        }
+        ///
 
-            try
+        // Lut config
+        struct LutCfg
+        {
+            bool valid;
+            std::string token;
+            std::string path;
+        };
+
+        // Example :
+        // lut=lut(lut_path.png); lut(ch1, 0), lut(ch1, 1), lut(ch1, 2)
+        LutCfg tryParseLut(std::string str)
+        {
+            LutCfg c;
+            c.valid = false;
+
+            if (str.find_first_of('=lut') == std::string::npos)
+                return c;
+
+            c.token = str.substr(0, str.find_first_of('=lut') + 1);
+            std::string parenthesis = str.substr(str.find_first_of('(') + 1, str.find_first_of(')') - str.find_first_of('(') - 1);
+            auto parts = splitString(parenthesis, ',');
+
+            if (parts.size() == 1)
             {
-                mu::Parser equParser;
-                int outValsCnt = 0;
-
-                while (true)
-                {
-                    try
-                    {
-                        equParser.SetExpr(equation);
-                        equParser.Eval(outValsCnt);
-                        if (numout != nullptr)
-                            *numout = outValsCnt;
-                    }
-                    catch (mu::ParserError &e)
-                    {
-                        if (e.GetCode() == mu::ecUNASSIGNABLE_TOKEN)
-                        {
-                            std::string token = e.GetToken();
-                            equParser.DefineConst(token, 1);
-                            tokens.push_back(token);
-                            continue;
-                        }
-                        throw e;
-                    }
-                    break;
-                }
-            }
-            catch (mu::ParserError &e)
-            {
-                throw satdump_exception(e.GetMsg());
+                c.path = parts[0];
+                c.valid = true;
             }
 
-            return tokens;
+            return c;
         }
 
         // Calibrated channels config
@@ -84,6 +96,51 @@ namespace satdump
             return c;
         }
 
+        std::vector<std::string> get_required_tokens(std::string equation, std::vector<LutCfg> lut_cfgs, int *numout = nullptr)
+        {
+            std::vector<std::string> tokens;
+
+            try
+            {
+                mu::Parser equParser;
+                int outValsCnt = 0;
+
+                // Define lut functions so it can detect tokens reliably
+                image::Image img;
+                for (auto &l : lut_cfgs)
+                    equParser.DefineFunUserData(l.token.c_str(), lutProcess, &img);
+
+                while (true)
+                {
+                    try
+                    {
+                        equParser.SetExpr(equation);
+                        equParser.Eval(outValsCnt);
+                        if (numout != nullptr)
+                            *numout = outValsCnt;
+                    }
+                    catch (mu::ParserError &e)
+                    {
+                        if (e.GetCode() == mu::ecUNASSIGNABLE_TOKEN)
+                        {
+                            std::string token = e.GetToken();
+                            equParser.DefineConst(token, 1);
+                            tokens.push_back(token);
+                            continue;
+                        }
+                        throw e;
+                    }
+                    break;
+                }
+            }
+            catch (mu::ParserError &e)
+            {
+                throw satdump_exception(e.GetMsg());
+            }
+
+            return tokens;
+        }
+
         image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progress)
         {
             // Sanitize string
@@ -93,6 +150,7 @@ namespace satdump
 
             // See if we ave some setup string present
             std::map<std::string, CalibChannelCfg> calib_cfgs;
+            std::vector<LutCfg> lut_cfgs;
             if (equation.find(';') != std::string::npos)
             {
                 auto split_cfg = splitString(equation, ';');
@@ -102,12 +160,15 @@ namespace satdump
                     auto pcfg = tryParse(cfg);
                     if (pcfg.valid)
                         calib_cfgs.emplace(pcfg.token, pcfg);
+                    auto lcfg = tryParseLut(cfg);
+                    if (lcfg.valid)
+                        lut_cfgs.push_back(lcfg);
                 }
             }
 
             // Get required variables & number of output channels
             int nout_channels = 0;
-            auto tokens = get_required_tokens(equation, &nout_channels);
+            auto tokens = get_required_tokens(equation, lut_cfgs, &nout_channels);
 
             // We can't handle over 4
             if (nout_channels > 4)
@@ -135,6 +196,17 @@ namespace satdump
                 image::Image *other_images = new image::Image[tokens.size()];
                 mu::Parser equParser;
                 equParser.SetExpr(equation);
+
+                // Add LUTs to equation parser
+                std::vector<std::shared_ptr<image::Image>> lut_imgs;
+                for (auto &l : lut_cfgs)
+                {
+                    logger->trace("Needs LUT " + l.path + " as " + l.token);
+                    std::shared_ptr<image::Image> lutimg = std::make_shared<image::Image>();
+                    image::load_img(*lutimg, l.path);
+                    equParser.DefineFunUserData(l.token.c_str(), lutProcess, lutimg.get());
+                    lut_imgs.push_back(lutimg);
+                }
 
                 // Iterate through tokens to set them up
                 for (auto &tkt : tokens)
