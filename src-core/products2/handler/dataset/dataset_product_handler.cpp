@@ -93,8 +93,13 @@ namespace satdump
 
         void DatasetProductHandler::do_process()
         {
-            if (processor->can_process())
-                processor->process();
+            if (processor)
+            {
+                if (processor->can_process())
+                    processor->process();
+            }
+            else
+                logger->error("Invalid processor!\n");
         }
     }
 }
