@@ -70,6 +70,9 @@ namespace goes
 
         void GRBABIImageAssembler::pushBlock(GRBImagePayloadHeader header, image::Image &block)
         {
+            if (block.size() == 0)
+                return;
+
             // Check this is the same image
             if (currentTimeStamp != header.utc_time)
             {
