@@ -138,7 +138,9 @@ void USRPSource::start()
 {
     DSPSampleSource::start();
     open_sdr();
-    open_channel();
+    if (!is_open) {
+        open_channel();
+    }
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
