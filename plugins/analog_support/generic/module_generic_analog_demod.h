@@ -7,18 +7,20 @@ namespace generic_analog
 {
     class GenericAnalogDemodModule : public demod::BaseDemodModule
     {
+        enum ModulationType : int
+        {
+            AM,
+            NFM
+        };
+
     protected:
         std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> res;
         std::shared_ptr<dsp::QuadratureDemodBlock> qua;
 
-
-        bool nfm_demod = true;
-        bool am_demod = false;
-
-        
         bool settings_changed = false;
         int upcoming_symbolrate = 0;
-        int e = 0;
+        bool record_demod_audio = false;
+        ModulationType modulation_type = ModulationType::AM;
 
         bool play_audio;
         uint64_t audio_samplerate = 48e3;
