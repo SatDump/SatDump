@@ -109,7 +109,10 @@ namespace fengyun_svissr
     {
         frame = new uint8_t[FRAME_SIZE];
 
-        // Counters and so
+        // Counter related vars
+        counter_locked = false;
+        global_counter = 0;
+        apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
         backwardScan = false;
 
         vissrImageReader.reset();
@@ -181,6 +184,36 @@ namespace fengyun_svissr
                 // Parse counter
                 int counter = frame[67] << 8 | frame[68];
 
+                // Does correction logic if specified by the user
+                if (apply_correction) {
+                    // Unlocks if we are starting a new series
+                    if (counter_locked && (counter == 1 || counter == 2)) {
+                        counter_locked = false;
+                    }
+
+                    if (!counter_locked) {
+                        // Can we lock?
+                        if (counter == global_counter+1) {
+                            counter_locked = true;
+                        } else {
+                            // We can't lock, save this counter for a check on the next one
+                            global_counter = counter;
+                        }
+                    }
+
+                    // We are locked, assume this frame's counter is the previous one plus one.
+                    if (counter_locked) {
+                        counter = global_counter+1;
+                        global_counter = counter;
+
+                        // The counter used in the decoding process is pulled from the frame,
+                        // so we rewrite it here.
+                        frame[67] = (counter >> 8) & 0xFF;
+                        frame[68] = counter & 0xFF;
+                    }
+                }
+
+
                 // Parse SCID
                 int scid = frame[89];
 
@@ -207,6 +240,9 @@ namespace fengyun_svissr
                 if (is_back && valid_lines > 40)
                 {
                     logger->info("Full disk end detected!");
+
+                    // Image has ended, unlock the corrector (if it was enabled)
+                    counter_locked = false;
 
                     std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
@@ -339,6 +375,30 @@ namespace fengyun_svissr
 
         ImGui::SameLine();
 
+        // Writes out a simple GUI for the corrector status if it was enabled by the user
+        if (apply_correction) {
+            ImGui::BeginGroup();
+            {
+                ImGui::Button("Correction", {200 * ui_scale, 20 * ui_scale});
+                {
+                    ImGui::Text("Counter correction status: ");
+
+                    ImGui::SameLine();
+
+                    if (global_counter == 0)
+                        ImGui::TextColored(style::theme.red, "WAITING");
+                    else if (global_counter != 0 && !counter_locked)
+                        ImGui::TextColored(style::theme.orange, "LOCKING");
+                    else {
+                        ImGui::TextColored(style::theme.green, "LOCKED");
+                    }
+                }
+            }
+            ImGui::EndGroup();
+        }
+
+        ImGui::SameLine();
+
         ImGui::BeginGroup();
         {
             ImGui::Button("Full Disk Progress", {200 * ui_scale, 20 * ui_scale});
@@ -374,4 +434,4 @@ namespace fengyun_svissr
     {
         return std::make_shared<SVISSRImageDecoderModule>(input_file, output_file_hint, parameters);
     }
-} // namespace elektro
+}
