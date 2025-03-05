@@ -189,9 +189,7 @@ namespace fengyun_svissr
                     // Unlocks if we are starting a new series
                     if (counter_locked && (counter == 1 || counter == 2)) {
                         counter_locked = false;
-                    }
-
-                    if (!counter_locked) {
+                    } else if (!counter_locked) {
                         // Can we lock?
                         if (counter == global_counter+1) {
                             counter_locked = true;
