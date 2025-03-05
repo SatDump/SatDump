@@ -47,7 +47,7 @@
                 "type": "bool",
                 "value": false,
                 "name": "Apply rudimentary correction",
-                "description": "This applies correction on the basis of a sequential order check. While making imagery more presentably, it can lead to several issues:\n- Missed image starts\n- Earth being deformed (because of dropped frames)"
+                "description": "This applies correction on the basis of a sequential order check. While making imagery more presentable at low SNRs, it can lead to several issues:\n- Missed image starts\n- Earth being deformed (because of dropped frames)"
             }
         },
         "work": {
