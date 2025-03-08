@@ -194,13 +194,18 @@ namespace satdump
         }
 
         // We are done. Does this have a dataset?
-        if (std::filesystem::exists(output_directory + "/dataset.json") &&
+        bool input_is_dataset = std::filesystem::path(input_file).stem().string() == "dataset" && std::filesystem::path(input_file).extension().string() == ".json";
+        if ((std::filesystem::exists(output_directory + "/dataset.json") || input_is_dataset) &&
             config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
         {
             logger->debug("Products processing is enabled! Starting processing module.");
 
+            std::string dataset_path = output_directory + "/dataset.json";
+            if (input_is_dataset)
+                dataset_path = input_file;
+
             // It does, fire up the processing module.
-            std::shared_ptr<ProcessingModule> module = modules_registry["products_processor"](output_directory + "/dataset.json",
+            std::shared_ptr<ProcessingModule> module = modules_registry["products_processor"](dataset_path,
                                                                                               output_directory + "/" + name,
                                                                                               "");
 
@@ -397,7 +402,7 @@ namespace satdump
         }
 
         std::sort(pipelines.begin(), pipelines.end(), [](const Pipeline &l, const Pipeline &r)
-            {
+                  {
                                                     std::string lname = l.readable_name;
                                                     std::string rname = r.readable_name;
                                                     std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
@@ -460,7 +465,7 @@ namespace satdump
             {
                 pipelines_json = merge_json_diffs(pipelines_system_json, loadJsonFile(user_cfg_path));
             }
-            catch (std::exception& e)
+            catch (std::exception &e)
             {
                 logger->warn("Error loading user pipelines: %s", e.what());
                 has_user_pipelines = false;
@@ -499,7 +504,7 @@ namespace satdump
                 std::filesystem::path(user_cfg_path).has_parent_path())
                 std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             logger->error("Cannot create directory for user pipelines: %s", e.what());
             return;
