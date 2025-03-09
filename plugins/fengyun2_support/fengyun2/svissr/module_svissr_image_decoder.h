@@ -26,6 +26,9 @@ namespace fengyun_svissr
         bool writingImage = false;
         int valid_lines;
         float approx_progess;
+        bool apply_correction;
+        int global_counter;
+        bool counter_locked = false;
 
         struct SVISSRBuffer
         {
@@ -80,6 +83,7 @@ namespace fengyun_svissr
         std::vector<int> scid_stats;
 
         // UI Stuff
+        float corr_history_ca[200];
         unsigned int textureID = 0;
         uint32_t *textureBuffer;
 
@@ -97,4 +101,4 @@ namespace fengyun_svissr
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace elektro_arktika
+}
