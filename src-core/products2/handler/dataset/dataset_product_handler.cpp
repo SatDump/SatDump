@@ -19,6 +19,7 @@ namespace satdump
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MHS_Mix.json")));
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/MSUGS_Full_Disk.json")));
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_as_MHS.json")));
+            available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MCIR_Sample.json")));
         }
 
         DatasetProductHandler::~DatasetProductHandler()
