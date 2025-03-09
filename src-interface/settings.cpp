@@ -73,7 +73,7 @@ namespace satdump
 
             int theme_id = 0;
             std::string current_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"].get<std::string>();
-            for (const auto& entry : std::filesystem::directory_iterator(resources::getResourcePath("themes")))
+            for (const auto &entry : std::filesystem::directory_iterator(resources::getResourcePath("themes")))
             {
                 if (entry.path().filename().extension() != ".json")
                     continue;
@@ -90,7 +90,7 @@ namespace satdump
 
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
-            opencl_devices_enum.push_back({ -1, -1, "None (Use CPU)" });
+            opencl_devices_enum.push_back({-1, -1, "None (Use CPU)"});
             int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
             int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
             int dev_id = 0;

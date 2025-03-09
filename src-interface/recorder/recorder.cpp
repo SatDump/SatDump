@@ -345,16 +345,24 @@ namespace satdump
                     if (current_decimation < 1)
                         current_decimation = 1;
 
+                    
+                    bool disableLO = config::main_cfg["user_interface"]["lock_xconverter_input"]["value"];
+                    if (assume_started && !disableLO)
+                        style::endDisabled();
+
                     bool pushed_color_xconv = xconverter_frequency != 0;
                     if (pushed_color_xconv)
                         ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
+
                     if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
                         set_frequency(frequency_hz);
+                    
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
 
-                    if (assume_started)
+                    if (assume_started && disableLO)
                         style::endDisabled();
+
 
                     ImGui::Spacing();
                     ImGui::Separator();
