@@ -87,6 +87,7 @@ namespace satdump
                     cfg["height"] = op.img->height();
                     image::set_metadata_proj_cfg(*op.img, cfg);
                     auto img = proj::reproject(op);
+                    logger->critical("DONE REPROJECTING!");
                     img_handler.updateImage(img);
                 }
             }

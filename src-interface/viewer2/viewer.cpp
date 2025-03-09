@@ -13,6 +13,7 @@
 #include "products2/handler/dataset/dataset_handler.h"
 #include "products2/handler/vector/shapefile_handler.h"
 #include "products2/handler/projection/projection_handler.h"
+#include "dsp/dsp_flowgraph_handler.h"
 
 namespace satdump
 {
@@ -128,6 +129,8 @@ namespace satdump
                             logger->error("Dummy Menu!");
                         if (ImGui::MenuItem("Projection"))
                             master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
+                        if (ImGui::MenuItem("DSP Flowgraph"))
+                            master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
                         if (ImGui::MenuItem("BitView TEST"))
                         {
                             std::vector<std::shared_ptr<Handler>> e;

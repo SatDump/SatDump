@@ -62,7 +62,19 @@ namespace satdump
                 if (needs_to_update)
                     asyncProcess();
             }
+        }
 
+        void ImageHandler::drawMenuBar()
+        {
+            if (ImGui::MenuItem("Save Image"))
+            {
+                logger->warn("Saving image to /tmp/out.png!");
+                image::save_img(get_current_img(), "/tmp/out.png");
+            }
+        }
+
+        void ImageHandler::drawContents(ImVec2 win_size)
+        {
             if (imgview_needs_update)
             {
                 image_view.update(get_current_img());
@@ -99,19 +111,7 @@ namespace satdump
                     ImGui::EndTooltip();
                 };
             }
-        }
 
-        void ImageHandler::drawMenuBar()
-        {
-            if (ImGui::MenuItem("Save Image"))
-            {
-                logger->warn("Saving image to /tmp/out.png!");
-                image::save_img(get_current_img(), "/tmp/out.png");
-            }
-        }
-
-        void ImageHandler::drawContents(ImVec2 win_size)
-        {
             image_view.draw(win_size);
         }
 
@@ -199,18 +199,25 @@ namespace satdump
 
             if (image_has_overlays)
             {
+                if (curr_image.size() == 0)
+                {
+                    curr_image = image;
+                    logger->critical("COPYING IMAGE!\n"); // TODOREWORK
+                }
+
                 nlohmann::json cfg = image::get_metadata_proj_cfg(image);
                 cfg["width"] = curr_image.width();
                 cfg["height"] = curr_image.height();
-                proj::Projection p = cfg;
-                p.init(1, 0);
+                std::unique_ptr<proj::Projection> p = std::make_unique<proj::Projection>();
+                *p = cfg;
+                p->init(1, 0);
 
                 double rotate180 = rotate180_image;
                 auto corr_lut = correct_rev_lut;
-                auto pfunc = [p, rotate180, corr_lut](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                auto pfunc = [&p, rotate180, corr_lut](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
                     double x, y;
-                    if (p.forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
                     else
                     {
