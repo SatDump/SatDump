@@ -111,19 +111,17 @@ namespace image
             if (!proj_cfg.contains("corr_altit"))
                 return img;
 
-            int width = proj_cfg.contains("corr_width") ? proj_cfg["corr_width"].get<int>() : img.width();
+            int width = img.width();
             float swath = proj_cfg["corr_swath"].get<float>();
             float resol = proj_cfg["corr_resol"].get<float>();
             float altit = proj_cfg["corr_altit"].get<float>();
             success = true;
 
-            resol *= float(width) / float(img.width());
-
             if (proj_cfg.contains("corr_width"))
             {
                 if ((int)img.width() != proj_cfg["corr_width"].get<int>())
                 {
-                    logger->debug("Image width mistmatch %d %d", proj_cfg["corr_width"].get<int>(), img.width());
+                    logger->debug("Image width mistmatch %d %d => RES %f/%f", proj_cfg["corr_width"].get<int>(), img.width(), resol, swath);
                     resol *= proj_cfg["corr_width"].get<int>() / float(img.width());
                 }
             }
