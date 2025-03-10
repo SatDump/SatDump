@@ -10,6 +10,7 @@
 #include "nlohmann/json.hpp"
 #include <vector>
 #include <thread>
+#include <mutex>
 
 namespace satdump
 {
@@ -73,6 +74,7 @@ namespace satdump
 
         private:
             bool blk_should_run;
+            std::mutex blk_th_mtx;
             std::thread blk_th;
             void run()
             {
@@ -82,6 +84,12 @@ namespace satdump
             }
 
         protected:
+            /**
+             * @brief Used to signal to a block it should exit in order
+             * to stop(). Usually only needed in sources. TODOREWORK
+             */
+            bool work_should_exit;
+
             /**
              * @brief The actual looping work function meant to handle
              * all the DSP (well, in most blocks)
@@ -102,6 +110,7 @@ namespace satdump
                 : d_id(id), inputs(in), outputs(out)
             {
                 blk_should_run = false;
+                work_should_exit = false;
             }
 
             ~Block()
@@ -160,6 +169,7 @@ namespace satdump
                     throw satdump_exception("Block wasn't properly stopped before start() was called again!");
 
                 init();
+                work_should_exit = false;
                 blk_should_run = true;
                 blk_th = std::thread(&Block::run, this);
                 pthread_setname_np(blk_th.native_handle(), d_id.c_str());
@@ -171,11 +181,15 @@ namespace satdump
              * TODOREWORK, potentially allow sending the terminator
              * as well to force-quit.
              */
-            virtual void stop()
+            virtual void stop(bool stop_now = false)
             { // TODOREWORK allow sending terminator in this function?
-              //  blk_should_run = false;
+                if (stop_now)
+                    work_should_exit = true;
+
+                blk_th_mtx.lock();
                 if (blk_th.joinable())
                     blk_th.join();
+                blk_th_mtx.unlock();
                 blk_should_run = false;
             }
         };

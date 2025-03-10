@@ -16,7 +16,7 @@ namespace satdump
 
         bool FileSourceBlock::work()
         {
-            if (!baseband_reader.is_eof())
+            if (!baseband_reader.is_eof() && !work_should_exit)
             {
                 auto oblk = DSPBuffer::newBufferSamples<complex_t>(d_buffer_size);
                 complex_t *obuf = oblk.getSamples<complex_t>();

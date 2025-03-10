@@ -183,22 +183,37 @@ namespace satdump
             if (ImGui::CollapsingHeader("Flowgraph"))
             {
                 if (running)
-                    style::beginDisabled();
-
-                //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
-                if (ImGui::Button("Run"))
                 {
-                    if (flow_thread.joinable())
-                        flow_thread.join();
-                    auto fun = [&]()
+                    if (ImGui::Button("Stop"))
+                        flowgraph.stop();
+                }
+                else
+                {
+                    if (ImGui::Button("Start"))
                     {
-                        flowgraph.run();
-                    };
-                    flow_thread = std::thread(fun);
+                        if (flow_thread.joinable())
+                            flow_thread.join();
+                        auto fun = [&]()
+                        {
+                            flowgraph.run();
+                        };
+                        flow_thread = std::thread(fun);
+                    }
                 }
 
-                //    if (ImGui::Button("Stop"))
-                //        flowgraph.stop();
+                if (running)
+                    style::beginDisabled();
+
+                /*auto pos = ImGui::GetCursorPos();
+                ImGui::Button("##test", {50, 50});
+                pos.x += 10;
+                ImGui::GetWindowDrawList()
+                    ->AddTriangleFilled({pos.x + 10, pos.y + 43},
+                                        {pos.x + 10, pos.y + 77},
+                                        {pos.x + 40, pos.y + 60},
+                                        ImColor(255, 255, 255, 255));*/
+
+                //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
 
                 if (ImGui::Button("To JSON"))
                 {

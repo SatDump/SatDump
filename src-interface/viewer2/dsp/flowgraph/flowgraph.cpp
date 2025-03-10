@@ -354,7 +354,17 @@ namespace satdump
         {
             try
             {
-                logger->error("TODODODODODOD");
+                // Iterate through all nodes
+                for (auto &n : nodes)
+                {
+                    // Stop only those that are sources
+                    if (n->internal->blk->inputs.size() == 0)
+                    {
+                        logger->trace("Stopping source " + n->internal->blk->d_id);
+                        n->internal->blk->stop(true);
+                        logger->trace("Stopped source " + n->internal->blk->d_id);
+                    }
+                }
             }
             catch (std::exception &e)
             {
