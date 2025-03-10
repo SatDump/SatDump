@@ -37,6 +37,9 @@ namespace generic_analog
 
         bool enable_audio = false;
 
+    private:
+        std::string safe_string(const std::string& str);
+
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };

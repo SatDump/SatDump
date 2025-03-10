@@ -37,7 +37,15 @@
           "value": 435.87e6,
           "name": "Satellite Nominal Frequency",
           "units": "Hz",
-          "description": "Frequency the satellite is transmitting."
+          "description": "Downlink frequency of the satellite."
+        },
+        "satellite_name":
+        {
+          "type": "string",
+          "value": "",
+          "name": "Satellite Name",
+          "units": "Hz",
+          "description": "Human-readable identifier for the satellite."
         },
         "modulation_type":
         {
@@ -77,12 +85,6 @@
           "generic_analog_demod":
           {
             "symbolrate": 48e3
-            //"enable_doppler": true,
-            //"satellite_norad": 57167,
-            //"satellite_frequency": 435.87e6,
-            //"options": "NFM",
-            //"bandwidth": 12500,
-            //"record_demod_audio": false
           }
         }
       }

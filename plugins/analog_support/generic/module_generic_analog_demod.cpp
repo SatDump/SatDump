@@ -35,7 +35,7 @@ namespace generic_analog
         //modulation_type
         if (d_parameters.contains("modulation_type"))
         {
-            const std::string_view mod = d_parameters["modulation_type"];
+            const std::string& mod = d_parameters["modulation_type"];
             if (mod == "NFM")
             {
                 modulation_type = ModulationType::NFM;
@@ -70,14 +70,49 @@ namespace generic_analog
             filesize = 0;
 
         const bool output_to_file = output_data_type == DATA_FILE || record_demod_audio;
+
+        std::string output_file_hint = d_output_file_hint;
         if (output_to_file)
         {
-            data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".wav");
+            // append satellite NORAD number to filename
+            if (d_parameters.contains("satellite_norad"))
+            {
+                output_file_hint.push_back('_');
+                output_file_hint.append(
+                    safe_string(
+                        std::to_string(
+                            d_parameters["satellite_norad"].get<nlohmann::json::number_unsigned_t>()
+                        )
+                    )
+                );
+            }
+
+            // append satellite name to filename
+            if (d_parameters.contains("satellite_name") && d_parameters["satellite_name"].size() > 0)
+            {
+                output_file_hint.push_back('_');
+                output_file_hint.append(safe_string(d_parameters["satellite_name"]));
+            }
+
+            // append satellite downlink frequency to filename
+            if (d_parameters.contains("satellite_frequency"))
+            {
+                output_file_hint.push_back('_');
+                output_file_hint.append(
+                    safe_string(
+                        std::to_string(
+                            d_parameters["satellite_frequency"].get<nlohmann::json::number_unsigned_t>()
+                        ) + "Hz"
+                    )
+                );
+            }
+
+            data_out = std::ofstream(output_file_hint + ".wav", std::ios::binary);
+            d_output_files.push_back(output_file_hint + ".wav");
         }
 
         logger->info("Using input baseband " + d_input_file);
-        logger->info("Demodulating to " + d_output_file_hint + ".wav");
+        logger->info("Demodulating to " + output_file_hint + ".wav");
         logger->info("Buffer size : " + std::to_string(d_buffer_size));
 
         time_t lastTime = 0;
@@ -318,6 +353,23 @@ namespace generic_analog
         drawStopButton();
         ImGui::End();
         drawFFT();
+    }
+
+    std::string GenericAnalogDemodModule::safe_string(const std::string& str)
+    {
+        std::string safe_str;
+        for (const char c : str)
+        {
+            if (std::isalnum(c)) // character is alphanumeric
+            {
+                safe_str.push_back(c);
+            }
+            else if (safe_str.back() != '_') // replace other characters with _
+            {
+                safe_str.push_back('_'); // but only once in a row
+            }
+        }
+        return safe_str;
     }
 
     std::string GenericAnalogDemodModule::getID()
