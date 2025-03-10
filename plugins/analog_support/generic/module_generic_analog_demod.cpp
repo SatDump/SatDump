@@ -79,7 +79,7 @@ namespace generic_analog
             {
                 output_file_hint.push_back('_');
                 output_file_hint.append(
-                    safe_string(
+                    make_safe_string(
                         std::to_string(
                             d_parameters["satellite_norad"].get<nlohmann::json::number_unsigned_t>()
                         )
@@ -88,10 +88,10 @@ namespace generic_analog
             }
 
             // append satellite name to filename
-            if (d_parameters.contains("satellite_name") && d_parameters["satellite_name"].size() > 0)
+            if (d_parameters.contains("satellite_name") && d_parameters["satellite_name"].get<nlohmann::json::string_t>().size() > 0)
             {
                 output_file_hint.push_back('_');
-                output_file_hint.append(safe_string(d_parameters["satellite_name"]));
+                output_file_hint.append(make_safe_string(d_parameters["satellite_name"]));
             }
 
             // append satellite downlink frequency to filename
@@ -99,7 +99,7 @@ namespace generic_analog
             {
                 output_file_hint.push_back('_');
                 output_file_hint.append(
-                    safe_string(
+                    make_safe_string(
                         std::to_string(
                             d_parameters["satellite_frequency"].get<nlohmann::json::number_unsigned_t>()
                         ) + "Hz"
@@ -355,7 +355,7 @@ namespace generic_analog
         drawFFT();
     }
 
-    std::string GenericAnalogDemodModule::safe_string(const std::string& str)
+    std::string GenericAnalogDemodModule::make_safe_string(const std::string& str)
     {
         std::string safe_str;
         for (const char c : str)
@@ -364,10 +364,14 @@ namespace generic_analog
             {
                 safe_str.push_back(c);
             }
-            else if (safe_str.back() != '_') // replace other characters with _
+            else if (safe_str.empty() || safe_str.back() != '_') // replace other characters with underscore
             {
                 safe_str.push_back('_'); // but only once in a row
             }
+        }
+        if (!safe_str.empty() && safe_str.back() == '_') // remove trailing underscore
+        {
+            safe_str.pop_back();
         }
         return safe_str;
     }
