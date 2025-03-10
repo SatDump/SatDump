@@ -21,6 +21,30 @@ namespace generic_analog
         MAX_SPS = 1e9;
 
         upcoming_symbolrate = d_symbolrate;
+        if (d_parameters.contains("bandwidth"))
+        {
+            upcoming_symbolrate = d_parameters["bandwidth"];
+            settings_changed = true;
+        }
+
+        if (d_parameters.contains("record_demod_audio"))
+        {
+            record_demod_audio = d_parameters["record_demod_audio"];
+        }
+
+        //modulation_type
+        if (d_parameters.contains("modulation_type"))
+        {
+            const std::string& mod = d_parameters["modulation_type"];
+            if (mod == "NFM")
+            {
+                modulation_type = ModulationType::NFM;
+            }
+            else if (mod == "AM")
+            {
+                modulation_type = ModulationType::AM;
+            }
+        }
     }
 
     void GenericAnalogDemodModule::init()
@@ -45,14 +69,50 @@ namespace generic_analog
         else
             filesize = 0;
 
-        if (output_data_type == DATA_FILE)
+        const bool output_to_file = output_data_type == DATA_FILE || record_demod_audio;
+
+        std::string output_file_hint = d_output_file_hint;
+        if (output_to_file)
         {
-            data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".wav");
+            // append satellite NORAD number to filename
+            if (d_parameters.contains("satellite_norad"))
+            {
+                output_file_hint.push_back('_');
+                output_file_hint.append(
+                    make_safe_string(
+                        std::to_string(
+                            d_parameters["satellite_norad"].get<nlohmann::json::number_unsigned_t>()
+                        )
+                    )
+                );
+            }
+
+            // append satellite name to filename
+            if (d_parameters.contains("satellite_name") && d_parameters["satellite_name"].get<nlohmann::json::string_t>().size() > 0)
+            {
+                output_file_hint.push_back('_');
+                output_file_hint.append(make_safe_string(d_parameters["satellite_name"]));
+            }
+
+            // append satellite downlink frequency to filename
+            if (d_parameters.contains("satellite_frequency"))
+            {
+                output_file_hint.push_back('_');
+                output_file_hint.append(
+                    make_safe_string(
+                        std::to_string(
+                            d_parameters["satellite_frequency"].get<nlohmann::json::number_unsigned_t>()
+                        ) + "Hz"
+                    )
+                );
+            }
+
+            data_out = std::ofstream(output_file_hint + ".wav", std::ios::binary);
+            d_output_files.push_back(output_file_hint + ".wav");
         }
 
         logger->info("Using input baseband " + d_input_file);
-        logger->info("Demodulating to " + d_output_file_hint + ".wav");
+        logger->info("Demodulating to " + output_file_hint + ".wav");
         logger->info("Buffer size : " + std::to_string(d_buffer_size));
 
         time_t lastTime = 0;
@@ -67,7 +127,7 @@ namespace generic_analog
         int16_t *output_wav_buffer_resamp = new int16_t[d_buffer_size * 200];
         uint64_t final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
-        if (output_data_type == DATA_FILE)
+        if (output_to_file)
             wave_writer.write_header(audio_samplerate, 1);
 
         std::shared_ptr<audio::AudioSink> audio_sink;
@@ -108,29 +168,14 @@ namespace generic_analog
                     quad_demod.set_gain(dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
                 }
 
-                switch (e) {
-                case 0:
-                    nfm_demod = true;
-                    am_demod = false;
-                    break;
-                case 1:
-                    am_demod = true;
-                    nfm_demod = false;
-                    break;
-                default:
-                    nfm_demod = true;
-                    am_demod = false;
-                    break;
-                }
-
                 settings_changed = false;
             }
 
             int nout = input_resamp.process(agc->output_stream->readBuf, dat_size, work_buffer_complex);
 
-            if (nfm_demod)
+            if (modulation_type == ModulationType::NFM)
                 nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
-            else if (am_demod)
+            else if (modulation_type == ModulationType::AM)
                 volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t*)work_buffer_complex, nout);
 
             // Into const
@@ -149,7 +194,7 @@ namespace generic_analog
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, nout, 1);
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer_resamp, final_out);
-            if (output_data_type == DATA_FILE)
+            if (output_to_file)
             {
                 data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
                 final_data_size += final_out * sizeof(int16_t);
@@ -177,7 +222,7 @@ namespace generic_analog
             int final_out = audio::AudioSink::resample_s16(output_wav_buffer, output_wav_buffer_resamp, d_symbolrate, audio_samplerate, dat_size, 1);
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer_resamp, final_out);
-            if (output_data_type == DATA_FILE)
+            if (output_data_type == DATA_FILE || record_live_audio)
             {
                 data_out.write((char *)output_wav_buffer_resamp, final_out * sizeof(int16_t));
                 final_data_size += final_out * sizeof(int16_t);
@@ -204,7 +249,7 @@ namespace generic_analog
             audio_sink->stop();
 
         // Finish up WAV
-        if (output_data_type == DATA_FILE)
+        if (output_to_file)
         {
             wave_writer.finish_header(final_data_size);
             data_out.close();
@@ -245,10 +290,11 @@ namespace generic_analog
             proc_mtx.lock();
             ImGui::SetNextItemWidth(200 * ui_scale);
             ImGui::InputInt("Bandwidth##bandwidthsetting", &upcoming_symbolrate);
+            ImGui::Checkbox("Record Audio##analogoption", &record_demod_audio);
 
-            ImGui::RadioButton("NFM##analogoption", &e, 0);
+            ImGui::RadioButton("NFM##analogoption", reinterpret_cast<int*>(&modulation_type), ModulationType::NFM);
             ImGui::SameLine();
-            ImGui::RadioButton("AM##analogoption", &e, 1);
+            ImGui::RadioButton("AM##analogoption", reinterpret_cast<int*>(&modulation_type), ModulationType::AM);
             style::beginDisabled();
             ImGui::RadioButton("WFM##analogoption", false);
             ImGui::SameLine();
@@ -307,6 +353,27 @@ namespace generic_analog
         drawStopButton();
         ImGui::End();
         drawFFT();
+    }
+
+    std::string GenericAnalogDemodModule::make_safe_string(const std::string& str)
+    {
+        std::string safe_str;
+        for (const char c : str)
+        {
+            if (std::isalnum(c)) // character is alphanumeric
+            {
+                safe_str.push_back(c);
+            }
+            else if (safe_str.empty() || safe_str.back() != '_') // replace other characters with underscore
+            {
+                safe_str.push_back('_'); // but only once in a row
+            }
+        }
+        if (!safe_str.empty() && safe_str.back() == '_') // remove trailing underscore
+        {
+            safe_str.pop_back();
+        }
+        return safe_str;
     }
 
     std::string GenericAnalogDemodModule::getID()
