@@ -4,12 +4,13 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "products/dataset.h"
+#include "products2/dataset.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
+#include "common/tracking/tle.h"
 
 namespace wsfm
 {
@@ -79,7 +80,7 @@ namespace wsfm
             norad = WSFM_1_NORAD;
 
         // Products dataset
-        satdump::ProductDataSet dataset;
+        satdump::products::DataSet dataset;
         dataset.satellite_name = sat_name;
         dataset.timestamp = get_median(mwi_reader.timestamps);
 
@@ -103,17 +104,12 @@ namespace wsfm
             logger->info("----------- MWI");
             logger->info("Lines : " + std::to_string(mwi_reader.lines));
 
-            satdump::ImageProducts mwi_products;
+            satdump::products::ImageProduct mwi_products;
             mwi_products.instrument_name = "wsfm_mwi";
-            mwi_products.has_timestamps = true;
-            mwi_products.set_tle(satellite_tle);
-            mwi_products.bit_depth = 16;
-            mwi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            mwi_products.set_timestamps(mwi_reader.timestamps);
-            mwi_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/wsfm_mwi.json")));
+            mwi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/wsfm_mwi.json")), satellite_tle, mwi_reader.timestamps);
 
             for (int i = 0; i < 17; i++)
-                mwi_products.images.push_back({"MWI-" + std::to_string(i + 1), std::to_string(i + 1), mwi_reader.getChannel(i)});
+                mwi_products.images.push_back({i, "MWI-" + std::to_string(i + 1), std::to_string(i + 1), mwi_reader.getChannel(i), 16});
 
             mwi_products.save(directory);
             dataset.products_list.push_back("MWI");

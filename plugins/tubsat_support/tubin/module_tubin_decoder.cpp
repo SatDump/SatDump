@@ -4,8 +4,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 #include "../png_fix.h"
 #include "common/image/bayer/bayer.h"
 #include "common/image/io.h"
@@ -102,7 +102,7 @@ namespace tubin
         std::string sat_name = "TUBIN";
 
         // Products dataset
-        satdump::ProductDataSet dataset;
+        satdump::products::DataSet dataset;
         dataset.satellite_name = sat_name;
         dataset.timestamp = time(0);
 
@@ -183,18 +183,17 @@ namespace tubin
                 logger->info("Width  : " + std::to_string(image.width()));
                 logger->info("Height : " + std::to_string(image.height()));
 
-                satdump::ImageProducts tubin_products;
+                satdump::products::ImageProduct tubin_products;
                 tubin_products.instrument_name = "tubin_vis";
                 // tubin_products.has_timestamps = true;
                 // tubin_products.set_tle(satellite_tle);
-                tubin_products.bit_depth = 16;
-                // tubin_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                // tubin_products.bit_depth = 16;
                 // tubin_products.set_timestamps(avhrr_reader.timestamps);
                 // tubin_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
 
-                tubin_products.images.push_back({"TUBIN-1", "1", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 0), 16, image.width(), image.height(), 1)});
-                tubin_products.images.push_back({"TUBIN-2", "2", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 1), 16, image.width(), image.height(), 1)});
-                tubin_products.images.push_back({"TUBIN-3", "3", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 2), 16, image.width(), image.height(), 1)});
+                tubin_products.images.push_back({0, "TUBIN-1", "1", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 0), 16, image.width(), image.height(), 1), 16});
+                tubin_products.images.push_back({1, "TUBIN-2", "2", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 1), 16, image.width(), image.height(), 1), 16});
+                tubin_products.images.push_back({2, "TUBIN-3", "3", image::Image((uint8_t *)img_color.raw_data() + (img_color.width() * img_color.height() * img_color.typesize() * 2), 16, image.width(), image.height(), 1), 16});
 
                 tubin_products.save(directory);
                 dataset.products_list.push_back(product_name);

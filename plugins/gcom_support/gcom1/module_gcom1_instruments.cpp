@@ -7,8 +7,8 @@
 #include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
-#include "products/dataset.h"
-#include "products/image_products.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
 
 namespace gcom1
 {
@@ -67,7 +67,7 @@ namespace gcom1
             int norad = 38337;
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
             dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
 
@@ -89,17 +89,15 @@ namespace gcom1
                 logger->info("----------- AMSR-2");
                 logger->info("Lines : " + std::to_string(amsr2_reader.lines));
 
-                satdump::ImageProducts amsr2_products;
+                satdump::products::ImageProduct amsr2_products;
                 amsr2_products.instrument_name = "amsr2";
                 // amsr2_products.has_timestamps = true;
                 // amsr2_products.set_tle(satellite_tle);
-                amsr2_products.bit_depth = 12;
-                // amsr2_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // amsr2_products.set_timestamps(mhs_reader.timestamps);
                 // amsr2_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 20; i++)
-                    amsr2_products.images.push_back({"AMSR2-" + std::to_string(i + 1), std::to_string(i + 1), amsr2_reader.getChannel(i)});
+                    amsr2_products.images.push_back({i, "AMSR2-" + std::to_string(i + 1), std::to_string(i + 1), amsr2_reader.getChannel(i), 12});
 
                 amsr2_products.save(directory);
                 dataset.products_list.push_back("AMSR-2");

@@ -4,8 +4,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "../../oceansat.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -57,19 +57,17 @@ namespace oceansat
                 std::filesystem::create_directory(directory);
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = "OceanSat-2";
             dataset.timestamp = time(NULL); // avg_overflowless(avhrr_reader.timestamps);
 
             ocm_status = SAVING;
 
-            satdump::ImageProducts ocm_products;
+            satdump::products::ImageProduct ocm_products;
             ocm_products.instrument_name = "ocm_oc2";
-            ocm_products.has_timestamps = false;
-            ocm_products.bit_depth = 12;
 
             for (int i = 0; i < 8; i++)
-                ocm_products.images.push_back({"OCM-" + std::to_string(i + 1), std::to_string(i + 1), ocm_reader.getChannel(i)});
+                ocm_products.images.push_back({i, "OCM-" + std::to_string(i + 1), std::to_string(i + 1), ocm_reader.getChannel(i), 12});
 
             ocm_products.save(directory);
             dataset.products_list.push_back("OCM");

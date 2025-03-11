@@ -6,8 +6,8 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 
 namespace mats
 {
@@ -67,7 +67,7 @@ namespace mats
             data_in.close();
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = "MATS";
             dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
 
@@ -82,17 +82,14 @@ namespace mats
                 logger->info("----------- MATS Nadir");
                 logger->info("Lines : " + std::to_string(mats_reader.nadir_lines));
 
-                satdump::ImageProducts mats_nadir_products;
+                satdump::products::ImageProduct mats_nadir_products;
                 mats_nadir_products.instrument_name = "mats_nadir";
-                mats_nadir_products.has_timestamps = false;
                 // mats_nadir_products.set_tle(satellite_tle);
-                mats_nadir_products.bit_depth = 12;
-                mats_nadir_products.set_wavenumber(0, 1311.99);
-                // mats_nadir_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // mats_nadir_products.set_timestamps(mhs_reader.timestamps);
                 // mats_nadir_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
-                mats_nadir_products.images.push_back({"MATS-Nadir", "1", mats_reader.getNadirImage()});
+                mats_nadir_products.images.push_back({0, "MATS-Nadir", "1", mats_reader.getNadirImage(), 12});
+                mats_nadir_products.set_channel_wavenumber(0, 1311.99);
 
                 mats_nadir_products.save(directory);
                 dataset.products_list.push_back("Nadir");

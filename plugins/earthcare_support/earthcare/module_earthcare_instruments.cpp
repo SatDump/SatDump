@@ -6,10 +6,11 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 #include "nlohmann/json_utils.h"
 #include "resources.h"
+#include "common/tracking/tle.h"
 
 #include "common/image/io.h"
 
@@ -86,7 +87,7 @@ namespace earthcare
             data_in.close();
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = "EarthCARE";
             dataset.timestamp = get_median(msi_reader.timestamps);
 
@@ -110,17 +111,12 @@ namespace earthcare
                 logger->info("----------- MSI");
                 logger->info("Lines : " + std::to_string(msi_reader.lines));
 
-                satdump::ImageProducts msi_products;
+                satdump::products::ImageProduct msi_products;
                 msi_products.instrument_name = "earthcare_msi";
-                msi_products.has_timestamps = true;
-                msi_products.set_tle(satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp));
-                msi_products.bit_depth = 16;
-                msi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                msi_products.set_timestamps(msi_reader.timestamps);
-                msi_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/earthcare_msi.json")));
+                msi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/earthcare_msi.json")), satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp), msi_reader.timestamps);
 
                 for (int i = 0; i < 7; i++)
-                    msi_products.images.push_back({"MSI-" + std::to_string(i + 1), std::to_string(i + 1), msi_reader.getChannel(i)});
+                    msi_products.images.push_back({i, "MSI-" + std::to_string(i + 1), std::to_string(i + 1), msi_reader.getChannel(i), 16});
 
                 msi_products.save(directory);
                 dataset.products_list.push_back("MSI");

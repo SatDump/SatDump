@@ -136,7 +136,6 @@ namespace elektro_arktika
                 satdump::products::ImageProduct msuvis_product;
                 msuvis_product.instrument_name = "msugs_vis";
                 //                    msuvis_products.has_timestamps = true; // TODOREWORK
-                //                    msuvis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 //                    msuvis_products.set_timestamps(timestamps);
                 //     msuvis_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));

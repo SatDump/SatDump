@@ -4,7 +4,7 @@
 #include <map>
 #include "logger.h"
 #include "common/utils.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include <filesystem>
 #include "common/repack.h"
 #include "../crc.h"
@@ -191,16 +191,14 @@ namespace proba
 
                     image::save_img(chris_img.raw, dir_path + "/RAW");
 
-                    satdump::ImageProducts chris_products;
+                    satdump::products::ImageProduct chris_products;
                     chris_products.instrument_name = "chris";
-                    chris_products.bit_depth = 12;
-                    chris_products.has_timestamps = false;
 
                     for (int i = 0; i < (int)chris_img.channels.size(); i++)
                     {
                         image::Image ch = chris_img.channels[i];
                         ch.resize(ch.width() * 2, ch.height());
-                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch});
+                        chris_products.images.push_back({i, "CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch, 12});
                     }
 
                     chris_products.save(dir_path);
@@ -241,15 +239,13 @@ namespace proba
 
                     image::save_img(chris_img.raw, dir_path + "/RAW");
 
-                    satdump::ImageProducts chris_products;
+                    satdump::products::ImageProduct chris_products;
                     chris_products.instrument_name = "chris";
-                    chris_products.bit_depth = 12;
-                    chris_products.has_timestamps = false;
 
                     for (int i = 0; i < (int)chris_img.channels.size(); i++)
                     {
                         image::Image ch = chris_img.channels[i];
-                        chris_products.images.push_back({"CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch});
+                        chris_products.images.push_back({i, "CHRIS-" + std::to_string(i + 1), std::to_string(i + 1), ch, 12});
                     }
 
                     chris_products.save(dir_path);

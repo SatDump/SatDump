@@ -139,7 +139,6 @@ namespace meteor
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = time(0); // avg_overflowless(msumr_timestamps);
 
-#if 0
                 // MTVZA
                 {
                     mtvza_status = SAVING;
@@ -151,23 +150,18 @@ namespace meteor
                     logger->info("----------- MTVZA");
                     logger->info("Lines : " + std::to_string(mtvza_lines));
 
-                    satdump::ImageProducts mtvza_products;
+                    satdump::products::ImageProduct mtvza_products;
                     mtvza_products.instrument_name = "mtvza";
-                    mtvza_products.has_timestamps = true;
-                    mtvza_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-                    mtvza_products.set_tle(satdump::general_tle_registry->get_from_norad(norad));
-                    mtvza_products.set_timestamps(timestamps);
-                    mtvza_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")));
+                    mtvza_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
 
                     for (int i = 0; i < 46; i++)
-                        mtvza_products.images.push_back({"MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mtvza_channels[i].data(), 16, 200, mtvza_lines, 1)});
+                        mtvza_products.images.push_back({i, "MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mtvza_channels[i].data(), 16, 200, mtvza_lines, 1), 16});
 
                     mtvza_products.save(directory);
                     dataset.products_list.push_back("MTVZA");
 
                     mtvza_status = DONE;
                 }
-#endif // TODOREWORK
 
                 dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
             }

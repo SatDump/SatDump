@@ -6,8 +6,8 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 
 extern "C"
 {
@@ -110,7 +110,7 @@ namespace ldcm
             data_in.close();
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = "LandSat-8/9";
             dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
 
@@ -127,22 +127,19 @@ namespace ldcm
                 logger->info("Lines 2 : " + std::to_string(tirs_reader2.lines));
                 logger->info("Lines 3 : " + std::to_string(tirs_reader3.lines));
 
-                satdump::ImageProducts tirs_products;
+                satdump::products::ImageProduct tirs_products;
                 tirs_products.instrument_name = "tirs";
-                tirs_products.has_timestamps = false;
                 // tirs_products.set_tle(satellite_tle);
-                tirs_products.bit_depth = 12;
                 // tirs_products.set_wavenumber(0, 1311.99);
-                // tirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 // tirs_products.set_timestamps(mhs_reader.timestamps);
                 // tirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")));
 
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 1), std::to_string(i + 1), tirs_reader1.getChannel(i)});
+                    tirs_products.images.push_back({i, "TIRS-" + std::to_string(i + 1), std::to_string(i + 1), tirs_reader1.getChannel(i), 12});
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 4), std::to_string(i + 4), tirs_reader2.getChannel(i)});
+                    tirs_products.images.push_back({i + 3, "TIRS-" + std::to_string(i + 4), std::to_string(i + 4), tirs_reader2.getChannel(i), 12});
                 for (int i = 0; i < 3; i++)
-                    tirs_products.images.push_back({"TIRS-" + std::to_string(i + 7), std::to_string(i + 7), tirs_reader3.getChannel(i)});
+                    tirs_products.images.push_back({i + 6, "TIRS-" + std::to_string(i + 7), std::to_string(i + 7), tirs_reader3.getChannel(i), 12});
 
                 tirs_products.save(directory);
                 dataset.products_list.push_back("TIRS");

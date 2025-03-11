@@ -4,8 +4,8 @@
 #include <volk/volk.h>
 #include "common/utils.h"
 #include "common/repack.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
+#include "products2/image_product.h"
+#include "products2/dataset.h"
 #include <filesystem>
 
 namespace dmsp
@@ -58,7 +58,8 @@ namespace dmsp
         else if (fs_config == "IR/VIS")
         {
             ols_reader.set_tag_bit(2);
-        } else
+        }
+        else
         {
             ols_reader.set_tag_bit(0);
         }
@@ -89,7 +90,7 @@ namespace dmsp
             data_in.close();
 
         // Products dataset
-        satdump::ProductDataSet dataset;
+        satdump::products::DataSet dataset;
         dataset.satellite_name = "DMSP-F1x";
         dataset.timestamp = time(0);
 
@@ -104,13 +105,11 @@ namespace dmsp
             logger->info("----------- OLS");
             logger->info("Lines : " + std::to_string(ols_reader.lines));
 
-            satdump::ImageProducts ols_products;
+            satdump::products::ImageProduct ols_products;
             ols_products.instrument_name = "ols";
-            ols_products.has_timestamps = false;
-            ols_products.bit_depth = 8;
 
-            ols_products.images.push_back({"OLS-VIS", "vis", ols_reader.getChannelVIS()});
-            ols_products.images.push_back({"OLS-IR", "ir", ols_reader.getChannelIR()});
+            ols_products.images.push_back({0, "OLS-VIS", "vis", ols_reader.getChannelVIS(), 8});
+            ols_products.images.push_back({1, "OLS-IR", "ir", ols_reader.getChannelIR(), 8});
 
             ols_products.save(directory);
             dataset.products_list.push_back("OLS");
