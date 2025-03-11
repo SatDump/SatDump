@@ -175,7 +175,7 @@ namespace satdump
              */
             int get_channel_image_idx(std::string name)
             {
-                for (int i = 0; i < images.size(); i++)
+                for (int i = 0; i < (int)images.size(); i++)
                     if (images[i].channel_name == name)
                         return i;
                 throw satdump_exception("Product Channel Name " + name + " is not present!");

@@ -38,7 +38,7 @@ namespace dsp
         int consumed = 0;
         for (int i = 0; (i + d_nsamples) < in_buffer; i += d_nsamples)
         {
-            T input = Block<T, T>::input_stream->readBuf[i];
+            //T input = Block<T, T>::input_stream->readBuf[i];
             T output = Block<T, T>::output_stream->readBuf[i];
 
             consumed += d_nsamples;

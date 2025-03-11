@@ -112,7 +112,7 @@ namespace ziq2
 
     void ziq2_read_info_pkt(uint8_t *input, uint64_t *samplerate)
     {
-        ziq2_pkt_hdr_t *mdr = (ziq2_pkt_hdr_t *)&input[0];
+        // ziq2_pkt_hdr_t *mdr = (ziq2_pkt_hdr_t *)&input[0];
         ziq2_info_pkt_hdr_t *hdr = (ziq2_info_pkt_hdr_t *)&input[sizeof(ziq2_pkt_hdr_t)];
         *samplerate = hdr->samplerate;
     }

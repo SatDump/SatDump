@@ -26,7 +26,7 @@ namespace satdump
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void setParams(nlohmann::json /*v*/)
             {
                 //  rate = v["rate"];
             }

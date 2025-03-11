@@ -36,7 +36,7 @@ namespace satdump
             complex_t *ibuf = iblk.getSamples<complex_t>();
             complex_t *obuf = oblk.getSamples<complex_t>();
 
-            for (int i = 0; i < iblk.size; i++)
+            for (uint32_t i = 0; i < iblk.size; i++)
             {
                 // Mix input & VCO
                 tmp_val = ibuf[i] * complex_t(cosf(-phase), sinf(-phase));

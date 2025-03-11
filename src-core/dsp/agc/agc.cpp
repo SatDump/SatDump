@@ -36,7 +36,7 @@ namespace satdump
             T *ibuf = iblk.getSamples<T>();
             T *obuf = oblk.getSamples<T>();
 
-            for (int i = 0; i < iblk.size; i++)
+            for (uint32_t i = 0; i < iblk.size; i++)
             {
                 T output = ibuf[i] * gain;
 

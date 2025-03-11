@@ -87,13 +87,13 @@ namespace lrit
                     10700,
                     13300,
                 };
-                const float goesn_imager_radiance_ranges_table[16][2] = {
+                /*const float goesn_imager_radiance_ranges_table[16][2] = {
                     {0, 1},       // 630,
                     {0.01, 2.20}, // 3900,
                     {0, 6},       // 64800,
                     {10, 120},    // 10700,
                     {20, 90},     // 13300,
-                };
+                };*/
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
             }
             else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
@@ -116,7 +116,7 @@ namespace lrit
                     12300,
                     13300,
                 };
-                const float goes_abi_radiance_ranges_table[16][2] = {
+                /*const float goes_abi_radiance_ranges_table[16][2] = {
                     // TODOREWORK DELETE
                     {0, 1},
                     {0, 1},
@@ -134,7 +134,7 @@ namespace lrit
                     {10, 150},    // 11200,
                     {20, 150},    // 12300,
                     {20, 150},    // 13300,
-                };
+                };*/
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
             }
             else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
@@ -157,7 +157,7 @@ namespace lrit
                     12400,
                     13300,
                 };
-                const float hima_ahi_radiance_ranges_table[16][2] = {
+                /*const float hima_ahi_radiance_ranges_table[16][2] = {
                     // TODOREWORK DELETE
                     {0, 1},
                     {0, 1},
@@ -175,7 +175,7 @@ namespace lrit
                     {10, 150},    // 11200,
                     {20, 150},    // 12400,
                     {20, 150},    // 13300,
-                };
+                };*/
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
             }
             else if (instrument_id == "ami")

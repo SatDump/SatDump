@@ -164,7 +164,6 @@ namespace elektro_arktika
                 satdump::products::ImageProduct msuvis_product;
                 msuvis_product.instrument_name = "msugs_vis";
                 //                    msuvis_products.has_timestamps = true; // TODOREWORK
-                //                    msuvis_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
                 //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 //                    msuvis_products.set_timestamps(timestamps);
                 msuvis_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/elektro_l3_msugs_vis2.json")),

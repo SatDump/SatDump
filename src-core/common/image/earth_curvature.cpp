@@ -111,7 +111,6 @@ namespace image
             if (!proj_cfg.contains("corr_altit"))
                 return img;
 
-            int width = img.width();
             float swath = proj_cfg["corr_swath"].get<float>();
             float resol = proj_cfg["corr_resol"].get<float>();
             float altit = proj_cfg["corr_altit"].get<float>();

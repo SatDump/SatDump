@@ -11,8 +11,8 @@ namespace image
         if (!channels.size())
             throw satdump_exception("No channels provided!");
 
-        int width = channels[0].img->width();
-        int height = channels[0].img->height();
+        size_t width = channels[0].img->width();
+        size_t height = channels[0].img->height();
         int depth = channels[0].img->depth();
 
         try
@@ -35,7 +35,7 @@ namespace image
                 {
                     auto tkts = splitString(p.tkt, ',');
                     for (int i = 0; i < p.img->channels(); i++)
-                        equParser.DefineVar(tkts.size() > i ? tkts[i] : (p.tkt + "_" + std::to_string(i + 1)), &p.val[i]);
+                        equParser.DefineVar((int)tkts.size() > i ? tkts[i] : (p.tkt + "_" + std::to_string(i + 1)), &p.val[i]);
                 }
 
                 if (p.img->depth() > depth)
@@ -80,7 +80,7 @@ namespace image
                     double *equOut = equParser.Eval(nout_channels);
 
                     // Set output
-                    for (c = 0; c < nout_channels; c++)
+                    for (c = 0; c < (size_t)nout_channels; c++)
                         out.setf(c, x, y, out.clampf(equOut[c]));
                 }
             }
