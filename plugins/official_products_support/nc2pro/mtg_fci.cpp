@@ -9,7 +9,7 @@
 #include <filesystem>
 #include "logger.h"
 #include <array>
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "libs/miniz/miniz.h"
 
 #include "common/projection/projs2/proj_json.h"
@@ -245,10 +245,8 @@ namespace nc2pro
         bool final_imgs_present[16] = {false};
 
         // Saving
-        satdump::ImageProducts fci_products;
+        satdump::products::ImageProduct fci_products;
         fci_products.instrument_name = "fci";
-        fci_products.has_timestamps = false;
-        fci_products.bit_depth = 12;
         fci_products.set_product_timestamp(prod_timestamp);
         fci_products.set_product_source(satellite);
 
@@ -284,7 +282,8 @@ namespace nc2pro
             final_imgs[i].mirror(false, true);
 
             if (final_imgs_present[i])
-                fci_products.images.push_back({"FCI-" + std::to_string(i + 1), std::to_string(i + 1), final_imgs[i]});
+                fci_products.images.push_back({i, "FCI-" + std::to_string(i + 1), std::to_string(i + 1), final_imgs[i], 12,
+                                               satdump::ChannelTransform().init_affine(3712.0 / final_imgs[i].width(), 3712.0 / final_imgs[i].height(), 0, 0)});
 
             logger->info("Processing channel %d", i + 1);
             final_imgs[i].clear();
@@ -296,34 +295,34 @@ namespace nc2pro
         proj.params.altitude = 3.57864e7;
         proj.proj_offset_x = -5568748.275756353;
         proj.proj_offset_y = 5568748.275756353;
-        proj.proj_scalar_x = 3000.403165817 * (3712.0 / double(largest_width));
-        proj.proj_scalar_y = -3000.403165817 * (3712.0 / double(largest_height));
+        proj.proj_scalar_x = 3000.403165817;  // / double(largest_width));
+        proj.proj_scalar_y = -3000.403165817; // / double(largest_height));
         proj.lam0 = center_longitude * DEG2RAD;
         nlohmann::json proj_cfg = proj;
-        proj_cfg["width"] = largest_width;
-        proj_cfg["height"] = largest_height; // 3712;
+        proj_cfg["width"] = 3712;
+        proj_cfg["height"] = 3712; // 3712;
         fci_products.set_proj_cfg(proj_cfg);
 
         nlohmann::json fci_config = loadJsonFile(resources::getResourcePath("calibration/FCI_table.json"));
 
         nlohmann::json calib_cfg;
-        calib_cfg["calibrator"] = "mtg_nc_fci";
         for (int i = 0; i < 16; i++)
         {
             calib_cfg["vars"]["scale"][i] = calibration_scale[i];
             calib_cfg["vars"]["offset"][i] = calibration_offset[i];
         }
-        fci_products.set_calibration(calib_cfg);
+        fci_products.set_calibration("mtg_nc_fci", calib_cfg);
 
-        int ii2 = 0;
         for (int i = 0; i < 16; i++)
         {
             if (final_imgs_present[i])
             {
-                fci_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_RADIANCE);
-                fci_products.set_wavenumber(ii2, freq_to_wavenumber(299792458.0 / (fci_config["wavelengths"][i].get<double>())));
-                fci_products.set_calibration_default_radiance_range(ii2, fci_config["default_ranges"][i][0].get<double>(), fci_config["default_ranges"][i][1].get<double>());
-                ii2++;
+                if (i < 8)
+                    fci_products.set_channel_unit(i, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                else
+                    fci_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
+
+                fci_products.set_channel_wavenumber(i, freq_to_wavenumber(299792458.0 / (fci_config["wavelengths"][i].get<double>())));
             }
         }
 

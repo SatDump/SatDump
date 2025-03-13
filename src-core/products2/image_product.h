@@ -102,6 +102,8 @@ namespace satdump
                 cfg["transform"] = get_channel_image(channel).ch_transform;
                 cfg["width"] = get_channel_image(channel).image.width();
                 cfg["height"] = get_channel_image(channel).image.height();
+                if (has_product_timestamp())
+                    cfg["proj_timestamp"] = get_product_timestamp();
                 return cfg;
             }
 

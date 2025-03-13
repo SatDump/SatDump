@@ -47,7 +47,7 @@ namespace satdump
     class StandardSatProj : public SatelliteProjection
     {
     protected:
-        proj::projection_t p;
+        ::proj::projection_t p;
 
     public:
         StandardSatProj(nlohmann::ordered_json cfg, TLE tle, nlohmann::ordered_json timestamps_raw);

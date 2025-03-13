@@ -42,11 +42,11 @@ public:
             evt.calibrators.push_back(std::make_shared<nat2pro::AMSUNatCalibrator>(evt.calib, evt.products));
         //        else if (evt.id == "metop_avhrr_nat")
         //            evt.calibrators.push_back(std::make_shared<nat2pro::AVHRRNatCalibrator>(evt.calib, evt.products));
-        else if (evt.id == "msg_nat_seviri")
-            evt.calibrators.push_back(std::make_shared<nat2pro::MSGNatCalibrator>(evt.calib, evt.products));
+        //        else if (evt.id == "msg_nat_seviri")
+        //            evt.calibrators.push_back(std::make_shared<nat2pro::MSGNatCalibrator>(evt.calib, evt.products));
         //
-        else if (evt.id == "mtg_nc_fci")
-            evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.calib, evt.products));
+        //        else if (evt.id == "mtg_nc_fci")
+        //            evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.calib, evt.products));
         else if (evt.id == "goes_nc_abi")
             evt.calibrators.push_back(std::make_shared<nc2pro::ABINcCalibrator>(evt.calib, evt.products));
     }
@@ -55,6 +55,10 @@ public:
     {
         if (evt.id == "metop_avhrr_nat")
             evt.calibrators.push_back(std::make_shared<nat2pro::AVHRRNatCalibrator>(evt.products, evt.calib));
+        else if (evt.id == "msg_nat_seviri")
+            evt.calibrators.push_back(std::make_shared<nat2pro::MSGNatCalibrator>(evt.products, evt.calib));
+        else if (evt.id == "mtg_nc_fci")
+            evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.products, evt.calib));
     }
 };
 

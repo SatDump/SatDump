@@ -70,6 +70,8 @@ namespace satdump
             ::proj::projection_t std_proj;
             std::shared_ptr<satdump::proj::LatLonTpsProjHelper> tps_fwd;
 
+            double proj_timestamp = -1; // Timestamp fed in case standards projs have a timestamp field
+
         public:
             Projection();
             ~Projection();

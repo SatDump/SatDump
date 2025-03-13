@@ -1,6 +1,6 @@
 #include "common/projection/projs2/proj_json.h"
 #include "formats.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "common/repack.h"
 #include "logger.h"
 #include "common/image/io.h"
@@ -263,10 +263,8 @@ namespace nat2pro
         }
 
         // Saving
-        satdump::ImageProducts seviri_products;
+        satdump::products::ImageProduct seviri_products;
         seviri_products.instrument_name = "seviri";
-        seviri_products.has_timestamps = false;
-        seviri_products.bit_depth = 10;
         seviri_products.set_product_timestamp(prod_timestamp);
         seviri_products.set_product_source(satellite_name);
 
@@ -292,6 +290,8 @@ namespace nat2pro
         //        proj_cfg["sweep_x"] = false;
         seviri_products.set_proj_cfg(proj_cfg);
 
+        nlohmann::json sev_config = loadJsonFile(resources::getResourcePath("calibration/SEVIRI_table.json"));
+
         for (int channel = 0; channel < 12; channel++)
         {
             if (bandsel[channel] != 'X')
@@ -314,41 +314,27 @@ namespace nat2pro
                 }
             }
 
-            seviri_products.images.push_back({"SEVIRI-" + std::to_string(channel + 1), std::to_string(channel + 1), vis_ir_imgs[channel]});
+            double ratiox = double(vis_ir_x_size) / double(hrv_x_size);
+            double ratioy = double(vis_ir_y_size) / double(hrv_y_size);
+            seviri_products.images.push_back({channel, "SEVIRI-" + std::to_string(channel + 1), std::to_string(channel + 1), vis_ir_imgs[channel], 10,
+                                              channel == 11 ? satdump::ChannelTransform().init_affine(ratiox, ratioy, 0, 0) : satdump::ChannelTransform().init_none()});
+
+            if (channel < 3 || channel == 11)
+                seviri_products.set_channel_unit(channel, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+            else
+                seviri_products.set_channel_unit(channel, CALIBRATION_ID_EMISSIVE_RADIANCE);
+
+            seviri_products.set_channel_wavenumber(channel, freq_to_wavenumber(299792458.0 / (sev_config["wavelengths"][channel].get<double>())));
         }
 
         nlohmann::json calib_cfg;
-        calib_cfg["calibrator"] = "msg_nat_seviri";
         for (int i = 0; i < 12; i++)
         {
             calib_cfg["vars"]["slope"][i] = calibration_slope[i];
             calib_cfg["vars"]["offset"][i] = calibration_offset[i];
         }
 
-        seviri_products.set_calibration(calib_cfg);
-        seviri_products.set_calibration_type(0, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
-        seviri_products.set_calibration_type(1, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
-        seviri_products.set_calibration_type(2, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
-        seviri_products.set_calibration_type(3, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(4, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(5, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(6, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(7, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(8, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(9, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(10, satdump::ImageProducts::CALIB_RADIANCE);
-        seviri_products.set_calibration_type(11, satdump::ImageProducts::CALIB_RADIANCE); // CALIB_REFLECTANCE);
-
-        seviri_products.set_calibration_default_radiance_range(9, 30, 120);
-        seviri_products.set_calibration_default_radiance_range(10, 30, 120);
-
-        nlohmann::json sev_config = loadJsonFile(resources::getResourcePath("calibration/SEVIRI_table.json"));
-
-        for (int i = 0; i < 12; i++)
-        {
-            seviri_products.set_wavenumber(i, freq_to_wavenumber(299792458.0 / (sev_config["wavelengths"][i].get<double>())));
-            seviri_products.set_calibration_default_radiance_range(i, sev_config["default_ranges"][i][0].get<double>(), sev_config["default_ranges"][i][1].get<double>());
-        }
+        seviri_products.set_calibration("msg_nat_seviri", calib_cfg);
 
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);

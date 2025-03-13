@@ -53,6 +53,11 @@ namespace satdump
                 if (!::proj::projection_setup(&std_proj))
                 {
                     fwd_type = inv_type = PROJ_STANDARD;
+                    if (d_cfg.contains("proj_timestamp"))
+                    {
+                        logger->warn("Using projection timestamps for timestamp feedback. May be inacurate!");
+                        proj_timestamp = d_cfg["proj_timestamp"];
+                    }
                     return true;
                 }
             }
@@ -128,6 +133,8 @@ namespace satdump
             if (inv_type == PROJ_STANDARD)
             {
                 pos.toDegs(); // TODOREWORK?
+                if (otime != nullptr)
+                    *otime = proj_timestamp;
                 return ::proj::projection_perform_inv(&std_proj, x, y, &pos.lon, &pos.lat);
             }
             else if (inv_type == PROJ_RAYTRACER)
