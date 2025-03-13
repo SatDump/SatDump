@@ -8,9 +8,10 @@ namespace rotator
 {
     enum rotator_status_t
     {
-        ROT_ERROR_OK = 0,  // No error
-        ROT_ERROR_CMD = 1, // Command error
-        ROT_ERROR_CON = 2, // Connection error
+        ROT_ERROR_OK = 0,       // No error
+        ROT_ERROR_CMD = 1,      // Command error
+        ROT_ERROR_CON = 2,      // Connection error
+        ROT_ERROR_INV_ARG = 3,  // Invalid argument
     };
 
     class RotatorHandler
@@ -25,6 +26,9 @@ namespace rotator
         virtual bool is_connected() = 0;
         virtual void connect() = 0;
         virtual void disconnect() = 0;
+    public:
+      std::array<float, 2> azLimits = {0, 360.0};
+      std::array<float, 2> elLimits = {0, 90.0};
     };
 
     struct RotatorHandlerOption
