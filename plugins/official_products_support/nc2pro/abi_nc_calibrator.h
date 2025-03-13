@@ -1,14 +1,11 @@
 #pragma once
 
-#include "products/image_products.h"
+#include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
-#include "common/calibration.h"
-#include "common/projection/sat_proj/sat_proj.h"
-#include "common/projection/reprojector.h"
 
 namespace nc2pro
 {
-    class ABINcCalibrator : public satdump::ImageProducts::CalibratorBase
+    class ABINcCalibrator : public satdump::products::ImageCalibrator
     {
     private:
         std::map<std::string, double> calibration_scale;
@@ -17,15 +14,16 @@ namespace nc2pro
         std::vector<std::string> channel_lut;
 
     public:
-        ABINcCalibrator(nlohmann::json calib, satdump::ImageProducts* products) : satdump::ImageProducts::CalibratorBase(calib, products)
+        ABINcCalibrator(satdump::products::ImageProduct *p, nlohmann::json c)
+            : satdump::products::ImageCalibrator(p, c)
         {
-            size_t num_channels = products->images.size();
+            size_t num_channels = p->images.size();
             for (size_t i = 0; i < num_channels; i++)
             {
-                std::string channel_name = products->images[i].channel_name;
-                calibration_scale[channel_name] = calib["vars"]["scale"][i];
-                calibration_offset[channel_name] = calib["vars"]["offset"][i];
-                calibration_kappa[channel_name] = calib["vars"]["kappa"][i];
+                std::string channel_name = p->images[i].channel_name;
+                calibration_scale[channel_name] = c["vars"]["scale"][i];
+                calibration_offset[channel_name] = c["vars"]["offset"][i];
+                calibration_kappa[channel_name] = c["vars"]["kappa"][i];
                 channel_lut.emplace_back(channel_name);
             }
         }
@@ -34,7 +32,7 @@ namespace nc2pro
         {
         }
 
-        double compute(int channel, int /* pos_x */, int /* pos_y */, int px_val)
+        double compute(int channel, int /* pos_x */, int /* pos_y */, uint32_t px_val)
         {
             if (px_val == 0)
                 return CALIBRATION_INVALID_VALUE;

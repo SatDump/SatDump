@@ -47,8 +47,8 @@ public:
         //
         //        else if (evt.id == "mtg_nc_fci")
         //            evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.calib, evt.products));
-        else if (evt.id == "goes_nc_abi")
-            evt.calibrators.push_back(std::make_shared<nc2pro::ABINcCalibrator>(evt.calib, evt.products));
+        // else if (evt.id == "goes_nc_abi")
+        //     evt.calibrators.push_back(std::make_shared<nc2pro::ABINcCalibrator>(evt.calib, evt.products));
     }
 
     static void provideImageCalibratorHandler2(const satdump::products::RequestImageCalibratorEvent &evt)
@@ -59,6 +59,8 @@ public:
             evt.calibrators.push_back(std::make_shared<nat2pro::MSGNatCalibrator>(evt.products, evt.calib));
         else if (evt.id == "mtg_nc_fci")
             evt.calibrators.push_back(std::make_shared<nc2pro::FCINcCalibrator>(evt.products, evt.calib));
+        else if (evt.id == "goes_nc_abi")
+            evt.calibrators.push_back(std::make_shared<nc2pro::ABINcCalibrator>(evt.products, evt.calib));
     }
 };
 

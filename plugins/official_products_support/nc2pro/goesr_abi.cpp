@@ -6,7 +6,7 @@
 #include <filesystem>
 #include "logger.h"
 #include <array>
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "common/calibration.h"
 
 #include "nlohmann/json_utils.h"
@@ -196,7 +196,7 @@ namespace nc2pro
             const size_t nc_size = input_file.tellg();
             nc_file.resize(nc_size);
             input_file.seekg(0, std::ios::beg);
-            input_file.read((char*)&nc_file[0], nc_size);
+            input_file.read((char *)&nc_file[0], nc_size);
             input_file.close();
 
             logger->info("Processing " + files_to_parse[i]);
@@ -226,16 +226,14 @@ namespace nc2pro
         }
 
         // Saving
-        satdump::ImageProducts abi_products;
+        satdump::products::ImageProduct abi_products;
         abi_products.instrument_name = "abi";
-        abi_products.has_timestamps = false;
-        abi_products.bit_depth = 14;
 
         size_t largest_width = 0, largest_height = 0;
         ParsedGOESRABI largestImg;
         for (auto &img : all_images)
         {
-            abi_products.images.push_back({"ABI-" + std::to_string(img.channel), std::to_string(img.channel), img.img});
+            abi_products.images.push_back({img.channel - 1, "ABI-" + std::to_string(img.channel), std::to_string(img.channel), img.img, 14});
 
             bool waslarger = false;
             if (img.img.width() > largest_width)
@@ -279,6 +277,9 @@ namespace nc2pro
             double scalar_x = column_scalar;
             double scalar_y = line_scalar;
 
+            for (auto &img : abi_products.images)
+                img.ch_transform = satdump::ChannelTransform().init_affine(double(largest_width) / img.image.width(), double(largest_height) / img.image.height(), 0, 0);
+
             proj_cfg["type"] = "geos";
             proj_cfg["lon0"] = center_longitude;
             proj_cfg["sweep_x"] = true;
@@ -310,48 +311,27 @@ namespace nc2pro
             11200,
             12300,
             13300,
-        };
-        const float goes_abi_radiance_ranges_table[16][2] = {
-            {0, 1},
-            {0, 1},
-            {0, 1},
-            {0, 1},
-            {0, 1},
-            {0, 1},
-            {0.01, 2.20}, // 3900,
-            {0, 6},       // 6190,
-            {0, 16},      // 6950,
-            {0.02, 20},   // 7340,
-            {5, 100},     // 8500,
-            {10, 120},    // 9610,
-            {10, 120},    // 10350,
-            {10, 150},    // 11200,
-            {20, 150},    // 12300,
-            {20, 150},    // 13300,
-        };
+        }; // TODOREWORK MOVE TO FILE!
 
         nlohmann::json calib_cfg;
-        calib_cfg["calibrator"] = "goes_nc_abi";
         for (size_t i = 0; i < all_images.size(); i++)
         {
             calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
             calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
             calib_cfg["vars"]["kappa"][i] = all_images[i].kappa;
         }
-        abi_products.set_calibration(calib_cfg);
+        abi_products.set_calibration("goes_nc_abi", calib_cfg);
 
-        int ii2 = 0;
         for (int i = 0; i < (int)all_images.size(); i++)
         {
-            if(all_images[i].kappa > 0)
-                abi_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_REFLECTANCE);
+            int channel_id = all_images[i].channel - 1;
+
+            if (all_images[i].kappa > 0)
+                abi_products.set_channel_unit(channel_id, CALIBRATION_ID_ALBEDO); // TODOREWORK reflective radiance
             else
-                abi_products.set_calibration_type(ii2, satdump::ImageProducts::CALIB_RADIANCE);
+                abi_products.set_channel_unit(channel_id, CALIBRATION_ID_EMISSIVE_RADIANCE);
 
-            abi_products.set_calibration_default_radiance_range(ii2, goes_abi_radiance_ranges_table[all_images[i].channel - 1][0], goes_abi_radiance_ranges_table[all_images[i].channel - 1][1]);
-
-            abi_products.set_wavenumber(ii2, 1e7 / goes_abi_wavelength_table[all_images[i].channel - 1]);
-            ii2++;
+            abi_products.set_channel_wavenumber(channel_id, 1e7 / goes_abi_wavelength_table[channel_id]);
         }
 #endif
 

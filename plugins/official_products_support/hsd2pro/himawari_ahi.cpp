@@ -2,7 +2,7 @@
 
 #include "common/image/image.h"
 #include "common/utils.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "core/exception.h"
 #include "libs/bzlib_utils.h"
 #include "logger.h"
@@ -58,13 +58,13 @@ namespace hsd2pro
         {
             dest_length = buffer_size - dest_offset;
             unsigned int consumed;
-            bz2_result = BZ2_bzBuffToBuffDecompress_M((char*)decomp_dest + dest_offset, &dest_length,
-                (char*)data.data() + source_offset, data.size() - source_offset, &consumed, 0, 0);
+            bz2_result = BZ2_bzBuffToBuffDecompress_M((char *)decomp_dest + dest_offset, &dest_length,
+                                                      (char *)data.data() + source_offset, data.size() - source_offset, &consumed, 0, 0);
             source_offset += consumed;
             dest_offset += dest_length;
         } while (bz2_result == 0 && data.size() > source_offset);
 
-        //Free up memory
+        // Free up memory
         std::vector<uint8_t>().swap(data);
 
         // Process if decompression was successful
@@ -98,14 +98,14 @@ namespace hsd2pro
             // Parse Header Information
             size_t num_columns = decomp_dest[block_offsets[HSD_DATA_INFO] + 6] << 8 | decomp_dest[block_offsets[HSD_DATA_INFO] + 5];
             size_t num_lines_per_segment = decomp_dest[block_offsets[HSD_DATA_INFO] + 8] << 8 | decomp_dest[block_offsets[HSD_DATA_INFO] + 7];
-            uint8_t bit_depth = decomp_dest[block_offsets[HSD_CAL_INFO] + 13]; //Is a 16-bit value, but the value is always below 16, so...
+            uint8_t bit_depth = decomp_dest[block_offsets[HSD_CAL_INFO] + 13]; // Is a 16-bit value, but the value is always below 16, so...
 
             size_t pixel_offset = num_columns *
-                ((decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 6] << 8 | decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 5]) - 1);
+                                  ((decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 6] << 8 | decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 5]) - 1);
 
             if (!image_out.header_parsed)
             {
-                image_out.sat_name = std::string((char*)&decomp_dest[block_offsets[HSD_BASIC_INFO] + 6]);
+                image_out.sat_name = std::string((char *)&decomp_dest[block_offsets[HSD_BASIC_INFO] + 6]);
 
                 double mtd_timestamp;
                 memcpy(&mtd_timestamp, &decomp_dest[block_offsets[HSD_BASIC_INFO] + 46], 8);
@@ -166,8 +166,8 @@ namespace hsd2pro
         delete[] decomp_dest;
     }
 
-	void process_himawari_ahi(std::string hsd_file, std::string pro_output_file, double *progress)
-	{
+    void process_himawari_ahi(std::string hsd_file, std::string pro_output_file, double *progress)
+    {
         std::vector<ParsedHimawariAHI> all_images;
         std::map<std::string, std::set<std::string>> files_to_parse; // Channel, paths
         {
@@ -218,7 +218,7 @@ namespace hsd2pro
                     const size_t bz2_size = input_file.tellg();
                     bz2_file.resize(bz2_size);
                     input_file.seekg(0, std::ios::beg);
-                    input_file.read((char*)&bz2_file[0], bz2_size);
+                    input_file.read((char *)&bz2_file[0], bz2_size);
                     input_file.close();
 
                     logger->info("Processing " + this_file);
@@ -230,10 +230,8 @@ namespace hsd2pro
             }
 
             // Saving
-            satdump::ImageProducts ahi_products;
+            satdump::products::ImageProduct ahi_products;
             ahi_products.instrument_name = "ahi";
-            ahi_products.has_timestamps = false;
-            ahi_products.bit_depth = 16;
 
             time_t prod_timestamp = 0;
             std::string sat_name = all_images[0].sat_name;
@@ -243,7 +241,7 @@ namespace hsd2pro
 
             for (auto &img : all_images)
             {
-                ahi_products.images.push_back({ "AHI-" + std::to_string(img.channel), std::to_string(img.channel), img.img });
+                ahi_products.images.push_back({img.channel - 1, "AHI-" + std::to_string(img.channel), std::to_string(img.channel), img.img, 16});
 
                 bool waslarger = false;
                 if (img.img.width() > largest_width)
@@ -276,6 +274,9 @@ namespace hsd2pro
                 double scalar_x = (pow(2.0, 16.0) / double(largestImg.cfac)) * k;
                 double scalar_y = (pow(2.0, 16.0) / double(largestImg.lfac)) * k;
 
+                for (auto &img : ahi_products.images)
+                    img.ch_transform = satdump::ChannelTransform().init_affine(double(largest_width) / img.image.width(), double(largest_height) / img.image.height(), 0, 0);
+
                 proj_cfg["type"] = "geos";
                 proj_cfg["lon0"] = center_longitude;
                 proj_cfg["sweep_x"] = false;
@@ -290,49 +291,28 @@ namespace hsd2pro
             }
 
             nlohmann::json calib_cfg;
-            calib_cfg["calibrator"] = "goes_nc_abi";
             for (size_t i = 0; i < all_images.size(); i++)
             {
                 calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
                 calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
                 calib_cfg["vars"]["kappa"][i] = all_images[i].kappa;
             }
-            ahi_products.set_calibration(calib_cfg);
-
-            const float himawari_ahi_radiance_ranges_table[16][2] = {
-                {0, 1},
-                {0, 1},
-                {0, 1},
-                {0, 1},
-                {0, 1},
-                {0, 1},
-                {0.01, 2.20}, // 3900,
-                {0, 6},       // 6190,
-                {0, 16},      // 6950,
-                {0.02, 20},   // 7340,
-                {5, 100},     // 8500,
-                {10, 120},    // 9610,
-                {10, 120},    // 10350,
-                {10, 150},    // 11200,
-                {20, 150},    // 12300,
-                {20, 150},    // 13300,
-            };
+            ahi_products.set_calibration("goes_nc_abi", calib_cfg);
 
             for (int i = 0; i < (int)all_images.size(); i++)
             {
-                ahi_products.set_wavenumber(i, all_images[i].wavenumber);
-                ahi_products.set_calibration_default_radiance_range(i, himawari_ahi_radiance_ranges_table[all_images[i].channel - 1][0],
-                    himawari_ahi_radiance_ranges_table[all_images[i].channel - 1][1]);
+                int channel_id = all_images[i].channel - 1;
+                ahi_products.set_channel_wavenumber(channel_id, all_images[i].wavenumber);
 
                 if (all_images[i].kappa > 0)
-                    ahi_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);
+                    ahi_products.set_channel_unit(channel_id, CALIBRATION_ID_ALBEDO); // TODOREWORK reflective radiance
                 else
-                    ahi_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
+                    ahi_products.set_channel_unit(channel_id, CALIBRATION_ID_EMISSIVE_RADIANCE);
             }
 
             if (!std::filesystem::exists(pro_output_file))
                 std::filesystem::create_directories(pro_output_file);
             ahi_products.save(pro_output_file);
         }
-	}
+    }
 }
