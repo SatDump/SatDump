@@ -1,17 +1,14 @@
 #pragma once
 
-#include "products/image_products.h"
-#include "nlohmann/json.hpp"
-#include "common/calibration.h"
-#include "common/projection/sat_proj/sat_proj.h"
+#include "products2/image/image_calibrator.h"
 
 namespace nat2pro
 {
-    class AMSUNatCalibrator : public satdump::ImageProducts::CalibratorBase
+    class AMSUNatCalibrator : public satdump::products::ImageCalibrator
     {
 
     public:
-        AMSUNatCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
+        AMSUNatCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
         {
         }
 
@@ -19,7 +16,7 @@ namespace nat2pro
         {
         }
 
-        double compute(int channel, int pos_x, int pos_y, int px_val)
+        double compute(int channel, int pos_x, int pos_y, uint32_t px_val)
         {
             if (px_val == 0)
                 return CALIBRATION_INVALID_VALUE;

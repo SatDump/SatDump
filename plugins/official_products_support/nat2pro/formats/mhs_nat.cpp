@@ -1,9 +1,12 @@
 #include "formats.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 #include "metop_nat.h"
+
+#include "common/utils.h"
+#include "metop_helper.h"
 
 namespace nat2pro
 {
@@ -17,6 +20,10 @@ namespace nat2pro
 
         std::vector<double> wavenumbers(5);
 
+        std::vector<double> timestamps;
+
+        std::string sat_id = "M00";
+
         size_t current_ptr = 0;
         while (current_ptr < nat_file.size())
         {
@@ -29,6 +36,7 @@ namespace nat2pro
             {
                 std::string full_header(&nat_file[current_ptr + 20], &nat_file[current_ptr + 20] + main_header.record_size - 20);
                 printf("%s\n", full_header.c_str());
+                sat_id = full_header.substr(664 - 20 + 32, 3);
             }
 
             /*if (main_header.record_class == 2)
@@ -63,6 +71,8 @@ namespace nat2pro
                         mhs_data[c][(number_of_lines - 1) * image_width + (89 - i)] = val >> 4;
                     }
                 }
+
+                timestamps.push_back(main_header.record_start_time);
 
                 if ((number_of_lines - 1) % 4 == 0)
                 {
@@ -109,36 +119,39 @@ namespace nat2pro
         }
 
         {
-            satdump::ImageProducts mhs_products;
-            mhs_products.instrument_name = "mhs";
-            // mhs_products.has_timestamps = true;
-            // mhs_products.set_tle(satellite_tle);
-            mhs_products.bit_depth = 16;
-            // mhs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            // mhs_products.set_timestamps(avhrr_reader.timestamps);
-            // mhs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+            auto ptime = get_median(timestamps);
+            auto info = getMetOpSatInfoFromID(sat_id, ptime);
 
+            satdump::products::ImageProduct mhs_products;
+            mhs_products.instrument_name = "mhs";
+
+            mhs_products.set_product_source(info.sat_name);
+            mhs_products.set_product_timestamp(ptime);
+
+#if 1
+            mhs_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_mhs.json")), info.satellite_tle, timestamps);
+#else
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "normal_gcps";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
             mhs_products.set_proj_cfg(proj_cfg);
+            // TODOREWORK switch to GCPs again!
+#endif
 
             for (int i = 0; i < 5; i++)
-                mhs_products.images.push_back({"MHS-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mhs_data[i].data(), 16, image_width, number_of_lines, 1)});
+                mhs_products.images.push_back({i, "MHS-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mhs_data[i].data(), 16, image_width, number_of_lines, 1), 16});
 
             // calibration
             nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/MHS.json"));
 
             // calib
             nlohmann::json calib_cfg;
-            calib_cfg["calibrator"] = "metop_mhs_nat";
-            calib_cfg["wavenumbers"] = calib_coefs["MetOp-B"]["wavenumber"];
-            mhs_products.set_calibration(calib_cfg);
+            mhs_products.set_calibration("metop_mhs_nat", calib_cfg);
             for (int n = 0; n < 5; n++)
             {
-                mhs_products.set_calibration_type(n, mhs_products.CALIB_RADIANCE);
-                mhs_products.set_calibration_default_radiance_range(n, calib_coefs["all"]["default_display_range"][n][0].get<double>(), calib_coefs["all"]["default_display_range"][n][1].get<double>());
+                mhs_products.set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                mhs_products.set_channel_wavenumber(n, calib_coefs[info.sat_name]["wavenumber"][n]);
             }
 
             if (!std::filesystem::exists(pro_output_file))

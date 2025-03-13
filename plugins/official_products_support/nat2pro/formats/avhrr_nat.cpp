@@ -8,6 +8,8 @@
 #include "common/utils.h"
 #include "common/tracking/tle.h"
 
+#include "metop_helper.h"
+
 namespace nat2pro
 {
     void decodeAVHRRNat(std::vector<uint8_t> &nat_file, std::string pro_output_file)
@@ -131,36 +133,16 @@ namespace nat2pro
         }
 
         {
-            std::string sat_name = "Unknown MetOp";
-            if (sat_id == "M02")
-                sat_name = "MetOp-A";
-            else if (sat_id == "M01")
-                sat_name = "MetOp-B";
-            else if (sat_id == "M03")
-                sat_name = "MetOp-C";
-
-            int norad = 0;
-            if (sat_id == "M01")
-                norad = 29499;
-            else if (sat_id == "M02")
-                norad = 38771;
-            else if (sat_id == "M03")
-                norad = 43689;
+            auto ptime = get_median(timestamps);
+            auto info = getMetOpSatInfoFromID(sat_id, ptime);
 
             satdump::products::ImageProduct avhrr_products;
             avhrr_products.instrument_name = "avhrr_3";
-            avhrr_products.set_product_source(sat_name);
-            avhrr_products.set_product_timestamp(get_median(timestamps));
-            // avhrr_products.has_timestamps = true;
-            // avhrr_products.set_tle(satellite_tle);
-            // avhrr_products.bit_depth = 16;
-            // avhrr_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            // avhrr_products.set_timestamps(avhrr_reader.timestamps);
-            // avhrr_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+            avhrr_products.set_product_source(info.sat_name);
+            avhrr_products.set_product_timestamp(ptime);
 
 #if 1
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, avhrr_products.get_product_timestamp());
-            avhrr_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), satellite_tle, timestamps);
+            avhrr_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), info.satellite_tle, timestamps);
 #else
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "gcps_timestamps";

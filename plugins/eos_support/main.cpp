@@ -21,7 +21,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
-        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
         satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
     }
 
@@ -32,11 +32,12 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, eos::instruments::EOSInstrumentsDecoderModule);
     }
 
-    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    static void provideImageCalibratorHandler(const satdump::products::RequestImageCalibratorEvent &evt)
     {
         if (evt.id == "eos_modis")
-            evt.calibrators.push_back(std::make_shared<eos::modis::EosMODISCalibrator>(evt.calib, evt.products));
+            evt.calibrators.push_back(std::make_shared<eos::modis::EosMODISCalibrator>(evt.products, evt.calib));
     }
+
     static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
     {
         if (evt.id == "day_fire")

@@ -465,12 +465,12 @@ namespace noaa
                     logger->info("----------- HIRS");
                     logger->info("Lines : " + std::to_string(hirs_reader.line));
 
-                    satdump::ImageProducts hirs_products;
+                    satdump::products::ImageProduct hirs_products;
                     hirs_products.instrument_name = "hirs";
                     hirs_products.has_timestamps = true;
                     hirs_products.bit_depth = 13;
                     hirs_products.set_tle(satellite_tle);
-                    hirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
+                    hirs_products.timestamp_type = satdump::ImageProduct::TIMESTAMP_LINE;
                     hirs_products.set_timestamps(hirs_reader.timestamps);
                     hirs_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/noaa_hirs.json")));
 

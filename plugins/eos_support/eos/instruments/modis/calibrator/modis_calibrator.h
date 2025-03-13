@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products/image_products.h"
+#include "products2/image/image_calibrator.h"
 #include "modis_emiss_table.h"
 // #include "modis_reflec_table.h"
 
@@ -44,10 +44,10 @@ namespace eos
         {
             typedef float CalibrationVars1[2];
             typedef float CalibrationVars2[1354][2];
-            CalibrationVars1 *RVS_1km_Emiss_BB;         //float RVS_1km_Emiss_BB[160][2];
-            CalibrationVars1 *RVS_1km_Emiss_SV;         //float RVS_1km_Emiss_SV[160][2];
-            CalibrationVars2 *RVS_1km_Emiss_EV;         //float RVS_1km_Emiss_EV[160][1354][2];
-            CalibrationVars2 *sigma_RVS_Emiss_EV;       //float sigma_RVS_Emiss_EV[160][1354][2];
+            CalibrationVars1 *RVS_1km_Emiss_BB;   // float RVS_1km_Emiss_BB[160][2];
+            CalibrationVars1 *RVS_1km_Emiss_SV;   // float RVS_1km_Emiss_SV[160][2];
+            CalibrationVars2 *RVS_1km_Emiss_EV;   // float RVS_1km_Emiss_EV[160][1354][2];
+            CalibrationVars2 *sigma_RVS_Emiss_EV; // float sigma_RVS_Emiss_EV[160][1354][2];
             std::vector<ValsPerScan> scan_data;
 
             CalibrationVars()
@@ -58,7 +58,7 @@ namespace eos
                 sigma_RVS_Emiss_EV = new CalibrationVars2[160];
             }
 
-            CalibrationVars& operator=(const nlohmann::json& j)
+            CalibrationVars &operator=(const nlohmann::json &j)
             {
                 scan_data = j["scan_data"];
                 for (int i = 0; i < 160; i++)
@@ -128,19 +128,19 @@ namespace eos
             bool get_emissive_coeffs(Coefficients_Emissive &Sat_CoeffsE, bool is_aqua, CalibrationVars &cvars, double &a0, double &a2, double &b1, float &L_sm, int DN_sv, int DN_bb, ValsPerScan &scani, int D_emiss);
 
             // Precompute all variables
-            nlohmann::json precomputeVars(satdump::ImageProducts *d_products, nlohmann::json d_vars, bool is_aqua);
+            nlohmann::json precomputeVars(satdump::products::ImageProduct *d_products, nlohmann::json d_vars, bool is_aqua);
         };
 
         // The actual calibrator! - Based on the MODIS ground processing SW, re-written in many places
-        class EosMODISCalibrator : public satdump::ImageProducts::CalibratorBase
+        class EosMODISCalibrator : public satdump::products::ImageCalibrator
         {
         private:
             bool is_aqua = false;
 
             CalibrationVars cvars;
 
-            double compute_emissive(int channel, int pos_x, int pos_y, int px_val);
-            double compute_reflective(int channel, int pos_x, int pos_y, int px_val);
+            double compute_emissive(int channel, int pos_x, int pos_y, uint32_t px_val);
+            double compute_reflective(int channel, int pos_x, int pos_y, uint32_t px_val);
 
             // Coefficients_Reflective Sat_CoeffsR; // This is WIP
             Coefficients_Emissive *Sat_CoeffsE;
@@ -149,21 +149,21 @@ namespace eos
             std::vector<std::vector<int>> bowtie_lut_1km;
 
         public:
-            EosMODISCalibrator(nlohmann::json calib, satdump::ImageProducts *products) : satdump::ImageProducts::CalibratorBase(calib, products)
+            EosMODISCalibrator(satdump::products::ImageProduct *p, nlohmann::json c)
+                : satdump::products::ImageCalibrator(p, c)
             {
-                is_aqua = calib["is_aqua"];
-                Sat_CoeffsE = new Coefficients_Emissive(calib["vars"]["c_emissive"]);
-                cvars = calib["vars"]["cvars"];
+                is_aqua = c["is_aqua"];
+                Sat_CoeffsE = new Coefficients_Emissive(c["vars"]["c_emissive"]);
+                cvars = c["vars"]["cvars"];
 
-                bowtie_lut_1km = calib["bowtie_lut_1km"];
+                bowtie_lut_1km = c["bowtie_lut_1km"];
             }
             ~EosMODISCalibrator()
             {
                 delete Sat_CoeffsE;
             }
 
-            void init() {}
-            double compute(int channel, int pos_x, int pos_y, int px_val);
+            double compute(int channel, int pos_x, int pos_y, uint32_t px_val);
         };
     }
 }

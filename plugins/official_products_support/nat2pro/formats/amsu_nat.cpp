@@ -1,9 +1,12 @@
 #include "formats.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 #include "metop_nat.h"
+
+#include "common/utils.h"
+#include "metop_helper.h"
 
 namespace nat2pro
 {
@@ -14,6 +17,10 @@ namespace nat2pro
         int number_of_lines = 0;
         int all_gcps = 0;
         nlohmann::json gcps_all;
+
+        std::vector<double> timestamps;
+
+        std::string sat_id = "M00";
 
         size_t current_ptr = 0;
         while (current_ptr < nat_file.size())
@@ -27,6 +34,7 @@ namespace nat2pro
             {
                 std::string full_header(&nat_file[current_ptr + 20], &nat_file[current_ptr + 20] + main_header.record_size - 20);
                 printf("%s\n", full_header.c_str());
+                sat_id = full_header.substr(664 - 20 + 32, 3);
             }
 
             /*if (main_header.record_class == 2)
@@ -62,6 +70,8 @@ namespace nat2pro
                     }
                 }
 
+                timestamps.push_back(main_header.record_start_time);
+
                 if ((number_of_lines - 1) % 4 == 0)
                 {
                     for (int i = 1; i < 30; i += 1)
@@ -89,36 +99,39 @@ namespace nat2pro
         }
 
         {
-            satdump::ImageProducts amsu_products;
-            amsu_products.instrument_name = "amsu_a";
-            // amsu_products.has_timestamps = true;
-            // amsu_products.set_tle(satellite_tle);
-            amsu_products.bit_depth = 16;
-            // amsu_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            // amsu_products.set_timestamps(avhrr_reader.timestamps);
-            // amsu_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
+            auto ptime = get_median(timestamps);
+            auto info = getMetOpSatInfoFromID(sat_id, ptime);
 
+            satdump::products::ImageProduct amsu_products;
+            amsu_products.instrument_name = "amsu_a";
+
+            amsu_products.set_product_source(info.sat_name);
+            amsu_products.set_product_timestamp(ptime);
+
+#if 1
+            amsu_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_amsu.json")), info.satellite_tle, timestamps);
+#else
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "normal_gcps";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
             amsu_products.set_proj_cfg(proj_cfg);
+            // TODOREWORK switch to GCPs again!
+#endif
 
             for (int i = 0; i < 15; i++)
-                amsu_products.images.push_back({"AMSU-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(amsu_data[i].data(), 16, image_width, number_of_lines, 1)});
+                amsu_products.images.push_back({i, "AMSU-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(amsu_data[i].data(), 16, image_width, number_of_lines, 1), 16});
 
             // calib
             nlohmann::json calib_cfg;
-            calib_cfg["calibrator"] = "metop_amsu_nat";
             nlohmann::json calib_coefs = loadJsonFile(resources::getResourcePath("calibration/AMSU-A.json"));
-            calib_cfg["wavenumbers"] = calib_coefs["all"]["wavenumber"];
 
-            amsu_products.set_calibration(calib_cfg);
+            amsu_products.set_calibration("metop_amsu_nat", calib_cfg);
 
             for (int c = 0; c < 15; c++)
             {
-                amsu_products.set_calibration_type(c, amsu_products.CALIB_RADIANCE);
-                amsu_products.set_calibration_default_radiance_range(c, calib_coefs["all"]["default_display_range"][c][0].get<double>(), calib_coefs["all"]["default_display_range"][c][1].get<double>());
+                amsu_products.set_channel_unit(c, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                amsu_products.set_channel_wavenumber(c, calib_coefs["all"]["wavenumber"][c]); // TODOREWORK, pull proper sat
             }
 
             // save

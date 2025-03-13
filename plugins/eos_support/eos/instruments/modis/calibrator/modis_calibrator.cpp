@@ -8,7 +8,7 @@ namespace eos
 {
     namespace modis
     {
-        double EosMODISCalibrator::compute(int channel, int pos_x, int pos_y, int px_val)
+        double EosMODISCalibrator::compute(int channel, int pos_x, int pos_y, uint32_t px_val)
         {
             // printf("HEY! %d\n", channel);
             //  250m Reflective Bands
@@ -27,11 +27,11 @@ namespace eos
             return CALIBRATION_INVALID_VALUE;
         }
 
-        double EosMODISCalibrator::compute_emissive(int channel, int pos_x, int pos_y, int px_val)
+        double EosMODISCalibrator::compute_emissive(int channel, int pos_x, int pos_y, uint32_t px_val)
         {
             int index_channel = channel;
             channel -= NUM_250M_BANDS + NUM_500M_BANDS + NUM_1000M_REFL_BANDS - 1; // Scale channel to "index in category"
-            //int index_channel_em = channel;
+            // int index_channel_em = channel;
 
             // Skip Band 26
             if (channel == MODIS_BAND26_INDEX_AT_RES)
@@ -127,14 +127,14 @@ namespace eos
                                /*PP_emiss->Planck_mir[D_emiss][S]*/ L_sm) /
                           cvars.RVS_1km_Emiss_EV[D_emiss][F][MS];
 
-            double radiance = spectral_radiance_to_radiance(L_ev, d_products->get_wavenumber(index_channel));
+            double radiance = spectral_radiance_to_radiance(L_ev, d_pro->get_channel_wavenumber(index_channel));
             if (std::isnan(radiance))
                 return CALIBRATION_INVALID_VALUE;
             else
                 return radiance;
         }
 
-        double EosMODISCalibrator::compute_reflective(int /* channel */, int /* pos_x */, int /* pos_y */, int /* px_val */)
+        double EosMODISCalibrator::compute_reflective(int /* channel */, int /* pos_x */, int /* pos_y */, uint32_t /* px_val */)
         {
             return CALIBRATION_INVALID_VALUE;
         }
