@@ -152,6 +152,7 @@ namespace nat2pro
             avhrr_products.set_proj_cfg(proj_cfg);
 // TODOREWORK switch to GCPs again!
 #endif
+            logger->critical("TODOREWORK switch to GCPs again!");
 
             std::string names[6] = {"1", "2", "3a", "3b", "4", "5"};
             for (int i = 0; i < 6; i++)

@@ -1,11 +1,14 @@
 #include "formats.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "resources.h"
 #include "metop_nat.h"
 
 #include "common/image/processing.h"
+
+#include "common/utils.h"
+#include "metop_helper.h"
 
 namespace nat2pro
 {
@@ -16,6 +19,10 @@ namespace nat2pro
         int number_of_lines = 0;
         int all_gcps = 0;
         nlohmann::json gcps_all;
+
+        std::vector<double> timestamps;
+
+        std::string sat_id = "M00";
 
         size_t current_ptr = 0;
         while (current_ptr < nat_file.size())
@@ -29,6 +36,7 @@ namespace nat2pro
             {
                 std::string full_header(&nat_file[current_ptr + 20], &nat_file[current_ptr + 20] + main_header.record_size - 20);
                 printf("%s\n", full_header.c_str());
+                sat_id = full_header.substr(664 - 20 + 32, 3);
             }
 
             /*if (main_header.record_class == 2)
@@ -83,6 +91,8 @@ namespace nat2pro
                     }
                 }
 
+                timestamps.push_back(main_header.record_start_time);
+
                 if ((number_of_lines - 2) % 4 == 0)
                 {
                     for (int i = 1; i < 30; i += 1)
@@ -110,24 +120,30 @@ namespace nat2pro
         }
 
         {
-            satdump::ImageProducts iasi_products;
+            auto ptime = get_median(timestamps);
+            auto info = getMetOpSatInfoFromID(sat_id, ptime);
+
+            satdump::products::ImageProduct iasi_products;
             iasi_products.instrument_name = "iasi";
-            // iasi_products.has_timestamps = true;
-            // iasi_products.set_tle(satellite_tle);
-            iasi_products.bit_depth = 16;
-            // iasi_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_LINE;
-            // iasi_products.set_timestamps(avhrr_reader.timestamps);
-            // iasi_products.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")));
             iasi_products.save_as_matrix = true;
 
+            iasi_products.set_product_source(info.sat_name);
+            iasi_products.set_product_timestamp(ptime);
+
+#if 1
+            iasi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi.json")), info.satellite_tle, timestamps);
+#else
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "normal_gcps";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
             iasi_products.set_proj_cfg(proj_cfg);
+            // TODOREWORK switch to GCPs again!
+#endif
+            logger->critical("TODOREWORK switch to GCPs again!");
 
             for (int i = 0; i < 8700; i++)
-                iasi_products.images.push_back({"IASI", std::to_string(i + 1), image::Image(iasi_data[i].data(), 16, image_width, number_of_lines, 1)});
+                iasi_products.images.push_back({i, "IASI", std::to_string(i + 1), image::Image(iasi_data[i].data(), 16, image_width, number_of_lines, 1), 16});
 
             // for (int i = 0; i < 8700; i++)
             //     image::equalize(iasi_products.images[i].image);
