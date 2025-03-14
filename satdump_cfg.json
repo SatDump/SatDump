@@ -515,50 +515,6 @@
     // Settings for the Viewer. Those also are default settings when generating viewer-less
     "viewer": {
         "instruments": {
-            "chris": {
-                "handler": "image_handler",
-                "name": "CHRIS",
-                "rgb_composites": {
-                    // LOW
-                    "LOW_RGB-080502-[land]": {
-                        "equation": "(((ch8-0.1243)/(1-0.1243))^(1/2.28)), (((ch5-0.1243)/(1-0.1243))^(1/2.28)), (((ch2-0.1243)/(1-0.1243))^(1/2.28))"
-                    },
-                    "LOW_EVI-(vegetation)": {
-                        "equation": "((ch19-ch8)/(ch19+6*ch8-7.5*ch2+1))*2"
-                    },
-                    "LOW_EVI-141908-(vegetation)": {
-                        "equation": "ch14 * 1.5, (ch19 + (ch19-ch8)*1.5/(ch19+6*ch8-7.5*ch2+1)) * 1.5, ch8* 1.5"
-                    },
-                    "LOW_RGB-191908-(221)": {
-                        "equation": "ch19*2, ch19*2, ch8*2"
-                    },
-                    "LOW_EVI-(vegetation)-[chlorophyll]": {
-                        "equation": "((ch15-ch8)/(ch15+6*ch8-7.5*ch2+1))*1.5"
-                    },
-                    "LOW_EVI-101808-(vegetation)-[chlorophyll]": {
-                        "equation": "ch10 * 1.5, ch18 + (ch15-ch8)/(ch15+6*ch8-7.5*ch2+1) * 1.5, ch8* 1.5"
-                    },
-                    "LOW_RGB-151508-(221)-[chlorophyll]": {
-                        "equation": "ch19*2, ch19*2, ch8*2"
-                    },
-                    "LOW_RGB-120805-[water]": {
-                        "equation": "(((ch12-0.086)/(0.16-0.086)^1.02)*(0.16-0.086))/0.12, (((ch8-0.086)/(0.16-0.086)^1.2)*(0.16-0.086))/0.12, (((ch5-0.086)/(0.16-0.086)^1.2)*(0.16-0.086))/0.12"
-                    },
-                    // ALL
-                    "ALL_RGB-251607-(RGB)": {
-                        "equation": "ch25 * 1.65, ch16 * 2.1, ch7 * 2"
-                    },
-                    "ALL_RGB-464625-(221)": {
-                        "equation": "ch46 * 2, ch46 * 2, ch25 * 2"
-                    },
-                    "ALL_EVI-634625-(vegetation)": {
-                        "equation": "ch63, ch46 + ((ch46-ch25)/(ch46+6*ch25-7.5*ch7+1)), ch25"
-                    },
-                    "ALL_EVI-(vegetation)": {
-                        "equation": "((ch46-ch25)/(ch46+6*ch25-7.5*ch7+1))*1.5"
-                    }
-                }
-            },
             "msu_gs": {
                 "handler": "image_handler",
                 "name": "MSU-GS",
