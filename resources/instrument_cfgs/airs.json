@@ -1,0 +1,115 @@
+{
+    "name": "AIRS",
+    "presets": [
+        {
+            "name": "λ=4.3µm (CO2 absorption 1a)",
+            "expression": "ch366",
+            "individual_equalize": true
+        },
+        {
+            "name": "λ=4.4µm (CO2 absorption 1b + H2O line)",
+            "expression": "ch420",
+            "individual_equalize": true
+        },
+        {
+            "name": "λ=7.7µm (Methane absorption)",
+            "expression": "ch980",
+            "individual_equalize": true
+        },
+        {
+            "name": "λ=14.9µm (CO2 absorption 2)",
+            "expression": "ch2292",
+            "individual_equalize": true
+        },
+        {
+            "name": "λ=10.8µm (Window)",
+            "expression": "ch1821",
+            "individual_equalize": true
+        },
+        {
+            "name": "AVHRR 3b45 IR False Color",
+            "expression": "ch4, ch1569, ch1821",
+            "individual_equalize": true
+        },
+        {
+            "name": "AVHRR 543b IR False Color",
+            "expression": "ch1821, ch1569, ch4",
+            "individual_equalize": true
+        },
+        {
+            "name": "HIRS False Color",
+            "expression": "ch2148, ch2193, ch2239",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/HIRSFalseColor.md"
+        },
+        {
+            "name": "6.2µm Water Vapor RGB",
+            "expression": "ch517, ch521, ch527",
+            "individual_equalize": true
+        },
+        {
+            "name": "7.35 µm Water Vapor RGB",
+            "expression": "ch845, ch857, ch863",
+            "individual_equalize": true
+        },
+        {
+            "name": "Airmass RGB",
+            "expression": "(1-ch515)-(1-ch857),  (1-ch1310)-(1-ch1569), (1-ch515)",
+            "individual_equalize": true
+        },
+        {
+            "name": "Clouds Only (N2O Sounding)",
+            "expression": "1-ch481, 1-ch570, 1",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/CloudOnlyN2O.md"
+        },
+        {
+            "name": "Mid Level Water Vapor",
+            "expression": "1-ch868",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MLWV.md"
+        },
+        {
+            "name": "Mid Stratosphere CO2 Temperature",
+            "expression": "ch2256",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MidStratoCO2T.md"
+        },
+        {
+            "name": "Low Stratosphere CO2 Temperature",
+            "expression": "ch2239",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/LowStratoCO2T.md"
+        },
+        {
+            "name": "Top Troposphere CO2 Temperature",
+            "expression": "ch2193",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/TopTropoCO2T.md"
+        },
+        {
+            "name": "High Troposphere CO2 Temperature",
+            "expression": "ch2148",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/HighTropoCO2T.md"
+        },
+        {
+            "name": "Mid Troposphere CO2/H2O Temperature",
+            "expression": "ch2088",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MidTropoCO2H2OT.md"
+        },
+        {
+            "name": "Low Troposphere CO2/H2O Temperature",
+            "expression": "ch2038",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/LowTropoCO2H2OT.md"
+        },
+        {
+            "name": "Cloud Detection Channel",
+            "expression": "1-ch236",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/CloudDetection.md"
+        }
+    ]
+}

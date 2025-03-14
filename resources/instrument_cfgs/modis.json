@@ -1,0 +1,197 @@
+{
+    "name": "MODIS",
+    "presets": [
+        {
+            "name": "AVHRR 221 False Color",
+            "expression": "ch2, ch2, ch1",
+            "geo_correct": true,
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "Day Fire Detection (Transparent)"
+        },
+        {
+            "name": "Day Fire Detection  (Map overlay)"
+        },
+        {
+            "name": "True Color",
+            "expression": "ch1, ch4, ch3",
+            "white_balance": true,
+            "geo_correct": true,
+            "description": "descriptions/TrueColor.md"
+        },
+        {
+            "name": "MODIS 221/143 Mix",
+            "expression": "(ch2 + ch1) / 2, (ch2 + ch4) / 2, (ch1 + ch3) / 2",
+            "white_balance": true,
+            "geo_correct": true
+        },
+        {
+            "name": "Day Microphysics",
+            "expression": "ch17, ch22^2.5, ch31",
+            "individual_equalize": true,
+            "white_balance": true,
+            "geo_correct": true,
+            "description": "descriptions/DayMicro.md"
+        },
+        {
+            "name": "CIR (Color Infrared)",
+            "expression": "ch2, ch1, ch4",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/CIR.md"
+        },
+        {
+            "name": "Geology",
+            "expression": "ch7, ch6, ch3",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/Geology.md"
+        },
+        {
+            "name": "Agriculture",
+            "expression": "ch6, ch2, ch3",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/Agriculture.md"
+        },
+        {
+            "name": "Bathymetric",
+            "expression": "ch1, ch4, ch9",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/Bathymetric.md"
+        },
+        {
+            "name": "AVHRR 543b IR False Color",
+            "expression": "cch32=(32, reflective_radiance, , ); cch31=(31, reflective_radiance, , ); cch20=(20, reflective_radiance, , ); 1-cch32, 1-cch31, 1-cch20",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/543b.md"
+        },
+        {
+            "name": "NO enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-NO.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "description": "descriptions/NO.md"
+        },
+        {
+            "name": "ZA enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/ZA.md"
+        },
+        {
+            "name": "MB enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/MB.md"
+        },
+        {
+            "name": "MD enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/MD.md"
+        },
+        {
+            "name": "BD enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/BD.md"
+        },
+        {
+            "name": "CC enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/CC.md"
+        },
+        {
+            "name": "EC enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/EC.md"
+        },
+        {
+            "name": "HE enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/HE.md"
+        },
+        {
+            "name": "HF enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/HF.md"
+        },
+        {
+            "name": "JF enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/JF.md"
+        },
+        {
+            "name": "JJ enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/JJ.md"
+        },
+        {
+            "name": "TA enhancement",
+            "expression": "cch31=(cch31, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/TA.md"
+        },
+        {
+            "name": "Cloud Top IR",
+            "expression": "cch31=(cch31, emissive_radiance, , );lut=lut(lut/cal/CloudTopIR.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/CloudTopIR.md"
+        },
+        {
+            "name": "Enhanced IR",
+            "expression": "cch31=(cch31, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/EnhancedIR.md"
+        },
+        {
+            "name": "IR 10.8µm - IR 6.2 µm Difference"
+        },
+        {
+            "name": "Night Microphysics",
+            "expression": "cch32=(32, brightness_temperature, 200, 400); cch31=(31, brightness_temperature, 200, 400); cch20=(20, brightness_temperature, 200, 400); 1-(3/200-cch32+cch31)*(200/10.5), 1-(7/200-cch31+cch20)*(200/9.9), ((cch31*200+200-243.7)/(293.2-243.7))",
+            "geo_correct": true,
+            "description": "descriptions/NightMicro.md"
+        },
+        {
+            "name": "Dust RGB",
+            "expression": "cch32=(32, brightness_temperature, 170, 400); cch31=(31, brightness_temperature, 170, 400); cch29=(29, brightness_temperature, 170, 400); (((cch32-cch31)+0.0173913043478261)/0.0260869565217391), ((cch31-cch29)/0.0652173913043478)^0.4, ((cch31-0.395652173913043)/0.121739130434783)",
+            "geo_correct": true,
+            "description": "descriptions/NightMicro.md"
+        },
+        {
+            "name": "24hour Microphysics RGB",
+            "expression": "cch32=(32, brightness_temperature, 170, 400); cch31=(31, brightness_temperature, 170, 400); cch29=(29, brightness_temperature, 170, 400); ((cch32-cch31)+0.0173913043478261)/0.0260869565217391, ((cch31-cch29)/0.0260869565217391)^0.833333333333333, (cch31+0.339130434782609)/0.239130434782609",
+            "geo_correct": true,
+            "description": "descriptions/NightMicro.md"
+        },
+        {
+            "name": "Differential Water Vapor RGB",
+            "expression": "cch28=(28, brightness_temperature, 180, 400); cch27=(27, brightness_temperature, 180, 400); ((cch28-cch27+0.01363636363)/0.15)^3.86548125242,((cch28-0.15068181818)/0.29545454545)^2.5,((cch27-0.12954545454)/0.1609090909)^2.5"
+        },
+        {
+            "name": "6.7µm Calibrated Water Vapor",
+            "expression": "cch27=(cch27, emissive_radiance, 0, 5.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch27, 0, 0), lut(cch27, 0, 1), lut(cch27, 0, 2)"
+        },
+        {
+            "name": "6.7µm Calibrated Water Vapor (RAMSDIS)",
+            "expression": "cch27=(cch27, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch27, 0, 0), lut(cch27, 0, 1), lut(cch27, 0, 2)"
+        },
+        {
+            "name": "7.35µm Calibrated Water Vapor",
+            "expression": "cch28=(cch28, emissive_radiance, 0, 23.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch28, 0, 0), lut(cch28, 0, 1), lut(cch28, 0, 2)"
+        },
+        {
+            "name": "7.35µm Calibrated Water Vapor (RAMSDIS)",
+            "expression": "cch28=(cch28, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch28, 0, 0), lut(cch28, 0, 1), lut(cch28, 0, 2)"
+        }
+    ]
+}
