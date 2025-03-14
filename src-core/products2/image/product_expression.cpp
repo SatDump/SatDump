@@ -8,100 +8,173 @@
 
 #include "common/image/io.h"
 
-#include "resources.h" // TODOREWORK?
+#include "resources.h"                               // TODOREWORK?
+#include "common/projection/projs/equirectangular.h" // TODOREWORK
 
 namespace satdump
 {
     namespace products
     {
         /// TODOREWORK
-        // Lut apply function
-        double lutProcess(void *userdata, double chvalx, double chvaly, double ch)
+        namespace
         {
-            image::Image *img = (image::Image *)userdata;
-            if (img->size() == 0)
-                return -1;
-            if (ch > img->channels())
-                return -1;
-            if (chvalx < 0)
-                chvalx = 0;
-            if (chvalx > 1)
-                chvalx = 1;
-            if (chvaly < 0)
-                chvaly = 0;
-            if (chvaly > 1)
-                chvaly = 1;
+            struct EquP
+            {
+                image::Image img;
+                size_t *x;
+                size_t *y;
+                proj::Projection p;
+                geodetic::geodetic_coords_t pos;
+                geodetic::projection::EquirectangularProjection ep;
+                int ox, oy;
+            };
 
-            return img->getf(ch, chvalx * (img->width() - 1), chvaly * (img->height() - 1));
-        }
-        ///
+            // Equp apply function
+            double equpProcess(void *userdata, double ch)
+            {
+                EquP *p = (EquP *)userdata;
+                image::Image &img = p->img;
+                if (img.size() == 0)
+                    return -1;
+                if (ch > img.channels())
+                    return -1;
 
-        // Lut config
-        struct LutCfg
-        {
-            bool valid;
-            std::string token;
-            std::string path;
-        };
+                if (p->p.inverse(*p->x, *p->y, p->pos))
+                    return 0;
 
-        // Example :
-        // lut=lut(lut_path.png); lut(ch1, 0), lut(ch1, 1), lut(ch1, 2)
-        LutCfg tryParseLut(std::string str)
-        {
-            LutCfg c;
-            c.valid = false;
+                p->ep.forward(p->pos.lon, p->pos.lat, p->ox, p->oy);
 
-            if (str.find_first_of('=lut') == std::string::npos)
+                return img.getf(ch, p->ox, p->oy);
+            }
+            ///
+
+            // Equp config
+            struct EqupCfg
+            {
+                bool valid;
+                std::string token;
+                std::string path;
+            };
+
+            // Example :
+            // bluemarble=equp(blue_marble.png); bluemarble(0), bluemarble(1), bluemarble(2)
+            EqupCfg tryParseEqup(std::string str)
+            {
+                EqupCfg c;
+                c.valid = false;
+
+                if (str.find("=equp") == std::string::npos)
+                    return c;
+
+                c.token = str.substr(0, str.find("=equp"));
+                std::string parenthesis = str.substr(str.find_first_of("(") + 1, str.find_first_of(")") - str.find_first_of("(") - 1);
+                auto parts = splitString(parenthesis, ',');
+
+                logger->trace("=> " + c.token + " %d : " + parts[0], parts.size());
+
+                if (parts.size() == 1)
+                {
+                    c.path = parts[0];
+                    c.valid = true;
+                }
+
                 return c;
-
-            c.token = str.substr(0, str.find_first_of('=lut') + 1);
-            std::string parenthesis = str.substr(str.find_first_of('(') + 1, str.find_first_of(')') - str.find_first_of('(') - 1);
-            auto parts = splitString(parenthesis, ',');
-
-            if (parts.size() == 1)
-            {
-                c.path = parts[0];
-                c.valid = true;
             }
-
-            return c;
         }
 
-        // Calibrated channels config
-        struct CalibChannelCfg
+        namespace
         {
-            bool valid;
-            std::string token;
-            std::string channel;
-            std::string unit;
-            double min;
-            double max;
-        };
-
-        // Example :
-        // cch2=(2,sun_angle_compensated_reflective_radiance,0,50);cch1=(1,sun_angle_compensated_reflective_radiance,0,50); cch2, cch2, cch1
-        CalibChannelCfg tryParse(std::string str)
-        {
-            CalibChannelCfg c;
-            c.valid = false;
-
-            c.token = str.substr(0, str.find_first_of('='));
-            std::string parenthesis = str.substr(str.find_first_of('(') + 1, str.find_first_of(')') - str.find_first_of('(') - 1);
-            auto parts = splitString(parenthesis, ',');
-
-            if (parts.size() == 4)
+            // Lut apply function
+            double lutProcess(void *userdata, double chvalx, double chvaly, double ch)
             {
-                c.channel = parts[0];
-                c.unit = parts[1];
-                c.min = std::stod(parts[2]);
-                c.max = std::stod(parts[3]);
-                c.valid = true;
-            }
+                image::Image *img = (image::Image *)userdata;
+                if (img->size() == 0)
+                    return -1;
+                if (ch > img->channels())
+                    return -1;
+                if (chvalx < 0)
+                    chvalx = 0;
+                if (chvalx > 1)
+                    chvalx = 1;
+                if (chvaly < 0)
+                    chvaly = 0;
+                if (chvaly > 1)
+                    chvaly = 1;
 
-            return c;
+                return img->getf(ch, chvalx * (img->width() - 1), chvaly * (img->height() - 1));
+            }
+            ///
+
+            // Lut config
+            struct LutCfg
+            {
+                bool valid;
+                std::string token;
+                std::string path;
+            };
+
+            // Example :
+            // lut=lut(lut_path.png); lut(ch1, 0), lut(ch1, 1), lut(ch1, 2)
+            LutCfg tryParseLut(std::string str)
+            {
+                LutCfg c;
+                c.valid = false;
+
+                if (str.find("=lut") == std::string::npos)
+                    return c;
+
+                c.token = str.substr(0, str.find("=lut"));
+                std::string parenthesis = str.substr(str.find_first_of("(") + 1, str.find_first_of(")") - str.find_first_of("(") - 1);
+                auto parts = splitString(parenthesis, ',');
+
+                if (parts.size() == 1)
+                {
+                    c.path = parts[0];
+                    c.valid = true;
+                }
+
+                return c;
+            }
         }
 
-        std::vector<std::string> get_required_tokens(std::string expression, std::vector<LutCfg> lut_cfgs, int *numout = nullptr)
+        namespace
+        {
+            // Calibrated channels config
+            struct CalibChannelCfg
+            {
+                bool valid;
+                std::string token;
+                std::string channel;
+                std::string unit;
+                double min;
+                double max;
+            };
+
+            // Example :
+            // cch2=(2,sun_angle_compensated_reflective_radiance,0,50);cch1=(1,sun_angle_compensated_reflective_radiance,0,50); cch2, cch2, cch1
+            CalibChannelCfg tryParse(std::string str)
+            {
+                CalibChannelCfg c;
+                c.valid = false;
+
+                c.token = str.substr(0, str.find_first_of("="));
+                std::string parenthesis = str.substr(str.find_first_of("(") + 1, str.find_first_of(")") - str.find_first_of("(") - 1);
+                auto parts = splitString(parenthesis, ',');
+
+                if (parts.size() == 4)
+                {
+                    c.channel = parts[0];
+                    c.unit = parts[1];
+                    c.min = std::stod(parts[2]);
+                    c.max = std::stod(parts[3]);
+                    c.valid = true;
+                }
+
+                return c;
+            }
+        }
+
+        std::vector<std::string> get_required_tokens(std::string expression, std::vector<LutCfg> lut_cfgs, std::vector<EqupCfg> equp_cfgs, int *numout = nullptr)
         {
             std::vector<std::string> tokens;
 
@@ -114,6 +187,8 @@ namespace satdump
                 image::Image img;
                 for (auto &l : lut_cfgs)
                     equParser.DefineFunUserData(l.token.c_str(), lutProcess, &img);
+                for (auto &l : equp_cfgs)
+                    equParser.DefineFunUserData(l.token.c_str(), equpProcess, &img);
 
                 while (true)
                 {
@@ -156,6 +231,7 @@ namespace satdump
             // See if we ave some setup string present
             std::map<std::string, CalibChannelCfg> calib_cfgs;
             std::vector<LutCfg> lut_cfgs;
+            std::vector<EqupCfg> equp_cfgs;
             if (expression.find(';') != std::string::npos)
             {
                 auto split_cfg = splitString(expression, ';');
@@ -168,12 +244,15 @@ namespace satdump
                     auto lcfg = tryParseLut(cfg);
                     if (lcfg.valid)
                         lut_cfgs.push_back(lcfg);
+                    auto ecfg = tryParseEqup(cfg);
+                    if (ecfg.valid)
+                        equp_cfgs.push_back(ecfg);
                 }
             }
 
             // Get required variables & number of output channels
             int nout_channels = 0;
-            auto tokens = get_required_tokens(expression, lut_cfgs, &nout_channels);
+            auto tokens = get_required_tokens(expression, lut_cfgs, equp_cfgs, &nout_channels);
 
             // We can't handle over 4
             if (nout_channels > 4)
@@ -211,6 +290,18 @@ namespace satdump
                     image::load_img(*lutimg, resources::getResourcePath(l.path));
                     equParser.DefineFunUserData(l.token.c_str(), lutProcess, lutimg.get());
                     lut_imgs.push_back(lutimg);
+                }
+
+                // Add EquPs to expression parser
+                std::vector<std::shared_ptr<EquP>> equp_imgs;
+                for (auto &l : equp_cfgs)
+                {
+                    logger->trace("Needs EquP " + l.path + " as " + l.token);
+                    std::shared_ptr<EquP> e = std::make_shared<EquP>();
+                    image::load_img(e->img, resources::getResourcePath(l.path));
+                    e->ep.init(e->img.width(), e->img.height(), -180, 90, 180, -90);
+                    equParser.DefineFunUserData(l.token.c_str(), equpProcess, e.get(), false);
+                    equp_imgs.push_back(e);
                 }
 
                 // Iterate through tokens to set them up
@@ -259,7 +350,19 @@ namespace satdump
                                  rtkt->img.height(),
                                  nout_channels);
 
+                // Variables to utilize
                 size_t x, y, i, c;
+
+                // EquPs
+                for (auto &i : equp_imgs)
+                {
+                    i->x = &x;
+                    i->y = &y;
+                    i->p = product->get_proj_cfg(rtkt->ch_idx);
+                    i->p.init(0, 1);
+                }
+
+                // Main loop
                 for (y = 0; y < rtkt->height; y++)
                 {
                     for (x = 0; x < rtkt->width; x++)
