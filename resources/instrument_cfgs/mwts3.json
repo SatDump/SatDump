@@ -1,0 +1,12 @@
+{
+    "name": "VIRR",
+    "presets": [
+        {
+            "name": "AMSU False Color",
+            "expression": "ch7, ch5, ch3",
+            "image": {
+                "individual_equalize": true
+            }
+        }
+    ]
+}

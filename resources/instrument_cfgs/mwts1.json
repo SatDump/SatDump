@@ -1,0 +1,40 @@
+{
+    "name": "MWTS-1",
+    "presets": [
+        {
+            "name": "550hPa Temperature (~5 km)",
+            "expression": "ch4",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "350hPa Temperature (~10 km)",
+            "expression": "ch5",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "200hPa Temperature (~12 km)",
+            "expression": "ch6",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "100hPa Temperature (~15 km)",
+            "expression": "ch7",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "AMSU False Color",
+            "expression": "ch4, ch3, ch1",
+            "image": {
+                "individual_equalize": true
+            }
+        }
+    ]
+}
