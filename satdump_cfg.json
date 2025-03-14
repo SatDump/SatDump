@@ -515,36 +515,6 @@
     // Settings for the Viewer. Those also are default settings when generating viewer-less
     "viewer": {
         "instruments": {
-            "msu_gs": {
-                "handler": "image_handler",
-                "name": "MSU-GS",
-                "rgb_composites": {
-                    "AVHRR 221 False Color": {
-                        "equation": "ch3,ch3,ch1",
-                        "description": "descriptions/221.md"
-                    },
-                    "MSU-GS 321 False Color": {
-                        "equation": "ch3,ch2,ch1",
-                        //
-                        "draw_map_overlay": true,
-                        "draw_shores_overlay": true,
-                        "draw_latlon_overlay": true
-                    },
-                    "Natural Color": {
-                        "channels": "ch3, ch2, ch1",
-                        "cpp": "msugs_natural_color",
-                        "description": "descriptions/NatColor.md"
-                    },
-                    "Color IR Merge": {
-                        "channels": "ch3, ch2, ch1, ch4",
-                        "cpp": "msugs_color_ir_merge",
-                        "autogen": false // Needs to be optimized...
-                    },
-                    "10.8µm Thermal IR": {
-                        "equation": "1-ch9"
-                    }
-                }
-            },
             "abi": {
                 "handler": "image_handler",
                 "name": "ABI",
