@@ -4,7 +4,9 @@
         {
             "name": "443 (AMSU 221 equivalent)",
             "expression": "ch4, ch4, ch3",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "843 (AMSU 421 equivalent)",
