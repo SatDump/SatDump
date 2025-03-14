@@ -4,26 +4,37 @@
         {
             "name": "CIR (Color Infrared)",
             "expression": "ch3, ch2, ch1",
-            "individual_equalize": true,
-            "geo_correct": true,
+            "image": { 
+                "individual_equalize": true,
+                "geo_correct": true
+            },
             "description": "descriptions/CIR.md"
         },
         {
             "name": "NDVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2)",
-            "equalize": true,
+            "image": { 
+                "equalize": true,
+                "geo_correct": true
+            },
             "geo_correct": true
         },
         {
             "name": "OSAVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2+0.16)",
-            "equalize": true,
+            "image": { 
+                "equalize": true,
+                "geo_correct": true
+            },
             "geo_correct": true
         },
         {
             "name": "Vegetation classification",
             "expression": "ch2/ch1",
-            "equalize": true,
+            "image": { 
+                "equalize": true,
+                "geo_correct": true
+            },
             "geo_correct": true
         }
     ]

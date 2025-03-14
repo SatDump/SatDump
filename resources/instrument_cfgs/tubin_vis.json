@@ -4,17 +4,23 @@
         {
             "name": 211,
             "expression": "ch2, ch1, ch1",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": 231,
             "expression": "ch2, ch3, ch1",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": 321,
             "expression": "ch3, ch2, ch1",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         }
     ]
 }

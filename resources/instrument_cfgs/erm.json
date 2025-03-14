@@ -4,7 +4,9 @@
         {
             "name": "Outgoing shortwave IR",
             "expression": "ch1",
-            "individual_equalize": true
+            "image" : {
+                "individual_equalize": true
+            }
         }
     ]
 }

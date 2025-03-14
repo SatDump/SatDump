@@ -1,34 +1,44 @@
 {
-    "name": "VIRR",
+    "name": "ATMS",
     "presets": [
         {
             "name": "ATMS False Color",
             "expression": "ch16, ch17, ch18",
-            "individual_equalize": true,
+            "image": { 
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/ATMSFC.md"
         },
         {
             "name": "MHS 221",
             "expression": "ch17,ch17,ch16",
-            "individual_equalize": true,
+            "image": { 
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/MHS221.md"
         },
         {
             "name": "MHS 421",
             "expression": "ch20,ch17,ch16",
-            "individual_equalize": true,
+            "image": { 
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/MHS221.md"
         },
         {
             "name": "Microwave Airmass",
             "expression": "ch18,ch19,ch20",
-            "individual_equalize": true,
+            "image": { 
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/MicrowaveAirmass.md"
         },
         {
             "name": "AMSU Surface Relative Temperature",
             "expression": "cos(ln(ch1) + ln(ch2)+0.8)",
-            "individual_equalize": true
+            "image": { 
+                "individual_equalize": true
+            }
         },
         {
             "name": "Brightness Temperature (Ch. 2)",

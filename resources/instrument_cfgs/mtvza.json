@@ -4,65 +4,89 @@
         {
             "name": "443 (AMSU 221 equivalent)",
             "expression": "ch4, ch4, ch3",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "843 (AMSU 421 equivalent)",
             "expression": "ch8, ch4, ch3",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "Soil Moisture",
             "expression": "ch14,ch13,ch12",
-            "individual_equalize": true,
+            "image": {
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/MTVZASoilMoisture.md"
         },
         {
             "name": "Vegetation",
             "expression": "ch16, ch15, ch17",
-            "individual_equalize": true,
+            "image": {
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/MTVZAVegetation.md"
         },
         {
             "name": "MTVZA False Color (WIP)",
             "expression": "ch17,1-ch16,1-ch15",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "Microwave Airmass",
             "expression": "ch30, ch29, ch28",
-            "individual_equalize": true,
+            "image": {
+                "individual_equalize": true
+            },
             "description": "descriptions/sounders/MicrowaveAirmass.md"
         },
         {
             "name": "550hPa Temperature (~5 km)",
             "expression": "ch16",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "350hPa Temperature (~10 km)",
             "expression": "ch17",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "200hPa Temperature (~12 km)",
             "expression": "ch18",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "100hPa Temperature (~15 km)",
             "expression": "ch19",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "Test1",
             "expression": "1-ch37",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         },
         {
             "name": "Test2",
             "expression": "1-ch33,1-ch34,1-ch35",
-            "individual_equalize": true
+            "image": {
+                "individual_equalize": true
+            }
         }
     ]
 }

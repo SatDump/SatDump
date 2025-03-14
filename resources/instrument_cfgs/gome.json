@@ -4,12 +4,16 @@
         {
             "name": "True Color",
             "expression": "ch2406, ch2719, ch3367",
-            "individual_equalize": true
+            "image" : {
+                "individual_equalize": true
+            }
         },
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch4096, ch4096, ch3263",
-            "individual_equalize": true
+            "image" : {
+                "individual_equalize": true
+            }
         }
     ]
 }
