@@ -5,7 +5,7 @@
 #include <filesystem>
 #include "logger.h"
 #include <array>
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "libs/miniz/miniz.h"
 
 #include "common/projection/projs2/proj_json.h"
@@ -205,21 +205,26 @@ namespace nc2pro
         }
 
         // Saving
-        satdump::ImageProducts olci_products;
+        satdump::products::ImageProduct olci_products;
         olci_products.instrument_name = "olci";
-        olci_products.has_timestamps = false;
-        olci_products.bit_depth = 16;
         olci_products.set_product_timestamp(prod_timestamp);
         olci_products.set_product_source(satellite);
 
         for (int i = 0; i < 21; i++)
-            olci_products.images.push_back({"OLCI-" + std::to_string(i + 1), std::to_string(i + 1), all_channels[i]});
+        {
+            double ratio = double(all_channels[0].width()) / double(all_channels[i].width());
+            olci_products.images.push_back({i, "OLCI-" + std::to_string(i + 1), std::to_string(i + 1), all_channels[i], 16,
+                                            satdump::ChannelTransform().init_affine(ratio, ratio, 0, 0)});
+        }
 
+#if 0
         nlohmann::json proj_cfg;
         proj_cfg["type"] = "normal_gcps";
         proj_cfg["gcp_cnt"] = gcps_all.size();
         proj_cfg["gcps"] = gcps_all;
         olci_products.set_proj_cfg(proj_cfg);
+                   // TODOREWORK switch to GCPs again!
+#endif
 
         if (!std::filesystem::exists(pro_output_file))
             std::filesystem::create_directories(pro_output_file);

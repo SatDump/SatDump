@@ -7,7 +7,7 @@
 #include <filesystem>
 #include "logger.h"
 #include <array>
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "libs/miniz/miniz.h"
 
 #include "common/projection/projs2/proj_json.h"
@@ -252,16 +252,19 @@ namespace nc2pro
             std::string pro_output_file_nadir = pro_output_file + "/NADIR";
 
             // Saving
-            satdump::ImageProducts slstr_products;
+            satdump::products::ImageProduct slstr_products;
             slstr_products.instrument_name = "slstr_nadir";
-            slstr_products.has_timestamps = false;
-            slstr_products.bit_depth = 16;
             slstr_products.set_product_timestamp(prod_timestamp);
             slstr_products.set_product_source(satellite);
 
             for (int i = 0; i < 9; i++)
-                slstr_products.images.push_back({"SLSTR-NADIR-" + std::to_string(i + 1), std::to_string(i + 1), all_channels_nadir[i]});
+            {
+                double ratio = double(all_channels_nadir[0].width()) / double(all_channels_nadir[i].width());
+                slstr_products.images.push_back({i, "SLSTR-NADIR-" + std::to_string(i + 1), std::to_string(i + 1), all_channels_nadir[i], 16,
+                                                 satdump::ChannelTransform().init_affine(ratio, ratio, 0, 0)});
+            }
 
+#if 0
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "normal_gcps";
             proj_cfg["gcp_cnt"] = gcps_all_nadir.size();
@@ -269,6 +272,8 @@ namespace nc2pro
             proj_cfg["width"] = all_channels_nadir[0].width();
             proj_cfg["height"] = all_channels_nadir[0].height();
             slstr_products.set_proj_cfg(proj_cfg);
+                        // TODOREWORK switch to GCPs again!
+#endif
 
             if (!std::filesystem::exists(pro_output_file_nadir))
                 std::filesystem::create_directories(pro_output_file_nadir);
@@ -280,16 +285,19 @@ namespace nc2pro
             std::string pro_output_file_offset = pro_output_file + "/OFFSET";
 
             // Saving
-            satdump::ImageProducts slstr_products;
+            satdump::products::ImageProduct slstr_products;
             slstr_products.instrument_name = "slstr_offset";
-            slstr_products.has_timestamps = false;
-            slstr_products.bit_depth = 16;
             slstr_products.set_product_timestamp(prod_timestamp);
             slstr_products.set_product_source(satellite);
 
             for (int i = 0; i < 9; i++)
-                slstr_products.images.push_back({"SLSTR-OFFSET-" + std::to_string(i + 1), std::to_string(i + 1), all_channels_offset[i]});
+            {
+                double ratio = double(all_channels_offset[0].width()) / double(all_channels_offset[i].width());
+                slstr_products.images.push_back({i, "SLSTR-OFFSET-" + std::to_string(i + 1), std::to_string(i + 1), all_channels_offset[i], 16,
+                                                 satdump::ChannelTransform().init_affine(ratio, ratio, 0, 0)});
+            }
 
+#if 0
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "normal_gcps";
             proj_cfg["gcp_cnt"] = gcps_all_offset.size();
@@ -297,6 +305,8 @@ namespace nc2pro
             proj_cfg["width"] = all_channels_offset[0].width();
             proj_cfg["height"] = all_channels_offset[0].height();
             slstr_products.set_proj_cfg(proj_cfg);
+                        // TODOREWORK switch to GCPs again!
+#endif
 
             if (!std::filesystem::exists(pro_output_file_offset))
                 std::filesystem::create_directories(pro_output_file_offset);

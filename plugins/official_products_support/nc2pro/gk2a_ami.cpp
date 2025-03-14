@@ -8,7 +8,7 @@
 #include "common/image/image.h"
 #include "common/utils.h"
 #include "core/exception.h"
-#include "products/image_products.h"
+#include "products2/image_product.h"
 #include "logger.h"
 
 namespace nc2pro
@@ -70,7 +70,7 @@ namespace nc2pro
 
             hid_t memspace = H5Screate_simple(2, image_dims, NULL);
             image_out.img = image::Image(16, image_dims[1], image_dims[0], 1);
-            H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t*)image_out.img.raw_data());
+            H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)image_out.img.raw_data());
             int bit_depth = hdf5_get_float_attr(file, "image_pixel_values", "number_of_valid_bits_per_pixel");
             int bit_depth_exponentiation = pow(2, bit_depth) - 1;
             image_out.calibration_scale /= pow(2, 16 - bit_depth);
@@ -115,7 +115,7 @@ namespace nc2pro
                     if (splt.size() == 6 &&
                         ori_splt[0] == splt[0] &&
                         ori_splt[1] == splt[1] &&
-                        ori_splt[2] == splt[2] && 
+                        ori_splt[2] == splt[2] &&
                         ori_splt[5] == splt[5])
                     {
                         files_to_parse.push_back(path);
@@ -137,7 +137,7 @@ namespace nc2pro
             const size_t nc_size = input_file.tellg();
             nc_file.resize(nc_size);
             input_file.seekg(0, std::ios::beg);
-            input_file.read((char*)&nc_file[0], nc_size);
+            input_file.read((char *)&nc_file[0], nc_size);
             input_file.close();
 
             logger->info("Processing " + files_to_parse[i]);
@@ -146,10 +146,8 @@ namespace nc2pro
         }
 
         // Saving
-        satdump::ImageProducts ami_products;
+        satdump::products::ImageProduct ami_products;
         ami_products.instrument_name = "ami";
-        ami_products.has_timestamps = false;
-        ami_products.bit_depth = 16;
 
         time_t prod_timestamp = 0;
         std::string sat_name = "GK-2A";
@@ -157,9 +155,10 @@ namespace nc2pro
         double center_longitude = 0;
         ParsedGK2AAMI largestImg;
 
-        for (auto &img : all_images)
+        for (int i = 0; i < (int)all_images.size(); i++)
         {
-            ami_products.images.push_back({ "AMI-" + img.channel, img.channel, img.img });
+            auto &img = all_images[i];
+            ami_products.images.push_back({i, "AMI-" + img.channel, img.channel, img.img, 16});
 
             bool waslarger = false;
             if (img.img.width() > largest_width)
@@ -192,6 +191,9 @@ namespace nc2pro
             double scalar_x = (pow(2.0, 16.0) / double(largestImg.cfac)) * k;
             double scalar_y = (pow(2.0, 16.0) / double(largestImg.lfac)) * k;
 
+            for (auto &img : ami_products.images)
+                img.ch_transform = satdump::ChannelTransform().init_affine(double(largest_width) / img.image.width(), double(largest_height) / img.image.height(), 0, 0);
+
             proj_cfg["type"] = "geos";
             proj_cfg["lon0"] = center_longitude;
             proj_cfg["sweep_x"] = false;
@@ -206,43 +208,22 @@ namespace nc2pro
         }
 
         nlohmann::json calib_cfg;
-        calib_cfg["calibrator"] = "goes_nc_abi";
         for (size_t i = 0; i < all_images.size(); i++)
         {
             calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
             calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
             calib_cfg["vars"]["kappa"][i] = all_images[i].kappa;
         }
-        ami_products.set_calibration(calib_cfg);
-
-        std::map<std::string, std::pair<float, float>> ami_ranges = {
-            {"VI004", {0, 1}},
-            {"VI005", {0, 1}},
-            {"VI006", {0, 1}},
-            {"VI008", {0, 1}},
-            {"NR013", {0, 1}},
-            {"NR016", {0, 1}},
-            {"SW038", {0.01, 2.20}},
-            {"WV063", {0, 6}},
-            {"WV069", {0, 16}},
-            {"WV073", {0.02, 20}},
-            {"IR087", {5, 100}},
-            {"IR096", {10, 120}},
-            {"IR105", {10, 120}},
-            {"IR112", {10, 150}},
-            {"IR123", {20, 150}},
-            {"IR133", {20, 150}},
-        };
+        ami_products.set_calibration("goes_nc_abi", calib_cfg);
 
         for (int i = 0; i < (int)all_images.size(); i++)
         {
             double wavelength_nm = std::stod(all_images[i].channel.substr(2, all_images[i].channel.size() - 1)) * 100;
-            ami_products.set_wavenumber(i, 1e7 / wavelength_nm);
-            ami_products.set_calibration_default_radiance_range(i, ami_ranges[all_images[i].channel].first, ami_ranges[all_images[i].channel].second);
+            ami_products.set_channel_wavenumber(i, 1e7 / wavelength_nm);
             if (all_images[i].kappa > 0)
-                ami_products.set_calibration_type(i, satdump::ImageProducts::CALIB_REFLECTANCE);
+                ami_products.set_channel_unit(i, CALIBRATION_ID_ALBEDO); // TODOREWORK reflective radiance
             else
-                ami_products.set_calibration_type(i, satdump::ImageProducts::CALIB_RADIANCE);
+                ami_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
         }
 
         if (!std::filesystem::exists(pro_output_file))
