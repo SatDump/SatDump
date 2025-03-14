@@ -1,0 +1,88 @@
+{
+    "name": "MERSI-3",
+    "presets": [
+        {
+            "name": "True Color",
+            "expression": "ch3, ch2, ch1",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/TrueColor.md"
+        },
+        {
+            "name": "MERSI False Color",
+            "expression": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
+            "individual_equalize": true,
+            "geo_correct": true
+        },
+        {
+            "name": "MERSI Airmass",
+            "expression": "ch9, ch12, ch11",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/MERSIAirmass.md"
+        },
+        {
+            "name": "AVHRR 221 False Color",
+            "expression": "ch4, ch4, ch1",
+            "equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "AVHRR 3a21 False Color",
+            "expression": "ch8, ch4, ch3",
+            "equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/3a21.md"
+        },
+        {
+            "name": "AVHRR 543b IR False Color",
+            "expression": "ch6, ch5, ch11",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/543b.md"
+        },
+        {
+            "name": "AVHRR 3b45 IR False Color",
+            "expression": "ch11, ch5, ch6",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/3b45.md"
+        },
+        {
+            "name": "10.8µm Thermal IR (Uncalibrated)",
+            "expression": "1.0 - ch5",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/ThermalUncal.md"
+        },
+        {
+            "name": "CIR (Color Infrared)",
+            "expression": "ch4, ch3, ch2",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/CIR.md"
+        },
+        {
+            "name": "Agriculture",
+            "expression": "ch8,ch4,ch1",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/Agriculture.md"
+        },
+        {
+            "name": "Geology",
+            "expression": "ch9,ch8,ch1",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/Geology.md"
+        },
+        {
+            "name": "Day Microphysics",
+            "expression": "ch3, ch8^2.5, ch5",
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/DayMicro.md"
+        }
+    ]
+}

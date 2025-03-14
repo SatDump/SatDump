@@ -1,0 +1,16 @@
+{
+    "name": "MERSI-1",
+    "presets": [
+        {
+            "name": "MERSI-1 321",
+            "expression": "ch3, ch2, ch1",
+            "individual_equalize": true,
+            "geo_correct": true
+        },
+        {
+            "name": "MERSI-1 441",
+            "expression": "ch4, ch4, ch1",
+            "geo_correct": true
+        }
+    ]
+}
