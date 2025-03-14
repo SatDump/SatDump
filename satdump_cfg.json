@@ -2078,50 +2078,6 @@
                     }
                 }
             },
-            "ocm_oc2": {
-                "handler": "image_handler",
-                "name": "OCM",
-                "rgb_composites": {
-                    "642": {
-                        "equation": "ch6, ch4, ch2"
-                    },
-                    "654": {
-                        "equation": "ch6, ch5, ch4"
-                    },
-                    "754": {
-                        "equation": "ch7, ch5, ch4"
-                    },
-                    "882": {
-                        "equation": "ch8, ch8, ch2"
-                    },
-                    "662": {
-                        "equation": "ch6, ch6, ch2"
-                    }
-                }
-            },
-            "erm": {
-                "handler": "image_handler",
-                "name": "ERM",
-                "rgb_composites": {
-                    "Outgoing shortwave IR": {
-                        "equation": "ch1",
-                        "individual_equalize": true,
-                        "project": {
-                            "draw_map_overlay": true,
-                            "individual_equalize": true,
-                            "config": {
-                                "type": "equirec",
-                                "offset_x": -180,
-                                "offset_y": 90,
-                                "scalar_x": 0.17578125,
-                                "scalar_y": -0.17578125,
-                                "width": 2048,
-                                "height": 1024
-                            }
-                        }
-                    }
-                }
-            },
             "ascat": {
                 "handler": "scatterometer_handler",
                 "name": "ASCAT",
@@ -2175,38 +2131,6 @@
                         "min": 0,
                         "max": 2576687,
                         "draw_map_overlay": true
-                    }
-                }
-            },
-            "ols": {
-                "handler": "image_handler",
-                "name": "OLS",
-                "rgb_composites": {
-                    "VIS/IR Mix": {
-                        "equation": "1-chir, chvis, chvis",
-                        "individual_equalize": true
-                    },
-                    "10.8µm Thermal IR": {
-                        "equation": "1-chir",
-                        "individual_equalize": true
-                    }
-                }
-            },
-            "tubin_vis": {
-                "handler": "image_handler",
-                "name": "TUBIN Visible",
-                "rgb_composites": {
-                    "211": {
-                        "equation": "ch2, ch1, ch1",
-                        "individual_equalize": true
-                    },
-                    "231": {
-                        "equation": "ch2, ch3, ch1",
-                        "individual_equalize": true
-                    },
-                    "321": {
-                        "equation": "ch3, ch2, ch1",
-                        "individual_equalize": true
                     }
                 }
             },

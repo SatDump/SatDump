@@ -1,5 +1,25 @@
 {
-    "name": "VIRR",
+    "name": "OCM",
     "presets": [
+        {
+            "name": 642,
+            "expression": "ch6, ch4, ch2"
+        },
+        {
+            "name": 654,
+            "expression": "ch6, ch5, ch4"
+        },
+        {
+            "name": 754,
+            "expression": "ch7, ch5, ch4"
+        },
+        {
+            "name": 882,
+            "expression": "ch8, ch8, ch2"
+        },
+        {
+            "name": 662,
+            "expression": "ch6, ch6, ch2"
+        }
     ]
 }
