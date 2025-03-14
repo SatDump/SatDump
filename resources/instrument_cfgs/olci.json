@@ -1,0 +1,29 @@
+{
+    "name": "OLCI",
+    "presets": [
+        {
+            "name": "AVHRR 221 False Color",
+            "expression": "ch15, ch15, ch7",
+            "equalize": true,
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "True Color",
+            "expression": "ch8,ch6,ch4",
+            "equalize": true,
+            "description": "descriptions/TrueColor.md"
+        },
+        {
+            "name": "CIR (Color Infrared)",
+            "expression": "ch17,ch8,ch6",
+            "equalize": true,
+            "description": "descriptions/CIR.md"
+        },
+        {
+            "name": "Bathymetric",
+            "expression": "ch8,ch6,ch3",
+            "equalize": true,
+            "description": "descriptions/Bathymetric.md"
+        }
+    ]
+}

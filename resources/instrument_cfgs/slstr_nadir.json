@@ -1,0 +1,35 @@
+{
+    "name": "SLSTR (Nadir)",
+    "presets": [
+        {
+            "name": "AVHRR 221 False Color",
+            "expression": "ch3,ch3,ch2",
+            "equalize": true,
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "AVHRR 3a21 False Color",
+            "expression": "ch5, ch3, ch2",
+            "equalize": true,
+            "description": "descriptions/3a21.md"
+        },
+        {
+            "name": "CIR (Color Infrared)",
+            "expression": "ch3,ch2,ch1",
+            "equalize": true,
+            "description": "descriptions/CIR.md"
+        },
+        {
+            "name": "Urban False Color",
+            "expression": "ch6,ch5,ch2",
+            "equalize": true
+        },
+        {
+            "name": "10.8µm Thermal IR",
+            "expression": "1-ch8",
+            "equalize": true,
+            "white_balance": true,
+            "description": "descriptions/ThermalUncal.md"
+        }
+    ]
+}
