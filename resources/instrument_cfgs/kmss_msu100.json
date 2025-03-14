@@ -11,14 +11,14 @@
         },
         {
             "name": "321",
-            "equation": "ch3, ch2, ch1",
+            "expression": "ch3, ch2, ch1",
             "image": {
                 "median_blur": true
             }
         },
         {
             "name": "331",
-            "equation": "ch3, ch3, ch1"
+            "expression": "ch3, ch3, ch1"
         }
     ]
 }

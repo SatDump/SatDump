@@ -1,4 +1,4 @@
-#include "product_equation.h"
+#include "product_expression.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
 #include "common/image/meta.h"
@@ -101,7 +101,7 @@ namespace satdump
             return c;
         }
 
-        std::vector<std::string> get_required_tokens(std::string equation, std::vector<LutCfg> lut_cfgs, int *numout = nullptr)
+        std::vector<std::string> get_required_tokens(std::string expression, std::vector<LutCfg> lut_cfgs, int *numout = nullptr)
         {
             std::vector<std::string> tokens;
 
@@ -119,7 +119,7 @@ namespace satdump
                 {
                     try
                     {
-                        equParser.SetExpr(equation);
+                        equParser.SetExpr(expression);
                         equParser.Eval(outValsCnt);
                         if (numout != nullptr)
                             *numout = outValsCnt;
@@ -146,20 +146,20 @@ namespace satdump
             return tokens;
         }
 
-        image::Image generate_equation_product_composite(ImageProduct *product, std::string equation, float *progress)
+        image::Image generate_expression_product_composite(ImageProduct *product, std::string expression, float *progress)
         {
             // Sanitize string
-            equation.erase(std::remove(equation.begin(), equation.end(), '\r'), equation.end());
-            equation.erase(std::remove(equation.begin(), equation.end(), '\n'), equation.end());
-            equation.erase(std::remove(equation.begin(), equation.end(), ' '), equation.end());
+            expression.erase(std::remove(expression.begin(), expression.end(), '\r'), expression.end());
+            expression.erase(std::remove(expression.begin(), expression.end(), '\n'), expression.end());
+            expression.erase(std::remove(expression.begin(), expression.end(), ' '), expression.end());
 
             // See if we ave some setup string present
             std::map<std::string, CalibChannelCfg> calib_cfgs;
             std::vector<LutCfg> lut_cfgs;
-            if (equation.find(';') != std::string::npos)
+            if (expression.find(';') != std::string::npos)
             {
-                auto split_cfg = splitString(equation, ';');
-                equation = split_cfg[split_cfg.size() - 1];
+                auto split_cfg = splitString(expression, ';');
+                expression = split_cfg[split_cfg.size() - 1];
                 for (auto &cfg : split_cfg)
                 {
                     auto pcfg = tryParse(cfg);
@@ -173,7 +173,7 @@ namespace satdump
 
             // Get required variables & number of output channels
             int nout_channels = 0;
-            auto tokens = get_required_tokens(equation, lut_cfgs, &nout_channels);
+            auto tokens = get_required_tokens(expression, lut_cfgs, &nout_channels);
 
             // We can't handle over 4
             if (nout_channels > 4)
@@ -200,9 +200,9 @@ namespace satdump
                 TokenS **tkts = new TokenS *[tokens.size()];
                 image::Image *other_images = new image::Image[tokens.size()];
                 mu::Parser equParser;
-                equParser.SetExpr(equation);
+                equParser.SetExpr(expression);
 
-                // Add LUTs to equation parser
+                // Add LUTs to expression parser
                 std::vector<std::shared_ptr<image::Image>> lut_imgs;
                 for (auto &l : lut_cfgs)
                 {
@@ -250,7 +250,7 @@ namespace satdump
                 }
 
                 if (ntkts == 0)
-                    throw satdump_exception("No channel in equation!");
+                    throw satdump_exception("No channel in expression!");
 
                 // Select reference channel, setup output
                 TokenS *rtkt = tkts[0];

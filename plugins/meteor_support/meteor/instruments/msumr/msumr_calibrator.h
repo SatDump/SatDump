@@ -321,9 +321,9 @@ int main(int argc, char *argv[])
         {
             "id": 4,
             "int_cfg": {
-                "equation": "ch1"
+                "expression": "ch1"
             },
-            "int_id": "image_product_equation",
+            "int_id": "image_product_expression",
             "io": [
                 {
                     "id": 7,

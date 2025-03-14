@@ -3,7 +3,7 @@
     "presets": [
         {
             "name": "421",
-            "equation": "ch4, ch2, ch1",
+            "expression": "ch4, ch2, ch1",
             "image": {
                 "individual_equalize": true
             }

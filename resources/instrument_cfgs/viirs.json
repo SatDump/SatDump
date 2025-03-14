@@ -3,7 +3,7 @@
     "presets": [
         {
             "name": "DNB + IR",
-            "equation": "(((1-chm14) * 1.5 - 0.6) * ((1-chm14) * 1.5 - 0.6)) + (((1-chm14) * 1.5 - 0.6) * ((chdnb * 50) - 0.45)) / 2",
+            "expression": "(((1-chm14) * 1.5 - 0.6) * ((1-chm14) * 1.5 - 0.6)) + (((1-chm14) * 1.5 - 0.6) * ((chdnb * 50) - 0.45)) / 2",
             "image": {
                 "individual_equalize": true
             }

@@ -3,7 +3,7 @@
     "presets": [
         {
             "name": "221",
-            "equation": "ch2, ch2, ch1"
+            "expression": "ch2, ch2, ch1"
         }
     ]
 }

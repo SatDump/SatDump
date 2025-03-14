@@ -1,4 +1,4 @@
-#include "equation.h"
+#include "expression.h"
 #include "core/exception.h"
 #include "libs/muparser/muParser.h"
 #include "common/utils.h"
@@ -6,7 +6,7 @@
 
 namespace image
 {
-    image::Image generate_image_equation(std::vector<EquationChannel> channels, std::string equation)
+    image::Image generate_image_expression(std::vector<ExpressionChannel> channels, std::string expression)
     {
         if (!channels.size())
             throw satdump_exception("No channels provided!");
@@ -18,7 +18,7 @@ namespace image
         try
         {
             mu::Parser equParser;
-            equParser.SetExpr(equation);
+            equParser.SetExpr(expression);
 
             nlohmann::json proj_cfg;
 

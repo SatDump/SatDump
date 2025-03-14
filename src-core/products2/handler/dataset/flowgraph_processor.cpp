@@ -24,7 +24,7 @@ namespace satdump
             flowgraph.node_internal_registry.emplace("image_product_source", []()
                                                      { return std::make_shared<ImageProductSource_Node>(); });
             flowgraph.node_internal_registry.emplace("image_product_equation", []()
-                                                     { return std::make_shared<ImageProductEquation_Node>(); });
+                                                     { return std::make_shared<ImageProductExpression_Node>(); });
             flowgraph.node_internal_registry.emplace("image_sink", []()
                                                      { return std::make_shared<ImageSink_Node>(); });
             flowgraph.node_internal_registry.emplace("image_get_proj", []()
@@ -32,7 +32,7 @@ namespace satdump
             flowgraph.node_internal_registry.emplace("image_reproj", []()
                                                      { return std::make_shared<ImageReproj_Node>(); });
             flowgraph.node_internal_registry.emplace("image_equation", []()
-                                                     { return std::make_shared<ImageEquation_Node>(); });
+                                                     { return std::make_shared<ImageExpression_Node>(); });
             flowgraph.node_internal_registry.emplace("image_handler_sink", [dp]()
                                                      { return std::make_shared<ImageHandlerSink_Node>(dp); });
             flowgraph.node_internal_registry.emplace("image_equalize", []()

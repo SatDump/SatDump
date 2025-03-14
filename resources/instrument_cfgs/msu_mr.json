@@ -3,11 +3,11 @@
     "presets": [
         {
             "name": "221",
-            "equation": "ch2, ch2, ch1"
+            "expression": "ch2, ch2, ch1"
         },
         {
             "name": "321 Sun Corrected",
-            "equation": "cch3=(3,sun_angle_compensated_reflective_radiance,0,10);\ncch2=(2,sun_angle_compensated_reflective_radiance,0,60);\ncch1=(1,sun_angle_compensated_reflective_radiance,0,50);\ncch3,\ncch2,\ncch1"
+            "expression": "cch3=(3,sun_angle_compensated_reflective_radiance,0,10);\ncch2=(2,sun_angle_compensated_reflective_radiance,0,60);\ncch1=(1,sun_angle_compensated_reflective_radiance,0,50);\ncch3,\ncch2,\ncch1"
         }
     ],
     "default": {

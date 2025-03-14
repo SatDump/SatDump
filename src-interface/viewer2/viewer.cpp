@@ -13,6 +13,7 @@
 #include "products2/handler/dataset/dataset_handler.h"
 #include "products2/handler/vector/shapefile_handler.h"
 #include "products2/handler/projection/projection_handler.h"
+#include "products2/handler/trash/trash_handler.h"
 #include "dsp/dsp_flowgraph_handler.h"
 // TODOREWORK
 #include "resources.h"
@@ -25,6 +26,9 @@ namespace satdump
             : Application("viewer")
         {
             master_handler = std::make_shared<DummyHandler>("MasterHandlerViewer");
+            auto trash_h = std::make_shared<TrashHandler>();
+            trash_h->setCanBeDragged(false);
+            master_handler->addSubHandler(trash_h);
 
             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }

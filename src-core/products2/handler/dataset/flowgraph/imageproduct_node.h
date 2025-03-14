@@ -2,7 +2,7 @@
 
 #include "flowgraph.h"
 #include "products2/image_product.h"
-#include "products2/image/product_equation.h"
+#include "products2/image/product_expression.h"
 
 namespace satdump
 {
@@ -44,17 +44,17 @@ namespace satdump
         }
     };
 
-    class ImageProductEquation_Node : public NodeInternal
+    class ImageProductExpression_Node : public NodeInternal
     {
     private:
-        std::string equation;
+        std::string expression;
 
         bool processing = false;
         float progress = 0;
 
     public:
-        ImageProductEquation_Node()
-            : NodeInternal("Image Product Equation")
+        ImageProductExpression_Node()
+            : NodeInternal("Image Product Expression")
         {
             inputs.push_back({"Product"});
             outputs.push_back({"Image"});
@@ -66,7 +66,7 @@ namespace satdump
             std::shared_ptr<satdump::products::ImageProduct> img_pro = std::static_pointer_cast<satdump::products::ImageProduct>(inputs[0].ptr);
 
             std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
-            *img_out = products::generate_equation_product_composite(img_pro.get(), equation, &progress);
+            *img_out = products::generate_expression_product_composite(img_pro.get(), expression, &progress);
 
             outputs[0].ptr = img_out;
 
@@ -77,7 +77,7 @@ namespace satdump
         void render()
         {
             ImGui::SetNextItemWidth(200 * ui_scale);
-            ImGui::InputTextMultiline("Equation", &equation);
+            ImGui::InputTextMultiline("Expression", &expression);
 
             if (processing)
                 ImGui::ProgressBar(progress, {200 * ui_scale, 0});
@@ -86,13 +86,13 @@ namespace satdump
         nlohmann::json to_json()
         {
             nlohmann::json j;
-            j["equation"] = equation;
+            j["expression"] = expression;
             return j;
         }
 
         void from_json(nlohmann::json j)
         {
-            equation = j["equation"];
+            expression = j["expression"];
         }
     };
 }

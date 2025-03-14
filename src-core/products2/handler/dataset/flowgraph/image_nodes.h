@@ -5,7 +5,7 @@
 #include "common/image/meta.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
-#include "common/image/equation.h"
+#include "common/image/expression.h"
 #include "common/image/processing.h"
 
 namespace satdump
@@ -173,7 +173,7 @@ namespace satdump
         void from_json(nlohmann::json j) {}
     };
 
-    class ImageEquation_Node : public NodeInternal
+    class ImageExpression_Node : public NodeInternal
     {
     private:
         struct ChConfig
@@ -185,18 +185,18 @@ namespace satdump
         };
 
         std::vector<ChConfig> channels;
-        std::string equation;
+        std::string expression;
 
     public:
-        ImageEquation_Node()
-            : NodeInternal("Image Equation")
+        ImageExpression_Node()
+            : NodeInternal("Image Expression")
         {
             outputs.push_back({"Image"});
         }
 
         void process()
         {
-            std::vector<image::EquationChannel> ch;
+            std::vector<image::ExpressionChannel> ch;
             for (int i = 0; i < channels.size(); i++)
             {
                 std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[i].ptr);
@@ -205,7 +205,7 @@ namespace satdump
             }
 
             std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
-            *img_out = image::generate_image_equation(ch, equation);
+            *img_out = image::generate_image_expression(ch, expression);
             outputs[0].ptr = img_out;
 
             has_run = true;
@@ -214,7 +214,7 @@ namespace satdump
         void render()
         {
             ImGui::SetNextItemWidth(200 * ui_scale);
-            ImGui::InputTextMultiline("Equation", &equation);
+            ImGui::InputTextMultiline("Expression", &expression);
 
             for (auto &c : channels)
             {
@@ -237,14 +237,14 @@ namespace satdump
         nlohmann::json to_json()
         {
             nlohmann::json j;
-            j["equation"] = equation;
+            j["expression"] = expression;
             j["channels"] = channels;
             return j;
         }
 
         void from_json(nlohmann::json j)
         {
-            equation = j["equation"];
+            expression = j["expression"];
             channels = j["channels"];
             inputs.clear();
             for (auto &c : channels)

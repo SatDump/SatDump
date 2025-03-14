@@ -47,8 +47,8 @@ namespace satdump
             std::string channel_calibrated_combo_str;
             int channel_calibrated_combo_curr_id = 0;
 
-            // Equation
-            std::string equation;
+            // Expression
+            std::string expression;
             float progress = 0;
 
             // Proc function

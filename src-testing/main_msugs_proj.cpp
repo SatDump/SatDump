@@ -16,7 +16,7 @@
 #include "common/image/io.h"
 #include "common/image/processing.h"
 
-#include "products2/image/product_equation.h"
+#include "products2/image/product_expression.h"
 #include "products2/image/image_calibrator.h"
 
 #include "common/utils.h"
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
     pro.get_channel_image("2").ch_transform.init_affine_slantx(1.0008, 1, -8, -1789.5, 0, 0.0047);
 
-    auto img = satdump::products::generate_equation_product_composite(&pro, "ch1 * 0 + ch2, ch2, ch1");
+    auto img = satdump::products::generate_expression_product_composite(&pro, "ch1 * 0 + ch2, ch2, ch1");
 
     {
         auto prj_cfg = image::get_metadata_proj_cfg(img);

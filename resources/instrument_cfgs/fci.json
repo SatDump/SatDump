@@ -3,11 +3,11 @@
     "presets": [
         {
             "name": "221",
-            "equation": "ch2, ch2, ch1"
+            "expression": "ch2, ch2, ch1"
         },
         {
             "name": "321",
-            "equation": "ch3, ch2, ch1"
+            "expression": "ch3, ch2, ch1"
         }
     ],
     "default": {

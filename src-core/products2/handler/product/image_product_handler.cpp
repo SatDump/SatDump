@@ -2,7 +2,7 @@
 #include "nlohmann/json_utils.h"
 
 #include "imgui/imgui_stdlib.h"
-#include "products2/image/product_equation.h"
+#include "products2/image/product_expression.h"
 #include "common/image/processing.h"               // TODOREWORK
 #include "common/dsp_source_sink/format_notated.h" // TODOREWORK
 
@@ -112,12 +112,12 @@ namespace satdump
                     needs_to_update |= ImGui::Combo("Unit##calibunit", &channel_calibrated_combo_curr_id, channel_calibrated_combo_str.c_str());
                     needs_to_update |= ImGui::Button("Update###updatecalib");
                     ImGui::SameLine();
-                    if (ImGui::Button("Add To Equ###calibaddtoequation")) // TODOREWORK?
-                        equation = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" +
-                                   product->images[channel_selection_curr_id].channel_name + ", " +
-                                   channel_calibrated_output_units[channel_calibrated_combo_curr_id] + ", " +
-                                   std::to_string(channel_calibrated_range_min[channel_selection_curr_id]) + ", " +
-                                   std::to_string(channel_calibrated_range_max[channel_selection_curr_id]) + ");\n" + equation;
+                    if (ImGui::Button("Add To Equ###calibaddtoexpression")) // TODOREWORK?
+                        expression = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" +
+                                     product->images[channel_selection_curr_id].channel_name + ", " +
+                                     channel_calibrated_output_units[channel_calibrated_combo_curr_id] + ", " +
+                                     std::to_string(channel_calibrated_range_min[channel_selection_curr_id]) + ", " +
+                                     std::to_string(channel_calibrated_range_max[channel_selection_curr_id]) + ");\n" + expression;
                 }
 
                 if (needs_to_be_disabled)
@@ -126,13 +126,13 @@ namespace satdump
 
             needs_to_update |= renderPresetMenu(); // TODOREWORK move in top drawMenu?
 
-            if (ImGui::CollapsingHeader("Equation", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("Expression", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
                 ImGui::SetNextItemWidth(ImGui::GetWindowSize().x - 10 * ui_scale);
-                ImGui::InputTextMultiline("##equation", &equation);
+                ImGui::InputTextMultiline("##expression", &expression);
                 if (ImGui::Button("Apply"))
                 {
                     channel_selection_curr_id = -1;
@@ -181,9 +181,9 @@ namespace satdump
 
         void ImageProductHandler::setConfig(nlohmann::json p)
         {
-            if (p.contains("equation"))
+            if (p.contains("expression"))
             {
-                equation = p["equation"];
+                expression = p["expression"];
                 channel_selection_curr_id = -1;
             }
             else if (p.contains("channel"))
@@ -218,7 +218,7 @@ namespace satdump
             nlohmann::json p;
 
             if (channel_selection_curr_id == -1)
-                p["equation"] = equation;
+                p["expression"] = expression;
             else
                 p["channel"] = product->images[channel_selection_curr_id].channel_name;
 
@@ -243,7 +243,7 @@ namespace satdump
             {
                 if (channel_selection_curr_id == -1)
                 {
-                    auto img = products::generate_equation_product_composite(product, equation, &progress);
+                    auto img = products::generate_expression_product_composite(product, expression, &progress);
                     img_handler.updateImage(img);
                 }
                 else
