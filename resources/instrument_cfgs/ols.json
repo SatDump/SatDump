@@ -1,5 +1,15 @@
 {
-    "name": "VIRR",
+    "name": "OLS",
     "presets": [
+        {
+            "name": "VIS/IR Mix",
+            "expression": "1-chir, chvis, chvis",
+            "individual_equalize": true
+        },
+        {
+            "name": "10.8µm Thermal IR",
+            "expression": "1-chir",
+            "individual_equalize": true
+        }
     ]
 }
