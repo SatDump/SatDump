@@ -1,0 +1,64 @@
+{
+    "name": "VIRR",
+    "presets": [
+        {
+            "name": "ATMS False Color",
+            "expression": "ch16, ch17, ch18",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/ATMSFC.md"
+        },
+        {
+            "name": "MHS 221",
+            "expression": "ch17,ch17,ch16",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MHS221.md"
+        },
+        {
+            "name": "MHS 421",
+            "expression": "ch20,ch17,ch16",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MHS221.md"
+        },
+        {
+            "name": "Microwave Airmass",
+            "expression": "ch18,ch19,ch20",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MicrowaveAirmass.md"
+        },
+        {
+            "name": "AMSU Surface Relative Temperature",
+            "expression": "cos(ln(ch1) + ln(ch2)+0.8)",
+            "individual_equalize": true
+        },
+        {
+            "name": "Brightness Temperature (Ch. 2)",
+            "expression": "cch2=(cch2, brightness_temperature, 140, 300);lut=lut(lut/cal/atmsBrightTemp.png);lut(cch2, 0, 0), lut(cch2, 0, 1), lut(cch2, 0, 2)",
+            "description": "descriptions/atmsBrightnessTemp.md"
+        },
+        {
+            "name": "550hPa Temperature (~5 km)",
+            "expression": "cch6=(6, reflective_radiance, , ); cch6"
+        },
+        {
+            "name": "350hPa Temperature (~10 km)",
+            "expression": "cch7=(7, reflective_radiance, , ); cch7"
+        },
+        {
+            "name": "200hPa Temperature (~12 km)",
+            "expression": "cch8=(8, reflective_radiance, , ); cch8"
+        },
+        {
+            "name": "100hPa Temperature (~15 km)",
+            "expression": "cch9=(9, reflective_radiance, , ); cch9"
+        },
+        {
+            "name": "Snow cover (Transparent, AMSU-like)",
+            "expression": "cch3=(3, reflective_radiance, , ); cch2=(2, reflective_radiance, , ); cch3^0.3, 0, 0, cch2 > 0.57 ? (cch3 < 0.5 ? 1 : 0) : 0"
+        },
+        {
+            "name": "Rainfall (Transparent, MHS-like)",
+            "expression": "cch22=(22, reflective_radiance, , ); cch20=(20, reflective_radiance, , ); (((1-cch22-cch20))-0.95)^0.25, 0, 0, (((1-cch22-cch20))-0.95)^0.25 > 0.01 ? 1 : 0",
+            "description": "descriptions/sounders/RainfallTransparent.md"
+        }
+    ]
+}

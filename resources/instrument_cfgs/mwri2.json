@@ -1,0 +1,20 @@
+{
+    "name": "MWRI-2",
+    "presets": [
+        {
+            "name": "MWRI-2 10.20.23 like MWRI 123",
+            "expression": "ch10, ch20, ch23",
+            "individual_equalize": true
+        },
+        {
+            "name": "Low Level Water Vapor",
+            "expression": "1-((ch2+ch1)/2)",
+            "individual_equalize": true
+        },
+        {
+            "name": "High Level Water Vapor",
+            "expression": "1-((ch4+ch3)/2)",
+            "individual_equalize": true
+        }
+    ]
+}
