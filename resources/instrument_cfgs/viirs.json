@@ -2,11 +2,117 @@
     "name": "VIIRS",
     "presets": [
         {
-            "name": "DNB + IR",
-            "expression": "(((1-chm14) * 1.5 - 0.6) * ((1-chm14) * 1.5 - 0.6)) + (((1-chm14) * 1.5 - 0.6) * ((chdnb * 50) - 0.45)) / 2",
-            "image": {
-                "individual_equalize": true
-            }
+            "name": "AVHRR 221 False Color",
+            "expression": "chi2, chi2, chi1",
+            "equalize": true,
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "AVHRR 3a21 False Color",
+            "expression": "chi3, chi2, chi1",
+            "equalize": true,
+            "description": "descriptions/3a21.md"
+        },
+        {
+            "name": "VIIRS I321/I221 Mix",
+            "expression": "(chi3 * 0.4 + chi2 * 0.6) * 4 - 0.2, chi2 * 4 - 0.2, chi1 * 4 - 0.2"
+        },
+        {
+            "name": "True Color",
+            "expression": "chm5, chm4, chm3",
+            "equalize": true,
+            "description": "descriptions/TrueColor.md"
+        },
+        {
+            "name": "Urban False Color",
+            "expression": "chm11,chm10,chm5",
+            "individual_equalize": true,
+            "description": "descriptions/ShortwaveIRFC.md"
+        },
+        {
+            "name": "Night Microphysics",
+            "expression": "chi5-chi4,chi4-chi3),chi4",
+            "individual_equalize": true,
+            "white_balance": true,
+            "description": "descriptions/NightMicro.md"
+        },
+        {
+            "name": "Day Microphysics",
+            "expression": "chi1, chi3^2.5,chi4",
+            "individual_equalize": true,
+            "description": "descriptions/DayMicro.md"
+        },
+        {
+            "name": "10.8µm Thermal IR (Uncalibrated)",
+            "expression": "1-chi4",
+            "individual_equalize": true,
+            "description": "descriptions/ThermalUncal.md"
+        },
+        {
+            "name": "CIR (Color Infrared)",
+            "expression": "chi3, chm5, chm4",
+            "individual_equalize": true,
+            "description": "descriptions/CIR.md"
+        },
+        {
+            "name": "Agriculture",
+            "expression": "chm10,chm7,chm3",
+            "equalize": true,
+            "white_balance": true,
+            "description": "descriptions/Agriculture.md"
+        },
+        {
+            "name": "Geology",
+            "expression": "chm11,chm10,chm3",
+            "individual_equalize": true,
+            "white_balance": true,
+            "description": "descriptions/Geology.md"
+        },
+        {
+            "name": "Bathymetric",
+            "expression": "chm5, chm4, chm1",
+            "equalize": true,
+            "description": "descriptions/Bathymetric.md"
+        },
+        {
+            "name": "Cirrus IR (ABI band 4 like)",
+            "expression": "chm9",
+            "white_balance": true,
+            "description": "descriptions/Cirrus.md"
+        },
+        {
+            "name": "Cloud Type RGB",
+            "expression": "chm9^1.5, chm5^0.75, chm10",
+            "individual_equalize": true,
+            "description": "descriptions/CloudType.md"
+        },
+        {
+            "name": "Cloud Phase RGB",
+            "expression": "chm10, chm11, chm5",
+            "individual_equalize": true,
+            "description": "descriptions/CloudPhase.md"
+        },
+        {
+            "name": "Dust/Ash RGB",
+            "expression": "chm16-chm15, chm15-chm14, chm15",
+            "individual_equalize": true,
+            "description": "descriptions/DustAshRGB.md"
+        },
+        {
+            "name": "Fire Temperature RGB",
+            "expression": "chm12, chm11, chm10",
+            "white_balance": true,
+            "description": "descriptions/FireTempRGB.md"
+        },
+        {
+            "name": "Panchromatic",
+            "expression": "chdnb",
+            "equalize": true,
+            "description": "descriptions/Panchromatic.md"
+        },
+        {
+            "name": "DNB Night",
+            "expression": "chdnb * 50 - 0.5"
         }
     ]
 }
