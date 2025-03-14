@@ -2,12 +2,166 @@
     "name": "SEVIRI",
     "presets": [
         {
-            "name": "221",
-            "expression": "ch2, ch2, ch1"
+            "name": "AVHRR 221 False Color",
+            "expression": "ch2,ch2,ch1",
+            "white_balance": true,
+            "description": "descriptions/221.md"
         },
         {
-            "name": "321",
-            "expression": "ch3, ch2, ch1"
+            "name": "AVHRR 3a21 False Color",
+            "expression": "ch3,ch2,ch1",
+            "white_balance": true,
+            "description": "descriptions/3a21.md"
+        },
+        {
+            "name": "Natural Color",
+            "expression": "((0.5*max(ch3,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.65, (ch2/0.7)^0.65, (ch1/0.7)^0.65",
+            "equalize": true,
+            "white_balance": true,
+            "description": "descriptions/NatColor.md"
+        },
+        {
+            "name": "AVHRR 124 False Color",
+            "expression": "ch1 == 0 ? 0 : ch1, ch2 == 0 ? 0 : ch2, 1-ch9 == 1 ? 0 : 1-ch9",
+            "individual_equalize": true,
+            "white_balance": true,
+            "description": "descriptions/124.md"
+        },
+        {
+            "name": "AVHRR 543b IR False Color",
+            "expression": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
+            "individual_equalize": true,
+            "white_balance": true,
+            "description": "descriptions/543b.md"
+        },
+        {
+            "name": "Day Microphysics",
+            "expression": "ch1,ch4^2.5, ch9",
+            "individual_equalize": true,
+            "white_balance": true,
+            "description": "descriptions/DayMicro.md"
+        },
+        {
+            "name": "Differential Water Vapor RGB",
+            "expression": "cch6=(6, brightness_temperature, 180, 400); cch5=(5, brightness_temperature, 180, 400); ((cch6-cch5+0.01363636363)/0.15)^3.86548125242,((cch6-0.15068181818)/0.29545454545)^2.5,((cch5-0.12954545454)/0.1609090909)^2.5"
+        },
+        {
+            "name": "Night Microphysics",
+            "expression": "cch9=(9, brightness_temperature, 200, 400); cch10=(10, brightness_temperature, 200, 400); cch4=(4, brightness_temperature, 200, 400); 1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
+            "description": "descriptions/NightMicro.md"
+        },
+        {
+            "name": "Water Vapor Blend",
+            "expression": "ch7 ==  0 ? 0 : 1-ch7, ch6 ==  0 ? 0 : 1-ch6, ch5 ==  0 ? 0 : 1-ch5",
+            "individual_equalize": true,
+            "white_balance": true
+        },
+        {
+            "name": "6.25µm Calibrated Water Vapor",
+            "expression": "cch5=(5, emissive_radiance, 0, 5.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)"
+        },
+        {
+            "name": "6.25µm Calibrated Water Vapor (RAMSDIS)",
+            "expression": "cch5=(5, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)"
+        },
+        {
+            "name": "7.35µm Calibrated Water Vapor",
+            "expression": "cch6=(6, emissive_radiance, 0, 23.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)"
+        },
+        {
+            "name": "7.35µm Calibrated Water Vapor (RAMSDIS)",
+            "expression": "cch6=(6, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)"
+        },
+        {
+            "name": "Split Water Vapor"
+        },
+        {
+            "name": "Split Ozone"
+        },
+        {
+            "name": "Split Cloud Phase"
+        },
+        {
+            "name": "Cloud Top IR",
+            "expression": "cch9=(9, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/CloudTopIR.md"
+        },
+        {
+            "name": "NO enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-NO.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/NO.md"
+        },
+        {
+            "name": "ZA enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/ZA.md"
+        },
+        {
+            "name": "MB enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/MB.md"
+        },
+        {
+            "name": "MD enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/MD.md"
+        },
+        {
+            "name": "BD enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/BD.md"
+        },
+        {
+            "name": "CC enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/CC.md"
+        },
+        {
+            "name": "EC enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/EC.md"
+        },
+        {
+            "name": "HE enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/HE.md"
+        },
+        {
+            "name": "HF enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/HF.md"
+        },
+        {
+            "name": "JF enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/JF.md"
+        },
+        {
+            "name": "JJ enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/JJ.md"
+        },
+        {
+            "name": "TA enhancement",
+            "expression": "cch9=(9, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",
+            "description": "descriptions/TA.md"
+        },
+        {
+            "name": "Color convection longwave IR",
+            "expression": "cch10=(10, brightness_temperature, 180, 320);lut=lut(lut/cal/ConvectionLWIR.png);lut(cch10, 0, 0), lut(cch10, 0, 1), lut(cch10, 0, 2)",
+            "geo_correct": true,
+            "description": "descriptions/ConvectionLWIR.md"
+        },
+        {
+            "name": "Snow enhancement",
+            "expression": "cch1=(1, reflective_radiance, 0, 20.76); cch9=(9, reflective_radiance, 5, 100); cch3=(3, reflective_radiance, 0, 19.85); ((3*cch1-cch9)/2)^1.7, ((3*cch1+cch9)/4)^1.7, (cch1-cch3)^1.7",
+            "individual_equalize": true,
+            "white_balance": true,
+            "description": "descriptions/Snow.md"
+        },
+        {
+            "name": "NDVI",
+            "description": "descriptions/NDVI.md"
         }
     ],
     "default": {

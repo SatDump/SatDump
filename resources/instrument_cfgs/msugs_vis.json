@@ -2,8 +2,24 @@
     "name": "MSU-GS Visible",
     "presets": [
         {
-            "name": "221",
-            "expression": "ch2, ch2, ch1"
-        }
+            "name": "AVHRR 221 False Color",
+            "expression": "ch3,ch3,ch1",
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "MSU-GS 321 False Color",
+            "expression": "ch3,ch2,ch1"
+        },
+        {
+            "name": "Natural Color",
+            "description": "descriptions/NatColor.md"
+        },/*
+        {
+            "name": "Color IR Merge"
+        },
+        {
+            "name": "10.8µm Thermal IR",
+            "expression": "1-ch9"
+        }*/
     ]
 }
