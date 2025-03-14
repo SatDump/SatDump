@@ -243,5 +243,73 @@
             "name": "7.35µm Calibrated Water Vapor (RAMSDIS)",
             "expression": "cch28=(cch28, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch28, 0, 0), lut(cch28, 0, 1), lut(cch28, 0, 2)"
         }
-    ]
+    ],
+    "default": {
+        "calibration_ranges": {
+            "20": {
+                "min": 0.05,
+                "max": 2.0
+            },
+            "21": {
+                "min": 0.01,
+                "max": 2.30
+            },
+            "22": {
+                "min": 0.01,
+                "max": 2.20
+            },
+            "23": {
+                "min": 0.01,
+                "max": 2.20
+            },
+            "24": {
+                "min": 0,
+                "max": 0.40
+            },
+            "25": {
+                "min": 0.01,
+                "max": 1.50
+            },
+            "27": {
+                "min": 0,
+                "max": 6
+            },
+            "28": {
+                "min": 0.02,
+                "max": 20
+            },
+            "29": {
+                "min": 5.0,
+                "max": 100
+            },
+            "30": {
+                "min": 10,
+                "max": 120
+            },
+            "31": {
+                "min": 10,
+                "max": 120
+            },
+            "32": {
+                "min": 10,
+                "max": 150
+            },
+            "33": {
+                "min": 20,
+                "max": 100
+            },
+            "34": {
+                "min": 20,
+                "max": 90
+            },
+            "35": {
+                "min": 20,
+                "max": 90
+            },
+            "36": {
+                "min": 20,
+                "max": 60
+            }
+        }
+    }
 }
