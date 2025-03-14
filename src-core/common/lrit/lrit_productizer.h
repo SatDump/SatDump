@@ -44,6 +44,6 @@ namespace lrit
         void setInstrumentID(std::string id) { instrument_id = id; }
 
         // Calibration WILL vary between sats
-        // std::function<void(satdump::ImageProducts *, ImageDataFunctionRecord *)> appendCalibrationToProductFunc;
+        // std::function<void(satdump::products::ImageProduct *, ImageDataFunctionRecord *)> appendCalibrationToProductFunc;
     };
 }

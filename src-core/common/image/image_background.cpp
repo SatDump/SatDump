@@ -1,6 +1,6 @@
 #include "image_background.h"
 #include "logger.h"
-#include "common/geodetic/geodetic_coordinates.h"
+/*#include "common/geodetic/geodetic_coordinates.h"
 #include "common/projection/reprojector.h"
 #include "common/projection/projs2/proj_json.h"
 
@@ -45,4 +45,4 @@ namespace image
 
 		proj::projection_free(&product_proj);
 	}
-}
+} TODOREWORK MAKE WORK AGAIN*/

@@ -6,8 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products/products.h"
-#include "products/dataset.h"
+#include "products2/dataset.h"
 #include "core/exception.h"
 #include "common/image/io.h"
 
@@ -47,7 +46,7 @@ namespace proba
             // std::ofstream output("file.ccsds");
 
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             if (d_satellite == PROBA_1)
                 dataset.satellite_name = "PROBA-1";
             else if (d_satellite == PROBA_2)

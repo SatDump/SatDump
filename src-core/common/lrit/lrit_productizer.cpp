@@ -4,7 +4,7 @@
 #include <filesystem>
 #include "logger.h"
 
-#include "products/processor/image_processor.h"
+// TODOREWORK #include "products/processor/image_processor.h"
 #include "core/config.h"
 #include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"

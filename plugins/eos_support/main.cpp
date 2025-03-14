@@ -2,13 +2,12 @@
 #include "logger.h"
 #include "core/module.h"
 
-#include "products/image_products.h"
 #include "terra/module_terra_db_demod.h"
 #include "aqua/module_aqua_db_decoder.h"
 #include "eos/module_eos_instruments.h"
 
 #include "eos/instruments/modis/calibrator/modis_calibrator.h"
-#include "eos/instruments/modis/day_fire.h"
+// #include "eos/instruments/modis/day_fire.h"
 
 class EOSSupport : public satdump::Plugin
 {
@@ -22,7 +21,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
-        satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
+        logger->critical("TODOREWORK NO MORE CPP COMPOSITES!!!"); //   satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -38,11 +37,11 @@ public:
             evt.calibrators.push_back(std::make_shared<eos::modis::EosMODISCalibrator>(evt.products, evt.calib));
     }
 
-    static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
-    {
-        if (evt.id == "day_fire")
-            evt.compositors.push_back(modis::dayFireCompositor);
-    }
+    // static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
+    // {
+    //     if (evt.id == "day_fire")
+    //         evt.compositors.push_back(modis::dayFireCompositor);
+    // }
 };
 
 PLUGIN_LOADER(EOSSupport)

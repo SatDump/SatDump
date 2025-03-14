@@ -20,7 +20,7 @@ namespace proba
 {
     namespace chris
     {
-        CHRISReader::CHRISReader(std::string &outputfolder, satdump::ProductDataSet &dataset) : dataset(dataset)
+        CHRISReader::CHRISReader(std::string &outputfolder, satdump::products::DataSet &dataset) : dataset(dataset)
         {
             output_folder = outputfolder;
         }

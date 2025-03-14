@@ -1,6 +1,6 @@
 #include "module_off2pro.h"
 #include "logger.h"
-#include "products/dataset.h"
+#include "products2/dataset.h"
 #include "common/utils.h"
 
 #include "../nat2pro/formats/formats.h"
@@ -55,7 +55,7 @@ namespace off2pro
             std::string prefix = source_off_path.stem().string().substr(0, 14);
             if (prefix == "OR_ABI-L1b-Rad")
                 nc2pro::process_goesr_abi(source_off_file, pro_output_file, &progress);
-            else if(prefix == "gk2a_ami_le1b_")
+            else if (prefix == "gk2a_ami_le1b_")
                 nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
             else
                 logger->error("Unknown .nc file type!");
@@ -79,7 +79,7 @@ namespace off2pro
                 const size_t nat_size = input_file.tellg();
                 nat_file.resize(nat_size);
                 input_file.seekg(0, std::ios::beg);
-                input_file.read((char*)&nat_file[0], nat_size);
+                input_file.read((char *)&nat_file[0], nat_size);
                 input_file.close();
             }
             progress = 1;
@@ -148,7 +148,7 @@ namespace off2pro
         if (std::filesystem::exists(pro_output_file + "/product.cbor") || product_paths.size() > 0)
         {
             // Products dataset
-            satdump::ProductDataSet dataset;
+            satdump::products::DataSet dataset;
             dataset.satellite_name = "Generic Product (Data Store / Archive)";
             dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
             if (product_paths.size() == 0)

@@ -7,7 +7,7 @@
 #include "meteor.h"
 #include "products2/image_product.h"
 #include "common/tracking/tle.h"
-#include "products/dataset.h"
+#include "products2/dataset.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/repack.h"
@@ -135,7 +135,7 @@ namespace meteor
 #endif
 
                 // Products dataset
-                satdump::ProductDataSet dataset;
+                satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = time(0); // avg_overflowless(msumr_timestamps);
 
@@ -279,7 +279,7 @@ namespace meteor
                 data_in.close();
 
                 // Products dataset
-                satdump::ProductDataSet dataset;
+                satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
                 dataset.timestamp = get_median(timestamps);
 

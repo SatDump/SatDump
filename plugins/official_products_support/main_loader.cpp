@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "core/module.h"
 
-#include "viewer/viewer.h"
+#include "core/config.h"
 #include "loader/archive_loader.h"
 #include "imgui/imgui_stdlib.h"
 
@@ -24,7 +24,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        satdump::eventBus->register_handler<satdump::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
+        logger->critical("TODOREWORK BRING BACK LOADER"); //    satdump::eventBus->register_handler<satdump::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
 
         if (satdump::config::main_cfg.contains("plugin_settings") && satdump::config::main_cfg["plugin_settings"].contains("official_products"))
             if (satdump::config::main_cfg["plugin_settings"]["official_products"].contains("enable_loader"))
@@ -73,7 +73,7 @@ public:
 
     static void saveConfig()
     {
-        if(_loader == nullptr)
+        if (_loader == nullptr)
             return;
         satdump::config::main_cfg["plugin_settings"]["official_products"] = {};
         auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
@@ -82,20 +82,20 @@ public:
         cfg["enable_loader"] = _enable_loader;
     }
 
-    static void renderViewerLoaderButton(const satdump::ViewerApplication::RenderLoadMenuElementsEvent &evt)
-    {
-        if (!_enable_loader)
-            return;
+    // static void renderViewerLoaderButton(const satdump::ViewerApplication::RenderLoadMenuElementsEvent &evt)
+    // {
+    //     if (!_enable_loader)
+    //         return;
 
-        if (ImGui::Button("Load Official"))
-            _loader_open = true;
+    //     if (ImGui::Button("Load Official"))
+    //         _loader_open = true;
 
-        if (_loader_open)
-        {
-            initLoader();
-            _loader->drawUI(&_loader_open);
-        }
-    }
+    //     if (_loader_open)
+    //     {
+    //         initLoader();
+    //         _loader->drawUI(&_loader_open);
+    //     }
+    // } TODOREWORK
 };
 
 PLUGIN_LOADER(OfficalProductsLoaderSupport)

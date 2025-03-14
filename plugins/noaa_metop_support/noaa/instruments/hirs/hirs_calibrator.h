@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products/image_products.h"
+#include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 #include "core/exception.h"
 

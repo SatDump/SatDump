@@ -13,8 +13,8 @@
 #include "goes/sd/module_sd_image_decoder.h"
 #include "goes/raw/module_goesr_instruments.h"
 
-#include "geo_false_color.h"
-#include "geo_false_color_ir_merge.h"
+// #include "geo_false_color.h"
+// #include "geo_false_color_ir_merge.h"
 
 #include "goes/hrit/dcs/dcs_settings.h"
 
@@ -30,7 +30,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
-        satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
+        logger->critical("NO MORE CPP COMPOS TODOREWORK"); //  satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
         satdump::eventBus->register_handler<goes::hrit::GOESLRITDataDecoderModule::DCPUpdateEvent>(goes::hrit::GOESLRITDataDecoderModule::updateDCPs);
         goes::hrit::initDcsConfig();
@@ -51,7 +51,7 @@ public:
 
     static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
     {
-        evt.plugin_config_handlers.push_back({"GOES HRIT DCS Parser", goes::hrit::renderDcsConfig, goes::hrit::saveDcsConfig });
+        evt.plugin_config_handlers.push_back({"GOES HRIT DCS Parser", goes::hrit::renderDcsConfig, goes::hrit::saveDcsConfig});
     }
 
     // static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
@@ -60,13 +60,13 @@ public:
     //         evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
     // }
 
-    static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
-    {
-        if (evt.id == "goes_abi_false_color")
-            evt.compositors.push_back(goes::goesFalseColorCompositor);
-        else if (evt.id == "goes_abi_false_color_ir_merge")
-            evt.compositors.push_back(goes::goesFalseColorIRMergeCompositor);
-    }
+    //   //  static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
+    //   //  {
+    //   //      if (evt.id == "goes_abi_false_color")
+    //   //          evt.compositors.push_back(goes::goesFalseColorCompositor);
+    //         else if (evt.id == "goes_abi_false_color_ir_merge")
+    //             evt.compositors.push_back(goes::goesFalseColorIRMergeCompositor);
+    //     }
 };
 
 PLUGIN_LOADER(GOESSupport)

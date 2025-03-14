@@ -10,7 +10,6 @@
 #include "resources.h"
 
 #include "common/tracking/tle.h"
-#include "products/products.h"
 #include "imgui/pfd/portable-file-dialogs.h"
 
 #include "core/opencl.h"
@@ -122,7 +121,6 @@ namespace satdump
         }
 
         // Products
-        registerProducts();
         products::registerProducts();
 
         // Set DSP buffer sizes if they have been changed

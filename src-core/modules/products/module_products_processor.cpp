@@ -2,8 +2,6 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 
-#include "products/processor/processor.h"
-
 #include "products2/dataset.h"
 #include "products2/product_process.h"
 

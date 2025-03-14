@@ -6,8 +6,6 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "products/products.h"
-#include "products/dataset.h"
 #include "nlohmann/json_utils.h"
 #include "common/image/io.h"
 

@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "common/image/image.h"
-#include "products/image_products.h"
+// TODOREWORK #include "products/image_products.h"
 
 namespace satdump
 {

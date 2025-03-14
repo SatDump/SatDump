@@ -6,7 +6,6 @@
 #include "core/plugin.h"
 #include "logger.h"
 #include "core/module.h"
-#include "products/image_products.h"
 
 #include "metop/module_metop_ahrpt_decoder.h"
 #include "metop/module_metop_dump_decoder.h"

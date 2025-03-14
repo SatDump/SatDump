@@ -12,6 +12,7 @@
 #include "../src-core/resources.h"
 #include "common/detect_header.h"
 #include "satdump_vars.h"
+#include "imgui/imgui_image.h"
 
 GLFWwindow *window;
 static volatile bool signal_caught = false;

@@ -20,7 +20,6 @@
 namespace satdump
 {
     SATDUMP_DLL2 std::shared_ptr<RecorderApplication> recorder_app;
-    SATDUMP_DLL2 std::shared_ptr<ViewerApplication> viewer_app;
     SATDUMP_DLL2 std::shared_ptr<viewer::ViewerApplication> viewer_app2;
     std::vector<std::shared_ptr<Application>> other_apps;
 
@@ -46,10 +45,7 @@ namespace satdump
         std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         credits_md.set_md(credits_markdown);
 
-        registerViewerHandlers();
-
         recorder_app = std::make_shared<RecorderApplication>();
-        viewer_app = std::make_shared<ViewerApplication>();
         viewer_app2 = std::make_shared<viewer::ViewerApplication>();
         open_recorder = satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("start_recorder_device");
 
@@ -72,10 +68,10 @@ namespace satdump
     void exitMainUI()
     {
         recorder_app->save_settings();
-        viewer_app->save_settings();
+        // TODOREWORK SAVING AGAIN? viewer_app->save_settings();
         config::saveUserConfig();
         recorder_app.reset();
-        viewer_app.reset();
+        viewer_app2.reset();
     }
 
     void renderMainUI()
@@ -135,11 +131,6 @@ namespace satdump
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Viewer"))
-                {
-                    viewer_app->draw();
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("Viewer2"))
                 {
                     viewer_app2->draw();
                     ImGui::EndTabItem();

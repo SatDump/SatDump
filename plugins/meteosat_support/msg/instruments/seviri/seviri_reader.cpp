@@ -10,7 +10,8 @@
 
 #include "core/config.h"
 #include "common/thread_priority.h"
-#include "products/processor/image_processor.h"
+#include "common/tracking/tle.h"
+// TODOREWORK BRING BACK #include "products/processor/image_processor.h"
 
 namespace lrit
 {

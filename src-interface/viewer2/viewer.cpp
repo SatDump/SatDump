@@ -14,6 +14,8 @@
 #include "products2/handler/vector/shapefile_handler.h"
 #include "products2/handler/projection/projection_handler.h"
 #include "dsp/dsp_flowgraph_handler.h"
+// TODOREWORK
+#include "resources.h"
 
 namespace satdump
 {

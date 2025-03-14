@@ -6,9 +6,6 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "products/products.h"
-#include "products/image_products.h"
-#include "products/dataset.h"
 #include "resources.h"
 
 namespace goes
@@ -39,7 +36,7 @@ namespace goes
 
             {
                 std::string suvi_dir = directory + "/SUVI";
-                if(!std::filesystem::exists(suvi_dir))
+                if (!std::filesystem::exists(suvi_dir))
                     std::filesystem::create_directories(suvi_dir);
                 suvi_reader.directory = suvi_dir;
             }

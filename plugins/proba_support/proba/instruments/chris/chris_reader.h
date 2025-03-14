@@ -7,7 +7,7 @@
 #include <map>
 #include <memory>
 #include "nlohmann/json.hpp"
-#include "products/dataset.h"
+#include "products2/dataset.h"
 
 namespace proba
 {
@@ -59,10 +59,10 @@ namespace proba
         private:
             std::map<uint32_t, std::shared_ptr<CHRISImageParser>> imageParsers;
             std::string output_folder;
-            satdump::ProductDataSet &dataset;
+            satdump::products::DataSet &dataset;
 
         public:
-            CHRISReader(std::string &outputfolder, satdump::ProductDataSet &dataset);
+            CHRISReader(std::string &outputfolder, satdump::products::DataSet &dataset);
             void work(ccsds::CCSDSPacket &packet);
             void save();
             int cnt() { return imageParsers.size(); }

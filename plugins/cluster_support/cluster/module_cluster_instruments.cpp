@@ -6,14 +6,11 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products/products.h"
-#include "products/dataset.h"
 #include "common/simple_deframer.h"
 #include "instruments/wbd_decoder.h"
 #include "common/audio/audio_sink.h"
 #include "common/dsp/io/wav_writer.h"
 #include "core/config.h"
-
 
 namespace cluster
 {
@@ -156,7 +153,7 @@ namespace cluster
 
             if (enable_audio)
                 audio_sink->stop();
-                
+
             wave_writer_Ez.finish_header(final_data_size_ant_Ez);
             wave_writer_Bx.finish_header(final_data_size_ant_Bx);
             wave_writer_By.finish_header(final_data_size_ant_By);
@@ -219,7 +216,7 @@ namespace cluster
             if (enable_audio)
             {
                 ImGui::Spacing();
-                const char* btn_icon, * label;
+                const char *btn_icon, *label;
                 ImU32 color;
                 if (play_audio)
                 {
