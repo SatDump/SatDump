@@ -8,6 +8,8 @@
 
 #include "common/image/io.h"
 
+#include "resources.h" // TODOREWORK?
+
 namespace satdump
 {
     namespace products
@@ -206,7 +208,7 @@ namespace satdump
                 {
                     logger->trace("Needs LUT " + l.path + " as " + l.token);
                     std::shared_ptr<image::Image> lutimg = std::make_shared<image::Image>();
-                    image::load_img(*lutimg, l.path);
+                    image::load_img(*lutimg, resources::getResourcePath(l.path));
                     equParser.DefineFunUserData(l.token.c_str(), lutProcess, lutimg.get());
                     lut_imgs.push_back(lutimg);
                 }

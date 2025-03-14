@@ -46,7 +46,7 @@ namespace satdump
         {
             bool was_changed = false;
 
-            if (ImGui::CollapsingHeader("Presets"))
+            if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::Combo("##presetproductcombo", &preset_selection_curr_id, preset_selection_box_str.c_str()))
                 {

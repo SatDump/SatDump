@@ -11,7 +11,8 @@
 
 #define CALIBRATION_INVALID_VALUE -9999.9 // TODOREWORK Change?
 
-#define CALIBRATION_ID_ALBEDO "albedo" // TODOREWORK probably delete?
+#define CALIBRATION_ID_ALBEDO "albedo"                                             // TODOREWORK probably delete?
+#define CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO "sun_angle_compensated_albedo" // TODOREWORK probably delete?
 #define CALIBRATION_ID_EMISSIVE_RADIANCE "emissive_radiance"
 #define CALIBRATION_ID_REFLECTIVE_RADIANCE "reflective_radiance"
 #define CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE "sun_angle_compensated_reflective_radiance"

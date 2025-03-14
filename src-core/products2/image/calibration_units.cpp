@@ -12,6 +12,7 @@ namespace satdump
     {
         std::map<std::string, UnitInfo> unit_registry = {
             {CALIBRATION_ID_ALBEDO, {"NoUnit", "Albedo (TMP)"}},
+            {CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO, {"NoUnit", "Sun Angle Compensated Albedo (TMP)"}},
             {CALIBRATION_ID_EMISSIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Emissive Radiance"}},
             {CALIBRATION_ID_REFLECTIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Reflective Radiance"}},
             {CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Sun Angle Compensated Reflective Radiance"}},
@@ -105,6 +106,8 @@ namespace satdump
                 converters.push_back(std::make_shared<RefRadToSunCorRefRadConverter>());
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
                 converters.push_back(std::make_shared<EmRadToBrightTempConverter>());
+            else if (itype == CALIBRATION_ID_ALBEDO && otype == CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO)
+                converters.push_back(std::make_shared<RefRadToSunCorRefRadConverter>()); // TODOREWORK? Keep?
 
             eventBus->fire_event<ConverterRequestEvent>({converters, itype, otype});
 
@@ -121,6 +124,8 @@ namespace satdump
                 otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE);
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE)
                 otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            else if (itype == CALIBRATION_ID_ALBEDO)
+                otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO);
 
             eventBus->fire_event<ConversionRequestEvent>({itype, otypes});
 

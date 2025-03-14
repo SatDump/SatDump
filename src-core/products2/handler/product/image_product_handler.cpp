@@ -70,7 +70,7 @@ namespace satdump
         {
             bool needs_to_be_disabled = is_processing;
 
-            if (ImGui::CollapsingHeader("Channels"))
+            if (ImGui::CollapsingHeader("Channels", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
@@ -126,7 +126,7 @@ namespace satdump
 
             needs_to_update |= renderPresetMenu(); // TODOREWORK move in top drawMenu?
 
-            if (ImGui::CollapsingHeader("Equation"))
+            if (ImGui::CollapsingHeader("Equation", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
