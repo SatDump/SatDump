@@ -2,23 +2,29 @@
     "name": "MSU-100",
     "presets": [
         {
-            "name": "Channel 1 Equalized",
-            "channel": "1",
-            "image": {
-                "median_blur": true,
-                "equalize": true
-            }
-        },
-        {
-            "name": "321",
+            "name": "CIR (Color Infrared)",
             "expression": "ch3, ch2, ch1",
-            "image": {
-                "median_blur": true
-            }
+            "individual_equalize": true,
+            "geo_correct": true,
+            "description": "descriptions/CIR.md"
         },
         {
-            "name": "331",
-            "expression": "ch3, ch3, ch1"
+            "name": "NDVI (Uncalibrated)",
+            "expression": "(ch3-ch2)/(ch3+ch2)",
+            "equalize": true,
+            "geo_correct": true
+        },
+        {
+            "name": "OSAVI (Uncalibrated)",
+            "expression": "(ch3-ch2)/(ch3+ch2+0.16)",
+            "equalize": true,
+            "geo_correct": true
+        },
+        {
+            "name": "Vegetation classification",
+            "expression": "ch2/ch1",
+            "equalize": true,
+            "geo_correct": true
         }
     ]
 }
