@@ -2,106 +2,70 @@
     "name": "IASI",
     "presets": [
         {
-            "name": "10.8µm Thermal IR",
-            "expression": "cch1=(1, emissive_radiance, 30, 120); 1-cch1",
+            "name": "Low Level Water Vapor",
+            "expression": "1-(ch1535+ch1536+ch1537+ch1538+ch1539+ch1540+ch1545+ch1542+ch1543+ch1544+ch1545)/10",
             "individual_equalize": true,
-            "geo_correct": true,
-            "description": "descriptions/ThermalCal.md"
+            "description": "descriptions/sounders/LLWV.md"
         },
         {
-            "name": "NO enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-NO.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "description": "descriptions/NO.md"
+            "name": "Mid Level Water Vapor",
+            "expression": "1-((ch2870 + ch2871 + ch2872 + ch2873 + ch2874 + ch2875 + ch2876 + ch2877 + ch2878 + ch2879 + ch2880 + ch2881 + ch2882 + ch2883 + ch2884 + ch2885 + ch2886) / 16)",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MLWV.md"
         },
         {
-            "name": "ZA enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/ZA.md"
+            "name": "Mid Stratosphere CO2 Temperature",
+            "expression": "(ch140+ch141+ch142)/3",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MidStratoCO2T.md"
         },
         {
-            "name": "MB enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/MB.md"
+            "name": "Low Stratosphere CO2 Temperature",
+            "expression": "(ch180+ch181+ch182)/3",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/LowStratoCO2T.md"
         },
         {
-            "name": "MD enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/MD.md"
+            "name": "Top Troposphere CO2 Temperature",
+            "expression": "(ch230+ch231+ch232+ch233+ch234)/5",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/TopTropoCO2T.md"
         },
         {
-            "name": "BD enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/BD.md"
+            "name": "High Troposphere CO2 Temperature",
+            "expression": "(ch284+ch283+ch285+ch286+ch287)/5",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/HighTropoCO2T.md"
         },
         {
-            "name": "CC enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/CC.md"
+            "name": "Mid Troposphere CO2/H2O Temperature",
+            "expression": "(ch351+ch352+ch353+ch354+ch355)/5",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/MidTropoCO2H2OT.md"
         },
         {
-            "name": "EC enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/EC.md"
+            "name": "Low Troposphere CO2/H2O Temperature",
+            "expression": "(ch415+ch416+ch417+ch418+ch419)/5",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/LowTropoCO2H2OT.md"
         },
         {
-            "name": "HE enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/HE.md"
+            "name": "Cloud Detection Channel",
+            "expression": "(ch7096+ch7097+ch7098+ch7099+ch7100+ch7101+ch7102+ch7103+ch7104+ch7105+ch7106)/10",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/CloudDetection.md"
         },
         {
-            "name": "HF enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/HF.md"
+            "name": "Clouds Only (N2O Sounding)",
+            "expression": "1-((ch6259+ch6260+ch6261+ch6262)/4), 1-((ch6171+ch6172+ch6173+ch6174)/4), 1",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/CloudOnlyN2O.md"
         },
         {
-            "name": "JF enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/JF.md"
-        },
-        {
-            "name": "JJ enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/JJ.md"
-        },
-        {
-            "name": "TA enhancement",
-            "expression": "cch1=(cch1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/TA.md"
-        },
-        {
-            "name": "Enhanced IR",
-            "expression": "cch1=(cch1, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/EnhancedIR.md"
-        },
-        {
-            "name": "Cloud Top IR",
-            "expression": "cch1=(cch1, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/CloudTopIR.md"
-        },
-        {
-            "name": "Enhanced IR (Transparent)",
-            "expression": "cch1=(1, brightness_temperature, 200, 241); cch1, 0, 0, cch1 > 0.99 ? 1 : 0",
-            "geo_correct": true,
-            "description": "descriptions/EnhancedIR.md"
-        },
-        {
-            "name": "Color general cloud IR",
-            "expression": "cch1=(cch1, brightness_temperature, 180, 320);lut=lut(lut/cal/Multispectral.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "geo_correct": true,
-            "description": "descriptions/ColorGeneralIR.md"
+            "name": "HIRS False Color",
+            "expression": "(ch284+ch283+ch285+ch286+ch287)/5, (ch230+ch231+ch232+ch233+ch234)/5, (ch180+ch181+ch182)/3",
+            "individual_equalize": true,
+            "description": "descriptions/sounders/HIRSFalseColor.md"
         }
     ]
 }
