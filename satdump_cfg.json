@@ -1097,33 +1097,6 @@
                     }
                 }
             },
-            "kmss_msu100": {
-                "handler": "image_handler",
-                "name": "KMSS (MSU-100)",
-                "rgb_composites": {
-                    "CIR (Color Infrared)": {
-                        "equation": "ch3, ch2, ch1",
-                        "individual_equalize": true,
-                        "geo_correct": true,
-                        "description": "descriptions/CIR.md"
-                    },
-                    "NDVI (Uncalibrated)": {
-                        "equation": "(ch3-ch2)/(ch3+ch2)",
-                        "equalize": true,
-                        "geo_correct": true
-                    },
-                    "OSAVI (Uncalibrated)": {
-                        "equation": "(ch3-ch2)/(ch3+ch2+0.16)",
-                        "equalize": true,
-                        "geo_correct": true
-                    },
-                    "Vegetation classification": {
-                        "equation": "ch2/ch1",
-                        "equalize": true,
-                        "geo_correct": true
-                    }
-                }
-            },
             "msu_gs": {
                 "handler": "image_handler",
                 "name": "MSU-GS",
