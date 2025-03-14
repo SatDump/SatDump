@@ -24,7 +24,7 @@ namespace satdump
             {
                 if (s == potential_child)
                     return true;
-                if (isParent(dragged, s))
+                if (isParent(s, potential_child))
                     return true;
             }
             return false;
