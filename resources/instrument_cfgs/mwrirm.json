@@ -1,0 +1,40 @@
+{
+    "name": "MWRI-RM",
+    "presets": [
+        {
+            "name": "MWRI-RM 10.20.23 like MWRI 123",
+            "expression": "ch10, ch20, ch23",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "MHS 221",
+            "expression": "ch21, ch21, ch15",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "MHS 421",
+            "expression": "ch22, ch21, ch15",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "Low Level Water Vapor",
+            "expression": "1-((ch2+ch1)/2)",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "High Level Water Vapor",
+            "expression": "1-((ch4+ch3)/2)",
+            "image": {
+                "individual_equalize": true
+            }
+        }
+    ]
+}
