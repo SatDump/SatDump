@@ -18,6 +18,10 @@
 #include <nng/protocol/bus0/bus.h>
 #include <nng/protocol/pair0/pair.h>
 
+#include "init.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/dsp/fft/fft_pan.h"
+
 #include <unistd.h>
 
 // HTTP Handler for stats
@@ -36,6 +40,37 @@ void http_handle(nng_aio *aio)
 int main(int argc, char *argv[])
 {
     initLogger();
+
+    logger->set_level(slog::LOG_OFF);
+    satdump::initSatdump();
+    completeLoggerInit();
+    logger->set_level(slog::LOG_TRACE);
+
+    dsp::registerAllSources();
+
+    ///////////////////////
+
+    std::shared_ptr<dsp::DSPSampleSource> dsp_source;
+    {
+        auto all_sources = dsp::getAllAvailableSources();
+        for (auto &s : all_sources)
+        {
+            logger->trace(s.name);
+            if (s.source_type == "rtlsdr")
+                dsp_source = dsp::getSourceFromDescriptor(s);
+        }
+    }
+
+    dsp_source->open();
+    dsp_source->set_samplerate(2.4e6);
+    dsp_source->set_frequency(431.8e6);
+    dsp_source->start();
+
+    std::shared_ptr<dsp::FFTPanBlock> fftPan = std::make_shared<dsp::FFTPanBlock>(dsp_source->output_stream);
+    fftPan->set_fft_settings(65536, dsp_source->get_samplerate(), 30);
+    fftPan->avg_num = 1;
+
+    ////////////////////////
 
     std::string http_server_url = "http://0.0.0.0:8080";
 
@@ -74,9 +109,37 @@ int main(int argc, char *argv[])
 
     nng_http_server_start(http_server);
 
+    fftPan->on_fft = [&](float *b)
+    {
+        std::vector<uint8_t> send_buf(8 + 65536);
+        float *min = (float *)&send_buf[0];
+        float *max = (float *)&send_buf[4];
+        uint8_t *dat = &send_buf[8];
+
+        *min = 1e6;
+        *max = -1e6;
+
+        for (int i = 0; i < 65536; i++)
+        {
+            if (*min > b[i])
+                *min = b[i];
+            if (*max < b[i])
+                *max = b[i];
+        }
+
+        for (int i = 0; i < 65536; i++)
+        {
+            float val = (b[i] - *min) / (*max - *min);
+            dat[i] = val * 255;
+        }
+
+        nng_send(socket, send_buf.data(), send_buf.size(), NNG_FLAG_NONBLOCK);
+    };
+    fftPan->start();
+
     while (1)
     {
-        char *buf = nullptr;
+        /*char *buf = nullptr;
         size_t size;
 
         int rv = 0;
@@ -96,7 +159,7 @@ int main(int argc, char *argv[])
         }
 
         printf("SEND\n");
-
+*/
         sleep(1);
     }
 

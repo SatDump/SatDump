@@ -18,6 +18,9 @@
 // TODOREWORK
 #include "resources.h"
 
+// TODOREWORK
+#include "dsp/waterfall_test.h"
+
 namespace satdump
 {
     namespace viewer
@@ -144,6 +147,8 @@ namespace satdump
                             if (e.size() > 0)
                                 master_handler->addSubHandler(e[0]);
                         }
+                        if (ImGui::MenuItem("Waterfall TEST"))
+                            master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
                         ImGui::EndMenu();
                     }
                     if (curr_handler && ImGui::BeginMenu("Config"))
