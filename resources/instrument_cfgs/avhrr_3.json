@@ -4,7 +4,7 @@
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch2, ch2, ch1",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/221.md"
@@ -12,8 +12,7 @@
         {
             "name": "AVHRR 3a21 False Color",
             "expression": "cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 5.41665); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch3a, cch2, cch1",
-
-            "image": { 
+            "image": {
                 "equalize": true,
                 "geo_correct": true
             },
@@ -22,7 +21,7 @@
         {
             "name": "4/221 Merge",
             "expression": "ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch1 * 2.2 - 0.15",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/4221merge.md"
@@ -30,7 +29,7 @@
         {
             "name": "NOAA Natural Color",
             "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2 * 0.6 + min(cch1, cch2) * 0.4, cch2, cch1",
-            "image": { 
+            "image": {
                 "individual_equalize": true,
                 "geo_correct": true
             },
@@ -39,7 +38,7 @@
         {
             "name": "Natural Color",
             "expression": "cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 5.41665); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); ((0.5*max(cch3a,min(cch2,cch1)) + 0.5*cch2) / 0.7)^0.65, (cch2/0.7)^0.65, (cch1/0.7)^0.65",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/NatColor.md"
@@ -47,7 +46,7 @@
         {
             "name": "AVHRR 543b IR False Color",
             "expression": "ch5, ch4, ch3b",
-            "image": { 
+            "image": {
                 "individual_equalize": true,
                 "geo_correct": true
             },
@@ -56,7 +55,7 @@
         {
             "name": "AVHRR 3b45 IR False Color",
             "expression": "ch3b, ch4, ch5",
-            "image": { 
+            "image": {
                 "individual_equalize": true,
                 "geo_correct": true
             },
@@ -65,7 +64,7 @@
         {
             "name": "AVHRR 124 False Color (Cloud RGB)",
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch4=(4, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/124.md"
@@ -73,7 +72,7 @@
         {
             "name": "10.8µm Thermal IR",
             "expression": "cch4=(4, reflective_radiance, 30, 120); cch4",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/ThermalCal.md"
@@ -81,7 +80,7 @@
         {
             "name": "Night Microphysics",
             "expression": "cch5=(5, brightness_temperature, 200, 400); cch4=(4, brightness_temperature, 200, 400); cch3b=(3b, brightness_temperature, 200, 400); 1-(3/200-cch5+cch4)*(200/10.5), 1-(7/200-cch4+cch3b)*(200/9.9), ((cch4*200+200-243.7)/(293.2-243.7))",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/NightMicro.md"
@@ -89,7 +88,7 @@
         {
             "name": "Day Microphysics (Metop)",
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 1.4); cch4=(4, brightness_temperature, 203, 323); cch1, cch3a, cch4",
-            "image": { 
+            "image": {
                 "geo_correct": true,
                 "equalize": true
             },
@@ -110,26 +109,29 @@
         },
         {
             "name": "MCIR",
+            "expression": "cch4=(4, emissive_radiance, 120.000000, 30.000000); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
             "name": "MSA (channel 1)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/nasa_hd.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
             "description": "descriptions/MSA.md"
         },
         {
             "name": "MSA (channel 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
+            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/nasa_hd.jpg); cch2 * (cch2) + (1-cch2) * bm(0), cch2 * (cch2) + (1-cch2) * bm(1), cch2 * (cch2) + (1-cch2) * bm(2)",
             "description": "descriptions/MSA.md"
         },
         {
             "name": "Snow enhancement",
             "expression": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/4)^1.7, (ch1-ch3a)^1.7",
-            "image": { 
+            "image": {
                 "individual_equalize": true,
                 "white_balance": true,
                 "geo_correct": true
@@ -138,30 +140,34 @@
         },
         {
             "name": "NDVI",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/NDVI.md"
         },
         {
             "name": "NDWI",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/NDWI.md"
         },
         {
             "name": "Night Fog Difference"
+            // TODOREWORK
         },
         {
             "name": "Split Window Difference"
+            // TODOREWORK
         },
         {
             "name": "Sea Surface Temperature",
+            // TODOREWORK
             "description": "descriptions/SST.md"
         },
         {
             "name": "Night Time Fire Detection (transparent)",
+            // TODOREWORK
             "description": "descriptions/NightFire.md"
         },
         {
@@ -189,7 +195,7 @@
         {
             "name": "ZA enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/ZA.md"
@@ -197,7 +203,7 @@
         {
             "name": "MB enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/MB.md"
@@ -205,7 +211,7 @@
         {
             "name": "MD enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/MD.md"
@@ -213,7 +219,7 @@
         {
             "name": "BD enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/BD.md"
@@ -221,7 +227,7 @@
         {
             "name": "CC enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/CC.md"
@@ -229,7 +235,7 @@
         {
             "name": "EC enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/EC.md"
@@ -237,7 +243,7 @@
         {
             "name": "HE enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/HE.md"
@@ -245,7 +251,7 @@
         {
             "name": "HF enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/HF.md"
@@ -253,7 +259,7 @@
         {
             "name": "JF enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/JF.md"
@@ -261,7 +267,7 @@
         {
             "name": "JJ enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/JJ.md"
@@ -269,7 +275,7 @@
         {
             "name": "TA enhancement",
             "expression": "cch4=(cch4, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/TA.md"
@@ -277,7 +283,7 @@
         {
             "name": "Enhanced IR",
             "expression": "cch4=(cch4, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/EnhancedIR.md"
@@ -285,7 +291,7 @@
         {
             "name": "Cloud Top IR",
             "expression": "cch4=(cch4, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/CloudTopIR.md"
@@ -293,7 +299,7 @@
         {
             "name": "Enhanced IR (Transparent)",
             "expression": "cch4=(4, brightness_temperature, 200, 241); cch4, 0, 0, cch4 > 0.99 ? 1 : 0",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/EnhancedIR.md"
@@ -301,7 +307,7 @@
         {
             "name": "Color general cloud IR",
             "expression": "cch4=(cch4, brightness_temperature, 180, 320);lut=lut(lut/cal/Multispectral.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/ColorGeneralIR.md"
@@ -309,7 +315,7 @@
         {
             "name": "Color convection longwave IR",
             "expression": "cch5=(cch5, brightness_temperature, 180, 320);lut=lut(lut/cal/ConvectionLWIR.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/ConvectionLWIR.md"
@@ -318,34 +324,37 @@
             "name": "APT channel A",
             "expression": "cha",
             "image": {
-            "equalize": true,
-            "geo_correct": true
+                "equalize": true,
+                "geo_correct": true
             }
         },
         {
             "name": "APT channel B",
             "expression": "chb",
             "image": {
-            "equalize": true,
-            "geo_correct": true
+                "equalize": true,
+                "geo_correct": true
             }
         },
         {
             "name": "MCIR (Uncalibrated)",
+            // TODOREWORK
             "description": "descriptions/MCIR.md"
         },
         {
             "name": "MSA (Uncalibrated)",
+            // TODOREWORK
             "description": "descriptions/MSA.md"
         },
         {
             "name": "MCIR Rain (Uncalibrated)",
+            // TODOREWORK
             "description": "descriptions/MCIR_precip.md"
         },
         {
             "name": "HVC (channel 1)",
             "expression": "lut=lut(lut/WXtoImg-HVC-1.png); lut(ch2, ch4, 0), lut(ch2, ch4, 1), lut(ch2, ch4, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/HVC.md"
@@ -353,7 +362,7 @@
         {
             "name": "HVC (channel 2)",
             "expression": "lut=lut(lut/WXtoImg-HVC-2.png); lut(ch2, ch4, 0), lut(ch2, ch4, 1), lut(ch2, ch4, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/HVC.md"

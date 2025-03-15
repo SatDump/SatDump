@@ -98,10 +98,12 @@
         },
         {
             "name": "Sea Surface Temperature",
+            // TODOREWORK
             "description": "descriptions/SST.md"
         },
         {
             "name": "Night Time Fire Detection (transparent)",
+            // TODOREWORK
             "description": "descriptions/NightFire.md"
         },
         {
@@ -123,6 +125,7 @@
         },
         {
             "name": "Split Window Difference"
+            // TODOREWORK
         },
         {
             "name": "NO enhancement",
@@ -265,6 +268,7 @@
             "image": {
                 "geo_correct": true
             },
+            // TODOREWORK
             "description": "descriptions/MCIR.md"
         },
         {
@@ -272,6 +276,7 @@
             "image": {
                 "geo_correct": true
             },
+            // TODOREWORK
             "description": "descriptions/MSA.md"
         },
         {

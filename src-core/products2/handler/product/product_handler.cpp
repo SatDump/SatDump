@@ -37,7 +37,14 @@ namespace satdump
             {
                 for (auto &cfg : instrument_cfg["presets"])
                 {
-                    preset_selection_box_str += cfg["name"].get<std::string>() + '\0';
+                    try
+                    {
+                        preset_selection_box_str += cfg["name"].get<std::string>() + '\0';
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Error loading preset! JSON : " + cfg.dump());
+                    }
                 }
             }
         }

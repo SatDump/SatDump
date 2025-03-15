@@ -2,7 +2,7 @@
     "name": "MHS",
     "presets": [
         {
-            "name": 221,
+            "name": "221",
             "expression": "cch2=(2, emissive_radiance, 0.039, 0.068); cch1=(1, emissive_radiance, 0.013, 0.022); cch2, cch2, cch1",
             "image": {
                 "individual_equalize": true
@@ -10,7 +10,7 @@
             "description": "descriptions/sounders/MHS221.md"
         },
         {
-            "name": 421,
+            "name": "421",
             "expression": "cch4=(4, emissive_radiance, 0.059, 0.09); cch2=(2, emissive_radiance, 0.039, 0.068); cch1=(1, emissive_radiance, 0.013, 0.022); cch4, cch2, cch1",
             "image": {
                 "individual_equalize": true
