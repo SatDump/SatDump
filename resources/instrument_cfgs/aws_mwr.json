@@ -2,6 +2,13 @@
     "name": "MWR",
     "presets": [
         {
+            "name": "AMSU False Color",
+            "expression": "ch4, ch2, ch1",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
             "name": "MHS 221",
             "expression": "ch10, ch10, ch9",
             "image": {

@@ -97,7 +97,7 @@
             "name": "Remember Window Size and Position",
             "description": "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
         },
-        "lock_xconverter_input":{
+        "lock_xconverter_input": {
             "type": "bool",
             "value": true,
             "name": "Lock LO setting",
@@ -542,8 +542,7 @@
                             1.0,
                             1.0
                         ],
-                        "calib_cfg": {
-                        },
+                        "calib_cfg": {},
                         "autogen": true
                     },
                     "ABI False Color IR Merge": {
@@ -1047,8 +1046,7 @@
                             1.0,
                             1.0
                         ],
-                        "calib_cfg": {
-                        },
+                        "calib_cfg": {},
                         "autogen": true
                     },
                     "AHI False Color (WIP)": {
@@ -1642,24 +1640,6 @@
                         "min": 0,
                         "max": 2576687,
                         "draw_map_overlay": true
-                    }
-                }
-            },
-            "sterna": {
-                "handler": "image_handler",
-                "name": "EPS Sterna Radiometer",
-                "rgb_composites": {
-                    "AMSU False Color": {
-                        "equation": "ch4, ch2, ch1",
-                        "individual_equalize": true
-                    },
-                    "Sterna Microwave Airmass": {
-                        "equation": "ch15,ch14,ch13",
-                        "individual_equalize": true
-                    },
-                    "Sterna 325 GHz Airmass": {
-                        "equation": "ch19,ch18,ch17",
-                        "individual_equalize": true
                     }
                 }
             }

@@ -70,8 +70,6 @@ namespace satdump
                 std::string parenthesis = str.substr(str.find_first_of("(") + 1, str.find_first_of(")") - str.find_first_of("(") - 1);
                 auto parts = splitString(parenthesis, ',');
 
-                logger->trace("=> " + c.token + " %d : " + parts[0], parts.size());
-
                 if (parts.size() == 1)
                 {
                     c.path = parts[0];
