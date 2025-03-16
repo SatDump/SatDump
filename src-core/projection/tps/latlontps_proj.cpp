@@ -2,6 +2,7 @@
 #include "core/exception.h"
 #include "common/geodetic/vincentys_calculations.h"
 #include <map>
+#include <chrono>
 #include "logger.h"
 
 namespace satdump
