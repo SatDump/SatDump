@@ -333,6 +333,63 @@ namespace metop
                 ascat_status = DONE;
             }*/
 
+            // ASCAT
+            {
+                ascat_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/ASCAT";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- ASCAT");
+                for (int i = 0; i < 6; i++)
+                    logger->info("Channel " + std::to_string(i + 1) + " lines : " + std::to_string(ascat_reader.lines[i]));
+
+                satdump::products::ImageProduct ascat_products;
+                ascat_products.instrument_name = "ascat";
+
+                for (int i = 0; i < 6; i++)
+                {
+                    ascat_products.images.push_back({i, "ASCAT-" + std::to_string(i + 1), std::to_string(i + 1), ascat_reader.getChannelImg(i), 16});
+                }
+
+                // Output a few nice composites as well
+                logger->info("ASCAT Composite...");
+                image::Image imageAll(16, 256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
+                {
+                    int height = ascat_reader.getChannelImg(0).height();
+
+                    auto image1 = ascat_reader.getChannelImg(0);
+                    auto image2 = ascat_reader.getChannelImg(1);
+                    auto image3 = ascat_reader.getChannelImg(2);
+                    image3.mirror(1, 0);
+                    auto image4 = ascat_reader.getChannelImg(3);
+                    image4.mirror(1, 0);
+                    auto image5 = ascat_reader.getChannelImg(4);
+                    auto image6 = ascat_reader.getChannelImg(5);
+                    image5.mirror(1, 0);
+
+                    // Row 1
+                    imageAll.draw_image(0, image6, 256 * 0, 0);
+                    imageAll.draw_image(0, image3, 256 * 1, 0);
+
+                    // Row 2
+                    imageAll.draw_image(0, image5, 256 * 0, height);
+                    imageAll.draw_image(0, image2, 256 * 1, height);
+
+                    // Row 3
+                    imageAll.draw_image(0, image4, 256 * 0, height * 2);
+                    imageAll.draw_image(0, image1, 256 * 1, height * 2);
+                }
+
+                image::save_img(imageAll, directory + "/ASCAT-ALL");
+
+                ascat_products.save(directory);
+                dataset.products_list.push_back("ASCAT");
+
+                ascat_status = DONE;
+            }
+
             // IASI
             {
                 iasi_img_status = iasi_status = SAVING;
@@ -420,7 +477,7 @@ namespace metop
                     calib_coefs[sat_name]["all"] = calib_coefs["all"];
                     amsu_reader.calibrate(calib_coefs[sat_name]);
                     amsu_products.set_calibration("noaa_amsu", amsu_reader.calib_out);
-                    for (int i = 0; i < 15; i++) 
+                    for (int i = 0; i < 15; i++)
                         amsu_products.set_channel_wavenumber(i, calib_coefs["all"]["wavenumber"][i]);
                 }
                 else

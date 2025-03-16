@@ -172,7 +172,9 @@ namespace satdump
                 work_should_exit = false;
                 blk_should_run = true;
                 blk_th = std::thread(&Block::run, this);
+#ifndef _WIN32
                 pthread_setname_np(blk_th.native_handle(), d_id.c_str());
+#endif
             }
 
             /**

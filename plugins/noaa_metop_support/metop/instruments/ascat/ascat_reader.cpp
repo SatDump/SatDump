@@ -71,7 +71,7 @@ namespace metop
                     double value = parse_uint_to_float(sample);
 
                     channels[channel][lines[channel]][i] = value;
-                    channels_img[channel][lines[channel] * 256 + i] = value / 100;
+                    channels_img[channel][lines[channel] * 256 + i] = sample; // value / 100;
                 }
 
                 timestamps[channel].push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);

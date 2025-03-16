@@ -37,6 +37,26 @@ void http_handle(nng_aio *aio)
     nng_aio_finish(aio, 0);
 }
 
+// HTTP Handler for commands
+void http_handleP(nng_aio *aio)
+{
+    std::string jsonstr = "{\"api\": true}";
+
+    nng_http_req *msg = (nng_http_req *)nng_aio_get_input(aio, 0);
+
+    void *ptr;
+    size_t ptrl;
+    nng_http_req_get_data(msg, &ptr, &ptrl);
+    logger->info("Got : %s", (char *)ptr);
+
+    nng_http_res *res;
+    nng_http_res_alloc(&res);
+    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
+    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
+    nng_aio_set_output(aio, 0, res);
+    nng_aio_finish(aio, 0);
+}
+
 int main(int argc, char *argv[])
 {
     initLogger();
@@ -86,6 +106,13 @@ int main(int argc, char *argv[])
     {
         nng_http_handler_alloc(&handler_api, "/api", http_handle);
         nng_http_handler_set_method(handler_api, "GET");
+        nng_http_server_add_handler(http_server, handler_api);
+    }
+
+    nng_http_handler *handler_apiP;
+    {
+        nng_http_handler_alloc(&handler_api, "/apip", http_handleP);
+        nng_http_handler_set_method(handler_api, "POST");
         nng_http_server_add_handler(http_server, handler_api);
     }
 
