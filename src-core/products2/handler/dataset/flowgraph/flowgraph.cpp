@@ -82,7 +82,7 @@ namespace satdump
         {
             ImNodes::BeginNode(n->id);
             ImNodes::BeginNodeTitleBar();
-            ImGui::Text(n->title.c_str());
+            ImGui::Text("%s", n->title.c_str());
             ImNodes::EndNodeTitleBar();
 
             n->internal->render();
@@ -95,13 +95,13 @@ namespace satdump
                     //                    const float node_width = 200.0 * ui_scale;
                     //                    const float label_width = ImGui::CalcTextSize(io.name.c_str()).x;
                     //                    ImGui::Indent(node_width - label_width);
-                    ImGui::Text(io.name.c_str());
+                    ImGui::Text("%s", io.name.c_str());
                     ImNodes::EndOutputAttribute();
                 }
                 else
                 {
                     ImNodes::BeginInputAttribute(io.id);
-                    ImGui::Text(io.name.c_str());
+                    ImGui::Text("%s", io.name.c_str());
                     ImNodes::EndInputAttribute();
                 }
             }
