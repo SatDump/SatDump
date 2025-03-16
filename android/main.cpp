@@ -100,15 +100,16 @@ void init(struct android_app *app)
         satdump::initSatdump();
         satdump::initMainUI();
 
-        //Shut down loading screen
+        // Shut down loading screen
         logger->del_sink(loading_screen_sink);
         loading_screen_sink.reset();
 
-        //Set font again to adjust for DPI
+        // Set font again to adjust for DPI
         eglSwapInterval(g_EglDisplay, 1);
 
         // TLE
-        satdump::ui_thread_pool.push([&](int) { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
+        satdump::ui_thread_pool.push([&](int)
+                                     { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
 
         was_init = true;
     }
@@ -120,7 +121,7 @@ void init(struct android_app *app)
 
 void tick()
 {
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
     if (g_EglDisplay == EGL_NO_DISPLAY)
         return;
 
@@ -184,7 +185,7 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
         break;
     case APP_CMD_SAVE_STATE:
         satdump::recorder_app->save_settings();
-        satdump::viewer_app->save_settings();
+        // satdump::viewer_app->save_settings(); // TODOREWORK!!!!
         satdump::config::saveUserConfig();
         break;
     }
