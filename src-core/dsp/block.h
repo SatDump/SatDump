@@ -173,7 +173,9 @@ namespace satdump
                 blk_should_run = true;
                 blk_th = std::thread(&Block::run, this);
 #ifndef _WIN32
+#ifndef __APPLE__
                 pthread_setname_np(blk_th.native_handle(), d_id.c_str());
+#endif
 #endif
             }
 
