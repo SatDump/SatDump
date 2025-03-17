@@ -3,7 +3,7 @@ project(official_products_support)
 
 find_package(PkgConfig)
 pkg_check_modules(HDF5 hdf5)
-if(${HDF5_FOUND} AND (NOT ANDROID)) # TODOREWORK Maybe actually yes ANDROID?
+if(${HDF5_FOUND} AND NOT ANDROID) # TODOREWORK Maybe actually yes ANDROID?
 
   # Core Plugin
   file(
