@@ -121,9 +121,21 @@ namespace satdump
 
         public:
             /**
+             * @brief Get parameters *LIST* of the block's
+             * parameters. This does not contain actual values,
+             * only a description of what is available. This
+             * will contains a name, optionally description,
+             * its type and range if applicable, string options
+             * and so on.
+             *
+             * @return parameters description
+             */
+            virtual nlohmann::json get_cfg_list() {}; // TODOREWORK
+
+            /**
              * @brief Get parameters of the block as JSON
              */
-            virtual nlohmann::json getParams() = 0;
+            virtual nlohmann::json get_cfg() = 0;
 
             /**
              * @brief Set parameters of the block from JSON,
@@ -136,7 +148,7 @@ namespace satdump
              * Optionally, this can also be made to be functional
              * while the block is running!
              */
-            virtual void setParams(nlohmann::json v) = 0;
+            virtual void set_cfg(nlohmann::json v) = 0;
 
         protected:
             template <typename T>

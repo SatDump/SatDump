@@ -36,7 +36,15 @@ namespace satdump
                 max_gain = p_max_gain;
             }
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg_list()
+            {
+                nlohmann::json p;
+                p["rate"]["type"] = "float";
+                p["reference"]["type"] = "float";
+                return p;
+            }
+
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
                 v["rate"] = p_rate;
@@ -46,7 +54,7 @@ namespace satdump
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void set_cfg(nlohmann::json v)
             {
                 setValFromJSONIfExists(p_rate, v["rate"]);
                 setValFromJSONIfExists(p_reference, v["reference"]);

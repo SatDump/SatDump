@@ -54,7 +54,7 @@ namespace satdump
 
             void init();
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
                 v["omega"] = p_omega;
@@ -67,7 +67,7 @@ namespace satdump
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void set_cfg(nlohmann::json v)
             {
                 setValFromJSONIfExists(p_omega, v["omega"]);
                 setValFromJSONIfExists(p_omegaGain, v["omegaGain"]);

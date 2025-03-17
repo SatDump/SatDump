@@ -315,7 +315,7 @@ namespace satdump
 
                             nlohmann::json p;
                             p["noutputs"] = inputs_to_feed.size();
-                            ptr->setParams(p);
+                            ptr->set_cfg(p);
 
                             ptr->inputs[0] = blk->outputs[o];
                             for (int v = 0; v < inputs_to_feed.size(); v++)

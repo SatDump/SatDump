@@ -23,14 +23,14 @@ namespace satdump
             {
             }
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
 
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void set_cfg(nlohmann::json v)
             {
                 //  setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
             }

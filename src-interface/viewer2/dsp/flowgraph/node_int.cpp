@@ -8,7 +8,7 @@ namespace satdump
         NodeInternal::NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b)
             : f((Flowgraph *)f), blk(b)
         {
-            j = blk->getParams();
+            j = blk->get_cfg();
             setupJSONParams();
         }
 
@@ -80,7 +80,7 @@ namespace satdump
 
             printf("\n%s\n", j.dump(4).c_str());
 
-            blk->setParams(j);
+            blk->set_cfg(j);
         }
     }
 }

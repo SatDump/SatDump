@@ -19,14 +19,14 @@ namespace satdump
 
             bool work();
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
                 //    v["rate"] = rate;
                 return v;
             }
 
-            void setParams(nlohmann::json /*v*/)
+            void set_cfg(nlohmann::json /*v*/)
             {
                 //  rate = v["rate"];
             }

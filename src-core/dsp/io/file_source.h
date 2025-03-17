@@ -48,7 +48,7 @@ namespace satdump
                 d_eof = false;
             }
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
                 v["file"] = p_file;
@@ -58,7 +58,7 @@ namespace satdump
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void set_cfg(nlohmann::json v)
             {
                 setValFromJSONIfExists(p_file, v["file"]);
                 std::string t = p_type;

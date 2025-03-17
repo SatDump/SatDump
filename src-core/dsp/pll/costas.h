@@ -48,7 +48,7 @@ namespace satdump
                 beta = (4 * loop_bw * loop_bw) / denom;
             }
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
                 v["loop_bw"] = p_loop_bw;
@@ -57,7 +57,7 @@ namespace satdump
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void set_cfg(nlohmann::json v)
             {
                 setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
                 setValFromJSONIfExists(p_order, v["order"]);

@@ -136,7 +136,7 @@ namespace satdump
                 getFinalJSON();
                 nlohmann::json bv;
                 bv["taps"] = dsp::firdes::root_raised_cosine(j["gain"], j["samplerate"], j["symbolrate"], j["alpha"], j["ntaps"]);
-                blk->setParams(bv);
+                blk->set_cfg(bv);
             }
         };
 

@@ -55,14 +55,14 @@ namespace satdump
                 }
             }
 
-            nlohmann::json getParams()
+            nlohmann::json get_cfg()
             {
                 nlohmann::json v;
                 v["taps"] = p_taps;
                 return v;
             }
 
-            void setParams(nlohmann::json v)
+            void set_cfg(nlohmann::json v)
             {
                 p_taps = v["taps"].get<std::vector<float>>();
             }
