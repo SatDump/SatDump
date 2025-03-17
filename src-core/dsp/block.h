@@ -130,7 +130,7 @@ namespace satdump
              *
              * @return parameters description
              */
-            virtual nlohmann::json get_cfg_list() {}; // TODOREWORK
+            virtual nlohmann::json get_cfg_list() { return {}; } // TODOREWORK
 
             /**
              * @brief Get parameters of the block as JSON
