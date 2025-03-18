@@ -15,6 +15,14 @@ namespace satdump
         {
         }
 
+        void AirspyDevBlock::start()
+        {
+        }
+
+        void AirspyDevBlock::stop(bool stop_now)
+        {
+        }
+
         bool AirspyDevBlock::work()
         {
             DSPBuffer iblk;
@@ -36,6 +44,25 @@ namespace satdump
             iblk.free();
 
             return false;
+        }
+
+        std::vector<DeviceInfo> AirspyDevBlock::listDevs()
+        {
+            std::vector<DeviceInfo> r;
+
+            uint64_t serials[100];
+            int c = airspy_list_devices(serials, 100);
+
+            for (int i = 0; i < c; i++)
+            {
+                std::stringstream ss;
+                ss << std::hex << serials[i];
+                nlohmann::json p;
+                p["serial"] = serials[i];
+                r.push_back({"airspy", "AirSpy One " + ss.str(), p});
+            }
+
+            return r;
         }
     }
 }

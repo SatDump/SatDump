@@ -2,7 +2,7 @@
 
 #include "../dev.h"
 
-//#include <libairspy/airspy.h>
+#include <libairspy/airspy.h>
 
 namespace satdump
 {
@@ -14,7 +14,7 @@ namespace satdump
             float p_rate = 1e-4;
 
         private:
-         //   airspy_device *airspy_dev_obj;
+            airspy_device *airspy_dev_obj;
 
             bool work();
 
@@ -50,6 +50,12 @@ namespace satdump
             void drawUI()
             {
             }
+
+            virtual void start();
+            virtual void stop(bool stop_now = false);
+
+        public:
+            static std::vector<DeviceInfo> listDevs();
         };
     }
 }

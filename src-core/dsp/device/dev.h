@@ -2,10 +2,18 @@
 
 #include "dsp/block.h"
 
+// TODOREWORK DOCUMENT
 namespace satdump
 {
     namespace ndsp
     {
+        struct DeviceInfo
+        {
+            std::string type;
+            std::string name;
+            nlohmann::json cfg;
+        };
+
         class DeviceBlock : public Block
         {
         public:
