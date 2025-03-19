@@ -531,10 +531,11 @@ namespace fengyun3
 
                 satdump::products::ImageProduct mwhs1_products;
                 mwhs1_products.instrument_name = "mwhs1";
-                mwhs1_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwhs1.json")), satellite_tle, mwhs1_reader.timestamps);
 
                 for (int i = 0; i < 5; i++)
                     mwhs1_products.images.push_back({i, "MWHS1-" + std::to_string(i + 1), std::to_string(i + 1), mwhs1_reader.getChannel(i), 16});
+
+                mwhs1_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwhs1.json")), satellite_tle, mwhs1_reader.timestamps);
 
                 mwhs1_products.save(directory);
                 dataset.products_list.push_back("MWHS-1");
@@ -555,10 +556,11 @@ namespace fengyun3
 
                 satdump::products::ImageProduct mwhs2_products;
                 mwhs2_products.instrument_name = "mwhs2";
-                mwhs2_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_cde_mwhs2.json")), satellite_tle, mwhs2_reader.timestamps);
 
                 for (int i = 0; i < 15; i++)
                     mwhs2_products.images.push_back({i, "MWHS2-" + std::to_string(i + 1), std::to_string(i + 1), mwhs2_reader.getChannel(i), 16});
+
+                mwhs2_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_cde_mwhs2.json")), satellite_tle, mwhs2_reader.timestamps);
 
                 mwhs2_products.save(directory);
                 dataset.products_list.push_back("MWHS-2");
@@ -1109,10 +1111,11 @@ namespace fengyun3
 
                 satdump::products::ImageProduct mwts1_products;
                 mwts1_products.instrument_name = "mwts1";
-                mwts1_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwts1.json")), satellite_tle, mwts2_reader.timestamps);
 
                 for (int i = 0; i < 27; i++)
                     mwts1_products.images.push_back({i, "MWTS1-" + std::to_string(i + 1), std::to_string(i + 1), mwts1_reader.getChannel(i), 16});
+
+                mwts1_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_ab_mwts1.json")), satellite_tle, mwts1_reader.timestamps);
 
                 mwts1_products.save(directory);
                 dataset.products_list.push_back("MWTS-1");
@@ -1133,10 +1136,11 @@ namespace fengyun3
 
                 satdump::products::ImageProduct mwts2_products;
                 mwts2_products.instrument_name = "mwts2";
-                mwts2_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mwts2.json")), satellite_tle, mwts2_reader.timestamps);
 
                 for (int i = 0; i < 18; i++)
                     mwts2_products.images.push_back({i, "MWTS2-" + std::to_string(i + 1), std::to_string(i + 1), mwts2_reader.getChannel(i), 16});
+
+                mwts2_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_d_mwts2.json")), satellite_tle, mwts2_reader.timestamps);
 
                 mwts2_products.save(directory);
                 dataset.products_list.push_back("MWTS-2");
