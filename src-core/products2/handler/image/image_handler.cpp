@@ -45,13 +45,13 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
+                needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
+                needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
+                needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
                 needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
                 needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
                 needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
-                needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
-                needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
-                needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
