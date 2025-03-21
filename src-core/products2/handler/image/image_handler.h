@@ -48,6 +48,10 @@ namespace satdump
             std::vector<float> correct_fwd_lut; // TODOREWORK handle this better?
             std::vector<float> correct_rev_lut;
 
+            // TODOREWORK File save
+            bool file_save_thread_running = false;
+            std::thread file_save_thread;
+
             // Proc function
             void do_process();
 

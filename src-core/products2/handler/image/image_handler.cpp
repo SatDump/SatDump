@@ -11,6 +11,8 @@
 
 #include "../vector/shapefile_handler.h"
 
+#include "imgui/pfd/pfd_utils.h" // TODOREWORK
+
 namespace satdump
 {
     namespace viewer
@@ -28,6 +30,8 @@ namespace satdump
 
         ImageHandler::~ImageHandler()
         {
+            if (file_save_thread.joinable())
+                file_save_thread.join();
         }
 
         void ImageHandler::drawMenu()
@@ -66,11 +70,33 @@ namespace satdump
 
         void ImageHandler::drawMenuBar()
         {
+            bool needs_to_be_disabled = is_processing || file_save_thread_running;
+
+            if (needs_to_be_disabled)
+                style::beginDisabled();
+
             if (ImGui::MenuItem("Save Image"))
             {
-                logger->warn("Saving image to /tmp/out.png!");
-                image::save_img(get_current_img(), "/tmp/out.png");
+                auto fun = [this]()
+                {
+                    file_save_thread_running = true;
+                    // TODOREWORK!!!!
+                    std::string save_type = ".png";
+                    std::string saved_at = save_image_dialog("out.png", ".", "Save Image", &get_current_img(), &save_type);
+                    if (saved_at == "")
+                        logger->info("Save cancelled");
+                    else
+                        logger->info("Saved current image at %s", saved_at.c_str());
+                    file_save_thread_running = false;
+                };
+
+                if (file_save_thread.joinable())
+                    file_save_thread.join();
+                file_save_thread = std::thread(fun);
             }
+
+            if (needs_to_be_disabled)
+                style::endDisabled();
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)
