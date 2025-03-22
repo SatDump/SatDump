@@ -224,7 +224,7 @@ namespace eos
                     // modis::modis_match_detector_histograms(image, 1 /*2*/, 20 * 2);
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_500, alpha, beta);
-                    modis_products.images.push_back({i + 2, "MODIS-" + std::to_string(i + 3), std::to_string(i + 3), image, 12});
+                    modis_products.images.push_back({i + 2, "MODIS-" + std::to_string(i + 3), std::to_string(i + 3), image, 12, satdump::ChannelTransform().init_affine(2, 2, 0, 0)});
                 }
 
                 std::vector<std::vector<int>> bowtie_lut_1km;
@@ -237,18 +237,20 @@ namespace eos
                     if (d_modis_bowtie)
                         image = image::bowtie::correctGenericBowTie(image, 1, scanHeight_1000, alpha, beta, &bowtie_lut_1km);
 
+                    auto cht = satdump::ChannelTransform().init_affine(4, 4, 0, 0);
+
                     if (i < 5)
-                        modis_products.images.push_back({i + 7, "MODIS-" + std::to_string(i + 8), std::to_string(i + 8), image, 12});
+                        modis_products.images.push_back({i + 7, "MODIS-" + std::to_string(i + 8), std::to_string(i + 8), image, 12, cht});
                     else if (i == 5)
-                        modis_products.images.push_back({i + 7, "MODIS-13L", "13L", image, 12});
+                        modis_products.images.push_back({i + 7, "MODIS-13L", "13L", image, 12, cht});
                     else if (i == 6)
-                        modis_products.images.push_back({i + 7, "MODIS-13H", "13H", image, 12});
+                        modis_products.images.push_back({i + 7, "MODIS-13H", "13H", image, 12, cht});
                     else if (i == 7)
-                        modis_products.images.push_back({i + 7, "MODIS-14L", "14L", image, 12});
+                        modis_products.images.push_back({i + 7, "MODIS-14L", "14L", image, 12, cht});
                     else if (i == 8)
-                        modis_products.images.push_back({i + 7, "MODIS-14H", "14H", image, 12});
+                        modis_products.images.push_back({i + 7, "MODIS-14H", "14H", image, 12, cht});
                     else
-                        modis_products.images.push_back({i + 7, "MODIS-" + std::to_string(i + 6), std::to_string(i + 6), image, 12});
+                        modis_products.images.push_back({i + 7, "MODIS-" + std::to_string(i + 6), std::to_string(i + 6), image, 12, cht});
                 }
 
                 // Calibration
