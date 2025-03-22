@@ -57,9 +57,23 @@ namespace satdump
             {
                 if (ImGui::Combo("##presetproductcombo", &preset_selection_curr_id, preset_selection_box_str.c_str()))
                 {
-                    setConfig(instrument_cfg["presets"][preset_selection_curr_id]);
+                    auto preset = instrument_cfg["presets"][preset_selection_curr_id];
+                    setConfig(preset);
                     was_changed = true;
                     preset_selection_curr_id = -1;
+
+                    // Description, optional
+                    if (preset.contains("description"))
+                    {
+                        std::ifstream ifs(resources::getResourcePath(preset["description"]));
+                        std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+                        markdown_info.set_md(desc_markdown);
+                        has_markdown_description = true;
+                    }
+                    else
+                    {
+                        has_markdown_description = false;
+                    }
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Default"))
@@ -67,6 +81,23 @@ namespace satdump
                     tryApplyDefaultPreset();
                     was_changed = true;
                 }
+                if (has_markdown_description)
+                {
+                    ImGui::SameLine();
+                    if (ImGui::Button(u8"\uf449###resetinfo"))
+                        show_markdown_description = true;
+                }
+            }
+
+            // Show description window
+            if (show_markdown_description)
+            {
+                ImGuiIO &io = ImGui::GetIO();
+                ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale}, ImGuiCond_Appearing);
+                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
+                ImGui::Begin("Preset Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
+                markdown_info.render();
+                ImGui::End();
             }
 
             return was_changed;

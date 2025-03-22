@@ -7,6 +7,7 @@
 #include "../handler.h"
 #include "products2/product.h"
 #include "../processing_handler.h"
+#include "common/widgets/markdown_helper.h"
 
 namespace satdump
 {
@@ -31,6 +32,10 @@ namespace satdump
 
             std::string preset_selection_box_str;
             int preset_selection_curr_id = -1;
+
+            bool has_markdown_description = false;
+            bool show_markdown_description = false;
+            widgets::MarkdownHelper markdown_info;
 
         protected:
             std::shared_ptr<products::Product> product;
