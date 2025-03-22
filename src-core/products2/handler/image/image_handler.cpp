@@ -46,6 +46,7 @@ namespace satdump
                     style::beginDisabled();
 
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
+                needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
                 needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
                 needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
@@ -148,7 +149,9 @@ namespace satdump
             white_balance_img = getValueOrDefault(p["white_balance"], false);
             normalize_img = getValueOrDefault(p["normalize"], false);
             median_blur_img = getValueOrDefault(p["median_blur"], false);
-            rotate180_image = getValueOrDefault(p["rotate180_image"], false);
+            despeckle_img = getValueOrDefault(p["despeckle"], false);
+            rotate180_image = getValueOrDefault(p["rotate180"], false);
+            geocorrect_image = getValueOrDefault(p["geocorrect"], false);
         }
 
         nlohmann::json ImageHandler::getConfig()
@@ -159,7 +162,9 @@ namespace satdump
             p["white_balance"] = white_balance_img;
             p["normalize"] = normalize_img;
             p["median_blur"] = median_blur_img;
-            p["rotate180_image"] = rotate180_image;
+            p["despeckle"] = despeckle_img;
+            p["rotate180"] = rotate180_image;
+            p["geocorrect"] = geocorrect_image;
             return p;
         }
 
@@ -197,6 +202,8 @@ namespace satdump
                     image::normalize(curr_image);
                 if (median_blur_img)
                     image::median_blur(curr_image);
+                if (despeckle_img)
+                    image::kuwahara_filter(curr_image);
                 if (rotate180_image)
                     curr_image.mirror(true, true);
 
