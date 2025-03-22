@@ -306,9 +306,9 @@ namespace satdump
                             logger->error("More than one to connect! Adding splitter");
 
                             std::shared_ptr<ndsp::Block> ptr;
-                            if (blk->outputs[o].type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_COMPLEX)
+                            if (blk->outputs[o].type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_CF32)
                                 ptr = std::make_shared<ndsp::SplitterBlock<complex_t>>();
-                            else if (blk->outputs[o].type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_FLOAT)
+                            else if (blk->outputs[o].type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_F32)
                                 ptr = std::make_shared<ndsp::SplitterBlock<float>>();
                             else
                                 throw satdump_exception("Unsupported splitter block IO type");

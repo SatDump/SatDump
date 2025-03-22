@@ -17,6 +17,8 @@
 
 #include "nlohmann/json_utils.h"
 
+//#include "dsp/device/airspy/airspy_dev.h"
+
 namespace satdump
 {
     namespace viewer
@@ -168,6 +170,9 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert({"mm_clock_recovery_cc", {"PLL/Clock Recovery MM CC", [=](const ndsp::Flowgraph *f)
                                                                               { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::MMClockRecoveryBlock<complex_t>>()); }}});
+
+         //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
+         //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
         }
 
         DSPFlowGraphHandler::~DSPFlowGraphHandler()

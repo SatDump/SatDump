@@ -63,14 +63,7 @@ namespace satdump
             for (auto &c : j.items())
             {
                 if (v.count(c.key()))
-                {
-                    if (c.value().is_number_integer())
-                        c.value() = f->var_manager_test.getIntVariable(v[c.key()]);
-                    else if (c.value().is_number())
-                        c.value() = f->var_manager_test.getDoubleVariable(v[c.key()]);
-                    else if (c.value().is_string())
-                        c.value() = v[c.key()];
-                }
+                    c.value() = f->var_manager_test.getVariable(v[c.key()]);
             }
         }
 

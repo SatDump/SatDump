@@ -11,9 +11,8 @@ namespace satdump
         public:
             nlohmann::json variables;
 
-        private:
-            template <typename T>
-            T getVariable(std::string var_str);
+        public:
+            nlohmann::json getVariable(std::string var_str);
 
         public:
             LuaVariableManager()
@@ -22,9 +21,6 @@ namespace satdump
             }
 
             void drawVariables();
-
-            double getDoubleVariable(std::string var_str);
-            int getIntVariable(std::string var_str);
         };
     }
 }

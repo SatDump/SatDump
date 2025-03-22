@@ -8,7 +8,7 @@ namespace satdump
     namespace ndsp
     {
         FFTPanBlock::FFTPanBlock()
-            : Block("fft_pan_cc", {{"in", DSP_SAMPLE_TYPE_COMPLEX}}, {})
+            : Block("fft_pan_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
         {
             output_fft_buff = new float[dsp::STREAM_BUFFER_SIZE]; // TODOREWORK
         }

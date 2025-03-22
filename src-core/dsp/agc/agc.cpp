@@ -7,8 +7,8 @@ namespace satdump
         template <typename T>
         AGCBlock<T>::AGCBlock()
             : Block(std::is_same_v<T, complex_t> ? "agc_cc" : "agc_ff",
-                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_COMPLEX : DSP_SAMPLE_TYPE_FLOAT}},
-                    {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_COMPLEX : DSP_SAMPLE_TYPE_FLOAT}})
+                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
+                    {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
         {
             outputs[0].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
         }

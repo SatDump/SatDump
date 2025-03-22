@@ -40,7 +40,7 @@ namespace satdump
                     Block::outputs.clear();
                     for (int i = 0; i < p_noutputs; i++)
                     {
-                        Block::outputs.push_back({{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_COMPLEX : DSP_SAMPLE_TYPE_FLOAT}});
+                        Block::outputs.push_back({{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}});
                         outputs[i].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
                     }
                 }

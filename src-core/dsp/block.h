@@ -26,8 +26,8 @@ namespace satdump
          */
         enum BlockIOType
         {
-            DSP_SAMPLE_TYPE_COMPLEX,
-            DSP_SAMPLE_TYPE_FLOAT,
+            DSP_SAMPLE_TYPE_CF32,
+            DSP_SAMPLE_TYPE_F32,
         };
 
         /**
@@ -43,6 +43,10 @@ namespace satdump
             std::string name;
             BlockIOType type;
             std::shared_ptr<DspBufferFifo> fifo = nullptr;
+
+            // TODOREWORK DOCUMENT
+            uint64_t samplerate = 0;
+            double frequency = 0;
         };
 
         /**

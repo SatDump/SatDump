@@ -5,7 +5,7 @@ namespace satdump
     namespace ndsp
     {
         FileSourceBlock::FileSourceBlock()
-            : Block("file_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_COMPLEX}})
+            : Block("file_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}})
         {
             outputs[0].fifo = std::make_shared<moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer>>(16);
         }

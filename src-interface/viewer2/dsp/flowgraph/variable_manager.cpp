@@ -4,6 +4,9 @@
 #include "common/widgets/json_editor.h"
 #include "libs/sol2/sol.hpp"
 #include "logger.h"
+#include "core/exception.h"
+
+#include <typeinfo>
 
 namespace satdump
 {
@@ -14,8 +17,7 @@ namespace satdump
             widgets::JSONTableEditor(variables, "Variables");
         }
 
-        template <typename T>
-        T LuaVariableManager::getVariable(std::string var_str)
+        nlohmann::json LuaVariableManager::getVariable(std::string var_str)
         {
             sol::state lua;
             lua.open_libraries(sol::lib::string);
@@ -23,20 +25,39 @@ namespace satdump
 
             for (auto &j : variables.items())
             {
-                if (j.value().is_number_integer())
-                    lua[j.key()] = j.value().get<int>();
-                else if (j.value().is_number())
-                    lua[j.key()] = j.value().get<double>();
+                if (j.value().is_number())
+                {
+                    if (j.value().is_number_integer())
+                        lua[j.key()] = j.value().get<int64_t>();
+                    else
+                        lua[j.key()] = j.value().get<double>();
+                }
+                else if (j.value().is_string())
+                    lua[j.key()] = j.value().get<std::string>();
                 else
                     logger->error("Type unsupported for Lua! : " + j.key());
             }
 
             lua.script("output = " + var_str);
 
-            return lua["output"].get<T>();
-        }
+            printf("%s\n", sol::type_name(lua, lua["output"].get_type()).c_str());
 
-        double LuaVariableManager::getDoubleVariable(std::string var_str) { return getVariable<double>(var_str); }
-        int LuaVariableManager::getIntVariable(std::string var_str) { return getVariable<int>(var_str); }
+            sol::object o = lua["output"];
+
+            if (o.is<bool>())
+                return o.as<bool>();
+            else if (o.is<int64_t>())
+                return o.as<int64_t>();
+            else if (o.is<std::string>())
+                return o.as<std::string>();
+            else if (o.is<double>())
+                return o.as<double>();
+            else
+            {
+                lua.open_libraries(sol::lib::base);
+                lua.script("print(output)");
+                throw satdump_exception("Could not convert type from Lua to JSON");
+            }
+        }
     }
 }

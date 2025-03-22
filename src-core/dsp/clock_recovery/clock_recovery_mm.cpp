@@ -16,8 +16,8 @@ namespace satdump
         template <typename T>
         MMClockRecoveryBlock<T>::MMClockRecoveryBlock()
             : Block(std::is_same_v<T, complex_t> ? "clock_recovery_mm_cc" : "clock_recovery_mm_ff",
-                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_COMPLEX : DSP_SAMPLE_TYPE_FLOAT}},
-                    {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_COMPLEX : DSP_SAMPLE_TYPE_FLOAT}})
+                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
+                    {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
         {
             outputs[0].fifo = std::make_shared<moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer>>(16);
 

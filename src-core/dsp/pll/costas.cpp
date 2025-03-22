@@ -10,7 +10,7 @@ namespace satdump
         }
 
         CostasBlock::CostasBlock()
-            : Block("costas_cc", {{"in", DSP_SAMPLE_TYPE_COMPLEX}}, {{"out", DSP_SAMPLE_TYPE_COMPLEX}})
+            : Block("costas_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}})
         {
             outputs[0].fifo = std::make_shared<moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer>>(16);
         }
