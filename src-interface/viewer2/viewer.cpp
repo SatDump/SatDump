@@ -20,6 +20,7 @@
 
 // TODOREWORK
 #include "dsp/waterfall_test.h"
+#include "dsp/newrec.h"
 
 namespace satdump
 {
@@ -29,9 +30,13 @@ namespace satdump
             : Application("viewer")
         {
             master_handler = std::make_shared<DummyHandler>("MasterHandlerViewer");
+
+            // Add trashcan
+            trash_handler = std::make_shared<DummyHandler>("TrashHandlerViewer");
             auto trash_h = std::make_shared<TrashHandler>();
             trash_h->setCanBeDragged(false);
-            master_handler->addSubHandler(trash_h);
+            trash_handler->addSubHandler(trash_h);
+            trash_handler->setCanBeDraggedTo(false);
 
             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
@@ -54,6 +59,7 @@ namespace satdump
                     ImGui::TableNextColumn();
 
                     master_handler->drawTreeMenu(curr_handler);
+                    trash_handler->drawTreeMenu(curr_handler);
 
                     ImGui::EndTable();
                 }
@@ -149,6 +155,8 @@ namespace satdump
                         }
                         if (ImGui::MenuItem("Waterfall TEST"))
                             master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
+                        if (ImGui::MenuItem("NewRec TEST"))
+                            master_handler->addSubHandler(std::make_shared<NewRecHandler>());
                         ImGui::EndMenu();
                     }
                     if (curr_handler && ImGui::BeginMenu("Config"))

@@ -32,6 +32,7 @@ namespace satdump
 
             std::shared_ptr<Handler> curr_handler;
             std::shared_ptr<Handler> master_handler;
+            std::shared_ptr<Handler> trash_handler;
 
             // TODOREWORK File open
             std::thread file_open_thread;
