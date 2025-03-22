@@ -6,6 +6,7 @@
 #include "common/image/io.h" // TODOREWORK
 #include "common/image/processing.h"
 #include "common/image/earth_curvature.h"
+#include "common/image/brightness_contrast.h"
 
 #include "nlohmann/json_utils.h"
 
@@ -53,6 +54,13 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
                 needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
+
+                needs_to_update |= ImGui::Checkbox(" Brightness/Constrast", &brightness_contrast_image);
+                if (brightness_contrast_image)
+                {
+                    needs_to_update |= ImGui::SliderFloat("Brightness", &brightness_contrast_brightness_image, -2, 2);
+                    needs_to_update |= ImGui::SliderFloat("Contrast", &brightness_contrast_constrast_image, -2, 2);
+                }
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -152,6 +160,9 @@ namespace satdump
             despeckle_img = getValueOrDefault(p["despeckle"], false);
             rotate180_image = getValueOrDefault(p["rotate180"], false);
             geocorrect_image = getValueOrDefault(p["geocorrect"], false);
+            brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
+            brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
+            brightness_contrast_constrast_image = getValueOrDefault(p["brightness_contrast_constrast"], 0);
         }
 
         nlohmann::json ImageHandler::getConfig()
@@ -165,6 +176,9 @@ namespace satdump
             p["despeckle"] = despeckle_img;
             p["rotate180"] = rotate180_image;
             p["geocorrect"] = geocorrect_image;
+            p["brightness_contrast"] = brightness_contrast_image;
+            p["brightness_contrast_brightness"] = brightness_contrast_brightness_image;
+            p["brightness_contrast_constrast"] = brightness_contrast_constrast_image;
             return p;
         }
 
@@ -183,7 +197,9 @@ namespace satdump
                                           normalize_img |
                                           median_blur_img |
                                           rotate180_image |
-                                          geocorrect_image /*OVERLAY*/;
+                                          geocorrect_image |
+                                          despeckle_img |
+                                          brightness_contrast_image /*OVERLAY*/;
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -204,6 +220,8 @@ namespace satdump
                     image::median_blur(curr_image);
                 if (despeckle_img)
                     image::kuwahara_filter(curr_image);
+                if (brightness_contrast_image)
+                    image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_constrast_image);
                 if (rotate180_image)
                     curr_image.mirror(true, true);
 

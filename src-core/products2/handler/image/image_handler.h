@@ -40,6 +40,9 @@ namespace satdump
             bool despeckle_img = false;
             bool rotate180_image = false;
             bool geocorrect_image = false;
+            bool brightness_contrast_image = false;
+            float brightness_contrast_brightness_image = 0.0;
+            float brightness_contrast_constrast_image = 0.0;
 
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;
