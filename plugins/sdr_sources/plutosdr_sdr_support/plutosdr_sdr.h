@@ -28,10 +28,12 @@ protected:
 
     int gain = 0;
     int gain_mode = 0;
+    int iq_mode = 0;
+    int rf_input = 0;
     std::string ip_address = "192.168.2.1";
 
     void set_gains();
-
+    void set_rfinput();
     std::thread work_thread;
     bool thread_should_run = false;
     std::mutex work_thread_mtx;
@@ -43,8 +45,11 @@ protected:
         work_thread_mtx.lock();
 
     restart:
-        int blockSize = std::min<int>(samplerate_widget.get_value() / 30, dsp::STREAM_BUFFER_SIZE);
-
+        int blockSize = dsp::STREAM_BUFFER_SIZE;
+        if(iq_mode==0) //CS16
+            blockSize = std::min<int>(samplerate_widget.get_value() / 20.0, dsp::STREAM_BUFFER_SIZE);
+        else    
+            blockSize = std::min<int>(samplerate_widget.get_value() / (20.0*2), dsp::STREAM_BUFFER_SIZE);
         int kernel_buffer_cnt = 4;
         struct iio_channel *rx0_i, *rx0_q;
         struct iio_buffer *rxbuf;
@@ -56,8 +61,16 @@ protected:
 
         logger->trace("PlutoSDR stream with %d buffers of size %d", kernel_buffer_cnt, blockSize);
         iio_channel_enable(rx0_i);
-        iio_channel_enable(rx0_q);
-
+        if(iq_mode==0) //CS16
+        {
+            iio_channel_enable(rx0_q);
+            logger->trace("PlutoSDR stream in CS16");
+        }
+        else
+        {
+            iio_channel_disable(rx0_q);
+            logger->trace("PlutoSDR stream in CS8");
+        }
         rxbuf = iio_device_create_buffer(dev, blockSize, false);
         if (!rxbuf)
         {
@@ -66,6 +79,8 @@ protected:
         }
 
         uint32_t val = 0;
+        //Reset underflow to avoid false flag
+        iio_device_reg_write(dev, 0x80000088, val);
         while (thread_should_run)
         {
             if (iio_buffer_refill(rxbuf) < 0)
@@ -77,9 +92,16 @@ protected:
                 logger->warn("PlutoSDR underflow!");
                 iio_device_reg_write(dev, 0x80000088, val);
             }
-
-            int16_t *buf = (int16_t *)iio_buffer_first(rxbuf, rx0_i);
-            volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, buf, 32768.0f, blockSize * 2);
+            if(iq_mode==0)
+            {
+                int16_t *buf = (int16_t *)iio_buffer_first(rxbuf, rx0_i);
+                volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, buf, 2048.0f, blockSize * 2);
+            }
+            else
+            {
+                int8_t *buf = (int8_t *)iio_buffer_first(rxbuf, rx0_i);
+                volk_8i_s32f_convert_32f((float *)output_stream->writeBuf, buf, 128.0f, blockSize * 2);
+            }
             output_stream->swap(blockSize);
         }
 
