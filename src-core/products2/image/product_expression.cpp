@@ -230,21 +230,29 @@ namespace satdump
             std::map<std::string, CalibChannelCfg> calib_cfgs;
             std::vector<LutCfg> lut_cfgs;
             std::vector<EqupCfg> equp_cfgs;
+
             if (expression.find(';') != std::string::npos)
             {
-                auto split_cfg = splitString(expression, ';');
-                expression = split_cfg[split_cfg.size() - 1];
-                for (auto &cfg : split_cfg)
+                try
                 {
-                    auto pcfg = tryParse(cfg);
-                    if (pcfg.valid)
-                        calib_cfgs.emplace(pcfg.token, pcfg);
-                    auto lcfg = tryParseLut(cfg);
-                    if (lcfg.valid)
-                        lut_cfgs.push_back(lcfg);
-                    auto ecfg = tryParseEqup(cfg);
-                    if (ecfg.valid)
-                        equp_cfgs.push_back(ecfg);
+                    auto split_cfg = splitString(expression, ';');
+                    expression = split_cfg[split_cfg.size() - 1];
+                    for (auto &cfg : split_cfg)
+                    {
+                        auto pcfg = tryParse(cfg);
+                        if (pcfg.valid)
+                            calib_cfgs.emplace(pcfg.token, pcfg);
+                        auto lcfg = tryParseLut(cfg);
+                        if (lcfg.valid)
+                            lut_cfgs.push_back(lcfg);
+                        auto ecfg = tryParseEqup(cfg);
+                        if (ecfg.valid)
+                            equp_cfgs.push_back(ecfg);
+                    }
+                }
+                catch (std::exception &e)
+                {
+                    throw satdump_exception("Error parsing equation parameters! " + std::string(e.what()));
                 }
             }
 
