@@ -1,0 +1,92 @@
+{
+    "analog_demod": {
+        "name": "Analog Demodulation",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+      "parameters":
+      {
+        "start_timestamp":
+        {
+          "type": "timestamp",
+          "value": -1,
+          "name": "Start Timestamp",
+          "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+        },
+        "enable_doppler":
+        {
+          "type": "bool",
+          "value": true,
+          "name": "Doppler Correction",
+          "description": "Apply doppler correction"
+        },
+        "satellite_norad":
+        {
+          "type": "int",
+          "value": 57167,
+          "name": "Satellite NORAD Number",
+          "description": "NORAD number identifying the satellite to correct the Doppler effect for."
+        },
+        "satellite_frequency":
+        {
+          "type": "notated_int",
+          "value": 435.87e6,
+          "name": "Satellite Nominal Frequency",
+          "units": "Hz",
+          "description": "Downlink frequency of the satellite."
+        },
+        "satellite_name":
+        {
+          "type": "string",
+          "value": "",
+          "name": "Satellite Name",
+          "units": "Hz",
+          "description": "Human-readable identifier for the satellite."
+        },
+        "modulation_type":
+        {
+          "type": "options",
+          "value": "AM",
+          "options":
+          [
+            "AM",
+            "NFM"
+          ],
+          "name": "Modulation Technique",
+          "description": "The analog modulation technique to demodulate."
+        },
+        "bandwidth":
+        {
+          "type": "notated_int",
+          "value": 12500,
+          "name": "Bandwidth",
+          "units": "Hz",
+          "description": "Samplerate of the demodulated signal."
+        },
+        "record_demod_audio":
+        {
+          "type": "bool",
+          "value": true,
+          "name": "Record Audio from Demodulation",
+          "description": "Write the resulting audio signal after demodulation to a file."
+        }
+      },
+      "work":
+      {
+        "baseband":
+        {
+        },
+        "audio_wav":
+        {
+          "generic_analog_demod":
+          {
+            "symbolrate": 48e3
+          }
+        }
+      }
+    }
+}
