@@ -93,6 +93,15 @@ namespace image
         if (d_data != nullptr)
             free(d_data);
         d_data = nullptr;
+
+        data_size = 0;
+        type_size = 0;
+
+        d_depth = 0;
+        d_maxv = 0;
+        d_width = 0;
+        d_height = 0;
+        d_channels = 0;
     }
 
     int Image::clamp(int input)

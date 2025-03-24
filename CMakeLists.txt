@@ -119,7 +119,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
-project(SatDump VERSION "1.2.3")
+project(SatDump VERSION "2.0.0")
 
 # Check if the current commit has a tag
 execute_process(
