@@ -511,6 +511,8 @@ namespace noaa
                         for (int n = 0; n < 19; n++)
                             hirs_products.set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
                         hirs_products.set_channel_unit(19, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                        for (int n = 0; n < 20; n++)
+                            hirs_products.set_channel_wavenumber(n, hirs_reader.calib_out["wavenumbers"][n]);
                     }
                     else
                         logger->warn("(HIRS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
