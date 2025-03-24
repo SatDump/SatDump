@@ -63,7 +63,7 @@ namespace satdump
             {
                 fftp->set_fft_settings(65536, dev->get_cfg()["samplerate"], 30);
 
-                fftp->inputs[0] = dev->outputs[0];
+                fftp->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
 
                 dev->start();
                 fftp->start();

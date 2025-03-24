@@ -12,6 +12,29 @@
 
 #include "logger.h"
 
+#if 0
+
+#include "dsp/device/dev.h"
+#include "init.h"
+
+int main(int argc, char *argv[])
+{
+    initLogger();
+
+    logger->set_level(slog::LOG_OFF);
+    satdump::initSatdump();
+    completeLoggerInit();
+    logger->set_level(slog::LOG_TRACE);
+
+    auto devs = satdump::ndsp::getDeviceList();
+
+    for (auto &d : devs)
+    {
+        logger->debug("\n" + nlohmann::json(d).dump(4));
+    }
+}
+
+#else
 #include <nng/nng.h>
 #include <nng/supplemental/http/http.h>
 #include <nng/supplemental/util/platform.h>
@@ -193,3 +216,4 @@ int main(int argc, char *argv[])
     nng_http_server_stop(http_server);
     nng_http_server_release(http_server);
 }
+#endif

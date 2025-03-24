@@ -234,7 +234,7 @@ namespace satdump
                     auto &blk = n->internal->blk;
 
                     // Iterate through outputs
-                    for (int o = 0; o < blk->outputs.size(); o++)
+                    for (int o = 0; o < blk->get_outputs().size(); o++)
                     {
                         // Get output ID
                         int o_id = -1;
@@ -249,7 +249,12 @@ namespace satdump
                         }
 
                         // Iterate through links, to asign outputs to applicable inputs
-                        std::vector<satdump::ndsp::BlockIO *> inputs_to_feed;
+                        struct InputH
+                        {
+                            std::shared_ptr<ndsp::Block> blk;
+                            int idx;
+                        };
+                        std::vector<InputH> inputs_to_feed;
                         for (auto &l : links)
                         {
                             if (l.start == o_id)
@@ -264,7 +269,7 @@ namespace satdump
                                             if (n2->node_io[b].id == l.end)
                                             {
                                                 // n2->internal->blk->inputs[b2] = blk->outputs[o];
-                                                inputs_to_feed.push_back(&n2->internal->blk->inputs[b2]);
+                                                inputs_to_feed.push_back({n2->internal->blk, b2}); //  &n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
                                                 logger->trace("Assigned to : " + n2->internal->blk->d_id);
                                             }
 
@@ -286,7 +291,7 @@ namespace satdump
                                             if (n2->node_io[b].id == l.start)
                                             {
                                                 // n2->internal->blk->inputs[b2] = blk->outputs[o];
-                                                inputs_to_feed.push_back(&n2->internal->blk->inputs[b2]);
+                                                inputs_to_feed.push_back({n2->internal->blk, b2}); // inputs_to_feed.push_back(&n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
                                                 logger->trace("Assigned to : " + n2->internal->blk->d_id);
                                             }
 
@@ -299,16 +304,16 @@ namespace satdump
 
                         if (inputs_to_feed.size() == 1)
                         {
-                            (*inputs_to_feed[0]) = blk->outputs[o];
+                            inputs_to_feed[0].blk->link(blk.get(), o, inputs_to_feed[0].idx, 16 /*TODOREWORK*/); // = blk->get_output(o, 16 /*TODOREWORK*/);
                         }
                         else if (inputs_to_feed.size() > 1)
                         {
                             logger->error("More than one to connect! Adding splitter");
 
                             std::shared_ptr<ndsp::Block> ptr;
-                            if (blk->outputs[o].type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_CF32)
+                            if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_CF32)
                                 ptr = std::make_shared<ndsp::SplitterBlock<complex_t>>();
-                            else if (blk->outputs[o].type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_F32)
+                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_F32)
                                 ptr = std::make_shared<ndsp::SplitterBlock<float>>();
                             else
                                 throw satdump_exception("Unsupported splitter block IO type");
@@ -317,9 +322,9 @@ namespace satdump
                             p["noutputs"] = inputs_to_feed.size();
                             ptr->set_cfg(p);
 
-                            ptr->inputs[0] = blk->outputs[o];
+                            ptr->link(blk.get(), o, 0, 16 /*TODOREWORK*/); // ptr->inputs[0] = blk->outputs[o];
                             for (int v = 0; v < inputs_to_feed.size(); v++)
-                                (*inputs_to_feed[v]) = ptr->outputs[v];
+                                inputs_to_feed[v].blk->link(ptr.get(), v, inputs_to_feed[0].idx, 16 /*TODOREWORK*/); //(*inputs_to_feed[v]) = ptr->outputs[v];
 
                             additional_blocks.push_back(ptr);
                         }
@@ -358,7 +363,7 @@ namespace satdump
                 for (auto &n : nodes)
                 {
                     // Stop only those that are sources
-                    if (n->internal->blk->inputs.size() == 0)
+                    if (n->internal->blk->get_inputs().size() == 0)
                     {
                         logger->trace("Stopping source " + n->internal->blk->d_id);
                         n->internal->blk->stop(true);

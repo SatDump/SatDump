@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 #include "common/dsp/complex.h"
 #include "common/dsp/utils/random.h"
+#include <mutex>
 
 namespace widgets
 {
@@ -14,6 +15,7 @@ namespace widgets
         complex_t sample_buffer_complex_float[CONST_SIZE];
         const int d_constellation_size;
         dsp::Random rng;
+        std::mutex mtx;
 
     public:
         float d_hscale, d_vscale;

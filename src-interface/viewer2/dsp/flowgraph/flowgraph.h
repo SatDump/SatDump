@@ -62,9 +62,9 @@ namespace satdump
                 Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i)
                     : id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i)
                 {
-                    for (auto &io : internal->blk->inputs)
+                    for (auto &io : internal->blk->get_inputs())
                         node_io.push_back({f->getNewNodeIOID(&node_io), io.name, false});
-                    for (auto &io : internal->blk->outputs)
+                    for (auto &io : internal->blk->get_outputs())
                         node_io.push_back({f->getNewNodeIOID(&node_io), io.name, true});
                 }
 

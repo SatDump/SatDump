@@ -15,6 +15,7 @@ namespace widgets
 
     void ConstellationViewer::pushComplexScaled(complex_t *buffer, int size, float scale)
     {
+        mtx.lock();
         int to_copy = std::min<int>(CONST_SIZE, size);
         int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
 
@@ -23,10 +24,12 @@ namespace widgets
 
         for (int i = 0; i < to_copy; i++)
             sample_buffer_complex_float[i] = buffer[i] * scale;
+        mtx.unlock();
     }
 
     void ConstellationViewer::pushComplex(complex_t *buffer, int size)
     {
+        mtx.lock();
         int to_copy = std::min<int>(CONST_SIZE, size);
         int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
 
@@ -34,10 +37,12 @@ namespace widgets
             std::memmove(&sample_buffer_complex_float[size], sample_buffer_complex_float, to_move * sizeof(complex_t));
 
         std::memcpy(sample_buffer_complex_float, buffer, to_copy * sizeof(complex_t));
+        mtx.unlock();
     }
 
     void ConstellationViewer::pushFloatAndGaussian(float *buffer, int size)
     {
+        mtx.lock();
         int to_copy = std::min<int>(CONST_SIZE, size);
         int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
 
@@ -46,10 +51,12 @@ namespace widgets
 
         for (int i = 0; i < to_copy; i++)
             sample_buffer_complex_float[i] = complex_t(buffer[i], rng.gasdev());
+        mtx.unlock();
     }
 
     void ConstellationViewer::pushSofttAndGaussian(int8_t *buffer, float scale, int size)
     {
+        mtx.lock();
         int to_copy = std::min<int>(CONST_SIZE, size);
         int to_move = size >= CONST_SIZE ? 0 : CONST_SIZE - size;
 
@@ -58,13 +65,15 @@ namespace widgets
 
         for (int i = 0; i < to_copy; i++)
             sample_buffer_complex_float[i] = complex_t(buffer[i] / scale, rng.gasdev());
+        mtx.unlock();
     }
 
     void ConstellationViewer::draw()
     {
+        mtx.lock();
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
         ImVec2 rect_min = ImGui::GetCursorScreenPos();
-        ImVec2 rect_max = { rect_min.x + d_constellation_size * ui_scale, rect_min.y + d_constellation_size * ui_scale };
+        ImVec2 rect_max = {rect_min.x + d_constellation_size * ui_scale, rect_min.y + d_constellation_size * ui_scale};
         draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
         draw_list->PushClipRect(rect_min, rect_max);
 
@@ -78,5 +87,6 @@ namespace widgets
 
         draw_list->PopClipRect();
         ImGui::Dummy(ImVec2(d_constellation_size * ui_scale + 3, d_constellation_size * ui_scale + 3));
+        mtx.unlock();
     }
 }

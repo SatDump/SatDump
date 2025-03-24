@@ -7,7 +7,6 @@ namespace satdump
         CyclostationaryAnalysis::CyclostationaryAnalysis()
             : Block("cyclostationary_analysis_cf", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_F32}})
         {
-            outputs[0].fifo = std::make_shared<moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer>>(16);
         }
 
         CyclostationaryAnalysis::~CyclostationaryAnalysis()

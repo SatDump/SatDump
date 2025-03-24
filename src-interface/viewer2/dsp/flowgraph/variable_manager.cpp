@@ -46,8 +46,8 @@ namespace satdump
 
             if (o.is<bool>())
                 return o.as<bool>();
-            else if (o.is<int64_t>())
-                return o.as<int64_t>();
+            //  else if (o.is<int64_t>())
+            // TODOREWORK      return o.as<int64_t>();
             else if (o.is<std::string>())
                 return o.as<std::string>();
             else if (o.is<double>())

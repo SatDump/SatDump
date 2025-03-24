@@ -73,8 +73,65 @@ namespace satdump
         {
         public:
             const std::string d_id;
+
+        protected:
             std::vector<BlockIO> inputs;
-            std::vector<BlockIO> outputs;
+            std::vector<BlockIO> outputs; // TODOREWORK check connection type!
+
+        public:
+            // TODOREWORK DOCUMENT
+            std::vector<BlockIO> get_inputs() { return inputs; }
+            std::vector<BlockIO> get_outputs() { return outputs; }
+
+            /**
+             * @brief Link an input to an output stream of some sort.
+             * This also checks the type of the BlockIO to ensure
+             * (some level of) compatibility.
+             * @param f input BlockIO to link to an input
+             * @param i index of the input (probably quite often 0)
+             */
+            void set_input(BlockIO f, int i)
+            {
+                if (i >= inputs.size())
+                    throw satdump_exception("Input index " + std::to_string(i) + " does not exist for " + d_id + "!");
+                if (inputs[i].type != f.type)
+                    throw satdump_exception("Input type " + std::to_string(inputs[i].type) + " not compatible with " + std::to_string(f.type) + " for " + d_id + "!");
+                inputs[i].fifo = f.fifo;
+            }
+
+            /**
+             * @brief Get one of the block's outputs, creating
+             * the fifo it if nbuf != 0
+             * @param i index of the output
+             * @param nbuf of buffers to setup in the output
+             * @return BlockIO struct of the output
+             */
+            BlockIO get_output(int i, int nbuf)
+            {
+                if (i >= outputs.size())
+                    throw satdump_exception("Ouput index " + std::to_string(i) + " does not exist for " + d_id + "!");
+                if (nbuf > 0)
+                    outputs[i].fifo = std::make_shared<DspBufferFifo>(nbuf);
+                return outputs[i];
+            }
+
+            /**
+             * @brief Link a block's output to another input,
+             * more or less just a warped around set_input and
+             * set_output
+             * @param ptr block to get the output from
+             * @param output_index index of the output to use,
+             * from ptr
+             * @param input_index index of the input to asign no
+             * (this block, NOT ptr)
+             * @param nbuf of buffers to setup in the output (see
+             * set_input for more info)
+             * @return BlockIO struct of the output
+             */
+            void link(Block *ptr, int output_index, int input_index, int nbuf)
+            {
+                set_input(ptr->get_output(output_index, nbuf), input_index);
+            }
 
         private:
             bool blk_should_run;
@@ -159,7 +216,7 @@ namespace satdump
             void setValFromJSONIfExists(T &v, nlohmann::json p)
             {
                 if (!p.is_null())
-                    v = p;
+                    v = p.get<T>();
             }
 
         public:
@@ -170,9 +227,9 @@ namespace satdump
              * been changed to apply them while the block is
              * running (given the block supports doing that, which
              * is optional!)
-             * /!\ Do note you should NOT make any changing to the
+             * /!\ Do note you should NOT make any changes to the
              * block's IO in this functions! IO config should be done
-             * in setParams()!
+             * in set_cfg()! TODOREWORK?
              */
             virtual void init() {} //= 0; TODOREWORK
 

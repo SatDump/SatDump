@@ -1,4 +1,4 @@
-
+#if 0
 #include "logger.h"
 #include "products/image_products.h"
 #include "common/map/map_drawer.h"
@@ -148,3 +148,4 @@ int main(int /*argc*/, char *argv[])
 
     image::save_img(warp_result.output_image, "test");
 }
+#endif // TODOREWORK

@@ -2,6 +2,7 @@
 
 #include "dsp/block.h"
 #include "common/dsp/complex.h"
+#include "common/dsp/block.h"
 
 namespace satdump
 {
@@ -12,8 +13,10 @@ namespace satdump
         {
         public:
             std::vector<float> p_taps;
+            int p_buffer_size = 8192 * 8;
 
         private:
+            int buffer_size = 0;
             T *buffer = nullptr;
             float **taps = nullptr;
             int ntaps;
@@ -21,6 +24,9 @@ namespace satdump
             int aligned_tap_count;
 
             bool work();
+
+            size_t lbuf_size;
+            size_t lbuf_offset;
 
         public:
             FIRBlock();
@@ -35,6 +41,12 @@ namespace satdump
                         volk_free(taps[i]);
                     volk_free(taps);
                 }
+                if (buffer != nullptr)
+                    volk_free(buffer);
+
+                // Init buffer
+                buffer = dsp::create_volk_buffer<T>(p_buffer_size); // TODOREWORK How to handle this from the initial buffer size?
+                buffer_size = p_buffer_size;
 
                 // Get alignement parameters
                 align = volk_get_alignment();
@@ -59,12 +71,14 @@ namespace satdump
             {
                 nlohmann::json v;
                 v["taps"] = p_taps;
+                v["buffer_size"] = p_buffer_size;
                 return v;
             }
 
             void set_cfg(nlohmann::json v)
             {
-                p_taps = v["taps"].get<std::vector<float>>();
+                setValFromJSONIfExists<std::vector<float>>(p_taps, v["taps"]);
+                setValFromJSONIfExists(p_buffer_size, v["buffer_size"]);
             }
         };
     }
