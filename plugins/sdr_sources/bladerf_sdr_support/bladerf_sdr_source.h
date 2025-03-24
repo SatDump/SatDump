@@ -7,9 +7,6 @@
 #include <thread>
 #include "common/widgets/double_list.h"
 
-#undef BLADERF_HAS_WIDEBAND
-#define BLADERF_HAS_WIDEBAND 1
-
 class BladeRFSource : public dsp::DSPSampleSource
 {
 protected:
