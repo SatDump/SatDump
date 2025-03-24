@@ -30,7 +30,9 @@ namespace satdump
             if (img_calibrator)
                 images_can_be_calibrated = true;
 
-            img_handler.additionalMouseCallback = [this](int x, int y)
+            img_handler = std::make_shared<ImageHandler>();
+
+            img_handler->additionalMouseCallback = [this](int x, int y)
             {
                 if (is_processing)
                     return;
@@ -153,7 +155,7 @@ namespace satdump
                 needs_to_update = false;
             }
 
-            img_handler.drawMenu();
+            img_handler->drawMenu();
 
             if (ImGui::CollapsingHeader("ImageProduct Advanced"))
             {
@@ -210,7 +212,7 @@ namespace satdump
             }
 
             if (p.contains("image"))
-                img_handler.setConfig(p["image"]);
+                img_handler->setConfig(p["image"]);
         }
 
         nlohmann::json ImageProductHandler::getConfig()
@@ -232,7 +234,7 @@ namespace satdump
                 r[name]["max"] = channel_calibrated_range_max[i];
             }
 
-            p["image"] = img_handler.getConfig();
+            p["image"] = img_handler->getConfig();
 
             return p;
         }
@@ -244,7 +246,7 @@ namespace satdump
                 if (channel_selection_curr_id == -1)
                 {
                     auto img = products::generate_expression_product_composite(product, expression, &progress);
-                    img_handler.updateImage(img);
+                    img_handler->updateImage(img);
                 }
                 else
                 {
@@ -260,7 +262,7 @@ namespace satdump
                         image::set_metadata_proj_cfg(img, product->get_proj_cfg(product->images[channel_selection_curr_id].abs_index));
                     }
 
-                    img_handler.updateImage(img);
+                    img_handler->updateImage(img);
                 }
             }
             catch (std::exception &e)
@@ -272,7 +274,7 @@ namespace satdump
         void ImageProductHandler::saveResult(std::string directory)
         {
             // TODOREWORK
-            auto &img = img_handler.get_current_img();
+            auto &img = img_handler->get_current_img();
             int autogen_id = 0;
             while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
                 autogen_id++;
@@ -281,12 +283,12 @@ namespace satdump
 
         void ImageProductHandler::drawMenuBar()
         {
-            img_handler.drawMenuBar();
+            img_handler->drawMenuBar();
             if (ImGui::MenuItem("Image To Handler"))
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
-                a->setConfig(img_handler.getConfig());
-                a->updateImage(img_handler.image);
+                a->setConfig(img_handler->getConfig());
+                a->updateImage(img_handler->image);
                 a->image_name = getName() + " Image";
                 addSubHandler(a);
             }
@@ -294,7 +296,7 @@ namespace satdump
 
         void ImageProductHandler::drawContents(ImVec2 win_size)
         {
-            img_handler.drawContents(win_size);
+            img_handler->drawContents(win_size);
         }
     }
 }

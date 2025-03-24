@@ -14,6 +14,10 @@
 
 #include "imgui/pfd/pfd_utils.h" // TODOREWORK
 
+// TODOREWORK!
+#include "products2/handler/vector/shapefile_handler.h"
+#include "resources.h"
+
 namespace satdump
 {
     namespace viewer
@@ -102,6 +106,19 @@ namespace satdump
                 if (file_save_thread.joinable())
                     file_save_thread.join();
                 file_save_thread = std::thread(fun);
+            }
+
+            // TODOREWORK move out?!
+            if (ImGui::BeginMenu("Add Overlay"))
+            {
+                if (ImGui::MenuItem("Shores"))
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+                if (ImGui::MenuItem("Borders"))
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")));
+                if (ImGui::MenuItem("Cities"))
+                    logger->info("TODOREWORK GeoJSON!"); // TODOREWORK  addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+
+                ImGui::EndMenu();
             }
 
             if (needs_to_be_disabled)

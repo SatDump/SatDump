@@ -26,7 +26,7 @@ namespace satdump
             ImageProductHandler(std::shared_ptr<products::Product> p);
             ~ImageProductHandler();
 
-            ImageHandler img_handler;
+            std::shared_ptr<ImageHandler> img_handler;
 
             // Products
             products::ImageProduct *product;
@@ -66,14 +66,19 @@ namespace satdump
 
             void addSubHandler(std::shared_ptr<Handler> handler)
             {
-                Handler::addSubHandler(handler);
-                img_handler.addSubHandler(handler);
+                // Handler::addSubHandler(handler);
+                img_handler->addSubHandler(handler);
             }
 
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
+            { // Handler::delSubHandler(handler, now);
+                img_handler->delSubHandler(handler, true);
+            }
+
+            void drawTreeMenu(std::shared_ptr<Handler> &h)
             {
-                img_handler.delSubHandler(handler, true);
-                Handler::delSubHandler(handler, now);
+                // Handler::drawTreeMenu(h);
+                img_handler->drawTreeMenu(h);
             }
 
             std::string getID() { return "image_product_handler"; }
