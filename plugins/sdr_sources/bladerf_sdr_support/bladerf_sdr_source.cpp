@@ -115,12 +115,13 @@ void BladeRFSource::open()
     // Get available samplerates
     std::vector<double> available_samplerates;
     available_samplerates.push_back(bladerf_range_samplerate->min);
-    for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
+    double maxr = bladerf_range_samplerate->max == 61.44e6 ? bladerf_range_samplerate->max * 2:bladerf_range_samplerate->max;
+    for (int i = 1e6; i <maxr; i += 1e6 )
     {
         // logger->trace("BladeRF device has samplerate %d SPS", i);
         available_samplerates.push_back(i);
     }
-    available_samplerates.push_back(bladerf_range_samplerate->max);
+    available_samplerates.push_back(maxr);
 
     samplerate_widget.set_list(available_samplerates, true);
     bandwidth_widget.set_list(available_samplerates, true, "Hz");

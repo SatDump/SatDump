@@ -38,6 +38,8 @@ if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
         check_cxx_source_compiles("${BLADERF_WIDEBAND_TEST_SOURCE}" BLADERF_HAVE_WIDEBAND)
     endif()
 
+    set(BLADERF_HAVE_WIDEBAND 1)
+
     if(BLADERF_HAVE_WIDEBAND)
         message("libBladeRF has wideband feature, enabling support!")
         target_compile_definitions(bladerf_sdr_support PUBLIC BLADERF_HAS_WIDEBAND=1)
