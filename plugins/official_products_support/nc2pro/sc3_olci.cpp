@@ -67,7 +67,14 @@ namespace nc2pro
         return o;
     }
 
-    nlohmann::json parse_sentinel3_ocli_geo(std::vector<uint8_t> data)
+    struct GCPCont
+    {
+        int x = 0;
+        int y = 0;
+        nlohmann::json v;
+    };
+
+    GCPCont parse_sentinel3_ocli_geo(std::vector<uint8_t> data)
     {
         hsize_t image_dims[2];
 
@@ -77,7 +84,7 @@ namespace nc2pro
         nlohmann::json gcps;
 
         if (file < 0)
-            return gcps;
+            return {0, 0, gcps};
 
         int dim_x = -1, dim_y = -1;
         std::vector<int> lat, lon;
@@ -87,14 +94,14 @@ namespace nc2pro
             hid_t dataset = H5Dopen2(file, l == 0 ? "latitude" : "longitude", H5P_DEFAULT);
 
             if (dataset < 0)
-                return gcps;
+                return {0, 0, gcps};
 
             hid_t dataspace = H5Dget_space(dataset);
             int rank = H5Sget_simple_extent_ndims(dataspace);
             H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
 
             if (rank != 2)
-                return gcps;
+                return {0, 0, gcps};
 
             hid_t memspace = H5Screate_simple(2, image_dims, NULL);
 
@@ -123,7 +130,7 @@ namespace nc2pro
 
         H5Fclose(file);
 
-        return gcps;
+        return {dim_x, dim_y, gcps};
     }
 
     void process_sc3_ocli(std::string zip_file, std::string pro_output_file, double *progess)
@@ -133,7 +140,7 @@ namespace nc2pro
         time_t prod_timestamp = time(0);
         std::string satellite = "Unknown Sentinel-3";
 
-        nlohmann::json gcps_all;
+        GCPCont gcps_all;
 
         {
             mz_zip_archive zip{};
@@ -210,9 +217,10 @@ namespace nc2pro
         olci_products.set_product_timestamp(prod_timestamp);
         olci_products.set_product_source(satellite);
 
+        double ratio_x1 = gcps_all.x != 0 ? gcps_all.x : double(all_channels[0].width());
         for (int i = 0; i < 21; i++)
         {
-            double ratio = double(all_channels[0].width()) / double(all_channels[i].width());
+            double ratio = ratio_x1 / double(all_channels[i].width());
             olci_products.images.push_back({i, "OLCI-" + std::to_string(i + 1), std::to_string(i + 1), all_channels[i], 16,
                                             satdump::ChannelTransform().init_affine(ratio, ratio, 0, 0)});
         }
@@ -220,8 +228,8 @@ namespace nc2pro
 #if 1
         nlohmann::json proj_cfg;
         proj_cfg["type"] = "gcps_timestamps_line";
-        proj_cfg["gcp_cnt"] = gcps_all.size();
-        proj_cfg["gcps"] = gcps_all;
+        proj_cfg["gcp_cnt"] = gcps_all.v.size();
+        proj_cfg["gcps"] = gcps_all.v;
         proj_cfg["timestamps"] = {0, 1}; // TODOREWORK MAKE THESE WORK!
         proj_cfg["gcp_spacing_x"] = 100;
         proj_cfg["gcp_spacing_y"] = 100;

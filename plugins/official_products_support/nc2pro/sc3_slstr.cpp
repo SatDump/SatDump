@@ -67,7 +67,14 @@ namespace nc2pro
         return o;
     }
 
-    nlohmann::json parse_sentinel3_slstr_geo(std::vector<uint8_t> data, bool nadir)
+    struct GCPCont
+    {
+        int x = 0;
+        int y = 0;
+        nlohmann::json v;
+    };
+
+    GCPCont parse_sentinel3_slstr_geo(std::vector<uint8_t> data, bool nadir)
     {
         hsize_t image_dims[2];
 
@@ -77,7 +84,7 @@ namespace nc2pro
         nlohmann::json gcps;
 
         if (file < 0)
-            return gcps;
+            return {0, 0, gcps};
 
         int dim_x = -1, dim_y = -1;
         std::vector<int> lat, lon;
@@ -87,14 +94,14 @@ namespace nc2pro
             hid_t dataset = H5Dopen2(file, nadir ? (l == 0 ? "latitude_an" : "longitude_an") : (l == 0 ? "latitude_ao" : "longitude_ao"), H5P_DEFAULT);
 
             if (dataset < 0)
-                return gcps;
+                return {0, 0, gcps};
 
             hid_t dataspace = H5Dget_space(dataset);
             int rank = H5Sget_simple_extent_ndims(dataspace);
             H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
 
             if (rank != 2)
-                return gcps;
+                return {0, 0, gcps};
 
             hid_t memspace = H5Screate_simple(2, image_dims, NULL);
 
@@ -123,7 +130,7 @@ namespace nc2pro
 
         H5Fclose(file);
 
-        return gcps;
+        return {dim_x, dim_y, gcps};
     }
 
     void process_sc3_slstr(std::string zip_file, std::string pro_output_file, std::vector<std::string> &product_paths, double *progess)
@@ -134,8 +141,8 @@ namespace nc2pro
         time_t prod_timestamp = time(0);
         std::string satellite = "Unknown Sentinel-3";
 
-        nlohmann::json gcps_all_nadir;
-        nlohmann::json gcps_all_offset;
+        GCPCont gcps_all_nadir;
+        GCPCont gcps_all_offset;
 
         {
             mz_zip_archive zip{};
@@ -257,9 +264,10 @@ namespace nc2pro
             slstr_products.set_product_timestamp(prod_timestamp);
             slstr_products.set_product_source(satellite);
 
+            double ratio_x1 = gcps_all_nadir.x != 0 ? gcps_all_nadir.x : double(all_channels_nadir[0].width());
             for (int i = 0; i < 9; i++)
             {
-                double ratio = double(all_channels_nadir[0].width()) / double(all_channels_nadir[i].width());
+                double ratio = ratio_x1 / double(all_channels_nadir[i].width());
                 slstr_products.images.push_back({i, "SLSTR-NADIR-" + std::to_string(i + 1), std::to_string(i + 1), all_channels_nadir[i], 16,
                                                  satdump::ChannelTransform().init_affine(ratio, ratio, 0, 0)});
             }
@@ -267,8 +275,8 @@ namespace nc2pro
 #if 1
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "gcps_timestamps_line";
-            proj_cfg["gcp_cnt"] = gcps_all_nadir.size();
-            proj_cfg["gcps"] = gcps_all_nadir;
+            proj_cfg["gcp_cnt"] = gcps_all_nadir.v.size();
+            proj_cfg["gcps"] = gcps_all_nadir.v;
             proj_cfg["timestamps"] = {0, 1}; // TODOREWORK MAKE THESE WORK!
             proj_cfg["gcp_spacing_x"] = 100;
             proj_cfg["gcp_spacing_y"] = 100;
@@ -290,6 +298,7 @@ namespace nc2pro
             slstr_products.set_product_timestamp(prod_timestamp);
             slstr_products.set_product_source(satellite);
 
+            double ratio_x1 = gcps_all_offset.x != 0 ? gcps_all_offset.x : double(all_channels_offset[0].width());
             for (int i = 0; i < 9; i++)
             {
                 double ratio = double(all_channels_offset[0].width()) / double(all_channels_offset[i].width());
@@ -300,8 +309,8 @@ namespace nc2pro
 #if 1
             nlohmann::json proj_cfg;
             proj_cfg["type"] = "gcps_timestamps_line";
-            proj_cfg["gcp_cnt"] = gcps_all_offset.size();
-            proj_cfg["gcps"] = gcps_all_offset;
+            proj_cfg["gcp_cnt"] = gcps_all_offset.v.size();
+            proj_cfg["gcps"] = gcps_all_offset.v;
             proj_cfg["timestamps"] = {0, 1}; // TODOREWORK MAKE THESE WORK!
             proj_cfg["gcp_spacing_x"] = 100;
             proj_cfg["gcp_spacing_y"] = 100;
