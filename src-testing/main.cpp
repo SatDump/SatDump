@@ -12,7 +12,7 @@
 
 #include "logger.h"
 
-#if 0
+#if 1
 
 #include "dsp/device/dev.h"
 #include "init.h"
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
-    logger->set_level(slog::LOG_OFF);
+    logger->set_level(slog::LOG_ERROR);
     satdump::initSatdump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
 
     for (auto &d : devs)
     {
+        auto i = satdump::ndsp::getDeviceInstanceFromInfo(d);
+        d.params = i->get_cfg_list();
         logger->debug("\n" + nlohmann::json(d).dump(4));
     }
 }

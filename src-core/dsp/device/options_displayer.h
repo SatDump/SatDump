@@ -26,6 +26,7 @@ namespace satdump
                 bool is_uint = false;
                 bool is_int = false;
                 bool is_float = false;
+                bool is_sub_array = false;
 
                 bool is_list = false;
                 bool is_range = false;
@@ -34,6 +35,8 @@ namespace satdump
                 std::vector<double> list;
                 std::vector<std::string> list_string;
                 std::array<double, 3> range;
+                int sub_array_max = 0;
+                nlohmann::json sub_array_cfg;
 
                 // Holding values
                 bool _bool = false;
@@ -41,6 +44,7 @@ namespace satdump
                 uint64_t _uint = 0;
                 int64_t _int = 0;
                 double _float = 0;
+                std::vector<std::shared_ptr<OptionsDisplayer>> _sub_array;
             };
 
             std::mutex opts_mtx;
@@ -70,6 +74,13 @@ namespace satdump
                     h.is_uint = vv["type"] == "uint";
                     h.is_int = vv["type"] == "int";
                     h.is_float = vv["type"] == "float";
+                    h.is_sub_array = vv["type"] == "sub";
+
+                    if (h.is_sub_array)
+                    {
+                        h.sub_array_cfg = vv["sub"];
+                        h.sub_array_max = vv["max"];
+                    }
 
                     h.is_list = vv.contains("list");
                     if (h.is_list)
@@ -103,6 +114,7 @@ namespace satdump
                 {
                     if (vals.contains(v.id))
                     {
+                        printf("%d\n", v.is_sub_array);
                         auto &j = vals[v.id];
                         if (v.is_bool && j.is_boolean())
                             v._bool = j;
@@ -114,8 +126,20 @@ namespace satdump
                             v._int = j;
                         else if (v.is_float && j.is_number())
                             v._float = j;
+                        else if (v.is_sub_array && j.is_array())
+                        {
+                            int nsize = j.size();
+                            v._sub_array.clear();
+                            for (int i = 0; i < nsize; i++)
+                            {
+                                auto nsub = std::make_shared<OptionsDisplayer>();
+                                nsub->add_options(v.sub_array_cfg);
+                                nsub->set_values(j[i]);
+                                v._sub_array.push_back(nsub);
+                            }
+                        }
                         else
-                            throw satdump_exception("Invalid options or JSON value! (SET)");
+                            throw satdump_exception("Invalid options or JSON value! (SET " + v.id + ")");
                     }
                 }
                 opts_mtx.unlock();
@@ -138,6 +162,11 @@ namespace satdump
                         j = v._int;
                     else if (v.is_float)
                         j = v._float;
+                    else if (v.is_sub_array)
+                    {
+                        for (int i = 0; i < v._sub_array.size(); i++)
+                            j[i] = v._sub_array[i]->get_values();
+                    }
                     else
                         throw satdump_exception("Invalid options or JSON value! (GET)");
                 }
@@ -243,6 +272,27 @@ namespace satdump
                     {
                         // TODOREWORK USE DOUBLE INSTEAD
                         u |= ImGui::InputDouble(id.c_str(), &v._float);
+                    }
+                    else if (v.is_sub_array)
+                    {
+                        // TODOREWORK? Check
+
+                        ImGui::Separator();
+                        ImGui::Text("%s", id.c_str());
+                        ImGui::Separator();
+                        for (int i = 0; i < v._sub_array.size(); i++)
+                        {
+                            u |= v._sub_array[i]->draw();
+                            ImGui::Separator();
+                        }
+
+                        if (v._sub_array.size() < v.sub_array_max)
+                        {
+                            if (ImGui::Button("Add"))
+                            {
+                                // TODOREWORk  v._sub_array.push_back()
+                            }
+                        }
                     }
                     else
                     {

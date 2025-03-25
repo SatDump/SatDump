@@ -111,7 +111,7 @@ namespace nc2pro
 
         for (int x = 0; x < dim_x; x += (dim_x / 50))
         {
-            for (int y = 0; y < dim_y; y += (dim_y / 50))
+            for (int y = 0; y < dim_y; y += 1) //(dim_y / 50))
             {
                 gcps[all_gcps]["x"] = x;
                 gcps[all_gcps]["y"] = y;
@@ -217,13 +217,15 @@ namespace nc2pro
                                             satdump::ChannelTransform().init_affine(ratio, ratio, 0, 0)});
         }
 
-#if 0
+#if 1
         nlohmann::json proj_cfg;
-        proj_cfg["type"] = "normal_gcps";
+        proj_cfg["type"] = "gcps_timestamps_line";
         proj_cfg["gcp_cnt"] = gcps_all.size();
         proj_cfg["gcps"] = gcps_all;
+        proj_cfg["timestamps"] = {0, 1}; // TODOREWORK MAKE THESE WORK!
+        proj_cfg["gcp_spacing_x"] = 100;
+        proj_cfg["gcp_spacing_y"] = 100;
         olci_products.set_proj_cfg(proj_cfg);
-                   // TODOREWORK switch to GCPs again!
 #endif
 
         if (!std::filesystem::exists(pro_output_file))

@@ -130,13 +130,15 @@ namespace nat2pro
             iasi_products.set_product_source(info.sat_name);
             iasi_products.set_product_timestamp(ptime);
 
-#if 1
-            iasi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi.json")), info.satellite_tle, timestamps);
+            auto p = loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi.json"));
+#if 0
+            iasi_products.set_proj_cfg_tle_timestamps(p, info.satellite_tle, timestamps);
 #else
-            nlohmann::json proj_cfg;
-            proj_cfg["type"] = "normal_gcps";
+            nlohmann::json proj_cfg = p;
+            proj_cfg["type"] = "gcps_timestamps_line";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
+            proj_cfg["timestamps"] = timestamps;
             iasi_products.set_proj_cfg(proj_cfg);
             // TODOREWORK switch to GCPs again!
 #endif

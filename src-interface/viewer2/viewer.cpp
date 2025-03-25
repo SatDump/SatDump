@@ -179,6 +179,8 @@ namespace satdump
                     }
                 }
 
+                eventBus->fire_event<RenderLoadMenuElementsEvent>({});
+
                 ImGui::EndMenuBar();
             }
         }

@@ -118,17 +118,17 @@ namespace nat2pro
             gome_products.set_product_source(info.sat_name);
             gome_products.set_product_timestamp(ptime);
 
-#if 1
-            gome_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json")), info.satellite_tle, timestamps);
+            auto p = loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_gome.json"));
+#if 0
+            gome_products.set_proj_cfg_tle_timestamps(p, info.satellite_tle, timestamps);
 #else
-            nlohmann::json proj_cfg;
-            proj_cfg["type"] = "normal_gcps";
+            nlohmann::json proj_cfg = p;
+            proj_cfg["type"] = "gcps_timestamps_line";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
+            proj_cfg["timestamps"] = timestamps;
             gome_products.set_proj_cfg(proj_cfg);
-            // TODOREWORK switch to GCPs again!
 #endif
-            logger->critical("TODOREWORK switch to GCPs again!");
 
             for (int i = 0; i < 6144; i++)
                 gome_products.images.push_back({i, "GOME", std::to_string(i + 1), image::Image(gome_data[i].data(), 16, image_width, number_of_lines, 1), 16});

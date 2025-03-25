@@ -6,6 +6,8 @@
 #include "loader/archive_loader.h"
 #include "imgui/imgui_stdlib.h"
 
+#include "viewer2/viewer.h"
+
 namespace
 {
     bool _enable_loader = false;
@@ -24,7 +26,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        logger->critical("TODOREWORK BRING BACK LOADER"); //    satdump::eventBus->register_handler<satdump::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
+        satdump::eventBus->register_handler<satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
 
         if (satdump::config::main_cfg.contains("plugin_settings") && satdump::config::main_cfg["plugin_settings"].contains("official_products"))
             if (satdump::config::main_cfg["plugin_settings"]["official_products"].contains("enable_loader"))
@@ -82,20 +84,24 @@ public:
         cfg["enable_loader"] = _enable_loader;
     }
 
-    // static void renderViewerLoaderButton(const satdump::ViewerApplication::RenderLoadMenuElementsEvent &evt)
-    // {
-    //     if (!_enable_loader)
-    //         return;
+    static void renderViewerLoaderButton(const satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent &evt)
+    {
+        if (!_enable_loader)
+            return;
 
-    //     if (ImGui::Button("Load Official"))
-    //         _loader_open = true;
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Load Official"))
+                _loader_open = true;
+            ImGui::EndMenu();
+        }
 
-    //     if (_loader_open)
-    //     {
-    //         initLoader();
-    //         _loader->drawUI(&_loader_open);
-    //     }
-    // } TODOREWORK
+        if (_loader_open)
+        {
+            initLoader();
+            _loader->drawUI(&_loader_open);
+        }
+    } // TODOREWORK
 };
 
 PLUGIN_LOADER(OfficalProductsLoaderSupport)

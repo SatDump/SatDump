@@ -35,7 +35,6 @@ void ImageViewWidget::update(image::Image &image)
     }
     else
     {
-        logger->trace("Mouse tooltip might have an issue here! (TODO)");
         fimg_width = image.width();
         fimg_height = image.height();
 
@@ -65,7 +64,7 @@ void ImageViewWidget::update(image::Image &image)
                 image::image_to_rgba(crop, img_chunks[i].texture_buffer.data());
 
                 img_chunks[i].offset_x = width_start;
-                img_chunks[i].offset_y = fimg_height - height_start;
+                img_chunks[i].offset_y = fimg_height - height_end;
             }
         }
     }

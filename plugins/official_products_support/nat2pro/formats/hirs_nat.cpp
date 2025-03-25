@@ -110,17 +110,17 @@ namespace nat2pro
             hirs_products.set_product_source(info.sat_name);
             hirs_products.set_product_timestamp(ptime);
 
-#if 1
-            hirs_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_hirs.json")), info.satellite_tle, timestamps);
+            auto p = loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_hirs.json"));
+#if 0
+            hirs_products.set_proj_cfg_tle_timestamps(p, info.satellite_tle, timestamps);
 #else
-            nlohmann::json proj_cfg;
-            proj_cfg["type"] = "normal_gcps";
+            nlohmann::json proj_cfg = p;
+            proj_cfg["type"] = "gcps_timestamps_line";
             proj_cfg["gcp_cnt"] = all_gcps;
             proj_cfg["gcps"] = gcps_all;
+            proj_cfg["timestamps"] = timestamps;
             hirs_products.set_proj_cfg(proj_cfg);
-            // TODOREWORK switch to GCPs again!
 #endif
-            logger->critical("TODOREWORK switch to GCPs again!");
 
             const int HIRSChannels[20] = {0, 16, 1, 2, 12, 3, 17, 10, 18, 6, 7, 19, 9, 13, 5, 4, 14, 11, 15, 8};
             for (int i = 0; i < 20; i++)
