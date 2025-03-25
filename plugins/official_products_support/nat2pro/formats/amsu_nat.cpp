@@ -72,7 +72,7 @@ namespace nat2pro
 
                 timestamps.push_back(main_header.record_start_time);
 
-                if ((number_of_lines - 1) % 4 == 0)
+                // if ((number_of_lines - 1) % 4 == 0)
                 {
                     for (int i = 1; i < 30; i += 1)
                     {
