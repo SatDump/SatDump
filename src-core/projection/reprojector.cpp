@@ -101,7 +101,8 @@ namespace satdump
                 src_proj_err = true;
             }
 
-            if (src_proj.init(true, false) && !src_proj_err)
+            if (src_proj.init(true, false) && !src_proj_err &&
+                src_proj.getInvType() != Projection::PROJ_RAYTRACER /*TODOREWORK*/)
             { // If the input is a standard projection
                 geodetic::geodetic_coords_t pos;
                 for (int x = 0; x < (int)result_img.width(); x++)
