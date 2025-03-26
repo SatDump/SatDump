@@ -28,5 +28,13 @@ namespace satdump
         {
             std::vector<PluginConfigHandler> &plugin_config_handlers;
         };
+
+        template <typename T>
+        inline void tryAssignValueFromSatdumpGeneralConfig(T &val, std::string variablename)
+        {
+            if (main_cfg["satdump_general"][variablename]["value"].is_null())
+                return;
+            val = main_cfg["satdump_general"][variablename]["value"].get<T>();
+        }
     }
 }

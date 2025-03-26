@@ -13,6 +13,7 @@
 #include "../vector/shapefile_handler.h"
 
 #include "imgui/pfd/pfd_utils.h" // TODOREWORK
+#include "core/config.h"
 
 // TODOREWORK!
 #include "products2/handler/vector/shapefile_handler.h"
@@ -94,8 +95,9 @@ namespace satdump
                 {
                     file_save_thread_running = true;
                     // TODOREWORK!!!!
-                    std::string save_type = ".png";
-                    std::string saved_at = save_image_dialog("out.png", ".", "Save Image", &get_current_img(), &save_type);
+                    std::string save_type = "png";
+                    config::tryAssignValueFromSatdumpGeneralConfig(save_type, "image_format");
+                    std::string saved_at = save_image_dialog("out", ".", "Save Image", &get_current_img(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");
                     else
