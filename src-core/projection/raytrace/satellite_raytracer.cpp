@@ -7,6 +7,7 @@
 
 //
 #include "common/normal_line.h"
+#include "common/manual_line.h"
 #include "common/timestamp_line_gcps.h"
 
 namespace satdump
@@ -53,6 +54,8 @@ namespace satdump
                 return std::make_shared<NormalLineRaytracer>(cfg);
             else if (type == "normal_single_line_old")
                 return std::make_shared<NormalLineRaytracerOld>(cfg);
+            else if (type == "manual_single_line_old")
+                return std::make_shared<ManualLineRaytracerOld>(cfg);
             else if (type == "gcps_timestamps_line")
                 return std::make_shared<TimestampLineGCPsRaytracer>(cfg);
 

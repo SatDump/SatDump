@@ -118,7 +118,7 @@ namespace satdump
                 if (ImGui::MenuItem("Borders"))
                     addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")));
                 if (ImGui::MenuItem("Cities"))
-                    logger->info("TODOREWORK GeoJSON!"); // TODOREWORK  addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+                    logger->error("TODOREWORK GeoJSON!"); // TODOREWORK  addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
 
                 ImGui::EndMenu();
             }

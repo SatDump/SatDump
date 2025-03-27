@@ -1,6 +1,8 @@
 #include "ascat_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include <cmath>
+#include <algorithm>
+#include <cstring>
 
 namespace metop
 {

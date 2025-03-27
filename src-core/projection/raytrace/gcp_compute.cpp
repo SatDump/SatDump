@@ -49,7 +49,7 @@ namespace satdump
             values.push_back(width - 1);
 
             // TODOREWORK Handle this properly. Boolean or function in the raytracer?
-            if (cfg["type"] == "manual_single_line")
+            if (cfg["type"] == "manual_single_line_old")
             {
                 values.clear();
 
