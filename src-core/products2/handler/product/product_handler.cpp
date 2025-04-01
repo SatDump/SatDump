@@ -57,9 +57,9 @@ namespace satdump
             if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::BeginCombo("##presetproductcombo", /*TODOREWORK maybe make this generic?*/
-                                      (preset_selection_curr_id > 0 && preset_selection_curr_id < preset_selection_box_str.size())
-                                          ? ""
-                                          : preset_selection_box_str[preset_selection_curr_id].c_str()))
+                                      (preset_selection_curr_id >= 0 && preset_selection_curr_id < preset_selection_box_str.size())
+                                          ? preset_selection_box_str[preset_selection_curr_id].c_str()
+                                          : ""))
                 {
                     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                     ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
