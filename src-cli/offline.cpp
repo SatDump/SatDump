@@ -51,13 +51,13 @@ int main_offline(int argc, char *argv[])
 
     if (pipeline.has_value())
     {
-        try
+      //  try
         {
             pipeline.value().run(input_file, output_file, parameters, input_level);
         }
-        catch (std::exception &e)
+    //    catch (std::exception &e)
         {
-            logger->error("Fatal error running pipeline : " + std::string(e.what()));
+     //       logger->error("Fatal error running pipeline : " + std::string(e.what()));
             return 1;
         }
     }

@@ -119,7 +119,7 @@ namespace satdump
                     {
                         next_aos_time = horizons_data[i].timestamp;
                         sat_next_aos_pos.az = horizons_data[i].az;
-                        sat_next_aos_pos.el = horizons_data[i].el;
+                        sat_next_aos_pos.el = 0;
                         break;
                     }
                 }
@@ -142,7 +142,7 @@ namespace satdump
                     {
                         next_aos_time = horizons_data[i].timestamp;
                         sat_next_aos_pos.az = horizons_data[i].az;
-                        sat_next_aos_pos.el = horizons_data[i].el;
+                        sat_next_aos_pos.el = 0;
                         aos_iter = i;
                         break;
                     }
@@ -202,7 +202,7 @@ namespace satdump
             next_aos_time = predict_from_julian(next_aos.time);
 
             sat_next_aos_pos.az = next_aos.azimuth * RAD_TO_DEG;
-            sat_next_aos_pos.el = next_aos.elevation * RAD_TO_DEG;
+            sat_next_aos_pos.el = 0;
             sat_next_los_pos.az = next_los.azimuth * RAD_TO_DEG;
             sat_next_los_pos.el = next_los.elevation * RAD_TO_DEG;
 

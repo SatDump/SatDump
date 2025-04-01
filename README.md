@@ -5,7 +5,7 @@
 A generic satellite data processing software.
 *Thanks Crosswalkersam for the icon!*
 
-There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat!
+There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat! Otherwise, a [Discord](https://discord.gg/ctt3M8pRYG) bridge to the Matrix is also available.
 
 # Introduction
 
