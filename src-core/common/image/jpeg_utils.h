@@ -1,15 +1,30 @@
 #pragma once
 
+/**
+ * @file jpeg_utils.h
+ */
+
 #include <cstdint>
 #include "image.h"
 #include <vector>
 
 namespace image
 {
-    // Decompress JPEG Data from memory
+    /**
+     * @brief Decompress 8-bit JPEG Data from memory
+     * @param data input buffer
+     * @param length buffer size
+     * @param ignore_errors if true, ignore some errors (needed for a
+     * few satellites sending slightly malformed but still valid JPEGs)
+     * @return the image
+     */
     Image decompress_jpeg(uint8_t *data, int length, bool ignore_errors = false);
 
-    // Compress JPEG to memory
+    /**
+     * @brief Compress JPEG to memory
+     * @param img the image to compress (8-bit)
+     * @return vector containing the JPEG stream
+     */
     std::vector<uint8_t> save_jpeg_mem(Image &img);
 
     // Decompress J2K Data from memory with OpenJP2
