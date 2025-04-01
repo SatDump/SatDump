@@ -192,6 +192,8 @@ namespace fengyun_svissr
                     } else if (!counter_locked) {
                         // Can we lock?
                         if (counter == global_counter+1) {
+                            // LOCKED!
+                            logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
                             counter_locked = true;
                         } else {
                             // We can't lock, save this counter for a check on the next one
@@ -234,6 +236,14 @@ namespace fengyun_svissr
 
                 // Try to detect a new scan
                 uint8_t is_back = most_common(&last_status[0], &last_status[20], 0);
+
+                // Ensures the counter doesn't lock during rollback
+                // Situation: 
+                //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
+                //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
+                if (is_back && valid_lines < 5) {
+                    counter_locked = false;
+                }
 
                 if (is_back && valid_lines > 40)
                 {
