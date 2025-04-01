@@ -5,5 +5,6 @@ INPUT                  = src-core/common/ccsds \
                          src-interface/viewer2 \
                          src-core/projection \
                          src-core/dsp \
+                         src-core/common/image \
 EXCLUDE                = src-core/common/image/font_lib src-core/common/image/font
 RECURSIVE              = YES
