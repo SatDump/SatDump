@@ -4,6 +4,7 @@
 #include "nlohmann/json_utils.h"
 #include "common/utils.h"
 #include "core/exception.h"
+#include "imgui/imgui_stdlib.h"
 
 namespace satdump
 {
@@ -39,7 +40,7 @@ namespace satdump
                 {
                     try
                     {
-                        preset_selection_box_str += cfg["name"].get<std::string>() + '\0';
+                        preset_selection_box_str.push_back(cfg["name"].get<std::string>());
                     }
                     catch (std::exception &e)
                     {
@@ -55,26 +56,45 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                if (ImGui::Combo("##presetproductcombo", &preset_selection_curr_id, preset_selection_box_str.c_str()))
+                if (ImGui::BeginCombo("##presetproductcombo", /*TODOREWORK maybe make this generic?*/
+                                      (preset_selection_curr_id > 0 && preset_selection_curr_id < preset_selection_box_str.size())
+                                          ? ""
+                                          : preset_selection_box_str[preset_selection_curr_id].c_str()))
                 {
-                    auto preset = instrument_cfg["presets"][preset_selection_curr_id];
-                    setConfig(preset);
-                    was_changed = true;
-                    preset_selection_curr_id = -1;
+                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                    ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
+                    for (size_t i = 0; i < preset_selection_box_str.size(); i++)
+                    {
+                        bool show = true;
+                        if (preset_search_str.size() != 0)
+                            show = isStringPresent(preset_selection_box_str[i], preset_search_str);
 
-                    // Description, optional
-                    if (preset.contains("description"))
-                    {
-                        std::ifstream ifs(resources::getResourcePath(preset["description"]));
-                        std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-                        markdown_info.set_md(desc_markdown);
-                        has_markdown_description = true;
+                        if (show && ImGui::Selectable(preset_selection_box_str[i].c_str(), (int)i == preset_selection_curr_id))
+                        {
+                            preset_selection_curr_id = i;
+
+                            auto preset = instrument_cfg["presets"][preset_selection_curr_id];
+                            setConfig(preset);
+                            was_changed = true;
+                            preset_selection_curr_id = -1;
+
+                            // Description, optional
+                            if (preset.contains("description"))
+                            {
+                                std::ifstream ifs(resources::getResourcePath(preset["description"]));
+                                std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+                                markdown_info.set_md(desc_markdown);
+                                has_markdown_description = true;
+                            }
+                            else
+                            {
+                                has_markdown_description = false;
+                            }
+                        }
                     }
-                    else
-                    {
-                        has_markdown_description = false;
-                    }
+                    ImGui::EndCombo();
                 }
+
                 ImGui::SameLine();
                 if (ImGui::Button("Default"))
                 {

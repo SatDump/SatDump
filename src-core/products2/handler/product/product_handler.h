@@ -30,7 +30,8 @@ namespace satdump
         private:
             std::string handler_name;
 
-            std::string preset_selection_box_str;
+            std::string preset_search_str;
+            std::vector<std::string> preset_selection_box_str;
             int preset_selection_curr_id = -1;
 
             bool has_markdown_description = false;
