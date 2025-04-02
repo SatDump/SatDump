@@ -55,7 +55,7 @@
         },
         {
             "name": "Differential Water Vapor RGB",
-            "expression": "cch6=(6, brightness_temperature, 180, 400); cch5=(5, brightness_temperature, 180, 400); ((cch6-cch5+0.01363636363)/0.15)^3.86548125242,((cch6-0.15068181818)/0.29545454545)^2.5,((cch5-0.12954545454)/0.1609090909)^2.5"
+            "expression": "cch6=(6, brightness_temperature, 180, 400); cch5=(5, brightness_temperature, 180, 400); 1-(((cch6-cch5+0.01363636363)/0.15)^3.86548125242),1-(((cch6-0.15068181818)/0.29545454545)^2.5),1-(((cch5-0.12954545454)/0.1609090909)^2.5)"
         },
         {
             "name": "Night Microphysics",
@@ -190,6 +190,14 @@
                 "geo_correct": true
             },
             "description": "descriptions/NDWI.md"
+        },
+        {
+            "name": "Sea Surface Temperature",
+            "expression": "IR11=(9, brightness_temperature, 270.15, 308.15);IR12=(10, brightness_temperature, 270.15, 308.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/bluered.png);lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",
+            "description": "descriptions/SST.md",
+            "image": {
+                "geo_correct": true
+            }
         }
     ],
     "default": {

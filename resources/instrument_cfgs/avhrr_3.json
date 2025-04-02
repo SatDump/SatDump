@@ -168,8 +168,11 @@
         },
         {
             "name": "Sea Surface Temperature",
-            // TODOREWORK
-            "description": "descriptions/SST.md"
+            "expression": "IR11=(4, brightness_temperature, 270.15, 308.15);IR12=(5, brightness_temperature, 270.15, 308.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/bluered.png);lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",
+            "description": "descriptions/SST.md",
+            "image": {
+                "geo_correct": true
+            }
         },
         {
             "name": "Night Time Fire Detection (transparent)",
