@@ -6,7 +6,7 @@
 
 #include "common/projection/projs2/proj_json.h"
 
-#include "common/projection/warp/warp.h"
+#include "projection/warp/warp.h"
 
 #include "projection/projection.h"
 

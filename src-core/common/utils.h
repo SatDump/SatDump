@@ -103,6 +103,18 @@ double avg_overflowless(std::vector<T> const &v)
 
 std::vector<std::string> splitString(std::string input, char del);
 
+inline void replaceAllStr(std::string &str, const std::string &from, const std::string &to)
+{
+    if (from.empty())
+        return;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+    {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    }
+}
+
 template <typename T>
 inline bool getBit(T &data, int &bit)
 {
@@ -115,7 +127,7 @@ bool isStringPresent(std::string searched, std::string keyword);
 uint64_t getFilesize(std::string filepath);
 
 // cURL helper function
-size_t curl_write_std_string(void* contents, size_t size, size_t nmemb, std::string* s);
+size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::string *s);
 
 // Perform a HTTP Request on the provided URL and return the result as a string
 int perform_http_request(std::string url, std::string &result, std::string added_header = "", float *progress = nullptr);

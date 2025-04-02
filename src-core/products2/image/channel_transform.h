@@ -7,7 +7,7 @@
 #include "nlohmann/json.hpp"
 #include "core/exception.h"
 
-#include "common/projection/thinplatespline.h" // TODOREWORK Move to here?
+#include "projection/thinplatespline.h" // TODOREWORK Move to here?
 
 namespace satdump
 {
@@ -61,8 +61,8 @@ namespace satdump
 
         std::vector<std::pair<double, double>> interpx_points;
         std::vector<std::pair<std::pair<double, double>, std::pair<double, double>>> interp_xy_points;
-        std::shared_ptr<projection::VizGeorefSpline2D> interp_fwd_interpolator;
-        std::shared_ptr<projection::VizGeorefSpline2D> interp_rev_interpolator;
+        std::shared_ptr<proj::VizGeorefSpline2D> interp_fwd_interpolator;
+        std::shared_ptr<proj::VizGeorefSpline2D> interp_rev_interpolator;
 
     public:
         /**
@@ -160,8 +160,8 @@ namespace satdump
             {
                 v.interpx_points = j["interpx_points"].get<std::vector<std::pair<double, double>>>();
 
-                v.interp_fwd_interpolator = std::make_shared<projection::VizGeorefSpline2D>(1);
-                v.interp_rev_interpolator = std::make_shared<projection::VizGeorefSpline2D>(1);
+                v.interp_fwd_interpolator = std::make_shared<proj::VizGeorefSpline2D>(1);
+                v.interp_rev_interpolator = std::make_shared<proj::VizGeorefSpline2D>(1);
 
                 for (auto &p : v.interpx_points)
                 {
@@ -177,8 +177,8 @@ namespace satdump
             {
                 v.interp_xy_points = j["interp_xy_points"].get<std::vector<std::pair<std::pair<double, double>, std::pair<double, double>>>>();
 
-                v.interp_fwd_interpolator = std::make_shared<projection::VizGeorefSpline2D>(2);
-                v.interp_rev_interpolator = std::make_shared<projection::VizGeorefSpline2D>(2);
+                v.interp_fwd_interpolator = std::make_shared<proj::VizGeorefSpline2D>(2);
+                v.interp_rev_interpolator = std::make_shared<proj::VizGeorefSpline2D>(2);
 
                 for (auto &p : v.interp_xy_points)
                 {

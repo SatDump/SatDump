@@ -32,7 +32,7 @@ namespace satdump
         int calculateSegmentNumberToSplitInto(WarpOperation &operation_t, double &median_dist)
         {
             int nsegs = 1;
-            std::vector<satdump::projection::GCP> gcps_curr = operation_t.ground_control_points;
+            std::vector<satdump::proj::GCP> gcps_curr = operation_t.ground_control_points;
             // Filter GCPs, only keep each first y in x
             std::sort(gcps_curr.begin(), gcps_curr.end(),
                       [&operation_t](auto &el1, auto &el2)
@@ -40,7 +40,7 @@ namespace satdump
                           return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x;
                       });
             {
-                std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
+                std::vector<satdump::proj::GCP> gcps_curr_bkp = gcps_curr;
                 gcps_curr.clear();
                 for (int y = 0; y < (int)gcps_curr_bkp.size() - 1; y++)
                 {
@@ -80,12 +80,12 @@ namespace satdump
             int y_end;
             int shift_lon;
             int shift_lat;
-            std::vector<satdump::projection::GCP> gcps;
+            std::vector<satdump::proj::GCP> gcps;
 
-            std::shared_ptr<projection::VizGeorefSpline2D> tps = nullptr;
+            std::shared_ptr<proj::VizGeorefSpline2D> tps = nullptr;
         };
 
-        void computeGCPCenter(std::vector<satdump::projection::GCP> &gcps, double &lon, double &lat)
+        void computeGCPCenter(std::vector<satdump::proj::GCP> &gcps, double &lon, double &lat)
         {
             double x_total = 0;
             double y_total = 0;
@@ -137,7 +137,7 @@ namespace satdump
                 scfg.y_end = operation_t.input_image->height();
         }
 
-        std::vector<satdump::projection::GCP> filter_gcps_position(std::vector<satdump::projection::GCP> gcps, double max_distance)
+        std::vector<satdump::proj::GCP> filter_gcps_position(std::vector<satdump::proj::GCP> gcps, double max_distance)
         {
             double center_lat = 0, center_lon = 0;
             computeGCPCenter(gcps, center_lon, center_lat);
@@ -216,7 +216,7 @@ namespace satdump
                 int y_end = ((segment + 1) / nsegs) * operation_t.input_image->height();
 
                 // Isolate GCPs for this segment
-                std::vector<satdump::projection::GCP> gcps_curr;
+                std::vector<satdump::proj::GCP> gcps_curr;
                 for (auto gcp : operation_t.ground_control_points)
                 {
                     if (gcp.y >= y_start && gcp.y < y_end)
@@ -236,7 +236,7 @@ namespace satdump
                               return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x;
                           });
                 {
-                    std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
+                    std::vector<satdump::proj::GCP> gcps_curr_bkp = gcps_curr;
                     gcps_curr.clear();
                     for (int y = 0; y < (int)gcps_curr_bkp.size() - 1 && gcps_curr_bkp.size() > 1; y++)
                     {

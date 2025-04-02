@@ -98,6 +98,11 @@ namespace satdump
                     chvaly = 0;
                 if (chvaly > 1)
                     chvaly = 1;
+                // Nan guard
+                if (chvalx != chvalx)
+                    chvalx = 0;
+                if (chvaly != chvaly)
+                    chvaly = 0;
 
                 return img->getf(ch, chvalx * (img->width() - 1), chvaly * (img->height() - 1));
             }
@@ -240,14 +245,22 @@ namespace satdump
                     for (auto &cfg : split_cfg)
                     {
                         auto pcfg = tryParse(cfg);
+                        auto lcfg = tryParseLut(cfg);
+                        auto ecfg = tryParseEqup(cfg);
                         if (pcfg.valid)
                             calib_cfgs.emplace(pcfg.token, pcfg);
-                        auto lcfg = tryParseLut(cfg);
-                        if (lcfg.valid)
+                        else if (lcfg.valid)
                             lut_cfgs.push_back(lcfg);
-                        auto ecfg = tryParseEqup(cfg);
-                        if (ecfg.valid)
+                        else if (ecfg.valid)
                             equp_cfgs.push_back(ecfg);
+                        else if (cfg.find("=") != std::string::npos) // Macro
+                        {
+                            auto macro = splitString(cfg, '=');
+                            if (macro.size() == 2)
+                                replaceAllStr(expression, macro[0], macro[1]);
+                            else
+                                logger->warn("Invalid macro config!");
+                        }
                     }
                 }
                 catch (std::exception &e)
@@ -255,6 +268,8 @@ namespace satdump
                     throw satdump_exception("Error parsing equation parameters! " + std::string(e.what()));
                 }
             }
+
+            logger->debug("Final Expression " + expression);
 
             // Get required variables & number of output channels
             int nout_channels = 0;

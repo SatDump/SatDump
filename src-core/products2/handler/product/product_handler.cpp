@@ -18,9 +18,16 @@ namespace satdump
             std::string config_path = "instrument_cfgs/" + product->instrument_name + ".json";
             if (resources::resourceExists(config_path))
             {
-                instrument_cfg = loadJsonFile(resources::getResourcePath(config_path));
-                if (instrument_cfg.contains("name"))
-                    handler_name = instrument_cfg["name"];
+                try
+                {
+                    instrument_cfg = loadJsonFile(resources::getResourcePath(config_path));
+                    if (instrument_cfg.contains("name"))
+                        handler_name = instrument_cfg["name"];
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Instrument configuration invalid! %s", e.what());
+                }
             }
             else
             {

@@ -63,7 +63,7 @@
 
 namespace satdump
 {
-    namespace projection
+    namespace proj
     {
         namespace
         {

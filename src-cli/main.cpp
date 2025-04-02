@@ -8,7 +8,7 @@
 #include "sdr_probe.h"
 #include "help_general.h"
 
-#include "project/project.h"
+// TODOREWORK #include "project/project.h"
 #include "satdump_vars.h"
 
 int main(int argc, char *argv[])
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     if (argc < 2)
     {
         logger->error("Please specify either live/record or pipeline name!");
-		logger->error("Use -h or help for information");
+        logger->error("Use -h or help for information");
         return 1;
     }
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         if (ret != 0)
             return ret;
     }
-    else if (std::string(argv[1]) == "project")
+    /*else if (std::string(argv[1]) == "project")
     {
         try
         {
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
         {
             logger->error("Error running project! %s", e.what());
         }
-    }
+    }TODOREWORK*/
     else if (std::string(argv[1]) == "version" || std::string(argv[1]) == "--v")
     {
         logger->info("This is SatDump v" + (std::string)satdump::SATDUMP_VERSION);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         sdr_probe();
     }
     //////////////
-	//////////////
+    //////////////
     else if ((std::string(argv[1]) == "-h") || (std::string(argv[1]) == "help"))
     {
         help_general();

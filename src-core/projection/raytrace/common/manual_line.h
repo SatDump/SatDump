@@ -1,7 +1,7 @@
 #pragma once
 
 #include "satellite_raytracer_sattrack.h"
-#include "common/projection/thinplatespline.h"
+#include "projection/thinplatespline.h"
 
 namespace satdump
 {
@@ -15,7 +15,7 @@ namespace satdump
             int image_width;
             double timestamp_offset;
 
-            projection::VizGeorefSpline2D spline_roll_pitch = projection::VizGeorefSpline2D(2);
+            VizGeorefSpline2D spline_roll_pitch = VizGeorefSpline2D(2);
             double roll_pitch_v[2] = {0, 0};
 
             bool yaw_swap;

@@ -3,7 +3,7 @@
 #include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 #include "common/calibration.h"
-#include "common/projection/thinplatespline.h"
+#include "projection/thinplatespline.h"
 
 #include "logger.h"
 
