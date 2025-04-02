@@ -59,6 +59,7 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
                 needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
+                needs_to_update |= ImGui::Checkbox("Invert", &invert_img);
 
                 needs_to_update |= ImGui::Checkbox(" Brightness/Constrast", &brightness_contrast_image);
                 if (brightness_contrast_image)
@@ -175,6 +176,7 @@ namespace satdump
             equalize_perchannel_img = getValueOrDefault(p["individual_equalize"], false);
             white_balance_img = getValueOrDefault(p["white_balance"], false);
             normalize_img = getValueOrDefault(p["normalize"], false);
+            invert_img = getValueOrDefault(p["invert"], false);
             median_blur_img = getValueOrDefault(p["median_blur"], false);
             despeckle_img = getValueOrDefault(p["despeckle"], false);
             rotate180_image = getValueOrDefault(p["rotate180"], rotate180_image);
@@ -191,6 +193,7 @@ namespace satdump
             p["individual_equalize"] = equalize_perchannel_img;
             p["white_balance"] = white_balance_img;
             p["normalize"] = normalize_img;
+            p["invert"] = invert_img;
             p["median_blur"] = median_blur_img;
             p["despeckle"] = despeckle_img;
             p["rotate180"] = rotate180_image;
@@ -214,6 +217,7 @@ namespace satdump
                                           equalize_perchannel_img |
                                           white_balance_img |
                                           normalize_img |
+                                          invert_img |
                                           median_blur_img |
                                           rotate180_image |
                                           geocorrect_image |
@@ -235,6 +239,8 @@ namespace satdump
                     image::white_balance(curr_image);
                 if (normalize_img)
                     image::normalize(curr_image);
+                if (invert_img)
+                    image::linear_invert(curr_image);
                 if (median_blur_img)
                     image::median_blur(curr_image);
                 if (despeckle_img)

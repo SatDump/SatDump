@@ -36,6 +36,7 @@ namespace satdump
             bool equalize_perchannel_img = false;
             bool white_balance_img = false;
             bool normalize_img = false;
+            bool invert_img = false;
             bool median_blur_img = false;
             bool despeckle_img = false;
             bool rotate180_image = false;
