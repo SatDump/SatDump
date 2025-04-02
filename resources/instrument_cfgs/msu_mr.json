@@ -327,7 +327,7 @@
                 "geo_correct": true
             },
             "description": "descriptions/NDWI.md"
-        },
+        }
     ],
     "default": {
         "calibration_ranges": {

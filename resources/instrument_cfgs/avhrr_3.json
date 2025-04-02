@@ -160,8 +160,11 @@
             // TODOREWORK
         },
         {
-            "name": "Split Window Difference"
-            // TODOREWORK
+            "name": "Split Window Difference",
+            "expression": "a=(4, brightness_temperature, 150, 400);b=(5, brightness_temperature, 150, 400);lut=lut(lut/cal/IR12-IR108-7+7.png);lut((((a * 250 + 150) - (b * 250 + 150)) + 7) / 14, 0, 0),lut((((a * 250 + 150) - (b * 250 + 150)) + 7) / 14, 0, 1),lut((((a * 250 + 150) - (b * 250 + 150)) + 7) / 14, 0, 2)",
+            "image": {
+                "geo_correct": true
+            }
         },
         {
             "name": "Sea Surface Temperature",
