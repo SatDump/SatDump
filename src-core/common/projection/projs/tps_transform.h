@@ -1,12 +1,13 @@
 #pragma once
 
 #include <vector>
-#include "../thinplatespline.h"
+#include "projection/thinplatespline.h"
 
 namespace satdump
 {
     namespace projection
     {
+        using namespace satdump::proj; // TODOREWORK Remove
         class TPSTransform
         {
         private:

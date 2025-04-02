@@ -46,14 +46,14 @@ namespace satdump
             *lat = atan2(z2, hyp) * RAD_TO_DEG;
         }
 
-        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
+        std::shared_ptr<proj::VizGeorefSpline2D> initTPSTransform(WarpOperation &op)
         {
             return initTPSTransform(op.ground_control_points, op.shift_lon, op.shift_lat);
         }
 
-        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat)
+        std::shared_ptr<proj::VizGeorefSpline2D> initTPSTransform(std::vector<proj::GCP> gcps, int shift_lon, int shift_lat)
         {
-            std::shared_ptr<projection::VizGeorefSpline2D> spline_transform = std::make_shared<projection::VizGeorefSpline2D>(2);
+            std::shared_ptr<proj::VizGeorefSpline2D> spline_transform = std::make_shared<proj::VizGeorefSpline2D>(2);
 
             // Attach (non-redundant) points to the transformation.
             std::map<std::pair<double, double>, int> oMapPixelLineToIdx;
@@ -123,7 +123,7 @@ namespace satdump
 
             std::vector<double> lat_values;
             std::vector<double> lon_values;
-            for (projection::GCP &g : op.ground_control_points)
+            for (proj::GCP &g : op.ground_control_points)
             {
                 lat_values.push_back(g.lat);
                 lon_values.push_back(g.lon);
@@ -136,7 +136,7 @@ namespace satdump
             lat_min = lat_max = avg_overflowless(lat_values);
             lon_min = lon_max = avg_overflowless(lon_values);
 
-            for (projection::GCP &g : op.ground_control_points)
+            for (proj::GCP &g : op.ground_control_points)
             {
                 if (g.lat > lat_max)
                     lat_max = g.lat;

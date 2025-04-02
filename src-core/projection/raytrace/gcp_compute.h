@@ -4,7 +4,7 @@
  * @file gcp_compute.h
  */
 
-#include "common/projection/thinplatespline.h"
+#include "projection/thinplatespline.h"
 #include "projection/projection.h"
 
 namespace satdump

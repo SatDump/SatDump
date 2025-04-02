@@ -2,7 +2,6 @@
 
 #include "image.h"
 #include "nlohmann/json.hpp"
-#include "common/projection/reprojector.h"
 
 namespace image
 {
