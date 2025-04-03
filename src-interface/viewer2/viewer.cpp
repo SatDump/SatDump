@@ -22,6 +22,8 @@
 #include "dsp/waterfall_test.h"
 #include "dsp/newrec.h"
 
+#include "tools_todoreworkmove/lut_generator.h"
+
 namespace satdump
 {
     namespace viewer
@@ -157,6 +159,8 @@ namespace satdump
                             master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
                             master_handler->addSubHandler(std::make_shared<NewRecHandler>());
+                        if (ImGui::MenuItem("Lut Generator"))
+                            master_handler->addSubHandler(std::make_shared<LutGeneratorHandler>());
                         ImGui::EndMenu();
                     }
                     if (curr_handler && ImGui::BeginMenu("Config"))

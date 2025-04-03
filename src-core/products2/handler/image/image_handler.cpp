@@ -61,7 +61,7 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
                 needs_to_update |= ImGui::Checkbox("Invert", &invert_img);
 
-                needs_to_update |= ImGui::Checkbox(" Brightness/Constrast", &brightness_contrast_image);
+                needs_to_update |= ImGui::Checkbox("Brightness/Constrast", &brightness_contrast_image);
                 if (brightness_contrast_image)
                 {
                     needs_to_update |= ImGui::SliderFloat("Brightness", &brightness_contrast_brightness_image, -2, 2);
