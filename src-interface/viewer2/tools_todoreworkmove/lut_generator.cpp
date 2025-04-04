@@ -1,6 +1,7 @@
 #include "lut_generator.h"
 #include "imgui/implot/implot.h"
 #include "common/image/io.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -10,7 +11,7 @@ namespace satdump
         {
             lut.resize(100, {255, 255, 255, 255});
             for (int i = 0; i < 100; i++)
-                lut[i].r = (i / 100.0) * 255;
+                lut[i].r = lut[i].g = lut[i].b = (i / 100.0) * 255;
         }
 
         LutGeneratorHandler::~LutGeneratorHandler()
@@ -110,25 +111,55 @@ namespace satdump
             current_col.b = colors[2] * 255.0;
             current_col.a = colors[3] * 255.0;
 
+            ImGui::SameLine();
+
+            if (ImGui::Button("Pick"))
+                current_col = getColorFromScreen();
+
+            image_select.draw();
             preview_img.draw({500, 500});
 
-            if (should_regen_image)
+            if (image_select.isValid() && should_regen_image)
             {
                 image::Image img;
-                image::load_img(img, "resources/maps/nasa.jpg");
+                image::load_img(img, image_select.getPath());
 
                 image::Image limg(8, img.width(), img.height(), 4);
                 for (size_t i = 0; i < img.width() * img.height(); i++)
                 {
                     float val = img.getf(i);
                     int pos = val * (lut.size() - 1);
-                    img.set(0, lut[pos].r);
-                    img.set(1, lut[pos].g);
-                    img.set(2, lut[pos].b);
-                    img.set(3, lut[pos].a);
-                    preview_img.update(img);
+                    limg.set(0, i, lut[pos].r);
+                    limg.set(1, i, lut[pos].g);
+                    limg.set(2, i, lut[pos].b);
+                    limg.set(3, i, lut[pos].a);
                 }
+                preview_img.update(limg);
+                should_regen_image = false;
             }
+        }
+
+        LutGeneratorHandler::ColorPX LutGeneratorHandler::getColorFromScreen()
+        {
+            FILE *grabcFile = popen("grabc", "r");
+
+            if (!grabcFile)
+                return {0, 0, 0, 0};
+
+            char buffer[1024];
+            char *line_p = fgets(buffer, sizeof(buffer), grabcFile);
+
+            std::string hex(line_p + 1, line_p + 7);
+
+            uint8_t r = std::stoul(hex.substr(0, 2), nullptr, 16);
+            uint8_t g = std::stoul(hex.substr(2, 2), nullptr, 16);
+            uint8_t b = std::stoul(hex.substr(4, 2), nullptr, 16);
+
+            logger->trace("R %d G %d B %d", r, g, b);
+
+            pclose(grabcFile);
+
+            return {r, g, b, 255};
         }
     }
 }
