@@ -35,12 +35,34 @@ namespace satdump
             ColorPX interpolate_start_color;
             int interpolate_start_position = 0;
 
+            bool lutaction_started = false;
+
+            image::Image generateLutImage();
+
             // Image gen
             FileSelectWidget image_select = FileSelectWidget("Preview Image", "Preview Image");
             bool should_regen_image = false;
             ImageViewWidget preview_img;
 
+            // Helper
             ColorPX getColorFromScreen();
+
+            // History
+            std::vector<std::vector<ColorPX>> history_vector;
+
+            void saveHistory() { history_vector.push_back(lut); }
+            void restoreHistory()
+            {
+                if (history_vector.size() == 0)
+                    return;
+                lut = history_vector[history_vector.size() - 1];
+                history_vector.erase(history_vector.end() - 1);
+                should_regen_image = true;
+            }
+
+            // TODOREWORK File save
+            bool file_save_thread_running = false;
+            std::thread file_save_thread;
 
         public:
             LutGeneratorHandler();
@@ -49,6 +71,7 @@ namespace satdump
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
+            void drawMenuBar();
 
             std::string getName() { return "Lut Generator"; }
 

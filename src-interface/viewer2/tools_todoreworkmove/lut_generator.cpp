@@ -2,6 +2,7 @@
 #include "imgui/implot/implot.h"
 #include "common/image/io.h"
 #include "logger.h"
+#include "imgui/pfd/pfd_utils.h"
 
 namespace satdump
 {
@@ -20,17 +21,88 @@ namespace satdump
 
         void LutGeneratorHandler::drawMenu()
         {
+            if (ImGui::CollapsingHeader("Lut"))
+            {
+                if (ImGui::Button("--"))
+                    for (int i = 0; i < 10; i++)
+                        lut.erase(lut.end() - 1);
+                ImGui::SameLine();
+                if (ImGui::Button("-"))
+                    lut.erase(lut.end() - 1);
+
+                ImGui::SameLine();
+                ImGui::Text("Size : %d\n", lut.size());
+                ImGui::SameLine();
+
+                if (ImGui::Button("+"))
+                    lut.push_back(current_col);
+                ImGui::SameLine();
+                if (ImGui::Button("++"))
+                    for (int i = 0; i < 10; i++)
+                        lut.push_back(current_col);
+
+                if (ImGui::RadioButton("Fill", mouse_mode == 0))
+                    mouse_mode = 0;
+                ImGui::SameLine();
+                if (ImGui::RadioButton("Interpolate", mouse_mode == 1))
+                    mouse_mode = 1;
+
+                float colors[4] = {current_col.r / 255.0,
+                                   current_col.g / 255.0,
+                                   current_col.b / 255.0,
+                                   current_col.a / 255.0};
+                ImGui::ColorEdit4("Color", colors, ImGuiColorEditFlags_NoInputs);
+                current_col.r = colors[0] * 255.0;
+                current_col.g = colors[1] * 255.0;
+                current_col.b = colors[2] * 255.0;
+                current_col.a = colors[3] * 255.0;
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Pick"))
+                    current_col = getColorFromScreen();
+
+                image_select.draw();
+                if (ImGui::Button("Update"))
+                    should_regen_image = true;
+
+                bool has_hist = history_vector.size();
+                if (!has_hist)
+                    style::beginDisabled();
+                if (ImGui::Button("History Back"))
+                    restoreHistory();
+                if (!has_hist)
+                    style::endDisabled();
+            }
+        }
+
+        void LutGeneratorHandler::drawMenuBar()
+        {
+            if (ImGui::MenuItem("Save LUT"))
+            {
+                auto lutImg = generateLutImage();
+                auto fun = [this, lutImg]()
+                {
+                    file_save_thread_running = true;
+                    // TODOREWORK!!!!
+                    std::string save_type = "png";
+                    std::string saved_at = save_image_dialog("out", ".", "Save Image", (image::Image *)&lutImg, &save_type);
+                    if (saved_at == "")
+                        logger->info("Save cancelled");
+                    else
+                        logger->info("Saved current image at %s", saved_at.c_str());
+                    file_save_thread_running = false;
+                };
+
+                if (file_save_thread.joinable())
+                    file_save_thread.join();
+                file_save_thread = std::thread(fun);
+            }
         }
 
         void LutGeneratorHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::Text("Size : %d\n", lut.size());
-            if (ImGui::Button("+"))
-                lut.push_back(current_col);
-            if (ImGui::Button("-"))
-                lut.erase(lut.end() - 1);
-
-            ImPlot::BeginPlot("LutPlot");
+            ImPlot::BeginPlot("LutPlot", {win_size.x, 200 * ui_scale});
             // ImPlot::SetupAxes("", "", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, lut.size(), ImPlotCond_Always);
             ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1, ImPlotCond_Always);
@@ -51,10 +123,17 @@ namespace satdump
                 ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p.x, 0}),
                                                    ImPlot::PlotToPixels({p.x, 1}),
                                                    ImColor(0, 0, 0), 1);
+
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    saveHistory();
+
                 if (mouse_mode == 0)
                 {
                     if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                    {
                         lut[floor(p.x)] = current_col;
+                        lutaction_started = true;
+                    }
                 }
                 else if (mouse_mode == 1)
                 {
@@ -62,6 +141,7 @@ namespace satdump
                     {
                         interpolate_start_position = floor(p.x);
                         interpolate_start_color = lut[interpolate_start_position];
+                        lutaction_started = true;
                     }
 
                     if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
@@ -75,11 +155,10 @@ namespace satdump
                         auto startc = interpolate_start_position < interpolate_stop_position ? interpolate_start_color : interpolate_stop_color;
                         auto stopc = interpolate_start_position < interpolate_stop_position ? interpolate_stop_color : interpolate_start_color;
 
-                        printf("Start %d Stop %d\n", start, stop);
+                        //                        printf("Start %d Stop %d\n", start, stop);
                         for (int i = start + 1; i < stop; i++)
                         {
                             float p = float(i - start) / float(stop - start);
-                            printf("%f\n", p);
                             ColorPX f;
                             f.r = startc.r * (1.0 - p) + stopc.r * p;
                             f.g = startc.g * (1.0 - p) + stopc.g * p;
@@ -89,35 +168,16 @@ namespace satdump
                         }
                     }
                 }
-
-                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-                    should_regen_image = true;
             }
 
             ImPlot::EndPlot();
 
-            if (ImGui::RadioButton("Fill", mouse_mode == 0))
-                mouse_mode = 0;
-            if (ImGui::RadioButton("Interpolate", mouse_mode == 1))
-                mouse_mode = 1;
+            if (lutaction_started && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                should_regen_image = true;
+            if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
+                restoreHistory();
 
-            float colors[4] = {current_col.r / 255.0,
-                               current_col.g / 255.0,
-                               current_col.b / 255.0,
-                               current_col.a / 255.0};
-            ImGui::ColorEdit4("Color", colors, ImGuiColorEditFlags_NoSidePreview);
-            current_col.r = colors[0] * 255.0;
-            current_col.g = colors[1] * 255.0;
-            current_col.b = colors[2] * 255.0;
-            current_col.a = colors[3] * 255.0;
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("Pick"))
-                current_col = getColorFromScreen();
-
-            image_select.draw();
-            preview_img.draw({500, 500});
+            preview_img.draw({win_size.x, win_size.y - 200 * ui_scale});
 
             if (image_select.isValid() && should_regen_image)
             {
@@ -137,6 +197,22 @@ namespace satdump
                 preview_img.update(limg);
                 should_regen_image = false;
             }
+        }
+
+        image::Image LutGeneratorHandler::generateLutImage()
+        {
+            image::Image lutImg(8, lut.size(), 10, 4);
+            for (size_t x = 0; x < lut.size(); x++)
+            {
+                for (size_t y = 0; y < lutImg.height(); y++)
+                {
+                    lutImg.set(0, x, y, lut[x].r);
+                    lutImg.set(1, x, y, lut[x].g);
+                    lutImg.set(2, x, y, lut[x].b);
+                    lutImg.set(3, x, y, lut[x].a);
+                }
+            }
+            return lutImg;
         }
 
         LutGeneratorHandler::ColorPX LutGeneratorHandler::getColorFromScreen()
