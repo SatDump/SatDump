@@ -4,7 +4,7 @@ binpatch: true
 ingredients:
   packages:
     - libfftw3-3
-    - libvolk2.5
+    - libvolk3.1
     - libpng16-16
     - libnng1
     - librtlsdr2
