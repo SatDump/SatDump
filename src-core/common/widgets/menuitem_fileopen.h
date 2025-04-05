@@ -18,7 +18,7 @@ namespace satdump
             std::string selected_path;
 
         public:
-            bool render(std::string menu_name, std::string dialog_name, std::string default_dir, std::vector<std::string> filters)
+            void render(std::string menu_name, std::string dialog_name, std::string default_dir, std::vector<std::string> filters)
             {
                 bool disallow = file_open_dialog;
                 if (disallow)
@@ -27,7 +27,10 @@ namespace satdump
                     file_open_dialog = new pfd::open_file(dialog_name, default_dir, filters, pfd::opt::force_path);
                 if (disallow)
                     style::endDisabled();
+            }
 
+            bool update()
+            {
                 if (file_open_dialog && file_open_dialog->ready(0))
                 {
                     selected_path = (file_open_dialog->result().size() == 0 ? "" : file_open_dialog->result()[0]);
@@ -35,7 +38,6 @@ namespace satdump
                     file_open_dialog = nullptr;
                     return true;
                 }
-
                 return false;
             }
 

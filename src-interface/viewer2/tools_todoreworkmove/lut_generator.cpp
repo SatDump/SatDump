@@ -11,6 +11,8 @@ namespace satdump
     {
         LutGeneratorHandler::LutGeneratorHandler()
         {
+            handler_tree_icon = "\uf043";
+
             lut.resize(100, {255, 255, 255, 255});
             for (int i = 0; i < 100; i++)
                 lut[i].r = lut[i].g = lut[i].b = (i / 100.0) * 255;
@@ -90,29 +92,7 @@ namespace satdump
         void LutGeneratorHandler::drawMenuBar()
         {
             file_save_menu.render("Save LUT", "lut", ".", "Save Image", true);
-
-            if (file_open_menu.render("Load LUT", "Select Image", resources::getResourcePath("lut"), {"All Files", "*"}))
-            {
-                image::Image l;
-                image::load_img(l, file_open_menu.getPath());
-                if (l.size() == 0)
-                {
-                    logger->error("Invalid image for a LUT!");
-                }
-                else
-                {
-                    l = l.to8bits();
-                    l.to_rgba();
-                    lut.resize(l.width());
-                    for (int i = 0; i < l.width(); i++)
-                    {
-                        lut[i].r = l.get(0, i, 0);
-                        lut[i].g = l.get(1, i, 0);
-                        lut[i].b = l.get(2, i, 0);
-                        lut[i].a = l.get(3, i, 0);
-                    }
-                }
-            }
+            file_open_menu.render("Load LUT", "Select Image", resources::getResourcePath("lut"), {"All Files", "*"});
         }
 
         void LutGeneratorHandler::drawContents(ImVec2 win_size)
@@ -211,6 +191,29 @@ namespace satdump
                 }
                 preview_img.update(limg);
                 should_regen_image = false;
+            }
+
+            if (file_open_menu.update())
+            {
+                image::Image l;
+                image::load_img(l, file_open_menu.getPath());
+                if (l.size() == 0)
+                {
+                    logger->error("Invalid image for a LUT!");
+                }
+                else
+                {
+                    l = l.to8bits();
+                    l.to_rgba();
+                    lut.resize(l.width());
+                    for (int i = 0; i < l.width(); i++)
+                    {
+                        lut[i].r = l.get(0, i, 0);
+                        lut[i].g = l.get(1, i, 0);
+                        lut[i].b = l.get(2, i, 0);
+                        lut[i].a = l.get(3, i, 0);
+                    }
+                }
             }
         }
 
