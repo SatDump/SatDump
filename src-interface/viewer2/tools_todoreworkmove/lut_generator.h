@@ -40,6 +40,18 @@ namespace satdump
 
             image::Image generateLutImage();
 
+            // Transform
+            bool use_range = false;
+
+            double range_min = 10;
+            double range_max = 50;
+
+            inline double range_transform(double x)
+            {
+                double size = lut.size();
+                return range_min + (x / size) * (range_max - range_min);
+            }
+
             // Image gen
             FileSelectWidget image_select = FileSelectWidget("Preview Image", "Preview Image");
             bool should_regen_image = false;

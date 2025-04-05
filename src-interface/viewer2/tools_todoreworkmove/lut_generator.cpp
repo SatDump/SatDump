@@ -31,7 +31,7 @@ namespace satdump
 
         void LutGeneratorHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("Lut"))
+            if (ImGui::CollapsingHeader("Lut", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::Button("--"))
                     for (int i = 0; i < 10; i++)
@@ -86,6 +86,16 @@ namespace satdump
 
                 if (ImGui::Button("Invert"))
                     std::reverse(lut.begin(), lut.end());
+
+                if (!use_range)
+                    style::beginDisabled();
+                ImGui::InputDouble("Range Min", &range_min);
+                ImGui::InputDouble("Range Max", &range_max);
+                if (range_max - range_min <= 0)
+                    range_max = range_min + 1;
+                if (!use_range)
+                    style::endDisabled();
+                ImGui::Checkbox("Use Range", &use_range);
             }
         }
 
@@ -97,75 +107,83 @@ namespace satdump
 
         void LutGeneratorHandler::drawContents(ImVec2 win_size)
         {
-            ImPlot::BeginPlot("LutPlot", {win_size.x, 200 * ui_scale});
-            // ImPlot::SetupAxes("", "", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-            ImPlot::SetupAxisLimits(ImAxis_X1, 0, lut.size(), ImPlotCond_Always);
-            ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1, ImPlotCond_Always);
-            for (int i = 0; i < lut.size(); i++)
+            if (!use_range)
             {
-                auto &p = lut[i];
-                ImPlot::GetPlotDrawList()->AddQuadFilled(
-                    ImPlot::PlotToPixels({i, 0}),
-                    ImPlot::PlotToPixels({i + 1, 0}),
-                    ImPlot::PlotToPixels({i + 1, 1}),
-                    ImPlot::PlotToPixels({i, 1}),
-                    IM_COL32(p.r, p.g, p.b, p.a));
+                range_min = 0;
+                range_max = lut.size();
             }
 
-            auto p = ImPlot::GetPlotMousePos();
-            if (p.y >= 0 && p.y <= 1 && p.x >= 0 && p.x < lut.size() && ImGui::IsItemFocused())
+            if (ImPlot::BeginPlot("LutPlot", {win_size.x - 10 * ui_scale, 200 * ui_scale}))
             {
-                ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p.x, 0}),
-                                                   ImPlot::PlotToPixels({p.x, 1}),
-                                                   ImColor(0, 0, 0), 1);
-
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                    saveHistory();
-
-                if (mouse_mode == 0)
+                // ImPlot::SetupAxes("", "", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                ImPlot::SetupAxisLimits(ImAxis_X1, range_min, range_max, ImPlotCond_Always);
+                ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1, ImPlotCond_Always);
+                for (int i = 0; i < lut.size(); i++)
                 {
-                    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-                    {
-                        lut[floor(p.x)] = current_col;
-                        lutaction_started = true;
-                    }
+                    auto &p = lut[i];
+                    ImPlot::GetPlotDrawList()->AddQuadFilled(
+                        ImPlot::PlotToPixels({range_transform(i), 0}),
+                        ImPlot::PlotToPixels({range_transform(i + 1), 0}),
+                        ImPlot::PlotToPixels({range_transform(i + 1), 1}),
+                        ImPlot::PlotToPixels({range_transform(i), 1}),
+                        IM_COL32(p.r, p.g, p.b, p.a));
                 }
-                else if (mouse_mode == 1)
+
+                auto p = ImPlot::GetPlotMousePos();
+                if (p.y >= 0 && p.y <= 1 && p.x >= 0 && p.x < lut.size() && ImGui::IsItemFocused())
                 {
+                    ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p.x, 0}),
+                                                       ImPlot::PlotToPixels({p.x, 1}),
+                                                       ImColor(0, 0, 0), 1);
+
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        saveHistory();
+
+                    if (mouse_mode == 0)
                     {
-                        interpolate_start_position = floor(p.x);
-                        interpolate_start_color = lut[interpolate_start_position];
-                        lutaction_started = true;
-                    }
-
-                    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-                    {
-                        int interpolate_stop_position = floor(p.x);
-                        auto interpolate_stop_color = lut[interpolate_stop_position];
-
-                        int start = interpolate_start_position < interpolate_stop_position ? interpolate_start_position : interpolate_stop_position;
-                        int stop = interpolate_start_position < interpolate_stop_position ? interpolate_stop_position : interpolate_start_position;
-
-                        auto startc = interpolate_start_position < interpolate_stop_position ? interpolate_start_color : interpolate_stop_color;
-                        auto stopc = interpolate_start_position < interpolate_stop_position ? interpolate_stop_color : interpolate_start_color;
-
-                        //                        printf("Start %d Stop %d\n", start, stop);
-                        for (int i = start + 1; i < stop; i++)
+                        if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
                         {
-                            float p = float(i - start) / float(stop - start);
-                            ColorPX f;
-                            f.r = startc.r * (1.0 - p) + stopc.r * p;
-                            f.g = startc.g * (1.0 - p) + stopc.g * p;
-                            f.b = startc.b * (1.0 - p) + stopc.b * p;
-                            f.a = startc.a * (1.0 - p) + stopc.a * p;
-                            lut[i] = f;
+                            lut[floor(p.x)] = current_col;
+                            lutaction_started = true;
+                        }
+                    }
+                    else if (mouse_mode == 1)
+                    {
+                        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        {
+                            interpolate_start_position = floor(p.x);
+                            interpolate_start_color = lut[interpolate_start_position];
+                            lutaction_started = true;
+                        }
+
+                        if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                        {
+                            int interpolate_stop_position = floor(p.x);
+                            auto interpolate_stop_color = lut[interpolate_stop_position];
+
+                            int start = interpolate_start_position < interpolate_stop_position ? interpolate_start_position : interpolate_stop_position;
+                            int stop = interpolate_start_position < interpolate_stop_position ? interpolate_stop_position : interpolate_start_position;
+
+                            auto startc = interpolate_start_position < interpolate_stop_position ? interpolate_start_color : interpolate_stop_color;
+                            auto stopc = interpolate_start_position < interpolate_stop_position ? interpolate_stop_color : interpolate_start_color;
+
+                            //                        printf("Start %d Stop %d\n", start, stop);
+                            for (int i = start + 1; i < stop; i++)
+                            {
+                                float p = float(i - start) / float(stop - start);
+                                ColorPX f;
+                                f.r = startc.r * (1.0 - p) + stopc.r * p;
+                                f.g = startc.g * (1.0 - p) + stopc.g * p;
+                                f.b = startc.b * (1.0 - p) + stopc.b * p;
+                                f.a = startc.a * (1.0 - p) + stopc.a * p;
+                                lut[i] = f;
+                            }
                         }
                     }
                 }
-            }
 
-            ImPlot::EndPlot();
+                ImPlot::EndPlot();
+            }
 
             if (lutaction_started && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                 should_regen_image = true;
