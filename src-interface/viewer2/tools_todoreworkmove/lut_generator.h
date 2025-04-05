@@ -73,6 +73,9 @@ namespace satdump
                 should_regen_image = true;
             }
 
+            // Replicate
+            int replicate_times = 2;
+
             // TODOREWORK File save
             widget::MenuItemImageSave file_save_menu;
             widget::MenuItemFileOpen file_open_menu;

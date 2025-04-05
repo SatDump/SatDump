@@ -96,6 +96,19 @@ namespace satdump
                 if (!use_range)
                     style::endDisabled();
                 ImGui::Checkbox("Use Range", &use_range);
+
+                ImGui::InputInt("##replicate", &replicate_times);
+                ImGui::SameLine();
+                if (ImGui::Button("Replicate"))
+                {
+                    if (replicate_times >= 2)
+                    {
+                        auto lut2 = lut;
+                        lut.clear();
+                        for (int i = 0; i < replicate_times; i++)
+                            lut.insert(lut.end(), lut2.begin(), lut2.end());
+                    }
+                }
             }
         }
 
