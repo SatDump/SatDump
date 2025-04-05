@@ -233,7 +233,7 @@ jobs:
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -252,6 +252,24 @@ jobs:
         with:
           name: SatDump-Ubuntu-22.04
           path: ${{runner.workspace}}/build/*.deb
+
+      - name: Setup pkg2appimage
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage && sudo apt install -y imagemagick desktop-file-utils libfuse2
+
+      - name: Make AppImage
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cp *.deb /tmp/satdump.deb && cp $GITHUB_WORKSPACE/SatDump.yml . && ./pkg2appimage SatDump.yml
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-AppImage
+          path: ${{runner.workspace}}/build/out/*.AppImage
 
   build_ubuntu_2404:
     # The CMake configure and build commands are platform agnostic and should work equally
@@ -282,7 +300,7 @@ jobs:
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -301,24 +319,6 @@ jobs:
         with:
           name: SatDump-Ubuntu-24.04
           path: ${{runner.workspace}}/build/*.deb
-
-      - name: Setup pkg2appimage
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage && sudo apt install -y imagemagick desktop-file-utils libfuse2
-
-      - name: Make AppImage
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cp *.deb /tmp/satdump.deb && cp $GITHUB_WORKSPACE/SatDump.yml . && ./pkg2appimage SatDump.yml
-
-      - name: Upload AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: SatDump-AppImage
-          path: ${{runner.workspace}}/build/out/*.AppImage
 
   build_linux_arm64:
     # The CMake configure and build commands are platform agnostic and should work equally
