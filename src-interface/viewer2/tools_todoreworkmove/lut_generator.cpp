@@ -3,6 +3,7 @@
 #include "common/image/io.h"
 #include "logger.h"
 #include "imgui/pfd/pfd_utils.h"
+#include "resources.h"
 
 namespace satdump
 {
@@ -13,6 +14,13 @@ namespace satdump
             lut.resize(100, {255, 255, 255, 255});
             for (int i = 0; i < 100; i++)
                 lut[i].r = lut[i].g = lut[i].b = (i / 100.0) * 255;
+
+            file_save_menu.getimg_callback = [this]()
+            {
+                std::shared_ptr<image::Image> img;
+                *img = generateLutImage();
+                return img;
+            };
         }
 
         LutGeneratorHandler::~LutGeneratorHandler()
@@ -73,30 +81,37 @@ namespace satdump
                     restoreHistory();
                 if (!has_hist)
                     style::endDisabled();
+
+                if (ImGui::Button("Invert"))
+                    std::reverse(lut.begin(), lut.end());
             }
         }
 
         void LutGeneratorHandler::drawMenuBar()
         {
-            if (ImGui::MenuItem("Save LUT"))
-            {
-                auto lutImg = generateLutImage();
-                auto fun = [this, lutImg]()
-                {
-                    file_save_thread_running = true;
-                    // TODOREWORK!!!!
-                    std::string save_type = "png";
-                    std::string saved_at = save_image_dialog("out", ".", "Save Image", (image::Image *)&lutImg, &save_type);
-                    if (saved_at == "")
-                        logger->info("Save cancelled");
-                    else
-                        logger->info("Saved current image at %s", saved_at.c_str());
-                    file_save_thread_running = false;
-                };
+            file_save_menu.render("Save LUT", "lut", ".", "Save Image", true);
 
-                if (file_save_thread.joinable())
-                    file_save_thread.join();
-                file_save_thread = std::thread(fun);
+            if (file_open_menu.render("Load LUT", "Select Image", resources::getResourcePath("lut"), {"All Files", "*"}))
+            {
+                image::Image l;
+                image::load_img(l, file_open_menu.getPath());
+                if (l.size() == 0)
+                {
+                    logger->error("Invalid image for a LUT!");
+                }
+                else
+                {
+                    l = l.to8bits();
+                    l.to_rgba();
+                    lut.resize(l.width());
+                    for (int i = 0; i < l.width(); i++)
+                    {
+                        lut[i].r = l.get(0, i, 0);
+                        lut[i].g = l.get(1, i, 0);
+                        lut[i].b = l.get(2, i, 0);
+                        lut[i].a = l.get(3, i, 0);
+                    }
+                }
             }
         }
 

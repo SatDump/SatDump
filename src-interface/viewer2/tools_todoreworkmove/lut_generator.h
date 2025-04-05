@@ -11,6 +11,7 @@
 
 #include "imgui/pfd/widget.h"
 #include "common/widgets/image_view.h"
+#include "common/widgets/menuitem_fileopen.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
@@ -61,8 +62,8 @@ namespace satdump
             }
 
             // TODOREWORK File save
-            bool file_save_thread_running = false;
-            std::thread file_save_thread;
+            widget::MenuItemImageSave file_save_menu;
+            widget::MenuItemFileOpen file_open_menu;
 
         public:
             LutGeneratorHandler();
