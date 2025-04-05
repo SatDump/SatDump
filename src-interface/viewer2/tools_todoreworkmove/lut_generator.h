@@ -52,6 +52,12 @@ namespace satdump
                 return range_min + (x / size) * (range_max - range_min);
             }
 
+            inline double range_transform_inv(double x)
+            {
+                double size = lut.size();
+                return ((x - range_min) / (range_max - range_min)) * size;
+            }
+
             // Image gen
             FileSelectWidget image_select = FileSelectWidget("Preview Image", "Preview Image");
             bool should_regen_image = false;

@@ -152,6 +152,8 @@ namespace satdump
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         saveHistory();
 
+                    p.x = range_transform_inv(p.x);
+
                     if (mouse_mode == 0)
                     {
                         if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
