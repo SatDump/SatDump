@@ -253,24 +253,6 @@ jobs:
           name: SatDump-Ubuntu-22.04
           path: ${{runner.workspace}}/build/*.deb
 
-      - name: Setup pkg2appimage
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage
-
-      - name: Make AppImage
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cp *.deb /tmp/satdump.deb && ./pkg2appimage ../SatDump.yml
-
-      - name: Upload AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: SatDump-AppImage
-          path: ${{runner.workspace}}/build/*.AppImage
-
   build_ubuntu_2404:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
@@ -319,6 +301,24 @@ jobs:
         with:
           name: SatDump-Ubuntu-24.04
           path: ${{runner.workspace}}/build/*.deb
+
+      - name: Setup pkg2appimage
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage
+
+      - name: Make AppImage
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cp *.deb /tmp/satdump.deb && ./pkg2appimage ../SatDump.yml
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-AppImage
+          path: ${{runner.workspace}}/build/*.AppImage
 
   build_linux_arm64:
     # The CMake configure and build commands are platform agnostic and should work equally
