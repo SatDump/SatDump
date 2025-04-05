@@ -19,6 +19,7 @@ ingredients:
     - liblimesuite20.10-1
     - libbladerf2
     - libhdf5-103-1
+    - libhdf5-hl-100
     - zenity
 #    - satdump
   exclude:
