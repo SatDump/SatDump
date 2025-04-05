@@ -239,7 +239,7 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
 }
 
 Write-Output "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.8.0.0
+git clone https://github.com/Aang23/uhd --depth 1 -b winarm64-patch
 cd uhd\host
 $null = mkdir build
 cd build
