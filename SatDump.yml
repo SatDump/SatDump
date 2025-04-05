@@ -29,9 +29,9 @@ ingredients:
   debs:
     - /tmp/satdump.deb
   sources:
-    - deb http://archive.ubuntu.com/ubuntu/ jammy main universe
+    - deb http://archive.ubuntu.com/ubuntu/ noble main universe
   dist:
-    - jammy #bookworm
+    - noble #bookworm
   script:
 #    - DLD=https://github.com/SatDump/SatDump/releases/download/nightly/satdump_ubuntu_22.04_amd64.deb    #$(wget -q "https://api.github.com/repos/satdump/satdump/releases/latest"  -O - | grep -E "https.*amd64.deb" | cut -d'"' -f4)
 #    - wget -c $DLD -O /home/owner/satdump.deb
