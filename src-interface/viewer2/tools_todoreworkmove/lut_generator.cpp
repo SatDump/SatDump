@@ -19,7 +19,7 @@ namespace satdump
 
             file_save_menu.getimg_callback = [this]()
             {
-                std::shared_ptr<image::Image> img;
+                auto img = std::make_shared<image::Image>();
                 *img = generateLutImage();
                 return img;
             };
