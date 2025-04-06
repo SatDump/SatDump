@@ -247,6 +247,12 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: make package
 
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Ubuntu-22.04
+          path: ${{runner.workspace}}/build/*.deb
+
       - name: Setup pkg2appimage
         working-directory: ${{runner.workspace}}/build
         shell: bash
@@ -259,11 +265,11 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cp *.deb /tmp/satdump.deb && cp $GITHUB_WORKSPACE/SatDump.yml . && ./pkg2appimage SatDump.yml
 
-      - name: Upload ZIP
+      - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: SatDump-Ubuntu-22.04
-          path: ${{runner.workspace}}/build/*.deb ${{runner.workspace}}/build/out/*.AppImage
+          name: SatDump-AppImage
+          path: ${{runner.workspace}}/build/out/*.AppImage
 
   build_ubuntu_2404:
     # The CMake configure and build commands are platform agnostic and should work equally
