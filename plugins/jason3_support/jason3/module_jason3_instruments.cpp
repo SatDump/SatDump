@@ -258,6 +258,16 @@ namespace jason3
 
                 {
                     satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = "C-Band Unknon";
+                    h.timestamps = poseidon_c_reader.timestamps;
+                    h.data = poseidon_c_reader.data_unknown;
+                    poseidon_products.data.push_back(h);
+                }
+
+                /////////////////////////////
+
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
                     h.channel_name = "Ku-Band Scatter";
                     h.timestamps = poseidon_ku_reader.timestamps;
                     h.data = poseidon_ku_reader.data_scatter;
@@ -269,6 +279,14 @@ namespace jason3
                     h.channel_name = "Ku-Band Height";
                     h.timestamps = poseidon_ku_reader.timestamps;
                     h.data = poseidon_ku_reader.data_height;
+                    poseidon_products.data.push_back(h);
+                }
+
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = "Ku-Band Unknon";
+                    h.timestamps = poseidon_ku_reader.timestamps;
+                    h.data = poseidon_ku_reader.data_unknown;
                     poseidon_products.data.push_back(h);
                 }
 

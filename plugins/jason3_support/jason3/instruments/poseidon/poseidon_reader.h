@@ -24,6 +24,8 @@ namespace jason3
             std::vector<double> data_height;
             std::vector<double> data_scatter;
 
+            std::vector<double> data_unknown;
+
             void work(ccsds::CCSDSPacket &packet);
         };
     } // namespace modis

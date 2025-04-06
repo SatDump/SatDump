@@ -1,5 +1,6 @@
 #include "poseidon_reader.h"
 #include "../timestamp.h"
+#include "logger.h"
 
 namespace jason3
 {
@@ -24,6 +25,13 @@ namespace jason3
             // We need to know where the satellite was when that packet was created
             double currentTime = parseJasonTime(packet);
             timestamps.push_back(currentTime);
+
+            uint32_t v1 = packet.payload[48 + 0] << 24 |
+                          packet.payload[48 + 1] << 16 |
+                          packet.payload[48 + 2] << 8 |
+                          packet.payload[48 + 3];
+
+            data_unknown.push_back(v1);
 
             /*predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
 
