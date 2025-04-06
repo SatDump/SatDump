@@ -5,7 +5,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "products2/image_product.h"
-// #include "products/radiation_products.h" TODOREWORK
+#include "products2/punctiform_product.h"
 #include "products2/dataset.h"
 #include "resources.h"
 #include "common/projection/timestamp_filtering.h"
@@ -270,35 +270,39 @@ namespace noaa
                     hirs_status = DONE;
                 }
 
-                /*                // SEM
-                                {
-                                    sem_status = SAVING;
-                                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
-                                    if (!std::filesystem::exists(directory))
-                                        std::filesystem::create_directory(directory);
+                // SEM
+                {
+                    sem_status = SAVING;
+                    std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
+                    if (!std::filesystem::exists(directory))
+                        std::filesystem::create_directory(directory);
 
-                                    logger->info("----------- SEM");
-                                    logger->info("Sample counts from selected channels :");
-                                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
-                                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
-                                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
-                                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
-                                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
+                    logger->info("----------- SEM");
+                    logger->info("Sample counts from selected channels :");
+                    logger->info("Channel OP1   : " + std::to_string(sem_reader.getChannel(0).size()));
+                    logger->info("Channel P8    : " + std::to_string(sem_reader.getChannel(20).size()));
+                    logger->info("Channel 0DE1  : " + std::to_string(sem_reader.getChannel(22).size()));
+                    logger->info("Channel 0EFL  : " + std::to_string(sem_reader.getChannel(38).size()));
+                    logger->info("Backgrounds   : " + std::to_string(sem_reader.getChannel(54).size()));
 
-                                    satdump::RadiationProducts sem_products;
-                                    sem_products.instrument_name = "sem";
-                                    sem_products.set_tle(satellite_tle);
-                                    for (int i = 0; i < 62; i++)
-                                    {
-                                        sem_products.channel_counts.push_back(sem_reader.getChannel(i));
-                                        sem_products.set_timestamps(i, sem_reader.getTimestamps(i));
-                                        sem_products.set_channel_name(i, sem_reader.channel_names[i]);
-                                    }
+                    satdump::products::PunctiformProduct sem_products;
+                    sem_products.instrument_name = "sem";
+                    sem_products.set_tle(satellite_tle);
+                    for (int i = 0; i < 62; i++)
+                    {
+                        satdump::products::PunctiformProduct::DataHolder h;
+                        h.channel_name = sem_reader.channel_names[i];
+                        h.timestamps = sem_reader.getTimestamps(i);
+                        auto v = sem_reader.getChannel(i);
+                        for (int x = 0; x < v.size(); x++)
+                            h.data.push_back(v[x]);
+                        sem_products.data.push_back(h);
+                    }
 
-                                    sem_products.save(directory);
-                                    dataset.products_list.push_back("SEM");
-                                    sem_status = DONE;
-                                }*/
+                    sem_products.save(directory);
+                    dataset.products_list.push_back("SEM");
+                    sem_status = DONE;
+                }
 
                 // telemetry
                 {

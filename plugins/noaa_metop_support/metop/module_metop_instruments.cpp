@@ -17,6 +17,7 @@
 #include "common/image/processing.h"
 #include "common/calibration.h"
 
+#include "products2/punctiform_product.h"
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 
@@ -520,7 +521,7 @@ namespace metop
                 logger->info("Count : " + std::to_string(admin_msg_reader.count));
             }
 
-            /*// SEM
+            // SEM
             {
                 sem_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SEM";
@@ -531,21 +532,26 @@ namespace metop
                 logger->info("----------- SEM");
                 logger->info("Packets : " + std::to_string(sem_reader.samples));
 
-                satdump::RadiationProducts sem_products;
+                satdump::products::PunctiformProduct sem_products;
                 sem_products.instrument_name = "sem";
                 // sem_products.has_timestamps = true;
                 sem_products.set_tle(satellite_tle);
-                sem_products.set_timestamps_all(sem_reader.timestamps);
-                sem_products.channel_counts.resize(40);
-                for (int i = 0; i < sem_reader.samples * 16; i++)
-                    for (int c = 0; c < 40; c++)
-                        sem_products.channel_counts[c].push_back(sem_reader.channels[c][i]);
+
+                for (int c = 0; c < 40; c++)
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = std::to_string(c + 1);
+                    h.timestamps = sem_reader.timestamps;
+                    for (int x = 0; x < sem_reader.channels[c].size(); x++)
+                        h.data.push_back(sem_reader.channels[c][x]);
+                    sem_products.data.push_back(h);
+                }
 
                 sem_products.save(directory);
                 dataset.products_list.push_back("SEM");
 
                 sem_status = DONE;
-            }*/
+            }
 
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
