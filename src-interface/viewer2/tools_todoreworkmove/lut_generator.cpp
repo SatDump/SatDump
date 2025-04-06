@@ -142,17 +142,17 @@ namespace satdump
                         IM_COL32(p.r, p.g, p.b, p.a));
                 }
 
-                auto p = ImPlot::GetPlotMousePos();
+                ImPlotPoint p_i;
+                ImPlotPoint p = p_i = ImPlot::GetPlotMousePos();
+                p.x = range_transform_inv(p.x);
                 if (p.y >= 0 && p.y <= 1 && p.x >= 0 && p.x < lut.size() && ImGui::IsItemFocused())
                 {
-                    ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p.x, 0}),
-                                                       ImPlot::PlotToPixels({p.x, 1}),
+                    ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p_i.x, 0}),
+                                                       ImPlot::PlotToPixels({p_i.x, 1}),
                                                        ImColor(0, 0, 0), 1);
 
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         saveHistory();
-
-                    p.x = range_transform_inv(p.x);
 
                     if (mouse_mode == 0)
                     {
