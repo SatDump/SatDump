@@ -1,5 +1,5 @@
 #include "poseidon_reader.h"
-#include "common/ccsds/ccsds_time.h"
+#include "../timestamp.h"
 
 namespace jason3
 {
@@ -22,7 +22,7 @@ namespace jason3
             frames++;
 
             // We need to know where the satellite was when that packet was created
-            double currentTime = ccsds::parseCCSDSTimeFull(packet, 16743, 1);
+            double currentTime = parseJasonTime(packet);
             timestamps.push_back(currentTime);
 
             /*predict_orbit(jason3_object, &jason3_orbit, predict_to_julian(currentTime));
@@ -33,7 +33,7 @@ namespace jason3
             int imageLat = map_height - ((90.0f + (jason3_orbit.latitude * 180.0f / M_PI)) / 180.0f) * map_height;
             int imageLon = ((jason3_orbit.longitude * 180.0f / M_PI) / 360.0f) * map_width + (map_width / 2);
             if (imageLon >= map_width)
-                imageLon -= map_width;
+                imageLon -= map_width;*/
 
             // Here is a very naive way of detecting when we got a radar echo...
             // And how stable it was...
@@ -73,6 +73,10 @@ namespace jason3
             firstOverThresoldAvg /= 8;
             countOverThresoldAvg /= 8;
 
+            data_scatter.push_back(countOverThresoldAvg);
+            data_height.push_back(firstOverThresoldAvg);
+
+            /*
             // "Scatter" samples
             int sampleScatter = 65 + ((float)countOverThresoldAvg / 104.0f) * 255;
             if (sampleScatter < 0)
@@ -93,7 +97,8 @@ namespace jason3
 
             // Write on the map
             unsigned char colorScatter[] = {(unsigned char)sampleScatter, (unsigned char)std::max(0, 255 - sampleScatter), 0};
-            map_image_scatter.draw_circle(imageLon, imageLat, 2, colorScatter);*/
+            map_image_scatter.draw_circle(imageLon, imageLat, 2, colorScatter);
+            */
         }
     } // namespace modis
 } // namespace eos

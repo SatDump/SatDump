@@ -20,6 +20,10 @@ namespace jason3
             int frames;
             std::vector<double> timestamps;
 
+            // TODOREWORK Proper radar as 3D limb
+            std::vector<double> data_height;
+            std::vector<double> data_scatter;
+
             void work(ccsds::CCSDSPacket &packet);
         };
     } // namespace modis

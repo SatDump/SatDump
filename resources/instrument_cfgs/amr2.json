@@ -1,0 +1,26 @@
+{
+    "name": "AMR-2",
+    "presets": [
+        {
+            "name": "Channel 1 DotMap",
+            "channel": "1",
+            "mode": "dotmap",
+            "range_min": 11700,
+            "range_max": 13000
+        },
+        {
+            "name": "Channel 2 DotMap",
+            "channel": "2",
+            "mode": "dotmap",
+            "range_min": 13200,
+            "range_max": 14600
+        },
+        {
+            "name": "Channel 3 DotMap",
+            "channel": "3",
+            "mode": "dotmap",
+            "range_min": 12600,
+            "range_max": 13600
+        }
+    ]
+}

@@ -2,7 +2,7 @@
 #include "lpt_reader.h"
 #include "resources.h"
 // #include "tle.h"
-#include "common/ccsds/ccsds_time.h"
+#include "../timestamp.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 /* pi */
@@ -32,7 +32,7 @@ namespace jason3
             frames++;
 
             // We need to know where the satellite was when that packet was created
-            double currentTime = ccsds::parseCCSDSTimeFull(packet, 16743 + 1056, 1);
+            double currentTime = parseJasonTime(packet);
             timestamps.push_back(currentTime);
 
             for (int ch = 0; ch < channel_count; ch++)

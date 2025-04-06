@@ -5,6 +5,7 @@
 #include "imgui/implot/implot.h" // TODOREWORK
 
 #include "products2/punctiform/product_dotmap.h"
+#include "common/image/io.h" // TODOREWORK
 
 namespace satdump
 {
@@ -98,9 +99,11 @@ namespace satdump
                     current_mode = MODE_GRAPH;
                 else if (p["mode"] == "dotmap")
                     current_mode = MODE_DOTMAP;
+                else if (p["mode"] == "fillmap")
+                    current_mode = MODE_FILLMAP;
             }
 
-            selected_channel = getValueOrDefault(p["selected_channel"], selected_channel);
+            selected_channel = getValueOrDefault(p["channel"], selected_channel);
             range_min = getValueOrDefault(p["range_min"], range_min);
             range_max = getValueOrDefault(p["range_max"], range_max);
         }
@@ -113,10 +116,12 @@ namespace satdump
                 p["mode"] = "graph";
             else if (current_mode == MODE_DOTMAP)
                 p["mode"] = "dotmap";
+            else if (current_mode == MODE_FILLMAP)
+                p["mode"] = "fillmap";
 
             p["channel"] = selected_channel;
-            p["range_min"] = range_min = 0;
-            p["range_max"] = range_max = 10;
+            p["range_min"] = range_min;
+            p["range_max"] = range_max;
 
             return p;
         }
@@ -145,6 +150,15 @@ namespace satdump
         void PunctiformProductHandler::saveResult(std::string directory)
         {
             // TODOREWORK
+            if (current_mode == MODE_DOTMAP || current_mode == MODE_FILLMAP)
+            {
+                // TODOREWORK
+                auto &img = img_handler.get_current_img();
+                int autogen_id = 0;
+                while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
+                    autogen_id++;
+                image::save_img(img, directory + "/img_" + std::to_string(autogen_id) + ".png");
+            }
         }
 
         void PunctiformProductHandler::drawMenuBar()

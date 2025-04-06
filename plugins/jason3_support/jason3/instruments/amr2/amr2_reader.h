@@ -21,6 +21,9 @@ namespace jason3
             int lines;
             std::vector<double> timestamps;
 
+            std::vector<double> timestamps_data;
+            std::vector<double> channels_data[3];
+
             void work(ccsds::CCSDSPacket &packet);
             image::Image getChannel(int channel);
         };

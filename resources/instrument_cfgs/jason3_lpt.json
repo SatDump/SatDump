@@ -1,0 +1,12 @@
+{
+    "name": "LPT",
+    "presets": [
+        {
+            "name": "ELS-A 12 DotMap",
+            "channel": "ELS-A 12",
+            "mode": "dotmap",
+            "range_min": 0,
+            "range_max": 1000
+        }
+    ]
+}
