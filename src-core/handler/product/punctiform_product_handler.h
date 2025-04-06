@@ -27,9 +27,11 @@ namespace satdump
             {
                 MODE_GRAPH,
                 MODE_DOTMAP,
+                MODE_FILLMAP,
             };
 
             current_mode_t current_mode = MODE_GRAPH;
+            float progress = 0;
 
             ImageHandler img_handler;
 

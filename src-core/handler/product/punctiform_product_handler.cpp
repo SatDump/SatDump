@@ -47,6 +47,12 @@ namespace satdump
                     current_mode = MODE_DOTMAP;
                     needs_to_update = true;
                 }
+                ImGui::SameLine();
+                if (ImGui::RadioButton("Fill Map", current_mode == MODE_FILLMAP))
+                {
+                    current_mode = MODE_FILLMAP;
+                    needs_to_update = true;
+                }
 
                 if (ImGui::BeginCombo("Channel##selectechannel", selected_channel.c_str()))
                 {
@@ -61,7 +67,7 @@ namespace satdump
                     ImGui::EndCombo();
                 }
 
-                if (current_mode == MODE_DOTMAP)
+                if (current_mode == MODE_DOTMAP || current_mode == MODE_FILLMAP)
                 {
                     ImGui::InputDouble("Range Min", &range_min);
                     ImGui::InputDouble("Range Max", &range_max);
@@ -71,6 +77,8 @@ namespace satdump
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
+
+                ImGui::ProgressBar(progress);
             }
 
             needs_to_update |= renderPresetMenu(); // TODOREWORK move in top drawMenu?
@@ -119,7 +127,12 @@ namespace satdump
             {
                 if (current_mode == MODE_DOTMAP)
                 {
-                    auto img = products::generate_dotmap_product_image(product, selected_channel, -1, -1, 5, true, true, range_min, range_max);
+                    auto img = products::generate_dotmap_product_image(product, selected_channel, -1, -1, 5, true, true, range_min, range_max, &progress);
+                    img_handler.updateImage(img);
+                }
+                else if (current_mode == MODE_FILLMAP)
+                {
+                    auto img = products::generate_fillmap_product_image(product, selected_channel, 200, 100, range_min, range_max, &progress);
                     img_handler.updateImage(img);
                 }
             }
@@ -159,7 +172,7 @@ namespace satdump
 
                 ImPlot::EndPlot();
             }
-            else if (current_mode == MODE_DOTMAP)
+            else if (current_mode == MODE_DOTMAP || current_mode == MODE_FILLMAP)
             {
                 img_handler.drawContents(win_size);
             }
