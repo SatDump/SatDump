@@ -238,16 +238,20 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
     rm -recurse -force FX3-SDK, FX3-SDK.zip
 }
 
-Write-Output "Building UHD..."
-git clone https://github.com/Aang23/uhd --depth 1 -b winarm64-patch
-cd uhd\host
-$null = mkdir build
-cd build
-cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
-cmake --build . --config Release
-cmake --install .
-cd ..\..\..
-rm -recurse -force uhd
+# Not compatible with ARM at this time
+if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
+{
+    Write-Output "Building UHD..."
+    git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.8.0.0
+    cd uhd\host
+    $null = mkdir build
+    cd build
+    cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
+    cmake --build . --config Release
+    cmake --install .
+    cd ..\..\..
+    rm -recurse -force uhd
+}
 
 cd ..
 rm -recurse -force build
