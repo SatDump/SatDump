@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-file(GLOB_RECURSE SatDump_testing_CPPS main.cpp)
+file(GLOB_RECURSE SatDump_testing_CPPS main.cpp angelscript/*.cpp aatc/*.cpp)
 
 add_executable(satdump-testing ${SatDump_testing_CPPS})
 target_include_directories(satdump-testing PUBLIC src-testing src-core)

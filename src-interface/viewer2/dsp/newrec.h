@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products2/handler/handler.h"
+#include "handler/handler.h"
 #include "dsp/device/dev.h"
 #include "dsp/device/options_displayer.h"
 #include "dsp/fft/fft_pan.h"

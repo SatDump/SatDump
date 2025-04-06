@@ -7,6 +7,7 @@
 #include "core/exception.h"
 
 #include "image_product.h"
+#include "punctiform_product.h"
 
 namespace satdump
 {
@@ -79,9 +80,11 @@ namespace satdump
 
         void registerProducts()
         {
-            product_loaders.clear();
+            product_loaders.clear(); /*TODOREWORK*/
             product_loaders.emplace("image", RegisteredProduct{PRODUCT_LOADER_FUN(ImageProduct), /*process_image_products*/ [](satdump::products::Product *, std::string)
                                                                { logger->error("NO PROCESSOR!"); }});
+            product_loaders.emplace("punctiform", RegisteredProduct{PRODUCT_LOADER_FUN(PunctiformProduct), /*process_image_products*/ [](satdump::products::Product *, std::string)
+                                                                    { logger->error("NO PROCESSOR!"); }});
             //  products_loaders.emplace("radiation", RegisteredProducts{PRODUCTS_LOADER_FUN(RadiationProducts), process_radiation_products});
             //  products_loaders.emplace("scatterometer", RegisteredProducts{PRODUCTS_LOADER_FUN(ScatterometerProducts), process_scatterometer_products});
 

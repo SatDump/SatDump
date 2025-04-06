@@ -7,6 +7,8 @@
 #include "imgui/imgui_stdlib.h"
 #include "core/style.h"
 
+#include "handler/image/image_handler.h"
+
 namespace satdump
 {
     namespace viewer
@@ -20,6 +22,21 @@ namespace satdump
             // Products
             products::PunctiformProduct *product;
 
+            // Needed for local stuff
+            enum current_mode_t
+            {
+                MODE_GRAPH,
+                MODE_DOTMAP,
+            };
+
+            current_mode_t current_mode = MODE_GRAPH;
+
+            ImageHandler img_handler;
+
+            std::string selected_channel;
+            double range_min = 0;
+            double range_max = 10;
+
             // Proc function
             void do_process();
 
@@ -27,6 +44,22 @@ namespace satdump
             void drawMenu();
             void drawContents(ImVec2 win_size);
             void drawMenuBar();
+
+            //
+            void addSubHandler(std::shared_ptr<Handler> handler)
+            {
+                img_handler.addSubHandler(handler);
+            }
+
+            void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
+            {
+                img_handler.delSubHandler(handler, true);
+            }
+
+            void drawTreeMenu(std::shared_ptr<Handler> &h)
+            {
+                img_handler.drawTreeMenu(h);
+            }
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products2/handler/handler.h"
+#include "handler/handler.h"
 
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"

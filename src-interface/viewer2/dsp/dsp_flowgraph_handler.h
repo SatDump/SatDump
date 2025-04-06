@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products2/handler/handler.h"
+#include "handler/handler.h"
 #include "flowgraph/flowgraph.h"
 
 // TODOREWORK, move into plugin? Or Core?

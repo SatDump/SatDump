@@ -40,14 +40,15 @@ namespace satdump
 
             nlohmann::json get_cfg_list()
             {
-                nlohmann::json p = devInfo.params;
+                nlohmann::json p;
 
                 p["serial"]["type"] = "string";
 
-                p["rx"]["type"] = "sub";
-                p["rx"]["max"] = 1;
-                auto &rxch0 = p["rx"]["sub"];
+                p["rx0"]["type"] = "sub";
+                auto &rxch0 = p["rx0"]["sub"];
                 {
+                    rxch0 = devInfo.params;
+
                     rxch0["frequency"]["type"] = "float";
 
                     if (!rxch0.contains("samplerate"))
@@ -85,7 +86,7 @@ namespace satdump
             {
                 nlohmann::json v;
                 v["serial"] = p_serial;
-                auto &r = v["rx"][0];
+                auto &r = v["rx0"];
                 r["samplerate"] = p_samplerate;
                 r["frequency"] = p_frequency;
                 r["gain_type"] = p_gain_type;
@@ -102,7 +103,7 @@ namespace satdump
             void set_cfg(nlohmann::json v)
             {
                 setValFromJSONIfExists(p_serial, v["serial"]);
-                auto &r = v["rx"][0];
+                auto &r = v["rx0"];
                 setValFromJSONIfExists(p_samplerate, r["samplerate"]);
                 setValFromJSONIfExists(p_frequency, r["frequency"]);
                 setValFromJSONIfExists(p_gain_type, r["gain_type"]);

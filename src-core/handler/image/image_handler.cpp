@@ -16,7 +16,7 @@
 #include "core/config.h"
 
 // TODOREWORK!
-#include "products2/handler/vector/shapefile_handler.h"
+#include "handler/vector/shapefile_handler.h"
 #include "resources.h"
 
 namespace satdump

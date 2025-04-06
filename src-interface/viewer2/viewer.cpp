@@ -8,12 +8,12 @@
 // #include "resources.h"
 #include "main_ui.h"
 
-#include "products2/handler/dummy_handler.h"
-#include "products2/handler/product/image_product_handler.h" // TODOREWORK CLEAN
-#include "products2/handler/dataset/dataset_handler.h"
-#include "products2/handler/vector/shapefile_handler.h"
-#include "products2/handler/projection/projection_handler.h"
-#include "products2/handler/trash/trash_handler.h"
+#include "handler/dummy_handler.h"
+#include "handler/product/image_product_handler.h" // TODOREWORK CLEAN
+#include "handler/dataset/dataset_handler.h"
+#include "handler/vector/shapefile_handler.h"
+#include "handler/projection/projection_handler.h"
+#include "handler/trash/trash_handler.h"
 #include "dsp/dsp_flowgraph_handler.h"
 // TODOREWORK
 #include "resources.h"

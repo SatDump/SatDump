@@ -10,6 +10,13 @@
 
 #include <thread>
 
+#include "nlohmann/json_utils.h"
+#include "products2/image_product.h"
+#include "products2/punctiform_product.h"
+#include "products2/dataset.h"
+#include "common/tracking/tle.h"
+#include "resources.h"
+
 namespace jason3
 {
     namespace instruments
@@ -80,10 +87,41 @@ namespace jason3
 
             data_in.close();
 
+            // Products dataset
+            satdump::products::DataSet dataset;
+            dataset.satellite_name = "Jason-3";
+            dataset.timestamp = get_median(amr2_reader.timestamps);
+
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(41240, dataset.timestamp);
+
+            /* // AMR-2
+             {
+                 amr2_status = SAVING;
+                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AMR-2";
+
+                 if (!std::filesystem::exists(directory))
+                     std::filesystem::create_directory(directory);
+
+                 logger->info("----------- AMR-2");
+                 logger->info("Lines : " + std::to_string(amr2_reader.lines));
+
+                 satdump::products::ImageProduct amr2_products;
+                 amr2_products.instrument_name = "amr_2";
+                 amr2_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/jason3_amr2.json")), satellite_tle, amr2_reader.timestamps);
+
+                 for (int i = 0; i < 3; i++)
+                     amr2_products.images.push_back({i, "AMR2-" + std::to_string(i + 1), std::to_string(i + 1), amr2_reader.getChannel(i), 16});
+
+                 amr2_products.save(directory);
+                 dataset.products_list.push_back("AMR-2");
+
+                 amr2_status = DONE;
+             }*/
+
             // AMR-2
             {
                 amr2_status = SAVING;
-                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AMR-2";
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/AMR-2_RAD";
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
@@ -91,17 +129,97 @@ namespace jason3
                 logger->info("----------- AMR-2");
                 logger->info("Lines : " + std::to_string(amr2_reader.lines));
 
+                satdump::products::PunctiformProduct amr2_products;
+                amr2_products.instrument_name = "amr_2";
+                amr2_products.set_tle(satellite_tle);
+
                 for (int i = 0; i < 3; i++)
                 {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    // TODOREWORK                      h.abs_index = i;
+                    h.channel_name = std::to_string(i + 1);
+                    h.timestamps = amr2_reader.timestamps;
                     auto img = amr2_reader.getChannel(i);
-                    image::save_img(img, directory + "/AMR2-" + std::to_string(i + 1));
+                    for (int i2 = 0; i2 < amr2_reader.timestamps.size(); i2++)
+                        h.data.push_back((double)img.get(0, 0, i2));
+                    amr2_products.data.push_back(h);
                 }
+
+                amr2_products.save(directory);
+                dataset.products_list.push_back("AMR-2_RAD");
+
                 amr2_status = DONE;
             }
 
-            // TODO SEM & POSEIDON
+            // LPT
+            {
+                lpt_aps_b_status = lpt_aps_a_status = lpt_els_b_status = lpt_els_a_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/LPT";
 
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- LPT");
+                logger->info("ELS-A : " + std::to_string(lpt_els_a_reader.timestamps.size()));
+                logger->info("ELS-B : " + std::to_string(lpt_els_b_reader.timestamps.size()));
+                logger->info("APS-A : " + std::to_string(lpt_aps_a_reader.timestamps.size()));
+                logger->info("APS-B : " + std::to_string(lpt_aps_b_reader.timestamps.size()));
+
+                satdump::products::PunctiformProduct lpt_products;
+                lpt_products.instrument_name = "jason_lpt";
+                lpt_products.set_tle(satellite_tle);
+
+                for (int i = 0; i < lpt_els_a_reader.channel_counts.size(); i++)
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = "ELS-A " + std::to_string(i + 1);
+                    h.timestamps = lpt_els_a_reader.timestamps;
+                    for (int x = 0; x < lpt_els_a_reader.channel_counts[i].size(); x++)
+                        h.data.push_back(lpt_els_a_reader.channel_counts[i][x]);
+                    lpt_products.data.push_back(h);
+                }
+
+                for (int i = 0; i < lpt_els_b_reader.channel_counts.size(); i++)
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = "ELS-B " + std::to_string(i + 1);
+                    h.timestamps = lpt_els_b_reader.timestamps;
+                    for (int x = 0; x < lpt_els_b_reader.channel_counts[i].size(); x++)
+                        h.data.push_back(lpt_els_b_reader.channel_counts[i][x]);
+                    lpt_products.data.push_back(h);
+                }
+
+                for (int i = 0; i < lpt_aps_a_reader.channel_counts.size(); i++)
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = "APS-A " + std::to_string(i + 1);
+                    h.timestamps = lpt_aps_a_reader.timestamps;
+                    for (int x = 0; x < lpt_aps_a_reader.channel_counts[i].size(); x++)
+                        h.data.push_back(lpt_aps_a_reader.channel_counts[i][x]);
+                    lpt_products.data.push_back(h);
+                }
+
+                for (int i = 0; i < lpt_aps_b_reader.channel_counts.size(); i++)
+                {
+                    satdump::products::PunctiformProduct::DataHolder h;
+                    h.channel_name = "APS-B " + std::to_string(i + 1);
+                    h.timestamps = lpt_aps_b_reader.timestamps;
+                    for (int x = 0; x < lpt_aps_b_reader.channel_counts[i].size(); x++)
+                        h.data.push_back(lpt_aps_b_reader.channel_counts[i][x]);
+                    lpt_products.data.push_back(h);
+                }
+
+                lpt_products.save(directory);
+                dataset.products_list.push_back("LPT");
+
+                lpt_aps_b_status = lpt_aps_a_status = lpt_els_b_status = lpt_els_a_status = DONE;
+            }
+
+            // TODOREWORK POSEIDON
+            logger->critical("TODOREWORK POSEIDON!!!");
+            // std::this_thread::sleep_for(std::chrono::seconds(10));
+
+            dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
         void Jason3InstrumentsDecoderModule::drawUI(bool window)

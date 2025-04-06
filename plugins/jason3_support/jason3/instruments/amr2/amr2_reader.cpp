@@ -24,7 +24,7 @@ namespace jason3
                 return;
 
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = ccsds::parseCCSDSTime(packet, 16743, 1);
+            time_t currentTime = ccsds::parseCCSDSTime(packet, 16743 + 1056, 1); // TODOREWORK!!!!
 
             // Also write them as a raw images
             for (int i = 0, y = 0; i < 12; i++)

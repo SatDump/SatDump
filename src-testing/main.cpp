@@ -11,211 +11,114 @@
  **********************************************************************/
 
 #include "logger.h"
+#include "products2/punctiform_product.h"
 
-#if 1
-
-#include "dsp/device/dev.h"
-#include "init.h"
+#include "common/image/io.h"
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    /* logger->set_level(slog::LOG_ERROR);
-     satdump::initSatdump();
-     completeLoggerInit();
-     logger->set_level(slog::LOG_TRACE);
-
-     auto devs = satdump::ndsp::getDeviceList();
-
-     for (auto &d : devs)
-     {
-         auto i = satdump::ndsp::getDeviceInstanceFromInfo(d);
-         d.params = i->get_cfg_list();
-         logger->debug("\n" + nlohmann::json(d).dump(4));
-     }*/
-}
+#if 0
 
 #else
-#include <nng/nng.h>
-#include <nng/supplemental/http/http.h>
-#include <nng/supplemental/util/platform.h>
-#include <nng/protocol/bus0/bus.h>
-#include <nng/protocol/pair0/pair.h>
+    satdump::products::PunctiformProduct p;
+    p.load("/tmp/jason3_test/AMR-2_RAD/product.cbor");
 
-#include "init.h"
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/fft/fft_pan.h"
+    image::Image map;
+    image::load_jpeg(map, "resources/maps/nasa.jpg");
 
-#include <unistd.h>
+    int channel = 1;
+    int img_x = 200; // map.width();
+    int img_y = 100; // map.height();
 
-// HTTP Handler for stats
-void http_handle(nng_aio *aio)
-{
-    std::string jsonstr = "{\"api\": true}";
-
-    nng_http_res *res;
-    nng_http_res_alloc(&res);
-    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
-    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
-    nng_aio_set_output(aio, 0, res);
-    nng_aio_finish(aio, 0);
-}
-
-// HTTP Handler for commands
-void http_handleP(nng_aio *aio)
-{
-    std::string jsonstr = "{\"api\": true}";
-
-    nng_http_req *msg = (nng_http_req *)nng_aio_get_input(aio, 0);
-
-    void *ptr;
-    size_t ptrl;
-    nng_http_req_get_data(msg, &ptr, &ptrl);
-    logger->info("Got : %s", (char *)ptr);
-
-    nng_http_res *res;
-    nng_http_res_alloc(&res);
-    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
-    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
-    nng_aio_set_output(aio, 0, res);
-    nng_aio_finish(aio, 0);
-}
-
-int main(int argc, char *argv[])
-{
-    initLogger();
-
-    logger->set_level(slog::LOG_OFF);
-    satdump::initSatdump();
-    completeLoggerInit();
-    logger->set_level(slog::LOG_TRACE);
-
-    dsp::registerAllSources();
-
-    ///////////////////////
-
-    std::shared_ptr<dsp::DSPSampleSource> dsp_source;
+    struct Pixel
     {
-        auto all_sources = dsp::getAllAvailableSources();
-        for (auto &s : all_sources)
-        {
-            logger->trace(s.name);
-            if (s.source_type == "rtlsdr")
-                dsp_source = dsp::getSourceFromDescriptor(s);
-        }
-    }
-
-    dsp_source->open();
-    dsp_source->set_samplerate(2.4e6);
-    dsp_source->set_frequency(431.8e6);
-    dsp_source->start();
-
-    std::shared_ptr<dsp::FFTPanBlock> fftPan = std::make_shared<dsp::FFTPanBlock>(dsp_source->output_stream);
-    fftPan->set_fft_settings(65536, dsp_source->get_samplerate(), 30);
-    fftPan->avg_num = 1;
-
-    ////////////////////////
-
-    std::string http_server_url = "http://0.0.0.0:8080";
-
-    nng_http_server *http_server;
-    nng_url *url;
-    {
-
-        nng_url_parse(&url, http_server_url.c_str());
-        nng_http_server_hold(&http_server, url);
-    }
-
-    nng_http_handler *handler_api;
-    {
-        nng_http_handler_alloc(&handler_api, "/api", http_handle);
-        nng_http_handler_set_method(handler_api, "GET");
-        nng_http_server_add_handler(http_server, handler_api);
-    }
-
-    nng_http_handler *handler_apiP;
-    {
-        nng_http_handler_alloc(&handler_api, "/apip", http_handleP);
-        nng_http_handler_set_method(handler_api, "POST");
-        nng_http_server_add_handler(http_server, handler_api);
-    }
-
-    nng_socket socket;
-
-    {
-
-        int rv = 0;
-        if (rv = nng_bus0_open(&socket); rv != 0)
-        {
-            printf("pair open error\n");
-        }
-
-        if (rv = nng_listen(socket, "ws://0.0.0.0:8080/ws", nullptr, 0); rv != 0)
-        {
-            printf("server listen error\n");
-        }
-    }
-
-    nng_url_free(url);
-
-    nng_http_server_start(http_server);
-
-    fftPan->on_fft = [&](float *b)
-    {
-        std::vector<uint8_t> send_buf(8 + 65536);
-        float *min = (float *)&send_buf[0];
-        float *max = (float *)&send_buf[4];
-        uint8_t *dat = &send_buf[8];
-
-        *min = 1e6;
-        *max = -1e6;
-
-        for (int i = 0; i < 65536; i++)
-        {
-            if (*min > b[i])
-                *min = b[i];
-            if (*max < b[i])
-                *max = b[i];
-        }
-
-        for (int i = 0; i < 65536; i++)
-        {
-            float val = (b[i] - *min) / (*max - *min);
-            dat[i] = val * 255;
-        }
-
-        nng_send(socket, send_buf.data(), send_buf.size(), NNG_FLAG_NONBLOCK);
+        int x;
+        int y;
+        std::vector<double> color;
     };
-    fftPan->start();
 
-    while (1)
+    std::vector<Pixel> all_pixels;
+
+    for (int i = 0; i < p.data[channel].data.size(); i++)
     {
-        /*char *buf = nullptr;
-        size_t size;
+        auto &v = p.data[0];
 
-        int rv = 0;
-        printf("WAIT\n");
-        if (rv = nng_recv(socket, &buf, &size, NNG_FLAG_ALLOC); rv != 0)
+        auto satpos = p.get_sample_position(0, i); // tracker.get_sat_position_at(v.timestamps[i]);
+
+        int image_y = img_y - ((90.0f + satpos.lat) / 180.0f) * img_y;
+        int image_x = (satpos.lon / 360) * img_x + (img_x / 2);
+
+        image_y = image_y % img_y;
+        image_x = image_x % img_x;
+
+        printf("%d %d %f\n", image_x, image_y, v.data[i]);
+
+        // std::vector<double> color = {(p.data[2].data[i].value - 12500) / 1000.0,
+        //                              (p.data[1].data[i].value - 12600) / 1000.0,
+        //                              (p.data[0].data[i].value - 12500) / 1000.0,
+        //                              1};
+
+        // std::vector<double> color = {(p.data[1].data[i].value - 12200) / 1000.0,
+        //                              (p.data[1].data[i].value - 12200) / 1000.0,
+        //                              (p.data[1].data[i].value - 12200) / 1000.0,
+        //                              1};
+
+        // std::vector<double> color = {(p.data[1].data[i].value - 13400) / 1000.0,
+        //                              (p.data[1].data[i].value - 13400) / 1000.0,
+        //                              (p.data[1].data[i].value - 13400) / 1000.0,
+        //                              1};
+
+        std::vector<double> color = {(v.data[i] - 12500) / 1000.0,
+                                     (v.data[i] - 12500) / 1000.0,
+                                     (v.data[i] - 12500) / 1000.0,
+                                     1};
+
+        for (auto &c : color)
         {
-            printf("recv error: %s\n", nng_strerror(rv));
+            if (c > 1.0)
+                c = 1;
+            if (c < 0)
+                c = 0;
         }
 
-        printf("server get with client: %s\n", buf);
+        all_pixels.push_back({image_x, image_y, color});
 
-        std::string testStr = "Server Reply!\n\r";
-        //  int rv = 0;
-        if (rv = nng_send(socket, (void *)testStr.c_str(), testStr.size(), NULL); rv != 0)
-        {
-            printf("send error: %s\n", nng_strerror(rv));
-        }
-
-        printf("SEND\n");
-*/
-        sleep(1);
+        map.draw_circle(image_x % img_x, image_y, 2, color, true);
     }
 
-    nng_http_server_stop(http_server);
-    nng_http_server_release(http_server);
-}
+    image::save_jpeg(map, "/home/alan/Downloads/test_jason_new.jpg");
+    map.fill(0);
+
+    for (int x = 0; x < img_x; x++)
+    {
+        logger->info(x);
+        for (int y = 0; y < img_y; y++)
+        {
+            int best_id = 0;
+            float best_dist = 1e6;
+            for (int p = 0; p < all_pixels.size(); p++)
+            {
+                float dx = all_pixels[p].x - x;
+                float dy = all_pixels[p].y - y;
+                float dist = sqrtf(dx * dx + dy * dy);
+                if (dist < best_dist)
+                {
+                    best_dist = dist;
+                    best_id = p;
+                }
+            }
+
+            if (best_dist < 5)
+                map.draw_pixel(x, y, all_pixels[best_id].color);
+        }
+    }
+
+    map.crop(0, 0, 200, 100);
+    // map.resize_bilinear(2048, 1024);
+    map.resize(2048, 1024);
+
+    image::save_jpeg(map, "/home/alan/Downloads/test_jason2_new.jpg");
 #endif
+}
