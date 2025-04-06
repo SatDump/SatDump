@@ -116,6 +116,8 @@ namespace image
             {
                 nlohmann::json meta;
                 meta["proj_cfg"] = pro;
+                meta["proj_cfg"]["width"] = w;
+                meta["proj_cfg"]["height"] = h;
                 set_metadata(img, meta);
             }
 

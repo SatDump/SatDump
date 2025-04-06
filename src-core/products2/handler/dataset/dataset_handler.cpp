@@ -3,7 +3,8 @@
 #include "../dummy_handler.h"
 #include "dataset_product_handler.h"
 
-#include "../product/image_product_handler.h" // TODOREWORK CLEAN
+#include "../product/image_product_handler.h"      // TODOREWORK CLEAN
+#include "../product/punctiform_product_handler.h" // TODOREWORK CLEAN
 #include "common/utils.h"
 
 namespace satdump
@@ -29,7 +30,13 @@ namespace satdump
             for (auto &p : dataset.products_list)
             {
                 auto prod = products::loadProduct(path + "/" + p);
-                std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(prod);
+                std::shared_ptr<ProductHandler> prod_h;
+                if (prod->type == "image")
+                    prod_h = std::make_shared<ImageProductHandler>(prod);
+                else if (prod->type == "punctiform")
+                    prod_h = std::make_shared<PunctiformProductHandler>(prod);
+                else
+                    logger->error("TODOREWORK!!!!!! Actually handle loading properly...");
                 instrument_products->addSubHandler(prod_h);
                 all_products.push_back(prod);
             }

@@ -34,6 +34,13 @@ namespace satdump
             updateImage(img);
         }
 
+        ImageHandler::ImageHandler(image::Image img, std::string name)
+        {
+            handler_tree_icon = "\uf7e8";
+            updateImage(img);
+            image_name = name;
+        }
+
         ImageHandler::~ImageHandler()
         {
             if (file_save_thread.joinable())

@@ -52,6 +52,9 @@ namespace satdump
                     if (ImGui::IsItemClicked())
                         h = handler;
 
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("%s", handler->getName().c_str());
+
                     // TODOREWORK CLEANUP
                     if (handler_can_subhandlers_be_dragged && handler->handler_can_be_dragged &&
                         ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))

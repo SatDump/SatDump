@@ -18,6 +18,7 @@ namespace satdump
         public:
             ImageHandler();
             ImageHandler(image::Image img);
+            ImageHandler(image::Image img, std::string name);
             ~ImageHandler();
 
             std::string image_name = "Unknown Image";

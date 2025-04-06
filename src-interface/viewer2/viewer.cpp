@@ -22,6 +22,8 @@
 #include "dsp/waterfall_test.h"
 #include "dsp/newrec.h"
 
+#include "common/image/io.h"
+
 #include "tools_todoreworkmove/lut_generator.h"
 
 namespace satdump
@@ -88,10 +90,8 @@ namespace satdump
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Open Product/Dataset (.cbor/.json)") && !file_open_dialog)
-                        file_open_dialog = new pfd::open_file("Dataset/Product (.cbor/.json)", ".", {"CBOR Files", "*.cbor", "JSON Files", "*.json", "SHP Files", "*.shp"}, pfd::opt::force_path); // TODOREWORK remember path?
-
-                    ImGui::MenuItem("Open Image");
+                    if (ImGui::MenuItem("Open File") && !file_open_dialog)                                                 // TODOREWORK switch to general thing
+                        file_open_dialog = new pfd::open_file("Open File", ".", {"All Files", "*"}, pfd::opt::force_path); // TODOREWORK remember path?
 
                     if (ImGui::BeginMenu("Hardcoded"))
                     {
@@ -228,48 +228,64 @@ namespace satdump
             }
         }
 
-        void ViewerApplication::openProductOrDataset(std::string path) // TODOREWORK
+        void ViewerApplication::openProductOrDataset(std::string path) // TODOREWORK Rename!
         {
             if (file_open_thread.joinable())
                 file_open_thread.join();
             auto fun = [this, path]()
             {
-                if (!std::filesystem::path(path).has_extension())
+                try
                 {
-                    logger->error("Invalid file, no extension!");
-                    return;
-                }
+                    if (!std::filesystem::path(path).has_extension())
+                    {
+                        logger->error("Invalid file, no extension!");
+                        return;
+                    }
 
-                // TODOREWORK Load more than just image products
-                if (std::filesystem::path(path).extension().string() == ".cbor")
-                {
-                    try
+                    // TODOREWORK Load more than just image products
+                    if (std::filesystem::path(path).extension().string() == ".cbor")
                     {
-                        std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
-                        master_handler->addSubHandler(prod_h);
+                        try
+                        {
+                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
+                            master_handler->addSubHandler(prod_h);
+                        }
+                        catch (std::exception &e)
+                        {
+                            logger->error("Error loading product! Maybe not a valid product? Details : %s", e.what());
+                        }
                     }
-                    catch (std::exception &e)
+                    else if (std::filesystem::path(path).extension().string() == ".json")
                     {
-                        logger->error("Error loading product! Maybe not a valid product? Details : %s", e.what());
+                        try
+                        {
+                            products::DataSet dataset;
+                            dataset.load(path);
+                            std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
+                            master_handler->addSubHandler(dat_h);
+                        }
+                        catch (std::exception &e)
+                        {
+                            logger->error("Error loading dataset! Maybe not a valid dataset? Details : %s", e.what());
+                        }
+                    }
+                    else if (std::filesystem::path(path).extension().string() == ".shp")
+                    {
+                        master_handler->addSubHandler(std::make_shared<ShapefileHandler>(path));
+                    }
+                    else
+                    {
+                        image::Image img;
+                        image::load_img(img, path);
+                        if (img.size() > 0)
+                            master_handler->addSubHandler(std::make_shared<ImageHandler>(img, std::filesystem::path(path).stem().string()));
+                        else
+                            logger->error("Could not open this file as image!"); // TODOREWORK Probably check before this?
                     }
                 }
-                else if (std::filesystem::path(path).extension().string() == ".json")
+                catch (std::exception &e)
                 {
-                    try
-                    {
-                        products::DataSet dataset;
-                        dataset.load(path);
-                        std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
-                        master_handler->addSubHandler(dat_h);
-                    }
-                    catch (std::exception &e)
-                    {
-                        logger->error("Error loading dataset! Maybe not a valid dataset? Details : %s", e.what());
-                    }
-                }
-                else if (std::filesystem::path(path).extension().string() == ".shp")
-                {
-                    master_handler->addSubHandler(std::make_shared<ShapefileHandler>(path));
+                    logger->error("Error opening file! => %s", e.what());
                 }
             };
             file_open_thread = std::thread(fun);

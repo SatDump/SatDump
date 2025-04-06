@@ -13,7 +13,7 @@ namespace geodetic
     // Simple class to hold Geodetic coordinates and easily convert between degs and rads
     class geodetic_coords_t
     {
-    private:
+    public:
         bool is_radians = false;
 
     public:

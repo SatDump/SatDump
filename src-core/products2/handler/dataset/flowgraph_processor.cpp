@@ -1,5 +1,4 @@
 #include "flowgraph_processor.h"
-#include "libs/sol2/sol.hpp"
 #include "logger.h"
 
 #include "lua/lua_bind.h"
