@@ -35,6 +35,78 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/lua/onelua.c
 )
 
+################################################################
+####### AngelScript START
+################################################################
+# Exclude AngelScript library files
+# file(GLOB_RECURSE SatDump_core_angelscript_CPPS angelscript/lib/*.cpp)
+#foreach(ii IN ITEMS ${SatDump_core_angelscript_CPPS})
+#    list(REMOVE_ITEM SatDump_core_CPPS ${ii})
+#endforeach()
+
+set(ARCHFLAGS "${CMAKE_SYSTEM_PROCESSOR}")
+if(APPLE AND NOT IOS)
+    if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+        set(ARCHFLAGS "aarch64")
+    endif()
+endif()
+
+if(MSVC AND CMAKE_CL_64)
+    enable_language(ASM_MASM)
+    if(CMAKE_ASM_MASM_COMPILER_WORKS)
+        set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} angelscript/lib/as_callfunc_x64_msvc_asm.asm)
+    else()
+        message(FATAL ERROR "MSVC x86_64 target requires a working assembler")
+    endif()
+endif()
+
+if(${ARCHFLAGS} MATCHES "^arm")
+    enable_language(ASM)
+    if(CMAKE_ASM_COMPILER_WORKS)
+        set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} angelscript/lib/as_callfunc_arm.cpp angelscript/lib/as_callfunc_arm_gcc.S)
+        set_property(SOURCE as_callfunc_arm_gcc.S APPEND PROPERTY COMPILE_FLAGS " -Wa,-mimplicit-it=always")
+    else()
+        message(FATAL ERROR "ARM target requires a working assembler")
+    endif()
+endif()
+
+if(${ARCHFLAGS} MATCHES "^aarch64")
+    enable_language(ASM)
+    if(CMAKE_ASM_COMPILER_WORKS)
+        if(NOT APPLE)
+            set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} angelscript/lib/as_callfunc_arm64.cpp angelscript/lib/as_callfunc_arm64_gcc.S)
+        else()
+            set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} angelscript/lib/as_callfunc_arm64.cpp angelscript/lib/as_callfunc_arm64_xcode.S)
+        endif()
+    else()
+        message(FATAL ERROR "ARM target requires a working assembler")
+    endif()
+endif()
+
+if(${ARCHFLAGS} MATCHES "riscv64")
+    enable_language(ASM)
+    if(CMAKE_ASM_COMPILER_WORKS)
+        set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} angelscript/lib/as_callfunc_riscv64.cpp angelscript/lib/as_callfunc_riscv64_gcc.S)
+    else()
+        message(FATAL ERROR "RISC-V 64 target requires a working assembler")
+    endif()
+endif()
+
+if(${ARCHFLAGS} MATCHES "^e2k")
+    enable_language(ASM)
+    if(CMAKE_ASM_COMPILER_WORKS)
+        set(ANGELSCRIPT_SOURCE ${ANGELSCRIPT_SOURCE} angelscript/lib/as_callfunc_e2k.cpp angelscript/lib/as_callfunc_e2k.S)
+    else()
+        message(FATAL ERROR "E2K target requires a working assembler")
+    endif()
+endif()
+
+set(SatDump_core_CPPS ${SatDump_core_CPPS} ${ANGELSCRIPT_SOURCE})
+unset(ANGELSCRIPT_SOURCE)
+################################################################
+####### AngelScript STOP
+################################################################
+
 find_package(PkgConfig)
 
 add_library(satdump_core SHARED ${SatDump_core_CPPS})
