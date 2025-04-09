@@ -57,15 +57,15 @@ namespace satdump
                 if (ImGui::RadioButton("Interpolate", mouse_mode == 1))
                     mouse_mode = 1;
 
-                float colors[4] = {current_col.r / 255.0,
-                                   current_col.g / 255.0,
-                                   current_col.b / 255.0,
-                                   current_col.a / 255.0};
+                float colors[4] = {current_col.r / 255.0f,
+                                   current_col.g / 255.0f,
+                                   current_col.b / 255.0f,
+                                   current_col.a / 255.0f};
                 ImGui::ColorEdit4("Color", colors, ImGuiColorEditFlags_NoInputs);
-                current_col.r = colors[0] * 255.0;
-                current_col.g = colors[1] * 255.0;
-                current_col.b = colors[2] * 255.0;
-                current_col.a = colors[3] * 255.0;
+                current_col.r = colors[0] * 255.0f;
+                current_col.g = colors[1] * 255.0f;
+                current_col.b = colors[2] * 255.0f;
+                current_col.a = colors[3] * 255.0f;
 
                 ImGui::SameLine();
 
