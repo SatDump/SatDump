@@ -268,6 +268,7 @@ namespace satdump
 
         LutGeneratorHandler::ColorPX LutGeneratorHandler::getColorFromScreen()
         {
+#ifndef _WIN32
             FILE *grabcFile = popen("grabc", "r");
 
             if (!grabcFile)
@@ -287,6 +288,9 @@ namespace satdump
             pclose(grabcFile);
 
             return {r, g, b, 255};
+#else
+            return {0, 0, 0, 255};
+#endif
         }
     }
 }
