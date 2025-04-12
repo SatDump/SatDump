@@ -42,42 +42,38 @@ namespace satdump
             {
                 nlohmann::json p;
 
+                p = devInfo.params;
+
                 p["serial"]["type"] = "string";
 
-                p["rx0"]["type"] = "sub";
-                auto &rxch0 = p["rx0"]["sub"];
+                p["frequency"]["type"] = "float";
+
+                if (!p.contains("samplerate"))
                 {
-                    rxch0 = devInfo.params;
-
-                    rxch0["frequency"]["type"] = "float";
-
-                    if (!rxch0.contains("samplerate"))
-                    {
-                        rxch0["samplerate"]["type"] = "uint";
-                        rxch0["samplerate"]["list"] = {2.5e6, 3e6, 6e6, 10e6};
-                    }
-
-                    rxch0["gain_type"]["type"] = "string";
-                    rxch0["gain_type"]["list"] = {"sensitive", "linear", "manual"};
-
-                    rxch0["general_gain"]["type"] = "int";
-                    rxch0["general_gain"]["range"] = {0, 21, 1};
-
-                    rxch0["lna_gain"]["type"] = "int";
-                    rxch0["lna_gain"]["range"] = {0, 15, 1};
-
-                    rxch0["mixer_gain"]["type"] = "int";
-                    rxch0["mixer_gain"]["range"] = {0, 15, 1};
-
-                    rxch0["vga_gain"]["type"] = "int";
-                    rxch0["vga_gain"]["range"] = {0, 15, 1};
-
-                    rxch0["lna_agc"]["type"] = "bool";
-
-                    rxch0["mixer_agc"]["type"] = "bool";
-
-                    rxch0["bias"]["type"] = "bool";
+                    p["samplerate"]["type"] = "uint";
+                    p["samplerate"]["list"] = {2.5e6, 3e6, 6e6, 10e6};
                 }
+
+                p["gain_type"]["type"] = "string";
+                p["gain_type"]["list"] = {"sensitive", "linear", "manual"};
+
+                p["general_gain"]["type"] = "int";
+                p["general_gain"]["range"] = {0, 21, 1};
+
+                p["lna_gain"]["type"] = "int";
+                p["lna_gain"]["range"] = {0, 15, 1};
+
+                p["mixer_gain"]["type"] = "int";
+                p["mixer_gain"]["range"] = {0, 15, 1};
+
+                p["vga_gain"]["type"] = "int";
+                p["vga_gain"]["range"] = {0, 15, 1};
+
+                p["lna_agc"]["type"] = "bool";
+
+                p["mixer_agc"]["type"] = "bool";
+
+                p["bias"]["type"] = "bool";
 
                 return p;
             }
@@ -100,7 +96,7 @@ namespace satdump
                 return v;
             }
 
-            void set_cfg(std::string key,nlohmann::json v)
+            void set_cfg(std::string key, nlohmann::json v)
             {
                 setValFromJSONIfExists(p_serial, v["serial"]);
                 auto &r = v["rx0"];

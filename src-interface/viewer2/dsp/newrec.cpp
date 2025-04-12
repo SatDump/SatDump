@@ -47,12 +47,12 @@ namespace satdump
         {
             if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                bool upd = options_displayer_test.draw();
+                nlohmann::json changed = options_displayer_test.draw();
 
-                if (upd)
+                if (changed.size() > 0)
                 {
-                    logger->trace("\n%s\n", options_displayer_test.get_values().dump(4).c_str());
-                    dev->set_cfg(options_displayer_test.get_values());
+                    logger->trace("\n%s\n", changed.dump(4).c_str());
+                    // TODOREWORK                    dev->set_cfg(options_displayer_test.get_values());
                     // dev->init();
                 }
             }

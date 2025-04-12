@@ -159,7 +159,7 @@ namespace satdump
                         if (ImGui::MenuItem("Waterfall TEST"))
                             master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
-                            ; // TODOREWORK                            master_handler->addSubHandler(std::make_shared<NewRecHandler>());
+                            master_handler->addSubHandler(std::make_shared<NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))
                             master_handler->addSubHandler(std::make_shared<CycloHelperHandler>());
                         if (ImGui::MenuItem("Lut Generator"))

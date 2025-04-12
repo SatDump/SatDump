@@ -26,7 +26,7 @@ namespace satdump
                 bool is_uint = false;
                 bool is_int = false;
                 bool is_float = false;
-                bool is_sub = false;
+                //                bool is_sub = false;
 
                 bool is_list = false;
                 bool is_range = false;
@@ -42,11 +42,29 @@ namespace satdump
                 uint64_t _uint = 0;
                 int64_t _int = 0;
                 double _float = 0;
-                std::shared_ptr<OptionsDisplayer> _sub;
+                //                std::shared_ptr<OptionsDisplayer> _sub;
             };
 
             std::mutex opts_mtx;
             std::vector<OptHolder> opts;
+
+            inline nlohmann::json get_val(OptHolder &v, nlohmann::json &j)
+            {
+                if (v.is_bool)
+                    j = v._bool;
+                else if (v.is_string)
+                    j = v._string;
+                else if (v.is_uint)
+                    j = v._uint;
+                else if (v.is_int)
+                    j = v._int;
+                else if (v.is_float)
+                    j = v._float;
+                //                else if (v.is_sub)
+                //                    j = v._sub->get_values();
+                else
+                    throw satdump_exception("Invalid options or JSON value! (GET " + v.id + ")");
+            }
 
         public:
             void add_options(nlohmann::json options)
@@ -72,13 +90,13 @@ namespace satdump
                     h.is_uint = vv["type"] == "uint";
                     h.is_int = vv["type"] == "int";
                     h.is_float = vv["type"] == "float";
-                    h.is_sub = vv["type"] == "sub";
+                    // h.is_sub = vv["type"] == "sub";
 
-                    if (h.is_sub)
-                    {
-                        h._sub = std::make_shared<OptionsDisplayer>();
-                        h._sub->add_options(vv["sub"]);
-                    }
+                    // if (h.is_sub)
+                    // {
+                    //     h._sub = std::make_shared<OptionsDisplayer>();
+                    //     h._sub->add_options(vv["sub"]);
+                    // }
 
                     h.is_list = vv.contains("list");
                     if (h.is_list)
@@ -94,16 +112,19 @@ namespace satdump
                         h.range = vv["range"].get<std::array<double, 3>>();
 
                     // Defaults
-                    if (h.is_bool)
-                        h._bool = vv["default"];
-                    else if (h.is_string)
-                        h._string = vv["default"];
-                    else if (h.is_uint)
-                        h._uint = vv["default"];
-                    else if (h.is_int)
-                        h._int = vv["default"];
-                    else if (h.is_float)
-                        h._float = vv["default"];
+                    if (vv.contains("default"))
+                    {
+                        if (h.is_bool)
+                            h._bool = vv["default"];
+                        else if (h.is_string)
+                            h._string = vv["default"];
+                        else if (h.is_uint)
+                            h._uint = vv["default"];
+                        else if (h.is_int)
+                            h._int = vv["default"];
+                        else if (h.is_float)
+                            h._float = vv["default"];
+                    }
 
                     opts.push_back(h);
                 }
@@ -135,8 +156,8 @@ namespace satdump
                             v._int = j;
                         else if (v.is_float && j.is_number())
                             v._float = j;
-                        else if (v.is_sub && j.is_object())
-                            v._sub->set_values(j);
+                        // else if (v.is_sub && j.is_object())
+                        //     v._sub->set_values(j);
                         else
                             throw satdump_exception("Invalid options or JSON value! (SET " + v.id + ")");
                     }
@@ -149,33 +170,19 @@ namespace satdump
                 opts_mtx.lock();
                 nlohmann::json vals;
                 for (auto &v : opts)
-                {
-                    auto &j = vals[v.id];
-                    if (v.is_bool)
-                        j = v._bool;
-                    else if (v.is_string)
-                        j = v._string;
-                    else if (v.is_uint)
-                        j = v._uint;
-                    else if (v.is_int)
-                        j = v._int;
-                    else if (v.is_float)
-                        j = v._float;
-                    else if (v.is_sub)
-                        j = v._sub->get_values();
-                    else
-                        throw satdump_exception("Invalid options or JSON value! (GET)");
-                }
+                    get_val(v, vals[v.id]);
                 opts_mtx.unlock();
                 return vals;
             }
 
-            bool draw()
+            nlohmann::json draw()
             {
-                bool u = false;
+                nlohmann::json vals;
+
                 opts_mtx.lock();
                 for (auto &v : opts)
                 {
+                    bool u = false;
                     std::string id = v.name; // TODOREWORK might cause issues? std::string(v.name + "##optsdisplayertodorework");
 
                     if (v.is_bool)
@@ -269,7 +276,7 @@ namespace satdump
                         // TODOREWORK USE DOUBLE INSTEAD
                         u |= ImGui::InputDouble(id.c_str(), &v._float);
                     }
-                    else if (v.is_sub)
+                    /*else if (v.is_sub)
                     {
                         // TODOREWORK? Check
 
@@ -278,14 +285,17 @@ namespace satdump
                         ImGui::Separator();
                         u |= v._sub->draw();
                         ImGui::Separator();
-                    }
+                    } TODOREWORK SUB */
                     else
                     {
                         ImGui::Text("Unimplemented : %s", id.c_str());
                     }
+
+                    if (u)
+                        get_val(v, vals[v.id]);
                 }
                 opts_mtx.unlock();
-                return u;
+                return vals;
             }
         };
     }
