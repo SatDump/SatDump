@@ -49,6 +49,16 @@ namespace satdump
             double frequency = 0;
         };
 
+        // TODOREWORK cleanup!!!!
+        inline void add_param(nlohmann::json &p, std::string id, std::string type, nlohmann::json def = {}, std::string name = "")
+        {
+            p[id]["type"] = type;
+            if (!def.is_null())
+                p[id]["default"] = def;
+            if (name != "")
+                p[id]["name"] = name;
+        }
+
         /**
          * @brief Base Block class.
          *
@@ -194,9 +204,9 @@ namespace satdump
             virtual nlohmann::json get_cfg_list() { return {}; } // TODOREWORK
 
             /**
-             * @brief Get parameters of the block as JSON
+             * @brief Get parameters of the block as JSON TODOREWORK
              */
-            virtual nlohmann::json get_cfg() = 0;
+            virtual nlohmann::json get_cfg(std::string key) = 0;
 
             /**
              * @brief Set parameters of the block from JSON,
@@ -207,9 +217,16 @@ namespace satdump
              * easy to be done in C++ directly, and using said
              * function here.
              * Optionally, this can also be made to be functional
-             * while the block is running!
+             * while the block is running! TODOREWORK
              */
-            virtual void set_cfg(nlohmann::json v) = 0;
+            virtual void set_cfg(std::string key, nlohmann::json v) = 0;
+
+            // TODOREWORK
+            void set_cfg(nlohmann::json v)
+            {
+                for (auto &i : v.items())
+                    set_cfg(i.key(), i.value());
+            }
 
         protected:
             template <typename T>
@@ -219,7 +236,7 @@ namespace satdump
                     v = p.get<T>();
             }
 
-        public:
+        protected:
             /**
              * @brief Applies current parameters to the block.
              * This is called automatically once in start(), but
@@ -233,6 +250,7 @@ namespace satdump
              */
             virtual void init() {} //= 0; TODOREWORK
 
+        public:
             /**
              * @brief Starts this block's internal thread and loop.
              */

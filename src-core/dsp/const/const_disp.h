@@ -19,16 +19,20 @@ namespace satdump
 
             bool work();
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                //    v["rate"] = rate;
-                return v;
+                // if (key == "max_gain")
+                //     return p_max_gain;
+                // else
+                throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json /*v*/)
+            void set_cfg(std::string key, nlohmann::json v)
             {
-                //  rate = v["rate"];
+                // if (key == "max_gain")
+                //     p_max_gain = v;
+                // else
+                throw satdump_exception(key);
             }
         };
     }

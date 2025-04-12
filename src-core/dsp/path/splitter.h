@@ -24,26 +24,32 @@ namespace satdump
             {
             }
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                v["noutputs"] = p_noutputs;
-                return v;
+                if (key == "noutputs")
+                    return p_noutputs;
+                throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json v)
+            void set_cfg(std::string key, nlohmann::json v)
             {
-                int no = p_noutputs;
-                setValFromJSONIfExists(p_noutputs, v["noutputs"]);
-                if (no != p_noutputs)
+                if (key == "noutputs")
                 {
-                    Block::outputs.clear();
-                    for (int i = 0; i < p_noutputs; i++)
+                    int no = p_noutputs;
+                    p_noutputs = v;
+
+                    if (no != p_noutputs)
                     {
-                        Block::outputs.push_back({{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}});
-                        outputs[i].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
+                        Block::outputs.clear();
+                        for (int i = 0; i < p_noutputs; i++)
+                        {
+                            Block::outputs.push_back({{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}});
+                            outputs[i].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
+                        }
                     }
                 }
+                else
+                    throw satdump_exception(key);
             }
         };
     }

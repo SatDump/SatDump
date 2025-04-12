@@ -78,6 +78,12 @@ namespace satdump
                 return true;
             }
 
+            if (needs_reinit)
+            {
+                needs_reinit = false;
+                init();
+            }
+
             DSPBuffer oblk = DSPBuffer::newBufferSamples<T>(iblk.max_size);
             T *ibuf = iblk.getSamples<T>();
             T *obuf = oblk.getSamples<T>();

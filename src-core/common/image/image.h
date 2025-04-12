@@ -8,12 +8,6 @@
 #include <cstdint>
 #include <vector>
 
-#if IMAGELIB_NOINLINE_SETGET
-#define IMGLIB_INLINE_SETGET
-#else
-#define IMGLIB_INLINE_SETGET inline
-#endif
-
 namespace image
 {
     class Image
@@ -336,7 +330,7 @@ namespace image
          * @param p index of the pixel to set
          * @param v value to set
          */
-        IMGLIB_INLINE_SETGET void set(size_t p, int v)
+        void set(size_t p, int v)
         {
             if (d_depth > 8)
                 ((uint16_t *)d_data)[p] = v;
@@ -351,7 +345,7 @@ namespace image
          * @param p index of the pixel to get
          * @return pixel value
          */
-        IMGLIB_INLINE_SETGET int get(size_t p)
+        int get(size_t p)
         {
             if (d_depth > 8)
                 return ((uint16_t *)d_data)[p];
@@ -366,7 +360,7 @@ namespace image
          * @param p index of the pixel to set
          * @param v value to set between 0 and 1
          */
-        IMGLIB_INLINE_SETGET void setf(size_t p, double v)
+        void setf(size_t p, double v)
         {
             if (d_depth > 8)
                 ((uint16_t *)d_data)[p] = v * (double)d_maxv;
@@ -381,7 +375,7 @@ namespace image
          * @param p index of the pixel to get
          * @return pixel value between 0 and 1
          */
-        IMGLIB_INLINE_SETGET double getf(size_t p)
+        double getf(size_t p)
         {
             if (d_depth > 8)
                 return (double)((uint16_t *)d_data)[p] / (double)d_maxv;
@@ -390,16 +384,16 @@ namespace image
         }
 
         // Easier int set/get
-        IMGLIB_INLINE_SETGET void set(size_t channel, size_t p, int v) { set(channel * d_width * d_height + p, v); }
-        IMGLIB_INLINE_SETGET int get(size_t channel, size_t p) { return get(channel * d_width * d_height + p); }
-        IMGLIB_INLINE_SETGET void set(size_t channel, size_t x, size_t y, int v) { set(channel * d_width * d_height + y * d_width + x, v); }
-        IMGLIB_INLINE_SETGET int get(size_t channel, size_t x, size_t y) { return get(channel * d_width * d_height + y * d_width + x); }
+        void set(size_t channel, size_t p, int v) { set(channel * d_width * d_height + p, v); }
+        int get(size_t channel, size_t p) { return get(channel * d_width * d_height + p); }
+        void set(size_t channel, size_t x, size_t y, int v) { set(channel * d_width * d_height + y * d_width + x, v); }
+        int get(size_t channel, size_t x, size_t y) { return get(channel * d_width * d_height + y * d_width + x); }
 
         // Easier double setf/getf
-        IMGLIB_INLINE_SETGET void setf(size_t channel, size_t p, double v) { setf(channel * d_width * d_height + p, v); }
-        IMGLIB_INLINE_SETGET double getf(size_t channel, size_t p) { return getf(channel * d_width * d_height + p); }
-        IMGLIB_INLINE_SETGET void setf(size_t channel, size_t x, size_t y, double v) { setf(channel * d_width * d_height + y * d_width + x, v); }
-        IMGLIB_INLINE_SETGET double getf(size_t channel, size_t x, size_t y) { return getf(channel * d_width * d_height + y * d_width + x); }
+        void setf(size_t channel, size_t p, double v) { setf(channel * d_width * d_height + p, v); }
+        double getf(size_t channel, size_t p) { return getf(channel * d_width * d_height + p); }
+        void setf(size_t channel, size_t x, size_t y, double v) { setf(channel * d_width * d_height + y * d_width + x, v); }
+        double getf(size_t channel, size_t x, size_t y) { return getf(channel * d_width * d_height + y * d_width + x); }
     };
 
     /**

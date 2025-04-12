@@ -93,6 +93,18 @@ namespace satdump
                     if (h.is_range)
                         h.range = vv["range"].get<std::array<double, 3>>();
 
+                    // Defaults
+                    if (h.is_bool)
+                        h._bool = vv["default"];
+                    else if (h.is_string)
+                        h._string = vv["default"];
+                    else if (h.is_uint)
+                        h._uint = vv["default"];
+                    else if (h.is_int)
+                        h._int = vv["default"];
+                    else if (h.is_float)
+                        h._float = vv["default"];
+
                     opts.push_back(h);
                 }
                 opts_mtx.unlock();

@@ -12,6 +12,7 @@ namespace satdump
         class FIRBlock : public Block
         {
         public:
+            bool needs_reinit = false;
             std::vector<float> p_taps;
             int p_buffer_size = 8192 * 8;
 
@@ -67,18 +68,27 @@ namespace satdump
                 }
             }
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                v["taps"] = p_taps;
-                v["buffer_size"] = p_buffer_size;
-                return v;
+                if (key == "taps")
+                    return p_taps;
+                else if (key == "buffer_size")
+                    return p_buffer_size;
+                else
+                    throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json v)
+            void set_cfg(std::string key, nlohmann::json v)
             {
-                setValFromJSONIfExists<std::vector<float>>(p_taps, v["taps"]);
-                setValFromJSONIfExists(p_buffer_size, v["buffer_size"]);
+                if (key == "taps")
+                {
+                    p_taps = v.get<std::vector<float>>();
+                    needs_reinit = true;
+                }
+                else if (key == "buffer_size")
+                    p_buffer_size = v;
+                else
+                    throw satdump_exception(key);
             }
         };
     }

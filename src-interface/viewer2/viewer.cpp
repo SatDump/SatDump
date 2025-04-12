@@ -15,6 +15,7 @@
 #include "handler/projection/projection_handler.h"
 #include "handler/trash/trash_handler.h"
 #include "dsp/dsp_flowgraph_handler.h"
+#include "dsp/cyclo_test.h"
 // TODOREWORK
 #include "resources.h"
 
@@ -147,7 +148,7 @@ namespace satdump
                         if (ImGui::MenuItem("Projection"))
                             master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
                         if (ImGui::MenuItem("DSP Flowgraph"))
-                            master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
+                            ; /// TODOREWORK                            master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
                         if (ImGui::MenuItem("BitView TEST"))
                         {
                             std::vector<std::shared_ptr<Handler>> e;
@@ -158,7 +159,9 @@ namespace satdump
                         if (ImGui::MenuItem("Waterfall TEST"))
                             master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
-                            master_handler->addSubHandler(std::make_shared<NewRecHandler>());
+                            ; // TODOREWORK                            master_handler->addSubHandler(std::make_shared<NewRecHandler>());
+                        if (ImGui::MenuItem("CycloHelper TEST"))
+                            master_handler->addSubHandler(std::make_shared<CycloHelperHandler>());
                         if (ImGui::MenuItem("Lut Generator"))
                             master_handler->addSubHandler(std::make_shared<LutGeneratorHandler>());
                         ImGui::EndMenu();

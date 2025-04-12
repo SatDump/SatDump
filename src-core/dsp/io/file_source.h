@@ -48,24 +48,32 @@ namespace satdump
                 d_eof = false;
             }
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                v["file"] = p_file;
-                v["type"] = (std::string)p_type;
-                v["buffer_size"] = p_buffer_size;
-                v["iq_swap"] = p_iq_swap;
-                return v;
+                if (key == "file")
+                    return p_file;
+                else if (key == "type")
+                    return (std::string)p_type;
+                else if (key == "buffer_size")
+                    return p_buffer_size;
+                else if (key == "iq_swap")
+                    return p_iq_swap;
+                else
+                    throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json v)
+            void set_cfg(std::string key, nlohmann::json v)
             {
-                setValFromJSONIfExists(p_file, v["file"]);
-                std::string t = p_type;
-                setValFromJSONIfExists(t, v["type"]);
-                p_type = t;
-                setValFromJSONIfExists(p_buffer_size, v["buffer_size"]);
-                setValFromJSONIfExists(p_iq_swap, v["iq_swap"]);
+                if (key == "file")
+                    p_file = v;
+                else if (key == "type")
+                    p_type = v.get<std::string>();
+                else if (key == "buffer_size")
+                    p_buffer_size = v;
+                else if (key == "iq_swap")
+                    p_iq_swap = v;
+                else
+                    throw satdump_exception(key);
             }
         };
     }

@@ -40,6 +40,12 @@ namespace satdump
                 return true;
             }
 
+            if (needs_reinit)
+            {
+                needs_reinit = false;
+                init();
+            }
+
             T *ibuf = iblk.getSamples<T>();
 
             lbuf_size = iblk.size > buffer_size ? buffer_size : iblk.size;

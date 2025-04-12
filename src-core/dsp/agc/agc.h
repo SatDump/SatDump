@@ -39,27 +39,39 @@ namespace satdump
             nlohmann::json get_cfg_list()
             {
                 nlohmann::json p;
-                p["rate"]["type"] = "float";
-                p["reference"]["type"] = "float";
+                add_param(p, "rate", "float", 1e-4, "Rate");
+                add_param(p, "reference", "float", 1, "Reference");
+                add_param(p, "gain", "float", 1, "Gain");
+                add_param(p, "max_gain", "float", 65536, "Max Gain");
                 return p;
             }
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                v["rate"] = p_rate;
-                v["reference"] = p_reference;
-                v["gain"] = p_gain;
-                v["max_gain"] = p_max_gain;
-                return v;
+                if (key == "rate")
+                    return p_rate;
+                else if (key == "reference")
+                    return p_reference;
+                else if (key == "gain")
+                    return p_gain;
+                else if (key == "max_gain")
+                    return p_max_gain;
+                else
+                    throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json v)
+            void set_cfg(std::string key, nlohmann::json v)
             {
-                setValFromJSONIfExists(p_rate, v["rate"]);
-                setValFromJSONIfExists(p_reference, v["reference"]);
-                setValFromJSONIfExists(p_gain, v["gain"]);
-                setValFromJSONIfExists(p_max_gain, v["max_gain"]);
+                if (key == "rate")
+                    p_rate = v;
+                else if (key == "reference")
+                    p_reference = v;
+                else if (key == "gain")
+                    p_gain = v;
+                else if (key == "max_gain")
+                    p_max_gain = v;
+                else
+                    throw satdump_exception(key);
             }
         };
     }

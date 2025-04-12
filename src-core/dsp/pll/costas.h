@@ -9,17 +9,14 @@ namespace satdump
     {
         class CostasBlock : public Block
         {
-        public:
-            float p_loop_bw = 0.004;
-            unsigned int p_order = 2;
-            float p_freq_limit = 1.0;
+        private:
+            int order = 2;
+            float loop_bw = 0.004;
+            float freq_limit = 1.0;
 
         private:
             float error = 0;
-            int order;
-
             float phase = 0, freq = 0;
-            float loop_bw;
             float alpha, beta;
 
             float freq_limit_min, freq_limit_max;
@@ -34,10 +31,8 @@ namespace satdump
 
             void init()
             {
-                order = p_order;
-                loop_bw = p_loop_bw;
-                freq_limit_min = -p_freq_limit;
-                freq_limit_max = p_freq_limit;
+                freq_limit_min = -freq_limit;
+                freq_limit_max = freq_limit;
 
                 error = 0;
                 phase = 0, freq = 0;
@@ -48,20 +43,34 @@ namespace satdump
                 beta = (4 * loop_bw * loop_bw) / denom;
             }
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                v["loop_bw"] = p_loop_bw;
-                v["order"] = p_order;
-                v["freq_limit"] = p_freq_limit;
-                return v;
+                if (key == "loop_bw")
+                    return loop_bw;
+                else if (key == "order")
+                    return order;
+                else if (key == "freq_limit")
+                    return freq_limit;
+                else
+                    throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json v)
+            void set_cfg(std::string key, nlohmann::json v)
             {
-                setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
-                setValFromJSONIfExists(p_order, v["order"]);
-                setValFromJSONIfExists(p_freq_limit, v["freq_limit"]);
+                if (key == "loop_bw")
+                {
+                    loop_bw = v;
+                    init();
+                }
+                else if (key == "order")
+                    order = v;
+                else if (key == "freq_limit")
+                {
+                    freq_limit = v;
+                    init();
+                }
+                else
+                    throw satdump_exception(key);
             }
         };
     }

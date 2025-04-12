@@ -17,8 +17,8 @@
 
 #include "nlohmann/json_utils.h"
 
-//#include "dsp/device/airspy/airspy_dev.h"
-
+// #include "dsp/device/airspy/airspy_dev.h"
+#if 0
 namespace satdump
 {
     namespace viewer
@@ -254,3 +254,4 @@ namespace satdump
         }
     }
 }
+#endif

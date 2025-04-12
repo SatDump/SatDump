@@ -1,5 +1,6 @@
 #pragma once
 
+#if 0
 #include "handler/handler.h"
 #include "flowgraph/flowgraph.h"
 
@@ -28,3 +29,4 @@ namespace satdump
         };
     }
 }
+#endif

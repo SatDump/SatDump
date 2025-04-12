@@ -82,7 +82,7 @@ namespace satdump
                 return p;
             }
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
                 nlohmann::json v;
                 v["serial"] = p_serial;
@@ -100,7 +100,7 @@ namespace satdump
                 return v;
             }
 
-            void set_cfg(nlohmann::json v)
+            void set_cfg(std::string key,nlohmann::json v)
             {
                 setValFromJSONIfExists(p_serial, v["serial"]);
                 auto &r = v["rx0"];

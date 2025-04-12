@@ -18,6 +18,7 @@
 
 #include "node_int.h"
 
+#if 0
 namespace satdump
 {
     namespace ndsp
@@ -185,3 +186,4 @@ namespace satdump
         };
     }
 }
+#endif

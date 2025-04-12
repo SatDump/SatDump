@@ -17,7 +17,7 @@ namespace satdump
                     dev = ndsp::getDeviceInstanceFromInfo(d);
                     dev->setDevInfo(d);
                     options_displayer_test.add_options(dev->get_cfg_list());
-                    options_displayer_test.set_values(dev->get_cfg());
+                    // TODOREWORK                    options_displayer_test.set_values(dev->get_cfg());
                     break;
                 }
             }
@@ -53,7 +53,7 @@ namespace satdump
                 {
                     logger->trace("\n%s\n", options_displayer_test.get_values().dump(4).c_str());
                     dev->set_cfg(options_displayer_test.get_values());
-                    dev->init();
+                    // dev->init();
                 }
             }
 

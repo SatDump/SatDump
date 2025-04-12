@@ -19,7 +19,9 @@
 // #include "aatc/aatc.hpp"
 // #include "aatc/aatc_container_vector.hpp"
 #include "angelscript/scriptarray/scriptarray.h"
-#include "angelscript/scriptjson/scriptjson.h"
+// #include "angelscript/scriptjson/scriptjson.h"
+
+#include "angelscript/scriptsatdump/bind_satdump.h"
 
 // Implement a simple message callback function
 void MessageCallback(const asSMessageInfo *msg, void *param)
@@ -43,42 +45,6 @@ void MessageCallback(const asSMessageInfo *msg, void *param)
 void print(std::string &msg)
 {
     printf("%s", msg.c_str());
-}
-
-#define IMAGELIB_NOINLINE_SETGET 1
-#include "common/image/image.h"
-#include "common/image/io.h"
-
-namespace img
-{
-    void ImageConstructor(void *memory)
-    {
-        // Initialize the pre-allocated memory by calling the
-        // object constructor with the placement-new operator
-        new (memory) image::Image();
-    }
-
-    void ImageDestructor(void *memory)
-    {
-        logger->error("Destruct %d", ((image::Image *)memory)->size());
-        // Uninitialize the memory by calling the object destructor
-        ((image::Image *)memory)->~Image();
-    }
-
-    /*void ImageSet(void *memory, int p, int v)
-    {
-        ((image::Image *)memory)->set(p, v);
-    }
-
-    int ImageGet(void *memory, int p)
-    {
-        return ((image::Image *)memory)->get(p);
-    }*/
-
-    void ImageDrawCircle(void *memory, int x0, int y0, int radius, CScriptArray *color, bool fill)
-    {
-        ((image::Image *)memory)->draw_circle(x0, y0, radius, std::vector<double>((double *)color->At(0), (double *)color->At(0) + color->GetSize()), fill);
-    }
 }
 
 namespace namelog
@@ -128,8 +94,10 @@ int main(int argc, char *argv[])
     // necessary to implement the registration yourself if you don't want to.
     RegisterStdString(engine);
     RegisterScriptArray(engine, true);
-    RegisterScriptJson(engine);
+    //    RegisterScriptJson(engine);
     // aatc::RegisterAllContainers(engine);
+
+    satdump::script::registerAll(engine);
 
     // Register the function that we want the scripts to call
     r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(print), asCALL_CDECL);
@@ -145,43 +113,12 @@ int main(int argc, char *argv[])
         r = engine->RegisterGlobalFunction("void critical(const string &in)", asFUNCTION(namelog::critical), asCALL_CDECL);
     }
 
-    {
-        engine->SetDefaultNamespace("image");
-
-        r = engine->RegisterObjectType("Image", sizeof(image::Image), asOBJ_VALUE | asGetTypeTraits<image::Image>());
-        //        assert(r >= 0);
-        // Register the behaviours
-        r = engine->RegisterObjectBehaviour("Image", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(img::ImageConstructor), asCALL_CDECL_OBJLAST);
-        // assert(r >= 0);
-        r = engine->RegisterObjectBehaviour("Image", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(img::ImageDestructor), asCALL_CDECL_OBJLAST);
-        //  assert(r >= 0);
-
-        r = engine->RegisterObjectMethod("Image", "void init(int, uint64, uint64, int)", asMETHOD(image::Image, init), asCALL_THISCALL); // assert( r >= 0 );
-        r = engine->RegisterObjectMethod("Image", "void fill(int)", asMETHOD(image::Image, fill), asCALL_THISCALL);                      // assert( r >= 0 );
-        r = engine->RegisterObjectMethod("Image", "uint64 size()", asMETHOD(image::Image, size), asCALL_THISCALL);
-
-        r = engine->RegisterObjectMethod("Image", "void set(uint64, int)", asMETHODPR(image::Image, set, (size_t, int), void), asCALL_THISCALL);
-        r = engine->RegisterObjectMethod("Image", "void set(uint64, uint64, int)", asMETHODPR(image::Image, set, (size_t, size_t, int), void), asCALL_THISCALL);
-        r = engine->RegisterObjectMethod("Image", "void set(uint64, uint64, uint64, int)", asMETHODPR(image::Image, set, (size_t, size_t, size_t, int), void), asCALL_THISCALL);
-        r = engine->RegisterObjectMethod("Image", "int get(uint64)", asMETHODPR(image::Image, get, (size_t), int), asCALL_THISCALL);
-        r = engine->RegisterObjectMethod("Image", "int get(uint64, uint64)", asMETHODPR(image::Image, get, (size_t, size_t), int), asCALL_THISCALL);
-        r = engine->RegisterObjectMethod("Image", "int get(uint64, uint64, uint64)", asMETHODPR(image::Image, get, (size_t, size_t, size_t), int), asCALL_THISCALL);
-
-        r = engine->RegisterObjectMethod("Image", "void draw_circle(int, int, int, array<double>@, bool)", asFUNCTION(img::ImageDrawCircle), asCALL_CDECL_OBJFIRST);
-
-        engine->RegisterObjectMethod("Image", "Image &opAssign(const Image &in)", asMETHODPR(image::Image, operator=, (const image::Image &), image::Image &), asCALL_THISCALL);
-
-        // r = engine->RegisterGlobalFunction("Image load_img(string)", asFUNCTIONPR(image::load_img, (std::string), image::Image), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void load_img(Image &out, string)", asFUNCTIONPR(image::load_img, (image::Image &, std::string), void), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void save_img(const Image &in, string, bool)", asFUNCTIONPR(image::save_img, (image::Image &, std::string, bool), void), asCALL_CDECL);
-    }
-
     nlohmann::json test2j;
     test2j["hello"] = true;
 
     {
 
-        engine->RegisterGlobalProperty("json testj", &test2j);
+        //        engine->RegisterGlobalProperty("json testj", &test2j);
         // engine->SetDefaultNamespace("nlohmann");
         // r = engine->RegisterObjectType("json", sizeof(nlohmann::json), asOBJ_VALUE | asGetTypeTraits<nlohmann::json>());
 

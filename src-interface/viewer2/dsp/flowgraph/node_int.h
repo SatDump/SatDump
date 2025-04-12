@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "dsp/block.h"
-
+#if 0
 namespace satdump
 {
     namespace ndsp
@@ -39,3 +39,4 @@ namespace satdump
         };
     }
 }
+#endif

@@ -9,7 +9,7 @@
 #include "common/utils.h"
 
 #include "dsp/path/splitter.h"
-
+#if 0
 namespace satdump
 {
     namespace ndsp
@@ -378,3 +378,4 @@ namespace satdump
         }
     }
 }
+#endif

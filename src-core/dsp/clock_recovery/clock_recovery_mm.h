@@ -20,6 +20,8 @@ namespace satdump
             int p_nfilt = 128;
             int p_ntaps = 8;
 
+            bool needs_reinit = false;
+
         private:
             // Buffer
             T *buffer = nullptr;
@@ -54,28 +56,78 @@ namespace satdump
 
             void init();
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg_list()
             {
-                nlohmann::json v;
-                v["omega"] = p_omega;
-                v["omegaGain"] = p_omegaGain;
-                v["mu"] = p_mu;
-                v["muGain"] = p_muGain;
-                v["omegaLimit"] = p_omegaLimit;
-                v["nfilt"] = p_nfilt;
-                v["ntaps"] = p_ntaps;
-                return v;
+                nlohmann::json p;
+                add_param(p, "omega", "float");
+                add_param(p, "omegaGain", "float", pow(8.7e-3, 2) / 4.0);
+                add_param(p, "mu", "float", 0.5f);
+                add_param(p, "muGain", "float", 8.7e-3);
+                add_param(p, "omegaLimit", "float", 0.005);
+                add_param(p, "nfilt", "int", 128);
+                add_param(p, "ntaps", "int", 8);
+                return p;
             }
 
-            void set_cfg(nlohmann::json v)
+            nlohmann::json get_cfg(std::string key)
             {
-                setValFromJSONIfExists(p_omega, v["omega"]);
-                setValFromJSONIfExists(p_omegaGain, v["omegaGain"]);
-                setValFromJSONIfExists(p_mu, v["p_mu"]);
-                setValFromJSONIfExists(p_muGain, v["muGain"]);
-                setValFromJSONIfExists(p_omegaLimit, v["omegaLimit"]);
-                setValFromJSONIfExists(p_nfilt, v["nfilt"]);
-                setValFromJSONIfExists(p_ntaps, v["ntaps"]);
+                if (key == "omega")
+                    return p_omega;
+                else if (key == "omegaGain")
+                    return p_omegaGain;
+                else if (key == "mu")
+                    return p_mu;
+                else if (key == "muGain")
+                    return p_muGain;
+                else if (key == "omegaLimit")
+                    return p_omegaLimit;
+                else if (key == "nfilt")
+                    return p_nfilt;
+                else if (key == "ntaps")
+                    return p_ntaps;
+                else
+                    throw satdump_exception(key);
+            }
+
+            void set_cfg(std::string key, nlohmann::json v)
+            {
+                if (key == "omega")
+                {
+                    p_omega = v;
+                    needs_reinit = true;
+                }
+                else if (key == "omegaGain")
+                {
+                    p_omegaGain = v;
+                    needs_reinit = true;
+                }
+                else if (key == "mu")
+                {
+                    p_mu = v;
+                    needs_reinit = true;
+                }
+                else if (key == "muGain")
+                {
+                    p_muGain = v;
+                    needs_reinit = true;
+                }
+                else if (key == "omegaLimit")
+                {
+                    p_omegaLimit = v;
+                    needs_reinit = true;
+                }
+                else if (key == "nfilt")
+                {
+                    p_nfilt = v;
+                    needs_reinit = true;
+                }
+                else if (key == "ntaps")
+                {
+                    p_ntaps = v;
+                    needs_reinit = true;
+                }
+                else
+                    throw satdump_exception(key);
             }
         };
     }
