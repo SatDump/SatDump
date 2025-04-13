@@ -28,7 +28,7 @@ namespace satdump
                 }
 
                 airspy_set_freq(airspy_dev_obj, p_frequency);
-                logger->debug("Set Airspy frequency to %d", p_frequency);
+                logger->debug("Set Airspy frequency to %f", p_frequency);
 
                 airspy_set_rf_bias(airspy_dev_obj, p_bias);
                 logger->debug("Set Airspy bias to %d", (int)p_bias);

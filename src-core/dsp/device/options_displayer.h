@@ -48,7 +48,7 @@ namespace satdump
             std::mutex opts_mtx;
             std::vector<OptHolder> opts;
 
-            inline nlohmann::json get_val(OptHolder &v, nlohmann::json &j)
+            inline void get_val(OptHolder &v, nlohmann::json &j)
             {
                 if (v.is_bool)
                     j = v._bool;

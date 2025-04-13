@@ -52,7 +52,7 @@ namespace satdump
                 if (changed.size() > 0)
                 {
                     logger->trace("\n%s\n", changed.dump(4).c_str());
-                    // TODOREWORK                    dev->set_cfg(options_displayer_test.get_values());
+                    dev->set_cfg(changed);
                     // dev->init();
                 }
             }

@@ -98,18 +98,31 @@ namespace satdump
 
             void set_cfg(std::string key, nlohmann::json v)
             {
-                setValFromJSONIfExists(p_serial, v["serial"]);
-                auto &r = v["rx0"];
-                setValFromJSONIfExists(p_samplerate, r["samplerate"]);
-                setValFromJSONIfExists(p_frequency, r["frequency"]);
-                setValFromJSONIfExists(p_gain_type, r["gain_type"]);
-                setValFromJSONIfExists(p_general_gain, r["general_gain"]);
-                setValFromJSONIfExists(p_lna_gain, r["lna_gain"]);
-                setValFromJSONIfExists(p_mixer_gain, r["mixer_gain"]);
-                setValFromJSONIfExists(p_vga_gain, r["vga_gain"]);
-                setValFromJSONIfExists(p_lna_agc, r["lna_agc"]);
-                setValFromJSONIfExists(p_mixer_agc, r["mixer_agc"]);
-                setValFromJSONIfExists(p_bias, r["bias"]);
+                if (key == "serial")
+                    p_serial = v;
+                else if (key == "samplerate")
+                    p_samplerate = v;
+                else if (key == "frequency")
+                    p_frequency = v;
+                else if (key == "gain_type")
+                    p_gain_type = v;
+                else if (key == "general_gain")
+                    p_general_gain = v;
+                else if (key == "lna_gain")
+                    p_lna_gain = v;
+                else if (key == "mixer_gain")
+                    p_mixer_gain = v;
+                else if (key == "vga_gain")
+                    p_vga_gain = v;
+                else if (key == "lna_agc")
+                    p_lna_agc = v;
+                else if (key == "mixer_agc")
+                    p_mixer_agc = v;
+                else if (key == "bias")
+                    p_bias = v;
+                else
+                    throw satdump_exception(key);
+                init();
             }
 
             void drawUI()
