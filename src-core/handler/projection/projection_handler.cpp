@@ -1,8 +1,9 @@
 #include "projection_handler.h"
 #include "core/style.h"
+#include "logger.h"
 
-#include "../vector/shapefile_handler.h"
 #include "../image/image_handler.h"
+#include "../vector/shapefile_handler.h"
 
 // TODOREWORK
 #include "projection/reprojector.h"
@@ -11,14 +12,9 @@ namespace satdump
 {
     namespace viewer
     {
-        ProjectionHandler::ProjectionHandler()
-        {
-            handler_tree_icon = "\uf6e6";
-        }
+        ProjectionHandler::ProjectionHandler() { handler_tree_icon = "\uf6e6"; }
 
-        ProjectionHandler::~ProjectionHandler()
-        {
-        }
+        ProjectionHandler::~ProjectionHandler() {}
 
         void ProjectionHandler::drawMenu()
         {
@@ -116,9 +112,6 @@ namespace satdump
             // TODOREWORK
         }
 
-        void ProjectionHandler::drawContents(ImVec2 win_size)
-        {
-            img_handler.drawContents(win_size);
-        }
-    }
-}
+        void ProjectionHandler::drawContents(ImVec2 win_size) { img_handler.drawContents(win_size); }
+    } // namespace viewer
+} // namespace satdump

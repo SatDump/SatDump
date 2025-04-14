@@ -8,9 +8,9 @@
 #include "base/readerwritercircularbuffer.h"
 #include "core/exception.h"
 #include "nlohmann/json.hpp"
-#include <vector>
-#include <thread>
 #include <mutex>
+#include <thread>
+#include <vector>
 
 namespace satdump
 {
@@ -50,7 +50,8 @@ namespace satdump
         };
 
         // TODOREWORK cleanup!!!!
-        inline void add_param(nlohmann::json &p, std::string id, std::string type, nlohmann::json def = {}, std::string name = "")
+        inline void add_param(nlohmann::ordered_json &p, std::string id, std::string type, nlohmann::json def = {},
+                              std::string name = "")
         {
             p[id]["type"] = type;
             if (!def.is_null())
@@ -105,7 +106,8 @@ namespace satdump
                 if (i >= inputs.size())
                     throw satdump_exception("Input index " + std::to_string(i) + " does not exist for " + d_id + "!");
                 if (inputs[i].type != f.type)
-                    throw satdump_exception("Input type " + std::to_string(inputs[i].type) + " not compatible with " + std::to_string(f.type) + " for " + d_id + "!");
+                    throw satdump_exception("Input type " + std::to_string(inputs[i].type) + " not compatible with " +
+                                            std::to_string(f.type) + " for " + d_id + "!");
                 inputs[i].fifo = f.fifo;
             }
 
@@ -191,6 +193,15 @@ namespace satdump
             }
 
         public:
+            // TODOREWORK document
+            enum cfg_res_t
+            {
+                RES_OK = 0,      // Applied fine
+                RES_LISTUPD = 1, // get_cfg_list must be pulled again
+                RES_IOUPD = 2,   // IO Configuration changed (must ALSO re-pull get_cfg_list!!!)
+                RES_ERR = 3,     // Config option not applied
+            };
+
             /**
              * @brief Get parameters *LIST* of the block's
              * parameters. This does not contain actual values,
@@ -201,12 +212,22 @@ namespace satdump
              *
              * @return parameters description
              */
-            virtual nlohmann::json get_cfg_list() { return {}; } // TODOREWORK
+            virtual nlohmann::ordered_json get_cfg_list() { return {}; } // TODOREWORK
 
             /**
              * @brief Get parameters of the block as JSON TODOREWORK
              */
             virtual nlohmann::json get_cfg(std::string key) = 0;
+
+            // TODOREWORK
+            nlohmann::json get_cfg()
+            {
+                nlohmann::json p;
+                auto v = get_cfg_list();
+                for (auto &v2 : v.items())
+                    p[v2.key()] = get_cfg(v2.key());
+                return p;
+            }
 
             /**
              * @brief Set parameters of the block from JSON,
@@ -218,14 +239,21 @@ namespace satdump
              * function here.
              * Optionally, this can also be made to be functional
              * while the block is running! TODOREWORK
+             * @return error code or status.
              */
-            virtual void set_cfg(std::string key, nlohmann::json v) = 0;
+            virtual cfg_res_t set_cfg(std::string key, nlohmann::json v) = 0;
 
             // TODOREWORK
-            void set_cfg(nlohmann::json v)
+            cfg_res_t set_cfg(nlohmann::json v)
             {
+                cfg_res_t r = RES_OK;
                 for (auto &i : v.items())
-                    set_cfg(i.key(), i.value());
+                {
+                    cfg_res_t r2 = set_cfg(i.key(), i.value());
+                    if (r2 > r)
+                        r = r2;
+                }
+                return r;
             }
 
         protected:
@@ -288,5 +316,5 @@ namespace satdump
                 blk_should_run = false;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

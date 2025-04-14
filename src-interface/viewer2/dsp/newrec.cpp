@@ -1,5 +1,6 @@
 #include "newrec.h"
 #include "common/widgets/stepped_slider.h"
+#include "dsp/block.h"
 #include "logger.h"
 
 namespace satdump
@@ -17,7 +18,7 @@ namespace satdump
                     dev = ndsp::getDeviceInstanceFromInfo(d);
                     dev->setDevInfo(d);
                     options_displayer_test.add_options(dev->get_cfg_list());
-                    // TODOREWORK                    options_displayer_test.set_values(dev->get_cfg());
+                    options_displayer_test.set_values(dev->get_cfg());
                     break;
                 }
             }
@@ -33,15 +34,10 @@ namespace satdump
             waterfall_plot->set_size(65536);
             waterfall_plot->set_rate(30, 20);
 
-            fftp->on_fft = [this](float *p)
-            {
-                waterfall_plot->push_fft(p);
-            };
+            fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
         }
 
-        NewRecHandler::~NewRecHandler()
-        {
-        }
+        NewRecHandler::~NewRecHandler() {}
 
         void NewRecHandler::drawMenu()
         {
@@ -52,7 +48,15 @@ namespace satdump
                 if (changed.size() > 0)
                 {
                     logger->trace("\n%s\n", changed.dump(4).c_str());
-                    dev->set_cfg(changed);
+                    auto r = dev->set_cfg(changed);
+                    if (r >= ndsp::Block::RES_LISTUPD)
+                    {
+                        options_displayer_test.clear();
+                        options_displayer_test.add_options(dev->get_cfg_list());
+                    }
+
+                    options_displayer_test.set_values(dev->get_cfg());
+
                     // dev->init();
                 }
             }
@@ -105,7 +109,8 @@ namespace satdump
             float waterfall_ratio = 0.3;
             float left_width = ImGui::GetCursorPosX() - 9;
 
-            ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false,
+                              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
@@ -116,10 +121,15 @@ namespace satdump
 #else
                 int offset = 30;
 #endif
-                ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
-                ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50),
+                                                    ImVec2((right_width + offset * ui_scale), wf_size));
+                ImGui::SetNextWindowSize(
+                    ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
-                if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+                if (ImGui::Begin("#fft", &t,
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar |
+                                     ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
+                                     ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
                     fft_plot->draw({float(wfft_widht), fft_height});
@@ -135,5 +145,5 @@ namespace satdump
             }
             ImGui::EndChild();
         }
-    }
-}
+    } // namespace viewer
+} // namespace satdump

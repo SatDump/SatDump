@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include "projection/thinplatespline.h"
+#include <vector>
 
 namespace satdump
 {
@@ -10,7 +10,7 @@ namespace satdump
         using namespace satdump::proj; // TODOREWORK Remove
         class TPSTransform
         {
-        private:
+          private:
             VizGeorefSpline2D *spline_forward;
             VizGeorefSpline2D *spline_reverse;
             bool fwd_solved = true;
@@ -19,7 +19,7 @@ namespace satdump
             bool has_been_init = false;
             double xy[2] = {0.0, 0.0};
 
-        public:
+          public:
             int init(std::vector<GCP> gcps, bool forward = true, bool reverse = true);
             TPSTransform();
             TPSTransform(std::vector<GCP> gcps);
@@ -41,5 +41,5 @@ namespace satdump
 
             inline VizGeorefSpline2D &getRawForward() { return *spline_forward; }
         };
-    };
-};
+    }; // namespace projection
+}; // namespace satdump

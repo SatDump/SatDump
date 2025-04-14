@@ -1,7 +1,7 @@
 #pragma once
 
-#include "imgui/imgui_internal.h"
 #include "core/style.h"
+#include "imgui/imgui_internal.h"
 
 struct TreeDrawerToClean
 {
@@ -27,8 +27,10 @@ struct TreeDrawerToClean
         const float HorizontalTreeLineSize = 8.0f;                                         // chosen arbitrarily
         const ImRect childRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); // RenderTree(child);
         const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
-        drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), style::theme.treeview_icon);
-        drawList->AddText(ImVec2(verticalLineStart.x + HorizontalTreeLineSize * 2.0f, childRect.Min.y), style::theme.treeview_icon, icon.c_str());
+        drawList->AddLine(ImVec2(verticalLineStart.x, midpoint),
+                          ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), style::theme.treeview_icon);
+        drawList->AddText(ImVec2(verticalLineStart.x + HorizontalTreeLineSize * 2.0f, childRect.Min.y),
+                          style::theme.treeview_icon, icon.c_str());
         verticalLineEnd.y = midpoint;
         return false;
     }

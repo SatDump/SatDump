@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dsp/block.h"
 #include "common/dsp/complex.h"
 #include "common/dsp/resamp/polyphase_bank.h"
+#include "dsp/block.h"
 
 namespace satdump
 {
@@ -56,9 +56,9 @@ namespace satdump
 
             void init();
 
-            nlohmann::json get_cfg_list()
+            nlohmann::ordered_json get_cfg_list()
             {
-                nlohmann::json p;
+                nlohmann::ordered_json p;
                 add_param(p, "omega", "float");
                 add_param(p, "omegaGain", "float", pow(8.7e-3, 2) / 4.0);
                 add_param(p, "mu", "float", 0.5f);
@@ -89,7 +89,7 @@ namespace satdump
                     throw satdump_exception(key);
             }
 
-            void set_cfg(std::string key, nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "omega")
                 {
@@ -128,7 +128,8 @@ namespace satdump
                 }
                 else
                     throw satdump_exception(key);
+                return RES_OK;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

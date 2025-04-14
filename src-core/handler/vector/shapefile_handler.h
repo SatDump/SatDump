@@ -2,8 +2,8 @@
 
 #include "../handler.h"
 
-#include "common/map/shapefile.h"
 #include "common/image/image.h"
+#include "common/map/shapefile.h"
 
 namespace satdump
 {
@@ -22,7 +22,8 @@ namespace satdump
 
             ImVec4 color_to_draw = {0, 1, 0, 1};
 
-            void draw_to_image(image::Image &img, std::function<std::pair<double, double>(double, double, double, double)> projectionFunc);
+            void draw_to_image(image::Image &img,
+                               std::function<std::pair<double, double>(double, double, double, double)> projectionFunc);
 
             // The Rest
             void drawMenu();
@@ -36,5 +37,5 @@ namespace satdump
 
             std::string getID() { return "shapefile_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

@@ -77,7 +77,8 @@ namespace satdump
                         {
                             IM_ASSERT(payload->DataSize == sizeof(DragDropWip));
                             const DragDropWip *payload_n = (const DragDropWip *)payload->Data;
-                            logger->info("Handler " + handler->getName() + " got drag of " + payload_n->drag->getName());
+                            logger->info("Handler " + handler->getName() + " got drag of " +
+                                         payload_n->drag->getName());
                             if (!isParent(payload_n->drag, handler))
                             {
                                 handler->addSubHandler(payload_n->drag);
@@ -127,9 +128,6 @@ namespace satdump
                 delSubHandlersNow();
         }
 
-        nlohmann::json Handler::getConfig()
-        {
-            return {};
-        }
-    }
-}
+        nlohmann::json Handler::getConfig() { return {}; }
+    } // namespace viewer
+} // namespace satdump

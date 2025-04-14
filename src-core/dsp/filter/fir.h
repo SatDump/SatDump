@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dsp/block.h"
-#include "common/dsp/complex.h"
 #include "common/dsp/block.h"
+#include "common/dsp/complex.h"
+#include "dsp/block.h"
 
 namespace satdump
 {
@@ -46,7 +46,8 @@ namespace satdump
                     volk_free(buffer);
 
                 // Init buffer
-                buffer = dsp::create_volk_buffer<T>(p_buffer_size); // TODOREWORK How to handle this from the initial buffer size?
+                buffer = dsp::create_volk_buffer<T>(
+                    p_buffer_size); // TODOREWORK How to handle this from the initial buffer size?
                 buffer_size = p_buffer_size;
 
                 // Get alignement parameters
@@ -78,7 +79,7 @@ namespace satdump
                     throw satdump_exception(key);
             }
 
-            void set_cfg(std::string key, nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "taps")
                 {
@@ -89,7 +90,8 @@ namespace satdump
                     p_buffer_size = v;
                 else
                     throw satdump_exception(key);
+                return RES_OK;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

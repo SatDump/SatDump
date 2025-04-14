@@ -1,0 +1,4 @@
+CompileFlags:
+  Add: [-xc++, -Wall, -std=c++17]
+  Remove: [-W*]
+  Compiler: g++

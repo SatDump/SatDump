@@ -4,14 +4,14 @@
  * @file handler.h
  */
 
-#include <string>
-#include <memory>
-#include <map>
-#include <mutex>
-#include <functional>
-#include "tree.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json.hpp"
+#include "tree.h"
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
 
 namespace satdump
 {
@@ -116,28 +116,19 @@ namespace satdump
              * @brief Set if a handler can be dragged around in the tree
              * @param v true to have it be draggable
              */
-            void setCanBeDragged(bool v)
-            {
-                handler_can_be_dragged = v;
-            }
+            void setCanBeDragged(bool v) { handler_can_be_dragged = v; }
 
             /**
              * @brief Set if a handler can be dragged to in the tree
              * @param v true to have it be a valid drag target
              */
-            void setCanBeDraggedTo(bool v)
-            {
-                handler_can_be_dragged_to = v;
-            }
+            void setCanBeDraggedTo(bool v) { handler_can_be_dragged_to = v; }
 
             /**
              * @brief Set if a handler's subhandlers can be dragged to in the tree
              * @param v true to have them be draggable
              */
-            void setSubHandlersCanBeDragged(bool v)
-            {
-                handler_can_subhandlers_be_dragged = v;
-            }
+            void setSubHandlersCanBeDragged(bool v) { handler_can_subhandlers_be_dragged = v; }
 
             /**
              * @brief Optional, allows setting a configuration/state from JSON
@@ -159,5 +150,5 @@ namespace satdump
         {
             std::vector<std::shared_ptr<Handler>> &h;
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

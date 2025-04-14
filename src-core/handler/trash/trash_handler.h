@@ -2,9 +2,6 @@
 
 #include "../handler.h"
 
-#include "common/map/shapefile.h"
-#include "common/image/image.h"
-
 namespace satdump
 {
     namespace viewer
@@ -32,5 +29,5 @@ namespace satdump
 
             std::string getID() { return "trash_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

@@ -3,9 +3,8 @@
 #include "../handler.h"
 #include "../processing_handler.h"
 
-#include "logger.h"
-#include "common/widgets/image_view.h"
 #include "common/image/meta.h"
+#include "common/widgets/image_view.h"
 
 #include "projection/projection.h"
 
@@ -76,5 +75,5 @@ namespace satdump
 
             std::string getID() { return "image_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

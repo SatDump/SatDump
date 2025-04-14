@@ -9,9 +9,9 @@
 #include <nng/protocol/bus0/bus.h>
 #include <thread>
 
-#include "imgui/pfd/widget.h"
 #include "common/widgets/image_view.h"
 #include "common/widgets/menuitem_fileopen.h"
+#include "imgui/pfd/widget.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
@@ -99,5 +99,5 @@ namespace satdump
 
             std::string getID() { return "lut_generator_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

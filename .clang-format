@@ -1,0 +1,20 @@
+---
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
+BasedOnStyle: Microsoft
+IndentWidth: 4
+---
+Language: Cpp
+# Force pointers to the type for C++.
+DerivePointerAlignment: false
+PointerAlignment: Right
+BraceWrapping:
+  AfterNamespace: true
+  AfterCaseLabel: true
+  BeforeLambdaBody: true
+#  IndentBraces: true
+NamespaceIndentation: All
+BreakTemplateDeclarations: Yes
+AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: All
+IndentCaseBlocks: False
+AccessModifierOffset: -4

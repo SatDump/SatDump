@@ -1,9 +1,9 @@
 #pragma once
 
-#include "handler/handler.h"
 #include "dsp/device/dev.h"
 #include "dsp/device/options_displayer.h"
 #include "dsp/fft/fft_pan.h"
+#include "handler/handler.h"
 
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
@@ -35,5 +35,5 @@ namespace satdump
 
             std::string getID() { return "newrec_test_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

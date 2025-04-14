@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dsp/block.h"
 #include "common/dsp/complex.h"
+#include "dsp/block.h"
 
 namespace satdump
 {
@@ -55,7 +55,7 @@ namespace satdump
                     throw satdump_exception(key);
             }
 
-            void set_cfg(std::string key, nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "loop_bw")
                 {
@@ -71,7 +71,8 @@ namespace satdump
                 }
                 else
                     throw satdump_exception(key);
+                return RES_OK;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

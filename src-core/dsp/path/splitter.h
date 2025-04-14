@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dsp/block.h"
 #include "common/dsp/complex.h"
+#include "dsp/block.h"
 
 namespace satdump
 {
@@ -20,9 +20,7 @@ namespace satdump
             SplitterBlock();
             ~SplitterBlock();
 
-            void init()
-            {
-            }
+            void init() {}
 
             nlohmann::json get_cfg(std::string key)
             {
@@ -31,7 +29,7 @@ namespace satdump
                 throw satdump_exception(key);
             }
 
-            void set_cfg(std::string key, nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "noutputs")
                 {
@@ -43,14 +41,16 @@ namespace satdump
                         Block::outputs.clear();
                         for (int i = 0; i < p_noutputs; i++)
                         {
-                            Block::outputs.push_back({{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}});
+                            Block::outputs.push_back(
+                                {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}});
                             outputs[i].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
                         }
                     }
                 }
                 else
                     throw satdump_exception(key);
+                return RES_OK;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

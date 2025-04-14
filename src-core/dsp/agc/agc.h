@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dsp/block.h"
 #include "common/dsp/complex.h"
+#include "dsp/block.h"
 
 namespace satdump
 {
@@ -36,9 +36,9 @@ namespace satdump
                 max_gain = p_max_gain;
             }
 
-            nlohmann::json get_cfg_list()
+            nlohmann::ordered_json get_cfg_list()
             {
-                nlohmann::json p;
+                nlohmann::ordered_json p;
                 add_param(p, "rate", "float", 1e-4, "Rate");
                 add_param(p, "reference", "float", 1, "Reference");
                 add_param(p, "gain", "float", 1, "Gain");
@@ -60,7 +60,7 @@ namespace satdump
                     throw satdump_exception(key);
             }
 
-            void set_cfg(std::string key, nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "rate")
                     p_rate = v;
@@ -72,7 +72,8 @@ namespace satdump
                     p_max_gain = v;
                 else
                     throw satdump_exception(key);
+                return RES_OK;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

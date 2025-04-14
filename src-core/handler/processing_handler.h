@@ -78,15 +78,12 @@ namespace satdump
                 }
 
                 is_processing = true;
-                auto fun = [this]()
-                {
-                    process();
-                };
+                auto fun = [this]() { process(); };
                 async_thread = std::thread(fun);
             }
 
             static std::string getID();
             static std::shared_ptr<Handler> getInstance();
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

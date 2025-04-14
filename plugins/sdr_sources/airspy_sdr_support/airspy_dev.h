@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dsp/block.h"
 #include "dsp/device/dev.h"
 
 #include <libairspy/airspy.h>
@@ -38,9 +39,9 @@ namespace satdump
 
             void init();
 
-            nlohmann::json get_cfg_list()
+            nlohmann::ordered_json get_cfg_list()
             {
-                nlohmann::json p;
+                nlohmann::ordered_json p;
 
                 p = devInfo.params;
 
@@ -57,17 +58,22 @@ namespace satdump
                 p["gain_type"]["type"] = "string";
                 p["gain_type"]["list"] = {"sensitive", "linear", "manual"};
 
-                p["general_gain"]["type"] = "int";
-                p["general_gain"]["range"] = {0, 21, 1};
+                if (p_gain_type == "sensitive" || p_gain_type == "linear")
+                {
+                    p["general_gain"]["type"] = "int";
+                    p["general_gain"]["range"] = {0, 21, 1};
+                }
+                else
+                {
+                    p["lna_gain"]["type"] = "int";
+                    p["lna_gain"]["range"] = {0, 15, 1};
 
-                p["lna_gain"]["type"] = "int";
-                p["lna_gain"]["range"] = {0, 15, 1};
+                    p["mixer_gain"]["type"] = "int";
+                    p["mixer_gain"]["range"] = {0, 15, 1};
 
-                p["mixer_gain"]["type"] = "int";
-                p["mixer_gain"]["range"] = {0, 15, 1};
-
-                p["vga_gain"]["type"] = "int";
-                p["vga_gain"]["range"] = {0, 15, 1};
+                    p["vga_gain"]["type"] = "int";
+                    p["vga_gain"]["range"] = {0, 15, 1};
+                }
 
                 p["lna_agc"]["type"] = "bool";
 
@@ -80,24 +86,35 @@ namespace satdump
 
             nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-                v["serial"] = p_serial;
-                auto &r = v["rx0"];
-                r["samplerate"] = p_samplerate;
-                r["frequency"] = p_frequency;
-                r["gain_type"] = p_gain_type;
-                r["general_gain"] = p_general_gain;
-                r["lna_gain"] = p_lna_gain;
-                r["mixer_gain"] = p_mixer_gain;
-                r["vga_gain"] = p_vga_gain;
-                r["lna_agc"] = p_lna_agc;
-                r["mixer_agc"] = p_mixer_agc;
-                r["bias"] = p_bias;
-                return v;
+                if (key == "serial")
+                    return p_serial;
+                else if (key == "samplerate")
+                    return p_samplerate;
+                else if (key == "frequency")
+                    return p_frequency;
+                else if (key == "gain_type")
+                    return p_gain_type;
+                else if (key == "general_gain")
+                    return p_general_gain;
+                else if (key == "lna_gain")
+                    return p_lna_gain;
+                else if (key == "mixer_gain")
+                    return p_mixer_gain;
+                else if (key == "vga_gain")
+                    return p_vga_gain;
+                else if (key == "lna_agc")
+                    return p_lna_agc;
+                else if (key == "mixer_agc")
+                    return p_mixer_agc;
+                else if (key == "bias")
+                    return p_bias;
+                else
+                    throw satdump_exception(key);
             }
 
-            void set_cfg(std::string key, nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
+                cfg_res_t r = RES_OK;
                 if (key == "serial")
                     p_serial = v;
                 else if (key == "samplerate")
@@ -105,7 +122,10 @@ namespace satdump
                 else if (key == "frequency")
                     p_frequency = v;
                 else if (key == "gain_type")
+                {
                     p_gain_type = v;
+                    r = RES_LISTUPD;
+                }
                 else if (key == "general_gain")
                     p_general_gain = v;
                 else if (key == "lna_gain")
@@ -123,11 +143,10 @@ namespace satdump
                 else
                     throw satdump_exception(key);
                 init();
+                return r;
             }
 
-            void drawUI()
-            {
-            }
+            void drawUI() {}
 
             void start();
             void stop(bool stop_now = false);
@@ -135,5 +154,5 @@ namespace satdump
         public:
             static std::vector<DeviceInfo> listDevs();
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

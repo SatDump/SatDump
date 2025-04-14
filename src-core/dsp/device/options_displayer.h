@@ -1,11 +1,11 @@
 #pragma once
 
-#include <mutex>
-#include "nlohmann/json.hpp"
-#include "imgui/imgui.h"
-#include "imgui/imgui_stdlib.h"
 #include "common/widgets/stepped_slider.h"
 #include "core/exception.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_stdlib.h"
+#include "nlohmann/json.hpp"
+#include <mutex>
 
 namespace satdump
 {
@@ -67,7 +67,7 @@ namespace satdump
             }
 
         public:
-            void add_options(nlohmann::json options)
+            void add_options(nlohmann::ordered_json options)
             {
                 opts_mtx.lock();
                 for (auto &v : options.items())
@@ -159,7 +159,8 @@ namespace satdump
                         // else if (v.is_sub && j.is_object())
                         //     v._sub->set_values(j);
                         else
-                            throw satdump_exception("Invalid options or JSON value! (SET " + v.id + ")");
+                            throw satdump_exception("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() +
+                                                    ")");
                     }
                 }
                 opts_mtx.unlock();
@@ -183,7 +184,8 @@ namespace satdump
                 for (auto &v : opts)
                 {
                     bool u = false;
-                    std::string id = v.name; // TODOREWORK might cause issues? std::string(v.name + "##optsdisplayertodorework");
+                    std::string id =
+                        v.name; // TODOREWORK might cause issues? std::string(v.name + "##optsdisplayertodorework");
 
                     if (v.is_bool)
                     {
@@ -298,5 +300,5 @@ namespace satdump
                 return vals;
             }
         };
-    }
-}
+    } // namespace todorework
+} // namespace satdump
