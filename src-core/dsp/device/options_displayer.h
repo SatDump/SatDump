@@ -80,6 +80,11 @@ namespace satdump
                     if (!vv.contains("type"))
                         throw satdump_exception("Option " + v.key() + " does not have type!");
 
+                    // May be hidden!
+                    if (vv.contains("hide"))
+                        if (vv["hide"].get<bool>())
+                            continue;
+
                     if (vv.contains("name"))
                         h.name = vv["name"];
                     else

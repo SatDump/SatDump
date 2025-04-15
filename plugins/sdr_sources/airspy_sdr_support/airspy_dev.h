@@ -46,6 +46,8 @@ namespace satdump
                 p = devInfo.params;
 
                 p["serial"]["type"] = "string";
+                if (devInfo.cfg.contains("serial"))
+                    p["serial"]["hide"] = true;
 
                 p["frequency"]["type"] = "float";
 
