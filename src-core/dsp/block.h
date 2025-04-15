@@ -50,8 +50,7 @@ namespace satdump
         };
 
         // TODOREWORK cleanup!!!!
-        inline void add_param(nlohmann::ordered_json &p, std::string id, std::string type, nlohmann::json def = {},
-                              std::string name = "")
+        inline void add_param(nlohmann::ordered_json &p, std::string id, std::string type, nlohmann::json def = {}, std::string name = "")
         {
             p[id]["type"] = type;
             if (!def.is_null())
@@ -87,11 +86,21 @@ namespace satdump
 
         protected:
             std::vector<BlockIO> inputs;
-            std::vector<BlockIO> outputs; // TODOREWORK check connection type!
+            std::vector<BlockIO> outputs;
 
         public:
-            // TODOREWORK DOCUMENT
+            /**
+             * @brief Get the block's input configurations and
+             * streams. You should not modify them.
+             * @return The block's input BlockIOs.
+             */
             std::vector<BlockIO> get_inputs() { return inputs; }
+
+            /**
+             * @brief Get the block's output configurations and
+             * streams. You should not modify them.
+             * @return The block's output BlockIOs.
+             */
             std::vector<BlockIO> get_outputs() { return outputs; }
 
             /**
@@ -103,11 +112,10 @@ namespace satdump
              */
             void set_input(BlockIO f, int i)
             {
-                if (i >= inputs.size())
+                if (i >= (int)inputs.size())
                     throw satdump_exception("Input index " + std::to_string(i) + " does not exist for " + d_id + "!");
                 if (inputs[i].type != f.type)
-                    throw satdump_exception("Input type " + std::to_string(inputs[i].type) + " not compatible with " +
-                                            std::to_string(f.type) + " for " + d_id + "!");
+                    throw satdump_exception("Input type " + std::to_string(inputs[i].type) + " not compatible with " + std::to_string(f.type) + " for " + d_id + "!");
                 inputs[i].fifo = f.fifo;
             }
 
@@ -120,7 +128,7 @@ namespace satdump
              */
             BlockIO get_output(int i, int nbuf)
             {
-                if (i >= outputs.size())
+                if (i >= (int)outputs.size())
                     throw satdump_exception("Ouput index " + std::to_string(i) + " does not exist for " + d_id + "!");
                 if (nbuf > 0)
                     outputs[i].fifo = std::make_shared<DspBufferFifo>(nbuf);
@@ -129,7 +137,7 @@ namespace satdump
 
             /**
              * @brief Link a block's output to another input,
-             * more or less just a warped around set_input and
+             * more or less just a warper around set_input and
              * set_output
              * @param ptr block to get the output from
              * @param output_index index of the output to use,
@@ -140,10 +148,7 @@ namespace satdump
              * set_input for more info)
              * @return BlockIO struct of the output
              */
-            void link(Block *ptr, int output_index, int input_index, int nbuf)
-            {
-                set_input(ptr->get_output(output_index, nbuf), input_index);
-            }
+            void link(Block *ptr, int output_index, int input_index, int nbuf) { set_input(ptr->get_output(output_index, nbuf), input_index); }
 
         private:
             bool blk_should_run;
@@ -159,7 +164,7 @@ namespace satdump
         protected:
             /**
              * @brief Used to signal to a block it should exit in order
-             * to stop(). Usually only needed in sources. TODOREWORK
+             * to stop(). Usually only needed in sources.
              */
             bool work_should_exit;
 
@@ -179,8 +184,7 @@ namespace satdump
              * @param in Inputs configurations, optional
              * @param out Output configurations, optional
              */
-            Block(std::string id, std::vector<BlockIO> in = {}, std::vector<BlockIO> out = {})
-                : d_id(id), inputs(in), outputs(out)
+            Block(std::string id, std::vector<BlockIO> in = {}, std::vector<BlockIO> out = {}) : d_id(id), inputs(in), outputs(out)
             {
                 blk_should_run = false;
                 work_should_exit = false;
@@ -193,13 +197,19 @@ namespace satdump
             }
 
         public:
-            // TODOREWORK document
+            /**
+             * @brief set_cfg status.
+             * @param RES_OK Applied fine
+             * @param RES_LISTUPD get_cfg_list must be pulled again
+             * @param RES_IOUPD IO Configuration changed (must ALSO re-pull get_cfg_list!!!)
+             * @param RES_ERR Config option not applied
+             */
             enum cfg_res_t
             {
-                RES_OK = 0,      // Applied fine
-                RES_LISTUPD = 1, // get_cfg_list must be pulled again
-                RES_IOUPD = 2,   // IO Configuration changed (must ALSO re-pull get_cfg_list!!!)
-                RES_ERR = 3,     // Config option not applied
+                RES_OK = 0,
+                RES_LISTUPD = 1,
+                RES_IOUPD = 2,
+                RES_ERR = 3,
             };
 
             /**
@@ -209,17 +219,28 @@ namespace satdump
              * will contains a name, optionally description,
              * its type and range if applicable, string options
              * and so on.
+             * This must be re-pulled in several cases :
+             * - If set_cfg returns RES_LISTUPD or higher
+             * - If the block is started
+             * - If the block is stopped
              *
              * @return parameters description
              */
-            virtual nlohmann::ordered_json get_cfg_list() { return {}; } // TODOREWORK
+            virtual nlohmann::ordered_json get_cfg_list() { return {}; }
 
             /**
-             * @brief Get parameters of the block as JSON TODOREWORK
+             * @brief Get parameters of the block as JSON
+             * @param key the parameter to retrieve
+             * @return requested parameter value
              */
             virtual nlohmann::json get_cfg(std::string key) = 0;
 
-            // TODOREWORK
+            /**
+             * @brief Get parameters of the block as JSON.
+             * Unlike get_cfg(key), this returns every single
+             * available parameter as declared by get_cfg_list().
+             * @return All parameters values
+             */
             nlohmann::json get_cfg()
             {
                 nlohmann::json p;
@@ -238,12 +259,20 @@ namespace satdump
              * easy to be done in C++ directly, and using said
              * function here.
              * Optionally, this can also be made to be functional
-             * while the block is running! TODOREWORK
+             * while the block is running!
+             * @param key parameter to set
+             * @param v value to set
              * @return error code or status.
              */
             virtual cfg_res_t set_cfg(std::string key, nlohmann::json v) = 0;
 
-            // TODOREWORK
+            /**
+             * @brief Set parameters of the block from JSON.
+             * Essentially the same as set_cfg(key, v), except
+             * this will set any number of them at once.
+             * @param v values to set
+             * @return highest error code or status
+             */
             cfg_res_t set_cfg(nlohmann::json v)
             {
                 cfg_res_t r = RES_OK;
@@ -268,15 +297,9 @@ namespace satdump
             /**
              * @brief Applies current parameters to the block.
              * This is called automatically once in start(), but
-             * may also be called manually after parameters have
-             * been changed to apply them while the block is
-             * running (given the block supports doing that, which
-             * is optional!)
-             * /!\ Do note you should NOT make any changes to the
-             * block's IO in this functions! IO config should be done
-             * in set_cfg()! TODOREWORK?
+             * may also be called manually by the block as needed.
              */
-            virtual void init() {} //= 0; TODOREWORK
+            virtual void init() {}
 
         public:
             /**

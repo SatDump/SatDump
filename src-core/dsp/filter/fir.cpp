@@ -6,8 +6,7 @@ namespace satdump
     {
         template <typename T>
         FIRBlock<T>::FIRBlock()
-            : Block(std::is_same_v<T, complex_t> ? "fir_cc" : "fir_ff",
-                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
+            : Block(std::is_same_v<T, complex_t> ? "fir_cc" : "fir_ff", {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
                     {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
         {
         }
@@ -99,5 +98,5 @@ namespace satdump
 
         template class FIRBlock<complex_t>;
         template class FIRBlock<float>;
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

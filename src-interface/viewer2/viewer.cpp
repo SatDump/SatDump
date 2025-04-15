@@ -4,35 +4,37 @@
 // #include "scatterometer_handler.h"
 // #include "core/config.h"
 // #include "products/dataset.h"
+#include "common/event_bus.h"
 #include "common/utils.h"
 // #include "resources.h"
-#include "main_ui.h"
+#include "core/plugin.h"
 
+#include "dsp/cyclo_test.h"
+#include "dsp/dsp_flowgraph_handler.h"
+#include "handler/dataset/dataset_handler.h"
 #include "handler/dummy_handler.h"
 #include "handler/product/image_product_handler.h" // TODOREWORK CLEAN
-#include "handler/dataset/dataset_handler.h"
-#include "handler/vector/shapefile_handler.h"
 #include "handler/projection/projection_handler.h"
 #include "handler/trash/trash_handler.h"
-#include "dsp/dsp_flowgraph_handler.h"
-#include "dsp/cyclo_test.h"
+#include "handler/vector/shapefile_handler.h"
 // TODOREWORK
 #include "resources.h"
 
 // TODOREWORK
-#include "dsp/waterfall_test.h"
 #include "dsp/newrec.h"
+#include "dsp/waterfall_test.h"
 
 #include "common/image/io.h"
 
 #include "tools_todoreworkmove/lut_generator.h"
 
+#include "imgui/imgui_filedrop.h"
+
 namespace satdump
 {
     namespace viewer
     {
-        ViewerApplication::ViewerApplication()
-            : Application("viewer")
+        ViewerApplication::ViewerApplication() : Application("viewer")
         {
             master_handler = std::make_shared<DummyHandler>("MasterHandlerViewer");
 
@@ -42,6 +44,14 @@ namespace satdump
             trash_h->setCanBeDragged(false);
             trash_handler->addSubHandler(trash_h);
             trash_handler->setCanBeDraggedTo(false);
+
+            // Enable dropping files onto the viewer. TODOREWORK, check the viewer IS active!?
+            eventBus->register_handler<imgui_utils::FileDropEvent>(
+                [this](const imgui_utils::FileDropEvent &v)
+                {
+                    for (auto &f : v.files)
+                        openProductOrDataset(f);
+                });
 
             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
@@ -148,7 +158,7 @@ namespace satdump
                         if (ImGui::MenuItem("Projection"))
                             master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
                         if (ImGui::MenuItem("DSP Flowgraph"))
-                            ; /// TODOREWORK                            master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
+                            master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
                         if (ImGui::MenuItem("BitView TEST"))
                         {
                             std::vector<std::shared_ptr<Handler>> e;
@@ -192,10 +202,7 @@ namespace satdump
             }
         }
 
-        void ViewerApplication::drawContents()
-        {
-            ImGui::Text("No handler selected!");
-        }
+        void ViewerApplication::drawContents() { ImGui::Text("No handler selected!"); }
 
         void ViewerApplication::drawUI()
         {
@@ -293,5 +300,5 @@ namespace satdump
             };
             file_open_thread = std::thread(fun);
         }
-    }
-};
+    } // namespace viewer
+}; // namespace satdump

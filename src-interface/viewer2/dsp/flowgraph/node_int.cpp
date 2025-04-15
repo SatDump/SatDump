@@ -1,80 +1,26 @@
 #include "node_int.h"
 #include "flowgraph.h"
-#if 0
+#include "imgui/imgui.h"
+
 namespace satdump
 {
     namespace ndsp
     {
-        NodeInternal::NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b)
-            : f((Flowgraph *)f), blk(b)
-        {
-            j = blk->get_cfg();
-            setupJSONParams();
-        }
+        NodeInternal::NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b) : f((Flowgraph *)f), blk(b) { optdisp = std::make_unique<ndsp::OptDisplayerWarper>(blk); }
 
         void NodeInternal::render()
         {
-            // widgets::JSONTreeEditor(v, "##testid", false);
-            /*for (auto &c : v.items())
-            {
-                std::string name = c.key();
-                std::string id = name + "##currentblock";
-                if (c.value().is_number())
-                {
-                    double l = c.value();
-                    ImGui::SetNextItemWidth(120);
-                    ImGui::InputDouble(id.c_str(), &l);
-                    c.value() = l;
-                }
-                else if (c.value().is_string())
-                {
-                    std::string l = c.value();
-                    ImGui::SetNextItemWidth(120);
-                    ImGui::InputText(id.c_str(), &l);
-                    c.value() = l;
-                }
-            }*/
-
-            for (auto &c : v)
-            {
-                ImGui::SetNextItemWidth(120);
-                ImGui::InputText(c.first.c_str(), &c.second);
-            }
+            ImGui::PushItemWidth(200);
+            optdisp->draw();
+            ImGui::PopItemWidth();
         }
 
-        nlohmann::json NodeInternal::getP()
-        {
-            return v;
-        }
+        nlohmann::json NodeInternal::getP() { return blk->get_cfg(); }
 
         void NodeInternal::setP(nlohmann::json p)
         {
-            for (auto &c : p.items())
-                if (v.count(c.key()))
-                    v[c.key()] = c.value();
-
-            // v = p;
-            //  blk->setParams(p);
-            //  v = blk->getParams();
+            blk->set_cfg(p);
+            optdisp->update();
         }
-
-        void NodeInternal::getFinalJSON()
-        {
-            for (auto &c : j.items())
-            {
-                if (v.count(c.key()))
-                    c.value() = f->var_manager_test.getVariable(v[c.key()]);
-            }
-        }
-
-        void NodeInternal::applyP()
-        {
-            getFinalJSON();
-
-            printf("\n%s\n", j.dump(4).c_str());
-
-            blk->set_cfg(j);
-        }
-    }
-}
-#endif
+    } // namespace ndsp
+} // namespace satdump

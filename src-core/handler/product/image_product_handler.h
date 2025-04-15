@@ -2,10 +2,10 @@
 
 #include "product_handler.h"
 
+#include "core/style.h"
+#include "imgui/imgui_stdlib.h"
 #include "logger.h"
 #include "products2/image_product.h"
-#include "imgui/imgui_stdlib.h"
-#include "core/style.h"
 // #include "libs/ctpl/ctpl_stl.h"
 // #include "common/widgets/markdown_helper.h"
 // #include "common/widgets/timed_message.h"
@@ -83,5 +83,5 @@ namespace satdump
 
             std::string getID() { return "image_product_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

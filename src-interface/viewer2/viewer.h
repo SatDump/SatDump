@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../app.h"
-#include "imgui/imgui.h"
-#include <mutex>
 
 #include "handler/handler.h"
 

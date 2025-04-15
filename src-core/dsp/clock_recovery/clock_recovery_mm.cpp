@@ -1,6 +1,6 @@
 #include "clock_recovery_mm.h"
-#include "common/dsp/window/window.h"
 #include "common/dsp/block.h"
+#include "common/dsp/window/window.h"
 
 #define BRANCHLESS_CLIP(x, clip) (0.5 * (std::abs(x + clip) - std::abs(x - clip)))
 
@@ -8,10 +8,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        inline double hz_to_rad(double freq, double samplerate)
-        {
-            return 2.0 * M_PI * (freq / samplerate);
-        }
+        inline double hz_to_rad(double freq, double samplerate) { return 2.0 * M_PI * (freq / samplerate); }
 
         template <typename T>
         MMClockRecoveryBlock<T>::MMClockRecoveryBlock()
@@ -54,7 +51,9 @@ namespace satdump
             omega_limit = omega_relative_limit * omega;
 
             // Init interpolator
-            pfb.init(dsp::windowed_sinc(p_nfilt * p_ntaps, hz_to_rad(0.5 / (double)p_nfilt, 1.0), dsp::window::nuttall, p_nfilt), p_nfilt); // TODOREWORK do this in main loop? TODODSP
+            pfb.init(dsp::windowed_sinc(p_nfilt * p_ntaps, hz_to_rad(0.5 / (double)p_nfilt, 1.0), dsp::window::nuttall,
+                                        p_nfilt),
+                     p_nfilt); // TODOREWORK do this in main loop? TODODSP
         }
 
         template <typename T>
@@ -122,7 +121,8 @@ namespace satdump
                     if (inc < (pfb.ntaps - 1))
                         volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
                     else
-                        volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
+                        volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)],
+                                                 pfb.taps[imu], pfb.ntaps);
 #else
                     volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
 #endif
@@ -139,11 +139,15 @@ namespace satdump
                 {
 #if MM_DO_BRANCH
                     if (inc < (pfb.ntaps - 1))
-                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu],
+                                                    pfb.ntaps);
                     else
-                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
+                        volk_32fc_32f_dot_prod_32fc(
+                            (lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)],
+                            pfb.taps[imu], pfb.ntaps);
 #else
-                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu],
+                                                pfb.ntaps);
 #endif
 
                     // Slice it
@@ -190,5 +194,5 @@ namespace satdump
 
         template class MMClockRecoveryBlock<complex_t>;
         template class MMClockRecoveryBlock<float>;
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

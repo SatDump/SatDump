@@ -1,8 +1,9 @@
 #pragma once
 
-#include "nlohmann/json.hpp"
 #include "dsp/block.h"
-#if 0
+#include "dsp/device/options_displayer_warper.h"
+#include "nlohmann/json.hpp"
+
 namespace satdump
 {
     namespace ndsp
@@ -14,19 +15,11 @@ namespace satdump
         {
         protected:
             Flowgraph *f;
-            void getFinalJSON();
-            void setupJSONParams()
-            {
-                v.clear();
-                for (auto &ji : j.items())
-                    v.emplace(ji.key(), ji.value().dump());
-            }
+
+            std::shared_ptr<ndsp::OptDisplayerWarper> optdisp;
 
         public:
             std::shared_ptr<ndsp::Block> blk;
-            // nlohmann::json v;
-            nlohmann::json j;
-            std::map<std::string, std::string> v;
 
         public:
             NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b);
@@ -35,8 +28,6 @@ namespace satdump
 
             virtual nlohmann::json getP();
             virtual void setP(nlohmann::json p);
-            virtual void applyP();
         };
-    }
-}
-#endif
+    } // namespace ndsp
+} // namespace satdump

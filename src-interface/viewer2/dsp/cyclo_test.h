@@ -2,22 +2,23 @@
 
 #include "handler/handler.h"
 
-#include "dsp/io/file_source.h"
-#include "dsp/path/splitter.h"
-#include "dsp/fft/fft_pan.h"
 #include "dsp/agc/agc.h"
-#include "dsp/filter/fir.h"
-#include "dsp/pll/costas.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/const/const_disp.h"
+#include "dsp/fft/fft_pan.h"
+#include "dsp/filter/rrc.h"
+#include "dsp/io/file_source.h"
+#include "dsp/path/splitter.h"
+#include "dsp/pll/costas.h"
 
-#include "common/widgets/notated_num.h"
 #include "common/widgets/fft_plot.h"
+#include "common/widgets/notated_num.h"
 #include "common/widgets/waterfall_plot.h"
 
+#include <memory>
 #include <thread>
 
-#include "dsp/device/options_displayer.h"
+#include "dsp/device/options_displayer_warper.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
@@ -42,7 +43,8 @@ namespace satdump
             widgets::NotatedNum<uint64_t> samplerate = widgets::NotatedNum<uint64_t>("Samplerate", 6e6, "S/s");
             widgets::NotatedNum<uint64_t> symbolrate = widgets::NotatedNum<uint64_t>("Symbolrate", 2.00e6, "S/s");
 
-            todorework::OptionsDisplayer opt_displayer;
+            std::unique_ptr<ndsp::OptDisplayerWarper> agc_optdisp;
+            std::unique_ptr<ndsp::OptDisplayerWarper> rrc_optdisp;
 
             enum mod_type_t
             {
@@ -58,6 +60,8 @@ namespace satdump
             std::shared_ptr<widgets::FFTPlot> fft_plot;
             std::shared_ptr<widgets::FFTPlot> fft_plot2;
 
+            bool started = 0;
+
         public:
             CycloHelperHandler();
             ~CycloHelperHandler();
@@ -70,5 +74,5 @@ namespace satdump
 
             std::string getID() { return "cyclo_helper_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

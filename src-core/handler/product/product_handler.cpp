@@ -1,17 +1,16 @@
 #include "product_handler.h"
-#include "resources.h"
-#include "logger.h"
-#include "nlohmann/json_utils.h"
 #include "common/utils.h"
 #include "core/exception.h"
 #include "imgui/imgui_stdlib.h"
+#include "logger.h"
+#include "nlohmann/json_utils.h"
+#include "resources.h"
 
 namespace satdump
 {
     namespace viewer
     {
-        ProductHandler::ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode)
-            : product(p)
+        ProductHandler::ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode) : product(p)
         {
             handler_tree_icon = "\uf713";
 
@@ -31,7 +30,8 @@ namespace satdump
             }
             else
             {
-                logger->warn("Couldn't open instrument configuration at " + config_path + ". Expect degraded experience.");
+                logger->warn("Couldn't open instrument configuration at " + config_path +
+                             ". Expect degraded experience.");
                 handler_name = product->instrument_name;
             }
 
@@ -63,10 +63,11 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                if (ImGui::BeginCombo("##presetproductcombo", /*TODOREWORK maybe make this generic?*/
-                                      (preset_selection_curr_id >= 0 && preset_selection_curr_id < preset_selection_box_str.size())
-                                          ? preset_selection_box_str[preset_selection_curr_id].c_str()
-                                          : ""))
+                if (ImGui::BeginCombo(
+                        "##presetproductcombo", /*TODOREWORK maybe make this generic?*/
+                        (preset_selection_curr_id >= 0 && preset_selection_curr_id < preset_selection_box_str.size())
+                            ? preset_selection_box_str[preset_selection_curr_id].c_str()
+                            : ""))
                 {
                     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                     ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
@@ -76,7 +77,8 @@ namespace satdump
                         if (preset_search_str.size() != 0)
                             show = isStringPresent(preset_selection_box_str[i], preset_search_str);
 
-                        if (show && ImGui::Selectable(preset_selection_box_str[i].c_str(), (int)i == preset_selection_curr_id))
+                        if (show &&
+                            ImGui::Selectable(preset_selection_box_str[i].c_str(), (int)i == preset_selection_curr_id))
                         {
                             preset_selection_curr_id = i;
 
@@ -89,7 +91,8 @@ namespace satdump
                             if (preset.contains("description"))
                             {
                                 std::ifstream ifs(resources::getResourcePath(preset["description"]));
-                                std::string desc_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+                                std::string desc_markdown((std::istreambuf_iterator<char>(ifs)),
+                                                          (std::istreambuf_iterator<char>()));
                                 markdown_info.set_md(desc_markdown);
                                 has_markdown_description = true;
                             }
@@ -121,7 +124,9 @@ namespace satdump
             {
                 ImGuiIO &io = ImGui::GetIO();
                 ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale}, ImGuiCond_Appearing);
-                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
+                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2),
+                                               (io.DisplaySize.y / 2) - (400 * ui_scale / 2)),
+                                        ImGuiCond_Appearing);
                 ImGui::Begin("Preset Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
                 markdown_info.render();
                 ImGui::End();
@@ -140,5 +145,5 @@ namespace satdump
         {
             throw satdump_exception("saveResult NOT implemented for this handler!");
         }
-    }
-}
+    } // namespace viewer
+} // namespace satdump

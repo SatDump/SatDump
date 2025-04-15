@@ -4,15 +4,14 @@
 #include "imgui/imgui_stdlib.h"
 #include "imgui/implot/implot.h" // TODOREWORK
 
-#include "products2/punctiform/product_dotmap.h"
 #include "common/image/io.h" // TODOREWORK
+#include "products2/punctiform/product_dotmap.h"
 
 namespace satdump
 {
     namespace viewer
     {
-        PunctiformProductHandler::PunctiformProductHandler(std::shared_ptr<products::Product> p)
-            : ProductHandler(p)
+        PunctiformProductHandler::PunctiformProductHandler(std::shared_ptr<products::Product> p) : ProductHandler(p)
         {
             handler_tree_icon = "\uf71e";
 
@@ -23,9 +22,7 @@ namespace satdump
             tryApplyDefaultPreset();
         }
 
-        PunctiformProductHandler::~PunctiformProductHandler()
-        {
-        }
+        PunctiformProductHandler::~PunctiformProductHandler() {}
 
         void PunctiformProductHandler::drawMenu()
         {
@@ -132,12 +129,14 @@ namespace satdump
             {
                 if (current_mode == MODE_DOTMAP)
                 {
-                    auto img = products::generate_dotmap_product_image(product, selected_channel, -1, -1, 5, true, true, range_min, range_max, &progress);
+                    auto img = products::generate_dotmap_product_image(product, selected_channel, -1, -1, 5, true, true,
+                                                                       range_min, range_max, &progress);
                     img_handler.updateImage(img);
                 }
                 else if (current_mode == MODE_FILLMAP)
                 {
-                    auto img = products::generate_fillmap_product_image(product, selected_channel, 200, 100, range_min, range_max, &progress);
+                    auto img = products::generate_fillmap_product_image(product, selected_channel, 200, 100, range_min,
+                                                                        range_max, &progress);
                     img_handler.updateImage(img);
                 }
             }
@@ -180,7 +179,8 @@ namespace satdump
                         std::vector<double> t;
                         for (int i = 0; i < ch.timestamps.size(); i++)
                             t.push_back(i);
-                        ImPlot::PlotLine(std::string("Channel " + ch.channel_name).c_str(), t.data(), ch.data.data(), ch.timestamps.size());
+                        ImPlot::PlotLine(std::string("Channel " + ch.channel_name).c_str(), t.data(), ch.data.data(),
+                                         ch.timestamps.size());
                     }
                 }
 
@@ -191,5 +191,5 @@ namespace satdump
                 img_handler.drawContents(win_size);
             }
         }
-    }
-}
+    } // namespace viewer
+} // namespace satdump

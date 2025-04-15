@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/exception.h"
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
 
@@ -56,6 +57,7 @@ namespace satdump
                     p["samplerate"]["type"] = "uint";
                     p["samplerate"]["list"] = {2.5e6, 3e6, 6e6, 10e6};
                 }
+                p["samplerate"]["disable"] = is_started;
 
                 p["gain_type"]["type"] = "string";
                 p["gain_type"]["list"] = {"sensitive", "linear", "manual"};
@@ -148,7 +150,12 @@ namespace satdump
                 return r;
             }
 
-            void drawUI() {}
+            double getStreamSamplerate(int id, bool output)
+            {
+                if (id > 0 || output)
+                    throw satdump_exception("Stream ID must be 0 and input only!");
+                return p_samplerate;
+            }
 
             void start();
             void stop(bool stop_now = false);

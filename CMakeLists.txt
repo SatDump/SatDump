@@ -7,6 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+# Automatically prepare compiler_commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_custom_target(copy-compile-commands ALL
+    ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_BINARY_DIR}/compile_commands.json
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+
 if(MSVC OR BUILD_MSVC)
     set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
 endif()
@@ -288,15 +296,15 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
 
         install(RUNTIME_DEPENDENCY_SET satdump_deps
             PRE_EXCLUDE_REGEXES
-                "api-ms-.*"
-                "ext-ms-.*"
-                "^hvsifiletrust\\.dll$"
-                "^pdmutilities\\.dll$"
-                "^vc.*"
-                "^msvcp.*"
-                "^concrt.*"
-                "satdump_core.dll"
-                "satdump_interface.dll"
+            "api-ms-.*"
+            "ext-ms-.*"
+            "^hvsifiletrust\\.dll$"
+            "^pdmutilities\\.dll$"
+            "^vc.*"
+            "^msvcp.*"
+            "^concrt.*"
+            "satdump_core.dll"
+            "satdump_interface.dll"
             POST_EXCLUDE_REGEXES
             ".*system32/.*\\.dll"
             DIRECTORIES

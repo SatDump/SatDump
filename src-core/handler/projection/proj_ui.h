@@ -56,8 +56,10 @@ namespace satdump
                     cfg["type"] = "equirec";
                     cfg["offset_x"] = projections_equirectangular_tl_lon;
                     cfg["offset_y"] = projections_equirectangular_tl_lat;
-                    cfg["scalar_x"] = (projections_equirectangular_br_lon - projections_equirectangular_tl_lon) / double(projections_image_width);
-                    cfg["scalar_y"] = (projections_equirectangular_br_lat - projections_equirectangular_tl_lat) / double(projections_image_height);
+                    cfg["scalar_x"] = (projections_equirectangular_br_lon - projections_equirectangular_tl_lon) /
+                                      double(projections_image_width);
+                    cfg["scalar_y"] = (projections_equirectangular_br_lat - projections_equirectangular_tl_lat) /
+                                      double(projections_image_height);
                 }
                 else if (projections_current_selected_proj == 1)
                 {
@@ -126,10 +128,11 @@ namespace satdump
                 ImGui::Spacing();
 
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.96f);
-                ImGui::Combo("##targetproj", &projections_current_selected_proj, "Equirectangular\0"
-                                                                                 "UTM (Mercator)\0"
-                                                                                 "Stereo\0"
-                                                                                 "Satellite (TPERS)\0"
+                ImGui::Combo("##targetproj", &projections_current_selected_proj,
+                             "Equirectangular\0"
+                             "UTM (Mercator)\0"
+                             "Stereo\0"
+                             "Satellite (TPERS)\0"
                              //  "Azimuthal Equidistant\0"
                 );
 
@@ -180,5 +183,5 @@ namespace satdump
                 }
             }
         };
-    }
-}
+    } // namespace proj
+} // namespace satdump

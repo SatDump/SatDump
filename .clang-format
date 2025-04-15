@@ -18,3 +18,4 @@ AllowShortBlocksOnASingleLine: Always
 AllowShortFunctionsOnASingleLine: All
 IndentCaseBlocks: False
 AccessModifierOffset: -4
+ColumnLimit: 200

@@ -1,18 +1,20 @@
-#include <signal.h>
-#include <filesystem>
+#include "../src-core/resources.h"
 #include "backend.h"
-#include "main_ui.h"
-#include "logger.h"
+#include "common/cli_utils.h"
+#include "common/detect_header.h"
 #include "core/style.h"
+#include "imgui/imgui_filedrop.h"
+#include "imgui/imgui_image.h"
 #include "init.h"
+#include "loader/loader.h"
+#include "logger.h"
+#include "main_ui.h"
 #include "processing.h"
 #include "satdump_vars.h"
-#include "loader/loader.h"
-#include "common/cli_utils.h"
-#include "../src-core/resources.h"
-#include "common/detect_header.h"
-#include "satdump_vars.h"
-#include "imgui/imgui_image.h"
+#include <filesystem>
+#include <signal.h>
+#include <string>
+#include <vector>
 
 GLFWwindow *window;
 static volatile bool signal_caught = false;
@@ -24,10 +26,7 @@ void sig_handler_ui(int signo)
         signal_caught = true;
 }
 
-static void glfw_error_callback(int error, const char *description)
-{
-    logger->error("Glfw Error " + std::to_string(error) + ": " + description);
-}
+static void glfw_error_callback(int error, const char *description) { logger->error("Glfw Error " + std::to_string(error) + ": " + description); }
 
 void window_content_scale_callback(GLFWwindow *, float xscale, float)
 {
@@ -37,6 +36,14 @@ void window_content_scale_callback(GLFWwindow *, float xscale, float)
 
 void bindBaseTextureFunctions();
 void bindAdvancedTextureFunctions();
+
+void glfw_drop_callback(GLFWwindow *window, int count, const char **paths)
+{
+    std::vector<std::string> files;
+    for (int i = 0; i < count; i++)
+        files.push_back(std::string(paths[i]));
+    satdump::eventBus->fire_event<satdump::imgui_utils::FileDropEvent>({files});
+}
 
 int main(int argc, char *argv[])
 {
@@ -109,16 +116,17 @@ int main(int argc, char *argv[])
         window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)satdump::SATDUMP_VERSION).c_str(), nullptr, nullptr);
         if (window == nullptr)
         {
-            pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer",
-                         pfd::choice::ok, pfd::icon::error);
+            pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer", pfd::choice::ok, pfd::icon::error);
             logger->critical("Could not init GLFW Window! Exiting");
             exit(1);
         }
     }
 
+    glfwSetDropCallback(window, glfw_drop_callback);
+
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates, and not in a loop
-                         // Vsync slows down init process when items are logged quickly
+    glfwSwapInterval(0); // Disable vsync on loading screen - not needed since frames are only pushed on log updates,
+                         // and not in a loop Vsync slows down init process when items are logged quickly
 
     // Bind texture/backend functions
     bindBackendFunctions();
@@ -184,8 +192,7 @@ int main(int argc, char *argv[])
     if (satdump::processing::is_processing)
     {
         try_get_params_from_input_file(parameters, input_file);
-        satdump::ui_thread_pool.push([&](int)
-                                     { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
+        satdump::ui_thread_pool.push([&](int) { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
     }
 
     // Set window position
@@ -213,8 +220,7 @@ int main(int argc, char *argv[])
     }
 
     // TLE
-    satdump::ui_thread_pool.push([&](int)
-                                 { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
+    satdump::ui_thread_pool.push([&](int) { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
 
     // Attach signal
     signal(SIGINT, sig_handler_ui);

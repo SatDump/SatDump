@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dsp/block.h"
+#include <cstdint>
 
 // TODOREWORK DOCUMENT
 namespace satdump
@@ -36,18 +37,13 @@ namespace satdump
             {
             }
 
-            virtual void drawUI() = 0;
-
             virtual void setDevInfo(DeviceInfo i)
             {
                 devInfo = i;
                 set_cfg(devInfo.cfg);
             }
 
-            // virtual int addChannel(bool is_in) = 0;
-            // virtual void delChannel(bool is_in, int idx) = 0;
-            // virtual void setChannelCfg(bool is_in, int idx, nlohmann::json cfg) = 0;
-            // virtual nlohmann::json getChannelCfg(bool is_in, int idx) = 0;
+            virtual double getStreamSamplerate(int id, bool output) = 0;
         };
 
         struct RequestDeviceListEvent

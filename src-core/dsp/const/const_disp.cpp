@@ -9,9 +9,7 @@ namespace satdump
         {
         }
 
-        ConstellationDisplayBlock::~ConstellationDisplayBlock()
-        {
-        }
+        ConstellationDisplayBlock::~ConstellationDisplayBlock() {}
 
         bool ConstellationDisplayBlock::work()
         {
@@ -31,5 +29,5 @@ namespace satdump
             iblk.free();
             return false;
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

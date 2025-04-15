@@ -1,24 +1,23 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include "nlohmann/json.hpp"
+#include <string>
+#include <vector>
 
 //// TODOREWORK
-#include "logger.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "core/style.h"
+#include "logger.h"
 
 #include "dsp/block.h"
 
 #include "common/widgets/json_editor.h"
 
-#include "variable_manager.h"
+// #include "variable_manager.h"
 
 #include "node_int.h"
 
-#if 0
 namespace satdump
 {
     namespace ndsp
@@ -60,8 +59,7 @@ namespace satdump
                 std::vector<InOut> node_io;
 
             public:
-                Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i)
-                    : id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i)
+                Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i)
                 {
                     for (auto &io : internal->blk->get_inputs())
                         node_io.push_back({f->getNewNodeIOID(&node_io), io.name, false});
@@ -115,7 +113,7 @@ namespace satdump
             Flowgraph();
             ~Flowgraph();
 
-            LuaVariableManager var_manager_test;
+            //            LuaVariableManager var_manager_test;
 
             std::shared_ptr<Node> addNode(std::string id, std::shared_ptr<NodeInternal> i)
             {
@@ -132,13 +130,13 @@ namespace satdump
                 for (auto &n : nodes)
                     j["nodes"][n->id] = n->getJSON();
                 j["links"] = links;
-                j["vars"] = var_manager_test.variables;
+                //                j["vars"] = var_manager_test.variables;
                 return j;
             }
 
             void setJSON(nlohmann::json j)
             {
-                var_manager_test.variables = j["vars"];
+                //                var_manager_test.variables = j["vars"];
 
                 nodes.clear();
                 links.clear();
@@ -184,6 +182,5 @@ namespace satdump
             void run();
             void stop();
         };
-    }
-}
-#endif
+    } // namespace ndsp
+} // namespace satdump

@@ -2,15 +2,14 @@
 #include "logger.h"
 
 #include "common/geodetic/vincentys_calculations.h" // TODOREWORK MOVE OUT
+#include "common/projection/projs2/proj_json.h"
 #include "raytrace/gcp_compute.h"
 
 namespace satdump
 {
     namespace proj
     {
-        Projection::Projection()
-        {
-        }
+        Projection::Projection() {}
 
         Projection::~Projection()
         {
@@ -23,8 +22,6 @@ namespace satdump
             ///////////////////////////////////////////////////////////
             // We need image width/height
             ///////////////////////////////////////////////////////////
-            int width = -1, height = -1;
-
             if (d_cfg.contains("width"))
                 width = d_cfg["width"];
             else
@@ -164,5 +161,5 @@ namespace satdump
             fwd_type = PROJ_INVALID;
             inv_type = PROJ_INVALID;
         }
-    }
-}
+    } // namespace proj
+} // namespace satdump

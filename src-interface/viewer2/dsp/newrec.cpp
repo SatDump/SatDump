@@ -52,10 +52,10 @@ namespace satdump
                     if (r >= ndsp::Block::RES_LISTUPD)
                     {
                         options_displayer_test.clear();
+                        logger->trace("\n%s\n", dev->get_cfg_list().dump(4).c_str());
                         options_displayer_test.add_options(dev->get_cfg_list());
+                        options_displayer_test.set_values(dev->get_cfg());
                     }
-
-                    options_displayer_test.set_values(dev->get_cfg());
 
                     // dev->init();
                 }
@@ -71,12 +71,20 @@ namespace satdump
 
                 dev->start();
                 fftp->start();
+
+                options_displayer_test.clear();
+                options_displayer_test.add_options(dev->get_cfg_list());
+                options_displayer_test.set_values(dev->get_cfg());
             }
 
             if (ImGui::Button("Stop"))
             {
                 dev->stop(true);
                 fftp->stop();
+
+                options_displayer_test.clear();
+                options_displayer_test.add_options(dev->get_cfg_list());
+                options_displayer_test.set_values(dev->get_cfg());
             }
 
             ImGui::Separator();
@@ -109,8 +117,7 @@ namespace satdump
             float waterfall_ratio = 0.3;
             float left_width = ImGui::GetCursorPosX() - 9;
 
-            ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false,
-                              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
@@ -121,14 +128,11 @@ namespace satdump
 #else
                 int offset = 30;
 #endif
-                ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50),
-                                                    ImVec2((right_width + offset * ui_scale), wf_size));
-                ImGui::SetNextWindowSize(
-                    ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
+                ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
+                ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
                 if (ImGui::Begin("#fft", &t,
-                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar |
-                                     ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
                                      ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);

@@ -1,8 +1,7 @@
 #pragma once
 
-#if 0
-#include "handler/handler.h"
 #include "flowgraph/flowgraph.h"
+#include "handler/handler.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
@@ -27,6 +26,5 @@ namespace satdump
 
             std::string getID() { return "dsp_flowgraph_handler"; }
         };
-    }
-}
-#endif
+    } // namespace viewer
+} // namespace satdump

@@ -47,5 +47,5 @@ namespace satdump
             std::string getName() { return "ProjectionToRename"; }
             std::string getID() { return "projection_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

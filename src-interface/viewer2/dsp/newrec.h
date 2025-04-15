@@ -20,7 +20,7 @@ namespace satdump
             ~NewRecHandler();
 
             std::shared_ptr<ndsp::DeviceBlock> dev;
-            todorework::OptionsDisplayer options_displayer_test;
+            ndsp::OptionsDisplayer options_displayer_test;
 
             std::shared_ptr<ndsp::FFTPanBlock> fftp;
 

@@ -10,7 +10,7 @@
 // Needed for projs. Maybe hide later? TBD TODOREWORK
 #include "products2/image/channel_transform.h"
 #include "raytrace/satellite_raytracer.h"
-#include "common/projection/projs2/proj_json.h"
+#include "common/projection/projs2/proj.h"
 #include "tps/latlontps_proj.h"
 
 namespace satdump

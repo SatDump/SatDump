@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dsp/block.h"
 #include "common/dsp/complex.h"
+#include "dsp/block.h"
 
 namespace satdump
 {
@@ -19,9 +19,7 @@ namespace satdump
             CyclostationaryAnalysis();
             ~CyclostationaryAnalysis();
 
-            void init()
-            {
-            }
+            void init() {}
 
             nlohmann::json get_cfg()
             {
@@ -35,5 +33,5 @@ namespace satdump
                 //  setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

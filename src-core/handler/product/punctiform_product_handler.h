@@ -2,10 +2,10 @@
 
 #include "product_handler.h"
 
+#include "core/style.h"
+#include "imgui/imgui_stdlib.h"
 #include "logger.h"
 #include "products2/punctiform_product.h"
-#include "imgui/imgui_stdlib.h"
-#include "core/style.h"
 
 #include "handler/image/image_handler.h"
 
@@ -48,20 +48,14 @@ namespace satdump
             void drawMenuBar();
 
             //
-            void addSubHandler(std::shared_ptr<Handler> handler)
-            {
-                img_handler.addSubHandler(handler);
-            }
+            void addSubHandler(std::shared_ptr<Handler> handler) { img_handler.addSubHandler(handler); }
 
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
             {
                 img_handler.delSubHandler(handler, true);
             }
 
-            void drawTreeMenu(std::shared_ptr<Handler> &h)
-            {
-                img_handler.drawTreeMenu(h);
-            }
+            void drawTreeMenu(std::shared_ptr<Handler> &h) { img_handler.drawTreeMenu(h); }
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
@@ -70,5 +64,5 @@ namespace satdump
 
             std::string getID() { return "punctiform_product_handler"; }
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

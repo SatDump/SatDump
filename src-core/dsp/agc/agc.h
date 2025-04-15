@@ -72,6 +72,7 @@ namespace satdump
                     p_max_gain = v;
                 else
                     throw satdump_exception(key);
+                init();
                 return RES_OK;
             }
         };

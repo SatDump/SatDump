@@ -4,19 +4,13 @@ namespace satdump
 {
     namespace ndsp
     {
-        inline float branchless_clip(float x, float clip)
-        {
-            return 0.5 * (std::abs(x + clip) - std::abs(x - clip));
-        }
+        inline float branchless_clip(float x, float clip) { return 0.5 * (std::abs(x + clip) - std::abs(x - clip)); }
 
-        CostasBlock::CostasBlock()
-            : Block("costas_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}})
+        CostasBlock::CostasBlock() : Block("costas_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}})
         {
         }
 
-        CostasBlock::~CostasBlock()
-        {
-        }
+        CostasBlock::~CostasBlock() {}
 
         bool CostasBlock::work()
         {
@@ -48,14 +42,17 @@ namespace satdump
                     error = tmp_val.real * tmp_val.imag;
                     break;
                 case 4: // Order 4, QPSK
-                    error = (tmp_val.real > 0.0f ? 1.0f : -1.0f) * tmp_val.imag - (tmp_val.imag > 0.0f ? 1.0f : -1.0f) * tmp_val.real;
+                    error = (tmp_val.real > 0.0f ? 1.0f : -1.0f) * tmp_val.imag -
+                            (tmp_val.imag > 0.0f ? 1.0f : -1.0f) * tmp_val.real;
                     break;
                 case 8: // Order 8, 8-PSK
                     const float K = (sqrtf(2.0) - 1);
                     if (fabsf(tmp_val.real) >= fabsf(tmp_val.imag))
-                        error = ((tmp_val.real > 0.0f ? 1.0f : -1.0f) * tmp_val.imag - (tmp_val.imag > 0.0f ? 1.0f : -1.0f) * tmp_val.real * K);
+                        error = ((tmp_val.real > 0.0f ? 1.0f : -1.0f) * tmp_val.imag -
+                                 (tmp_val.imag > 0.0f ? 1.0f : -1.0f) * tmp_val.real * K);
                     else
-                        error = ((tmp_val.real > 0.0f ? 1.0f : -1.0f) * tmp_val.imag * K - (tmp_val.imag > 0.0f ? 1.0f : -1.0f) * tmp_val.real);
+                        error = ((tmp_val.real > 0.0f ? 1.0f : -1.0f) * tmp_val.imag * K -
+                                 (tmp_val.imag > 0.0f ? 1.0f : -1.0f) * tmp_val.real);
                     break;
                 }
 
@@ -85,5 +82,5 @@ namespace satdump
 
             return false;
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

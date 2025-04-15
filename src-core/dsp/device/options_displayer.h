@@ -2,14 +2,17 @@
 
 #include "common/widgets/stepped_slider.h"
 #include "core/exception.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "nlohmann/json.hpp"
+#include <cstddef>
 #include <mutex>
+#include <string>
 
 namespace satdump
 {
-    namespace todorework // rename!!!!! And move to somewhere more generic!!!! And document!!!
+    namespace ndsp // rename!!!!! And move to somewhere more generic!!!! And document!!!
     {
         class OptionsDisplayer
         {
@@ -19,6 +22,7 @@ namespace satdump
                 // ID
                 std::string id;
                 std::string name;
+                bool disable = false;
 
                 // Type
                 bool is_bool = false;
@@ -42,7 +46,6 @@ namespace satdump
                 uint64_t _uint = 0;
                 int64_t _int = 0;
                 double _float = 0;
-                //                std::shared_ptr<OptionsDisplayer> _sub;
             };
 
             std::mutex opts_mtx;
@@ -60,8 +63,6 @@ namespace satdump
                     j = v._int;
                 else if (v.is_float)
                     j = v._float;
-                //                else if (v.is_sub)
-                //                    j = v._sub->get_values();
                 else
                     throw satdump_exception("Invalid options or JSON value! (GET " + v.id + ")");
             }
@@ -85,6 +86,9 @@ namespace satdump
                         if (vv["hide"].get<bool>())
                             continue;
 
+                    if (vv.contains("disable"))
+                        h.disable = vv["disable"].get<bool>();
+
                     if (vv.contains("name"))
                         h.name = vv["name"];
                     else
@@ -95,13 +99,6 @@ namespace satdump
                     h.is_uint = vv["type"] == "uint";
                     h.is_int = vv["type"] == "int";
                     h.is_float = vv["type"] == "float";
-                    // h.is_sub = vv["type"] == "sub";
-
-                    // if (h.is_sub)
-                    // {
-                    //     h._sub = std::make_shared<OptionsDisplayer>();
-                    //     h._sub->add_options(vv["sub"]);
-                    // }
 
                     h.is_list = vv.contains("list");
                     if (h.is_list)
@@ -161,11 +158,8 @@ namespace satdump
                             v._int = j;
                         else if (v.is_float && j.is_number())
                             v._float = j;
-                        // else if (v.is_sub && j.is_object())
-                        //     v._sub->set_values(j);
                         else
-                            throw satdump_exception("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() +
-                                                    ")");
+                            throw satdump_exception("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() + ")");
                     }
                 }
                 opts_mtx.unlock();
@@ -189,8 +183,10 @@ namespace satdump
                 for (auto &v : opts)
                 {
                     bool u = false;
-                    std::string id =
-                        v.name; // TODOREWORK might cause issues? std::string(v.name + "##optsdisplayertodorework");
+                    std::string id = std::string(v.name + "##" + std::to_string((size_t)this));
+
+                    if (v.disable)
+                        style::beginDisabled();
 
                     if (v.is_bool)
                     {
@@ -208,7 +204,8 @@ namespace satdump
                     }
                     else if (v.is_string)
                     {
-                        u |= ImGui::InputText(id.c_str(), &v._string);
+                        ImGui::InputText(id.c_str(), &v._string);
+                        u |= ImGui::IsItemDeactivatedAfterEdit();
                     }
                     else if (v.is_range && v.is_int)
                     {
@@ -268,35 +265,31 @@ namespace satdump
                     {
                         // TODOREWORK USE LARGE INT INSTEAD
                         int lv = v._int;
-                        u |= ImGui::InputInt(id.c_str(), &lv);
+                        ImGui::InputInt(id.c_str(), &lv);
+                        u |= ImGui::IsItemDeactivatedAfterEdit();
                         v._int = lv;
                     }
                     else if (v.is_uint)
                     {
                         // TODOREWORK USE LARGE INT INSTEAD
                         int lv = v._uint;
-                        u |= ImGui::InputInt(id.c_str(), &lv);
+                        ImGui::InputInt(id.c_str(), &lv);
+                        u |= ImGui::IsItemDeactivatedAfterEdit();
                         v._uint = lv;
                     }
                     else if (v.is_float)
                     {
                         // TODOREWORK USE DOUBLE INSTEAD
-                        u |= ImGui::InputDouble(id.c_str(), &v._float);
+                        ImGui::InputDouble(id.c_str(), &v._float);
+                        u |= ImGui::IsItemDeactivatedAfterEdit();
                     }
-                    /*else if (v.is_sub)
-                    {
-                        // TODOREWORK? Check
-
-                        ImGui::Separator();
-                        ImGui::Text("%s", id.c_str());
-                        ImGui::Separator();
-                        u |= v._sub->draw();
-                        ImGui::Separator();
-                    } TODOREWORK SUB */
                     else
                     {
                         ImGui::Text("Unimplemented : %s", id.c_str());
                     }
+
+                    if (v.disable)
+                        style::endDisabled();
 
                     if (u)
                         get_val(v, vals[v.id]);
@@ -305,5 +298,5 @@ namespace satdump
                 return vals;
             }
         };
-    } // namespace todorework
+    } // namespace ndsp
 } // namespace satdump

@@ -6,8 +6,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        AirspyDevBlock::AirspyDevBlock()
-            : DeviceBlock("airspy_dev_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}})
+        AirspyDevBlock::AirspyDevBlock() : DeviceBlock("airspy_dev_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}})
         {
             outputs[0].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
         }
@@ -163,5 +162,5 @@ namespace satdump
 
             return r;
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

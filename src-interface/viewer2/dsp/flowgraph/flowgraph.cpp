@@ -1,6 +1,6 @@
 #include "flowgraph.h"
-#include <limits>
 #include "core/exception.h"
+#include <limits>
 
 #include "imgui/imnodes/imnodes.h"
 #include "imgui/imnodes/imnodes_internal.h"
@@ -9,18 +9,14 @@
 #include "common/utils.h"
 
 #include "dsp/path/splitter.h"
-#if 0
+
 namespace satdump
 {
     namespace ndsp
     {
-        Flowgraph::Flowgraph()
-        {
-        }
+        Flowgraph::Flowgraph() {}
 
-        Flowgraph::~Flowgraph()
-        {
-        }
+        Flowgraph::~Flowgraph() {}
 
         int Flowgraph::getNewNodeID()
         {
@@ -164,9 +160,7 @@ namespace satdump
             int link_id;
             if (ImNodes::IsLinkDestroyed(&link_id))
             {
-                auto iter = std::find_if(
-                    links.begin(), links.end(), [link_id](const Link &link) -> bool
-                    { return link.id == link_id; });
+                auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
                 logger->trace("LINK DELETE %d %d", iter->start, iter->end);
                 links.erase(iter);
             }
@@ -182,15 +176,11 @@ namespace satdump
 
                     for (auto &id : nodes_ids)
                     {
-                        auto iter = std::find_if(
-                            nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool
-                            { return node->id == id; });
+                        auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
                         logger->trace("NODE DELETE %d", id);
                         for (auto &linkid : iter->get()->node_io)
                         {
-                            auto liter = std::find_if(
-                                links.begin(), links.end(), [linkid](const Link &link) -> bool
-                                { return link.start == linkid.id || link.end == linkid.id; });
+                            auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
                             if (liter != links.end())
                                 links.erase(liter);
                         }
@@ -230,7 +220,7 @@ namespace satdump
                 // Iterate through all nodes
                 for (auto &n : nodes)
                 {
-                    n->internal->applyP(); // TODOREWORK?
+                    //                    n->internal->applyP(); // TODOREWORK?
                     auto &blk = n->internal->blk;
 
                     // Iterate through outputs
@@ -376,6 +366,5 @@ namespace satdump
                 logger->error("Error running flowgraph : %s", e.what());
             }
         }
-    }
-}
-#endif
+    } // namespace ndsp
+} // namespace satdump

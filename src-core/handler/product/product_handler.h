@@ -5,9 +5,9 @@
  */
 
 #include "../handler.h"
-#include "products2/product.h"
 #include "../processing_handler.h"
 #include "common/widgets/markdown_helper.h"
+#include "products2/product.h"
 
 namespace satdump
 {
@@ -72,5 +72,5 @@ namespace satdump
 
             std::string getID() { return "product_handler"; };
         };
-    }
-}
+    } // namespace viewer
+} // namespace satdump

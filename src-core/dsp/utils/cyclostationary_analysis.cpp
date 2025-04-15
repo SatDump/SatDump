@@ -9,9 +9,7 @@ namespace satdump
         {
         }
 
-        CyclostationaryAnalysis::~CyclostationaryAnalysis()
-        {
-        }
+        CyclostationaryAnalysis::~CyclostationaryAnalysis() {}
 
         bool CyclostationaryAnalysis::work()
         {
@@ -41,5 +39,5 @@ namespace satdump
 
             return false;
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

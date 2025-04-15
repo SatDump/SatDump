@@ -46,8 +46,7 @@ namespace satdump
                     volk_free(buffer);
 
                 // Init buffer
-                buffer = dsp::create_volk_buffer<T>(
-                    p_buffer_size); // TODOREWORK How to handle this from the initial buffer size?
+                buffer = dsp::create_volk_buffer<T>(p_buffer_size); // TODOREWORK How to handle this from the initial buffer size?
                 buffer_size = p_buffer_size;
 
                 // Get alignement parameters

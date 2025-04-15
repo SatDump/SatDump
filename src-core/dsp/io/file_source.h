@@ -48,6 +48,16 @@ namespace satdump
                 d_eof = false;
             }
 
+            nlohmann::ordered_json get_cfg_list()
+            {
+                nlohmann::ordered_json p;
+                add_param(p, "file", "string");
+                add_param(p, "type", "string");
+                add_param(p, "buffer_size", "int");
+                add_param(p, "iq_swap", "bool");
+                return p;
+            }
+
             nlohmann::json get_cfg(std::string key)
             {
                 if (key == "file")
