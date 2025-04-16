@@ -8,12 +8,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Automatically prepare compiler_commands
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_custom_target(copy-compile-commands ALL
-    ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_BINARY_DIR}/compile_commands.json
-    ${CMAKE_CURRENT_LIST_DIR}
-)
+if(DEFINED ENV{CI})
+    message("Running in CI. Skipping EXPORT_COMPILE_COMMANDS")
+else()
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    add_custom_target(copy-compile-commands ALL
+        ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_BINARY_DIR}/compile_commands.json
+        ${CMAKE_CURRENT_LIST_DIR}
+    )
+endif()
 
 if(MSVC OR BUILD_MSVC)
     set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
