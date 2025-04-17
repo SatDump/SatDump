@@ -3,8 +3,7 @@
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #ifdef __ANDROID__
 #include "API/lms7_device.h"
-#include "protocols/Streamer.h"
-#include "ConnectionRegistry/ConnectionRegistry.h"
+#include "lime/LimeSuite.h"
 #else
 #include <lime/LimeSuite.h>
 #include <lime/lms7_device.h>
@@ -19,15 +18,8 @@ class LimeSDRSource : public dsp::DSPSampleSource
 protected:
     bool is_open = false, is_started = false;
 
-#if __ANDROID__
-    lime::LMS7_Device *limeDevice;
-    lime::StreamChannel *limeStream;
-    lime::StreamChannel *limeStreamID;
-    lime::StreamConfig limeConfig;
-#else
     lms_device_t *limeDevice;
     lms_stream_t limeStream;
-#endif
 
     widgets::DoubleList samplerate_widget;
     widgets::DoubleList bandwidth_widget;
@@ -49,11 +41,7 @@ protected:
     bool thread_should_run = false;
     void mainThread()
     {
-#if __ANDROID__
-        lime::StreamChannel::Metadata md;
-#else
         lms_stream_meta_t md;
-#endif
 
         // int buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value());
         int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
@@ -61,11 +49,8 @@ protected:
 
         while (thread_should_run)
         {
-#if __ANDROID__
-            int cnt = limeStream->Read(output_stream->writeBuf, buffer_size, &md);
-#else
             int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, buffer_size, &md, 2000);
-#endif
+
             if (cnt > 0)
                 output_stream->swap(cnt);
         }

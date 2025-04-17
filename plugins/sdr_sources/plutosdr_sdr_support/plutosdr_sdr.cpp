@@ -8,17 +8,6 @@ F5OEO FixMe :
 #include "plutosdr_sdr.h"
 #include "imgui/imgui_stdlib.h"
 
-#ifdef __ANDROID__
-#include "common/dsp_source_sink/android_usb_backend.h"
-
-const std::vector<DevVIDPID> PLUTOSDR_USB_VID_PID = {{0x0456, 0xb673}};
-
-extern "C"
-{
-    struct iio_context *usb_create_context_fd(unsigned int bus, int fd, uint16_t address, uint16_t intrfc);
-}
-#endif
-
 // Adapted from https://github.com/altillimity/SatDump/pull/111 and SDR++
 
 const char *pluto_gain_mode[] = {"manual", "fast_attack", "slow_attack", "hybrid"};
@@ -176,7 +165,6 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-#ifndef __ANDROID__
     results.push_back({"plutosdr", "PlutoSDR IP", "0", false});
 
     // Try to find local USB devices
@@ -201,12 +189,6 @@ std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
         }
 
     iio_scan_context_destroy(scan_ctx);
-#else
-    int vid, pid;
-    std::string path;
-    if (getDeviceFD(vid, pid, PLUTOSDR_USB_VID_PID, path) != -1)
-        results.push_back({"plutosdr", "PlutoSDR USB", "0"});
-#endif
 
     return results;
 }
@@ -215,7 +197,6 @@ void PlutoSDRSource::sdr_startup()
 {
     uint64_t current_samplerate = samplerate_widget.get_value();
 
-#ifndef __ANDROID__
     if (is_usb)
     {
         logger->trace("Using PlutoSDR Device at " + d_sdr_id);
@@ -226,12 +207,7 @@ void PlutoSDRSource::sdr_startup()
         logger->trace("Using PlutoSDR IP Address " + ip_address);
         ctx = iio_create_context_from_uri(std::string("ip:" + ip_address).c_str());
     }
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, PLUTOSDR_USB_VID_PID, path);
-    ctx = usb_create_context_fd(0, fd, 0, 1);
-#endif
+
     if (ctx == NULL)
         throw satdump_exception("Could not open PlutoSDR device!");
     phy = iio_context_find_device(ctx, "ad9361-phy");
