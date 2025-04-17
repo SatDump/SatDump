@@ -50,18 +50,12 @@ namespace image
             v.max = v.offset + v.scale;
         }
 
-        inline double getVal(double img_val)
-        {
-            return img_val * scale + offset;
-        }
+        inline double getVal(double img_val) { return img_val * scale + offset; }
 
-        inline double setVal(double cal_val)
-        {
-            return (cal_val - offset) / scale;
-        }
+        inline double setVal(double cal_val) { return (cal_val - offset) / scale; }
     };
 
     bool has_metadata_calib_cfg(Image &img);
     void set_metadata_calib_cfg(Image &img, nlohmann::json calib_cfg);
     nlohmann::json get_metadata_calib_cfg(const Image &img);
-}
+} // namespace image

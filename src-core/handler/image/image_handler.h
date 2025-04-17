@@ -63,6 +63,9 @@ namespace satdump
             // Mouse callback to be added by other handlers if needed
             std::function<void(int x, int y)> additionalMouseCallback = [](int, int) {};
 
+            std::string getSaneName();
+            void saveResult(std::string directory);
+
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);

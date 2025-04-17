@@ -16,27 +16,19 @@ namespace satdump
             stop(); // TODOREWORK (make sure to close device)
         }
 
-        void AirspyDevBlock::init()
+        void AirspyDevBlock::set_frequency()
         {
             if (is_open)
             {
-                if (!is_started)
-                {
-                    airspy_set_samplerate(airspy_dev_obj, p_samplerate);
-                    logger->debug("Set Airspy samplerate to %d", p_samplerate);
-                }
-
                 airspy_set_freq(airspy_dev_obj, p_frequency);
                 logger->debug("Set Airspy frequency to %f", p_frequency);
+            }
+        }
 
-                airspy_set_rf_bias(airspy_dev_obj, p_bias);
-                logger->debug("Set Airspy bias to %d", (int)p_bias);
-
-                airspy_set_lna_agc(airspy_dev_obj, p_lna_agc);
-                airspy_set_mixer_agc(airspy_dev_obj, p_mixer_agc);
-                logger->debug("Set Airspy LNA AGC to %d", p_lna_agc);
-                logger->debug("Set Airspy Mixer AGC to %d", p_mixer_agc);
-
+        void AirspyDevBlock::set_gains()
+        {
+            if (is_open)
+            {
                 if (p_gain_type == "sensitive")
                 {
                     airspy_set_sensitivity_gain(airspy_dev_obj, p_general_gain);
@@ -57,12 +49,36 @@ namespace satdump
             }
         }
 
+        void AirspyDevBlock::set_others()
+        {
+            if (is_open)
+            {
+                airspy_set_rf_bias(airspy_dev_obj, p_bias);
+                logger->debug("Set Airspy bias to %d", (int)p_bias);
+
+                airspy_set_lna_agc(airspy_dev_obj, p_lna_agc);
+                airspy_set_mixer_agc(airspy_dev_obj, p_mixer_agc);
+                logger->debug("Set Airspy LNA AGC to %d", p_lna_agc);
+                logger->debug("Set Airspy Mixer AGC to %d", p_mixer_agc);
+            }
+        }
+
+        void AirspyDevBlock::init()
+        {
+            set_frequency();
+            set_gains();
+            set_others();
+        }
+
         void AirspyDevBlock::start()
         {
             if (airspy_open_sn(&airspy_dev_obj, std::stoull(p_serial)) != AIRSPY_SUCCESS)
                 throw satdump_exception("Could not open Airspy One device! Serial : " + p_serial);
             logger->info("Opened Airspy One device! Serial : " + p_serial);
             is_open = true;
+
+            airspy_set_samplerate(airspy_dev_obj, p_samplerate);
+            logger->debug("Set Airspy samplerate to %d", p_samplerate);
 
             airspy_set_packing(airspy_dev_obj, 1);
             airspy_set_sample_type(airspy_dev_obj, AIRSPY_SAMPLE_FLOAT32_IQ);

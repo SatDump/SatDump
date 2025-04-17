@@ -42,8 +42,7 @@ namespace satdump
                 if (!channel_calibrated && img_calibrator && channel_selection_curr_id != -1)
                 {
                     double val = img_calibrator->compute(channel_selection_curr_id, x, y);
-                    ImGui::Text("Unit : %f %s", val,
-                                product->images[channel_selection_curr_id].calibration_type.c_str());
+                    ImGui::Text("Unit : %f %s", val, product->images[channel_selection_curr_id].calibration_type.c_str());
                 }
             };
 
@@ -54,8 +53,7 @@ namespace satdump
             {
                 if (channel_selection_curr_id != -1)
                 {
-                    channel_calibrated_output_units = calibration::getAvailableConversions(
-                        product->images[channel_selection_curr_id].calibration_type);
+                    channel_calibrated_output_units = calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type);
                     channel_calibrated_combo_str.clear();
                     for (auto &u : channel_calibrated_output_units)
                         channel_calibrated_combo_str += calibration::getUnitInfo(u).name + '\0';
@@ -76,13 +74,11 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                if (ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id,
-                                 channel_selection_box_str.c_str()))
+                if (ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str()))
                 {
                     if (channel_selection_curr_id != -1)
                     { // TODOREWORK dedup
-                        channel_calibrated_output_units = calibration::getAvailableConversions(
-                            product->images[channel_selection_curr_id].calibration_type);
+                        channel_calibrated_output_units = calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type);
                         channel_calibrated_combo_str.clear();
                         for (auto &u : channel_calibrated_output_units)
                             channel_calibrated_combo_str += calibration::getUnitInfo(u).name + '\0';
@@ -112,17 +108,13 @@ namespace satdump
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(150 * ui_scale);
                     ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[channel_selection_curr_id]);
-                    needs_to_update |= ImGui::Combo("Unit##calibunit", &channel_calibrated_combo_curr_id,
-                                                    channel_calibrated_combo_str.c_str());
+                    needs_to_update |= ImGui::Combo("Unit##calibunit", &channel_calibrated_combo_curr_id, channel_calibrated_combo_str.c_str());
                     needs_to_update |= ImGui::Button("Update###updatecalib");
                     ImGui::SameLine();
                     if (ImGui::Button("Add To Equ###calibaddtoexpression")) // TODOREWORK?
-                        expression = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" +
-                                     product->images[channel_selection_curr_id].channel_name + ", " +
-                                     channel_calibrated_output_units[channel_calibrated_combo_curr_id] + ", " +
-                                     std::to_string(channel_calibrated_range_min[channel_selection_curr_id]) + ", " +
-                                     std::to_string(channel_calibrated_range_max[channel_selection_curr_id]) + ");\n" +
-                                     expression;
+                        expression = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" + product->images[channel_selection_curr_id].channel_name + ", " +
+                                     channel_calibrated_output_units[channel_calibrated_combo_curr_id] + ", " + std::to_string(channel_calibrated_range_min[channel_selection_curr_id]) + ", " +
+                                     std::to_string(channel_calibrated_range_max[channel_selection_curr_id]) + ");\n" + expression;
                 }
 
                 if (needs_to_be_disabled)
@@ -216,6 +208,12 @@ namespace satdump
 
             if (p.contains("image"))
                 img_handler->setConfig(p["image"]);
+
+            // TODOREWORK?
+            if (p.contains("name"))
+                img_handler->image_name = getName() + " " + p["name"].get<std::string>();
+            else
+                img_handler->image_name = getName() + " " + "Image";
         }
 
         nlohmann::json ImageProductHandler::getConfig()
@@ -255,16 +253,13 @@ namespace satdump
                 {
                     image::Image img;
                     if (channel_calibrated)
-                        img = products::generate_calibrated_product_channel(
-                            product, product->images[channel_selection_curr_id].channel_name,
-                            channel_calibrated_range_min[channel_selection_curr_id],
-                            channel_calibrated_range_max[channel_selection_curr_id],
-                            channel_calibrated_output_units[channel_calibrated_combo_curr_id], &progress);
+                        img = products::generate_calibrated_product_channel(product, product->images[channel_selection_curr_id].channel_name, channel_calibrated_range_min[channel_selection_curr_id],
+                                                                            channel_calibrated_range_max[channel_selection_curr_id], channel_calibrated_output_units[channel_calibrated_combo_curr_id],
+                                                                            &progress);
                     else
                     {
                         img = product->images[channel_selection_curr_id].image;
-                        image::set_metadata_proj_cfg(
-                            img, product->get_proj_cfg(product->images[channel_selection_curr_id].abs_index));
+                        image::set_metadata_proj_cfg(img, product->get_proj_cfg(product->images[channel_selection_curr_id].abs_index));
                     }
 
                     img_handler->updateImage(img);
@@ -276,15 +271,7 @@ namespace satdump
             }
         }
 
-        void ImageProductHandler::saveResult(std::string directory)
-        {
-            // TODOREWORK
-            auto &img = img_handler->get_current_img();
-            int autogen_id = 0;
-            while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
-                autogen_id++;
-            image::save_img(img, directory + "/img_" + std::to_string(autogen_id) + ".png");
-        }
+        void ImageProductHandler::saveResult(std::string directory) { img_handler->saveResult(directory); }
 
         void ImageProductHandler::drawMenuBar()
         {
@@ -294,7 +281,7 @@ namespace satdump
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
                 a->setConfig(img_handler->getConfig());
                 a->updateImage(img_handler->image);
-                a->image_name = getName() + " Image";
+                a->image_name = img_handler->image_name;
                 addSubHandler(a);
             }
         }

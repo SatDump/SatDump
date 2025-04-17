@@ -120,6 +120,10 @@ namespace satdump
                     throw satdump_exception(key);
             }
 
+            void set_frequency();
+            void set_gains();
+            void set_others();
+
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 cfg_res_t r = RES_OK;
@@ -128,29 +132,53 @@ namespace satdump
                 else if (key == "samplerate")
                     p_samplerate = v;
                 else if (key == "frequency")
+                {
                     p_frequency = v;
+                    set_frequency();
+                }
                 else if (key == "gain_type")
                 {
                     p_gain_type = v;
                     r = RES_LISTUPD;
+                    set_gains();
                 }
                 else if (key == "general_gain")
+                {
                     p_general_gain = v;
+                    set_gains();
+                }
                 else if (key == "lna_gain")
+                {
                     p_lna_gain = v;
+                    set_gains();
+                }
                 else if (key == "mixer_gain")
+                {
                     p_mixer_gain = v;
+                    set_gains();
+                }
                 else if (key == "vga_gain")
+                {
                     p_vga_gain = v;
+                    set_gains();
+                }
                 else if (key == "lna_agc")
+                {
                     p_lna_agc = v;
+                    set_others();
+                }
                 else if (key == "mixer_agc")
+                {
                     p_mixer_agc = v;
+                    set_others();
+                }
                 else if (key == "bias")
+                {
                     p_bias = v;
+                    set_others();
+                }
                 else
                     throw satdump_exception(key);
-                init();
                 return r;
             }
 

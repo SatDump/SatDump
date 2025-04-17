@@ -10,10 +10,7 @@ namespace image
         }
     }
 
-    bool has_metadata(Image &img)
-    {
-        return img.metadata_obj != nullptr;
-    }
+    bool has_metadata(Image &img) { return img.metadata_obj != nullptr; }
 
     void set_metadata(Image &img, nlohmann::json metadata)
     {
@@ -35,10 +32,7 @@ namespace image
             delete ((nlohmann::json *)img.metadata_obj);
     }
 
-    bool has_metadata_proj_cfg(Image &img)
-    {
-        return img.metadata_obj != nullptr && get_metadata(img).contains("proj_cfg");
-    }
+    bool has_metadata_proj_cfg(Image &img) { return img.metadata_obj != nullptr && get_metadata(img).contains("proj_cfg"); }
 
     void set_metadata_proj_cfg(Image &img, nlohmann::json proj_cfg)
     {
@@ -58,10 +52,7 @@ namespace image
             return nlohmann::json();
     }
 
-    bool has_metadata_calib_cfg(Image &img)
-    {
-        return img.metadata_obj != nullptr && get_metadata(img).contains("calib_cfg");
-    }
+    bool has_metadata_calib_cfg(Image &img) { return img.metadata_obj != nullptr && get_metadata(img).contains("calib_cfg"); }
 
     void set_metadata_calib_cfg(Image &img, nlohmann::json calib_cfg)
     {
@@ -78,4 +69,4 @@ namespace image
         else
             return nlohmann::json();
     }
-}
+} // namespace image

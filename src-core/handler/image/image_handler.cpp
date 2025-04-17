@@ -13,6 +13,7 @@
 
 #include "../vector/shapefile_handler.h"
 
+#include "common/utils.h"
 #include "core/config.h"
 #include "imgui/pfd/pfd_utils.h" // TODOREWORK
 
@@ -59,8 +60,7 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
                 needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
-                needs_to_update |=
-                    ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
+                needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
                 needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
                 needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
                 needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
@@ -104,7 +104,7 @@ namespace satdump
                     // TODOREWORK!!!!
                     std::string save_type = "png";
                     config::tryAssignValueFromSatdumpGeneralConfig(save_type, "image_format");
-                    std::string saved_at = save_image_dialog("out", ".", "Save Image", &get_current_img(), &save_type);
+                    std::string saved_at = save_image_dialog(getSaneName(), ".", "Save Image", &get_current_img(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");
                     else
@@ -121,15 +121,12 @@ namespace satdump
             if (ImGui::BeginMenu("Add Overlay"))
             {
                 if (ImGui::MenuItem("Shores"))
-                    addSubHandler(
-                        std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
                 if (ImGui::MenuItem("Borders"))
-                    addSubHandler(std::make_shared<ShapefileHandler>(
-                        resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")));
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")));
                 if (ImGui::MenuItem("Cities"))
-                    logger->error(
-                        "TODOREWORK GeoJSON!"); // TODOREWORK
-                                                // addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+                    logger->error("TODOREWORK GeoJSON!"); // TODOREWORK
+                                                          // addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
 
                 ImGui::EndMenu();
             }
@@ -221,10 +218,21 @@ namespace satdump
             process();
         }
 
+        std::string ImageHandler::getSaneName()
+        {
+            std::string img_name = image_name;
+            replaceAllStr(img_name, " ", "_");
+            replaceAllStr(img_name, "/", "_");
+            replaceAllStr(img_name, "\\", "_");
+            return img_name;
+        }
+
+        // TODOREWORK?
+        void ImageHandler::saveResult(std::string directory) { image::save_img(get_current_img(), directory + "/" + getSaneName()); }
+
         void ImageHandler::do_process()
         {
-            bool image_needs_processing = equalize_img | equalize_perchannel_img | white_balance_img | normalize_img |
-                                          invert_img | median_blur_img | rotate180_image | geocorrect_image |
+            bool image_needs_processing = equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate180_image | geocorrect_image |
                                           despeckle_img | brightness_contrast_image /*OVERLAY*/;
 
             correct_fwd_lut.clear();
@@ -249,16 +257,14 @@ namespace satdump
                 if (despeckle_img)
                     image::kuwahara_filter(curr_image);
                 if (brightness_contrast_image)
-                    image::brightness_contrast(curr_image, brightness_contrast_brightness_image,
-                                               brightness_contrast_constrast_image);
+                    image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_constrast_image);
                 if (rotate180_image)
                     curr_image.mirror(true, true);
 
                 if (geocorrect_image)
                 { // TODOREWORK handle disabling projs, etc
                     bool success = false;
-                    curr_image = image::earth_curvature::perform_geometric_correction(
-                        curr_image, success, &correct_rev_lut, &correct_fwd_lut);
+                    curr_image = image::earth_curvature::perform_geometric_correction(curr_image, success, &correct_rev_lut, &correct_fwd_lut);
                     if (!success)
                     {
                         correct_fwd_lut.clear();
@@ -295,12 +301,10 @@ namespace satdump
 
                 double rotate180 = rotate180_image;
                 auto corr_lut = correct_rev_lut;
-                auto pfunc = [&p, rotate180, corr_lut](double lat, double lon, double h,
-                                                       double w) mutable -> std::pair<double, double>
+                auto pfunc = [&p, rotate180, corr_lut](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
                     double x, y;
-                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 ||
-                        y >= h)
+                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
                     else
                     {
