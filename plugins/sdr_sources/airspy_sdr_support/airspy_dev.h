@@ -4,7 +4,11 @@
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
 
+#ifdef __ANDROID__
+#include "airspy.h"
+#else
 #include <libairspy/airspy.h>
+#endif
 
 // TODOREWORK Change the namespace?
 namespace satdump
