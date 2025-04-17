@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    <!-- RTL-SDR -->
-    <usb-device vendor-id="3034" product-id="10296"/>
+    <!-- specifying no attributes matches every device -->
+    <usb-device  />
 </resources>
