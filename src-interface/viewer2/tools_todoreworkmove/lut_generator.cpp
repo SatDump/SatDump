@@ -1,8 +1,8 @@
 #include "lut_generator.h"
-#include "imgui/implot/implot.h"
 #include "common/image/io.h"
-#include "logger.h"
+#include "imgui/implot/implot.h"
 #include "imgui/pfd/pfd_utils.h"
+#include "logger.h"
 #include "resources.h"
 
 namespace satdump
@@ -25,9 +25,7 @@ namespace satdump
             };
         }
 
-        LutGeneratorHandler::~LutGeneratorHandler()
-        {
-        }
+        LutGeneratorHandler::~LutGeneratorHandler() {}
 
         void LutGeneratorHandler::drawMenu()
         {
@@ -35,10 +33,12 @@ namespace satdump
             {
                 if (ImGui::Button("--"))
                     for (int i = 0; i < 10; i++)
-                        lut.erase(lut.end() - 1);
+                        if (lut.size() > 1)
+                            lut.erase(lut.end() - 1);
                 ImGui::SameLine();
                 if (ImGui::Button("-"))
-                    lut.erase(lut.end() - 1);
+                    if (lut.size() > 1)
+                        lut.erase(lut.end() - 1);
 
                 ImGui::SameLine();
                 ImGui::Text("Size : %d\n", lut.size());
@@ -57,10 +57,7 @@ namespace satdump
                 if (ImGui::RadioButton("Interpolate", mouse_mode == 1))
                     mouse_mode = 1;
 
-                float colors[4] = {current_col.r / 255.0f,
-                                   current_col.g / 255.0f,
-                                   current_col.b / 255.0f,
-                                   current_col.a / 255.0f};
+                float colors[4] = {current_col.r / 255.0f, current_col.g / 255.0f, current_col.b / 255.0f, current_col.a / 255.0f};
                 ImGui::ColorEdit4("Color", colors, ImGuiColorEditFlags_NoInputs);
                 current_col.r = colors[0] * 255.0f;
                 current_col.g = colors[1] * 255.0f;
@@ -134,12 +131,8 @@ namespace satdump
                 for (int i = 0; i < lut.size(); i++)
                 {
                     auto &p = lut[i];
-                    ImPlot::GetPlotDrawList()->AddQuadFilled(
-                        ImPlot::PlotToPixels({range_transform(i), 0}),
-                        ImPlot::PlotToPixels({range_transform(i + 1), 0}),
-                        ImPlot::PlotToPixels({range_transform(i + 1), 1}),
-                        ImPlot::PlotToPixels({range_transform(i), 1}),
-                        IM_COL32(p.r, p.g, p.b, p.a));
+                    ImPlot::GetPlotDrawList()->AddQuadFilled(ImPlot::PlotToPixels({range_transform(i), 0}), ImPlot::PlotToPixels({range_transform(i + 1), 0}),
+                                                             ImPlot::PlotToPixels({range_transform(i + 1), 1}), ImPlot::PlotToPixels({range_transform(i), 1}), IM_COL32(p.r, p.g, p.b, p.a));
                 }
 
                 ImPlotPoint p_i;
@@ -147,9 +140,7 @@ namespace satdump
                 p.x = range_transform_inv(p.x);
                 if (p.y >= 0 && p.y <= 1 && p.x >= 0 && p.x < lut.size() && ImGui::IsItemFocused())
                 {
-                    ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p_i.x, 0}),
-                                                       ImPlot::PlotToPixels({p_i.x, 1}),
-                                                       ImColor(0, 0, 0), 1);
+                    ImPlot::GetPlotDrawList()->AddLine(ImPlot::PlotToPixels({p_i.x, 0}), ImPlot::PlotToPixels({p_i.x, 1}), ImColor(0, 0, 0), 1);
 
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                         saveHistory();
@@ -292,5 +283,5 @@ namespace satdump
             return {0, 0, 0, 255};
 #endif
         }
-    }
-}
+    } // namespace viewer
+} // namespace satdump
