@@ -2,13 +2,6 @@
 
 #include "handler/handler.h"
 
-#include "common/widgets/fft_plot.h"
-#include "common/widgets/waterfall_plot.h"
-
-#include <nng/nng.h>
-#include <nng/protocol/bus0/bus.h>
-#include <thread>
-
 #include "common/widgets/image_view.h"
 #include "common/widgets/menuitem_fileopen.h"
 #include "imgui/pfd/widget.h"
