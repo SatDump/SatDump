@@ -112,6 +112,8 @@ namespace demod
             // Estimate SNR
             snr_estimator.update((complex_t *)rec->output_stream->readBuf, dat_size / 2);
             snr = snr_estimator.snr();
+            signal = snr_estimator.signal();
+            noise = snr_estimator.noise();
 
             if (snr > peak_snr)
                 peak_snr = snr;
@@ -132,6 +134,8 @@ namespace demod
             // Update module stats
             module_stats["snr"] = snr;
             module_stats["peak_snr"] = peak_snr;
+            module_stats["signal"] = signal;
+            module_stats["noise"] = noise;
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
