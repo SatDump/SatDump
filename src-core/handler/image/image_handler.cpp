@@ -1,6 +1,7 @@
 #include "image_handler.h"
 
 #include "core/style.h"
+#include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
 
@@ -70,8 +71,10 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Brightness/Constrast", &brightness_contrast_image);
                 if (brightness_contrast_image)
                 {
-                    needs_to_update |= ImGui::SliderFloat("Brightness", &brightness_contrast_brightness_image, -2, 2);
-                    needs_to_update |= ImGui::SliderFloat("Contrast", &brightness_contrast_constrast_image, -2, 2);
+                    ImGui::SliderFloat("Brightness", &brightness_contrast_brightness_image, -2, 2);
+                    needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
+                    ImGui::SliderFloat("Contrast", &brightness_contrast_constrast_image, -2, 2);
+                    needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                 }
 
                 if (needs_to_be_disabled)
