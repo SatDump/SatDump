@@ -1,15 +1,15 @@
 #include "product_expression.h"
+#include "common/image/meta.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
-#include "common/image/meta.h"
 
 #include "common/utils.h"
 #include "products2/image/image_calibrator.h"
 
 #include "common/image/io.h"
 
-#include "resources.h"                               // TODOREWORK?
 #include "common/projection/projs/equirectangular.h" // TODOREWORK
+#include "resources.h"                               // TODOREWORK?
 
 namespace satdump
 {
@@ -78,7 +78,7 @@ namespace satdump
 
                 return c;
             }
-        }
+        } // namespace
 
         namespace
         {
@@ -138,7 +138,7 @@ namespace satdump
 
                 return c;
             }
-        }
+        } // namespace
 
         namespace
         {
@@ -175,7 +175,7 @@ namespace satdump
 
                 return c;
             }
-        }
+        } // namespace
 
         std::vector<std::string> get_required_tokens(std::string expression, std::vector<LutCfg> lut_cfgs, std::vector<EqupCfg> equp_cfgs, int *numout = nullptr)
         {
@@ -244,6 +244,9 @@ namespace satdump
                     expression = split_cfg[split_cfg.size() - 1];
                     for (auto &cfg : split_cfg)
                     {
+                        if (cfg == expression)
+                            continue; // Skip actual expression!
+
                         auto pcfg = tryParse(cfg);
                         auto lcfg = tryParseLut(cfg);
                         auto ecfg = tryParseEqup(cfg);
@@ -366,10 +369,7 @@ namespace satdump
 
                 // Select reference channel, setup output
                 TokenS *rtkt = tkts[0];
-                image::Image out(rtkt->img.depth(),
-                                 rtkt->img.width(),
-                                 rtkt->img.height(),
-                                 nout_channels);
+                image::Image out(rtkt->img.depth(), rtkt->img.width(), rtkt->img.height(), nout_channels);
 
                 // Variables to utilize
                 size_t x, y, i, c;
@@ -396,9 +396,7 @@ namespace satdump
                             rtkt->transform.forward(&t->px, &t->py);
                             t->transform.reverse(&t->px, &t->py);
                             if (t->px > 0 && t->px < t->width && t->py > 0 && t->py < t->height)
-                                t->v = (((t->px - (uint32_t)t->px) == 0 && (t->py - (uint32_t)t->py) == 0)
-                                            ? (double)t->img.get(0, t->px, t->py)
-                                            : (double)t->img.get_pixel_bilinear(0, t->px, t->py)) /
+                                t->v = (((t->px - (uint32_t)t->px) == 0 && (t->py - (uint32_t)t->py) == 0) ? (double)t->img.get(0, t->px, t->py) : (double)t->img.get_pixel_bilinear(0, t->px, t->py)) /
                                        t->maxval; // TODOREWORK optimize
                             else
                                 t->v = 0; // TODOREWORK DETECT AND CROP
@@ -432,5 +430,5 @@ namespace satdump
                 throw satdump_exception(e.GetMsg());
             }
         }
-    }
-}
+    } // namespace products
+} // namespace satdump
