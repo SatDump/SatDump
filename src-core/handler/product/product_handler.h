@@ -42,6 +42,10 @@ namespace satdump
             std::shared_ptr<products::Product> product;
             nlohmann::ordered_json instrument_cfg;
 
+            // TODOREWORK document!
+            std::string product_internal_name; // TODOREWORK? Rename? No idea
+            std::string generateFileName();
+
         protected:
             /**
              * @brief Draw preset selection menu

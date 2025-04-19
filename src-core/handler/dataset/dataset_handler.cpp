@@ -11,8 +11,7 @@ namespace satdump
 {
     namespace viewer
     {
-        DatasetHandler::DatasetHandler(std::string path, products::DataSet d)
-            : dataset(d)
+        DatasetHandler::DatasetHandler(std::string path, products::DataSet d) : dataset(d)
         {
             instrument_products = std::make_shared<DummyHandler>("Instruments");
             general_products = std::make_shared<DatasetProductHandler>();
@@ -32,9 +31,9 @@ namespace satdump
                 auto prod = products::loadProduct(path + "/" + p);
                 std::shared_ptr<ProductHandler> prod_h;
                 if (prod->type == "image")
-                    prod_h = std::make_shared<ImageProductHandler>(prod);
+                    prod_h = std::make_shared<ImageProductHandler>(prod, true);
                 else if (prod->type == "punctiform")
-                    prod_h = std::make_shared<PunctiformProductHandler>(prod);
+                    prod_h = std::make_shared<PunctiformProductHandler>(prod, true);
                 else
                     logger->error("TODOREWORK!!!!!! Actually handle loading properly...");
                 instrument_products->addSubHandler(prod_h);
@@ -45,16 +44,10 @@ namespace satdump
             instrument_products->handler_tree_icon = "\uf970";
         }
 
-        DatasetHandler::~DatasetHandler()
-        {
-        }
+        DatasetHandler::~DatasetHandler() {}
 
-        void DatasetHandler::drawMenu()
-        {
-        }
+        void DatasetHandler::drawMenu() {}
 
-        void DatasetHandler::drawContents(ImVec2 win_size)
-        {
-        }
-    }
-}
+        void DatasetHandler::drawContents(ImVec2 win_size) {}
+    } // namespace viewer
+} // namespace satdump

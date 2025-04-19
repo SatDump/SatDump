@@ -15,7 +15,7 @@ namespace satdump
 {
     namespace viewer
     {
-        ImageProductHandler::ImageProductHandler(std::shared_ptr<products::Product> p) : ProductHandler(p)
+        ImageProductHandler::ImageProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode) : ProductHandler(p, dataset_mode)
         {
             handler_tree_icon = "\uf71e";
 
@@ -209,11 +209,12 @@ namespace satdump
             if (p.contains("image"))
                 img_handler->setConfig(p["image"]);
 
-            // TODOREWORK?
+            // TODOREWORK Maybe make it changed when updated NOT because of preset?
             if (p.contains("name"))
-                img_handler->image_name = getName() + " " + p["name"].get<std::string>();
+                product_internal_name = p["name"].get<std::string>();
             else
-                img_handler->image_name = getName() + " " + "Image";
+                product_internal_name = "Image";
+            img_handler->image_name = generateFileName();
         }
 
         nlohmann::json ImageProductHandler::getConfig()

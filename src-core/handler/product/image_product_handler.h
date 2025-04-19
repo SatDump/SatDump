@@ -23,7 +23,7 @@ namespace satdump
         class ImageProductHandler : public ProductHandler
         {
         public:
-            ImageProductHandler(std::shared_ptr<products::Product> p);
+            ImageProductHandler(std::shared_ptr<products::Product>, bool dataset_mode = false);
             ~ImageProductHandler();
 
             std::shared_ptr<ImageHandler> img_handler;

@@ -16,7 +16,7 @@ namespace satdump
         class PunctiformProductHandler : public ProductHandler
         {
         public:
-            PunctiformProductHandler(std::shared_ptr<products::Product> p);
+            PunctiformProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode = false);
             ~PunctiformProductHandler();
 
             // Products
@@ -50,10 +50,7 @@ namespace satdump
             //
             void addSubHandler(std::shared_ptr<Handler> handler) { img_handler.addSubHandler(handler); }
 
-            void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
-            {
-                img_handler.delSubHandler(handler, true);
-            }
+            void delSubHandler(std::shared_ptr<Handler> handler, bool now = false) { img_handler.delSubHandler(handler, true); }
 
             void drawTreeMenu(std::shared_ptr<Handler> &h) { img_handler.drawTreeMenu(h); }
 

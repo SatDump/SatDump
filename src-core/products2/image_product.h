@@ -4,9 +4,10 @@
  * @file image_product.h
  */
 
-#include "product.h"
 #include "common/image/image.h"
+#include "common/utils.h"
 #include "image/channel_transform.h"
+#include "product.h"
 
 #include "common/physics_constants.h"
 #include "image/calibration_units.h" // TODOREWORK MOVE!!!! + Conversion
@@ -75,6 +76,11 @@ namespace satdump
             void set_proj_cfg(nlohmann::json cfg)
             {
                 contents["projection_cfg"] = cfg;
+                if (cfg.contains("tle") && cfg["tle"].contains("name"))
+                    if (!has_product_source())
+                        set_product_source(cfg["tle"]["name"]);
+                if (cfg.contains("timestamps") && !has_product_timestamp())
+                    set_product_timestamp(get_median(cfg["timestamps"].get<std::vector<double>>()));
             }
 
             /**
@@ -85,9 +91,9 @@ namespace satdump
              */
             void set_proj_cfg_tle_timestamps(nlohmann::json cfg, nlohmann::json tle, nlohmann::json timestamps)
             {
-                contents["projection_cfg"] = cfg;
-                contents["projection_cfg"]["tle"] = tle;
-                contents["projection_cfg"]["timestamps"] = timestamps;
+                cfg["tle"] = tle;
+                cfg["timestamps"] = timestamps;
+                set_proj_cfg(cfg);
             }
 
             /**
@@ -111,10 +117,7 @@ namespace satdump
              * @brief Check if geo projection info is present
              * @return true if present
              */
-            bool has_proj_cfg()
-            {
-                return contents.contains("projection_cfg");
-            }
+            bool has_proj_cfg() { return contents.contains("projection_cfg"); }
 
         public:
             void set_calibration(std::string calibrator, nlohmann::json cfg)
@@ -123,25 +126,16 @@ namespace satdump
                 contents["calibration"]["calibrator"] = calibrator;
             }
 
-            std::pair<std::string, nlohmann::json> get_calibration()
-            {
-                return {contents["calibration"]["calibrator"], contents["calibration"]};
-            }
+            std::pair<std::string, nlohmann::json> get_calibration() { return {contents["calibration"]["calibrator"], contents["calibration"]}; }
 
             /**
              * @brief Check if calibration info is present
              * @return true if present
              */
-            bool has_calibration()
-            {
-                return contents.contains("calibration");
-            }
+            bool has_calibration() { return contents.contains("calibration"); }
 
             // TODOREWORK DOCUMENT
-            nlohmann::json get_calibration_raw()
-            {
-                return contents.contains("calibration") ? contents["calibration"] : nlohmann::json();
-            }
+            nlohmann::json get_calibration_raw() { return contents.contains("calibration") ? contents["calibration"] : nlohmann::json(); }
 
         public:
             /**
@@ -220,10 +214,7 @@ namespace satdump
              * @param index absolute channel index
              * @param frequency frequency value, in Hz
              */
-            void set_channel_frequency(int index, double frequency)
-            {
-                set_channel_wavenumber(index, freq_to_wavenumber(frequency));
-            }
+            void set_channel_frequency(int index, double frequency) { set_channel_wavenumber(index, freq_to_wavenumber(frequency)); }
 
             /**
              * @brief Get channel wavenumber
@@ -243,10 +234,7 @@ namespace satdump
              * @param index absolute channel index
              * @return channel frequency in Hz
              */
-            double get_channel_frequency(int index)
-            {
-                return wavenumber_to_freq(get_channel_wavenumber(index));
-            }
+            double get_channel_frequency(int index) { return wavenumber_to_freq(get_channel_wavenumber(index)); }
 
             /**
              * @brief Set channel calibration unit
@@ -274,5 +262,5 @@ namespace satdump
 
             virtual ~ImageProduct();
         };
-    }
-}
+    } // namespace products
+} // namespace satdump
