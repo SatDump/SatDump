@@ -1,7 +1,8 @@
 #include "punctiform_product_handler.h"
+#include "core/style.h"
+#include "logger.h"
 #include "nlohmann/json_utils.h"
 
-#include "imgui/imgui_stdlib.h"
 #include "imgui/implot/implot.h" // TODOREWORK
 
 #include "common/image/io.h" // TODOREWORK

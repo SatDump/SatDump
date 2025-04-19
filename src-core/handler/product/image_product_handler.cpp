@@ -1,15 +1,16 @@
 #include "image_product_handler.h"
 #include "nlohmann/json_utils.h"
 
+#include "core/style.h"
+#include "imgui/imgui_stdlib.h"
+#include "logger.h"
+
 #include "common/dsp_source_sink/format_notated.h" // TODOREWORK
-#include "common/image/processing.h"               // TODOREWORK
 #include "imgui/imgui_stdlib.h"
 #include "products2/image/product_expression.h"
 
 #include "common/widgets/json_editor.h"
 #include "products2/image/calibration_units.h" // TODOREWORK
-
-#include "common/image/io.h" // TODOREWORK
 
 namespace satdump
 {

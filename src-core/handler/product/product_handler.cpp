@@ -192,6 +192,6 @@ namespace satdump
             return file_name;
         }
 
-        void ProductHandler::saveResult(std::string directory) { throw satdump_exception("saveResult NOT implemented for this handler!"); }
+        void ProductHandler::saveResult(std::string directory) { throw satdump_exception("saveResult NOT implemented for this handler! => " + directory); }
     } // namespace viewer
 } // namespace satdump

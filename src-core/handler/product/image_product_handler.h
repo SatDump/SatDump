@@ -1,20 +1,9 @@
 #pragma once
 
-#include "product_handler.h"
-
-#include "core/style.h"
-#include "imgui/imgui_stdlib.h"
-#include "logger.h"
-#include "products2/image_product.h"
-// #include "libs/ctpl/ctpl_stl.h"
-// #include "common/widgets/markdown_helper.h"
-// #include "common/widgets/timed_message.h"
-// TODOREWORK?
-#include <thread>
-
 #include "../image/image_handler.h"
-
+#include "product_handler.h"
 #include "products2/image/image_calibrator.h"
+#include "products2/image_product.h"
 
 namespace satdump
 {
