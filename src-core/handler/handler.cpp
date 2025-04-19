@@ -1,5 +1,6 @@
 #include "handler.h"
 #include "imgui/imgui.h"
+#include "logger.h"
 
 //// TODOREWORK?
 #include "product/image_product_handler.h"

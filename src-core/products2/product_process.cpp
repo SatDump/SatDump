@@ -1,4 +1,5 @@
 #include "product_process.h"
+#include "logger.h"
 
 #include "handler/product/product_handler.h"
 #include "handler/product/image_product_handler.h"

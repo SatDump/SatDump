@@ -1,4 +1,5 @@
 #include "dataset_handler.h"
+#include "logger.h"
 
 #include "../dummy_handler.h"
 #include "dataset_product_handler.h"
