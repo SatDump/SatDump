@@ -30,7 +30,10 @@ namespace satdump
             else if (l.size() > 1)
                 throw satdump_exception("Got more than one device instance! " + i.name);
 
+            for (auto &li : l)
+                li->setDevInfo(i);
+
             return l[0];
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

@@ -22,11 +22,11 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param(p, "gain", "float", 1, "Gain");
-                add_param(p, "samplerate", "float", 6e6, "Samplerate");
-                add_param(p, "symbolrate", "float", 2e6, "Symbolrate");
-                add_param(p, "alpha", "float", 0.35, "Alpha");
-                add_param(p, "ntaps", "int", 31, "NTaps");
+                add_param_simple(p, "gain", "float", "Gain");
+                add_param_simple(p, "samplerate", "float", "Samplerate");
+                add_param_simple(p, "symbolrate", "float", "Symbolrate");
+                add_param_simple(p, "alpha", "float", "Alpha");
+                add_param_simple(p, "ntaps", "int", "NTaps");
                 return p;
             }
 

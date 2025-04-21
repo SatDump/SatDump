@@ -10,6 +10,8 @@
 #include <mutex>
 #include <string>
 
+#include "logger.h"
+
 namespace satdump
 {
     namespace ndsp // rename!!!!! And move to somewhere more generic!!!! And document!!!
@@ -159,7 +161,7 @@ namespace satdump
                         else if (v.is_float && j.is_number())
                             v._float = j;
                         else
-                            throw satdump_exception("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() + ")");
+                            logger->error("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() + ")");
                     }
                 }
                 opts_mtx.unlock();
@@ -184,6 +186,7 @@ namespace satdump
                 {
                     bool u = false;
                     std::string id = std::string(v.name + "##" + std::to_string((size_t)this));
+                    std::string id_n = std::string(v.name);
 
                     if (v.disable)
                         style::beginDisabled();
@@ -211,21 +214,21 @@ namespace satdump
                     {
                         // TODOREWORK ALLOW LARGE INT
                         int lv = v._int;
-                        u |= widgets::SteppedSliderInt(id.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
+                        u |= widgets::SteppedSliderInt(id_n.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
                         v._int = lv;
                     }
                     else if (v.is_range && v.is_uint)
                     {
                         // TODOREWORK ALLOW LARGE INT
                         int lv = v._uint;
-                        u |= widgets::SteppedSliderInt(id.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
+                        u |= widgets::SteppedSliderInt(id_n.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
                         v._uint = lv;
                     }
                     else if (v.is_range && v.is_float)
                     {
                         // TODOREWORK USE DOUBLE INSTEAD
                         float lv = v._float;
-                        u |= widgets::SteppedSliderFloat(id.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
+                        u |= widgets::SteppedSliderFloat(id_n.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
                         v._float = lv;
                     }
                     else if (v.is_list && v.is_int)

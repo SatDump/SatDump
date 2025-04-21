@@ -13,184 +13,209 @@
 #include "logger.h"
 
 #if 1
-#include "angelscript/angelscript.h"
-#include "angelscript/scriptstdstring/scriptstdstring.h"
-#include "angelscript/scriptbuilder/scriptbuilder.h"
-// #include "aatc/aatc.hpp"
-// #include "aatc/aatc_container_vector.hpp"
-#include "angelscript/scriptarray/scriptarray.h"
-// #include "angelscript/scriptjson/scriptjson.h"
 
-#include "angelscript/scriptsatdump/bind_satdump.h"
-
-// Implement a simple message callback function
-void MessageCallback(const asSMessageInfo *msg, void *param)
-{
-    const char *type = "ERR ";
-    if (msg->type == asMSGTYPE_WARNING)
-        type = "WARN";
-    else if (msg->type == asMSGTYPE_INFORMATION)
-        type = "INFO";
-    // printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
-
-    if (msg->type == asMSGTYPE_INFORMATION)
-        logger->info("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
-    else if (msg->type == asMSGTYPE_WARNING)
-        logger->warn("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
-    else if (msg->type == asMSGTYPE_ERROR)
-        logger->error("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
-}
-
-// Print the script string to the standard output stream
-void print(std::string &msg)
-{
-    printf("%s", msg.c_str());
-}
-
-namespace namelog
-{
-    void trace(std::string &f) { logger->trace("[AngelScript] " + f); }
-    void debug(std::string &f) { logger->debug("[AngelScript] " + f); }
-    void info(std::string &f) { logger->info("[AngelScript] " + f); }
-    void warn(std::string &f) { logger->warn("[AngelScript] " + f); }
-    void error(std::string &f) { logger->error("[AngelScript] " + f); }
-    void critical(std::string &f) { logger->critical("[AngelScript] " + f); }
-}
-
-#include "nlohmann/json.hpp"
-
-namespace j
-{
-    void JConstructor(void *memory)
-    {
-        // Initialize the pre-allocated memory by calling the
-        // object constructor with the placement-new operator
-        new (memory) nlohmann::basic_json<>();
-    }
-
-    void JDestructor(void *memory)
-    {
-        // Uninitialize the memory by calling the object destructor
-        ((nlohmann::basic_json<> *)memory)->~basic_json();
-    }
-}
-#endif
+#include "dsp/device/dev.h"
+#include "init.h"
 
 int main(int argc, char *argv[])
 {
-#if 1
     initLogger();
 
-    // Create the script engine
-    asIScriptEngine *engine = asCreateScriptEngine();
+    logger->set_level(slog::LOG_ERROR);
+    satdump::initSatdump();
+    completeLoggerInit();
+    logger->set_level(slog::LOG_TRACE);
 
-    // Set the message callback to receive information on errors in human readable form.
-    int r = engine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL);
-    //    assert(r >= 0);
+    auto devs = satdump::ndsp::getDeviceList();
 
-    // AngelScript doesn't have a built-in string type, as there is no definite standard
-    // string type for C++ applications. Every developer is free to register its own string type.
-    // The SDK do however provide a standard add-on for registering a string type, so it's not
-    // necessary to implement the registration yourself if you don't want to.
-    RegisterStdString(engine);
-    RegisterScriptArray(engine, true);
-    //    RegisterScriptJson(engine);
-    // aatc::RegisterAllContainers(engine);
-
-    satdump::script::registerAll(engine);
-
-    // Register the function that we want the scripts to call
-    r = engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(print), asCALL_CDECL);
-    //  assert(r >= 0);
-
+    for (auto &d : devs)
     {
-        engine->SetDefaultNamespace("logger");
-        r = engine->RegisterGlobalFunction("void trace(const string &in)", asFUNCTION(namelog::trace), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void debug(const string &in)", asFUNCTION(namelog::debug), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void info(const string &in)", asFUNCTION(namelog::info), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void warn(const string &in)", asFUNCTION(namelog::error), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(namelog::error), asCALL_CDECL);
-        r = engine->RegisterGlobalFunction("void critical(const string &in)", asFUNCTION(namelog::critical), asCALL_CDECL);
+        auto i = satdump::ndsp::getDeviceInstanceFromInfo(d);
+        d.params = i->get_cfg_list();
+        logger->debug("\n" + nlohmann::json(d).dump(4) + "\n");
     }
-
-    nlohmann::json test2j;
-    test2j["hello"] = true;
-
-    {
-
-        //        engine->RegisterGlobalProperty("json testj", &test2j);
-        // engine->SetDefaultNamespace("nlohmann");
-        // r = engine->RegisterObjectType("json", sizeof(nlohmann::json), asOBJ_VALUE | asGetTypeTraits<nlohmann::json>());
-
-        // r = engine->RegisterObjectBehaviour("json", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(j::JConstructor), asCALL_CDECL_OBJLAST);
-        // r = engine->RegisterObjectBehaviour("json", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(j::JDestructor), asCALL_CDECL_OBJLAST);
-
-        // engine->RegisterObjectMethod("json", "json &opAssign(const json &in)", asMETHODPR(nlohmann::json, operator=, (const nlohmann::json &), nlohmann::json &), asCALL_THISCALL);
-    }
-
-    ////////////////////////////////////////
-
-    {
-        // The CScriptBuilder helper is an add-on that loads the file,
-        // performs a pre-processing pass if necessary, and then tells
-        // the engine to build a script module.
-        CScriptBuilder builder;
-        int r = builder.StartNewModule(engine, "MyModule");
-        if (r < 0)
-        {
-            // If the code fails here it is usually because there
-            // is no more memory to allocate the module
-            printf("Unrecoverable error while starting a new module.\n");
-            return 1;
-        }
-        r = builder.AddSectionFromFile("test.as");
-        if (r < 0)
-        {
-            // The builder wasn't able to load the file. Maybe the file
-            // has been removed, or the wrong name was given, or some
-            // preprocessing commands are incorrectly written.
-            printf("Please correct the errors in the script and try again.\n");
-            return 1;
-        }
-        r = builder.BuildModule();
-        if (r < 0)
-        {
-            // An error occurred. Instruct the script writer to fix the
-            // compilation errors that were listed in the output stream.
-            printf("Please correct the errors in the script and try again.\n");
-            return 1;
-        }
-
-        //////////////
-
-        // Find the function that is to be called.
-        asIScriptModule *mod = engine->GetModule("MyModule");
-        asIScriptFunction *func = mod->GetFunctionByDecl("void main()");
-        if (func == 0)
-        {
-            // The function couldn't be found. Instruct the script writer
-            // to include the expected function in the script.
-            printf("The script must have the function 'void main()'. Please add it and try again.\n");
-            return 1;
-        }
-
-        // Create our context, prepare it, and then execute
-        asIScriptContext *ctx = engine->CreateContext();
-        ctx->Prepare(func);
-        r = ctx->Execute();
-        if (r != asEXECUTION_FINISHED)
-        {
-            // The execution didn't complete as expected. Determine what happened.
-            if (r == asEXECUTION_EXCEPTION)
-            {
-                // An exception occurred, let the script writer know what happened so it can be corrected.
-                printf("An exception '%s' occurred. Please correct the code and try again.\n", ctx->GetExceptionString());
-            }
-        }
-
-        // Clean up
-        ctx->Release();
-        engine->ShutDownAndRelease();
-    }
-#endif
 }
+
+#else
+#include <nng/nng.h>
+#include <nng/protocol/bus0/bus.h>
+#include <nng/protocol/pair0/pair.h>
+#include <nng/supplemental/http/http.h>
+#include <nng/supplemental/util/platform.h>
+
+#include "common/dsp/fft/fft_pan.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "init.h"
+
+#include <unistd.h>
+
+// HTTP Handler for stats
+void http_handle(nng_aio *aio)
+{
+    std::string jsonstr = "{\"api\": true}";
+
+    nng_http_res *res;
+    nng_http_res_alloc(&res);
+    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
+    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
+    nng_aio_set_output(aio, 0, res);
+    nng_aio_finish(aio, 0);
+}
+
+// HTTP Handler for commands
+void http_handleP(nng_aio *aio)
+{
+    std::string jsonstr = "{\"api\": true}";
+
+    nng_http_req *msg = (nng_http_req *)nng_aio_get_input(aio, 0);
+
+    void *ptr;
+    size_t ptrl;
+    nng_http_req_get_data(msg, &ptr, &ptrl);
+    logger->info("Got : %s", (char *)ptr);
+
+    nng_http_res *res;
+    nng_http_res_alloc(&res);
+    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
+    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
+    nng_aio_set_output(aio, 0, res);
+    nng_aio_finish(aio, 0);
+}
+
+int main(int argc, char *argv[])
+{
+    initLogger();
+
+    logger->set_level(slog::LOG_OFF);
+    satdump::initSatdump();
+    completeLoggerInit();
+    logger->set_level(slog::LOG_TRACE);
+
+    dsp::registerAllSources();
+
+    ///////////////////////
+
+    std::shared_ptr<dsp::DSPSampleSource> dsp_source;
+    {
+        auto all_sources = dsp::getAllAvailableSources();
+        for (auto &s : all_sources)
+        {
+            logger->trace(s.name);
+            if (s.source_type == "rtlsdr")
+                dsp_source = dsp::getSourceFromDescriptor(s);
+        }
+    }
+
+    dsp_source->open();
+    dsp_source->set_samplerate(2.4e6);
+    dsp_source->set_frequency(431.8e6);
+    dsp_source->start();
+
+    std::shared_ptr<dsp::FFTPanBlock> fftPan = std::make_shared<dsp::FFTPanBlock>(dsp_source->output_stream);
+    fftPan->set_fft_settings(65536, dsp_source->get_samplerate(), 30);
+    fftPan->avg_num = 1;
+
+    ////////////////////////
+
+    std::string http_server_url = "http://0.0.0.0:8080";
+
+    nng_http_server *http_server;
+    nng_url *url;
+    {
+
+        nng_url_parse(&url, http_server_url.c_str());
+        nng_http_server_hold(&http_server, url);
+    }
+
+    nng_http_handler *handler_api;
+    {
+        nng_http_handler_alloc(&handler_api, "/api", http_handle);
+        nng_http_handler_set_method(handler_api, "GET");
+        nng_http_server_add_handler(http_server, handler_api);
+    }
+
+    nng_http_handler *handler_apiP;
+    {
+        nng_http_handler_alloc(&handler_api, "/apip", http_handleP);
+        nng_http_handler_set_method(handler_api, "POST");
+        nng_http_server_add_handler(http_server, handler_api);
+    }
+
+    nng_socket socket;
+
+    {
+
+        int rv = 0;
+        if (rv = nng_bus0_open(&socket); rv != 0)
+        {
+            printf("pair open error\n");
+        }
+
+        if (rv = nng_listen(socket, "ws://0.0.0.0:8080/ws", nullptr, 0); rv != 0)
+        {
+            printf("server listen error\n");
+        }
+    }
+
+    nng_url_free(url);
+
+    nng_http_server_start(http_server);
+
+    fftPan->on_fft = [&](float *b)
+    {
+        std::vector<uint8_t> send_buf(8 + 65536);
+        float *min = (float *)&send_buf[0];
+        float *max = (float *)&send_buf[4];
+        uint8_t *dat = &send_buf[8];
+
+        *min = 1e6;
+        *max = -1e6;
+
+        for (int i = 0; i < 65536; i++)
+        {
+            if (*min > b[i])
+                *min = b[i];
+            if (*max < b[i])
+                *max = b[i];
+        }
+
+        for (int i = 0; i < 65536; i++)
+        {
+            float val = (b[i] - *min) / (*max - *min);
+            dat[i] = val * 255;
+        }
+
+        nng_send(socket, send_buf.data(), send_buf.size(), NNG_FLAG_NONBLOCK);
+    };
+    fftPan->start();
+
+    while (1)
+    {
+        /*char *buf = nullptr;
+        size_t size;
+
+        int rv = 0;
+        printf("WAIT\n");
+        if (rv = nng_recv(socket, &buf, &size, NNG_FLAG_ALLOC); rv != 0)
+        {
+            printf("recv error: %s\n", nng_strerror(rv));
+        }
+
+        printf("server get with client: %s\n", buf);
+
+        std::string testStr = "Server Reply!\n\r";
+        //  int rv = 0;
+        if (rv = nng_send(socket, (void *)testStr.c_str(), testStr.size(), NULL); rv != 0)
+        {
+            printf("send error: %s\n", nng_strerror(rv));
+        }
+
+        printf("SEND\n");
+*/
+        sleep(1);
+    }
+
+    nng_http_server_stop(http_server);
+    nng_http_server_release(http_server);
+}
+#endif

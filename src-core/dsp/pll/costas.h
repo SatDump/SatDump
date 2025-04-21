@@ -46,9 +46,9 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param(p, "loop_bw", "float");
-                add_param(p, "order", "int");
-                add_param(p, "freq_limit", "float");
+                add_param_simple(p, "loop_bw", "float");
+                add_param_simple(p, "order", "int");
+                add_param_simple(p, "freq_limit", "float");
                 return p;
             }
 

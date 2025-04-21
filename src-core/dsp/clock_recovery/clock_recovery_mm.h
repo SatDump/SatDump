@@ -59,13 +59,13 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param(p, "omega", "float");
-                add_param(p, "omegaGain", "float", pow(8.7e-3, 2) / 4.0);
-                add_param(p, "mu", "float", 0.5f);
-                add_param(p, "muGain", "float", 8.7e-3);
-                add_param(p, "omegaLimit", "float", 0.005);
-                add_param(p, "nfilt", "int", 128);
-                add_param(p, "ntaps", "int", 8);
+                add_param_simple(p, "omega", "float");
+                add_param_simple(p, "omegaGain", "float");
+                add_param_simple(p, "mu", "float");
+                add_param_simple(p, "muGain", "float");
+                add_param_simple(p, "omegaLimit", "float");
+                add_param_simple(p, "nfilt", "int");
+                add_param_simple(p, "ntaps", "int");
                 return p;
             }
 

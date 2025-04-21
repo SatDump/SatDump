@@ -1,6 +1,6 @@
 #pragma once
 
-#include "flowgraph/flowgraph.h"
+#include "dsp/flowgraph/flowgraph.h"
 #include "handler/handler.h"
 
 // TODOREWORK, move into plugin? Or Core?
@@ -25,6 +25,11 @@ namespace satdump
             std::string getName() { return "Flowgraph"; }
 
             std::string getID() { return "dsp_flowgraph_handler"; }
+        };
+
+        struct RegisterNodesEvent
+        {
+            std::map<std::string, ndsp::Flowgraph::NodeInternalReg> &r;
         };
     } // namespace viewer
 } // namespace satdump

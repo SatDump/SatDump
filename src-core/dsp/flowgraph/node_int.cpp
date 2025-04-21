@@ -8,11 +8,12 @@ namespace satdump
     {
         NodeInternal::NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b) : f((Flowgraph *)f), blk(b) { optdisp = std::make_unique<ndsp::OptDisplayerWarper>(blk); }
 
-        void NodeInternal::render()
+        bool NodeInternal::render()
         {
             ImGui::PushItemWidth(200);
-            optdisp->draw();
+            bool r = optdisp->draw();
             ImGui::PopItemWidth();
+            return r;
         }
 
         nlohmann::json NodeInternal::getP() { return blk->get_cfg(); }

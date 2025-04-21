@@ -13,7 +13,7 @@ namespace satdump
 
             for (auto &d : devs)
             {
-                if (d.type == "airspy")
+                if (d.type == "bladerf")
                 {
                     dev = ndsp::getDeviceInstanceFromInfo(d);
                     dev->setDevInfo(d);

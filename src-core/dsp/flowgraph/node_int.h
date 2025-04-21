@@ -24,7 +24,9 @@ namespace satdump
         public:
             NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b);
 
-            virtual void render();
+            virtual bool render();
+
+            virtual void up_state() { optdisp->update(); }
 
             virtual nlohmann::json getP();
             virtual void setP(nlohmann::json p);

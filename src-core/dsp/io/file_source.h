@@ -51,10 +51,10 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param(p, "file", "string");
-                add_param(p, "type", "string");
-                add_param(p, "buffer_size", "int");
-                add_param(p, "iq_swap", "bool");
+                add_param_simple(p, "file", "string");
+                add_param_simple(p, "type", "string");
+                add_param_simple(p, "buffer_size", "int");
+                add_param_simple(p, "iq_swap", "bool");
                 return p;
             }
 

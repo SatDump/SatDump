@@ -31,13 +31,13 @@ namespace satdump
             {
                 if (p_gain_type == "sensitive")
                 {
-                    airspy_set_sensitivity_gain(airspy_dev_obj, p_general_gain);
-                    logger->debug("Set Airspy gain (sensitive) to %d", p_general_gain);
+                    airspy_set_sensitivity_gain(airspy_dev_obj, p_gain);
+                    logger->debug("Set Airspy gain (sensitive) to %d", p_gain);
                 }
                 else if (p_gain_type == "linear")
                 {
-                    airspy_set_linearity_gain(airspy_dev_obj, p_general_gain);
-                    logger->debug("Set Airspy gain (linear) to %d", p_general_gain);
+                    airspy_set_linearity_gain(airspy_dev_obj, p_gain);
+                    logger->debug("Set Airspy gain (linear) to %d", p_gain);
                 }
                 else if (p_gain_type == "manual")
                 {

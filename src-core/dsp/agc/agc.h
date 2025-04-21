@@ -39,10 +39,10 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param(p, "rate", "float", 1e-4, "Rate");
-                add_param(p, "reference", "float", 1, "Reference");
-                add_param(p, "gain", "float", 1, "Gain");
-                add_param(p, "max_gain", "float", 65536, "Max Gain");
+                add_param_simple(p, "rate", "float", "Rate");
+                add_param_simple(p, "reference", "float", "Reference");
+                add_param_simple(p, "gain", "float", "Gain");
+                add_param_simple(p, "max_gain", "float", "Max Gain");
                 return p;
             }
 

@@ -10,6 +10,8 @@
 
 #include "dsp/path/splitter.h"
 
+#include <unistd.h>
+
 namespace satdump
 {
     namespace ndsp
@@ -109,7 +111,8 @@ namespace satdump
                 ImGui::Text("%s", n->title.c_str());
                 ImNodes::EndNodeTitleBar();
 
-                n->internal->render();
+                if (n->internal->render())
+                    n->updateIO(); // TODOREWORK!
 
                 for (auto &io : n->node_io)
                 {
@@ -330,12 +333,19 @@ namespace satdump
                     n->internal->blk->start();
                 for (auto &b : additional_blocks)
                     b->start();
+                for (auto &n : nodes)
+                    n->internal->up_state();
 
                 // And then wait for them to exit
                 for (auto &n : nodes)
                     n->internal->blk->stop();
                 for (auto &b : additional_blocks)
                     b->stop();
+
+                sleep(2);
+
+                for (auto &n : nodes)
+                    n->internal->up_state();
             }
             catch (std::exception &e)
             {

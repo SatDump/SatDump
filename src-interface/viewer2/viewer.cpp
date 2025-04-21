@@ -10,7 +10,7 @@
 #include "core/plugin.h"
 
 #include "dsp/cyclo_test.h"
-#include "dsp/dsp_flowgraph_handler.h"
+#include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "handler/dataset/dataset_handler.h"
 #include "handler/dummy_handler.h"
 #include "handler/product/image_product_handler.h" // TODOREWORK CLEAN

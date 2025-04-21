@@ -50,13 +50,28 @@ namespace satdump
         };
 
         // TODOREWORK cleanup!!!!
-        inline void add_param(nlohmann::ordered_json &p, std::string id, std::string type, nlohmann::json def = {}, std::string name = "")
+        inline void add_param_simple(nlohmann::ordered_json &p, std::string id, std::string type, std::string name = "")
         {
             p[id]["type"] = type;
-            if (!def.is_null())
-                p[id]["default"] = def;
             if (name != "")
                 p[id]["name"] = name;
+        }
+
+        inline void add_param_range(nlohmann::ordered_json &p, std::string id, std::string type, nlohmann::ordered_json min, nlohmann::ordered_json max, nlohmann::ordered_json step,
+                                    std::string name = "")
+        {
+            p[id]["type"] = type;
+            if (name != "")
+                p[id]["name"] = name;
+            p[id]["range"] = {min, max, step};
+        }
+
+        inline void add_param_list(nlohmann::ordered_json &p, std::string id, std::string type, nlohmann::json list, std::string name = "")
+        {
+            p[id]["type"] = type;
+            if (name != "")
+                p[id]["name"] = name;
+            p[id]["list"] = list;
         }
 
         /**

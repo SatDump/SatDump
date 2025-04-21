@@ -10,11 +10,10 @@ namespace satdump
     {
         struct DeviceInfo
         {
-            std::string type;   // SDR Type ID string
-            std::string name;   // Display name
-            nlohmann::json cfg; // Default parameters for the block to use THIS device
-            nlohmann::json params =
-                {}; // List of additional parameters that may be device-specific (eg, Airspy Mini vs Airspy R2)
+            std::string type;      // SDR Type ID string
+            std::string name;      // Display name
+            nlohmann::json cfg;    // Default parameters for the block to use THIS device
+            nlohmann::json params; // List of additional parameters that may be device-specific (eg, Airspy Mini vs Airspy R2)
 
             NLOHMANN_DEFINE_TYPE_INTRUSIVE(DeviceInfo, type, name, cfg, params)
         };
@@ -22,20 +21,13 @@ namespace satdump
         class DeviceBlock : public Block
         {
         private:
-            bool work()
-            {
-                throw satdump_exception(
-                    "Device Source and/or Sync does not implement work. Should NOT have been called!");
-            }
+            bool work() { throw satdump_exception("Device Source and/or Sync does not implement work. Should NOT have been called!"); }
 
         protected:
             DeviceInfo devInfo;
 
         public:
-            DeviceBlock(std::string id, std::vector<BlockIO> in = {}, std::vector<BlockIO> out = {})
-                : Block(id, in, out)
-            {
-            }
+            DeviceBlock(std::string id, std::vector<BlockIO> in = {}, std::vector<BlockIO> out = {}) : Block(id, in, out) {}
 
             virtual void setDevInfo(DeviceInfo i)
             {

@@ -1,4 +1,5 @@
 #include "dsp_flowgraph_handler.h"
+#include "core/plugin.h"
 #include "dsp/filter/rrc.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
@@ -30,11 +31,12 @@ namespace satdump
         public:
             NodeTestFileSource(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::FileSourceBlock>()) {}
 
-            virtual void render()
+            virtual bool render()
             {
                 ndsp::NodeInternal::render();
                 float prog = double(((ndsp::FileSourceBlock *)blk.get())->d_progress) / double(((ndsp::FileSourceBlock *)blk.get())->d_filesize);
                 ImGui::ProgressBar(prog, {100, 20});
+                return false;
             }
         };
 
@@ -43,10 +45,11 @@ namespace satdump
         public:
             NodeTestConst(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::ConstellationDisplayBlock>()) {}
 
-            virtual void render()
+            virtual bool render()
             {
                 ndsp::NodeInternal::render();
                 ((ndsp::ConstellationDisplayBlock *)blk.get())->constel.draw();
+                return false;
             }
         };
 
@@ -61,10 +64,11 @@ namespace satdump
                 ((ndsp::FFTPanBlock *)blk.get())->set_fft_settings(8192, 6e6);
             }
 
-            virtual void render()
+            virtual bool render()
             {
                 ndsp::NodeInternal::render();
                 fft.draw({500, 500});
+                return false;
             }
         };
 
@@ -98,6 +102,8 @@ namespace satdump
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
+
+            eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
         }
 
         DSPFlowGraphHandler::~DSPFlowGraphHandler()

@@ -18,12 +18,12 @@ namespace satdump
         class AirspyDevBlock : public DeviceBlock
         {
         public:
-            std::string p_serial = " 0";
+            std::string p_serial = "0";
             double p_frequency = 100e6;
             double p_samplerate = 2.5e6;
 
             std::string p_gain_type = "sensitive";
-            int p_general_gain = 0;
+            int p_gain = 0;
             int p_lna_gain = 0;
             int p_mixer_gain = 0;
             int p_vga_gain = 0;
@@ -51,43 +51,31 @@ namespace satdump
                 p = devInfo.params;
 
                 p["serial"]["type"] = "string";
-                if (devInfo.cfg.contains("serial"))
-                    p["serial"]["hide"] = true;
+                p["serial"]["hide"] = devInfo.cfg.contains("serial");
+                p["serial"]["disable"] = is_started;
 
                 p["frequency"]["type"] = "float";
 
                 if (!p.contains("samplerate"))
-                {
-                    p["samplerate"]["type"] = "uint";
-                    p["samplerate"]["list"] = {2.5e6, 3e6, 6e6, 10e6};
-                }
+                    add_param_list(p, "samplerate", "uint", {2.5e6, 3e6, 6e6, 10e6});
                 p["samplerate"]["disable"] = is_started;
 
-                p["gain_type"]["type"] = "string";
-                p["gain_type"]["list"] = {"sensitive", "linear", "manual"};
+                add_param_list(p, "gain_type", "string", {"sensitive", "linear", "manual"}, "Gain Type");
 
                 if (p_gain_type == "sensitive" || p_gain_type == "linear")
                 {
-                    p["general_gain"]["type"] = "int";
-                    p["general_gain"]["range"] = {0, 21, 1};
+                    add_param_range(p, "gain", "int", 0, 21, 1, "Gain");
                 }
                 else
                 {
-                    p["lna_gain"]["type"] = "int";
-                    p["lna_gain"]["range"] = {0, 15, 1};
-
-                    p["mixer_gain"]["type"] = "int";
-                    p["mixer_gain"]["range"] = {0, 15, 1};
-
-                    p["vga_gain"]["type"] = "int";
-                    p["vga_gain"]["range"] = {0, 15, 1};
+                    add_param_range(p, "lna_gain", "int", 0, 15, 1, "LNA Gain");
+                    add_param_range(p, "mixer_gain", "int", 0, 15, 1, "Mixer Gain");
+                    add_param_range(p, "vga_gain", "int", 0, 15, 1, "VGA Gain");
                 }
 
-                p["lna_agc"]["type"] = "bool";
-
-                p["mixer_agc"]["type"] = "bool";
-
-                p["bias"]["type"] = "bool";
+                add_param_simple(p, "lna_agc", "bool", "LNA AGC");
+                add_param_simple(p, "mixer_agc", "bool", "Mixer AGC");
+                add_param_simple(p, "bias", "bool", "Bias");
 
                 return p;
             }
@@ -102,8 +90,8 @@ namespace satdump
                     return p_frequency;
                 else if (key == "gain_type")
                     return p_gain_type;
-                else if (key == "general_gain")
-                    return p_general_gain;
+                else if (key == "gain")
+                    return p_gain;
                 else if (key == "lna_gain")
                     return p_lna_gain;
                 else if (key == "mixer_gain")
@@ -142,9 +130,9 @@ namespace satdump
                     r = RES_LISTUPD;
                     set_gains();
                 }
-                else if (key == "general_gain")
+                else if (key == "gain")
                 {
-                    p_general_gain = v;
+                    p_gain = v;
                     set_gains();
                 }
                 else if (key == "lna_gain")

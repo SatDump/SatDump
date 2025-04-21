@@ -22,9 +22,11 @@ namespace satdump
                 disp.set_values(blk->get_cfg());
             }
 
-            void draw()
+            bool draw()
             {
                 nlohmann::json changed = disp.draw();
+
+                bool ret = false;
 
                 if (changed.size() > 0)
                 {
@@ -34,9 +36,12 @@ namespace satdump
                         disp.clear();
                         disp.add_options(blk->get_cfg_list());
                     }
+                    ret = r >= ndsp::Block::RES_IOUPD;
 
                     disp.set_values(blk->get_cfg());
                 }
+
+                return ret;
             }
 
             void update()

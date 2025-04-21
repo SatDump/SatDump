@@ -1,16 +1,14 @@
-#include "core/plugin.h"
-#include "logger.h"
 #include "airspy_sdr.h"
+#include "core/plugin.h"
+#include "dsp/flowgraph/dsp_flowgraph_handler.h"
+#include "logger.h"
 
 #include "airspy_dev.h"
 
 class AirspySDRSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "airspy_sdr_support";
-    }
+    std::string getID() { return "airspy_sdr_support"; }
 
     void init()
     {
@@ -18,6 +16,8 @@ public:
 
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceListEvent>(registerDevs);
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceInstanceEvent>(provideDeviceInstance);
+
+        satdump::eventBus->register_handler<satdump::viewer::RegisterNodesEvent>(registerNodes);
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
@@ -35,6 +35,12 @@ public:
     {
         if (evt.info.type == "airspy")
             evt.i.push_back(std::make_shared<satdump::ndsp::AirspyDevBlock>());
+    }
+
+    static void registerNodes(const satdump::viewer::RegisterNodesEvent &evt)
+    {
+        evt.r.insert({"airspy_cc",
+                      {"Device/Airspy Dev", [](const satdump::ndsp::Flowgraph *f) { return std::make_shared<satdump::ndsp::NodeInternal>(f, std::make_shared<satdump::ndsp::AirspyDevBlock>()); }}});
     }
 };
 

@@ -38,6 +38,8 @@ namespace satdump
                 friend class Flowgraph;
 
             private:
+                Flowgraph *_f;
+
                 const int id;
                 const std::string title;
                 const std::string internal_id;
@@ -58,14 +60,17 @@ namespace satdump
 
                 std::vector<InOut> node_io;
 
-            public:
-                Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i)
+                void updateIO()
                 {
+                    node_io.clear();
                     for (auto &io : internal->blk->get_inputs())
-                        node_io.push_back({f->getNewNodeIOID(&node_io), io.name, false});
+                        node_io.push_back({_f->getNewNodeIOID(&node_io), io.name, false});
                     for (auto &io : internal->blk->get_outputs())
-                        node_io.push_back({f->getNewNodeIOID(&node_io), io.name, true});
+                        node_io.push_back({_f->getNewNodeIOID(&node_io), io.name, true});
                 }
+
+            public:
+                Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : _f(f), id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i) { updateIO(); }
 
                 Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i)
                     : id(j["id"]), internal_id(j["int_id"]), title(i->blk->d_id), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
