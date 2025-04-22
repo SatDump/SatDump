@@ -1,6 +1,7 @@
 #include "newrec.h"
 #include "common/widgets/stepped_slider.h"
 #include "dsp/block.h"
+#include "dsp/device/dev.h"
 #include "logger.h"
 
 namespace satdump
@@ -13,10 +14,9 @@ namespace satdump
 
             for (auto &d : devs)
             {
-                if (d.type == "bladerf")
+                if (d.type == "airspy")
                 {
-                    dev = ndsp::getDeviceInstanceFromInfo(d);
-                    dev->setDevInfo(d);
+                    dev = ndsp::getDeviceInstanceFromInfo(d, ndsp::DeviceBlock::MODE_SINGLE_RX);
                     options_displayer_test.add_options(dev->get_cfg_list());
                     options_displayer_test.set_values(dev->get_cfg());
                     break;

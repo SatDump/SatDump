@@ -151,7 +151,7 @@ namespace satdump
                     uint32_t dev_samplerates[10];
                     airspy_get_samplerates(airspy_dev_obj, &samprate_cnt, 0);
                     airspy_get_samplerates(airspy_dev_obj, dev_samplerates, samprate_cnt);
-                    c["samplerate"]["type"] = "uint";
+                    c["samplerate"]["type"] = "samplerate";
 
                     bool has_10msps = false;
                     for (int i = samprate_cnt - 1, i2 = 0; i >= 0; i--, i2++)

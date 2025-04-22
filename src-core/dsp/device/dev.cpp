@@ -19,7 +19,7 @@ namespace satdump
             return l;
         }
 
-        std::shared_ptr<DeviceBlock> getDeviceInstanceFromInfo(DeviceInfo i)
+        std::shared_ptr<DeviceBlock> getDeviceInstanceFromInfo(DeviceInfo i, DeviceBlock::device_mode_t m)
         {
             std::vector<std::shared_ptr<DeviceBlock>> l;
 
@@ -31,7 +31,7 @@ namespace satdump
                 throw satdump_exception("Got more than one device instance! " + i.name);
 
             for (auto &li : l)
-                li->setDevInfo(i);
+                li->setDevInfo(i, m);
 
             return l[0];
         }

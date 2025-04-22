@@ -7,8 +7,10 @@
 #include <cstdio>
 #include <libbladeRF.h>
 #include <string>
+#include <unistd.h>
 
 #include "common/dsp/complex.h"
+#include "nlohmann/json.hpp"
 
 // TODOREWORK Change the namespace?
 namespace satdump
@@ -18,6 +20,7 @@ namespace satdump
         class BladeRFDevBlock : public DeviceBlock
         {
         public:
+            int bladerf_model = 0;
             std::string dev_serial = "";
 
             // Only one samplerate for all channels
@@ -94,7 +97,6 @@ namespace satdump
             }
 
             std::thread work_thread_tx;
-            bool thread_should_run_tx = false;
             void mainThread_tx()
             {
                 int16_t *sample_buffer;
@@ -103,7 +105,7 @@ namespace satdump
                 {
                     sample_buffer = new int16_t[sample_buffer_size * 2 * tx_ch_number];
 
-                    while (thread_should_run_rx)
+                    while (1)
                     {
                         if (tx_ch_number == 1)
                         {
@@ -140,29 +142,54 @@ namespace satdump
 
             void init();
 
+            void setDevInfo(DeviceInfo i, device_mode_t mode)
+            {
+                DeviceBlock::setDevInfo(i, mode);
+                if (devMode == MODE_SINGLE_RX)
+                {
+                    set_cfg("rx_ch_number", 1);
+                    set_cfg("tx_ch_number", 0);
+                }
+                else if (devMode == MODE_SINGLE_TX)
+                {
+                    set_cfg("rx_ch_number", 0);
+                    set_cfg("tx_ch_number", 1);
+                }
+            }
+
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
 
-                p = devInfo.params;
+                auto &op = devInfo.params;
 
-                p["serial"]["type"] = "string";
-                p["serial"]["hide"] = devInfo.cfg.contains("serial");
-                p["serial"]["disable"] = is_started;
+                if (devMode != MODE_SINGLE_TX && rx_ch_number > 0)
+                    add_param_simple(p, "rx_frequency", "freq", "RX Frequency");
+                if (devMode != MODE_SINGLE_RX && tx_ch_number > 0)
+                    add_param_simple(p, "tx_frequency", "freq", "TX Frequency");
 
-                add_param_simple(p, "rx_ch_number", "uint", "RX Ch Number");
-                add_param_simple(p, "tx_ch_number", "uint", "TX Ch Number");
-                p["rx_ch_number"]["disable"] = is_started;
-                p["tx_ch_number"]["disable"] = is_started;
+                if (!devInfo.cfg.contains("serial"))
+                {
+                    p["serial"]["name"] = "Serial";
+                    p["serial"]["type"] = "string";
+                    p["serial"]["hide"] = devInfo.cfg.contains("serial");
+                    p["serial"]["disable"] = is_started;
+                }
 
-                if (!p.contains("samplerate"))
+                if (devMode == MODE_NORMAL)
+                {
+                    add_param_simple(p, "rx_ch_number", "uint", "RX Ch Number");
+                    add_param_simple(p, "tx_ch_number", "uint", "TX Ch Number");
+                    p["rx_ch_number"]["disable"] = is_started;
+                    p["tx_ch_number"]["disable"] = is_started;
+                }
+
+                if (op.contains("samplerate"))
+                    p["samplerate"] = op["samplerate"];
+                else
                     add_param_simple(p, "samplerate", "uint", "Samplerate");
                 p["samplerate"]["disable"] = is_started;
-
-                if (rx_ch_number > 0)
-                    add_param_simple(p, "rx_frequency", "float", "RX Frequency");
-                if (tx_ch_number > 0)
-                    add_param_simple(p, "tx_frequency", "float", "TX Frequency");
+                p["samplerate"]["range_noslider"] = true;
 
                 if (rx_ch_number == 1)
                 {
@@ -176,13 +203,33 @@ namespace satdump
                 }
 
                 if (rx_ch_number >= 1 && rx_ch_id == 0)
-                    add_param_simple(p, "rx1_gain", "int", "RX1 Gain");
+                {
+                    if (op.contains("rx1_gain"))
+                        p["rx1_gain"] = op["rx1_gain"];
+                    else
+                        add_param_simple(p, "rx1_gain", "int", "RX1 Gain");
+                }
                 if (rx_ch_number >= 2 || rx_ch_id == 1)
-                    add_param_simple(p, "rx2_gain", "int", "RX2 Gain");
+                {
+                    if (op.contains("rx2_gain"))
+                        p["rx2_gain"] = op["rx2_gain"];
+                    else
+                        add_param_simple(p, "rx2_gain", "int", "RX2 Gain");
+                }
                 if (tx_ch_number >= 1 && tx_ch_id == 0)
-                    add_param_simple(p, "tx1_gain", "int", "TX1 Gain");
+                {
+                    if (op.contains("tx1_gain"))
+                        p["tx1_gain"] = op["tx1_gain"];
+                    else
+                        add_param_simple(p, "tx1_gain", "float", "TX1 Gain");
+                }
                 if (tx_ch_number >= 2 || tx_ch_id == 1)
-                    add_param_simple(p, "tx2_gain", "int", "TX2 Gain");
+                {
+                    if (op.contains("tx2_gain"))
+                        p["tx2_gain"] = op["tx2_gain"];
+                    else
+                        add_param_simple(p, "tx2_gain", "float", "TX2 Gain");
+                }
 
                 if (rx_ch_number > 0)
                     add_param_simple(p, "rx_bias", "bool", "RX Bias");
@@ -365,9 +412,33 @@ namespace satdump
 
             double getStreamSamplerate(int id, bool output)
             {
-                if (id > 0 || output)
-                    throw satdump_exception("Stream ID must be 0 and input only!");
+                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                    throw satdump_exception("Stream ID must be <= channel count in direction!");
                 return samplerate;
+            }
+
+            virtual void setStreamSamplerate(int id, bool output, double samplerate)
+            {
+                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                    throw satdump_exception("Stream ID must be <= channel count in direction!");
+                set_cfg("samplerate", samplerate);
+            }
+
+            virtual double getStreamFrequency(int id, bool output)
+            {
+                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                    throw satdump_exception("Stream ID must be <= channel count in direction!");
+                return output ? tx_frequency : rx_frequency;
+            }
+
+            virtual void setStreamFrequency(int id, bool output, double frequency)
+            {
+                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                    throw satdump_exception("Stream ID must be <= channel count in direction!");
+                if (output)
+                    set_cfg("tx_frequency", frequency);
+                else
+                    set_cfg("rx_frequency", frequency);
             }
 
             void start();

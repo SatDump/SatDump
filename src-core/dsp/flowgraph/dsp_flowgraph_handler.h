@@ -3,6 +3,8 @@
 #include "dsp/flowgraph/flowgraph.h"
 #include "handler/handler.h"
 
+#include "dsp/device/dev.h"
+
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
 {

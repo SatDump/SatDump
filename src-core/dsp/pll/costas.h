@@ -72,7 +72,11 @@ namespace satdump
                     init();
                 }
                 else if (key == "order")
+                {
                     order = v;
+                    if (order != 2 && order != 4 && order != 8)
+                        order = 2;
+                }
                 else if (key == "freq_limit")
                 {
                     freq_limit = v;

@@ -1,5 +1,6 @@
 #include "dsp_flowgraph_handler.h"
 #include "core/plugin.h"
+#include "dsp/device/dev.h"
 #include "dsp/filter/rrc.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
@@ -27,7 +28,6 @@ namespace satdump
     {
         class NodeTestFileSource : public ndsp::NodeInternal
         {
-
         public:
             NodeTestFileSource(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::FileSourceBlock>()) {}
 
@@ -104,6 +104,17 @@ namespace satdump
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
+
+#if 0
+            // Local devices!!
+            std::vector<ndsp::DeviceInfo> found_devices = ndsp::getDeviceList();
+            for (auto &dev : found_devices)
+            {
+                flowgraph.node_internal_registry.insert({"idk_dev_cc",
+                                                         {"Local Devs/" + dev.name, [dev](const ndsp::Flowgraph *f)
+                                                          { return std::make_shared<ndsp::NodeInternal>(f, ndsp::getDeviceInstanceFromInfo(dev, ndsp::DeviceBlock::MODE_NORMAL)); }}});
+            }
+#endif
         }
 
         DSPFlowGraphHandler::~DSPFlowGraphHandler()

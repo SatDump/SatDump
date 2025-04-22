@@ -1,5 +1,7 @@
 #include "bladerf_dev.h"
 #include "common/dsp/complex.h"
+#include "dsp/block.h"
+#include "nlohmann/json.hpp"
 #include <bladeRF2.h>
 #include <libbladeRF.h>
 #include <logger.h>
@@ -25,14 +27,18 @@ namespace satdump
             {
                 if (rx_ch_number > 0)
                 {
+                    bladerf_frequency actual;
                     bladerf_set_frequency(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), rx_frequency);
-                    logger->debug("Set BladeRF RX frequency to %d", rx_frequency);
+                    bladerf_get_frequency(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), &actual);
+                    logger->debug("Set BladeRF RX frequency to %f, actual %f", rx_frequency, (double)actual);
                 }
 
                 if (tx_ch_number > 0)
                 {
+                    bladerf_frequency actual;
                     bladerf_set_frequency(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), tx_frequency);
-                    logger->debug("Set BladeRF TX frequency to %d", tx_frequency);
+                    bladerf_get_frequency(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), &actual);
+                    logger->debug("Set BladeRF TX frequency to %f, actual %f", tx_frequency, (double)actual);
                 }
             }
         }
@@ -41,9 +47,9 @@ namespace satdump
         {
             if (is_open)
             {
-                if (rx_ch_number > 0)
+                for (int i = 0; i < 2; i++)
                 {
-                    for (int i = 0; i < 2; i++)
+                    if (rx_ch_number > 0)
                     {
                         if (rx_ch_number == 2 || rx_ch_id == i)
                         {
@@ -51,7 +57,10 @@ namespace satdump
                             bladerf_set_gain(bladerf_dev_obj, BLADERF_CHANNEL_RX(i), rx_gain[i]);
                             logger->debug("Set BladeRF RX%d gain to %d", i + 1, rx_gain[i]);
                         }
+                    }
 
+                    if (tx_ch_number > 0)
+                    {
                         if (tx_ch_number == 2 || tx_ch_id == i)
                         {
                             bladerf_set_gain(bladerf_dev_obj, BLADERF_CHANNEL_TX(i), tx_gain[i]);
@@ -96,15 +105,16 @@ namespace satdump
         {
             struct bladerf_devinfo info;
             bladerf_init_devinfo(&info);
-            if (dev_serial.size() > 0)
+            if (dev_serial.size() >= BLADERF_SERIAL_LENGTH - 1)
             {
-                dev_serial.resize(BLADERF_SERIAL_LENGTH, '\0');
                 strncpy(info.serial, dev_serial.c_str(), BLADERF_SERIAL_LENGTH - 1);
+                info.serial[BLADERF_SERIAL_LENGTH - 1] = '\0';
             }
             info.serial[BLADERF_SERIAL_LENGTH - 1] = '\0';
 
-            if (bladerf_open_with_devinfo(&bladerf_dev_obj, &info) != 0)
-                throw satdump_exception("Could not open BladeRF device!");
+            int r = 0;
+            if (r = bladerf_open_with_devinfo(&bladerf_dev_obj, &info))
+                throw satdump_exception("Could not open BladeRF '" + std::string(info.serial) + "' device! " + std::string(bladerf_strerror(r)));
             is_open = true;
 
             // TODOREWORK all channels
@@ -144,7 +154,6 @@ namespace satdump
             }
             if (tx_ch_number > 0)
             {
-                thread_should_run_tx = true;
                 work_thread_tx = std::thread(&BladeRFDevBlock::mainThread_tx, this);
             }
             is_started = true;
@@ -152,11 +161,12 @@ namespace satdump
 
         void BladeRFDevBlock::stop(bool stop_now)
         {
-            if (stop_now && is_started) // TODOREWORK Split wait & stop?
+            if (is_started) // TODOREWORK Split wait & stop?
             {
                 if (rx_ch_number > 0)
                 {
-                    thread_should_run_rx = false;
+                    if (stop_now)
+                        thread_should_run_rx = false;
                     logger->info("Waiting for the RX thread...");
                     if (work_thread_rx.joinable())
                         work_thread_rx.join();
@@ -167,7 +177,6 @@ namespace satdump
 
                 if (tx_ch_number > 0)
                 {
-                    thread_should_run_tx = false;
                     logger->info("Waiting for the TX thread...");
                     if (work_thread_tx.joinable())
                         work_thread_tx.join();
@@ -175,7 +184,23 @@ namespace satdump
                 }
 
                 bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), false);
-                bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), false);
+                bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), false);
+
+                if (rx_ch_number > 0)
+                {
+                    if (rx_ch_number == 2 || rx_ch_id == 0)
+                        bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), false);
+                    if (rx_ch_number == 2 || rx_ch_id == 1)
+                        bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(1), false);
+                }
+                if (tx_ch_number > 0)
+                {
+                    if (tx_ch_number == 2 || tx_ch_id == 0)
+                        bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), false);
+                    if (tx_ch_number == 2 || tx_ch_id == 1)
+                        bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_TX(1), false);
+                }
+
                 bladerf_close(bladerf_dev_obj);
 
                 is_started = false;
@@ -193,7 +218,7 @@ namespace satdump
             bladerf *bladerf_dev_obj;
             for (int i = 0; i < devs_cnt; i++)
             {
-                nlohmann::json c;
+                nlohmann::ordered_json c;
 
                 // Open device
                 if (bladerf_open_with_devinfo(&bladerf_dev_obj, &devs_list[i]) != 0)
@@ -219,29 +244,39 @@ namespace satdump
                 // Get all ranges, per channel
                 for (int tx_rx = 0; tx_rx < 2; tx_rx++)
                 {
-                    for (int channel_id = 0; channel_id < (tx_rx ? tx_channel_cnt : rx_channel_cnt); channel_id++)
-                    {
-                        const bladerf_range *bladerf_range_samplerate;
-                        const bladerf_range *bladerf_range_bandwidth;
-                        const bladerf_range *bladerf_range_gain;
+                    const bladerf_range *bladerf_range_samplerate;
+                    const bladerf_range *bladerf_range_bandwidth;
+                    const bladerf_range *bladerf_range_gain_rx;
+                    const bladerf_range *bladerf_range_gain_tx;
 
-                        bladerf_channel bch = tx_rx ? BLADERF_CHANNEL_TX(channel_id) : BLADERF_CHANNEL_RX(channel_id);
-                        bladerf_get_sample_rate_range(bladerf_dev_obj, bch, &bladerf_range_samplerate);
-                        bladerf_get_bandwidth_range(bladerf_dev_obj, bch, &bladerf_range_bandwidth);
-                        bladerf_get_gain_range(bladerf_dev_obj, bch, &bladerf_range_gain);
+                    bladerf_get_sample_rate_range(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), &bladerf_range_samplerate);
+                    bladerf_get_bandwidth_range(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), &bladerf_range_bandwidth);
+                    bladerf_get_gain_range(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), &bladerf_range_gain_rx);
+                    bladerf_get_gain_range(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), &bladerf_range_gain_tx);
 
-                        std::string chname = "ch_" + (tx_rx ? (std::string) "tx" : (std::string) "rx") + std::to_string(channel_id + 1);
-                        c[chname + "_enabled"]["type"] = "bool";
+                    // Get available samplerates
+                    std::vector<double> available_samplerates;
+                    available_samplerates.push_back(bladerf_range_samplerate->min);
+                    for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
+                        available_samplerates.push_back(i);
+                    available_samplerates.push_back(bladerf_range_samplerate->max);
 
-                        c[chname + "_gain"]["type"] = "int";
-                        c[chname + "_gain"]["range"] = {bladerf_range_gain->min, bladerf_range_gain->max, bladerf_range_gain->step};
+                    //                    add_param_list(c, "samplerate", "uint", available_samplerates, "Samplerate");
+                    //                    add_param_range(c, "samplerate", "uint", bladerf_range_samplerate->min, bladerf_range_samplerate->max, bladerf_range_samplerate->step, "Samplerate");
+                    //                    c["samplerate"]["range_noslider"] = true;
+                    c["samplerate"]["type"] = "samplerate";
+                    c["samplerate"]["name"] = "Samplerate";
+                    c["samplerate"]["list"] = available_samplerates;
+                    c["samplerate"]["allow_manual"] = true;
 
-                        c[chname + "_bandwidth"]["type"] = "int";
-                        c[chname + "_bandwidth"]["range"] = {bladerf_range_bandwidth->min, bladerf_range_bandwidth->max, bladerf_range_bandwidth->step};
-
-                        c[chname + "_samplerate"]["type"] = "int";
-                        c[chname + "_samplerate"]["range"] = {bladerf_range_samplerate->min, bladerf_range_samplerate->max, bladerf_range_samplerate->step};
-                    }
+                    add_param_range(c, "rx1_gain", "int", bladerf_range_gain_rx->min, bladerf_range_gain_rx->max, bladerf_range_gain_rx->step, "RX1 Gain");
+                    if (bladerf_model == 2)
+                        add_param_range(c, "rx2_gain", "int", bladerf_range_gain_rx->min, bladerf_range_gain_rx->max, bladerf_range_gain_rx->step, "RX2 Gain");
+                    add_param_range(c, "tx1_gain", "float", bladerf_range_gain_tx->min * bladerf_range_gain_tx->scale, bladerf_range_gain_tx->max * bladerf_range_gain_tx->scale,
+                                    bladerf_range_gain_tx->step * bladerf_range_gain_tx->scale, "TX1 Gain");
+                    if (bladerf_model == 2)
+                        add_param_range(c, "tx2_gain", "float", bladerf_range_gain_tx->min * bladerf_range_gain_tx->scale, bladerf_range_gain_tx->max * bladerf_range_gain_tx->scale,
+                                        bladerf_range_gain_tx->step * bladerf_range_gain_tx->scale, "TX2 Gain");
                 }
 
                 std::string name = "BladeRF";
@@ -254,6 +289,8 @@ namespace satdump
                 nlohmann::json p;
                 p["serial"] = std::string(devs_list[i].serial);
                 r.push_back({"bladerf", name, p, c});
+
+                bladerf_close(bladerf_dev_obj);
             }
 
             if (devs_list != nullptr && devs_cnt > 0)

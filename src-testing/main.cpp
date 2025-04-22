@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     for (auto &d : devs)
     {
-        auto i = satdump::ndsp::getDeviceInstanceFromInfo(d);
+        auto i = satdump::ndsp::getDeviceInstanceFromInfo(d, satdump::ndsp::DeviceBlock::MODE_SINGLE_TX);
         d.params = i->get_cfg_list();
         logger->debug("\n" + nlohmann::json(d).dump(4) + "\n");
     }

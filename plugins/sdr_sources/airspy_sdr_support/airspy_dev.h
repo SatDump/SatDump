@@ -48,16 +48,16 @@ namespace satdump
             {
                 nlohmann::ordered_json p;
 
+                p["frequency"]["type"] = "freq";
+
                 p = devInfo.params;
 
                 p["serial"]["type"] = "string";
                 p["serial"]["hide"] = devInfo.cfg.contains("serial");
                 p["serial"]["disable"] = is_started;
 
-                p["frequency"]["type"] = "float";
-
                 if (!p.contains("samplerate"))
-                    add_param_list(p, "samplerate", "uint", {2.5e6, 3e6, 6e6, 10e6});
+                    add_param_list(p, "samplerate", "samplerate", {2.5e6, 3e6, 6e6, 10e6});
                 p["samplerate"]["disable"] = is_started;
 
                 add_param_list(p, "gain_type", "string", {"sensitive", "linear", "manual"}, "Gain Type");
@@ -175,6 +175,27 @@ namespace satdump
                 if (id > 0 || output)
                     throw satdump_exception("Stream ID must be 0 and input only!");
                 return p_samplerate;
+            }
+
+            virtual void setStreamSamplerate(int id, bool output, double samplerate)
+            {
+                if (id > 0 || output)
+                    throw satdump_exception("Stream ID must be 0 and input only!");
+                set_cfg("samplerate", samplerate);
+            }
+
+            virtual double getStreamFrequency(int id, bool output)
+            {
+                if (id > 0 || output)
+                    throw satdump_exception("Stream ID must be 0 and input only!");
+                return p_frequency;
+            }
+
+            virtual void setStreamFrequency(int id, bool output, double frequency)
+            {
+                if (id > 0 || output)
+                    throw satdump_exception("Stream ID must be 0 and input only!");
+                set_cfg("frequency", frequency);
             }
 
             void start();

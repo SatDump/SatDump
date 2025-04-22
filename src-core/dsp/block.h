@@ -192,6 +192,9 @@ namespace satdump
              */
             virtual bool work() = 0;
 
+            // TODOREWORK
+            bool is_work_running() { return blk_should_run; }
+
         public:
             /**
              * @brief Generic constructor, to be overloaded.AGCBlock

@@ -7,10 +7,15 @@
 #include "imgui/imgui_stdlib.h"
 #include "nlohmann/json.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <mutex>
 #include <string>
 
+#include "common/widgets/double_list.h"
+#include "common/widgets/frequency_input.h"
+
 #include "logger.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
@@ -32,10 +37,15 @@ namespace satdump
                 bool is_uint = false;
                 bool is_int = false;
                 bool is_float = false;
+                bool is_freq = false;
+                bool is_samplerate = false;
+
                 //                bool is_sub = false;
 
                 bool is_list = false;
                 bool is_range = false;
+                bool is_range_noslider = false;
+                bool is_range_list = false;
 
                 // Value config. TODOREWORK, handle lists as uint64_t too?
                 std::vector<double> list;
@@ -48,6 +58,7 @@ namespace satdump
                 uint64_t _uint = 0;
                 int64_t _int = 0;
                 double _float = 0;
+                std::shared_ptr<widgets::DoubleList> _samplerate;
             };
 
             std::mutex opts_mtx;
@@ -59,12 +70,14 @@ namespace satdump
                     j = v._bool;
                 else if (v.is_string)
                     j = v._string;
-                else if (v.is_uint)
+                else if (v.is_uint || v.is_freq)
                     j = v._uint;
                 else if (v.is_int)
                     j = v._int;
                 else if (v.is_float)
                     j = v._float;
+                else if (v.is_samplerate)
+                    j = v._samplerate->get_value();
                 else
                     throw satdump_exception("Invalid options or JSON value! (GET " + v.id + ")");
             }
@@ -101,6 +114,8 @@ namespace satdump
                     h.is_uint = vv["type"] == "uint";
                     h.is_int = vv["type"] == "int";
                     h.is_float = vv["type"] == "float";
+                    h.is_freq = vv["type"] == "freq";
+                    h.is_samplerate = vv["type"] == "samplerate";
 
                     h.is_list = vv.contains("list");
                     if (h.is_list)
@@ -113,7 +128,19 @@ namespace satdump
 
                     h.is_range = vv.contains("range");
                     if (h.is_range)
+                    {
                         h.range = vv["range"].get<std::array<double, 3>>();
+                        if (vv.contains("range_noslider"))
+                            h.is_range_noslider = vv["range_noslider"];
+                    }
+
+                    h.is_range_list = h.is_list && h.is_range;
+
+                    if (h.is_samplerate)
+                    {
+                        h._samplerate = std::make_shared<widgets::DoubleList>(h.name);
+                        h._samplerate->set_list(vv["list"], getValueOrDefault(vv["allow_manual"], false));
+                    }
 
                     // Defaults
                     if (vv.contains("default"))
@@ -154,12 +181,14 @@ namespace satdump
                             v._bool = j;
                         else if (v.is_string && j.is_string())
                             v._string = j;
-                        else if (v.is_uint && j.is_number())
+                        else if ((v.is_uint || v.is_freq) && j.is_number())
                             v._uint = j;
                         else if (v.is_int && j.is_number())
                             v._int = j;
                         else if (v.is_float && j.is_number())
                             v._float = j;
+                        else if (v.is_samplerate && j.is_number())
+                            v._samplerate->set_value(j);
                         else
                             logger->error("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() + ")");
                     }
@@ -221,7 +250,16 @@ namespace satdump
                     {
                         // TODOREWORK ALLOW LARGE INT
                         int lv = v._uint;
-                        u |= widgets::SteppedSliderInt(id_n.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
+                        if (v.is_range_noslider)
+                        {
+                            u |= ImGui::InputInt(id_n.c_str(), &lv);
+                            if (lv < v.range[0])
+                                lv = v.range[0];
+                            if (lv > v.range[1])
+                                lv = v.range[1];
+                        }
+                        else
+                            u |= widgets::SteppedSliderInt(id_n.c_str(), &lv, v.range[0], v.range[1], v.range[2]);
                         v._uint = lv;
                     }
                     else if (v.is_range && v.is_float)
@@ -286,10 +324,23 @@ namespace satdump
                         ImGui::InputDouble(id.c_str(), &v._float);
                         u |= ImGui::IsItemDeactivatedAfterEdit();
                     }
+                    else if (v.is_freq)
+                    {
+                        u |= widgets::FrequencyInput(id.c_str(), &v._uint, 0, false);
+                        // TODOREWORK handle ranges
+                    }
+                    else if (v.is_samplerate)
+                    {
+                        u |= v._samplerate->render();
+                    }
                     else
                     {
                         ImGui::Text("Unimplemented : %s", id.c_str());
                     }
+
+                    if (v.is_range_list)
+                        if (ImGui::Checkbox(("Manual " + v.name).c_str(), &v.is_range))
+                            v.is_list = !v.is_range;
 
                     if (v.disable)
                         style::endDisabled();
