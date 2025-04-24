@@ -1,14 +1,13 @@
 #pragma once
 
-#include "common/dsp/complex.h"
-#include "dsp/block.h"
+#include "dsp/block_simple.h"
 
 namespace satdump
 {
     namespace ndsp
     {
         template <typename T>
-        class AGCBlock : public Block
+        class AGCBlock : public BlockSimple<T, T>
         {
         public:
             float p_rate = 1e-4;
@@ -22,7 +21,8 @@ namespace satdump
             float gain;      // current gain
             float max_gain;  // max allowable gain
 
-            bool work();
+        public:
+            uint32_t process(T *input, uint32_t nsamples, T *output);
 
         public:
             AGCBlock();
@@ -60,7 +60,7 @@ namespace satdump
                     throw satdump_exception(key);
             }
 
-            cfg_res_t set_cfg(std::string key, nlohmann::json v)
+            Block::cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "rate")
                     p_rate = v;
@@ -73,7 +73,7 @@ namespace satdump
                 else
                     throw satdump_exception(key);
                 init();
-                return RES_OK;
+                return Block::RES_OK;
             }
         };
     } // namespace ndsp
