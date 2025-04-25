@@ -43,15 +43,6 @@ namespace satdump
                 beta = (4 * loop_bw * loop_bw) / denom;
             }
 
-            nlohmann::ordered_json get_cfg_list()
-            {
-                nlohmann::ordered_json p;
-                add_param_simple(p, "loop_bw", "float");
-                add_param_simple(p, "order", "int");
-                add_param_simple(p, "freq_limit", "float");
-                return p;
-            }
-
             nlohmann::json get_cfg(std::string key)
             {
                 if (key == "loop_bw")
@@ -72,11 +63,7 @@ namespace satdump
                     init();
                 }
                 else if (key == "order")
-                {
                     order = v;
-                    if (order != 2 && order != 4 && order != 8)
-                        order = 2;
-                }
                 else if (key == "freq_limit")
                 {
                     freq_limit = v;

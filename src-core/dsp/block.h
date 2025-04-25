@@ -28,6 +28,7 @@ namespace satdump
         {
             DSP_SAMPLE_TYPE_CF32,
             DSP_SAMPLE_TYPE_F32,
+            DSP_SAMPLE_TYPE_S8,
         };
 
         /**

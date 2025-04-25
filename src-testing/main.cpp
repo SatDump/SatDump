@@ -18,6 +18,7 @@
 #include "dsp/base/dsp_buffer.h"
 #include "dsp/block.h"
 #include "dsp/filter/fir.h"
+#include "dsp/tomove/sstv_linesync.h"
 #include "dsp/utils/hilbert.h"
 #include "dsp/utils/quadrature_demod.h"
 #include "logger.h"
@@ -31,41 +32,12 @@
 class SSTVSync
 {
 public:
-    float samplerate = 48000;
     float line_time = 0.150;
     float sync_time = 0.0105;
-
-    int line_length;
-    int sync_length;
-
-    int sync_line_buffer_len;
-    float *sync_line_buffer;
-
-    std::vector<float> sync;
-
-    float calcValFromFreq(float freq) { return (2. * M_PI * freq) / samplerate; }
-
-    int found_offset = -1;
-    int skip = -1;
 
     std::vector<float> full_image;
 
     std::vector<uint8_t> ir, ig, ib;
-
-    const float minval = calcValFromFreq(1200);
-    const float minvalimg = calcValFromFreq(1488); // TODOREWORK should be 1500?
-    const float maxval = calcValFromFreq(2300);
-
-    float lineGetScaledIMG(float v)
-    {
-        v = (v - minvalimg) / (maxval - minvalimg);
-
-        if (v < 0)
-            v = 0;
-        if (v > 1)
-            v = 1;
-        return v;
-    }
 
     // COLOR
     int clamp(int v)
@@ -88,25 +60,18 @@ public:
     }
 
 public:
-    SSTVSync()
-    {
-        line_length = round(samplerate * line_time);
-        sync_length = round(samplerate * sync_time);
-
-        sync_line_buffer_len = line_length * 2; //+ sync_length;
-        sync_line_buffer = new float[sync_line_buffer_len];
-        memset(sync_line_buffer, 0, sync_line_buffer_len * sizeof(float));
-
-        for (int i = 0; i < sync_length; i++)
-            sync.push_back(calcValFromFreq(1200));
-    }
+    SSTVSync() {}
 
     int pre_y[320];
     int pre_ryby[320];
 
+    int line_length = 0;
+
     void lineProc(std::vector<float> line)
     {
         full_image.insert(full_image.end(), line.begin(), line.end());
+
+        line_length = line.size();
 
         {
             int color_sync_length = int(0.0045 * 48000);
@@ -117,7 +82,7 @@ public:
             {
                 int p_t = ((10.5 + 90. + (i / double(color_sync_length - 1)) * 4.5) / 150.) * (line_length - 1);
                 //  color_sync += newimg_sync.get(line * line_length + p_t) / 255.0;
-                colrsync_wip.push_back(lineGetScaledIMG(line[p_t]));
+                colrsync_wip.push_back(line[p_t]);
             }
             color_sync = get_median(colrsync_wip); // /= color_sync_length;
 
@@ -133,8 +98,8 @@ public:
                 int p_y = ((10.5 + p * 90.) / 150.) * (line_length - 1);
                 int p_ryby = ((10.5 + 90. + 4.5 + p * 45.) / 150.) * (line_length - 1);
 
-                int _y = lineGetScaledIMG(line[p_y]) * 255;       // newimg_sync.get(line * line_length + p_y);
-                int _ryby = lineGetScaledIMG(line[p_ryby]) * 255; // newimg_sync.get(line * line_length + p_ryby);
+                int _y = line[p_y] * 255;       // newimg_sync.get(line * line_length + p_y);
+                int _ryby = line[p_ryby] * 255; // newimg_sync.get(line * line_length + p_ryby);
 
                 // offset = color_sync_v ^ (line % 2);
                 int ii = color_sync_v; //^(line % 2);
@@ -179,20 +144,12 @@ public:
         std::vector<uint8_t> imgvec;
 
         for (auto &v : full_image)
-        {
-            v = (v - minvalimg) / (maxval - minvalimg);
-
-            if (v < 0)
-                v = 0;
-            if (v > 1)
-                v = 1;
             imgvec.push_back(v * 255);
-        }
 
         int lines = full_image.size() / line_length;
         image::Image img(imgvec.data(), 8, line_length, lines, 1);
 
-        img.resize_bilinear(533, img.height());
+        img.resize_bilinear(3000, img.height());
         image::save_img(img, "/tmp/testnewsync.png");
 
         {
@@ -205,90 +162,64 @@ public:
             image::save_img(img, "/tmp/testnewsync_COLOR.png");
         }
     }
+};
 
-    void push(float *buf, int len)
+class SSTVLineProc
+{
+public:
+    int mode = 0;
+
+    float line_time = 0.066875;   // 0.26726415052316954;
+    float image_offset = 0.00687; // 0.00512;
+    float image_time = 0.060;     // 0.262144;
+
+    int output_width = 120;
+    std::vector<uint8_t> getLine(std::vector<float> &line, float offset, float duration)
     {
-        for (int is = 0; is < len; is++)
+        int line_length = line.size();
+        std::vector<uint8_t> l;
+        for (int x = 0; x < output_width; x++)
         {
-            memmove(&sync_line_buffer[0], &sync_line_buffer[1], (sync_line_buffer_len - 1) * sizeof(float));
-            sync_line_buffer[sync_line_buffer_len - 1] = buf[is];
+            float p = x / double(output_width - 1);
+            int pos = ((image_offset + p * image_time) / line_time) * (line_length - 1);
+            l.push_back(line[pos] * 255);
+        }
+        return l;
+    }
 
-#if 1
-            if (skip-- > 0)
-                continue;
+    std::vector<uint32_t> grayScaleToRGBA(std::vector<uint8_t> l)
+    {
+        std::vector<uint32_t> lo;
+        for (auto &i : l)
+            lo.push_back(i << 24 | i << 16 | i << 8 | 0);
+        return lo;
+    }
 
-            {
-                int best_cor = sync.size() * 255;
-                int best_pos = 0;
-                for (int pos = 0; pos < line_length; pos++)
-                {
-                    int cor = 0;
-                    for (int i = 0; i < sync.size(); i++)
-                    {
-                        // float weight = abs(i - (sync.size() / 2.)) / double(sync.size() / 2.);
-
-                        float fv = (double)sync_line_buffer[pos + i];
-                        fv = (fv - minval) / (maxval - minval);
-
-                        if (fv < 0)
-                            fv = 0;
-                        if (fv > 1)
-                            fv = 1;
-
-                        cor += abs(int(fv * 255) - sync[i]);
-                    }
-
-                    if (cor < best_cor)
-                    {
-                        best_cor = cor;
-                        best_pos = pos;
-                    }
-                }
-
-                lineProc(std::vector<float>(sync_line_buffer + best_pos, sync_line_buffer + best_pos + line_length));
-                skip = line_length;
-            }
-#endif
-
-#if 0
-            if (skip-- > 0)
-                continue;
-
-            if (found_offset >= 0)
-            {
-                if (found_offset == 0)
-                {
-                    full_image.insert(full_image.end(), sync_line_buffer, sync_line_buffer + line_length);
-                    skip = sync_length;
-                }
-                found_offset--;
-            }
-            else
-            {
-                float best_cor = sync.size() * 255;
-                int best_pos = 0;
-                for (int pos = 0; pos < line_length; pos++)
-                {
-                    float cor = 0;
-                    for (int i = 0; i < sync.size(); i++)
-                    {
-                        // float weight = abs(i - (sync.size() / 2.)) / double(sync.size() / 2.);
-                        cor += fabs(sync_line_buffer[pos + i] - sync[i]);
-                    }
-
-                    if (cor < best_cor)
-                    {
-                        best_cor = cor;
-                        best_pos = pos;
-                    }
-                }
-
-                found_offset = best_pos;
-            }
-#endif
+public:
+    std::vector<uint32_t> lineProc(std::vector<float> line)
+    {
+        if (mode == 0)
+        {
+            return grayScaleToRGBA(getLine(line, image_offset, image_time));
+        }
+        else
+        {
+            return {};
         }
     }
 };
+
+image::Image rgbaToImg(std::vector<uint32_t> &vec, int width)
+{
+    image::Image img(8, width, vec.size() / width, 3);
+    for (int i = 0; i < img.width() * img.height(); i++)
+    {
+        img.set(0, i, (vec[i] >> 24) & 0xFF);
+        img.set(1, i, (vec[i] >> 16) & 0xFF);
+        img.set(2, i, (vec[i] >> 8) & 0xFF);
+    }
+    return img;
+}
 
 int main(int argc, char *argv[])
 {
@@ -301,6 +232,19 @@ int main(int argc, char *argv[])
     bpf.set_cfg("taps", dsp::firdes::band_pass(1, 48000, 1200, 2300, 500, dsp::fft::window::WIN_KAISER));
     satdump::ndsp::HilbertBlock hilb;
     satdump::ndsp::QuadratureDemodBlock quad;
+    satdump::ndsp::SSTVLineSyncBlock lsync;
+
+    // PD120
+    lsync.set_cfg("sync_time", 0.020);
+    lsync.set_cfg("line_time", 0.50848);
+
+    // Classic 8s
+    // lsync.set_cfg("sync_time", 0.005);
+    // lsync.set_cfg("line_time", 0.066875);
+
+    // FAX480
+    // lsync.set_cfg("sync_time", 0.00512);
+    // lsync.set_cfg("line_time", 0.26726415052316954);
 
     satdump::ndsp::BlockIO io_in;
     io_in.name = "in";
@@ -310,14 +254,19 @@ int main(int argc, char *argv[])
     bpf.set_input(io_in, 0);
     hilb.link(&bpf, 0, 0, 4);
     quad.link(&hilb, 0, 0, 4);
+    lsync.link(&quad, 0, 0, 4);
 
     bpf.start();
     hilb.start();
     quad.start();
+    lsync.start();
 
-    auto io_out = quad.get_output(0, 4);
+    auto io_out = lsync.get_output(0, 4);
 
     SSTVSync sstv;
+
+    std::vector<uint32_t> all_lines;
+    SSTVLineProc lineproc;
 
     std::thread readThread(
         [&]()
@@ -336,7 +285,9 @@ int main(int argc, char *argv[])
                 //                logger->info("Got Something!");
 
                 output_float.write(((char *)iblk.getSamples<float>()), iblk.size * sizeof(float));
-                sstv.push(iblk.getSamples<float>(), iblk.size);
+                sstv.lineProc(std::vector<float>(iblk.getSamples<float>(), iblk.getSamples<float>() + iblk.size));
+                auto ll = lineproc.lineProc(std::vector<float>(iblk.getSamples<float>(), iblk.getSamples<float>() + iblk.size));
+                all_lines.insert(all_lines.end(), ll.begin(), ll.end());
 
                 iblk.free();
             }
@@ -359,9 +310,13 @@ int main(int argc, char *argv[])
     bpf.stop();
     hilb.stop();
     quad.stop();
+    lsync.stop();
 
     if (readThread.joinable())
         readThread.join();
 
     sstv.saveImg();
+
+    auto img = rgbaToImg(all_lines, lineproc.output_width);
+    image::save_img(img, "/home/alan/Downloads/SSTV/img_out.png");
 }
