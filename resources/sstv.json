@@ -1,0 +1,50 @@
+{
+    "B/W 8": {
+        "mode": "grayscale",
+        "samplerate": 48e3,
+        "line_time": 0.066875,
+        "sync_time": 0.005,
+        "img_offset": 0.00687,
+        "img_time": 0.060,
+        "img_width": 120
+    },
+    "FAX480": {
+        "mode": "grayscale",
+        "samplerate": 48e3,
+        "line_time": 0.26726415052316954,
+        "sync_time": 0.00512,
+        "img_offset": 0.00512,
+        "img_time": 0.262144,
+        "img_width": 512
+    },
+    "Robot 36": {
+        "mode": "robot", // TODOREWORK rename probably?
+        "samplerate": 48e3,
+        "line_time": 0.150,
+        "sync_time": 0.0105,
+        "color_sync_offset": -1,
+        "color_sync_time": -1,
+        "color_offset_y": -1,
+        "color_offset_uv": -1,
+        "color_time_y": -1,
+        "color_time_uv": -1,
+        "img_width": 320
+    },
+    "PD120": {
+        "mode": "yuv_2y", // TODOREWORK rename probably?
+        "samplerate": 48e3,
+        "line_time": 0.50848,
+        "sync_time": 0.020,
+        "color_sync_offset": -1,
+        "color_sync_time": -1,
+        "color_offset_y1": -1,
+        "color_offset_y2": -1,
+        "color_offset_u": -1,
+        "color_offset_v": -1,
+        "color_time_y1": -1,
+        "color_time_y2": -1,
+        "color_time_u": -1,
+        "color_time_v": -1,
+        "img_width": 320 // TODOREWORK!
+    }
+}
