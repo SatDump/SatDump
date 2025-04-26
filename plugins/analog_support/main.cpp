@@ -1,20 +1,19 @@
+#include "core/module.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "core/module.h"
 
-#include "noaa_apt/module_noaa_apt_demod.h"
 #include "noaa_apt/module_noaa_apt_decoder.h"
+#include "noaa_apt/module_noaa_apt_demod.h"
 #include "noaa_apt/noaa_apt_proj.h"
 
 #include "generic/module_generic_analog_demod.h"
 
+#include "sstv/module_sstv_decoder.h"
+
 class AnalogSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "analog_support";
-    }
+    std::string getID() { return "analog_support"; }
 
     void init()
     {
@@ -28,6 +27,8 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, noaa_apt::NOAAAPTDecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, generic_analog::GenericAnalogDemodModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, sstv::SSTVDecoderModule);
     }
 
     static void provideSatProjHandler(const satdump::proj::RequestSatelliteRaytracerEvent &evt)

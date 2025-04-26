@@ -27,6 +27,47 @@
             }
         }
     },
+    "sstv_decoder": {
+        "name": "SSTV Decoder",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "parameters": {
+            "sstv_mode": {
+                "type": "options",
+                "value": "M2-2",
+                "name": "SSTV Mode",
+                "options": [
+                    "BW8",
+                    "FAX480",
+                    "Robot36",
+                    "PD120"
+                ],
+                "description": "Please select the desired SSTV Mode!"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "audio_wav": {
+                "generic_analog_demod": {
+                    "symbolrate": 12e3
+                }
+            },
+            "products": {
+                "sstv_decoder": {
+                    "audio_samplerate": 48e3
+                }
+            }
+        }
+    },
     ///////////////////////////////////////////////////////////////
     "saral_l_band": {
         "name": "Saral L-Band",

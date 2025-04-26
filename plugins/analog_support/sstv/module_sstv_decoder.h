@@ -11,6 +11,13 @@ namespace sstv
         std::atomic<uint64_t> progress;
 
         long d_audio_samplerate;
+        std::string d_sstv_mode;
+
+        // UI Stuff
+        instrument_status_t sstv_status = DECODING;
+        bool has_to_update = false;
+        unsigned int textureID = 0;
+        uint32_t *textureBuffer = nullptr;
 
     public:
         SSTVDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

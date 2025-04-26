@@ -1,5 +1,5 @@
 {
-    "B/W 8": {
+    "BW8": {
         "mode": "grayscale",
         "samplerate": 48e3,
         "line_time": 0.066875,
@@ -17,34 +17,32 @@
         "img_time": 0.262144,
         "img_width": 512
     },
-    "Robot 36": {
-        "mode": "robot", // TODOREWORK rename probably?
+    "Robot36": {
+        "mode": "robot",
         "samplerate": 48e3,
         "line_time": 0.150,
         "sync_time": 0.0105,
-        "color_sync_offset": -1,
-        "color_sync_time": -1,
-        "color_offset_y": -1,
-        "color_offset_uv": -1,
-        "color_time_y": -1,
-        "color_time_uv": -1,
+        "color_sync_offset": 0.1005,
+        "color_sync_time": 0.0045,
+        "color_offset_y": 0.0105,
+        "color_offset_uv": 0.105,
+        "color_time_y": 0.090,
+        "color_time_uv": 0.045,
         "img_width": 320
     },
     "PD120": {
-        "mode": "yuv_2y", // TODOREWORK rename probably?
+        "mode": "yuv_2y",
         "samplerate": 48e3,
         "line_time": 0.50848,
         "sync_time": 0.020,
-        "color_sync_offset": -1,
-        "color_sync_time": -1,
-        "color_offset_y1": -1,
-        "color_offset_y2": -1,
-        "color_offset_u": -1,
-        "color_offset_v": -1,
-        "color_time_y1": -1,
-        "color_time_y2": -1,
-        "color_time_u": -1,
-        "color_time_v": -1,
-        "img_width": 320 // TODOREWORK!
+        "color_offset_y1": 0.02208,
+        "color_offset_y2": 0.38688,
+        "color_offset_u": 0.26528,
+        "color_offset_v": 0.14368,
+        "color_time_y1": 0.1216,
+        "color_time_y2": 0.1216,
+        "color_time_u": 0.1216,
+        "color_time_v": 0.1216,
+        "img_width": 640
     }
 }
