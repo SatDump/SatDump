@@ -219,7 +219,7 @@ namespace sstv
             read_thread.join();
 
         auto img = rgbaToImg(all_lines, lproc.output_width);
-        image::save_img(img, "/home/alan/Downloads/SSTV/img_out.png");
+        image::save_img(img, d_output_file_hint + ".png");
     }
 
     void SSTVDecoderModule::drawUI(bool window)
