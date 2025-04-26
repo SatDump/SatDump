@@ -1,5 +1,6 @@
 #include "sstv_linesync.h"
 #include "dsp/block.h"
+#include "logger.h"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -32,10 +33,22 @@ namespace satdump
 
             for (uint32_t is = 0; is < iblk.size; is++)
             {
-                memmove(&sync_line_buffer[0], &sync_line_buffer[1], (sync_line_buffer_len - 1) * sizeof(float));
-                sync_line_buffer[sync_line_buffer_len - 1] = iblk.getSamples<float>()[is];
+                if (skip > 1)
+                {
+                    int to_move = std::min<int>(iblk.size - is, skip);
+                    memmove(&sync_line_buffer[0], &sync_line_buffer[to_move], (sync_line_buffer_len - to_move) * sizeof(float));
+                    memcpy(&sync_line_buffer[sync_line_buffer_len - to_move], &iblk.getSamples<float>()[is], to_move * sizeof(float));
+                    is += to_move - 1;
+                    skip -= to_move;
+                }
+                else
+                {
+                    memmove(&sync_line_buffer[0], &sync_line_buffer[1], (sync_line_buffer_len - 1) * sizeof(float));
+                    sync_line_buffer[sync_line_buffer_len - 1] = iblk.getSamples<float>()[is];
+                    skip--;
+                }
 
-                if (skip-- > 0)
+                if (skip > 0)
                     continue;
 
                 int best_cor = sync.size() * 255;

@@ -176,7 +176,7 @@ namespace sstv
                     break;
                 }
 
-                logger->info("Got Something!");
+                //                logger->info("Got Something!");
 
                 auto ll = lproc.lineProc(std::vector<float>(iblk.getSamples<float>(), iblk.getSamples<float>() + iblk.size));
                 all_lines.insert(all_lines.end(), ll.begin(), ll.end());

@@ -112,7 +112,7 @@ namespace sstv
 
             bool color_sync_v = color_sync > 0.5;
 
-            logger->trace("Color Sync %d", color_sync_v);
+            //            logger->trace("Color Sync %d", color_sync_v);
 
             // Y / UV lines
             auto l_y = getLine(line, cfg.color_offset_y, cfg.color_time_y, cfg.line_time, cfg.img_width);
