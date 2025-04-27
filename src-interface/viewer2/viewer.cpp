@@ -9,6 +9,7 @@
 // #include "resources.h"
 #include "core/plugin.h"
 
+#include "core/style.h"
 #include "dsp/cyclo_test.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "handler/dataset/dataset_handler.h"
@@ -229,7 +230,7 @@ namespace satdump
                 ImGui::BeginGroup();
 
                 if (curr_handler)
-                    curr_handler->drawContents({float(right_width - 4), float(viewer_size.y)});
+                    curr_handler->drawContents({float(right_width - 4 * ui_scale), float(viewer_size.y)});
                 else
                     drawContents();
 

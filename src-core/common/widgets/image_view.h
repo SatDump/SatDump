@@ -1,11 +1,11 @@
 #pragma once
 
-#include "imgui/imgui.h"
 #include "common/image/image.h"
-#include <mutex>
-#include <vector>
-#include <string>
+#include "imgui/imgui.h"
 #include <functional>
+#include <mutex>
+#include <string>
+#include <vector>
 
 class ImageViewWidget
 {
@@ -34,6 +34,10 @@ private:
     std::string id_str;
 
     bool autoFitNextFrame = false;
+
+public:
+    bool zoom_in_next = false;
+    bool zoom_out_next = false;
 
 public:
     ImageViewWidget();

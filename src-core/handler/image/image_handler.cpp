@@ -21,6 +21,7 @@
 // TODOREWORK!
 #include "handler/vector/shapefile_handler.h"
 #include "resources.h"
+#include <cstddef>
 
 namespace satdump
 {
@@ -140,6 +141,8 @@ namespace satdump
 
         void ImageHandler::drawContents(ImVec2 win_size)
         {
+            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_MenuBar);
+
             if (imgview_needs_update)
             {
                 image_view.update(get_current_img());
@@ -177,7 +180,16 @@ namespace satdump
                 };
             }
 
-            image_view.draw(win_size);
+            if (ImGui::BeginMenuBar())
+            {
+                image_view.zoom_in_next |= ImGui::MenuItem("\ueb81");
+                image_view.zoom_out_next |= ImGui::MenuItem("\ueb82");
+                ImGui::EndMenuBar();
+            }
+
+            image_view.draw(ImGui::GetContentRegionAvail());
+
+            ImGui::EndChild();
         }
 
         void ImageHandler::setConfig(nlohmann::json p)

@@ -1,14 +1,14 @@
 #define SATDUMP_DLL_EXPORT 1
 
-#include <filesystem>
 #include "style.h"
+#include "backend.h"
+#include "config.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
-#include "nlohmann/json_utils.h"
 #include "logger.h"
-#include "config.h"
-#include "backend.h"
+#include "nlohmann/json_utils.h"
 #include "resources.h"
+#include <filesystem>
 
 #ifdef __APPLE__
 #include <CoreGraphics/CGDirectDisplay.h>
@@ -26,10 +26,7 @@ namespace style
 
     void hexToImVec4(std::string color_hex, ImVec4 *this_color)
     {
-        color_hex.erase(std::remove_if(color_hex.begin(), color_hex.end(),
-                                       [&](const char c)
-                                       { return !std::isxdigit(c); }),
-                        color_hex.end());
+        color_hex.erase(std::remove_if(color_hex.begin(), color_hex.end(), [&](const char c) { return !std::isxdigit(c); }), color_hex.end());
         if (color_hex.size() != 8)
         {
             logger->debug("Invalid color code %s", color_hex.c_str());
@@ -99,28 +96,27 @@ namespace style
         // ImGui sizes
         if (data.contains("ImGuiStyle") && data["ImGuiStyle"].is_object())
         {
-            const std::map<std::string, float ImGuiStyle::*> style_map = {
-                {"Alpha", &ImGuiStyle::Alpha},
-                {"DisabledAlpha", &ImGuiStyle::DisabledAlpha},
-                {"WindowRounding", &ImGuiStyle::WindowRounding},
-                {"WindowBorderSize", &ImGuiStyle::WindowBorderSize},
-                {"ChildRounding", &ImGuiStyle::ChildRounding},
-                {"ChildBorderSize", &ImGuiStyle::ChildBorderSize},
-                {"PopupRounding", &ImGuiStyle::PopupRounding},
-                {"PopupBorderSize", &ImGuiStyle::PopupBorderSize},
-                {"FrameRounding", &ImGuiStyle::FrameRounding},
-                {"FrameBorderSize", &ImGuiStyle::FrameBorderSize},
-                {"IndentSpacing", &ImGuiStyle::IndentSpacing},
-                {"LogSliderDeadzone", &ImGuiStyle::LogSliderDeadzone},
-                {"ColumnsMinSpacing", &ImGuiStyle::ColumnsMinSpacing},
-                {"ScrollbarSize", &ImGuiStyle::ScrollbarSize},
-                {"ScrollbarRounding", &ImGuiStyle::ScrollbarRounding},
-                {"GrabMinSize", &ImGuiStyle::GrabMinSize},
-                {"GrabRounding", &ImGuiStyle::GrabRounding},
-                {"TabRounding", &ImGuiStyle::TabRounding},
-                {"TabBorderSize", &ImGuiStyle::TabBorderSize},
-                {"TabBarBorderSize", &ImGuiStyle::TabBarBorderSize},
-                {"SeparatorTextBorderSize", &ImGuiStyle::SeparatorTextBorderSize}};
+            const std::map<std::string, float ImGuiStyle::*> style_map = {{"Alpha", &ImGuiStyle::Alpha},
+                                                                          {"DisabledAlpha", &ImGuiStyle::DisabledAlpha},
+                                                                          {"WindowRounding", &ImGuiStyle::WindowRounding},
+                                                                          {"WindowBorderSize", &ImGuiStyle::WindowBorderSize},
+                                                                          {"ChildRounding", &ImGuiStyle::ChildRounding},
+                                                                          {"ChildBorderSize", &ImGuiStyle::ChildBorderSize},
+                                                                          {"PopupRounding", &ImGuiStyle::PopupRounding},
+                                                                          {"PopupBorderSize", &ImGuiStyle::PopupBorderSize},
+                                                                          {"FrameRounding", &ImGuiStyle::FrameRounding},
+                                                                          {"FrameBorderSize", &ImGuiStyle::FrameBorderSize},
+                                                                          {"IndentSpacing", &ImGuiStyle::IndentSpacing},
+                                                                          {"LogSliderDeadzone", &ImGuiStyle::LogSliderDeadzone},
+                                                                          {"ColumnsMinSpacing", &ImGuiStyle::ColumnsMinSpacing},
+                                                                          {"ScrollbarSize", &ImGuiStyle::ScrollbarSize},
+                                                                          {"ScrollbarRounding", &ImGuiStyle::ScrollbarRounding},
+                                                                          {"GrabMinSize", &ImGuiStyle::GrabMinSize},
+                                                                          {"GrabRounding", &ImGuiStyle::GrabRounding},
+                                                                          {"TabRounding", &ImGuiStyle::TabRounding},
+                                                                          {"TabBorderSize", &ImGuiStyle::TabBorderSize},
+                                                                          {"TabBarBorderSize", &ImGuiStyle::TabBarBorderSize},
+                                                                          {"SeparatorTextBorderSize", &ImGuiStyle::SeparatorTextBorderSize}};
 
             for (auto &style_item : data["ImGuiStyle"].items())
             {
@@ -217,27 +213,26 @@ namespace style
         // Custom SatDump Colors
         if (data.contains("SatDumpColors") && data["SatDumpColors"].is_object())
         {
-            const std::map<std::string, ImColor Theme::*> custom_color_map = {
-                {"red", &Theme::red},
-                {"green", &Theme::green},
-                {"blue", &Theme::blue},
-                {"yellow", &Theme::yellow},
-                {"orange", &Theme::orange},
-                {"cyan", &Theme::cyan},
-                {"fuchsia", &Theme::fuchsia},
-                {"magenta", &Theme::magenta},
-                {"lavender", &Theme::lavender},
-                {"light_green", &Theme::light_green},
-                {"light_cyan", &Theme::light_cyan},
-                {"constellation", &Theme::constellation},
-                {"plot_bg", &Theme::plot_bg},
-                {"fft_graduations", &Theme::fft_graduations},
-                {"widget_bg", &Theme::widget_bg},
-                {"frame_bg", &Theme::frame_bg},
-                {"overlay_bg", &Theme::overlay_bg},
-                {"notification_bg", &Theme::notification_bg},
-                {"freq_highlight", &Theme::freq_highlight},
-                {"treeview_icon", &Theme::treeview_icon}};
+            const std::map<std::string, ImColor Theme::*> custom_color_map = {{"red", &Theme::red},
+                                                                              {"green", &Theme::green},
+                                                                              {"blue", &Theme::blue},
+                                                                              {"yellow", &Theme::yellow},
+                                                                              {"orange", &Theme::orange},
+                                                                              {"cyan", &Theme::cyan},
+                                                                              {"fuchsia", &Theme::fuchsia},
+                                                                              {"magenta", &Theme::magenta},
+                                                                              {"lavender", &Theme::lavender},
+                                                                              {"light_green", &Theme::light_green},
+                                                                              {"light_cyan", &Theme::light_cyan},
+                                                                              {"constellation", &Theme::constellation},
+                                                                              {"plot_bg", &Theme::plot_bg},
+                                                                              {"fft_graduations", &Theme::fft_graduations},
+                                                                              {"widget_bg", &Theme::widget_bg},
+                                                                              {"frame_bg", &Theme::frame_bg},
+                                                                              {"overlay_bg", &Theme::overlay_bg},
+                                                                              {"notification_bg", &Theme::notification_bg},
+                                                                              {"freq_highlight", &Theme::freq_highlight},
+                                                                              {"treeview_icon", &Theme::treeview_icon}};
 
             for (auto &color : data["SatDumpColors"].items())
             {
@@ -281,15 +276,16 @@ namespace style
         ImGuiIO &io = ImGui::GetIO();
         io.Fonts->Clear();
         const ImWchar def[] = {0x20, 0x2300, 0}; // default range
-        const ImWchar list[8][3] = {
-            {0xf000, 0xf0ff, 0},
-            {0xf400, 0xf4ff, 0},
-            {0xf800, 0xf8ff, 0},
-            {0xfc00, 0xfcff, 0},
-            {0xea00, 0xeaff, 0},
-            {0xf200, 0xf2ff, 0},
-            {0x2000, 0x20ff, 0},
-            {0xf500, 0xfd46, 0},
+        const ImWchar list[9][3] = {
+            {0xf000, 0xf0ff, 0}, //
+            {0xf400, 0xf4ff, 0}, //
+            {0xf800, 0xf8ff, 0}, //
+            {0xfc00, 0xfcff, 0}, //
+            {0xea00, 0xeaff, 0}, //
+            {0xf200, 0xf2ff, 0}, //
+            {0x2000, 0x20ff, 0}, //
+            {0xf500, 0xfd46, 0}, //
+            {0xea60, 0xebeb, 0}, //
         };
         static ImFontConfig config;
         float macos_fbs = macos_framebuffer_scale();
@@ -298,7 +294,7 @@ namespace style
         baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
         config.MergeMode = true;
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 9; i++)
             baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), theme.font_size * font_scaling, &config, list[i]);
         config.MergeMode = false;
 
@@ -322,4 +318,4 @@ namespace style
         return 1.0f;
 #endif
     }
-}
+} // namespace style

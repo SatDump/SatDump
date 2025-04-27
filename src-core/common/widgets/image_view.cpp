@@ -1,6 +1,6 @@
 #include "image_view.h"
-#include "imgui/imgui_image.h"
 #include "core/style.h"
+#include "imgui/imgui_image.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/implot/implot.h"
 #include "imgui/implot/implot_internal.h"
@@ -13,9 +13,7 @@ ImageViewWidget::ImageViewWidget()
     id_num++;
 }
 
-ImageViewWidget::~ImageViewWidget()
-{
-}
+ImageViewWidget::~ImageViewWidget() {}
 
 void ImageViewWidget::update(image::Image &image)
 {
@@ -152,27 +150,25 @@ void ImageViewWidget::draw(ImVec2 win_size)
     {
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
-        if (ImPlot::BeginPlot((id_str + "plot").c_str(), ImVec2(win_size.x, win_size.y - 16 * ui_scale), ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal))
+        if (ImPlot::BeginPlot((id_str + "plot").c_str(), ImVec2(win_size.x, win_size.y - 16 * ui_scale),
+                              ImPlotFlags_NoLegend | ImPlotFlags_NoTitle | ImPlotFlags_CanvasOnly | ImPlotFlags_Equal | ImPlotFlags_NoFrame))
         {
             if (autoFitNextFrame)
             {
-                ImPlot::SetupAxes(nullptr, nullptr,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | ImPlotAxisFlags_AutoFit,
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | ImPlotAxisFlags_AutoFit,
                                   ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | ImPlotAxisFlags_AutoFit);
                 autoFitNextFrame = false;
             }
             else
-                ImPlot::SetupAxes(nullptr, nullptr,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/,
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/,
                                   ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/);
 
             for (auto &chunk : img_chunks)
-                ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id,
-                                  ImPlotPoint(chunk.offset_x, chunk.offset_y), ImPlotPoint(chunk.offset_x + chunk.img_width, chunk.offset_y + chunk.img_height));
+                ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id, ImPlotPoint(chunk.offset_x, chunk.offset_y),
+                                  ImPlotPoint(chunk.offset_x + chunk.img_width, chunk.offset_y + chunk.img_height));
 
             auto pos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
-            if (pos.x >= 0 && pos.y >= 0 &&
-                pos.x < fimg_width && pos.y < fimg_height)
+            if (pos.x >= 0 && pos.y >= 0 && pos.x < fimg_width && pos.y < fimg_height)
                 mouseCallback(pos.x, (fimg_height - 1) - pos.y);
 
 #ifdef __ANDROID__
@@ -187,6 +183,18 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 addPlotScroll(*ImPlot::GetCurrentPlot(), 2);
             ImGui::SetCursorPos(pre_pos);
 #endif
+
+            if (zoom_in_next)
+            {
+                addPlotScroll(*ImPlot::GetCurrentPlot(), 2);
+                zoom_in_next = false;
+            }
+
+            if (zoom_out_next)
+            {
+                addPlotScroll(*ImPlot::GetCurrentPlot(), -2);
+                zoom_out_next = false;
+            }
 
             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Right))
                 autoFitNextFrame = true;
