@@ -94,6 +94,8 @@ namespace sstv
 
         bpf.set_cfg("taps", dsp::firdes::band_pass(1, sstv_samplerate, freq_sync, freq_img_white, 500, dsp::fft::window::WIN_KAISER));
 
+        hilb.set_cfg("ntaps", 651);
+
         lsync.set_cfg("sync_time", sstv_cfg["sync_time"]);
         lsync.set_cfg("line_time", sstv_cfg["line_time"]);
 

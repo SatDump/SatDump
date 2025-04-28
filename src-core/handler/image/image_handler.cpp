@@ -1,5 +1,6 @@
 #include "image_handler.h"
 
+#include "common/image/meta.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
@@ -20,27 +21,42 @@
 
 // TODOREWORK!
 #include "handler/vector/shapefile_handler.h"
+#include "products2/image/channel_transform.h"
 #include "resources.h"
 #include <cstddef>
+#include <utility>
 
 namespace satdump
 {
     namespace viewer
     {
-        ImageHandler::ImageHandler() { handler_tree_icon = "\uf7e8"; }
-
-        ImageHandler::ImageHandler(image::Image img)
+        ImageHandler::ImageHandler()
         {
             handler_tree_icon = "\uf7e8";
-            updateImage(img);
+
+            // TODOREWORK experimental?
+            image_view.cropCallback = [this](int x1, int y1, int x2, int y2)
+            {
+                if (x2 < x1)
+                    std::swap(x1, x2);
+                if (y2 < y1)
+                    std::swap(y1, y2);
+
+                logger->critical("CROPPING %d %d, %d %d, %d %d", x1, y1, x2, y2, get_current_img().width(), get_current_img().height());
+
+                auto img = get_current_img().crop_to(x1, y1, x2, y2);
+                auto proj_cfg = image::get_metadata_proj_cfg(get_current_img());
+                proj_cfg["width"] = img.width();
+                proj_cfg["height"] = img.height();
+                proj_cfg["transform2"] = ChannelTransform().init_affine(1, 1, x1, y1);
+                image::set_metadata_proj_cfg(img, proj_cfg);
+                updateImage(img);
+            };
         }
 
-        ImageHandler::ImageHandler(image::Image img, std::string name)
-        {
-            handler_tree_icon = "\uf7e8";
-            updateImage(img);
-            image_name = name;
-        }
+        ImageHandler::ImageHandler(image::Image img) : ImageHandler::ImageHandler() { updateImage(img); }
+
+        ImageHandler::ImageHandler(image::Image img, std::string name) : ImageHandler::ImageHandler(img) { image_name = name; }
 
         ImageHandler::~ImageHandler()
         {
@@ -185,6 +201,9 @@ namespace satdump
             {
                 image_view.zoom_in_next |= ImGui::MenuItem("\ueb81");
                 image_view.zoom_out_next |= ImGui::MenuItem("\ueb82");
+                image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
+                image_view.select_crop_next |= ImGui::MenuItem("Crop");
+
                 ImGui::EndMenuBar();
             }
 

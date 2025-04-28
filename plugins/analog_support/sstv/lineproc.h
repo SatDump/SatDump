@@ -119,14 +119,7 @@ namespace sstv
             auto l_uv = getLine(line, cfg.color_offset_uv, cfg.color_time_uv, cfg.line_time, cfg.img_width);
 
             // We can only decode after we accumulated 2
-            if (!color_sync_v)
-            {
-                cfg.previous_y = l_y;
-                cfg.previous_uv = l_uv;
-
-                return {};
-            }
-            else
+            if (color_sync_v)
             {
                 std::vector<uint32_t> ol(cfg.img_width * 2);
 
@@ -143,6 +136,13 @@ namespace sstv
                 }
 
                 return ol;
+            }
+            else
+            {
+                cfg.previous_y = l_y;
+                cfg.previous_uv = l_uv;
+
+                return {};
             }
         }
 

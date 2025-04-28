@@ -230,7 +230,7 @@ namespace satdump
                 ImGui::BeginGroup();
 
                 if (curr_handler)
-                    curr_handler->drawContents({float(right_width - 4 * ui_scale), float(viewer_size.y)});
+                    curr_handler->drawContents({float(right_width - 9 * ui_scale), float(viewer_size.y)});
                 else
                     drawContents();
 

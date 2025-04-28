@@ -33,11 +33,17 @@ private:
 
     std::string id_str;
 
-    bool autoFitNextFrame = false;
-
 public:
+    bool autoFitNextFrame = false;
     bool zoom_in_next = false;
     bool zoom_out_next = false;
+
+    bool select_crop_next = false;
+    bool isSelectingCrop = false;
+    ImVec2 crop_initial_pos;
+    ImVec2 crop_end_pos;
+
+    std::function<void(int x1, int y1, int x2, int y2)> cropCallback = [](int, int, int, int) {};
 
 public:
     ImageViewWidget();

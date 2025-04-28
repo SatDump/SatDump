@@ -198,7 +198,7 @@ namespace satdump
 
         public:
             /**
-             * @brief Generic constructor, to be overloaded.AGCBlock
+             * @brief Generic constructor, to be overloaded.
              * @param id of the block, meant to be a short identifier (eg, agc_cc)
              * @param in Inputs configurations, optional
              * @param out Output configurations, optional

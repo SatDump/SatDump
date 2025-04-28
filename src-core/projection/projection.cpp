@@ -41,6 +41,15 @@ namespace satdump
                 transform.init_none();
 
             ///////////////////////////////////////////////////////////
+            // Get optional second channel pre-transform, if present
+            ///////////////////////////////////////////////////////////
+            if (d_cfg.contains("transform2"))
+            {
+                has_2nd_transform = true;
+                transform2 = d_cfg["transform2"];
+            }
+
+            ///////////////////////////////////////////////////////////
             // Attempt to setup a standard projection first
             ///////////////////////////////////////////////////////////
             try
@@ -119,12 +128,16 @@ namespace satdump
 
             // Run channel transform, might do nothing if no transform is needed
             transform.reverse(&x, &y);
+            if (has_2nd_transform)
+                transform2.reverse(&x, &y);
             return 0;
         }
 
         bool Projection::inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
         {
             // Run channel transform, might do nothing if no transform is needed
+            if (has_2nd_transform)
+                transform2.forward(&x, &y);
             transform.forward(&x, &y);
 
             if (inv_type == PROJ_STANDARD)

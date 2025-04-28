@@ -1,10 +1,12 @@
 #include "image_view.h"
 #include "core/style.h"
+#include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/implot/implot.h"
 #include "imgui/implot/implot_internal.h"
 #include "logger.h"
+#include <cstdio>
 
 ImageViewWidget::ImageViewWidget()
 {
@@ -160,8 +162,8 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 autoFitNextFrame = false;
             }
             else
-                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/,
-                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/);
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | (isSelectingCrop ? ImPlotAxisFlags_Lock : 0),
+                                  ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | (isSelectingCrop ? ImPlotAxisFlags_Lock : 0));
 
             for (auto &chunk : img_chunks)
                 ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id, ImPlotPoint(chunk.offset_x, chunk.offset_y),
@@ -198,6 +200,51 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Right))
                 autoFitNextFrame = true;
+
+            if (select_crop_next && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                isSelectingCrop = true;
+                crop_initial_pos = ImVec2(ImPlot::GetPlotMousePos().x, ImPlot::GetPlotMousePos().y);
+                select_crop_next = false;
+            }
+
+            if (isSelectingCrop)
+            {
+                if (!ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                {
+                    crop_end_pos = ImVec2(ImPlot::GetPlotMousePos().x, ImPlot::GetPlotMousePos().y);
+
+                    if (crop_initial_pos.x < 0)
+                        crop_initial_pos.x = 0;
+                    if (crop_initial_pos.y < 0)
+                        crop_initial_pos.y = 0;
+
+                    if (crop_initial_pos.x >= fimg_width)
+                        crop_initial_pos.x = fimg_width - 1;
+                    if (crop_initial_pos.y >= fimg_height)
+                        crop_initial_pos.y = fimg_height - 1;
+
+                    if (crop_end_pos.x < 0)
+                        crop_end_pos.x = 0;
+                    if (crop_end_pos.y < 0)
+                        crop_end_pos.y = 0;
+
+                    if (crop_end_pos.x >= fimg_width)
+                        crop_end_pos.x = fimg_width - 1;
+                    if (crop_end_pos.y >= fimg_height)
+                        crop_end_pos.y = fimg_height - 1;
+
+                    auto p1 = ImPlot::PlotToPixels(crop_initial_pos);
+                    auto p2 = ImPlot::PlotToPixels(crop_end_pos);
+                    ImPlot::GetPlotDrawList()->AddQuad(p1, {p2.x, p1.y}, p2, {p1.x, p2.y}, ImColor(255, 255, 255));
+                }
+                else
+                {
+                    logger->trace("Crop %d %d, %d %d\n", (int)crop_initial_pos.x, (fimg_height - 1) - (int)crop_initial_pos.y, (int)crop_end_pos.x, (fimg_height - 1) - (int)crop_end_pos.y);
+                    cropCallback(crop_initial_pos.x, (fimg_height - 1) - crop_initial_pos.y, crop_end_pos.x, (fimg_height - 1) - crop_end_pos.y);
+                    isSelectingCrop = false;
+                }
+            }
 
             ImPlot::EndPlot();
         }

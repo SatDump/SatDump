@@ -1,14 +1,13 @@
 #include "normal_line.h"
 #include "common/geodetic/euler_raytrace.h"
-#include "nlohmann/json_utils.h"
 #include "common/geodetic/vincentys_calculations.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
     namespace proj
     {
-        NormalLineRaytracer::NormalLineRaytracer(nlohmann::json cfg)
-            : SatelliteRaytracerSatTrack(cfg)
+        NormalLineRaytracer::NormalLineRaytracer(nlohmann::json cfg) : SatelliteRaytracerSatTrack(cfg)
         {
             timestamps = cfg["timestamps"].get<std::vector<double>>();
 
@@ -86,8 +85,7 @@ namespace satdump
 
         //////////////////////////////////
 
-        NormalLineRaytracerOld::NormalLineRaytracerOld(nlohmann::json cfg)
-            : SatelliteRaytracerSatTrack(cfg)
+        NormalLineRaytracerOld::NormalLineRaytracerOld(nlohmann::json cfg) : SatelliteRaytracerSatTrack(cfg)
         {
             timestamps = cfg["timestamps"].get<std::vector<double>>();
 
@@ -166,5 +164,5 @@ namespace satdump
             else
                 return 0;
         }
-    }
-}
+    } // namespace proj
+} // namespace satdump

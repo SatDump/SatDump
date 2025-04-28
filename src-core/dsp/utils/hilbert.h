@@ -46,8 +46,6 @@ namespace satdump
                 // Init taps
                 auto p_taps = dsp::firdes::hilbert(ntaps, dsp::fft::window::WIN_HAMMING, 6.76);
 
-                logger->critical(nlohmann::json(p_taps).dump());
-
                 // Init taps
                 ntaps = p_taps.size();
                 taps = (float *)volk_malloc(ntaps * sizeof(float), volk_get_alignment());

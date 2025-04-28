@@ -4,13 +4,13 @@
  * @file projection.h
  */
 
-#include "nlohmann/json.hpp"
 #include "common/geodetic/geodetic_coordinates.h"
+#include "nlohmann/json.hpp"
 
 // Needed for projs. Maybe hide later? TBD TODOREWORK
+#include "common/projection/projs2/proj.h"
 #include "products2/image/channel_transform.h"
 #include "raytrace/satellite_raytracer.h"
-#include "common/projection/projs2/proj.h"
 #include "tps/latlontps_proj.h"
 
 namespace satdump
@@ -72,6 +72,10 @@ namespace satdump
 
             double proj_timestamp = -1; // Timestamp fed in case standards projs have a timestamp field
 
+        private:
+            bool has_2nd_transform = false;
+            ChannelTransform transform2; // TODO DOCUMENT
+
         public:
             Projection();
             ~Projection();
@@ -117,5 +121,5 @@ namespace satdump
             friend void to_json(nlohmann::json &j, const Projection &v) { v.to_json(j); }
             friend void from_json(const nlohmann::json &j, Projection &v) { v.from_json(j); }
         };
-    }
-}
+    } // namespace proj
+} // namespace satdump
