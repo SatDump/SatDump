@@ -1,16 +1,16 @@
 #include "module_meteor_xband_instruments.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "meteor.h"
-#include "products2/image_product.h"
-#include "common/tracking/tle.h"
-#include "products2/dataset.h"
-#include "resources.h"
-#include "nlohmann/json_utils.h"
 #include "common/repack.h"
+#include "common/tracking/tle.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "meteor.h"
+#include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "resources.h"
+#include <filesystem>
+#include <fstream>
 
 namespace meteor
 {
@@ -152,7 +152,8 @@ namespace meteor
 
                     satdump::products::ImageProduct mtvza_products;
                     mtvza_products.instrument_name = "mtvza";
-                    mtvza_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
+                    mtvza_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")),
+                                                               satdump::general_tle_registry->get_from_norad(norad), timestamps);
 
                     for (int i = 0; i < 46; i++)
                         mtvza_products.images.push_back({i, "MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mtvza_channels[i].data(), 16, 200, mtvza_lines, 1), 16});
@@ -296,15 +297,14 @@ namespace meteor
 
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
-                    kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
+                    kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")),
+                                                             satdump::general_tle_registry->get_from_norad(norad), timestamps);
 
-                    std::vector<satdump::ChannelTransform> transforms_def = {satdump::ChannelTransform().init_none(),
-                                                                             satdump::ChannelTransform().init_none(),
-                                                                             satdump::ChannelTransform().init_none()};
+                    std::vector<satdump::ChannelTransform> transforms_def = {satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none()};
 
                     if (sat_name == "METEOR-M2-4")
-                        transforms_def = {satdump::ChannelTransform().init_none(),
-                                          satdump::ChannelTransform().init_affine_slantx(1, 1, 4, -3.8, 4000, 0.0012),
+                        transforms_def = {satdump::ChannelTransform().init_none(),                                     //
+                                          satdump::ChannelTransform().init_affine_slantx(1, 1, 4, -3.8, 4000, 0.0012), //
                                           satdump::ChannelTransform().init_affine_slantx(1, 1, -2, -2, 4000, 0.0005)};
 
                     for (int i = 0; i < 3; i++)
@@ -333,13 +333,21 @@ namespace meteor
 
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
-                    kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")), satdump::general_tle_registry->get_from_norad(norad), timestamps);
+                    kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")),
+                                                             satdump::general_tle_registry->get_from_norad(norad), timestamps);
+
+                    std::vector<satdump::ChannelTransform> transforms_def = {satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none()};
+
+                    if (sat_name == "METEOR-M2-4")
+                        transforms_def = {satdump::ChannelTransform().init_none(),                                                          //
+                                          satdump::ChannelTransform().init_affine_slantx(0.999800, 1.000000, -12.000000, -3.0, 0, -0.0009), //
+                                          satdump::ChannelTransform().init_affine_slantx(0.999800, 1, -22, 5.700000, 0, 0.0005)};
 
                     for (int i = 0; i < 3; i++)
                     {
                         auto img = image::Image(msu100_2_dat[i].data(), 16, 8000, kmss_lines, 1);
                         msu100_2_dat[i].clear();
-                        kmss_product.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, 0, 0)});
+                        kmss_product.images.push_back({i, "MSU100-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, transforms_def[i]});
                     }
 
                     kmss_product.save(directory);
@@ -385,19 +393,13 @@ namespace meteor
             ImGui::End();
         }
 
-        std::string MeteorXBandInstrumentsDecoderModule::getID()
-        {
-            return "meteor_xband_instruments";
-        }
+        std::string MeteorXBandInstrumentsDecoderModule::getID() { return "meteor_xband_instruments"; }
 
-        std::vector<std::string> MeteorXBandInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::vector<std::string> MeteorXBandInstrumentsDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> MeteorXBandInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MeteorXBandInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace meteor
