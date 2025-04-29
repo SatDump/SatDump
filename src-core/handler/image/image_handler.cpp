@@ -46,6 +46,11 @@ namespace satdump
 
                 auto img = get_current_img().crop_to(x1, y1, x2, y2);
                 auto proj_cfg = image::get_metadata_proj_cfg(get_current_img());
+                if (proj_cfg.contains("transform2"))
+                {
+                    x1 += proj_cfg["transform2"]["bx"].get<double>();
+                    y1 += proj_cfg["transform2"]["by"].get<double>();
+                }
                 proj_cfg["width"] = img.width();
                 proj_cfg["height"] = img.height();
                 proj_cfg["transform2"] = ChannelTransform().init_affine(1, 1, x1, y1);
