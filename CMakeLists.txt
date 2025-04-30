@@ -210,6 +210,7 @@ endif()
 
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
+add_subdirectory(src-cli2)
 
 if(BUILD_GUI)
     message("Building the GUI")
