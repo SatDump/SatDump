@@ -130,6 +130,7 @@ namespace satdump
                     std::string save_type = "png";
                     config::tryAssignValueFromSatdumpGeneralConfig(save_type, "image_format");
                     std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+                    logger->trace("Saving default dir : " + default_path);
                     std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &get_current_img(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");
