@@ -1,4 +1,5 @@
 #include "CLI11.hpp"
+#include "common/detect_header.h"
 #include "core/config.h"
 #include "core/module.h"
 #include "core/pipeline.h"
@@ -6,6 +7,9 @@
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "satdump_vars.h"
+
+#include "core/pipeline.h"
+#include <memory>
 
 int main(int argc, char *argv[])
 {
@@ -46,6 +50,8 @@ int main(int argc, char *argv[])
         //      sub_p->add_flag("--" + ep.key());
     }
 
+    std::map<std::string, std::map<std::string, std::shared_ptr<std::string>>> pipeline_opts;
+
     CLI::App *sub_pipeline = app.add_subcommand("pipeline", "Run a pipeline");
     for (auto &p : satdump::pipelines)
     {
@@ -61,12 +67,16 @@ int main(int argc, char *argv[])
             for (auto &e : ep.value().items())
                 common[ep.key()][e.key()] = p.editable_parameters[ep.key()][e.key()];
 
+        pipeline_opts.emplace(p.name, std::map<std::string, std::shared_ptr<std::string>>());
+
         for (auto &ep : common.items())
         {
+            auto opt = std::make_shared<std::string>();
             if (ep.value().contains("description"))
-                sub_p->add_flag("--" + ep.key(), (const std::string)ep.value()["description"].get<std::string>());
+                sub_p->add_flag("--" + ep.key(), *opt, (const std::string)ep.value()["description"].get<std::string>());
             else
-                sub_p->add_flag("--" + ep.key());
+                sub_p->add_flag("--" + ep.key(), *opt, "");
+            pipeline_opts[p.name].emplace(ep.key(), opt);
         }
     }
 
@@ -75,12 +85,39 @@ int main(int argc, char *argv[])
     for (auto *subcom : app.get_subcommands())
     {
         std::cout << "Subcommand: " << subcom->get_name() << '\n';
+
         if (subcom->get_name() == "pipeline")
         {
             for (auto *s2 : subcom->get_subcommands())
             {
-                std::string t = s2->get_option("level")->get_option_text();
-                logger->info(s2->get_name() + " level " + t);
+                std::string level = s2->get_option("level")->as<std::string>();
+                std::string input = s2->get_option("input_file")->as<std::string>();
+                std::string output = s2->get_option("output_folder")->as<std::string>();
+
+                auto pipeline = satdump::getPipelineFromName(s2->get_name());
+
+                nlohmann::json params;
+
+                try_get_params_from_input_file(params, input);
+
+                for (auto *s33 : s2->get_options())
+                {
+                    if (s2->count(s33->get_name()))
+                    {
+                        logger->critical(s33->get_name().substr(2));
+                        auto optname = s33->get_name().substr(2);
+                        if (pipeline_opts[pipeline->name].count(optname))
+                            params[optname] = nlohmann::json::parse(s33->as<std::string>());
+                    }
+                }
+
+                // logger->critical(params.dump());
+
+                // Create output dir
+                if (!std::filesystem::exists(output))
+                    std::filesystem::create_directories(output);
+
+                pipeline->run(input, output, params, level);
             }
         }
     }
