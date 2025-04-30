@@ -4,13 +4,14 @@
  * @file calibration_units.h
  */
 
-#include <string>
 #include <map>
+#include <string>
 
 // TODOREWORK move all this out of products! / change namespace
 
 #define CALIBRATION_INVALID_VALUE -9999.9 // TODOREWORK Change?
 
+#define CALIBRATION_ID_SUN_ANGLE "sun_angle"                                       // TODOREWORK probably delete?
 #define CALIBRATION_ID_ALBEDO "albedo"                                             // TODOREWORK probably delete?
 #define CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO "sun_angle_compensated_albedo" // TODOREWORK probably delete?
 #define CALIBRATION_ID_EMISSIVE_RADIANCE "emissive_radiance"
@@ -19,8 +20,8 @@
 #define CALIBRATION_ID_BRIGHTNESS_TEMPERATURE "brightness_temperature"
 
 // TODOREWORK
-#include "projection/projection.h"
 #include "common/calibration.h"
+#include "projection/projection.h"
 
 namespace satdump
 {
@@ -201,5 +202,5 @@ namespace satdump
                     return CALIBRATION_INVALID_VALUE;
             }
         };
-    }
-}
+    } // namespace calibration
+} // namespace satdump

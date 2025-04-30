@@ -1,7 +1,7 @@
-#include <cmath>
 #include "calibration.h"
-#include <vector>
+#include <cmath>
 #include <ctime>
+#include <vector>
 
 #define c1 1.1910427e-05
 #define c2 1.4387752
@@ -57,13 +57,14 @@ namespace
         double current_wav = low_wav;
         for (int i = 0; i < 50; i++)
         {
-            double ewav = temperature_to_radiance(t_bb, freq_to_wavenumber(299792458.0 / current_wav)); // dwav * (2.0 * M_PI * h * pow(c, 2)) / (pow(current_wav, 5) * (exp(h * c / (current_wav * k * t_bb)) - 1.0));
+            double ewav = temperature_to_radiance(
+                t_bb, freq_to_wavenumber(299792458.0 / current_wav)); // dwav * (2.0 * M_PI * h * pow(c, 2)) / (pow(current_wav, 5) * (exp(h * c / (current_wav * k * t_bb)) - 1.0));
             E_wav.push_back(ewav);
             current_wav = low_wav + i * dwav;
         }
         return trapz(E_wav) / (48.0);
     }
-}
+} // namespace
 
 double calculate_sun_irradiance_interval(double low_wav, double high_wav)
 {
@@ -135,14 +136,11 @@ namespace
         const double dpr = 1.0 / rpd;
         // Angle in earth orbit in radians, 0 = the beginning of the year
         double dang = 2.0 * M_PI * (double)(jday - 1) / dpy;
-        double homp = 12.0 + 0.123570 * sin(dang) - 0.004289 * cos(dang) +
-                      0.153809 * sin(2.0 * dang) + 0.060783 * cos(2.0 * dang);
+        double homp = 12.0 + 0.123570 * sin(dang) - 0.004289 * cos(dang) + 0.153809 * sin(2.0 * dang) + 0.060783 * cos(2.0 * dang);
         // Hour angle in the local solar time (degrees)
         double hang = dph * (hour - homp) + dlon;
         double ang = 279.9348 * rpd + dang;
-        double sigma = (ang * dpr + 0.4087 * sin(ang) + 1.8724 * cos(ang) -
-                        0.0182 * sin(2.0 * ang) + 0.0083 * cos(2.0 * ang)) *
-                       rpd;
+        double sigma = (ang * dpr + 0.4087 * sin(ang) + 1.8724 * cos(ang) - 0.0182 * sin(2.0 * ang) + 0.0083 * cos(2.0 * ang)) * rpd;
         // Sin of sun declination
         double sindlt = sinob * sin(sigma);
         // Cos of sun declination
@@ -163,7 +161,7 @@ namespace
 
         return zenith;
     }
-}
+} // namespace
 
 // cos(80deg)
 #define cos80 0.173648178
@@ -221,4 +219,19 @@ double compensate_radiance_for_sun(double radiance, time_t ltime, float lat, flo
     if (cos_sza < 0.01) // cos80)
         return -999.99; // CALIBRATION_INVALID_VALUE; // 0.05;    // cos80;
     return /*100.0 **/ radiance / tr / cos_sza;
+}
+
+double get_sun_angle(time_t ltime, float lat, float lon)
+{
+    std::tm t_read = *gmtime(&ltime);
+
+    int year = t_read.tm_year + 1900;
+    int month = t_read.tm_mon + 1;
+    int day = t_read.tm_mday;
+    int hour = t_read.tm_hour;
+    int minute = t_read.tm_min;
+
+    double cos_sza = cos_sol_za(year, month, day, hour, minute, lat, lon);
+
+    return 90.0 - acos(cos_sza) * 57.29578;
 }

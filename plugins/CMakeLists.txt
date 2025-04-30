@@ -435,13 +435,6 @@ if(PLUGIN_BOCHUM_SUPPORT)
 endif()
 
 # ##############################################################################
-option(PLUGIN_STANDARD_CPP_COMPOS "Enable Standard C++ Composites plugin" OFF)
-
-if(PLUGIN_STANDARD_CPP_COMPOS OR PLUGINS_ALL)
-  add_subdirectory(standard_cpp_compos_support)
-endif()
-
-# ##############################################################################
 option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
 
 if(PLUGIN_BITVIEW_APP)
