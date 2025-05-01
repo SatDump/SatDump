@@ -59,14 +59,6 @@ public:
     //     if (evt.id == "goes_xrit")
     //         evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
     // }
-
-    //   //  static void provideCppCompositeHandler(const satdump::RequestCppCompositeEvent &evt)
-    //   //  {
-    //   //      if (evt.id == "goes_abi_false_color")
-    //   //          evt.compositors.push_back(goes::goesFalseColorCompositor);
-    //         else if (evt.id == "goes_abi_false_color_ir_merge")
-    //             evt.compositors.push_back(goes::goesFalseColorIRMergeCompositor);
-    //     }
 };
 
 PLUGIN_LOADER(GOESSupport)

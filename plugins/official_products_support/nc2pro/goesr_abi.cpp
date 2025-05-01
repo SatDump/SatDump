@@ -1,13 +1,13 @@
 #include "common/utils.h"
 
-#include "hdf5_utils.h"
-#include <H5LTpublic.h>
-#include "common/image/image.h"
-#include <filesystem>
-#include "logger.h"
-#include <array>
-#include "products2/image_product.h"
 #include "common/calibration.h"
+#include "common/image/image.h"
+#include "hdf5_utils.h"
+#include "logger.h"
+#include "products2/image_product.h"
+#include <H5LTpublic.h>
+#include <array>
+#include <filesystem>
 
 #include "nlohmann/json_utils.h"
 #include "resources.h"
@@ -160,21 +160,12 @@ namespace nc2pro
                     std::string cleanname = std::filesystem::path(path).stem().string();
                     auto splt = splitString(cleanname, '_');
 
-                    if (splt.size() == 6 &&
-                        ori_splt[0] == splt[0] &&
-                        ori_splt[2] == splt[2] &&
-                        ori_splt[3] == splt[3])
+                    if (splt.size() == 6 && ori_splt[0] == splt[0] && ori_splt[2] == splt[2] && ori_splt[3] == splt[3])
                     {
                         auto splt2 = splitString(splt[1], '-');
 
-                        if (splt2.size() == 4 &&
-                            ori_splt2[0] == splt2[0] &&
-                            ori_splt2[1] == splt2[1] &&
-                            ori_splt2[2] == splt2[2] &&
-                            ori_splt2[3].size() == 5 &&
-                            ori_splt2[3][0] == splt2[3][0] &&
-                            ori_splt2[3][1] == splt2[3][1] &&
-                            ori_splt2[3][2] == splt2[3][2])
+                        if (splt2.size() == 4 && ori_splt2[0] == splt2[0] && ori_splt2[1] == splt2[1] && ori_splt2[2] == splt2[2] && ori_splt2[3].size() == 5 && ori_splt2[3][0] == splt2[3][0] &&
+                            ori_splt2[3][1] == splt2[3][1] && ori_splt2[3][2] == splt2[3][2])
                         {
                             files_to_parse.push_back(path);
                         }
@@ -211,10 +202,7 @@ namespace nc2pro
         {
             std::tm timeS;
             memset(&timeS, 0, sizeof(std::tm));
-            if (sscanf(all_images[0].time_coverage_start.c_str(),
-                       "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ",
-                       &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
-                       &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+            if (sscanf(all_images[0].time_coverage_start.c_str(), "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ", &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
             {
                 timeS.tm_year -= 1900;
                 timeS.tm_mon -= 1;
@@ -295,30 +283,31 @@ namespace nc2pro
 
 #if 1
         const float goes_abi_wavelength_table[16] = {
-            470,
-            640,
-            860,
-            1380,
-            1610,
-            2260,
-            3900,
-            6190,
-            6950,
-            7340,
-            8500,
-            9610,
-            10350,
-            11200,
-            12300,
-            13300,
+            470,   //
+            640,   //
+            860,   //
+            1380,  //
+            1610,  //
+            2260,  //
+            3900,  //
+            6190,  //
+            6950,  //
+            7340,  //
+            8500,  //
+            9610,  //
+            10350, //
+            11200, //
+            12300, //
+            13300, //
         }; // TODOREWORK MOVE TO FILE!
 
         nlohmann::json calib_cfg;
         for (size_t i = 0; i < all_images.size(); i++)
         {
-            calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
-            calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
-            calib_cfg["vars"]["kappa"][i] = all_images[i].kappa;
+            int channel_id = all_images[i].channel - 1;
+            calib_cfg["vars"]["scale"][channel_id] = all_images[i].calibration_scale;
+            calib_cfg["vars"]["offset"][channel_id] = all_images[i].calibration_offset;
+            calib_cfg["vars"]["kappa"][channel_id] = all_images[i].kappa;
         }
         abi_products.set_calibration("goes_nc_abi", calib_cfg);
 
@@ -343,4 +332,4 @@ namespace nc2pro
             std::filesystem::create_directories(pro_output_file);
         abi_products.save(pro_output_file);
     }
-}
+} // namespace nc2pro

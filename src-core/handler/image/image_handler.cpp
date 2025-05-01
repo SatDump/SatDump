@@ -1,5 +1,6 @@
 #include "image_handler.h"
 
+#include "common/image/image_background.h"
 #include "common/image/meta.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
@@ -98,6 +99,8 @@ namespace satdump
                     ImGui::SliderFloat("Contrast", &brightness_contrast_constrast_image, -2, 2);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                 }
+
+                needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -232,6 +235,7 @@ namespace satdump
             brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
             brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
             brightness_contrast_constrast_image = getValueOrDefault(p["brightness_contrast_constrast"], 0);
+            remove_background_img = getValueOrDefault(p["remove_background"], false);
         }
 
         nlohmann::json ImageHandler::getConfig()
@@ -249,6 +253,7 @@ namespace satdump
             p["brightness_contrast"] = brightness_contrast_image;
             p["brightness_contrast_brightness"] = brightness_contrast_brightness_image;
             p["brightness_contrast_constrast"] = brightness_contrast_constrast_image;
+            p["remove_background"] = remove_background_img;
             return p;
         }
 
@@ -274,7 +279,7 @@ namespace satdump
         void ImageHandler::do_process()
         {
             bool image_needs_processing = equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate180_image | geocorrect_image |
-                                          despeckle_img | brightness_contrast_image /*OVERLAY*/;
+                                          despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -299,6 +304,8 @@ namespace satdump
                     image::kuwahara_filter(curr_image);
                 if (brightness_contrast_image)
                     image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_constrast_image);
+                if (remove_background_img)
+                    image::remove_background(curr_image, nullptr); // TODOREWORK progress?
                 if (rotate180_image)
                     curr_image.mirror(true, true);
 

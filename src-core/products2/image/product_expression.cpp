@@ -260,7 +260,7 @@ namespace satdump
                         {
                             auto macro = splitString(cfg, '=');
                             if (macro.size() == 2)
-                                replaceAllStr(expression, macro[0], macro[1]);
+                                replaceAllStr(expression, macro[0], "(" + macro[1] + ")");
                             else
                                 logger->warn("Invalid macro config!");
                         }

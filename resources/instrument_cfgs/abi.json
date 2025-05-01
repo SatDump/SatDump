@@ -1,6 +1,226 @@
 {
     "name": "ABI",
-    "presets": [],
+    "presets": [
+        {
+            "name": "ABI False Color",
+            "expression": "lut2=lut(lut/goes/abi/wxstar/ch2_curve.png);lut=lut(lut/goes/abi/wxstar/lut.png);ch2 == 1 ? 0 : lut(ch13, lut2(ch2, 0, 0), 0),ch2 == 1 ? 0 : lut(ch13, lut2(ch2, 0, 0), 1), ch2 == 1 ? 0 : lut(ch13, lut2(ch2, 0, 0), 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "ABI Visible False Color",
+            "expression": "cch1=(1, albedo, 0.000000, 1.000000);cch2=(2, albedo, 0.000000, 1.000000);cch3=(3, albedo, 0.000000, 1.000000);cch2^0.45454545454,(cch2^0.45454545454)*0.45+(cch3^0.45454545454)*0.1+(cch1^0.45454545454)*0.45,cch1^0.45454545454"
+        },
+        {
+            "name": "ABI False Color IR Merge",
+            "expression": "bm=equp(maps/nasa_night.jpg);\nlut2=lut(lut/goes/abi/wxstar/ch2_curve.png);\nlut=lut(lut/goes/abi/usradioguycustomlut.png);\ns=(2, sun_angle, 0.000000, 8.000000);\n(lut(ch13, lut2(ch2, 0, 0), 0)) * s + (ch13 * (ch13) + (1-ch13) * bm(0)) * (1-s),\n(lut(ch13, lut2(ch2, 0, 0), 1)) * s + (ch13 * (ch13) + (1-ch13) * bm(1)) * (1-s),\n(lut(ch13, lut2(ch2, 0, 0), 2)) * s + (ch13 * (ch13) + (1-ch13) * bm(2)) * (1-s)"
+        },
+        {
+            "name": "Night Fog Difference",
+            "expression": "cch7=(7, brightness_temperature, 163.000000, 300.000000);\ncch13=(13, brightness_temperature, 163.000000, 300.000000);\nval=(cch13 - cch7 - numerator) / denominator;\nnumerator=minval/input_range;\ndenominator=(maxval-minval)/input_range;\nminval=-16;\nmaxval=16;\ninput_range=137;\nlut=lut(lut/cal/fog_btd.png);\nlut(val, 0, 0),\nlut(val, 0, 1),\nlut(val, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Day Cloud Phase Distinction",
+            "expression": "cch13=(13, brightness_temperature, 219.650000, 280.650000);cch5=(5, albedo, 0.010000, 0.590000);cch2=(2, albedo, 0.000000, 0.780000);1-cch13, cch2, cch5",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "ABI Split Window Difference",
+            "expression": "cch15=(15, brightness_temperature, 163.000000, 300.000000);\ncch13=(13, brightness_temperature, 163.000000, 300.000000);\nval=(cch13 - cch15 - numerator) / denominator;\nnumerator=minval/input_range;\ndenominator=(maxval-minval)/input_range;\nminval=-10;\nmaxval=10;\ninput_range=137;\nlut=lut(lut/cal/abi_split_difference.png);\nlut(val, 0, 0),\nlut(val, 0, 1),\nlut(val, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Clean Longwave IR Window Band",
+            "description": "descriptions/ABICleanLWIR.md",
+            "expression": "cch13=(13, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15.png);lut(cch13, 0, 0),lut(cch13, 0, 1),lut(cch13, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Infrared Longwave Window Band",
+            "description": "descriptions/ABILWIR.md",
+            "expression": "cch14=(14, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15.png);lut(cch14, 0, 0),lut(cch14, 0, 1),lut(cch14, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Dirty Longwave Window",
+            "description": "descriptions/ABIDirtyLWIR.md",
+            "expression": "cch15=(15, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15.png);lut(cch15, 0, 0),lut(cch15, 0, 1),lut(cch15, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Dirty Longwave Window - CIRA",
+            "expression": "cch15=(15, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/Dirty_IR_CIRA.png);lut(cch15, 0, 0),lut(cch15, 0, 1),lut(cch15, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Mid-level Tropospheric Water Vapor",
+            "description": "descriptions/ABIMLWV.md",
+            "expression": "cch9=(9, brightness_temperature, 180.000000, 280.000000);lut=lut(lut/cal/abi_wv_8-10.png);lut(cch9, 0, 0),lut(cch9, 0, 1),lut(cch9, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Upper-Level Tropospheric Water Vapor",
+            "description": "descriptions/ABIULWV.md",
+            "expression": "cch8=(8, brightness_temperature, 180.000000, 280.000000);lut=lut(lut/cal/abi_wv_8-10.png);lut(cch8, 0, 0),lut(cch8, 0, 1),lut(cch8, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Shortwave Window Band",
+            "description": "descriptions/ABISW.md",
+            "expression": "cch7=(7, brightness_temperature, 190.000000, 400.000000);lut=lut(lut/cal/abi_ir_7.png);lut(cch7, 0, 0),lut(cch7, 0, 1),lut(cch7, 0, 2)"
+        },
+        {
+            "name": "Day Cloud Convection",
+            "expression": "cch13=(13, brightness_temperature, 203.000000, 323.000000);cch2=(2, albedo, 0.000000, 1.000000);cch2^0.58823529411,cch2^0.58823529411,1-cch13",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Nighttime Microphysics",
+            "expression": "cch15=(15, brightness_temperature, 163.000000, 330.000000);cch13=(13, brightness_temperature, 163.000000, 330.000000);cch7=(7, brightness_temperature, 163.000000, 330.000000);(cch15-cch13+0.04011976047)/0.05568862275,(cch13-cch7+0.01856287425)/0.0497005988,(cch13-0.48233532934)/0.29401197604",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Day Rocket Plume Detection",
+            "expression": "cch8=(8, brightness_temperature, 233.000000, 253.000000);cch7=(7, brightness_temperature, 273.000000, 338.000000);cch2=(2, albedo, 0.000000, 0.800000);cch7, cch8, cch2",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "789",
+            "expression": "ch7, ch8, ch9",
+            "image": {
+                "individual_equalize": true,
+                "normalize": true
+            }
+        },
+        {
+            "name": "7_13_15",
+            "expression": "ch7,ch13,ch15",
+            "image": {
+                "individual_equalize": true,
+                "normalize": true
+            }
+        },
+        {
+            "name": "Clean Longwave IR (Transparent)",
+            "description": "descriptions/ABICleanLWIR.md",
+            "expression": "cch13=(13, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15_transparent.png);lut(cch13, 0, 0),lut(cch13, 0, 1),lut(cch13, 0, 2),lut(cch13, 0, 3)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Infrared Longwave (Transparent)",
+            "description": "descriptions/ABILWIR.md",
+            "expression": "cch14=(14, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15_transparent.png);lut(cch14, 0, 0),lut(cch14, 0, 1),lut(cch14, 0, 2),lut(cch14, 0, 3)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Dirty Longwave IR (Transparent)",
+            "description": "descriptions/ABIDirtyLWIR.md",
+            "expression": "cch15=(15, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15_transparent.png);lut(cch15, 0, 0),lut(cch15, 0, 1),lut(cch15, 0, 2),lut(cch15, 0, 3)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Shortwave Window Band (Transparent)",
+            "description": "descriptions/ABISW.md",
+            "expression": "cch7=(7, brightness_temperature, 190.000000, 400.000000);lut=lut(lut/cal/abi_ir_7_transparent.png);lut(cch7, 0, 0),lut(cch7, 0, 1),lut(cch7, 0, 2),lut(cch7, 0, 3)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "AWG Cloud Height Algorithm (ACHA)",
+            "expression": "lut=lut(lut/goes/abi/L2/acha.png);lut(chACHA, 0, 0),lut(chACHA, 0, 1),lut(chACHA, 0, 2)"
+        },
+        {
+            "name": "Cloud top Temperature (ACHT)",
+            "expression": "lut=lut(lut/goes/abi/L2/acht.png);lut(chACHT, 0, 0),lut(chACHT, 0, 1),lut(chACHT, 0, 2)"
+        },
+        {
+            "name": "Derived Stability Indices - CAPE",
+            "expression": "lut=lut(lut/goes/abi/L2/dsi-cape.png);lut(chDSI, 0, 0),lut(chDSI, 0, 1),lut(chDSI, 0, 2)"
+        },
+        {
+            "name": "Total Precipitable Water",
+            "expression": "lut=lut(lut/goes/abi/L2/tpw.png);lut(chTPW, 0, 0),lut(chTPW, 0, 1),lut(chTPW, 0, 2)"
+        },
+        {
+            "name": "Rain Rate Per Quarter Hour",
+            "expression": "lut=lut(lut/goes/abi/L2/rrqpe.png);lut(chRRQPE, 0, 0),lut(chRRQPE, 0, 1),lut(chRRQPE, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Land Surface Temperature",
+            "expression": "lut=lut(lut/goes/abi/L2/lst.png);lut(chLST, 0, 0),lut(chLST, 0, 1),lut(chLST, 0, 2)"
+        },
+        {
+            "name": "Land Surface Temperature (tmbates)",
+            "expression": "lut=lut(lut/goes/abi/L2/lst_tmbates.png);lut(chLST, 0, 0),lut(chLST, 0, 1),lut(chLST, 0, 2)"
+        },
+        {
+            "name": "Sea Surface Temperature",
+            "expression": "lut=lut(lut/goes/abi/L2/sst.png);lut(chSST, 0, 0),lut(chSST, 0, 1),lut(chSST, 0, 2)"
+        },
+        {
+            "name": "Sea Surface Temperature (tmbates)",
+            "expression": "lut=lut(lut/goes/abi/L2/sst_tmbates.png);lut(chSST, 0, 0),lut(chSST, 0, 1),lut(chSST, 0, 2)"
+        },
+        {
+            "name": "RRQPE Transparent",
+            "expression": "lut=lut(lut/goes/abi/L2/rrqpe_transparent.png);lut(chRRQPE, 0, 0),lut(chRRQPE, 0, 1),lut(chRRQPE, 0, 2),lut(chRRQPE, 0, 3)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "LST Transparent",
+            "expression": "lut=lut(lut/goes/abi/L2/lst_transparent.png);lut(chLST, 0, 0),lut(chLST, 0, 1),lut(chLST, 0, 2),lut(chLST, 0, 3)"
+        },
+        {
+            "name": "LST Transparent (tmbates)",
+            "expression": "lut=lut(lut/goes/abi/L2/lst_transparent_tmbates.png);lut(chLST, 0, 0),lut(chLST, 0, 1),lut(chLST, 0, 2),lut(chLST, 0, 3)"
+        },
+        {
+            "name": "SST Transparent",
+            "expression": "lut=lut(lut/goes/abi/L2/sst_transparent.png);lut(chSST, 0, 0),lut(chSST, 0, 1),lut(chSST, 0, 2),lut(chSST, 0, 3)"
+        },
+        {
+            "name": "SST Transparent (tmbates)",
+            "expression": "lut=lut(lut/goes/abi/L2/sst_transparent_tmbates.png);lut(chSST, 0, 0),lut(chSST, 0, 1),lut(chSST, 0, 2),lut(chSST, 0, 3)"
+        }
+    ],
     "default": {
         "calibration_ranges": {
             "1": {
