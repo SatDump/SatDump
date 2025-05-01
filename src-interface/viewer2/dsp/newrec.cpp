@@ -14,7 +14,7 @@ namespace satdump
 
             for (auto &d : devs)
             {
-                if (d.type == "airspy")
+                if (d.type == "bladerf")
                 {
                     dev = ndsp::getDeviceInstanceFromInfo(d, ndsp::DeviceBlock::MODE_SINGLE_RX);
                     options_displayer_test.add_options(dev->get_cfg_list());

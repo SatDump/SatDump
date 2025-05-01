@@ -25,6 +25,7 @@
 #include "products2/image/channel_transform.h"
 #include "resources.h"
 #include <cstddef>
+#include <filesystem>
 #include <utility>
 
 namespace satdump
@@ -274,7 +275,7 @@ namespace satdump
         }
 
         // TODOREWORK?
-        void ImageHandler::saveResult(std::string directory) { image::save_img(get_current_img(), directory + "/" + getSaneName()); }
+        void ImageHandler::saveResult(std::string directory) { image::save_img_safe(get_current_img(), directory + "/" + getSaneName()); }
 
         void ImageHandler::do_process()
         {

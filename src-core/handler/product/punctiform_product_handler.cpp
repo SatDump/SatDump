@@ -155,7 +155,7 @@ namespace satdump
                 int autogen_id = 0;
                 while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
                     autogen_id++;
-                image::save_img(img, directory + "/img_" + std::to_string(autogen_id) + ".png");
+                image::save_img_safe(img, directory + "/img_" + std::to_string(autogen_id) + ".png");
             }
         }
 

@@ -1,6 +1,41 @@
 {
     "name": "AHI",
-    "presets": [],
+    "presets": [
+        {
+            "name": "AHI Visible False Color",
+            "expression": "cch1=(1, albedo, 0.000000, 1.000000);cch2=(2, albedo, 0.000000, 1.000000);cch3=(3, albedo, 0.000000, 1.000000);cch4=(4, albedo, 0.000000, 1.000000);cch3^0.45454545454,(cch2^0.45454545454)*0.93+(cch4^0.45454545454)*0.07,cch1^0.45454545454"
+        },
+        {
+            "name": "AHI False Color (WIP)",
+            "expression": "lut2=lut(lut/goes/abi/wxstar/ch2_curve.png);lut=lut(lut/goes/abi/wxstar/lut.png);ch3 == 1 ? 0 : lut(ch13, lut2(ch3, 0, 0), 0),ch3 == 1 ? 0 : lut(ch13, lut2(ch3, 0, 0), 1), ch3 == 1 ? 0 : lut(ch13, lut2(ch3, 0, 0), 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Day Cloud Convection",
+            "expression": "cch13=(13, brightness_temperature, 203.000000, 323.000000);cch3=(3, albedo, 0.000000, 1.000000);cch3^0.58823529411,cch3^0.58823529411,1-cch13",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Upper-Level Tropospheric Water Vapor",
+            "description": "descriptions/ABIULWV.md",
+            "expression": "cch8=(8, brightness_temperature, 180.000000, 280.000000);lut=lut(lut/cal/abi_wv_8-10.png);lut(cch8, 0, 0),lut(cch8, 0, 1),lut(cch8, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Clean Longwave IR Window Band",
+            "description": "descriptions/ABICleanLWIR.md",
+            "expression": "cch13=(13, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15.png);lut(cch13, 0, 0),lut(cch13, 0, 1),lut(cch13, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        }
+    ],
     "default": {
         "calibration_ranges": {
             "1": {

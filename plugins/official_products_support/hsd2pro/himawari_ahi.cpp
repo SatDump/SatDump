@@ -2,13 +2,13 @@
 
 #include "common/image/image.h"
 #include "common/utils.h"
-#include "products2/image_product.h"
 #include "core/exception.h"
 #include "libs/bzlib_utils.h"
 #include "logger.h"
+#include "products2/image_product.h"
 
-#include <set>
 #include <filesystem>
+#include <set>
 
 namespace hsd2pro
 {
@@ -58,8 +58,7 @@ namespace hsd2pro
         {
             dest_length = buffer_size - dest_offset;
             unsigned int consumed;
-            bz2_result = BZ2_bzBuffToBuffDecompress_M((char *)decomp_dest + dest_offset, &dest_length,
-                                                      (char *)data.data() + source_offset, data.size() - source_offset, &consumed, 0, 0);
+            bz2_result = BZ2_bzBuffToBuffDecompress_M((char *)decomp_dest + dest_offset, &dest_length, (char *)data.data() + source_offset, data.size() - source_offset, &consumed, 0, 0);
             source_offset += consumed;
             dest_offset += dest_length;
         } while (bz2_result == 0 && data.size() > source_offset);
@@ -100,8 +99,7 @@ namespace hsd2pro
             size_t num_lines_per_segment = decomp_dest[block_offsets[HSD_DATA_INFO] + 8] << 8 | decomp_dest[block_offsets[HSD_DATA_INFO] + 7];
             uint8_t bit_depth = decomp_dest[block_offsets[HSD_CAL_INFO] + 13]; // Is a 16-bit value, but the value is always below 16, so...
 
-            size_t pixel_offset = num_columns *
-                                  ((decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 6] << 8 | decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 5]) - 1);
+            size_t pixel_offset = num_columns * ((decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 6] << 8 | decomp_dest[block_offsets[HSD_SEGMENT_INFO] + 5]) - 1);
 
             if (!image_out.header_parsed)
             {
@@ -188,12 +186,7 @@ namespace hsd2pro
                     std::string cleanname = std::filesystem::path(path).stem().string();
                     auto splt = splitString(cleanname, '_');
 
-                    if (splt.size() == 8 &&
-                        ori_splt[0] == splt[0] &&
-                        ori_splt[1] == splt[1] &&
-                        ori_splt[2] == splt[2] &&
-                        ori_splt[3] == splt[3] &&
-                        ori_splt[5] == splt[5])
+                    if (splt.size() == 8 && ori_splt[0] == splt[0] && ori_splt[1] == splt[1] && ori_splt[2] == splt[2] && ori_splt[3] == splt[3] && ori_splt[5] == splt[5])
                     {
                         files_to_parse[splt[4]].insert(path);
                     }
@@ -293,9 +286,10 @@ namespace hsd2pro
             nlohmann::json calib_cfg;
             for (size_t i = 0; i < all_images.size(); i++)
             {
-                calib_cfg["vars"]["scale"][i] = all_images[i].calibration_scale;
-                calib_cfg["vars"]["offset"][i] = all_images[i].calibration_offset;
-                calib_cfg["vars"]["kappa"][i] = all_images[i].kappa;
+                int channel_id = all_images[i].channel - 1;
+                calib_cfg["vars"]["scale"][channel_id] = all_images[i].calibration_scale;
+                calib_cfg["vars"]["offset"][channel_id] = all_images[i].calibration_offset;
+                calib_cfg["vars"]["kappa"][channel_id] = all_images[i].kappa;
             }
             ahi_products.set_calibration("goes_nc_abi", calib_cfg);
 
@@ -315,4 +309,4 @@ namespace hsd2pro
             ahi_products.save(pro_output_file);
         }
     }
-}
+} // namespace hsd2pro

@@ -1,7 +1,8 @@
 #include "io.h"
-#include <fstream>
-#include "logger.h"
 #include "core/config.h"
+#include "logger.h"
+#include <fstream>
+#include <string>
 
 namespace image
 {
@@ -54,21 +55,29 @@ namespace image
             save_qoi(img, file);
     }
 
+    void save_img_safe(Image &img, std::string file, bool fast)
+    {
+        int id = 1;
+    recheck:
+        std::string file2 = file + (id > 1 ? ("_" + std::to_string(id)) : "");
+        std::string name2 = file2;
+        if (!image::append_ext(&name2))
+            return;
+        if (std::filesystem::exists(name2))
+        {
+            id++;
+            goto recheck;
+        }
+        image::save_img(img, file2, fast);
+    }
+
     // Append selected file extension
     bool append_ext(std::string *file, bool prod)
     {
         // Do nothing if there's already an extension
-        if (file->find(".png") != std::string::npos ||
-            file->find(".jpeg") != std::string::npos ||
-            file->find(".jpg") != std::string::npos ||
-            file->find(".j2k") != std::string::npos ||
-            file->find(".pgm") != std::string::npos ||
-            file->find(".pbm") != std::string::npos ||
-            file->find(".ppm") != std::string::npos ||
-            file->find(".tif") != std::string::npos ||
-            file->find(".tiff") != std::string::npos ||
-            file->find(".gtif") != std::string::npos ||
-            file->find(".qoi") != std::string::npos)
+        if (file->find(".png") != std::string::npos || file->find(".jpeg") != std::string::npos || file->find(".jpg") != std::string::npos || file->find(".j2k") != std::string::npos ||
+            file->find(".pgm") != std::string::npos || file->find(".pbm") != std::string::npos || file->find(".ppm") != std::string::npos || file->find(".tif") != std::string::npos ||
+            file->find(".tiff") != std::string::npos || file->find(".gtif") != std::string::npos || file->find(".qoi") != std::string::npos)
             return true;
 
         // Otherwise, load the user setting
@@ -95,4 +104,4 @@ namespace image
         *file += "." + image_format;
         return true;
     }
-}
+} // namespace image

@@ -39,8 +39,6 @@ namespace image
         if (img.metadata_obj == nullptr)
             img.metadata_obj = (nlohmann::json *)new nlohmann::json();
 
-        // TODOREWORK don't think we need this anymore? satdump::proj::rescaleProjectionScalarsIfNeeded(proj_cfg, img.width(), img.height());
-
         (*((nlohmann::json *)img.metadata_obj))["proj_cfg"] = proj_cfg;
     }
 

@@ -4,8 +4,8 @@
  * @file  io.h
  */
 
-#include <string>
 #include "image.h"
+#include <string>
 
 namespace image
 {
@@ -158,6 +158,17 @@ namespace image
     void save_img(Image &img, std::string file, bool fast = true);
 
     /**
+     * @brief Save an image to an image file
+     * automatically to the right format if supported.
+     * This variant will NOT override existing files
+     *
+     * @param img image to save
+     * @param file filepath to save the image to with extension
+     * @param fast whether to save using fast mode (slightly worse compression on PNG) or not
+     */
+    void save_img_safe(Image &img, std::string file, bool fast = true);
+
+    /**
      * @brief Append default image file format extension
      * as configured in satdump_cfg.json.
      *
@@ -166,4 +177,4 @@ namespace image
      * @return true if there's already an extension
      */
     bool append_ext(std::string *file, bool prod = false);
-}
+} // namespace image
