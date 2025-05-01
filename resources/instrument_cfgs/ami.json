@@ -1,6 +1,61 @@
 {
     "name": "AMI",
-    "presets": [],
+    "presets": [
+        {
+            "name": "AMI Natural Color",
+            "expression": "cchVI006=(VI006, albedo, 0.000000, 1.000000);cchVI008=(VI008, albedo, 0.000000, 1.000000);cchNR016=(NR016, albedo, 0.000000, 1.000000);cchNR016,cchVI008,cchVI006",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "MCIR",
+            "expression": "cch=(IR105, emissive_radiance, 120.000000, 10.000000); bm=equp(maps/nasa_hd.jpg); cch * (cch) + (1-cch) * bm(0), cch * (cch) + (1-cch) * bm(1), cch * (cch) + (1-cch) * bm(2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Clean Longwave IR Window Band",
+            "description": "descriptions/ABICleanLWIR.md",
+            "expression": "cchIR105=(IR105, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15.png);lut(cchIR105, 0, 0),lut(cchIR105, 0, 1),lut(cchIR105, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Dirty Longwave Window",
+            "description": "descriptions/ABIDirtyLWIR.md",
+            "expression": "cchIR123=(IR123, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/abi_ir_11-15.png);lut(cchIR123, 0, 0),lut(cchIR123, 0, 1),lut(cchIR123, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Dirty Longwave Window - CIRA",
+            "expression": "cchIR123=(IR123, brightness_temperature, 163.000000, 330.000000);lut=lut(lut/cal/Dirty_IR_CIRA.png);lut(cchIR123, 0, 0),lut(cchIR123, 0, 1),lut(cchIR123, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Mid-level Tropospheric Water Vapor",
+            "description": "descriptions/ABIMLWV.md",
+            "expression": "cchWV069=(WV069, brightness_temperature, 180.000000, 280.000000);lut=lut(lut/cal/abi_wv_8-10.png);lut(cchWV069, 0, 0),lut(cchWV069, 0, 1),lut(cchWV069, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "SW038_IR105_IR123",
+            "expression": "chSW038,chIR105,chIR123",
+            "image": {
+                "individual_equalize": true,
+                "remove_background": true,
+                "normalize": true
+            }
+        }
+    ],
     "default": {
         "calibration_ranges": {
             "VI004": {
