@@ -2,20 +2,20 @@
 #include "common/image/io.h"
 #include "common/image/meta.h"
 #include "logger.h"
+#include "resources.h"
 
 namespace satdump
 {
     namespace products
     {
-        image::Image generate_dotmap_product_image(PunctiformProduct *product, std::string channel, int width, int height,
-                                                   int dotsize, bool background, bool use_lut,
-                                                   double min, double max, float *progress)
+        image::Image generate_dotmap_product_image(PunctiformProduct *product, std::string channel, int width, int height, int dotsize, bool background, bool use_lut, double min, double max,
+                                                   float *progress)
         {
             image::Image map;
 
             if (background)
             {
-                image::load_jpeg(map, "resources/maps/nasa.jpg");
+                image::load_jpeg(map, resources::getResourcePath("maps/nasa.jpg"));
                 if (width != -1 && height != -1)
                     map.resize_bilinear(width, height);
             }
@@ -56,10 +56,7 @@ namespace satdump
                 //                              (p.data[1].data[i].value - 13400) / 1000.0,
                 //                              1};
 
-                std::vector<double> color = {(ch.data[i] - min) / (max - min),
-                                             (ch.data[i] - min) / (max - min),
-                                             (ch.data[i] - min) / (max - min),
-                                             1};
+                std::vector<double> color = {(ch.data[i] - min) / (max - min), (ch.data[i] - min) / (max - min), (ch.data[i] - min) / (max - min), 1};
 
                 for (auto &c : color)
                 {
@@ -89,8 +86,7 @@ namespace satdump
             return map;
         }
 
-        image::Image generate_fillmap_product_image(PunctiformProduct *product, std::string channel,
-                                                    int width, int height, double min, double max, float *progress)
+        image::Image generate_fillmap_product_image(PunctiformProduct *product, std::string channel, int width, int height, double min, double max, float *progress)
         {
             struct Pixel
             {
@@ -119,10 +115,7 @@ namespace satdump
                 image_y = image_y % img_y;
                 image_x = image_x % img_x;
 
-                std::vector<double> color = {(ch.data[i] - min) / (max - min),
-                                             (ch.data[i] - min) / (max - min),
-                                             (ch.data[i] - min) / (max - min),
-                                             1};
+                std::vector<double> color = {(ch.data[i] - min) / (max - min), (ch.data[i] - min) / (max - min), (ch.data[i] - min) / (max - min), 1};
 
                 for (auto &c : color)
                 {
@@ -182,5 +175,5 @@ namespace satdump
 
             return map;
         }
-    }
-}
+    } // namespace products
+} // namespace satdump
