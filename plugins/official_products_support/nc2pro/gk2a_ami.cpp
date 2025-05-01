@@ -1,15 +1,15 @@
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
-#include <algorithm>
 
-#include "gk2a_ami.h"
-#include "hdf5_utils.h"
-#include <H5LTpublic.h>
 #include "common/image/image.h"
 #include "common/utils.h"
 #include "core/exception.h"
-#include "products2/image_product.h"
+#include "gk2a_ami.h"
+#include "hdf5_utils.h"
 #include "logger.h"
+#include "products2/image_product.h"
+#include <H5LTpublic.h>
 
 namespace nc2pro
 {
@@ -112,11 +112,7 @@ namespace nc2pro
                     std::string cleanname = std::filesystem::path(path).stem().string();
                     auto splt = splitString(cleanname, '_');
 
-                    if (splt.size() == 6 &&
-                        ori_splt[0] == splt[0] &&
-                        ori_splt[1] == splt[1] &&
-                        ori_splt[2] == splt[2] &&
-                        ori_splt[5] == splt[5])
+                    if (splt.size() == 6 && ori_splt[0] == splt[0] && ori_splt[1] == splt[1] && ori_splt[2] == splt[2] && ori_splt[5] == splt[5])
                     {
                         files_to_parse.push_back(path);
                     }
@@ -221,7 +217,7 @@ namespace nc2pro
             double wavelength_nm = std::stod(all_images[i].channel.substr(2, all_images[i].channel.size() - 1)) * 100;
             ami_products.set_channel_wavenumber(i, 1e7 / wavelength_nm);
             if (all_images[i].kappa > 0)
-                ami_products.set_channel_unit(i, CALIBRATION_ID_ALBEDO); // TODOREWORK reflective radiance
+                ami_products.set_channel_unit(i, CALIBRATION_ID_ALBEDO);
             else
                 ami_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
         }
@@ -230,4 +226,4 @@ namespace nc2pro
             std::filesystem::create_directories(pro_output_file);
         ami_products.save(pro_output_file);
     }
-}
+} // namespace nc2pro

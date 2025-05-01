@@ -12,10 +12,11 @@
         },
         {
             "name": "Natural Color",
+            // TODOREWORK
             "description": "descriptions/NatColor.md"
-        },/*
+        }, /*
         {
-            "name": "Color IR Merge"
+            "name": "Color IR Merge" TODOREWORK
         },
         {
             "name": "10.8µm Thermal IR",

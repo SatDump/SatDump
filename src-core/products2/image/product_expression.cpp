@@ -8,8 +8,8 @@
 
 #include "common/image/io.h"
 
-#include "common/projection/projs/equirectangular.h" // TODOREWORK
-#include "resources.h"                               // TODOREWORK?
+#include "common/projection/projs/equirectangular.h"
+#include "resources.h"
 
 namespace satdump
 {

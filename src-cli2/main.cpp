@@ -11,6 +11,9 @@
 #include "core/pipeline.h"
 #include <memory>
 
+#include "run_as.h"
+#include "run_lua.h"
+
 int main(int argc, char *argv[])
 {
     // Init logger
@@ -37,8 +40,10 @@ int main(int argc, char *argv[])
     app.require_subcommand();
 
     CLI::App *sub_run = app.add_subcommand("run", "Run a script");
+    sub_run->add_option("script", "The script to run")->required();
     sub_run->add_flag("--lua", "Run a Lua script");
     sub_run->add_flag("--as", "Run an AngelScript script");
+    sub_run->require_option(2);
 
     CLI::App *sub_module = app.add_subcommand("module", "Run a single module");
     for (auto &p : modules_registry)
@@ -57,9 +62,9 @@ int main(int argc, char *argv[])
     {
         CLI::App *sub_p = sub_pipeline->add_subcommand(p.name);
 
-        sub_p->add_option("level", "Level of the input file. Can be cadu, file, baseband...");
-        sub_p->add_option("input_file", "Actual input file (eg. metop_ahrpt.cadu, a baseband, etc)");
-        sub_p->add_option("output_folder", "Output folder for processed data");
+        sub_p->add_option("level", "Level of the input file. Can be cadu, file, baseband...")->required();
+        sub_p->add_option("input_file", "Actual input file (eg. metop_ahrpt.cadu, a baseband, etc)")->required();
+        sub_p->add_option("output_folder", "Output folder for processed data")->required();
 
         nlohmann::json common = satdump::config::main_cfg["user_interface"]["default_offline_parameters"];
 
@@ -118,6 +123,19 @@ int main(int argc, char *argv[])
                     std::filesystem::create_directories(output);
 
                 pipeline->run(input, output, params, level);
+            }
+        }
+        else if (subcom->get_name() == "run")
+        {
+            if (subcom->count("--as"))
+            {
+                std::string script = subcom->get_option("script")->as<std::string>();
+                satdump::runAngelScript(script);
+            }
+            else if (subcom->count("--lua"))
+            {
+                std::string script = subcom->get_option("script")->as<std::string>();
+                satdump::runLua(script);
             }
         }
     }

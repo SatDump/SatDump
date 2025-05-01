@@ -1,36 +1,27 @@
-#include "core/plugin.h"
-#include "logger.h"
-#include "core/module.h"
 #include "core/config.h"
+#include "core/module.h"
+#include "core/plugin.h"
 
+#include "goes/grb/module_goes_grb_cadu_extractor.h"
+#include "goes/grb/module_goes_grb_data_decoder.h"
 #include "goes/gvar/module_gvar_decoder.h"
 #include "goes/gvar/module_gvar_image_decoder.h"
 #include "goes/hrit/module_goes_lrit_data_decoder.h"
-#include "goes/grb/module_goes_grb_cadu_extractor.h"
-#include "goes/grb/module_goes_grb_data_decoder.h"
 #include "goes/mdl/module_goes_mdl_decoder.h"
+#include "goes/raw/module_goesr_instruments.h"
 #include "goes/sd/module_goesn_sd_decoder.h"
 #include "goes/sd/module_sd_image_decoder.h"
-#include "goes/raw/module_goesr_instruments.h"
-
-// #include "geo_false_color.h"
-// #include "geo_false_color_ir_merge.h"
 
 #include "goes/hrit/dcs/dcs_settings.h"
 
 class GOESSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "goes_support";
-    }
+    std::string getID() { return "goes_support"; }
 
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
-        // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
-        logger->critical("NO MORE CPP COMPOS TODOREWORK"); //  satdump::eventBus->register_handler<satdump::RequestCppCompositeEvent>(provideCppCompositeHandler);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
         satdump::eventBus->register_handler<goes::hrit::GOESLRITDataDecoderModule::DCPUpdateEvent>(goes::hrit::GOESLRITDataDecoderModule::updateDCPs);
         goes::hrit::initDcsConfig();
@@ -53,12 +44,6 @@ public:
     {
         evt.plugin_config_handlers.push_back({"GOES HRIT DCS Parser", goes::hrit::renderDcsConfig, goes::hrit::saveDcsConfig});
     }
-
-    // static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
-    // {
-    //     if (evt.id == "goes_xrit")
-    //         evt.calibrators.push_back(std::make_shared<goes::hrit::GOESxRITCalibrator>(evt.calib, evt.products));
-    // }
 };
 
 PLUGIN_LOADER(GOESSupport)

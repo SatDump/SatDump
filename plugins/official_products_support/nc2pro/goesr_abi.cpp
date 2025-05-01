@@ -316,7 +316,7 @@ namespace nc2pro
             int channel_id = all_images[i].channel - 1;
 
             if (all_images[i].kappa > 0)
-                abi_products.set_channel_unit(channel_id, CALIBRATION_ID_ALBEDO); // TODOREWORK reflective radiance
+                abi_products.set_channel_unit(channel_id, CALIBRATION_ID_ALBEDO);
             else
                 abi_products.set_channel_unit(channel_id, CALIBRATION_ID_EMISSIVE_RADIANCE);
 
