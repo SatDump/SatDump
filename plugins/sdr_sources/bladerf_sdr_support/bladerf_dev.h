@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <libbladeRF.h>
 #include <string>
-#include <unistd.h>
 
 #include "common/dsp/complex.h"
 #include "nlohmann/json.hpp"
