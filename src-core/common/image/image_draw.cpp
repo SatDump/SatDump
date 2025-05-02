@@ -1,5 +1,5 @@
-#include "image.h"
 #include "core/exception.h"
+#include "image.h"
 
 namespace image
 {
@@ -7,6 +7,8 @@ namespace image
     {
         if (image.d_depth != d_depth)
             throw satdump_exception("draw_image bit depth must be the same! " + std::to_string(d_depth) + " != " + std::to_string(image.depth()));
+        if (image.d_channels != d_channels && image.d_channels != 1)
+            throw satdump_exception("draw_image channel count must be the same or 1! " + std::to_string(d_depth) + " != " + std::to_string(image.depth()));
 
         // Get min height and width, mostly for safety
         int width = std::min<int>(d_width, x0 + image.width()) - x0;
@@ -204,4 +206,4 @@ namespace image
             draw_line(x1, y0, x0, y0, color);
         }
     }
-}
+} // namespace image
