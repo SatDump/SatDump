@@ -1,8 +1,8 @@
-#include "lua_bind.h"
 #include "common/image/image.h"
-#include "common/image/processing.h"
 #include "common/image/io.h"
 #include "common/image/meta.h"
+#include "common/image/processing.h"
+#include "lua_bind.h"
 #include "projection/projection.h"
 
 namespace satdump
@@ -50,6 +50,7 @@ namespace satdump
             image_type["draw_pixel"] = &image::Image::draw_pixel;
             image_type["draw_line"] = &image::Image::draw_line;
             image_type["draw_circle"] = &image::Image::draw_circle;
+            image_type["draw_rectangle"] = &image::Image::draw_rectangle;
             image_type["draw_image"] = &image::Image::draw_image;
             image_type["draw_image_alpha"] = &image::Image::draw_image_alpha;
 
@@ -62,14 +63,8 @@ namespace satdump
             lua["image_load_img"] = (void (*)(image::Image &, std::string))(&image::load_img);
             lua["image_save_img"] = (void (*)(image::Image &, std::string))(&image::save_img);
 
-            lua["image_get_metadata_proj_cfg"] = [](image::Image &img)
-            {
-                return (proj::Projection)image::get_metadata_proj_cfg(img);
-            };
-            lua["image_set_metadata_proj_cfg"] = [](image::Image &img, proj::Projection p)
-            {
-                image::set_metadata_proj_cfg(img, p);
-            };
+            lua["image_get_metadata_proj_cfg"] = [](image::Image &img) { return (proj::Projection)image::get_metadata_proj_cfg(img); };
+            lua["image_set_metadata_proj_cfg"] = [](image::Image &img, proj::Projection p) { image::set_metadata_proj_cfg(img, p); };
         }
-    }
-}
+    } // namespace lua
+} // namespace satdump

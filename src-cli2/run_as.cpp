@@ -7,6 +7,8 @@
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 
 #include "angelscript/scriptsatdump/bind_satdump.h"
+#include "nlohmann/json.hpp"
+#include <cstdio>
 
 // TODOREWORK, this is all temporary
 namespace satdump
@@ -14,19 +16,41 @@ namespace satdump
     // Implement a simple message callback function
     void MessageCallback(const asSMessageInfo *msg, void *param)
     {
-        const char *type = "ERR ";
-        if (msg->type == asMSGTYPE_WARNING)
-            type = "WARN";
-        else if (msg->type == asMSGTYPE_INFORMATION)
-            type = "INFO";
-        // printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
+        bool lint = *((bool *)param);
 
-        if (msg->type == asMSGTYPE_INFORMATION)
-            logger->info("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
-        else if (msg->type == asMSGTYPE_WARNING)
-            logger->warn("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
-        else if (msg->type == asMSGTYPE_ERROR)
-            logger->error("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
+        if (lint)
+        {
+            nlohmann::json l;
+
+            l["type"] = "error";
+            if (msg->type == asMSGTYPE_WARNING)
+                l["type"] = "warn";
+            else if (msg->type == asMSGTYPE_INFORMATION)
+                l["type"] = "info";
+
+            l["file"] = msg->section;
+            l["line"] = msg->row;
+            l["col"] = msg->col;
+            l["msg"] = msg->message;
+
+            printf("%s\n", l.dump().c_str());
+        }
+        else
+        {
+            const char *type = "ERR";
+            if (msg->type == asMSGTYPE_WARNING)
+                type = "WARN";
+            else if (msg->type == asMSGTYPE_INFORMATION)
+                type = "INFO";
+            // printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
+
+            if (msg->type == asMSGTYPE_INFORMATION)
+                logger->info("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
+            else if (msg->type == asMSGTYPE_WARNING)
+                logger->warn("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
+            else if (msg->type == asMSGTYPE_ERROR)
+                logger->error("[AngelScript] %s (%d, %d) : %s : %s", msg->section, msg->row, msg->col, type, msg->message);
+        }
     }
 
     namespace namelog
@@ -39,13 +63,13 @@ namespace satdump
         void critical(std::string &f) { logger->critical("[AngelScript] " + f); }
     } // namespace namelog
 
-    int runAngelScript(std::string file)
+    int runAngelScript(std::string file, bool lint)
     {
         // Create the script engine
         asIScriptEngine *engine = asCreateScriptEngine();
 
         // Set the message callback to receive information on errors in human readable form.
-        int r = engine->SetMessageCallback(asFUNCTION(MessageCallback), 0, asCALL_CDECL);
+        int r = engine->SetMessageCallback(asFUNCTION(MessageCallback), &lint, asCALL_CDECL);
 
         // AngelScript doesn't have a built-in string type, as there is no definite standard
         // string type for C++ applications. Every developer is free to register its own string type.
@@ -95,6 +119,8 @@ namespace satdump
         }
 
         //////////////
+        if (lint)
+            return 0;
 
         // Find the function that is to be called.
         asIScriptModule *mod = engine->GetModule("MyModule");

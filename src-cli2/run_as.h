@@ -4,5 +4,5 @@
 
 namespace satdump
 {
-    int runAngelScript(std::string file);
+    int runAngelScript(std::string file, bool lint);
 }

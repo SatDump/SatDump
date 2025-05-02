@@ -41,9 +41,12 @@ int main(int argc, char *argv[])
 
     CLI::App *sub_run = app.add_subcommand("run", "Run a script");
     sub_run->add_option("script", "The script to run")->required();
-    sub_run->add_flag("--lua", "Run a Lua script");
-    sub_run->add_flag("--as", "Run an AngelScript script");
-    sub_run->require_option(2);
+    auto sub_run_group = sub_run->add_option_group("--lua,--as");
+    sub_run_group->add_flag("--lua", "Run a Lua script");
+    sub_run_group->add_flag("--as", "Run an AngelScript script");
+    sub_run_group->require_option(1);
+    sub_run->add_flag("--lint", "Lint the script, without executing it");
+    sub_run->require_option(2, 3);
 
     CLI::App *sub_module = app.add_subcommand("module", "Run a single module");
     for (auto &p : modules_registry)
@@ -130,7 +133,7 @@ int main(int argc, char *argv[])
             if (subcom->count("--as"))
             {
                 std::string script = subcom->get_option("script")->as<std::string>();
-                satdump::runAngelScript(script);
+                satdump::runAngelScript(script, subcom->count("--lint"));
             }
             else if (subcom->count("--lua"))
             {
