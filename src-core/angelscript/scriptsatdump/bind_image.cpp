@@ -1,12 +1,14 @@
-#include "bind_satdump.h"
+#include "angelscript/angelscript.h"
 #include "angelscript/scriptarray/scriptarray.h"
+#include "bind_satdump.h"
 
 #include "common/image/image.h"
-#include "common/image/processing.h"
 #include "common/image/io.h"
+#include "common/image/processing.h"
 
 #include "bind_json.h"
 #include "common/image/meta.h"
+#include "common/image/text.h"
 
 namespace satdump
 {
@@ -65,10 +67,7 @@ namespace satdump
                 }
 
             protected:
-                virtual ~CScriptImage()
-                {
-                    delete img;
-                }
+                virtual ~CScriptImage() { delete img; }
 
                 mutable int refCount;
 
@@ -78,7 +77,7 @@ namespace satdump
 
             static CScriptImage *ScriptImageFactory() { return new CScriptImage(); }
             static CScriptImage *ScriptImageFactory2(int bit_depth, size_t width, size_t height, int channels) { return new CScriptImage(bit_depth, width, height, channels); }
-        }
+        } // namespace
 
         std::vector<double> arrayToVectorDouble(CScriptArray *array) { return std::vector<double>((double *)array->At(0), (double *)array->At(0) + array->GetSize()); }
 
@@ -103,7 +102,10 @@ namespace satdump
             void draw_circle(void *ptr, int x0, int y0, int radius, CScriptArray *color) { ((CScriptImage *)ptr)->img->draw_circle(x0, y0, radius, arrayToVectorDouble(color)); }
             void draw_circle2(void *ptr, int x0, int y0, int radius, CScriptArray *color, bool fill) { ((CScriptImage *)ptr)->img->draw_circle(x0, y0, radius, arrayToVectorDouble(color), fill); }
             void draw_rectangle(void *ptr, int x0, int y0, int x1, int y1, CScriptArray *color) { ((CScriptImage *)ptr)->img->draw_rectangle(x0, y0, x1, y1, arrayToVectorDouble(color)); }
-            void draw_rectangle2(void *ptr, int x0, int y0, int x1, int y1, CScriptArray *color, bool fill) { ((CScriptImage *)ptr)->img->draw_rectangle(x0, y0, x1, y1, arrayToVectorDouble(color), fill); }
+            void draw_rectangle2(void *ptr, int x0, int y0, int x1, int y1, CScriptArray *color, bool fill)
+            {
+                ((CScriptImage *)ptr)->img->draw_rectangle(x0, y0, x1, y1, arrayToVectorDouble(color), fill);
+            }
 
             void init(void *ptr, int bit_depth, size_t width, size_t height, int channels) { ((CScriptImage *)ptr)->img->init(bit_depth, width, height, channels); };
             void clear(void *ptr) { ((CScriptImage *)ptr)->img->clear(); };
@@ -148,13 +150,13 @@ namespace satdump
             double getf2(void *ptr, size_t channel, size_t p) { return ((CScriptImage *)ptr)->img->getf(channel, p); }
             void setf3(void *ptr, size_t channel, size_t x, size_t y, double v) { ((CScriptImage *)ptr)->img->setf(channel, x, y, v); }
             double getf3(void *ptr, size_t channel, size_t x, size_t y) { return ((CScriptImage *)ptr)->img->getf(channel, x, y); }
-        }
+        } // namespace img
 
         namespace io
         {
             void load_img(CScriptImage *img, std::string file) { image::load_img(*img->img, file); }
             void save_img(CScriptImage *img, std::string file, bool fast) { image::save_img(*img->img, file, fast); }
-        }
+        } // namespace io
 
         namespace proc
         {
@@ -174,7 +176,7 @@ namespace satdump
 
             void simple_despeckle(CScriptImage *img) { image::simple_despeckle(*img->img); }
             void simple_despeckle2(CScriptImage *img, int thresold) { image::simple_despeckle(*img->img, thresold); }
-        }
+        } // namespace proc
 
         namespace meta
         {
@@ -182,7 +184,17 @@ namespace satdump
             void set_metadata(CScriptImage *img, CScriptJson *metadata) { return image::set_metadata(*img->img, *metadata->j); }
             CScriptJson *get_metadata(CScriptImage *img) { return new CScriptJson(image::get_metadata(*img->img)); }
             void free_metadata(CScriptImage *img) { return image::free_metadata(*img->img); }
-        }
+        } // namespace meta
+
+        namespace text
+        {
+            void TextDrawerConstructor(void *memory) { new (memory) image::TextDrawer(); }
+            void TextDrawerDestructor(void *memory) { ((image::TextDrawer *)memory)->~TextDrawer(); }
+            void draw_text(void *ptr, CScriptImage *img, int xs0, int ys0, CScriptArray *color, int size, std::string text)
+            {
+                ((image::TextDrawer *)ptr)->draw_text(*img->img, xs0, ys0, arrayToVectorDouble(color), size, text);
+            }
+        } // namespace text
 
         void registerImage(asIScriptEngine *engine)
         {
@@ -313,6 +325,18 @@ namespace satdump
             engine->RegisterGlobalFunction("void set_metadata(Image &, nlohmann::json &)", asFUNCTION(meta::set_metadata), asCALL_CDECL);
             engine->RegisterGlobalFunction("nlohmann::json@ get_metadata(Image &)", asFUNCTION(meta::get_metadata), asCALL_CDECL);
             engine->RegisterGlobalFunction("void free_metadata(Image &)", asFUNCTION(meta::free_metadata), asCALL_CDECL);
+
+            ////////////////////////////////
+            //////// Image Text
+            ////////////////////////////////
+
+            engine->RegisterObjectType("TextDrawer", sizeof(image::TextDrawer), asOBJ_VALUE | asGetTypeTraits<image::TextDrawer>());
+            engine->RegisterObjectBehaviour("TextDrawer", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(text::TextDrawerConstructor), asCALL_CDECL_OBJLAST);
+            engine->RegisterObjectBehaviour("TextDrawer", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(text::TextDrawerDestructor), asCALL_CDECL_OBJLAST);
+
+            engine->RegisterObjectMethod("TextDrawer", "void init_font(string &in)", asMETHOD(image::TextDrawer, init_font), asCALL_THISCALL);
+            engine->RegisterObjectMethod("TextDrawer", "bool fond_ready()", asMETHOD(image::TextDrawer, font_ready), asCALL_THISCALL);
+            engine->RegisterObjectMethod("TextDrawer", "void draw_text(Image &, int, int, array<double>@, int, string)", asFUNCTION(text::draw_text), asCALL_CDECL_OBJFIRST);
         }
-    }
-}
+    } // namespace script
+} // namespace satdump

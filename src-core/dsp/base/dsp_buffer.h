@@ -4,6 +4,7 @@
  * @file dsp_buffer.h
  */
 
+#include "dll_export.h"
 #include <cstddef>
 #include <cstdint>
 #include <volk/volk.h>
@@ -32,7 +33,7 @@ namespace satdump
             DSP_BUFFER_TYPE_INVALID = 255,
         };
 
-        extern const size_t volk_alignment;
+        SATDUMP_DLL extern const size_t volk_alignment;
 
         /**
          * @brief DSP Buffer class
@@ -64,7 +65,10 @@ namespace satdump
              * @return sample pointer
              */
             template <typename T>
-            inline T *getSamples() { return (T *)ptr; }
+            inline T *getSamples()
+            {
+                return (T *)ptr;
+            }
 
             /**
              * @brief Checks if this buffer is a terminator.
@@ -119,5 +123,5 @@ namespace satdump
                 return b;
             }
         };
-    }
-}
+    } // namespace ndsp
+} // namespace satdump
