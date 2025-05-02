@@ -19,8 +19,6 @@
 #include "dsp/const/const_disp.h"
 #include "dsp/pll/costas.h"
 
-#include <memory>
-
 #include "nlohmann/json_utils.h"
 
 // #include "dsp/device/airspy/airspy_dev.h"
