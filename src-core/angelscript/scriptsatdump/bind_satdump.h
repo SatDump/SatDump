@@ -7,6 +7,7 @@ namespace satdump
     namespace script
     {
         // TODOREWORK document
+        void registerSystem(asIScriptEngine *engine);
         void registerJson(asIScriptEngine *engine);
         void registerGeodetic(asIScriptEngine *engine);
         void registerProj(asIScriptEngine *engine);
@@ -14,6 +15,7 @@ namespace satdump
 
         inline void registerAll(asIScriptEngine *engine)
         {
+            registerSystem(engine);
             registerJson(engine);
             registerGeodetic(engine);
             registerProj(engine);

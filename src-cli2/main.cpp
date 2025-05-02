@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
     for (auto *subcom : app.get_subcommands())
     {
-        std::cout << "Subcommand: " << subcom->get_name() << '\n';
+        //  std::cout << "Subcommand: " << subcom->get_name() << '\n';
 
         if (subcom->get_name() == "pipeline")
         {

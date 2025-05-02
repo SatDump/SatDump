@@ -13,12 +13,19 @@
 // TODOREWORK, this is all temporary
 namespace satdump
 {
+    struct JSONDiags
+    {
+        bool lint;
+        int ndiags = 0;
+        nlohmann::json all_diags;
+    };
+
     // Implement a simple message callback function
     void MessageCallback(const asSMessageInfo *msg, void *param)
     {
-        bool lint = *((bool *)param);
+        JSONDiags *p = (JSONDiags *)param;
 
-        if (lint)
+        if (p->lint)
         {
             nlohmann::json l;
 
@@ -33,7 +40,7 @@ namespace satdump
             l["col"] = msg->col;
             l["msg"] = msg->message;
 
-            printf("%s\n", l.dump().c_str());
+            p->all_diags["diags"][p->ndiags++] = l;
         }
         else
         {
@@ -69,7 +76,10 @@ namespace satdump
         asIScriptEngine *engine = asCreateScriptEngine();
 
         // Set the message callback to receive information on errors in human readable form.
-        int r = engine->SetMessageCallback(asFUNCTION(MessageCallback), &lint, asCALL_CDECL);
+        JSONDiags diags;
+        diags.lint = lint;
+        diags.all_diags["file"] = file;
+        int r = engine->SetMessageCallback(asFUNCTION(MessageCallback), &diags, asCALL_CDECL);
 
         // AngelScript doesn't have a built-in string type, as there is no definite standard
         // string type for C++ applications. Every developer is free to register its own string type.
@@ -97,8 +107,11 @@ namespace satdump
         {
             // If the code fails here it is usually because there
             // is no more memory to allocate the module
-            printf("Unrecoverable error while starting a new module.\n");
-            return 1;
+            if (!lint)
+            {
+                printf("Unrecoverable error while starting a new module.\n");
+                return 1;
+            }
         }
         r = builder.AddSectionFromFile(file.c_str());
         if (r < 0)
@@ -106,21 +119,30 @@ namespace satdump
             // The builder wasn't able to load the file. Maybe the file
             // has been removed, or the wrong name was given, or some
             // preprocessing commands are incorrectly written.
-            printf("Please correct the errors in the script and try again.\n");
-            return 1;
+            if (!lint)
+            {
+                printf("Please correct the errors in the script and try again.\n");
+                return 1;
+            }
         }
         r = builder.BuildModule();
         if (r < 0)
         {
             // An error occurred. Instruct the script writer to fix the
             // compilation errors that were listed in the output stream.
-            printf("Please correct the errors in the script and try again.\n");
-            return 1;
+            if (!lint)
+            {
+                printf("Please correct the errors in the script and try again.\n");
+                return 1;
+            }
         }
 
         //////////////
         if (lint)
+        {
+            printf("%s\n", diags.all_diags.dump(4).c_str());
             return 0;
+        }
 
         // Find the function that is to be called.
         asIScriptModule *mod = engine->GetModule("MyModule");
