@@ -1,6 +1,11 @@
 #include "bind_satdump.h"
 #include <string>
 
+#ifdef _WIN32
+#include <TlHelp32.h>
+#include <Windows.h>
+#endif
+
 namespace satdump
 {
     namespace script

@@ -6,6 +6,8 @@
 #include <string>
 #include <string_view>
 
+// Adapted from https://github.com/sashi0034/angel-lsp/blob/HEAD/examples/generate_as_predefined.cpp
+
 namespace satdump
 {
     namespace script
