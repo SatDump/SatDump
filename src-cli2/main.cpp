@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     sub_run_group->add_flag("--as", "Run an AngelScript script");
     sub_run_group->require_option(1);
     sub_run->add_flag("--lint", "Lint the script, without executing it");
+    sub_run->add_flag("--predef", "Dump as.predefined");
     sub_run->require_option(2, 3);
 
     CLI::App *sub_module = app.add_subcommand("module", "Run a single module");
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
             if (subcom->count("--as"))
             {
                 std::string script = subcom->get_option("script")->as<std::string>();
-                satdump::runAngelScript(script, subcom->count("--lint"));
+                satdump::runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));
             }
             else if (subcom->count("--lua"))
             {

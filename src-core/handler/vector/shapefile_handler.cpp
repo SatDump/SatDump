@@ -1,5 +1,6 @@
 #include "shapefile_handler.h"
 
+#include "core/config.h"
 #include "dbf_file/dbf_file.h"
 #include "logger.h"
 
@@ -18,8 +19,7 @@ namespace satdump
 
             std::ifstream f(shapefile, std::ios::binary);
             file = std::make_unique<shapefile::Shapefile>(f);
-            std::string db = std::filesystem::path(shapefile).parent_path().string() + "/" +
-                             std::filesystem::path(shapefile).stem().string() + ".dbf";
+            std::string db = std::filesystem::path(shapefile).parent_path().string() + "/" + std::filesystem::path(shapefile).stem().string() + ".dbf";
             shapefile_name = std::filesystem::path(shapefile).stem().string() + ".shp";
             logger->critical(db);
             if (std::filesystem::exists(db))
@@ -27,16 +27,22 @@ namespace satdump
                 dbf_file = dbf_file::readDbfFile(db);
                 logger->critical("JSON : \n%s\n", dbf_file.dump(4).c_str());
             }
+
+            if (!config::main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()].is_null())
+                setConfig(config::main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()]);
         }
 
-        ShapefileHandler::~ShapefileHandler() {}
+        ShapefileHandler::~ShapefileHandler()
+        {
+            config::main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()] = getConfig();
+            config::saveUserConfig();
+        }
 
         void ShapefileHandler::drawMenu()
         {
             if (ImGui::CollapsingHeader("Settings"))
             {
-                ImGui::ColorEdit3("##shapefilecolor##Color", (float *)&color_to_draw,
-                                  ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
+                ImGui::ColorEdit3("##shapefilecolor##Color", (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
             }
         }
 
@@ -95,35 +101,42 @@ namespace satdump
             }
         }
 
-        void ShapefileHandler::setConfig(nlohmann::json p) {}
+        void ShapefileHandler::setConfig(nlohmann::json p)
+        {
+            if (p.contains("color"))
+            {
+                auto &c = p["color"];
+                color_to_draw.x = c[0];
+                color_to_draw.y = c[1];
+                color_to_draw.z = c[2];
+                color_to_draw.w = c[3];
+            }
+        }
 
         nlohmann::json ShapefileHandler::getConfig()
         {
             nlohmann::json p;
+            p["color"] = {color_to_draw.x, color_to_draw.y, color_to_draw.z, color_to_draw.w};
             return p;
         }
 
-        void ShapefileHandler::draw_to_image(
-            image::Image &img, std::function<std::pair<double, double>(double, double, double, double)> projectionFunc)
+        void ShapefileHandler::draw_to_image(image::Image &img, std::function<std::pair<double, double>(double, double, double, double)> projectionFunc)
         {
             // TODOREWORK
             std::vector<double> color = {color_to_draw.x, color_to_draw.y, color_to_draw.z, color_to_draw.w};
 
             {
-                std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw =
-                    [color, &img, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
+                std::function<void(std::vector<std::vector<shapefile::point_t>>)> polylineDraw = [color, &img, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts)
                 {
                     int width = img.width();
                     int height = img.height();
 
                     for (std::vector<shapefile::point_t> coordinates : parts)
                     {
-                        std::pair<double, double> start =
-                            projectionFunc(coordinates[0].y, coordinates[0].x, height, width);
+                        std::pair<double, double> start = projectionFunc(coordinates[0].y, coordinates[0].x, height, width);
                         for (int i = 1; i < (int)coordinates.size() - 1; i++)
                         {
-                            std::pair<double, double> end =
-                                projectionFunc(coordinates[i].y, coordinates[i].x, height, width);
+                            std::pair<double, double> end = projectionFunc(coordinates[i].y, coordinates[i].x, height, width);
                             if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
                                 img.draw_line(start.first, start.second, end.first, end.second, color);
 
@@ -132,11 +145,9 @@ namespace satdump
                     }
                 };
 
-                std::function<void(shapefile::point_t)> pointDraw =
-                    [color, &img, &projectionFunc](shapefile::point_t coordinates)
+                std::function<void(shapefile::point_t)> pointDraw = [color, &img, &projectionFunc](shapefile::point_t coordinates)
                 {
-                    std::pair<double, double> cc =
-                        projectionFunc(coordinates.y, coordinates.x, img.height(), img.width());
+                    std::pair<double, double> cc = projectionFunc(coordinates.y, coordinates.x, img.height(), img.width());
 
                     if (cc.first == -1 || cc.second == -1)
                         return;

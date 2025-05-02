@@ -1,4 +1,5 @@
 #include "run_as.h"
+#include "angelscript/scriptsatdump/dump_predef.h"
 #include "logger.h"
 
 #include "angelscript/angelscript.h"
@@ -70,7 +71,7 @@ namespace satdump
         void critical(std::string &f) { logger->critical("[AngelScript] " + f); }
     } // namespace namelog
 
-    int runAngelScript(std::string file, bool lint)
+    int runAngelScript(std::string file, bool lint, bool predef)
     {
         // Create the script engine
         asIScriptEngine *engine = asCreateScriptEngine();
@@ -97,6 +98,9 @@ namespace satdump
         engine->RegisterGlobalFunction("void warn(const string &in)", asFUNCTION(namelog::error), asCALL_CDECL);
         engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(namelog::error), asCALL_CDECL);
         engine->RegisterGlobalFunction("void critical(const string &in)", asFUNCTION(namelog::critical), asCALL_CDECL);
+
+        if (predef)
+            script::GenerateScriptPredefined(engine, "../as.predefined");
 
         // The CScriptBuilder helper is an add-on that loads the file,
         // performs a pre-processing pass if necessary, and then tells
