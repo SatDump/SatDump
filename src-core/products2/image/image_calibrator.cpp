@@ -4,15 +4,34 @@
 
 #include "calibration_units.h"
 #include "common/lrit/generic_xrit_calibrator.h"
+#include "nlohmann/json.hpp"
+#include <memory>
 
 namespace satdump
 {
     namespace products
     {
+        // TODOREWORK???
+        namespace
+        {
+            class DummyCalibrator : public ImageCalibrator
+            {
+            public:
+                DummyCalibrator(ImageProduct *p, nlohmann::json c) : ImageCalibrator(p, c) {}
+
+            protected:
+                double compute(int abs_idx, int x, int y, uint32_t val) { return CALIBRATION_INVALID_VALUE; }
+            };
+        } // namespace
+
         std::shared_ptr<ImageCalibrator> get_calibrator_from_product(ImageProduct *p)
         {
             if (!p->has_calibration())
-                return nullptr;
+            {
+                logger->error("No calibration info. Using Dummy (" + p->instrument_name + ")!");
+                return std::make_shared<DummyCalibrator>(p, nlohmann::json());
+                // return nullptr;
+            }
 
             std::string id = p->get_calibration().first;
             nlohmann::json cfg = p->get_calibration().second;
@@ -39,10 +58,7 @@ namespace satdump
             //                throw satdump_exception("Non-default unit not supported yet!");
 
             auto &ori = product->images[channel_id];
-            image::Image out(ori.image.depth(),
-                             ori.image.width(),
-                             ori.image.height(),
-                             1);
+            image::Image out(ori.image.depth(), ori.image.width(), ori.image.height(), 1);
 
             calibration::UnitConverter converter; // TODOREWORK cleanup this whole file?
             converter.set_proj(product->get_proj_cfg(product->get_channel_image(channel_name).abs_index));
@@ -77,5 +93,5 @@ namespace satdump
 
             return out;
         }
-    }
-}
+    } // namespace products
+} // namespace satdump

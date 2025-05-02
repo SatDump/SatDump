@@ -25,8 +25,8 @@ namespace satdump
                 channel_selection_box_str += "Channel " + img.channel_name + '\0';
 
             // TODOREWORK
-            if (product->has_calibration())
-                img_calibrator = products::get_calibrator_from_product(product);
+            // if (product->has_calibration())
+            img_calibrator = products::get_calibrator_from_product(product);
             if (img_calibrator)
                 images_can_be_calibrated = true;
 
