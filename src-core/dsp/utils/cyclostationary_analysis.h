@@ -21,16 +21,16 @@ namespace satdump
 
             void init() {}
 
-            nlohmann::json get_cfg()
+            nlohmann::json get_cfg(std::string key)
             {
-                nlohmann::json v;
-
-                return v;
+                throw satdump_exception(key);
             }
 
-            void set_cfg(nlohmann::json v)
+            cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
-                //  setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
+                throw satdump_exception(key);
+                return RES_OK;
+                 // setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
             }
         };
     } // namespace ndsp
