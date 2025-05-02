@@ -1,10 +1,11 @@
 #pragma once
 
-#include "projection/raytrace/common/satellite_raytracer_sattrack.h"
 #include "common/geodetic/euler_raytrace.h"
 #include "nlohmann/json_utils.h"
+#include "projection/raytrace/common/satellite_raytracer_sattrack.h"
 
 #include "common/tracking/interpolator.h"
+#include <cstddef>
 
 namespace jpss
 {
@@ -24,8 +25,7 @@ namespace jpss
         std::vector<predict_position> sat_positions;
 
     public:
-        VIIRSNormalLineSatProj(nlohmann::ordered_json cfg)
-            : satdump::proj::SatelliteRaytracerSatTrack(cfg)
+        VIIRSNormalLineSatProj(nlohmann::ordered_json cfg) : satdump::proj::SatelliteRaytracerSatTrack(cfg)
         {
             timestamps = cfg["timestamps"].get<std::vector<double>>();
 
@@ -55,6 +55,9 @@ namespace jpss
             if (timestamp == -1)
                 return 1;
 
+            if (otime != nullptr)
+                *otime = timestamp;
+
             auto pos_curr = sat_positions[iy];
 
             geodetic::euler_coords_t satellite_pointing;
@@ -73,4 +76,4 @@ namespace jpss
                 return 0;
         }
     };
-}
+} // namespace jpss

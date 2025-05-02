@@ -3,9 +3,11 @@
 #include "../handler.h"
 #include "../processing_handler.h"
 
+#include "common/image/hue_saturation_json.h"
 #include "common/image/meta.h"
 #include "common/widgets/image_view.h"
 
+#include "nlohmann/json.hpp"
 #include "projection/projection.h"
 
 namespace satdump
@@ -32,6 +34,8 @@ namespace satdump
             void updateImage(image::Image &img); // TODOREWORK
 
             // All params
+            bool huesaturation_img = false;
+            image::HueSaturation huesaturation_cfg_img;
             bool equalize_img = false;
             bool equalize_perchannel_img = false;
             bool white_balance_img = false;

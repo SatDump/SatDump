@@ -347,18 +347,18 @@
         },
         {
             "name": "MCIR (Uncalibrated)",
-            // TODOREWORK
-            "description": "descriptions/MCIR.md"
+            "description": "descriptions/MCIR.md",
+            "expression": "bm=equp(maps/nasa_hd.jpg); chb * (chb) + (1-chb) * bm(0), chb * (chb) + (1-chb) * bm(1), chb * (chb) + (1-chb) * bm(2)"
         },
         {
             "name": "MSA (Uncalibrated)",
-            // TODOREWORK
-            "description": "descriptions/MSA.md"
+            "description": "descriptions/MSA.md",
+            "expression": "bm=equp(maps/nasa_hd.jpg); ch=(cha) * 1.5;ch * (ch) + (1-ch) * bm(0), ch * (ch) + (1-ch) * bm(1), ch * (ch) + (1-ch) * bm(2)"
         },
         {
             "name": "MCIR Rain (Uncalibrated)",
-            // TODOREWORK
-            "description": "descriptions/MCIR_precip.md"
+            "description": "descriptions/MCIR_precip.md",
+            "expression": "bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/WXtoImg-NO.png);lut(1-chb, 0, 0) * (chb) + (1-chb) * bm(0), lut(1-chb, 0, 1) * (chb) + (1-chb) * bm(1),lut(1-chb, 0, 2) * (chb) + (1-chb) * bm(2)"
         },
         {
             "name": "HVC (channel 1)",
