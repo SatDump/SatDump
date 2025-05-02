@@ -105,7 +105,7 @@ namespace satdump
                         continue;
                     const std::string_view ns = f->GetNamespace();
                     if (not ns.empty())
-                        stream << "namespace " << ns << " { ";             // std::format("namespace {} {{ ", ns);
+                        stream << "namespace " << ns << " { ";              // std::format("namespace {} {{ ", ns);
                     stream << f->GetDeclaration(false, false, true) << ";"; // std::format("{};", f->GetDeclaration(false, false, true));
                     if (not ns.empty())
                         stream << " }";
@@ -160,7 +160,7 @@ namespace satdump
         /// @brief Generate 'as.predefined' file, which contains all defined symbols in C++. It is used by the language server.
         void GenerateScriptPredefined(const asIScriptEngine *engine, const std::string &path)
         {
-            assert(path.ends_with("as.predefined"));
+            //            assert(path.ends_with("as.predefined"));
 
             std::ofstream stream{path};
 

@@ -1,12 +1,5 @@
-#include "angelscript/scriptarray/scriptarray.h"
 #include "bind_satdump.h"
-
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
-
-#include "bind_json.h"
-#include "common/image/meta.h"
+#include <string>
 
 namespace satdump
 {
@@ -124,9 +117,7 @@ namespace satdump
         void registerSystem(asIScriptEngine *engine)
         {
             engine->RegisterGlobalFunction("int exec(const string &in)", asFUNCTIONPR(ExecSystemCmd, (const std::string &), int), asCALL_CDECL);
-            assert(r >= 0);
             engine->RegisterGlobalFunction("int exec(const string &in, string &out)", asFUNCTIONPR(ExecSystemCmd, (const std::string &, std::string &), int), asCALL_CDECL);
-            assert(r >= 0);
         }
     } // namespace script
 } // namespace satdump
