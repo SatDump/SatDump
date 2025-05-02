@@ -1,4 +1,5 @@
 #include "text.h"
+#include "resources.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
 #include "common/image/font/imstb_truetype.h"
@@ -12,8 +13,8 @@
 #ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "logger.h"
 
@@ -54,6 +55,8 @@ namespace image
         infile.close();
         has_font = true;
     }
+
+    void TextDrawer::init_font() { init_font(resources::getResourcePath("fonts/font.ttf")); }
 
     void TextDrawer::draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int s, std::string text)
     {
@@ -131,8 +134,7 @@ namespace image
                     if (m != 0 && pos2 < img.width() * img.height())
                     {
                         float mf = m / 255.0;
-                        std::vector<double> col = {(color[0] - img.getf(0, pos2)) * mf + img.getf(0, pos2),
-                                                   img.channels() > 1 ? ((color[1] - img.getf(1, pos2)) * mf + img.getf(1, pos2)) : 1,
+                        std::vector<double> col = {(color[0] - img.getf(0, pos2)) * mf + img.getf(0, pos2), img.channels() > 1 ? ((color[1] - img.getf(1, pos2)) * mf + img.getf(1, pos2)) : 1,
                                                    img.channels() > 2 ? ((color[2] - img.getf(2, pos2)) * mf + img.getf(2, pos2)) : 1,
                                                    img.channels() > 3 ? ((color[3] - img.getf(3, pos2)) * mf + img.getf(3, pos2)) : 1};
                         img.draw_pixel(x, y, col);
@@ -145,4 +147,4 @@ namespace image
             CP += SF * info.advance;
         }
     }
-}
+} // namespace image

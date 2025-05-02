@@ -4,8 +4,8 @@
  * @file text.h
  */
 
-#include "image.h"
 #include "common/image/font/imstb_truetype.h"
+#include "image.h"
 #include <string>
 
 namespace image
@@ -51,6 +51,11 @@ namespace image
         void init_font(std::string font_path);
 
         /**
+         * @brief Init with the default font
+         */
+        void init_font();
+
+        /**
          * @brief Is the font ready?
          * @return true if the font is ready
          */
@@ -67,4 +72,4 @@ namespace image
          */
         void draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int size, std::string text);
     };
-}
+} // namespace image

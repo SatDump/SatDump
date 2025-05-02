@@ -334,8 +334,9 @@ namespace satdump
             engine->RegisterObjectBehaviour("TextDrawer", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(text::TextDrawerConstructor), asCALL_CDECL_OBJLAST);
             engine->RegisterObjectBehaviour("TextDrawer", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(text::TextDrawerDestructor), asCALL_CDECL_OBJLAST);
 
-            engine->RegisterObjectMethod("TextDrawer", "void init_font(string &in)", asMETHOD(image::TextDrawer, init_font), asCALL_THISCALL);
-            engine->RegisterObjectMethod("TextDrawer", "bool fond_ready()", asMETHOD(image::TextDrawer, font_ready), asCALL_THISCALL);
+            engine->RegisterObjectMethod("TextDrawer", "void init_font(string &in)", asMETHODPR(image::TextDrawer, init_font, (std::string), void), asCALL_THISCALL);
+            engine->RegisterObjectMethod("TextDrawer", "void init_font()", asMETHODPR(image::TextDrawer, init_font, (), void), asCALL_THISCALL);
+            engine->RegisterObjectMethod("TextDrawer", "bool font_ready()", asMETHOD(image::TextDrawer, font_ready), asCALL_THISCALL);
             engine->RegisterObjectMethod("TextDrawer", "void draw_text(Image &, int, int, array<double>@, int, string)", asFUNCTION(text::draw_text), asCALL_CDECL_OBJFIRST);
         }
     } // namespace script
