@@ -32,7 +32,7 @@ namespace satdump
                         stream << "\n";
                     }
                     stream << "}\n";
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "}\n";
                 }
             }
@@ -43,11 +43,11 @@ namespace satdump
                 for (int i = 0; i < engine->GetObjectTypeCount(); i++)
                 {
                     const auto t = engine->GetObjectTypeByIndex(i);
-                    if (not t)
+                    if (!t)
                         continue;
 
                     const std::string_view ns = t->GetNamespace();
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "namespace " << ns << " {\n"; // std::format("namespace {} {{\n", ns);
 
                     stream << "class " << t->GetName(); // std::format("class {}", t->GetName());
@@ -90,7 +90,7 @@ namespace satdump
                                << ";\n"; // std::format("\tfuncdef {};\n", t->GetChildFuncdef(j)->GetFuncdefSignature()->GetDeclaration(false));
                     }
                     stream << "}\n";
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "}\n";
                 }
             }
@@ -101,13 +101,13 @@ namespace satdump
                 for (int i = 0; i < engine->GetGlobalFunctionCount(); i++)
                 {
                     const auto f = engine->GetGlobalFunctionByIndex(i);
-                    if (not f)
+                    if (!f)
                         continue;
                     const std::string_view ns = f->GetNamespace();
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "namespace " << ns << " { ";              // std::format("namespace {} {{ ", ns);
                     stream << f->GetDeclaration(false, false, true) << ";"; // std::format("{};", f->GetDeclaration(false, false, true));
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << " }";
                     stream << "\n";
                 }
@@ -128,11 +128,11 @@ namespace satdump
                         continue;
 
                     std::string_view ns = ns0;
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "namespace " << ns << " { "; // std::format("namespace {} {{ ", ns);
 
                     stream << t << " " << name << ";"; // std::format("{} {};", t, name);
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << " }";
                     stream << "\n";
                 }
@@ -144,14 +144,14 @@ namespace satdump
                 for (int i = 0; i < engine->GetTypedefCount(); ++i)
                 {
                     const auto type = engine->GetTypedefByIndex(i);
-                    if (not type)
+                    if (!type)
                         continue;
                     const std::string_view ns = type->GetNamespace();
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "namespace " << ns << " {\n"; // std::format("namespace {} {{\n", ns);
                     stream << "typedef " << engine->GetTypeDeclaration(type->GetTypedefTypeId()) << " " << type->GetName()
                            << ";\n"; // std::format("typedef {} {};\n", engine->GetTypeDeclaration(type->GetTypedefTypeId()), type->GetName());
-                    if (not ns.empty())
+                    if (!ns.empty())
                         stream << "}\n";
                 }
             }
