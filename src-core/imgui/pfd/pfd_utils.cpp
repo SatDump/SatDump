@@ -1,9 +1,10 @@
-#include <algorithm>
-#include <sstream>
-#include "portable-file-dialogs.h"
+#include "pfd_utils.h"
 #include "core/config.h"
 #include "logger.h"
-#include "pfd_utils.h"
+#include "portable-file-dialogs.h"
+#include <algorithm>
+#include <cstdio>
+#include <sstream>
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -15,13 +16,8 @@ namespace satdump
 {
     std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image *image, std::string *default_ext)
     {
-        std::vector<std::string> saveopts = {
-            "PNG Files", "*.png",
-            "JPEG 2000 Files", "*.j2k",
-            "JPEG Files", "*.jpg *.jpeg",
-            "PBM Files", "*.pbm *.pgm *.ppm",
-            "TIFF Files", "*.tif *.tiff *.gtif",
-            "QOI Files", "*.qoi"};
+        std::vector<std::string> saveopts = {"PNG Files",         "*.png",      "JPEG 2000 Files",     "*.j2k",     "JPEG Files", "*.jpg *.jpeg", "PBM Files",
+                                             "*.pbm *.pgm *.ppm", "TIFF Files", "*.tif *.tiff *.gtif", "QOI Files", "*.qoi"};
 
         size_t i = 1;
         for (auto it = saveopts.begin() + 1;; it += 2)
@@ -87,4 +83,4 @@ namespace satdump
 #endif
         return path;
     }
-}
+} // namespace satdump

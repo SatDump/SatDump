@@ -1,5 +1,6 @@
 #include "flowgraph.h"
 #include "core/exception.h"
+#include <chrono>
 #include <limits>
 
 #include "imgui/imnodes/imnodes.h"
@@ -10,7 +11,7 @@
 
 #include "dsp/path/splitter.h"
 
-#include <unistd.h>
+#include <thread>
 
 namespace satdump
 {
@@ -342,7 +343,7 @@ namespace satdump
                 for (auto &b : additional_blocks)
                     b->stop();
 
-                sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 for (auto &n : nodes)
                     n->internal->up_state();

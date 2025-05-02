@@ -1,8 +1,9 @@
-#include "bind_satdump.h"
 #include "angelscript/scriptarray/scriptarray.h"
+#include "bind_satdump.h"
 
 #include "projection/projection.h"
 
+#include "bind_geodetic.h"
 #include "bind_json.h"
 
 namespace satdump
@@ -56,10 +57,7 @@ namespace satdump
                 }
 
             protected:
-                virtual ~CScriptProjection()
-                {
-                    delete p;
-                }
+                virtual ~CScriptProjection() { delete p; }
 
                 mutable int refCount;
 
@@ -68,7 +66,8 @@ namespace satdump
 
             public:
                 bool init(bool fwd, bool inv) { return p->init(fwd, inv); }
-                bool forward(geodetic::geodetic_coords_t pos, double &x, double &y) { return p->forward(pos, x, y); }
+                bool forward(CScriptGeodeticCoords *pos, double &x, double &y) { return p->forward(*pos->p, x, y); }
+                bool inverse(double x, double y, CScriptGeodeticCoords *pos) { return p->inverse(x, y, *pos->p); }
 
                 CScriptProjection &operator=(const CScriptJson &v)
                 {
@@ -80,7 +79,7 @@ namespace satdump
             };
 
             static CScriptProjection *ScriptProjectionFactory() { return new CScriptProjection(); }
-        }
+        } // namespace
 
         namespace pro
         {
@@ -106,13 +105,17 @@ namespace satdump
             engine->RegisterObjectBehaviour("Projection", asBEHAVE_RELEASE, "void f()", asMETHOD(CScriptProjection, Release), asCALL_THISCALL);
 
             // Copy operator
-            engine->RegisterObjectMethod("Projection", "Projection &opAssign(const Projection &in)", asMETHODPR(CScriptProjection, operator=, (const CScriptProjection &), CScriptProjection &), asCALL_THISCALL);
-            engine->RegisterObjectMethod("Projection", "Projection &opAssign(const nlohmann::json &in)", asMETHODPR(CScriptProjection, operator=, (const CScriptJson &), CScriptProjection &), asCALL_THISCALL);
+            engine->RegisterObjectMethod("Projection", "Projection &opAssign(const Projection &in)", asMETHODPR(CScriptProjection, operator=, (const CScriptProjection &), CScriptProjection &),
+                                         asCALL_THISCALL);
+            engine->RegisterObjectMethod("Projection", "Projection &opAssign(const nlohmann::json &in)", asMETHODPR(CScriptProjection, operator=, (const CScriptJson &), CScriptProjection &),
+                                         asCALL_THISCALL);
 
             engine->RegisterObjectMethod("Projection", "nlohmann::json@ opImplConv()", asMETHOD(CScriptProjection, opConv_json), asCALL_THISCALL);
 
             // Other funcs
             engine->RegisterObjectMethod("Projection", "bool init(bool, bool)", asMETHOD(CScriptProjection, init), asCALL_THISCALL);
+            engine->RegisterObjectMethod("Projection", "bool forward(geodetic::geodetic_coords_t@, double &out, double &out)", asMETHOD(CScriptProjection, forward), asCALL_THISCALL);
+            engine->RegisterObjectMethod("Projection", "bool inverse(double, double, geodetic::geodetic_coords_t@)", asMETHOD(CScriptProjection, inverse), asCALL_THISCALL);
         }
-    }
-}
+    } // namespace script
+} // namespace satdump
