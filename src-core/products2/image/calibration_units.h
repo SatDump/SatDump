@@ -84,6 +84,18 @@ namespace satdump
              * @return converted unit, or CALIBRATION_INVALID_VALUE on errors
              */
             virtual double convert(const UnitConverter *c, double x, double y, double val);
+
+            /**
+             * @brief Convert unit ranges. This does the same
+             * as convert, except it's optimized for converting
+             * a range.
+             *
+             * @param c reference to the UnitConverter this belongs to
+             * @param min min of the range
+             * @param max max of the range
+             * @return true if the convertion was done
+             */
+            virtual bool convert_range(const UnitConverter *c, double &min, double &max);
         };
 
         /**
@@ -159,6 +171,19 @@ namespace satdump
 
         public:
             /**
+             * @brief Simple constructor
+             */
+            UnitConverter() {}
+
+            /**
+             * @brief Setup from an ImageProduct
+             *
+             * @param product ImageProduct
+             * @param channel_name name ID of the channel to use
+             */
+            UnitConverter(void *product, std::string channel_name);
+
+            /**
              * @brief Sets the projection to utilize for conversion
              * if needed. This is optional, but some conversions will
              * fail if not present. If available, this should be set.
@@ -200,6 +225,24 @@ namespace satdump
                     return converter->convert(this, x, y, val);
                 else
                     return CALIBRATION_INVALID_VALUE;
+            }
+
+            /**
+             * @brief Convert unit ranges. This does the same
+             * as convert, except it's optimized for a range.
+             *
+             * @param min min of the range
+             * @param max max of the range
+             * @return true if the convertion was done
+             */
+            bool convert_range(double &min, double &max)
+            {
+                if (unitEqual)
+                    return true;
+                else if (converter)
+                    return converter->convert_range(this, min, max);
+                else
+                    return false;
             }
         };
     } // namespace calibration

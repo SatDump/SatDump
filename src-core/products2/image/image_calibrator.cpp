@@ -60,9 +60,7 @@ namespace satdump
             auto &ori = product->images[channel_id];
             image::Image out(ori.image.depth(), ori.image.width(), ori.image.height(), 1);
 
-            calibration::UnitConverter converter; // TODOREWORK cleanup this whole file?
-            converter.set_proj(product->get_proj_cfg(product->get_channel_image(channel_name).abs_index));
-            converter.set_wavenumber(product->get_channel_image(channel_name).wavenumber);
+            calibration::UnitConverter converter(product, channel_name); // TODOREWORK cleanup this whole file?
             converter.set_conversion(ori.calibration_type, output_unit);
 
             image::ImgCalibHandler calib_handler;

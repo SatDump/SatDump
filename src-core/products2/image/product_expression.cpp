@@ -276,7 +276,8 @@ namespace satdump
                 }
             }
 
-            logger->debug("Final Expression " + expression);
+            if (!dummy_mode)
+                logger->debug("Final Expression " + expression);
 
             // Get required variables & number of output channels
             int nout_channels = 0;

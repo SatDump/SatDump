@@ -3,6 +3,7 @@
 #include "core/exception.h"
 #include "core/plugin.h"
 #include "logger.h"
+#include "products2/image_product.h"
 
 #define CALIBRATION_RADIANCE_UNIT "W\u00B7sr\u207b\u00b9\u00B7m\u207b\u00b2"
 #define CALIBRATION_TEMPERATURE_UNIT "°K"
@@ -32,6 +33,7 @@ namespace satdump
         }
 
         double ConverterBase::convert(const UnitConverter *c, double x, double y, double val) { throw satdump_exception("Function not implemented!"); }
+        bool ConverterBase::convert_range(const UnitConverter *c, double &min, double &max) { throw satdump_exception("Function not implemented!"); }
 
         void UnitConverter::set_proj(nlohmann::json p)
         {
@@ -80,6 +82,8 @@ namespace satdump
 
                     return compensate_radiance_for_sun(val, timestamp, pos.lat, pos.lon);
                 }
+
+                bool convert_range(const UnitConverter *, double &, double &) { return true; }
             };
 
             class EmRadToBrightTempConverter : public ConverterBase
@@ -90,6 +94,31 @@ namespace satdump
                     if (c->wavenumber == -1)
                         return CALIBRATION_INVALID_VALUE;
                     return radiance_to_temperature(val, c->wavenumber);
+                }
+
+                bool convert_range(const UnitConverter *c, double &min, double &max)
+                {
+                    min = convert(c, 0, 0, min);
+                    max = convert(c, 0, 0, max);
+                    return true;
+                }
+            };
+
+            class BrightTempToEmRadConverter : public ConverterBase
+            {
+            public:
+                double convert(const UnitConverter *c, double x, double y, double val)
+                {
+                    if (c->wavenumber == -1)
+                        return CALIBRATION_INVALID_VALUE;
+                    return temperature_to_radiance(val, c->wavenumber);
+                }
+
+                bool convert_range(const UnitConverter *c, double &min, double &max)
+                {
+                    min = convert(c, 0, 0, min);
+                    max = convert(c, 0, 0, max);
+                    return true;
                 }
             };
 
@@ -109,8 +138,21 @@ namespace satdump
 
                     return get_sun_angle(timestamp, pos.lat, pos.lon);
                 }
+
+                bool convert_range(const UnitConverter *c, double &min, double &max)
+                {
+                    min = 0;
+                    max = 90;
+                    return true;
+                }
             };
         } // namespace
+
+        UnitConverter::UnitConverter(void *product, std::string channel_name)
+        {
+            set_proj(((products::ImageProduct *)product)->get_proj_cfg(((products::ImageProduct *)product)->get_channel_image(channel_name).abs_index));
+            set_wavenumber(((products::ImageProduct *)product)->get_channel_image(channel_name).wavenumber);
+        }
 
         std::vector<std::shared_ptr<ConverterBase>> getAvailableConverters(std::string itype, std::string otype)
         {
@@ -120,6 +162,8 @@ namespace satdump
                 converters.push_back(std::make_shared<RefRadToSunCorRefRadConverter>());
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
                 converters.push_back(std::make_shared<EmRadToBrightTempConverter>());
+            else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE && otype == CALIBRATION_ID_EMISSIVE_RADIANCE)
+                converters.push_back(std::make_shared<BrightTempToEmRadConverter>());
             else if (itype == CALIBRATION_ID_ALBEDO && otype == CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO)
                 converters.push_back(std::make_shared<RefRadToSunCorRefRadConverter>()); // TODOREWORK? Keep?
             else if (otype == CALIBRATION_ID_SUN_ANGLE)
@@ -140,6 +184,8 @@ namespace satdump
                 otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE);
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE)
                 otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
+                otypes.push_back(CALIBRATION_ID_EMISSIVE_RADIANCE);
             else if (itype == CALIBRATION_ID_ALBEDO)
                 otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO);
 

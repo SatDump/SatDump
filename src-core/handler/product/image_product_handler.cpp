@@ -49,8 +49,6 @@ namespace satdump
             };
 
             // TODOREWORK Calib range init
-            channel_calibrated_range_min.resize(product->images.size(), 0);
-            channel_calibrated_range_max.resize(product->images.size(), 100);
             if (images_can_be_calibrated)
             {
                 if (channel_selection_curr_id != -1)
@@ -58,7 +56,12 @@ namespace satdump
                     channel_calibrated_output_units = calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type);
                     channel_calibrated_combo_str.clear();
                     for (auto &u : channel_calibrated_output_units)
+                    {
                         channel_calibrated_combo_str += calibration::getUnitInfo(u).name + '\0';
+
+                        channel_calibrated_range_min.emplace(u, std::vector<double>(product->images.size(), 0));
+                        channel_calibrated_range_max.emplace(u, std::vector<double>(product->images.size(), 100));
+                    }
                 }
             }
 
@@ -104,19 +107,20 @@ namespace satdump
 
                 if (channel_selection_curr_id != -1 && images_can_be_calibrated)
                 {
+                    std::string &curr_unit = channel_calibrated_output_units[channel_calibrated_combo_curr_id];
                     needs_to_update |= ImGui::Checkbox("Calibrate", &channel_calibrated);
                     ImGui::SetNextItemWidth(150 * ui_scale);
-                    ImGui::InputDouble("##rangemin", &channel_calibrated_range_min[channel_selection_curr_id]);
+                    ImGui::InputDouble("##rangemin", &channel_calibrated_range_min[curr_unit][channel_selection_curr_id]);
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(150 * ui_scale);
-                    ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[channel_selection_curr_id]);
+                    ImGui::InputDouble("##rangemax", &channel_calibrated_range_max[curr_unit][channel_selection_curr_id]);
                     needs_to_update |= ImGui::Combo("Unit##calibunit", &channel_calibrated_combo_curr_id, channel_calibrated_combo_str.c_str());
                     needs_to_update |= ImGui::Button("Update###updatecalib");
                     ImGui::SameLine();
                     if (ImGui::Button("Add To Equ###calibaddtoexpression")) // TODOREWORK?
-                        expression = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" + product->images[channel_selection_curr_id].channel_name + ", " +
-                                     channel_calibrated_output_units[channel_calibrated_combo_curr_id] + ", " + std::to_string(channel_calibrated_range_min[channel_selection_curr_id]) + ", " +
-                                     std::to_string(channel_calibrated_range_max[channel_selection_curr_id]) + ");\n" + expression;
+                        expression = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" + product->images[channel_selection_curr_id].channel_name + ", " + curr_unit + ", " +
+                                     std::to_string(channel_calibrated_range_min[curr_unit][channel_selection_curr_id]) + ", " +
+                                     std::to_string(channel_calibrated_range_max[curr_unit][channel_selection_curr_id]) + ");\n" + expression;
                 }
 
                 if (needs_to_be_disabled)
@@ -194,6 +198,7 @@ namespace satdump
 
             channel_calibrated = getValueOrDefault(p["channel_calibrated"], false);
 
+            // Also handle automatic conversions!
             if (p.contains("calibration_ranges"))
             {
                 auto &r = p["calibration_ranges"];
@@ -202,8 +207,24 @@ namespace satdump
                     auto &name = product->images[i].channel_name;
                     if (r.contains(name) && r[name].contains("min") && r[name].contains("max"))
                     {
-                        channel_calibrated_range_min[i] = r[name]["min"];
-                        channel_calibrated_range_max[i] = r[name]["max"];
+                        for (auto u : channel_calibrated_range_min)
+                        {
+                            std::string curr_unit = u.first;
+                            std::string source_unit = r[name].contains("unit") ? r[name]["unit"].get<std::string>() : product->images[i].calibration_type;
+                            channel_calibrated_range_min[u.first][i] = r[name]["min"];
+                            channel_calibrated_range_max[u.first][i] = r[name]["max"];
+
+                            if (source_unit != curr_unit)
+                            {
+                                calibration::UnitConverter conv(product, name);
+                                conv.set_conversion(source_unit, curr_unit);
+                                if (!conv.convert_range(channel_calibrated_range_min[u.first][i], channel_calibrated_range_max[u.first][i]))
+                                {
+                                    channel_calibrated_range_min[u.first][i] = 0;
+                                    channel_calibrated_range_max[u.first][i] = 100;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -230,12 +251,15 @@ namespace satdump
 
             p["channel_calibrated"] = channel_calibrated;
 
-            for (int i = 0; i < product->images.size(); i++)
+            if (channel_calibrated_range_min.size() > 0)
             {
-                auto &r = p["calibration_ranges"];
-                auto &name = product->images[i].channel_name;
-                r[name]["min"] = channel_calibrated_range_min[i];
-                r[name]["max"] = channel_calibrated_range_max[i];
+                for (int i = 0; i < product->images.size(); i++)
+                {
+                    auto &r = p["calibration_ranges"];
+                    auto &name = product->images[i].channel_name;
+                    r[name]["min"] = channel_calibrated_range_min[product->images[i].calibration_type][i];
+                    r[name]["max"] = channel_calibrated_range_max[product->images[i].calibration_type][i];
+                }
             }
 
             p["image"] = img_handler->getConfig();
@@ -256,9 +280,12 @@ namespace satdump
                 {
                     image::Image img;
                     if (channel_calibrated)
-                        img = products::generate_calibrated_product_channel(product, product->images[channel_selection_curr_id].channel_name, channel_calibrated_range_min[channel_selection_curr_id],
-                                                                            channel_calibrated_range_max[channel_selection_curr_id], channel_calibrated_output_units[channel_calibrated_combo_curr_id],
-                                                                            &progress);
+                    {
+                        std::string unit = channel_calibrated_output_units[channel_calibrated_combo_curr_id];
+                        img = products::generate_calibrated_product_channel(product, product->images[channel_selection_curr_id].channel_name,
+                                                                            channel_calibrated_range_min[unit][channel_selection_curr_id],
+                                                                            channel_calibrated_range_max[unit][channel_selection_curr_id], unit, &progress);
+                    }
                     else
                     {
                         img = product->images[channel_selection_curr_id].image;
