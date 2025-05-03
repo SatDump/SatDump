@@ -78,7 +78,7 @@ namespace satdump
                 *default_ext = extension.substr(1);
         }
 #else
-        path = save_name;
+        std::string path = save_name;
         image::save_img(*image, save_name);
 #endif
         return path;

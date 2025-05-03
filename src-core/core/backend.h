@@ -1,9 +1,11 @@
 #pragma once
+
 #include "dll_export.h"
 #include <functional>
 #include <stdint.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace backend
 {
