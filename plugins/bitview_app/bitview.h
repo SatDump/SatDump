@@ -6,7 +6,7 @@
 #include <thread>
 #include <vector>
 
-#include "imgui/pfd/widget.h"
+#include "imgui/dialogs/widget.h"
 
 #include "bit_container.h"
 
@@ -51,4 +51,4 @@ namespace satdump
                 return "BitView TODOREWORK";
         }
     };
-};
+}; // namespace satdump

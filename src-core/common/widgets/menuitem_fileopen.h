@@ -1,11 +1,11 @@
 #pragma once
 
-#include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
 #include "core/config.h"
-#include "imgui/pfd/pfd_utils.h"
-#include "imgui/pfd/portable-file-dialogs.h"
+#include "core/style.h"
+#include "imgui/dialogs/pfd_utils.h"
+#include "imgui/dialogs/widget.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -14,29 +14,30 @@ namespace satdump
         class MenuItemFileOpen
         {
         private:
-            pfd::open_file *file_open_dialog = nullptr;
+            fileutils::FileSelTh *file_open_dialog = nullptr;
             std::string selected_path;
 
         public:
-            void render(std::string menu_name, std::string dialog_name, std::string default_dir, std::vector<std::string> filters)
+            void render(std::string menu_name, std::string dialog_name, std::string default_dir, std::vector<std::pair<std::string, std::string>> filters)
             {
                 bool disallow = file_open_dialog;
                 if (disallow)
                     style::beginDisabled();
                 if (ImGui::MenuItem(menu_name.c_str()))
-                    file_open_dialog = new pfd::open_file(dialog_name, default_dir, filters, pfd::opt::force_path);
+                    file_open_dialog = new fileutils::FileSelTh(filters, default_dir);
                 if (disallow)
                     style::endDisabled();
             }
 
             bool update()
             {
-                if (file_open_dialog && file_open_dialog->ready(0))
+                if (file_open_dialog && file_open_dialog->is_ready())
                 {
-                    selected_path = (file_open_dialog->result().size() == 0 ? "" : file_open_dialog->result()[0]);
+                    selected_path = file_open_dialog->result();
                     delete file_open_dialog;
                     file_open_dialog = nullptr;
-                    return true;
+                    if (selected_path.size() > 0)
+                        return true;
                 }
                 return false;
             }
@@ -87,5 +88,5 @@ namespace satdump
 
             std::function<std::shared_ptr<image::Image>()> getimg_callback;
         };
-    }
-}
+    } // namespace widget
+} // namespace satdump

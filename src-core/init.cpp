@@ -1,16 +1,15 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "init.h"
-#include "logger.h"
+#include "core/config.h"
 #include "core/module.h"
 #include "core/pipeline.h"
-#include <filesystem>
 #include "core/plugin.h"
-#include "satdump_vars.h"
-#include "core/config.h"
+#include "logger.h"
 #include "resources.h"
+#include "satdump_vars.h"
+#include <filesystem>
 
 #include "common/tracking/tle.h"
-#include "imgui/pfd/portable-file-dialogs.h"
 
 #include "core/opencl.h"
 
@@ -56,8 +55,8 @@ namespace satdump
         catch (std::exception &e)
         {
             logger->critical("Error loading SatDump config! SatDump will now exit. Error:\n%s", e.what());
-            if (is_gui)
-                pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" + std::string(e.what()), pfd::choice::ok, pfd::icon::error);
+            // if (is_gui)
+            //    pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" + std::string(e.what()), pfd::choice::ok, pfd::icon::error); TODOREWORK bring this back
             exit(1);
         }
 
@@ -152,4 +151,4 @@ namespace satdump
         logger->error("specify -DCMAKE_BUILD_TYPE=Release in CMake.");
 #endif
     }
-}
+} // namespace satdump

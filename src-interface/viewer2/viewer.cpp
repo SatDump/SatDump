@@ -89,12 +89,15 @@ namespace satdump
         {
             // Handle File Stuff TODOREWORK?
             {
-                if (file_open_dialog && file_open_dialog->ready(0))
+                if (file_open_dialog && file_open_dialog->is_ready())
                 {
-                    std::string prod_path = (file_open_dialog->result().size() == 0 ? "" : file_open_dialog->result()[0]);
+                    std::string prod_path = file_open_dialog->result();
                     delete file_open_dialog;
                     file_open_dialog = nullptr;
-                    openProductOrDataset(prod_path);
+                    if (prod_path.size() > 0)
+                        openProductOrDataset(prod_path);
+                    else
+                        logger->trace("No file selected");
                 }
             }
 
@@ -102,8 +105,8 @@ namespace satdump
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Open File") && !file_open_dialog)                                                 // TODOREWORK switch to general thing
-                        file_open_dialog = new pfd::open_file("Open File", ".", {"All Files", "*"}, pfd::opt::force_path); // TODOREWORK remember path?
+                    if (ImGui::MenuItem("Open File") && !file_open_dialog)                      // TODOREWORK switch to general thing
+                        file_open_dialog = new fileutils::FileSelTh({{"All Files", "*"}}, "."); // TODOREWORK remember path?
 
                     if (ImGui::BeginMenu("Hardcoded"))
                     {

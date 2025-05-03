@@ -1,7 +1,7 @@
 #include "lut_generator.h"
 #include "common/image/io.h"
+#include "imgui/dialogs/pfd_utils.h"
 #include "imgui/implot/implot.h"
-#include "imgui/pfd/pfd_utils.h"
 #include "logger.h"
 #include "resources.h"
 
@@ -112,7 +112,7 @@ namespace satdump
         void LutGeneratorHandler::drawMenuBar()
         {
             file_save_menu.render("Save LUT", "lut", ".", "Save Image", true);
-            file_open_menu.render("Load LUT", "Select Image", resources::getResourcePath("lut"), {"All Files", "*"});
+            file_open_menu.render("Load LUT", "Select Image", resources::getResourcePath("lut"), {{"All Files", "*"}});
         }
 
         void LutGeneratorHandler::drawContents(ImVec2 win_size)

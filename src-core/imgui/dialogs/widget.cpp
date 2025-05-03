@@ -1,9 +1,9 @@
-#include <filesystem>
 #include "widget.h"
+#include "android_dialogs.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "android_dialogs.h"
+#include <filesystem>
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -12,8 +12,8 @@
 FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text, bool directory, bool allow_url)
     : label(label), selection_text(selection_text), directory(directory), allow_url(allow_url)
 {
-    fileselect = nullptr;
-    dirselect = nullptr;
+    file_select = nullptr;
+    dir_select = nullptr; // dirselect = nullptr;
     waiting_for_res = false;
     file_valid = false;
     url_valid = false;
@@ -24,8 +24,10 @@ FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text
 
 FileSelectWidget::~FileSelectWidget()
 {
-    delete fileselect;
-    delete dirselect;
+    if (file_select != nullptr)
+        delete file_select;
+    if (dir_select != nullptr)
+        delete dir_select; //    delete dirselect;
 }
 
 bool FileSelectWidget::draw(std::string hint)
@@ -36,7 +38,7 @@ bool FileSelectWidget::draw(std::string hint)
 #ifdef _MSC_VER
     if (default_dir == ".")
     {
-        char* cwd;
+        char *cwd;
         cwd = _getcwd(NULL, 0);
         if (cwd != 0)
             default_dir = cwd;
@@ -49,11 +51,9 @@ bool FileSelectWidget::draw(std::string hint)
         ImGui::PushStyleColor(ImGuiCol_Text, style::theme.red.Value);
     if (allow_url)
     {
-        ImGuiStyle& style = ImGui::GetStyle();
-        float textbox_width = ImGui::GetContentRegionAvail().x -
-            (ImGui::CalcTextSize(btnid.c_str(), nullptr, true).x +
-                ImGui::CalcTextSize("Load").x +
-                style.ItemSpacing.x * 2 + style.FramePadding.x * 4);
+        ImGuiStyle &style = ImGui::GetStyle();
+        float textbox_width =
+            ImGui::GetContentRegionAvail().x - (ImGui::CalcTextSize(btnid.c_str(), nullptr, true).x + ImGui::CalcTextSize("Load").x + style.ItemSpacing.x * 2 + style.FramePadding.x * 4);
         if (textbox_width < 20 * ui_scale)
             textbox_width = 20 * ui_scale;
         ImGui::SetNextItemWidth(textbox_width);
@@ -72,7 +72,7 @@ bool FileSelectWidget::draw(std::string hint)
 #ifdef __ANDROID__
             show_select_file_dialog();
 #else
-            fileselect = new pfd::open_file(selection_text.c_str(), default_dir, { "All Files", "*" }, pfd::opt::force_path);
+            file_select = new fileutils::FileSelTh({{"All Files", "*"}}, default_dir); // TODOREWORK Selection Text?
 #endif
         }
         else
@@ -80,7 +80,7 @@ bool FileSelectWidget::draw(std::string hint)
 #ifdef __ANDROID__
             show_select_directory_dialog();
 #else
-            dirselect = new pfd::select_folder(selection_text.c_str(), default_dir, pfd::opt::force_path);
+            dir_select = new fileutils::DirSelTh(default_dir); // TODOREWORK Selection Text?
 #endif
         }
 
@@ -100,32 +100,33 @@ bool FileSelectWidget::draw(std::string hint)
             get = get_select_directory_dialog_result();
         if (get != "")
         {
-            if(get == "NO_PATH_SELECTED")
+            if (get == "NO_PATH_SELECTED")
                 waiting_for_res = false;
             else
             {
 #else
-        bool is_ready = (directory ? dirselect->ready(0) : fileselect->ready(0));
+        bool is_ready = (directory ? dir_select->is_ready() : file_select->is_ready());
         if (is_ready)
         {
             if (!directory)
             {
-                get = (fileselect->result().size() == 0 ? "" :  fileselect->result()[0]);
-                delete fileselect;
-                fileselect = nullptr;
+                get = file_select->result();
+                delete file_select;
+                file_select = nullptr;
             }
-                
+
             else
             {
-                get = dirselect->result();
-                delete dirselect;
-                dirselect = nullptr;
+                get = dir_select->result();
+                delete dir_select;
+                dir_select = nullptr;
             }
 
             if (get == "")
                 waiting_for_res = false;
             else
             {
+
 #endif
                 path = get;
                 changed |= true;
@@ -149,26 +150,17 @@ bool FileSelectWidget::draw(std::string hint)
     return (file_valid || url_valid) && changed;
 }
 
-std::string FileSelectWidget::getPath()
-{
-    return path;
-}
+std::string FileSelectWidget::getPath() { return path; }
 
-void FileSelectWidget::setPath(std::string new_path)
-{
-    path = new_path;
-}
+void FileSelectWidget::setPath(std::string new_path) { path = new_path; }
 
 void FileSelectWidget::setDefaultDir(std::string new_path)
 {
     default_dir = new_path;
 #ifndef _MSC_VER
-    if(default_dir.back() != '/')
+    if (default_dir.back() != '/')
         default_dir += "/";
 #endif
 }
 
-bool FileSelectWidget::isValid()
-{
-    return file_valid;
-}
+bool FileSelectWidget::isValid() { return file_valid; }

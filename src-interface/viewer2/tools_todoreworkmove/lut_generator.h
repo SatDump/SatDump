@@ -4,7 +4,7 @@
 
 #include "common/widgets/image_view.h"
 #include "common/widgets/menuitem_fileopen.h"
-#include "imgui/pfd/widget.h"
+#include "imgui/dialogs/widget.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump

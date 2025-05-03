@@ -3,12 +3,14 @@
 #include "common/cli_utils.h"
 #include "common/detect_header.h"
 #include "core/style.h"
+#include "imgui/imgui.h"
 #include "imgui/imgui_filedrop.h"
 #include "imgui/imgui_image.h"
 #include "init.h"
 #include "loader/loader.h"
 #include "logger.h"
 #include "main_ui.h"
+#include "nfd.h"
 #include "processing.h"
 #include "satdump_vars.h"
 #include <filesystem>
@@ -44,6 +46,9 @@ void glfw_drop_callback(GLFWwindow *window, int count, const char **paths)
         files.push_back(std::string(paths[i]));
     satdump::eventBus->fire_event<satdump::imgui_utils::FileDropEvent>({files});
 }
+
+#include "nfd/include/nfd.hpp"
+#include "nfd/include/nfd_glfw3.h"
 
 int main(int argc, char *argv[])
 {
@@ -116,7 +121,7 @@ int main(int argc, char *argv[])
         window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)satdump::SATDUMP_VERSION).c_str(), nullptr, nullptr);
         if (window == nullptr)
         {
-            pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer", pfd::choice::ok, pfd::icon::error);
+            // TODOREWORK bring this back    pfd::message("SatDump", "Could not start SatDump UI. Please make sure your graphics card supports OpenGL 2.1 or newer", pfd::choice::ok, pfd::icon::error);
             logger->critical("Could not init GLFW Window! Exiting");
             exit(1);
         }
@@ -159,6 +164,9 @@ int main(int argc, char *argv[])
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
 #endif
+
+    // Init file dialogs
+    NFD::Guard nfdGuard;
 
     // Set font
     style::setFonts(backend::device_scale);

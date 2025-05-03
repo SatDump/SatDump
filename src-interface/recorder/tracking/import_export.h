@@ -1,10 +1,10 @@
 #pragma once
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/widgets/notated_num.h"
-#include "common/widgets/timed_message.h"
 #include "common/tracking/obj_tracker/object_tracker.h"
 #include "common/tracking/scheduler/scheduler.h"
-#include "imgui/pfd/widget.h"
+#include "common/widgets/notated_num.h"
+#include "common/widgets/timed_message.h"
+#include "imgui/dialogs/widget.h"
 
 namespace satdump
 {
@@ -36,4 +36,4 @@ namespace satdump
         void do_export(AutoTrackScheduler &scheduler, ObjectTracker &tracker, std::shared_ptr<rotator::RotatorHandler> rotator_handler);
         void do_import(AutoTrackScheduler &scheduler, ObjectTracker &tracker, std::shared_ptr<rotator::RotatorHandler> rotator_handler);
     };
-}
+} // namespace satdump
