@@ -12,7 +12,7 @@ namespace satdump
 {
     namespace viewer
     {
-        ProductHandler::ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode) : product(p)
+        ProductHandler::ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode, std::function<bool(nlohmann::ordered_json &)> filterPreset) : product(p)
         {
             handler_tree_icon = "\uf713";
 
@@ -48,11 +48,21 @@ namespace satdump
                 {
                     try
                     {
-                        preset_selection_box_str.push_back(cfg["name"].get<std::string>());
+                        if (filterPreset(cfg))
+                        {
+                            preset_selection_box_str.push_back(cfg["name"].get<std::string>());
+                        }
+                        else
+                        {
+                            logger->trace("Disabling unavailable preset : " + cfg["name"].get<std::string>());
+                        }
                     }
                     catch (std::exception &e)
                     {
-                        logger->error("Error loading preset! JSON : " + cfg.dump());
+                        if (cfg.contains("name"))
+                            logger->warn("Error loading preset (" + cfg["name"].get<std::string>() + ")! JSON : " + cfg.dump());
+                        else
+                            logger->warn("Error loading preset! JSON : " + cfg.dump());
                     }
                 }
             }
