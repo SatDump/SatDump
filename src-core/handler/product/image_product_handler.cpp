@@ -7,6 +7,7 @@
 
 #include "common/dsp_source_sink/format_notated.h" // TODOREWORK
 #include "imgui/imgui_stdlib.h"
+#include "products2/image/calibration_converter.h"
 #include "products2/image/product_expression.h"
 
 #include "common/widgets/json_editor.h"

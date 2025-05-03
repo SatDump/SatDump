@@ -10,6 +10,7 @@
 #include "common/image/io.h"
 
 #include "common/projection/projs/equirectangular.h"
+#include "projection/projection.h"
 #include "resources.h"
 
 namespace satdump
