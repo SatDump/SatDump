@@ -25,8 +25,6 @@ namespace satdump
             for (auto &img : product->images)
                 channel_selection_box_str += "Channel " + img.channel_name + '\0';
 
-            // TODOREWORK
-            // if (product->has_calibration())
             img_calibrator = products::get_calibrator_from_product(product);
             if (img_calibrator)
                 images_can_be_calibrated = true;
@@ -48,7 +46,7 @@ namespace satdump
                 }
             };
 
-            // TODOREWORK Calib range init
+            // Calib range init
             if (images_can_be_calibrated)
             {
                 if (channel_selection_curr_id != -1)

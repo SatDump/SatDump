@@ -6,9 +6,10 @@
 #include "common/projection/timestamp_filtering.h"
 
 //
-#include "common/normal_line.h"
 #include "common/manual_line.h"
+#include "common/normal_line.h"
 #include "common/timestamp_line_gcps.h"
+#include "projection/raytrace/common/normal_per_ifov.h"
 
 namespace satdump
 {
@@ -56,6 +57,8 @@ namespace satdump
                 return std::make_shared<NormalLineRaytracerOld>(cfg);
             else if (type == "manual_single_line_old")
                 return std::make_shared<ManualLineRaytracerOld>(cfg);
+            else if (type == "normal_per_ifov_old")
+                return std::make_shared<NormalPerIFOVRaytracerOld>(cfg);
             else if (type == "gcps_timestamps_line")
                 return std::make_shared<TimestampLineGCPsRaytracer>(cfg);
 
@@ -67,5 +70,5 @@ namespace satdump
 
             throw satdump_exception("Invalid satellite projection : " + type + "!");
         }
-    }
-}
+    } // namespace proj
+} // namespace satdump

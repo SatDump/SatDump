@@ -4,7 +4,7 @@
         {
             "name": "10.8µm Thermal IR",
             "expression": "cch1=(1, emissive_radiance, 30, 120); 1-cch1",
-            "image" : {
+            "image": {
                 "individual_equalize": true,
                 "geo_correct": true
             },
@@ -18,7 +18,7 @@
         {
             "name": "ZA enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/ZA.md"
@@ -26,7 +26,7 @@
         {
             "name": "MB enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/MB.md"
@@ -34,7 +34,7 @@
         {
             "name": "MD enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/MD.md"
@@ -42,7 +42,7 @@
         {
             "name": "BD enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/BD.md"
@@ -50,7 +50,7 @@
         {
             "name": "CC enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/CC.md"
@@ -58,7 +58,7 @@
         {
             "name": "EC enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/EC.md"
@@ -66,7 +66,7 @@
         {
             "name": "HE enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/HE.md"
@@ -74,7 +74,7 @@
         {
             "name": "HF enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/HF.md"
@@ -82,7 +82,7 @@
         {
             "name": "JF enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/JF.md"
@@ -90,7 +90,7 @@
         {
             "name": "JJ enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/JJ.md"
@@ -98,7 +98,7 @@
         {
             "name": "TA enhancement",
             "expression": "cch1=(1, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/TA.md"
@@ -106,7 +106,7 @@
         {
             "name": "Enhanced IR",
             "expression": "cch1=(1, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/EnhancedIR.md"
@@ -114,7 +114,7 @@
         {
             "name": "Cloud Top IR",
             "expression": "cch1=(1, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/CloudTopIR.md"
@@ -122,7 +122,7 @@
         {
             "name": "Enhanced IR (Transparent)",
             "expression": "cch1=(1, brightness_temperature, 200, 241); 1, 0, 0, cch1 > 0.99 ? 1 : 0",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/EnhancedIR.md"
@@ -130,10 +130,18 @@
         {
             "name": "Color general cloud IR",
             "expression": "cch1=(1, brightness_temperature, 180, 320);lut=lut(lut/cal/Multispectral.png);lut(1, 0, 0), lut(1, 0, 1), lut(1, 0, 2)",
-            "image": { 
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/ColorGeneralIR.md"
         }
-    ]
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "min": 30,
+                "max": 120
+            }
+        }
+    }
 }

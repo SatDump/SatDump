@@ -20,7 +20,7 @@ namespace satdump
                 DummyCalibrator(ImageProduct *p, nlohmann::json c) : ImageCalibrator(p, c) {}
 
             protected:
-                double compute(int abs_idx, int x, int y, uint32_t val) { return CALIBRATION_INVALID_VALUE; }
+                double compute(int abs_idx, int x, int y, uint32_t val) { return val; }
             };
         } // namespace
 
