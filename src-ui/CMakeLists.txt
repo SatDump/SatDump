@@ -7,11 +7,24 @@ if(MSVC)
 endif()
 
 file(GLOB_RECURSE SatDump_ui_CPPS *.cpp imgui/gl3w/gl3w.c)
+
+set (EXCLUDE_DIR "/nfd/")
+file (GLOB_RECURSE SatDump_ui_CPPS "*.cpp" "*.c")
+foreach (TMP_PATH ${SatDump_ui_CPPS})
+    string (FIND ${TMP_PATH} ${EXCLUDE_DIR} EXCLUDE_DIR_FOUND)
+    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+        list (REMOVE_ITEM SatDump_ui_CPPS ${TMP_PATH})
+    endif ()
+endforeach(TMP_PATH)
+
 add_executable(satdump-ui ${SatDump_ui_CPPS} ${WIN32_RESOURCES})
 target_include_directories(satdump-ui PUBLIC . ../src-core ../src-interface ../libsdr)
 
+# Natife File Dialogs
+add_subdirectory(nfd)
+
 # Link against the core
-target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface)
+target_link_libraries(satdump-ui PUBLIC satdump_core satdump_interface nfd::nfd)
 
 # OpenGL or OpenGL ES
 option(BUILD_GLES "Build the GUI with OpenGL ES" OFF)

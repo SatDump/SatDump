@@ -1,5 +1,6 @@
 #include "image_handler.h"
 
+#include "common/image/hue_saturation.h"
 #include "common/image/image_background.h"
 #include "common/image/meta.h"
 #include "core/style.h"
@@ -18,7 +19,7 @@
 
 #include "common/utils.h"
 #include "core/config.h"
-#include "imgui/pfd/pfd_utils.h" // TODOREWORK
+#include "imgui/dialogs/pfd_utils.h" // TODOREWORK
 
 // TODOREWORK!
 #include "handler/vector/shapefile_handler.h"
@@ -99,6 +100,26 @@ namespace satdump
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                     ImGui::SliderFloat("Contrast", &brightness_contrast_constrast_image, -2, 2);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
+                }
+
+                needs_to_update |= ImGui::Checkbox("Hue/Saturation", &huesaturation_img);
+                if (huesaturation_img)
+                {
+                    for (int i = 0; i < 7; i++)
+                    {
+                        std::string cname[] = {"All", "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta"};
+                        float hue = huesaturation_cfg_img.hue[i] * 180.0;
+                        float saturation = huesaturation_cfg_img.saturation[i] * 100.0;
+                        float lightness = huesaturation_cfg_img.lightness[i] * 100.0;
+                        needs_to_update |= ImGui::SliderFloat(std::string(cname[i] + " Hue").c_str(), &hue, -180, 180);
+                        needs_to_update |= ImGui::SliderFloat(std::string(cname[i] + " Saturation").c_str(), &saturation, -100, 100);
+                        needs_to_update |= ImGui::SliderFloat(std::string(cname[i] + " Ligntess").c_str(), &lightness, -100, 100);
+                        huesaturation_cfg_img.hue[i] = hue / 180.0;
+                        huesaturation_cfg_img.saturation[i] = saturation / 100.0;
+                        huesaturation_cfg_img.lightness[i] = lightness / 100.0;
+                    }
+
+                    ImGui::InputDouble("Overlap", &huesaturation_cfg_img.overlap);
                 }
 
                 needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
@@ -235,6 +256,9 @@ namespace satdump
             brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
             brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
             brightness_contrast_constrast_image = getValueOrDefault(p["brightness_contrast_constrast"], 0);
+            huesaturation_img = getValueOrDefault(p["hue_saturation"], false);
+            if (p.contains("hue_saturation_cfg"))
+                huesaturation_cfg_img = p["hue_saturation_cfg"];
             remove_background_img = getValueOrDefault(p["remove_background"], false);
         }
 
@@ -253,6 +277,8 @@ namespace satdump
             p["brightness_contrast"] = brightness_contrast_image;
             p["brightness_contrast_brightness"] = brightness_contrast_brightness_image;
             p["brightness_contrast_constrast"] = brightness_contrast_constrast_image;
+            p["hue_saturation"] = huesaturation_img;
+            p["hue_saturation_cfg"] = huesaturation_cfg_img;
             p["remove_background"] = remove_background_img;
             return p;
         }
@@ -278,8 +304,8 @@ namespace satdump
 
         void ImageHandler::do_process()
         {
-            bool image_needs_processing = equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate180_image | geocorrect_image |
-                                          despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
+            bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate180_image |
+                                          geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -288,6 +314,8 @@ namespace satdump
             {
                 curr_image = image;
 
+                if (huesaturation_img)
+                    image::hue_saturation(curr_image, huesaturation_cfg_img);
                 if (equalize_img)
                     image::equalize(curr_image, false);
                 if (equalize_perchannel_img)

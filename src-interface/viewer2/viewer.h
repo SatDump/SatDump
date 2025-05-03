@@ -4,7 +4,7 @@
 
 #include "handler/handler.h"
 
-#include "imgui/pfd/portable-file-dialogs.h"
+#include "imgui/dialogs/widget.h"
 
 namespace satdump
 {
@@ -34,7 +34,7 @@ namespace satdump
 
             // TODOREWORK File open
             std::thread file_open_thread;
-            pfd::open_file *file_open_dialog = nullptr;
+            fileutils::FileSelTh *file_open_dialog = nullptr;
 
         public:
             void openProductOrDataset(std::string path);
@@ -48,5 +48,5 @@ namespace satdump
             std::string get_name() { return "Viewer"; }
             static std::shared_ptr<Application> getInstance() { return std::make_shared<ViewerApplication>(); }
         };
-    }
-};
+    } // namespace viewer
+}; // namespace satdump

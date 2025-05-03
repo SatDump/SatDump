@@ -1,8 +1,9 @@
 #include "import_export.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_stdlib.h"
+#include "core/backend.h"
 #include "core/config.h"
 #include "core/style.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_stdlib.h"
 #include "main_ui.h"
 
 #include <fstream>
@@ -11,10 +12,9 @@ namespace satdump
 {
     TrackingImportExport::TrackingImportExport()
     {
-        source_obj = dsp::dsp_sources_registry.begin()->second.getInstance({
-                dsp::dsp_sources_registry.begin()->first, "", "" });
+        source_obj = dsp::dsp_sources_registry.begin()->second.getInstance({dsp::dsp_sources_registry.begin()->first, "", ""});
 
-        for (auto& this_source : dsp::dsp_sources_registry)
+        for (auto &this_source : dsp::dsp_sources_registry)
         {
             if (this_source.first == "remote")
                 continue;
@@ -28,21 +28,19 @@ namespace satdump
     bool TrackingImportExport::draw_export()
     {
         bool ret = false;
-        if(ImGui::CollapsingHeader("Export to CLI", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("Export to CLI", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGuiStyle& imgui_style = ImGui::GetStyle();
+            ImGuiStyle &imgui_style = ImGui::GetStyle();
             initial_frequency.draw();
             if (ImGui::Combo("Source", &selected_sdr, sdr_sources_str.c_str()))
-                source_obj = dsp::dsp_sources_registry[sdr_sources[selected_sdr]]
-                    .getInstance({sdr_sources[selected_sdr], "", "" });
+                source_obj = dsp::dsp_sources_registry[sdr_sources[selected_sdr]].getInstance({sdr_sources[selected_sdr], "", ""});
             ImGui::InputTextWithHint("Source ID", "[Auto]", &source_id);
             source_obj->drawControlUI();
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
             ImGui::InputTextWithHint("HTTP Server", "[Disabled]", &http_server);
-            ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - ImGui::CalcTextSize(u8"\ufc6e Open").x -
-                imgui_style.ItemSpacing.x - imgui_style.FramePadding.x * 2);
+            ImGui::SetNextItemWidth(ImGui::CalcItemWidth() - ImGui::CalcTextSize(u8"\ufc6e Open").x - imgui_style.ItemSpacing.x - imgui_style.FramePadding.x * 2);
             output_directory.draw();
             ImGui::SameLine(0, imgui_style.ItemInnerSpacing.x);
             ImGui::TextUnformatted("Output Directory");
@@ -129,19 +127,19 @@ namespace satdump
         exported_config["tracked_objects"] = scheduler.getTracked();
 
         // Export
-        ui_thread_pool.push([this, exported_config](int) {
-            auto result = pfd::save_file("Export config as...", "", {"JSON files", "*.json"});
-            while (!result.ready(1000))
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-            if (result.result().size() > 0)
+        ui_thread_pool.push(
+            [this, exported_config](int)
             {
-                std::ofstream test_output(result.result());
-                test_output << exported_config.dump(4);
-                test_output.close();
-                export_message.set_message(style::theme.green, "Successfully exported config");
-            }
-        });
+                std::string result = backend::saveFileDialog({{"JSON Files", "*.json"}}, "", "autotrack.cfg");
+
+                if (result.size() > 0)
+                {
+                    std::ofstream test_output(result);
+                    test_output << exported_config.dump(4);
+                    test_output.close();
+                    export_message.set_message(style::theme.green, "Successfully exported config");
+                }
+            });
     }
 
     void TrackingImportExport::do_import(AutoTrackScheduler &scheduler, ObjectTracker &tracker, std::shared_ptr<rotator::RotatorHandler> rotator_handler)
@@ -163,7 +161,7 @@ namespace satdump
             nlohmann::ordered_json imported_config = loadJsonFile(import_file.getPath());
             if (import_autotrack_settings)
                 scheduler.setAutoTrackCfg(imported_config["tracking"]["autotrack_cfg"]);
-            if(import_tracked_objects)
+            if (import_tracked_objects)
                 scheduler.setTracked(imported_config["tracked_objects"]);
             if (import_rotator_settings)
             {
@@ -188,4 +186,4 @@ namespace satdump
 
         import_message.set_message(style::theme.green, "Successfully imported config");
     }
-}
+} // namespace satdump

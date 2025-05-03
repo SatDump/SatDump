@@ -2,7 +2,7 @@
 #include <string>
 #include "core/params.h"
 #include "core/pipeline.h"
-#include "imgui/pfd/widget.h"
+#include "imgui/dialogs/widget.h"
 
 namespace satdump
 {

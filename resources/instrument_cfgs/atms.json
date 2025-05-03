@@ -4,7 +4,7 @@
         {
             "name": "ATMS False Color",
             "expression": "ch16, ch17, ch18",
-            "image": { 
+            "image": {
                 "individual_equalize": true
             },
             "description": "descriptions/sounders/ATMSFC.md"
@@ -12,7 +12,7 @@
         {
             "name": "MHS 221",
             "expression": "ch17,ch17,ch16",
-            "image": { 
+            "image": {
                 "individual_equalize": true
             },
             "description": "descriptions/sounders/MHS221.md"
@@ -20,7 +20,7 @@
         {
             "name": "MHS 421",
             "expression": "ch20,ch17,ch16",
-            "image": { 
+            "image": {
                 "individual_equalize": true
             },
             "description": "descriptions/sounders/MHS221.md"
@@ -28,7 +28,7 @@
         {
             "name": "Microwave Airmass",
             "expression": "ch18,ch19,ch20",
-            "image": { 
+            "image": {
                 "individual_equalize": true
             },
             "description": "descriptions/sounders/MicrowaveAirmass.md"
@@ -36,7 +36,7 @@
         {
             "name": "AMSU Surface Relative Temperature",
             "expression": "cos(ln(ch1) + ln(ch2)+0.8)",
-            "image": { 
+            "image": {
                 "individual_equalize": true
             }
         },
@@ -47,28 +47,120 @@
         },
         {
             "name": "550hPa Temperature (~5 km)",
-            "expression": "cch6=(6, reflective_radiance, , ); cch6"
+            "expression": "cch6=(6, brightness_temperature, , ); cch6"
         },
         {
             "name": "350hPa Temperature (~10 km)",
-            "expression": "cch7=(7, reflective_radiance, , ); cch7"
+            "expression": "cch7=(7, brightness_temperature, , ); cch7"
         },
         {
             "name": "200hPa Temperature (~12 km)",
-            "expression": "cch8=(8, reflective_radiance, , ); cch8"
+            "expression": "cch8=(8, brightness_temperature, , ); cch8"
         },
         {
             "name": "100hPa Temperature (~15 km)",
-            "expression": "cch9=(9, reflective_radiance, , ); cch9"
+            "expression": "cch9=(9, brightness_temperature, , ); cch9"
         },
         {
             "name": "Snow cover (Transparent, AMSU-like)",
-            "expression": "cch3=(3, reflective_radiance, , ); cch2=(2, reflective_radiance, , ); cch3^0.3, 0, 0, cch2 > 0.57 ? (cch3 < 0.5 ? 1 : 0) : 0"
+            "expression": "cch3=(3, brightness_temperature, , ); cch2=(2, brightness_temperature, , ); cch3^0.3, 0, 0, cch2 > 0.57 ? (cch3 < 0.5 ? 1 : 0) : 0"
         },
         {
             "name": "Rainfall (Transparent, MHS-like)",
-            "expression": "cch22=(22, reflective_radiance, , ); cch20=(20, reflective_radiance, , ); (((1-cch22-cch20))-0.95)^0.25, 0, 0, (((1-cch22-cch20))-0.95)^0.25 > 0.01 ? 1 : 0",
+            "expression": "cch22=(22, brightness_temperature, , ); cch20=(20, brightness_temperature, , ); (((1-cch22-cch20))-0.95)^0.25, 0, 0, (((1-cch22-cch20))-0.95)^0.25 > 0.01 ? 1 : 0",
             "description": "descriptions/sounders/RainfallTransparent.md"
         }
-    ]
+    ],
+    "default": {
+        "calibration_ranges": { // TODOREWORK, convert them between units!
+            "1": {
+                "min": 150,
+                "max": 300
+            },
+            "2": {
+                "min": 150,
+                "max": 300
+            },
+            "3": {
+                "min": 210,
+                "max": 300
+            },
+            "4": {
+                "min": 200,
+                "max": 300
+            },
+            "5": {
+                "min": 220,
+                "max": 280
+            },
+            "6": {
+                "min": 220,
+                "max": 280
+            },
+            "7": {
+                "min": 210,
+                "max": 260
+            },
+            "8": {
+                "min": 210,
+                "max": 240
+            },
+            "9": {
+                "min": 200,
+                "max": 250
+            },
+            "10": {
+                "min": 200,
+                "max": 250
+            },
+            "11": {
+                "min": 200,
+                "max": 250
+            },
+            "12": {
+                "min": 200,
+                "max": 250
+            },
+            "13": {
+                "min": 200,
+                "max": 260
+            },
+            "14": {
+                "min": 200,
+                "max": 260
+            },
+            "15": {
+                "min": 200,
+                "max": 260
+            },
+            "16": {
+                "min": 200,
+                "max": 300
+            },
+            "17": {
+                "min": 235,
+                "max": 285
+            },
+            "18": {
+                "min": 235,
+                "max": 285
+            },
+            "19": {
+                "min": 235,
+                "max": 285
+            },
+            "20": {
+                "min": 235,
+                "max": 285
+            },
+            "21": {
+                "min": 235,
+                "max": 285
+            },
+            "22": {
+                "min": 235,
+                "max": 285
+            }
+        }
+    }
 }

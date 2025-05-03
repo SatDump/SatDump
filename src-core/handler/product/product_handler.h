@@ -7,7 +7,9 @@
 #include "../handler.h"
 #include "../processing_handler.h"
 #include "common/widgets/markdown_helper.h"
+#include "nlohmann/json.hpp"
 #include "products2/product.h"
+#include <functional>
 
 namespace satdump
 {
@@ -69,8 +71,9 @@ namespace satdump
              * @param p product to handle
              * @param dataset_mode if true, only displays the instrument name,
              * otherwise adds timestamp and source name for clarity
+             * @param filterPreset optional function to filter the presets list
              */
-            ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode = false);
+            ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode = false, std::function<bool(nlohmann::ordered_json &)> filterPreset = [](auto &) { return true; });
 
             std::string getName() { return handler_name; }
 

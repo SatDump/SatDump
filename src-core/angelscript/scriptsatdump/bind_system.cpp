@@ -2,8 +2,9 @@
 #include <string>
 
 #ifdef _WIN32
-#include <TlHelp32.h>
 #include <Windows.h>
+
+#include <TlHelp32.h>
 #endif
 
 namespace satdump

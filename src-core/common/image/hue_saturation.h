@@ -4,7 +4,6 @@
  * @file hue_saturation.h
  */
 
-#include <cstdint>
 #include "image.h"
 
 namespace image
@@ -27,8 +26,6 @@ namespace image
      */
     struct HueSaturation
     {
-        HueRange range;
-
         double hue[7];
         double saturation[7];
         double lightness[7];
@@ -60,4 +57,4 @@ namespace image
      * @brief Convert HSL to RGB
      */
     void hsl_to_rgb(double h, double s, double l, double &r, double &g, double &b);
-}
+} // namespace image

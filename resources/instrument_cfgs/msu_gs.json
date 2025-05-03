@@ -12,8 +12,41 @@
         },
         {
             "name": "Natural Color",
-            // TODOREWORK
-            "description": "descriptions/NatColor.md"
+            "description": "descriptions/NatColor.md",
+            "expression": "ch3,ch2,ch1",
+            "image": {
+                "hue_saturation": true,
+                "hue_saturation_cfg": {
+                    "hue": [
+                        0.0,
+                        0.5,
+                        -0.25,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "lightness": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "overlap": 0.0,
+                    "saturation": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
         },
         {
             "name": "MCIR",

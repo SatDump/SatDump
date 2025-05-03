@@ -1,4 +1,5 @@
 #include "product_expression.h"
+#include "common/image/image.h"
 #include "common/image/meta.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
@@ -226,6 +227,9 @@ namespace satdump
 
         image::Image generate_expression_product_composite(ImageProduct *product, std::string expression, float *progress)
         {
+            // Dummy mode, a special mode where no actual work is done, only checking
+            bool dummy_mode = progress ? (*progress == -1) : false;
+
             // Sanitize string
             expression.erase(std::remove(expression.begin(), expression.end(), '\r'), expression.end());
             expression.erase(std::remove(expression.begin(), expression.end(), '\n'), expression.end());
@@ -281,6 +285,26 @@ namespace satdump
             // We can't handle over 4
             if (nout_channels > 4)
                 throw satdump_exception("Can't have more than 4 output channels!");
+
+            // If in dummy mode, we just check the channels are present/can be calibrated
+            // Let it error out if need be!
+            if (dummy_mode)
+            {
+                *progress = 1;
+
+                for (auto &t : tokens)
+                    if (t.find("ch") == 0 && t.size() > 2)
+                        product->get_channel_image(t.substr(2));
+
+                for (auto &t : calib_cfgs)
+                {
+                    product->get_channel_image(t.second.channel);
+                    if (!product->has_calibration())
+                        *progress = 0;
+                }
+
+                return image::Image();
+            }
 
             // Handles variables for each input channel
             struct TokenS
@@ -345,7 +369,7 @@ namespace satdump
                         tkts[ntkts++] = nt;
                     }
                     else if (calib_cfgs.count(tkt))
-                    {
+                    { // Calibrated channel case
                         auto &c = calib_cfgs[tkt];
                         std::string index = calib_cfgs[tkt].channel;
                         logger->trace("Needs calibrated channel " + index + " as " + c.unit);
@@ -429,6 +453,20 @@ namespace satdump
             {
                 throw satdump_exception(e.GetMsg());
             }
+        }
+
+        bool check_expression_product_composite(satdump::products::ImageProduct *product, std::string expression)
+        {
+            float dummy = -1;
+            try
+            {
+                satdump::products::generate_expression_product_composite(product, expression, &dummy);
+            }
+            catch (std::exception &)
+            {
+                return false;
+            }
+            return dummy == 1;
         }
     } // namespace products
 } // namespace satdump

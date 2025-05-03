@@ -1,17 +1,17 @@
 #define SATDUMP_DLL_EXPORT2 1
 #include "main_ui.h"
-#include "imgui/imgui_flags.h"
-#include "imgui/imgui.h"
-#include "processing.h"
-#include "offline.h"
-#include "settings.h"
-#include "satdump_vars.h"
-#include "core/backend.h"
-#include "resources.h"
-#include "common/widgets/markdown_helper.h"
 #include "common/audio/audio_sink.h"
+#include "common/widgets/markdown_helper.h"
+#include "core/backend.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_flags.h"
 #include "imgui_notify/imgui_notify.h"
 #include "notify_logger_sink.h"
+#include "offline.h"
+#include "processing.h"
+#include "resources.h"
+#include "satdump_vars.h"
+#include "settings.h"
 #include "status_logger_sink.h"
 
 #include "imgui/implot/implot.h"
@@ -184,4 +184,4 @@ namespace satdump
     }
 
     SATDUMP_DLL2 ctpl::thread_pool ui_thread_pool(8);
-}
+} // namespace satdump

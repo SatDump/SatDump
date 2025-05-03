@@ -1,7 +1,7 @@
 #include "pfd_utils.h"
+#include "core/backend.h"
 #include "core/config.h"
 #include "logger.h"
-#include "portable-file-dialogs.h"
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
@@ -61,24 +61,24 @@ namespace satdump
 #else
         default_path += "/";
 #endif
-        std::string save_name = default_path + default_name + "." + *default_ext;
-        std::string path = "";
+        std::string save_name = default_name + "." + *default_ext;
 
 #ifndef __ANDROID__
-        auto result = pfd::save_file(window_title, save_name, saveopts);
-        while (!result.ready(1000))
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::vector<std::pair<std::string, std::string>> final_saveopt;
+        for (int i = 0; i < saveopts.size() / 2; i++)
+            final_saveopt.push_back({saveopts[i * 2 + 0], saveopts[i * 2 + 1]});
 
-        if (result.result().size() > 0)
+        std::string path = backend::saveFileDialog(final_saveopt, default_path, save_name);
+
+        if (path.size() > 0)
         {
-            path = result.result();
             image::save_img(*image, path);
             std::string extension = std::filesystem::path(path).extension().string();
             if (extension.size() > 1)
                 *default_ext = extension.substr(1);
         }
 #else
-        path = save_name;
+        std::string path = save_name;
         image::save_img(*image, save_name);
 #endif
         return path;

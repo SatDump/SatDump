@@ -11,5 +11,17 @@
  **********************************************************************/
 
 #include "logger.h"
+#include "products2/image/product_expression.h"
+#include "products2/image_product.h"
+#include <exception>
 
-int main(int argc, char *argv[]) { initLogger(); }
+int main(int argc, char *argv[])
+{
+    initLogger();
+
+    satdump::products::ImageProduct pro;
+    pro.load("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/AVHRR/product.cbor");
+
+    bool v = satdump::products::check_expression_product_composite(&pro, "cha, ch2, ch1");
+    logger->critical(v);
+}

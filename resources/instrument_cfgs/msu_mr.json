@@ -107,7 +107,8 @@
         },
         {
             "name": "Sea Surface Temperature",
-"expression": "IR11=(5, brightness_temperature, 269.15, 309.15);IR12=(6, brightness_temperature, 269.15, 309.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/SST_-4+36.png);lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",            "description": "descriptions/SST.md",
+            "expression": "IR11=(5, brightness_temperature, 269.15, 309.15);IR12=(6, brightness_temperature, 269.15, 309.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/SST_-4+36.png);lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",
+            "description": "descriptions/SST.md",
             "image": {
                 "geo_correct": true
             }
@@ -280,7 +281,6 @@
                 "geo_correct": true
             },
             "expression": "bm=equp(maps/nasa_hd.jpg); ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(0), ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(1), ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(2)",
-            // TODOREWORK Tune?
             "description": "descriptions/MCIR.md"
         },
         {
@@ -289,7 +289,6 @@
                 "geo_correct": true
             },
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/nasa_hd.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
-            // TODOREWORK
             "description": "descriptions/MSA.md"
         },
         {
