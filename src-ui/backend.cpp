@@ -110,9 +110,10 @@ std::string selectFolderDialog(std::string default_path)
     // show the dialog
     nfdwindowhandle_t h;
     NFD_GetNativeWindowFromGLFWWindow(window, &h);
-    nfdresult_t result = NFD::PickFolder(outPath, default_path == "" ? nullptr : default_path.c_str(), h);
 
     glfw_frame_mtx.unlock();
+
+    nfdresult_t result = NFD::PickFolder(outPath, default_path == "" ? nullptr : default_path.c_str(), h);
 
     if (result == NFD_OKAY)
         return outPath.get();
@@ -131,13 +132,13 @@ std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> fi
     nfdwindowhandle_t h;
     NFD_GetNativeWindowFromGLFWWindow(window, &h);
 
+    glfw_frame_mtx.unlock();
+
     std::vector<nfdfilteritem_t> filt;
     for (auto &f : filters)
         filt.push_back({f.first.c_str(), f.second.c_str()});
 
     nfdresult_t result = NFD::OpenDialog(outPath, filt.data(), filt.size(), default_path == "" ? nullptr : default_path.c_str(), h);
-
-    glfw_frame_mtx.unlock();
 
     if (result == NFD_OKAY)
         return outPath.get();
@@ -156,13 +157,13 @@ std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filt
     nfdwindowhandle_t h;
     NFD_GetNativeWindowFromGLFWWindow(window, &h);
 
+    glfw_frame_mtx.unlock();
+
     std::vector<nfdfilteritem_t> filt;
     for (auto &f : filters)
         filt.push_back({f.first.c_str(), f.second.c_str()});
 
     nfdresult_t result = NFD::SaveDialog(outPath, filt.data(), filt.size(), default_path.c_str(), default_name.c_str(), h);
-
-    glfw_frame_mtx.unlock();
 
     if (result == NFD_OKAY)
         return outPath.get();
