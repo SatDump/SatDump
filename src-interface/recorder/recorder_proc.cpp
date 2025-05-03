@@ -6,6 +6,8 @@
 
 #ifndef _MSC_VER
 #include <sys/statvfs.h>
+#else
+#include <Windows.h>
 #endif
 
 namespace satdump
