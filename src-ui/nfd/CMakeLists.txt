@@ -59,7 +59,7 @@ endif()
 if(nfd_PLATFORM STREQUAL PLATFORM_LINUX)
   find_package(PkgConfig REQUIRED)
   # for Linux, we support GTK3 and xdg-desktop-portal
-  option(NFD_PORTAL "Use xdg-desktop-portal instead of GTK" OFF)
+  option(NFD_PORTAL "Use xdg-desktop-portal instead of GTK" ON)
   if(NOT NFD_PORTAL)
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
     message("Using GTK version: ${GTK3_VERSION}")
