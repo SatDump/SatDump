@@ -320,7 +320,7 @@ bool needs_uninitialize;
 nfdresult_t NFD_Init(void) {
     // Init COM library.
     HRESULT result =
-        ::CoInitializeEx(nullptr, ::COINIT_APARTMENTTHREADED | ::COINIT_DISABLE_OLE1DDE);
+        ::CoInitializeEx(nullptr, ::COINIT_MULTITHREADED | ::COINIT_DISABLE_OLE1DDE);
 
     if (SUCCEEDED(result)) {
         needs_uninitialize = true;
