@@ -103,6 +103,9 @@ void funcSetIcon(uint8_t *image, int w, int h)
 
 std::string selectFolderDialog(std::string default_path)
 {
+    // Init file dialogs
+    NFD::Guard nfdGuard;
+
     glfw_frame_mtx.lock();
 
     NFD::UniquePath outPath;
@@ -125,6 +128,9 @@ std::string selectFolderDialog(std::string default_path)
 
 std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path)
 {
+    // Init file dialogs
+    NFD::Guard nfdGuard;
+
     glfw_frame_mtx.lock();
 
     NFD::UniquePath outPath;
@@ -150,6 +156,9 @@ std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> fi
 
 std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path, std::string default_name)
 {
+    // Init file dialogs
+    NFD::Guard nfdGuard;
+
     glfw_frame_mtx.lock();
 
     NFD::UniquePath outPath;

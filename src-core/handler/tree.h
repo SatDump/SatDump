@@ -2,16 +2,17 @@
 
 #include "core/style.h"
 #include "imgui/imgui_internal.h"
+#include "logger.h"
 
 struct TreeDrawerToClean
 {
     float SmallOffsetX = 11.0f - 22; // for now, a hardcoded value; should take into account tree indent size
 
-    ImDrawList *drawList;
+    ImDrawList *drawList = nullptr;
 
-    ImVec2 verticalLineStart;
+    ImVec2 verticalLineStart = {0, 0};
 
-    ImVec2 verticalLineEnd;
+    ImVec2 verticalLineEnd = {0, 0};
 
     void start()
     {

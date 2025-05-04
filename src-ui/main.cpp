@@ -165,9 +165,6 @@ int main(int argc, char *argv[])
     glfwSetWindowContentScaleCallback(window, window_content_scale_callback);
 #endif
 
-    // Init file dialogs
-    NFD::Guard nfdGuard;
-
     // Set font
     style::setFonts(backend::device_scale);
 
