@@ -229,8 +229,8 @@ namespace satdump
 
             if (ImGui::BeginMenuBar())
             {
-                image_view.zoom_in_next |= ImGui::MenuItem("\ueb81");
-                image_view.zoom_out_next |= ImGui::MenuItem("\ueb82");
+                image_view.zoom_in_next |= ImGui::MenuItem(u8"\ueb81");
+                image_view.zoom_out_next |= ImGui::MenuItem(u8"\ueb82");
                 image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
                 image_view.select_crop_next |= ImGui::MenuItem("Crop");
 
