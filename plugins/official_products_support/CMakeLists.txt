@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(official_products_support)
 
+if(NOT ANDROID)
 find_package(PkgConfig)
 pkg_check_modules(HDF5 hdf5)
-if(${HDF5_FOUND} AND NOT ANDROID) # TODOREWORK Maybe actually yes ANDROID?
+if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
 
   # Core Plugin
   file(
@@ -56,4 +57,5 @@ if(${HDF5_FOUND} AND NOT ANDROID) # TODOREWORK Maybe actually yes ANDROID?
     endif()
   endif()
 
+endif()
 endif()
