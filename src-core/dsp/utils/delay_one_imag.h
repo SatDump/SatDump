@@ -2,22 +2,23 @@
 
 #include "common/dsp/complex.h"
 #include "dsp/block.h"
+#include "dsp/block_simple.h"
+#include <cstdint>
 
 namespace satdump
 {
     namespace ndsp
     {
-        class CyclostationaryAnalysis : public Block
+        class DelayOneImagBlock : public BlockSimple<complex_t, complex_t>
         {
-        public:
-            //
-
         private:
-            bool work();
+            float lastSamp;
 
         public:
-            CyclostationaryAnalysis();
-            ~CyclostationaryAnalysis();
+            DelayOneImagBlock();
+            ~DelayOneImagBlock();
+
+            uint32_t process(complex_t *input, uint32_t nsamples, complex_t *output);
 
             void init() {}
 
@@ -30,7 +31,6 @@ namespace satdump
             {
                 throw satdump_exception(key);
                 return RES_OK;
-                 // setValFromJSONIfExists(p_loop_bw, v["loop_bw"]);
             }
         };
     } // namespace ndsp

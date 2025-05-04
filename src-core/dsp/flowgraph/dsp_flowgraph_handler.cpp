@@ -2,6 +2,7 @@
 #include "core/plugin.h"
 #include "dsp/device/dev.h"
 #include "dsp/filter/rrc.h"
+#include "dsp/utils/cyclostationary_analysis.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
 
@@ -99,6 +100,10 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"rrc_fir_cc", {"RRC FIR CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::RRC_FIRBlock<complex_t>>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"cyclostationary_analysis_cf",
+                 {"Cyclostationary/Cyclostationary Analysis", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CyclostationaryAnalysis>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
