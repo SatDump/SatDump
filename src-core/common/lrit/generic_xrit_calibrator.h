@@ -1,11 +1,13 @@
 #pragma once
 
-#include "products2/image/image_calibrator.h"
-#include "nlohmann/json.hpp"
 #include "common/calibration.h"
+#include "nlohmann/json.hpp"
+#include "products2/image/image_calibrator.h"
 #include "projection/thinplatespline.h"
 
 #include "logger.h"
+#include <utility>
+#include <vector>
 
 namespace lrit
 {
@@ -18,7 +20,7 @@ namespace lrit
         std::vector<int> new_max_val;
         int product_bit_depth;
 
-        std::vector<std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>> lut_for_channels;
+        std::vector<std::pair<std::shared_ptr<satdump::proj::VizGeorefSpline2D>, std::unordered_map<int, float>>> lut_for_channels;
 
     public:
         GenericxRITCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
@@ -43,7 +45,7 @@ namespace lrit
                     if (calib_cfg.contains("to_complete") && calib_cfg["to_complete"].get<bool>())
                     {
                         std::vector<std::pair<int, float>> llut = calib_cfg[d_pro->images[i].channel_name];
-                        std::shared_ptr<satdump::projection::VizGeorefSpline2D> spline = std::make_shared<satdump::projection::VizGeorefSpline2D>(1);
+                        std::shared_ptr<satdump::proj::VizGeorefSpline2D> spline = std::make_shared<satdump::proj::VizGeorefSpline2D>(1);
                         bool is_first = true;
                         for (auto &v : llut)
                         {
@@ -124,4 +126,4 @@ namespace lrit
             }
         }
     };
-}
+} // namespace lrit

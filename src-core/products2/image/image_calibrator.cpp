@@ -2,9 +2,9 @@
 #include "common/image/meta.h"
 #include "core/plugin.h"
 
-#include "calibration_units.h"
 #include "common/lrit/generic_xrit_calibrator.h"
 #include "nlohmann/json.hpp"
+#include "products2/image/calibration_converter.h"
 #include <memory>
 
 namespace satdump
@@ -20,7 +20,7 @@ namespace satdump
                 DummyCalibrator(ImageProduct *p, nlohmann::json c) : ImageCalibrator(p, c) {}
 
             protected:
-                double compute(int abs_idx, int x, int y, uint32_t val) { return CALIBRATION_INVALID_VALUE; }
+                double compute(int abs_idx, int x, int y, uint32_t val) { return val; }
             };
         } // namespace
 
@@ -60,9 +60,7 @@ namespace satdump
             auto &ori = product->images[channel_id];
             image::Image out(ori.image.depth(), ori.image.width(), ori.image.height(), 1);
 
-            calibration::UnitConverter converter; // TODOREWORK cleanup this whole file?
-            converter.set_proj(product->get_proj_cfg(product->get_channel_image(channel_name).abs_index));
-            converter.set_wavenumber(product->get_channel_image(channel_name).wavenumber);
+            calibration::UnitConverter converter(product, channel_name); // TODOREWORK cleanup this whole file?
             converter.set_conversion(ori.calibration_type, output_unit);
 
             image::ImgCalibHandler calib_handler;

@@ -1,6 +1,6 @@
 #include "gome_reader.h"
-#include <cstring>
 #include "common/ccsds/ccsds_time.h"
+#include <cstring>
 
 #include <cstdio>
 
@@ -97,7 +97,7 @@ namespace metop
             if (counter == 15)
             {
                 lines++;
-                timestamps.push_back(ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1);
+                timestamps.push_back(ccsds::parseCCSDSTimeFull(packet, 10957));
             }
 
             for (int band = 0; band < 6; band++)

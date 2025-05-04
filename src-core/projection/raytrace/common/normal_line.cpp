@@ -2,6 +2,7 @@
 #include "common/geodetic/euler_raytrace.h"
 #include "common/geodetic/vincentys_calculations.h"
 #include "nlohmann/json_utils.h"
+#include <cstdio>
 
 namespace satdump
 {

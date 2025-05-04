@@ -10,6 +10,7 @@
 #include "common/image/io.h"
 
 #include "common/projection/projs/equirectangular.h"
+#include "projection/projection.h"
 #include "resources.h"
 
 namespace satdump
@@ -276,7 +277,8 @@ namespace satdump
                 }
             }
 
-            logger->debug("Final Expression " + expression);
+            if (!dummy_mode)
+                logger->debug("Final Expression " + expression);
 
             // Get required variables & number of output channels
             int nout_channels = 0;

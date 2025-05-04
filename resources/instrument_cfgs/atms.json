@@ -74,90 +74,112 @@
     "default": {
         "calibration_ranges": { // TODOREWORK, convert them between units!
             "1": {
+                "unit": "brightness_temperature",
                 "min": 150,
                 "max": 300
             },
             "2": {
+                "unit": "brightness_temperature",
                 "min": 150,
                 "max": 300
             },
             "3": {
+                "unit": "brightness_temperature",
                 "min": 210,
                 "max": 300
             },
             "4": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 300
             },
             "5": {
+                "unit": "brightness_temperature",
                 "min": 220,
                 "max": 280
             },
             "6": {
+                "unit": "brightness_temperature",
                 "min": 220,
                 "max": 280
             },
             "7": {
+                "unit": "brightness_temperature",
                 "min": 210,
                 "max": 260
             },
             "8": {
+                "unit": "brightness_temperature",
                 "min": 210,
                 "max": 240
             },
             "9": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 250
             },
             "10": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 250
             },
             "11": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 250
             },
             "12": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 250
             },
             "13": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 260
             },
             "14": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 260
             },
             "15": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 260
             },
             "16": {
+                "unit": "brightness_temperature",
                 "min": 200,
                 "max": 300
             },
             "17": {
+                "unit": "brightness_temperature",
                 "min": 235,
                 "max": 285
             },
             "18": {
+                "unit": "brightness_temperature",
                 "min": 235,
                 "max": 285
             },
             "19": {
+                "unit": "brightness_temperature",
                 "min": 235,
                 "max": 285
             },
             "20": {
+                "unit": "brightness_temperature",
                 "min": 235,
                 "max": 285
             },
             "21": {
+                "unit": "brightness_temperature",
                 "min": 235,
                 "max": 285
             },
             "22": {
+                "unit": "brightness_temperature",
                 "min": 235,
                 "max": 285
             }

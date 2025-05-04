@@ -1,6 +1,6 @@
 #include "iasi_reader.h"
-#include "iasi_brd.h"
 #include "common/ccsds/ccsds_time.h"
+#include "iasi_brd.h"
 
 namespace metop
 {
@@ -22,10 +22,7 @@ namespace metop
 
         struct unsigned_int16
         {
-            operator unsigned short(void) const
-            {
-                return ((a << 8) + b);
-            }
+            operator unsigned short(void) const { return ((a << 8) + b); }
 
             unsigned char a;
             unsigned char b;
@@ -75,9 +72,9 @@ namespace metop
                 }
 
                 if (cnt1)
-                    timestamps[lines + 1] = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
+                    timestamps[lines + 1] = ccsds::parseCCSDSTimeFull(packet, 10957);
                 else
-                    timestamps[lines + 0] = ccsds::crcCheckVerticalParity(packet) ? ccsds::parseCCSDSTimeFull(packet, 10957) : -1;
+                    timestamps[lines + 0] = ccsds::parseCCSDSTimeFull(packet, 10957);
             }
 
             // Frame counter
@@ -91,9 +88,6 @@ namespace metop
                 channels[channel].resize((lines + 2) * 60);
         }
 
-        image::Image IASIReader::getChannel(int channel)
-        {
-            return image::Image(channels[channel].data(), 16, 30 * 2, lines, 1);
-        }
+        image::Image IASIReader::getChannel(int channel) { return image::Image(channels[channel].data(), 16, 30 * 2, lines, 1); }
     } // namespace iasi
 } // namespace metop

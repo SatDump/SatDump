@@ -1,11 +1,8 @@
 #pragma once
 
-#include "nlohmann/json.hpp"
-#include "core/exception.h"
-
 #include "../image_product.h" // TODOREWORK remove?
-
 #include "calibration_units.h"
+#include "nlohmann/json.hpp"
 
 namespace satdump
 {
@@ -22,10 +19,7 @@ namespace satdump
             uint32_t val = 0;
 
         public:
-            ImageCalibrator(ImageProduct *p, nlohmann::json c)
-                : d_pro(p), d_cfg(c)
-            {
-            }
+            ImageCalibrator(ImageProduct *p, nlohmann::json c) : d_pro(p), d_cfg(c) {}
 
             inline double compute(int idx, int x, int y)
             {
@@ -53,5 +47,5 @@ namespace satdump
 
         std::shared_ptr<ImageCalibrator> get_calibrator_from_product(ImageProduct *p);
         image::Image generate_calibrated_product_channel(ImageProduct *product, std::string channel_name, double range_min, double range_max, std::string output_unit = "", float *progess = nullptr);
-    }
-}
+    } // namespace products
+} // namespace satdump
