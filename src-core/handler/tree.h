@@ -18,7 +18,7 @@ struct TreeDrawerToClean
         drawList = ImGui::GetWindowDrawList();
 
         verticalLineStart = ImGui::GetCursorScreenPos();
-        verticalLineStart.x += SmallOffsetX; // to nicely line up with the arrow symbol
+        verticalLineStart.x += SmallOffsetX * ui_scale; // to nicely line up with the arrow symbol
         verticalLineEnd = verticalLineStart;
     }
 
@@ -27,10 +27,8 @@ struct TreeDrawerToClean
         const float HorizontalTreeLineSize = 8.0f;                                         // chosen arbitrarily
         const ImRect childRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); // RenderTree(child);
         const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
-        drawList->AddLine(ImVec2(verticalLineStart.x, midpoint),
-                          ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), style::theme.treeview_icon);
-        drawList->AddText(ImVec2(verticalLineStart.x + HorizontalTreeLineSize * 2.0f, childRect.Min.y),
-                          style::theme.treeview_icon, icon.c_str());
+        drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), style::theme.treeview_icon);
+        drawList->AddText(ImVec2(verticalLineStart.x + HorizontalTreeLineSize * 2.0f, childRect.Min.y), style::theme.treeview_icon, icon.c_str());
         verticalLineEnd.y = midpoint;
         return false;
     }
