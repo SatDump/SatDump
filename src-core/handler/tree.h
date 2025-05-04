@@ -24,7 +24,7 @@ struct TreeDrawerToClean
 
     bool node(std::string icon)
     {
-        const float HorizontalTreeLineSize = 8.0f;                                         // chosen arbitrarily
+        const float HorizontalTreeLineSize = 8.0f * ui_scale;                              // chosen arbitrarily
         const ImRect childRect = ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); // RenderTree(child);
         const float midpoint = (childRect.Min.y + childRect.Max.y) / 2.0f;
         drawList->AddLine(ImVec2(verticalLineStart.x, midpoint), ImVec2(verticalLineStart.x + HorizontalTreeLineSize, midpoint), style::theme.treeview_icon);
