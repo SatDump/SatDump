@@ -122,6 +122,7 @@ namespace satdump
 
         void registerSystem(asIScriptEngine *engine)
         {
+            engine->SetDefaultNamespace("");
             engine->RegisterGlobalFunction("int exec(const string &in)", asFUNCTIONPR(ExecSystemCmd, (const std::string &), int), asCALL_CDECL);
             engine->RegisterGlobalFunction("int exec(const string &in, string &out)", asFUNCTIONPR(ExecSystemCmd, (const std::string &, std::string &), int), asCALL_CDECL);
         }

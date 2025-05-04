@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "run_as.h"
-#include "run_lua.h"
 
 int main(int argc, char *argv[])
 {
@@ -41,13 +40,13 @@ int main(int argc, char *argv[])
 
     CLI::App *sub_run = app.add_subcommand("run", "Run a script");
     sub_run->add_option("script", "The script to run")->required();
-    auto sub_run_group = sub_run->add_option_group("--lua,--as");
-    sub_run_group->add_flag("--lua", "Run a Lua script");
-    sub_run_group->add_flag("--as", "Run an AngelScript script");
-    sub_run_group->require_option(1);
+    // auto sub_run_group = sub_run->add_option_group("--lua,--as");
+    // sub_run_group->add_flag("--lua", "Run a Lua script");
+    // sub_run_group->add_flag("--as", "Run an AngelScript script");
+    // sub_run_group->require_option(1); TODOREWORK
     sub_run->add_flag("--lint", "Lint the script, without executing it");
     sub_run->add_flag("--predef", "Dump as.predefined");
-    sub_run->require_option(2, 3);
+    sub_run->require_option(1, 3);
 
     CLI::App *sub_module = app.add_subcommand("module", "Run a single module");
     for (auto &p : modules_registry)
@@ -131,16 +130,8 @@ int main(int argc, char *argv[])
         }
         else if (subcom->get_name() == "run")
         {
-            if (subcom->count("--as"))
-            {
-                std::string script = subcom->get_option("script")->as<std::string>();
-                satdump::runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));
-            }
-            else if (subcom->count("--lua"))
-            {
-                std::string script = subcom->get_option("script")->as<std::string>();
-                satdump::runLua(script);
-            }
+            std::string script = subcom->get_option("script")->as<std::string>();
+            satdump::runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));
         }
     }
 }

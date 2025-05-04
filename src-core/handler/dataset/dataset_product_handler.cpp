@@ -2,10 +2,10 @@
 #include "logger.h"
 
 // TODOREWORK
-#include "resources.h"
 #include "nlohmann/json_utils.h"
+#include "resources.h"
 
-#include "lua_processor.h"
+// TODOREWORK #include "lua_processor.h"
 #include "flowgraph_processor.h"
 
 namespace satdump
@@ -22,13 +22,9 @@ namespace satdump
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MCIR_Sample.json")));
         }
 
-        DatasetProductHandler::~DatasetProductHandler()
-        {
-        }
+        DatasetProductHandler::~DatasetProductHandler() {}
 
-        void DatasetProductHandler::drawMenu()
-        {
-        }
+        void DatasetProductHandler::drawMenu() {}
 
         void DatasetProductHandler::drawContents(ImVec2 win_size)
         {
@@ -49,9 +45,10 @@ namespace satdump
                         if (ImGui::Selectable(p["name"].get<std::string>().c_str(), &sel))
                         {
                             current_cfg = p["name"];
-                            if (p["processor"].get<std::string>() == "lua_processor")
+                            /* TODOREWORK if (p["processor"].get<std::string>() == "lua_processor")
                                 processor = std::make_unique<Lua_DatasetProductProcessor>(dataset_handler, this, p);
-                            else if (p["processor"].get<std::string>() == "flowgraph_processor")
+                            else*/
+                            if (p["processor"].get<std::string>() == "flowgraph_processor")
                                 processor = std::make_unique<Flowgraph_DatasetProductProcessor>(dataset_handler, this, p);
                         }
                     }
@@ -102,5 +99,5 @@ namespace satdump
             else
                 logger->error("Invalid processor!\n");
         }
-    }
-}
+    } // namespace viewer
+} // namespace satdump
