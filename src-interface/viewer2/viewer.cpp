@@ -106,7 +106,7 @@ namespace satdump
                 if (ImGui::BeginMenu("File"))
                 {
                     if (ImGui::MenuItem("Open File") && !file_open_dialog)                      // TODOREWORK switch to general thing
-                        file_open_dialog = new fileutils::FileSelTh({{"All Files", "*"}}, "."); // TODOREWORK remember path?
+                        file_open_dialog = new fileutils::FileSelTh({{"All Files", "*"}}, ""); // TODOREWORK remember path?
 
                     if (ImGui::BeginMenu("Hardcoded"))
                     {
