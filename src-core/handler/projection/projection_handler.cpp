@@ -12,7 +12,7 @@ namespace satdump
 {
     namespace viewer
     {
-        ProjectionHandler::ProjectionHandler() { handler_tree_icon = "\uf6e6"; }
+        ProjectionHandler::ProjectionHandler() { handler_tree_icon = u8"\uf6e6"; }
 
         ProjectionHandler::~ProjectionHandler() {}
 

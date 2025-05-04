@@ -79,7 +79,7 @@ namespace satdump
             if (ImNodes::GetCurrentContext() == nullptr)
                 ImNodes::CreateContext();
 
-            handler_tree_icon = "\uf92f";
+            handler_tree_icon = u8"\uf92f";
 
             flowgraph.node_internal_registry.insert({"file_source_cc", {"IO/File Source", [](const ndsp::Flowgraph *f) { return std::make_shared<NodeTestFileSource>(f); }}});
             flowgraph.node_internal_registry.insert(

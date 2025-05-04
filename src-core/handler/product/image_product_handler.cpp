@@ -20,7 +20,7 @@ namespace satdump
         ImageProductHandler::ImageProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode)
             : ProductHandler(p, dataset_mode, [p](auto &c) { return products::check_expression_product_composite((products::ImageProduct *)p.get(), c["expression"]); })
         {
-            handler_tree_icon = "\uf71e";
+            handler_tree_icon = u8"\uf71e";
 
             product = (products::ImageProduct *)ProductHandler::product.get();
             for (auto &img : product->images)

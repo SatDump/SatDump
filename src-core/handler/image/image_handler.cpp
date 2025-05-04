@@ -35,7 +35,7 @@ namespace satdump
     {
         ImageHandler::ImageHandler()
         {
-            handler_tree_icon = "\uf7e8";
+            handler_tree_icon = u8"\uf7e8";
 
             // TODOREWORK experimental?
             image_view.cropCallback = [this](int x1, int y1, int x2, int y2)

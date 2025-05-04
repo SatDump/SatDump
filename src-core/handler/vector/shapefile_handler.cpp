@@ -11,11 +11,11 @@ namespace satdump
 {
     namespace viewer
     {
-        ShapefileHandler::ShapefileHandler() { handler_tree_icon = "\uf84c"; }
+        ShapefileHandler::ShapefileHandler() { handler_tree_icon = u8"\uf84c"; }
 
         ShapefileHandler::ShapefileHandler(std::string shapefile)
         {
-            handler_tree_icon = "\uf84c";
+            handler_tree_icon = u8"\uf84c";
 
             std::ifstream f(shapefile, std::ios::binary);
             file = std::make_unique<shapefile::Shapefile>(f);

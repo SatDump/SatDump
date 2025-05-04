@@ -14,7 +14,7 @@ namespace satdump
     {
         PunctiformProductHandler::PunctiformProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode) : ProductHandler(p, dataset_mode)
         {
-            handler_tree_icon = "\uf71e";
+            handler_tree_icon = u8"\uf71e";
 
             product = (products::PunctiformProduct *)ProductHandler::product.get();
             if (product->data.size())

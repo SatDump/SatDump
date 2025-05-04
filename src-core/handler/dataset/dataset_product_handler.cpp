@@ -14,7 +14,7 @@ namespace satdump
     {
         DatasetProductHandler::DatasetProductHandler()
         {
-            handler_tree_icon = "\uf70e";
+            handler_tree_icon = u8"\uf70e";
 
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MHS_Mix.json")));
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/MSUGS_Full_Disk.json")));

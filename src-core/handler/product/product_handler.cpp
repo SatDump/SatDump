@@ -14,7 +14,7 @@ namespace satdump
     {
         ProductHandler::ProductHandler(std::shared_ptr<products::Product> p, bool dataset_mode, std::function<bool(nlohmann::ordered_json &)> filterPreset) : product(p)
         {
-            handler_tree_icon = "\uf713";
+            handler_tree_icon = u8"\uf713";
 
             std::string config_path = "instrument_cfgs/" + product->instrument_name + ".json";
             if (resources::resourceExists(config_path))

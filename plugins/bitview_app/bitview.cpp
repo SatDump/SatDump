@@ -24,7 +24,7 @@ namespace satdump
         : current_bit_container(c)
     {
         c->bitview = this;
-        handler_tree_icon = "\uf471";
+        handler_tree_icon = u8"\uf471";
 
         all_tools.push_back(std::make_shared<DeframerTool>());
         all_tools.push_back(std::make_shared<DifferentialTool>());
@@ -34,7 +34,7 @@ namespace satdump
 
     BitViewHandler::BitViewHandler()
     {
-        handler_tree_icon = "\uf471";
+        handler_tree_icon = u8"\uf471";
 
         all_tools.push_back(std::make_shared<DeframerTool>());
         all_tools.push_back(std::make_shared<DifferentialTool>());

@@ -4,7 +4,7 @@ namespace satdump
 {
     namespace viewer
     {
-        TrashHandler::TrashHandler() { handler_tree_icon = "\uf014"; }
+        TrashHandler::TrashHandler() { handler_tree_icon = u8"\uf014"; }
 
         TrashHandler::~TrashHandler() {}
 

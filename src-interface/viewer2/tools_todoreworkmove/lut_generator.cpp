@@ -11,7 +11,7 @@ namespace satdump
     {
         LutGeneratorHandler::LutGeneratorHandler()
         {
-            handler_tree_icon = "\uf043";
+            handler_tree_icon = u8"\uf043";
 
             lut.resize(100, {255, 255, 255, 255});
             for (int i = 0; i < 100; i++)
