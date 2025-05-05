@@ -73,6 +73,10 @@ namespace satdump
 
                     rot_current_reqlast_pos.az = rot_current_req_pos.az;
                     rot_current_reqlast_pos.el = rot_current_req_pos.el;
+
+                    if(rotator_target_pos_updated_callback) {
+                        rotator_target_pos_updated_callback(rot_current_req_pos.az, rot_current_req_pos.el);
+                    }
                 }
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(uint64_t(rotator_update_period * 1e3)));
