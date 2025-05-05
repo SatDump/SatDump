@@ -1,9 +1,10 @@
 #pragma once
 
+#include "common/dsp/utils/random.h"
 #include "core/module.h"
+#include "svissr_pn_sync.h"
 #include <complex>
 #include <fstream>
-#include "common/dsp/utils/random.h"
 
 namespace fengyun_svissr
 {
@@ -21,6 +22,8 @@ namespace fengyun_svissr
         // UI Stuff
         dsp::Random rng;
 
+        bool pn_sync;
+
     public:
         SVISSRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~SVISSRDecoderModule();
@@ -35,4 +38,4 @@ namespace fengyun_svissr
         static std::vector<std::string> getParameters();
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace elektro_arktika
+} // namespace fengyun_svissr

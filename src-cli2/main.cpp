@@ -80,10 +80,18 @@ int main(int argc, char *argv[])
         for (auto &ep : common.items())
         {
             auto opt = std::make_shared<std::string>();
+            CLI::Option *f;
             if (ep.value().contains("description"))
-                sub_p->add_flag("--" + ep.key(), *opt, (const std::string)ep.value()["description"].get<std::string>());
+                f = sub_p->add_flag("--" + ep.key(), *opt, (const std::string)ep.value()["description"].get<std::string>());
             else
-                sub_p->add_flag("--" + ep.key(), *opt, "");
+                f = sub_p->add_flag("--" + ep.key(), *opt, "");
+            if (ep.value().contains("value"))
+            {
+                if (ep.value()["value"].is_string())
+                    f->default_val(ep.value()["value"].get<std::string>());
+                else
+                    f->default_val(ep.value()["value"].dump());
+            }
             pipeline_opts[p.name].emplace(ep.key(), opt);
         }
     }

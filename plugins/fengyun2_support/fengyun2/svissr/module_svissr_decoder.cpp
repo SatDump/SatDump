@@ -1,9 +1,11 @@
 #include "module_svissr_decoder.h"
-#include "logger.h"
 #include "common/codings/differential/nrzm.h"
 #include "imgui/imgui.h"
+#include "logger.h"
 #include "svissr_deframer.h"
 #include "svissr_derand.h"
+#include <cstdint>
+#include <cstdio>
 
 #define BUFFER_SIZE 8192
 
@@ -15,22 +17,15 @@ namespace fengyun_svissr
     SVISSRDecoderModule::SVISSRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
+
+        pn_sync = parameters["pn_sync"];
     }
 
-    std::vector<ModuleDataType> SVISSRDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
+    std::vector<ModuleDataType> SVISSRDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-    std::vector<ModuleDataType> SVISSRDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
+    std::vector<ModuleDataType> SVISSRDecoderModule::getOutputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-    SVISSRDecoderModule::~SVISSRDecoderModule()
-    {
-        delete[] buffer;
-    }
+    SVISSRDecoderModule::~SVISSRDecoderModule() { delete[] buffer; }
 
     void SVISSRDecoderModule::process()
     {
@@ -59,8 +54,12 @@ namespace fengyun_svissr
         // Derand
         PNDerandomizer derand;
 
+        // PN Sync
+        PNSync sync(BUFFER_SIZE);
+        int8_t *buffer2 = buffer;
+
         // Final buffer after decoding
-        uint8_t finalBuffer[BUFFER_SIZE];
+        uint8_t *finalBuffer = new uint8_t[sync.TARGET_WROTE_BITS / 8];
 
         // Bits => Bytes stuff
         uint8_t byteShifter = 0;
@@ -75,13 +74,15 @@ namespace fengyun_svissr
             else
                 input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
+            int ret = pn_sync ? sync.process((const uint8_t *)buffer, BUFFER_SIZE, (uint8_t **)&buffer2) : BUFFER_SIZE;
+
             // Group symbols into bytes now, I channel
             inByteShifter = 0;
             byteShifted = 0;
 
-            for (int i = 0; i < BUFFER_SIZE; i++)
+            for (int i = 0; i < ret; i++)
             {
-                byteShifter = byteShifter << 1 | (buffer[i] > 0);
+                byteShifter = byteShifter << 1 | (buffer2[i] > 0);
                 inByteShifter++;
 
                 if (inByteShifter == 8)
@@ -92,10 +93,10 @@ namespace fengyun_svissr
             }
 
             // Differential decoding for both of them
-            diff.decode(finalBuffer, BUFFER_SIZE / 8);
+            diff.decode(finalBuffer, ret / 8);
 
             // Deframe
-            std::vector<std::vector<uint8_t>> frameBuffer = deframer.work(finalBuffer, BUFFER_SIZE / 8);
+            std::vector<std::vector<uint8_t>> frameBuffer = deframer.work(finalBuffer, ret / 8);
 
             // If we found frames, write them out
             if (frameBuffer.size() > 0)
@@ -121,12 +122,13 @@ namespace fengyun_svissr
             }
         }
 
+        delete[] finalBuffer;
+
         if (output_data_type == DATA_FILE)
             data_out.close();
         if (input_data_type == DATA_FILE)
             data_in.close();
     }
-
 
     void SVISSRDecoderModule::drawUI(bool window)
     {
@@ -138,7 +140,7 @@ namespace fengyun_svissr
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 ImVec2 rect_min = ImGui::GetCursorScreenPos();
-                ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                ImVec2 rect_max = {rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale};
                 draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
                 draw_list->PushClipRect(rect_min, rect_max);
 
@@ -146,8 +148,7 @@ namespace fengyun_svissr
                 {
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (buffer[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
-                                               2 * ui_scale,
-                                               style::theme.constellation);
+                                               2 * ui_scale, style::theme.constellation);
                 }
 
                 draw_list->PopClipRect();
@@ -162,18 +163,12 @@ namespace fengyun_svissr
         ImGui::End();
     }
 
-    std::string SVISSRDecoderModule::getID()
-    {
-        return "fengyun_svissr_decoder";
-    }
+    std::string SVISSRDecoderModule::getID() { return "fengyun_svissr_decoder"; }
 
-    std::vector<std::string> SVISSRDecoderModule::getParameters()
-    {
-        return {};
-    }
+    std::vector<std::string> SVISSRDecoderModule::getParameters() { return {}; }
 
     std::shared_ptr<ProcessingModule> SVISSRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SVISSRDecoderModule>(input_file, output_file_hint, parameters);
     }
-} // namespace elektro
+} // namespace fengyun_svissr

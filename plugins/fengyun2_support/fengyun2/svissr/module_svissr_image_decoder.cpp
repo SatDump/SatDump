@@ -1,12 +1,12 @@
 #include "module_svissr_image_decoder.h"
-#include "logger.h"
 #include "common/codings/differential/nrzs.h"
+#include "common/image/io.h"
+#include "common/utils.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-#include <filesystem>
+#include "logger.h"
 #include "resources.h"
-#include "common/utils.h"
-#include "common/image/io.h"
+#include <filesystem>
 
 #define FRAME_SIZE 44356
 
@@ -104,8 +104,8 @@ namespace fengyun_svissr
         writingImage = false;
     }
 
-    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                          sat_name(parameters["satname"])
+    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : ProcessingModule(input_file, output_file_hint, parameters), sat_name(parameters["satname"])
     {
         frame = new uint8_t[FRAME_SIZE];
 
@@ -118,15 +118,9 @@ namespace fengyun_svissr
         vissrImageReader.reset();
     }
 
-    std::vector<ModuleDataType> SVISSRImageDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
+    std::vector<ModuleDataType> SVISSRImageDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-    std::vector<ModuleDataType> SVISSRImageDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
-    }
+    std::vector<ModuleDataType> SVISSRImageDecoderModule::getOutputTypes() { return {DATA_FILE}; }
 
     SVISSRImageDecoderModule::~SVISSRImageDecoderModule()
     {
@@ -185,25 +179,33 @@ namespace fengyun_svissr
                 int counter = frame[67] << 8 | frame[68];
 
                 // Does correction logic if specified by the user
-                if (apply_correction) {
+                if (apply_correction)
+                {
                     // Unlocks if we are starting a new series
-                    if (counter_locked && (counter == 1 || counter == 2)) {
+                    if (counter_locked && (counter == 1 || counter == 2))
+                    {
                         counter_locked = false;
-                    } else if (!counter_locked) {
+                    }
+                    else if (!counter_locked)
+                    {
                         // Can we lock?
-                        if (counter == global_counter+1) {
+                        if (counter == global_counter + 1)
+                        {
                             // LOCKED!
                             logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
                             counter_locked = true;
-                        } else {
+                        }
+                        else
+                        {
                             // We can't lock, save this counter for a check on the next one
                             global_counter = counter;
                         }
                     }
 
                     // We are locked, assume this frame's counter is the previous one plus one.
-                    if (counter_locked) {
-                        counter = global_counter+1;
+                    if (counter_locked)
+                    {
+                        counter = global_counter + 1;
                         global_counter = counter;
 
                         // The counter used in the decoding process is pulled from the frame,
@@ -212,7 +214,6 @@ namespace fengyun_svissr
                         frame[68] = counter & 0xFF;
                     }
                 }
-
 
                 // Parse SCID
                 int scid = frame[89];
@@ -238,10 +239,11 @@ namespace fengyun_svissr
                 uint8_t is_back = most_common(&last_status[0], &last_status[20], 0);
 
                 // Ensures the counter doesn't lock during rollback
-                // Situation: 
+                // Situation:
                 //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
                 //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
-                if (is_back && valid_lines < 5) {
+                if (is_back && valid_lines < 5)
+                {
                     counter_locked = false;
                 }
 
@@ -383,31 +385,27 @@ namespace fengyun_svissr
 
         ImGui::SameLine();
 
+        ImGui::BeginGroup();
         // Writes out a simple GUI for the corrector status if it was enabled by the user
-        if (apply_correction) {
-            ImGui::BeginGroup();
+        if (apply_correction)
+        {
+            ImGui::Button("Correction", {200 * ui_scale, 20 * ui_scale});
             {
-                ImGui::Button("Correction", {200 * ui_scale, 20 * ui_scale});
+                ImGui::Text("Counter correction status: ");
+
+                ImGui::SameLine();
+
+                if (global_counter == 0)
+                    ImGui::TextColored(style::theme.red, "WAITING");
+                else if (global_counter != 0 && !counter_locked)
+                    ImGui::TextColored(style::theme.orange, "LOCKING");
+                else
                 {
-                    ImGui::Text("Counter correction status: ");
-
-                    ImGui::SameLine();
-
-                    if (global_counter == 0)
-                        ImGui::TextColored(style::theme.red, "WAITING");
-                    else if (global_counter != 0 && !counter_locked)
-                        ImGui::TextColored(style::theme.orange, "LOCKING");
-                    else {
-                        ImGui::TextColored(style::theme.green, "LOCKED");
-                    }
+                    ImGui::TextColored(style::theme.green, "LOCKED");
                 }
             }
-            ImGui::EndGroup();
         }
 
-        ImGui::SameLine();
-
-        ImGui::BeginGroup();
         {
             ImGui::Button("Full Disk Progress", {200 * ui_scale, 20 * ui_scale});
             ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200 * ui_scale, 20 * ui_scale));
@@ -428,18 +426,12 @@ namespace fengyun_svissr
         ImGui::End();
     }
 
-    std::string SVISSRImageDecoderModule::getID()
-    {
-        return "fengyun_svissr_image_decoder";
-    }
+    std::string SVISSRImageDecoderModule::getID() { return "fengyun_svissr_image_decoder"; }
 
-    std::vector<std::string> SVISSRImageDecoderModule::getParameters()
-    {
-        return {"satname"};
-    }
+    std::vector<std::string> SVISSRImageDecoderModule::getParameters() { return {"satname"}; }
 
     std::shared_ptr<ProcessingModule> SVISSRImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SVISSRImageDecoderModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace fengyun_svissr
