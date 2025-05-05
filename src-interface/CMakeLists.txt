@@ -19,7 +19,7 @@ target_link_libraries(satdump_interface PUBLIC satdump_core)
 
 # Install
 if(MSVC OR BUILD_MSVC)
-    install(TARGETS satdump_interface DESTINATION bin)
+    install(TARGETS satdump_interface DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-    install(TARGETS satdump_interface DESTINATION lib)
+    install(TARGETS satdump_interface DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

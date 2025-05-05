@@ -288,7 +288,7 @@ namespace satdump
         virtual void save(std::string directory);
         virtual void load(std::string file);
 
-        ~ImageProducts();
+        virtual ~ImageProducts();
 
     private:
         std::map<int, image::Image> calibrated_img_cache;

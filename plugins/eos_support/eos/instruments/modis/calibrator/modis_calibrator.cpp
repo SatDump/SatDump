@@ -31,7 +31,7 @@ namespace eos
         {
             int index_channel = channel;
             channel -= NUM_250M_BANDS + NUM_500M_BANDS + NUM_1000M_REFL_BANDS - 1; // Scale channel to "index in category"
-            int index_channel_em = channel;
+            //int index_channel_em = channel;
 
             // Skip Band 26
             if (channel == MODIS_BAND26_INDEX_AT_RES)
@@ -54,9 +54,9 @@ namespace eos
             int spos_y = pos_y % 10;
             if (bowtie_lut_1km.size() > 0)
             {
-                if (pos_x >= bowtie_lut_1km.size())
+                if ((size_t)pos_x >= bowtie_lut_1km.size())
                     return CALIBRATION_INVALID_VALUE;
-                if (spos_y >= bowtie_lut_1km[pos_x].size())
+                if ((size_t)spos_y >= bowtie_lut_1km[pos_x].size())
                     return CALIBRATION_INVALID_VALUE;
                 spos_y = bowtie_lut_1km[pos_x][spos_y];
             }
@@ -134,7 +134,7 @@ namespace eos
                 return radiance;
         }
 
-        double EosMODISCalibrator::compute_reflective(int channel, int pos_x, int pos_y, int px_val)
+        double EosMODISCalibrator::compute_reflective(int /* channel */, int /* pos_x */, int /* pos_y */, int /* px_val */)
         {
             return CALIBRATION_INVALID_VALUE;
         }

@@ -1,11 +1,11 @@
 #include "module_cluster_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 #include "common/simple_deframer.h"
@@ -39,7 +39,7 @@ namespace cluster
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1101, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid1(1101, false);
 
             std::ofstream output(d_output_file_hint + "_wbd.frm", std::ios::binary);
             std::ofstream output_cadu2(d_output_file_hint + "_cadu_bkp.cadu", std::ios::binary);
@@ -60,22 +60,22 @@ namespace cluster
 
             // Buffers to wav...for all the antennas
             std::ofstream out_antenna_Ez(d_output_file_hint + "_Ez.wav", std::ios::binary);
-            int final_data_size_ant_Ez = 0;
+            uint64_t final_data_size_ant_Ez = 0;
             dsp::WavWriter wave_writer_Ez(out_antenna_Ez);
             wave_writer_Ez.write_header(27443, 1);
 
             std::ofstream out_antenna_Bx(d_output_file_hint + "_Bx.wav", std::ios::binary);
-            int final_data_size_ant_Bx = 0;
+            uint64_t final_data_size_ant_Bx = 0;
             dsp::WavWriter wave_writer_Bx(out_antenna_Bx);
             wave_writer_Bx.write_header(27443, 1);
 
             std::ofstream out_antenna_By(d_output_file_hint + "_By.wav", std::ios::binary);
-            int final_data_size_ant_By = 0;
+            uint64_t final_data_size_ant_By = 0;
             dsp::WavWriter wave_writer_By(out_antenna_By);
             wave_writer_By.write_header(27443, 1);
 
             std::ofstream out_antenna_Ey(d_output_file_hint + "_Ey.wav", std::ios::binary);
-            int final_data_size_ant_Ey = 0;
+            uint64_t final_data_size_ant_Ey = 0;
             dsp::WavWriter wave_writer_Ey(out_antenna_Ey);
             wave_writer_Ey.write_header(27443, 1);
 
@@ -91,7 +91,7 @@ namespace cluster
                 output_cadu2.write((char *)cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 if (vcdu.vcid == 5) // Parse WBD VCID
                 {
@@ -161,6 +161,10 @@ namespace cluster
             wave_writer_Bx.finish_header(final_data_size_ant_Bx);
             wave_writer_By.finish_header(final_data_size_ant_By);
             wave_writer_Ey.finish_header(final_data_size_ant_Ey);
+            out_antenna_Ez.close();
+            out_antenna_Bx.close();
+            out_antenna_By.close();
+            out_antenna_Ey.close();
 
             if (input_data_type == DATA_FILE)
                 data_in.close();

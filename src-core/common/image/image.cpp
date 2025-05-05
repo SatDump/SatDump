@@ -27,9 +27,12 @@ namespace image
 
     Image &Image::operator=(const Image &img)
     {
-        // Copy contents of the image over
-        init(img.d_depth, img.d_width, img.d_height, img.d_channels);
-        memcpy(d_data, img.d_data, img.data_size * img.type_size);
+        if (img.d_data != nullptr)
+        {
+            // Copy contents of the image over
+            init(img.d_depth, img.d_width, img.d_height, img.d_channels);
+            memcpy(d_data, img.d_data, img.data_size * img.type_size);
+        }
         copy_meta(img);
         return *this;
     }
@@ -70,7 +73,7 @@ namespace image
         // Init buffer
         data_size = width * height * channels;
         d_data = malloc(type_size * data_size);
-        if (d_data == nullptr)
+        if (d_data == NULL)
             throw satdump_exception("Could not allocate memory for image!");
 
         // Set to 0

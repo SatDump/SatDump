@@ -7,10 +7,11 @@ namespace satdump
 {
     AutoTrackScheduler::AutoTrackScheduler()
     {
-        if (general_tle_registry.size() > 0)
+        auto tle_registry = general_tle_registry;
+        if (tle_registry->size() > 0)
             has_tle = true;
 
-        for (auto &tle : general_tle_registry)
+        for (auto &tle : *tle_registry)
             satoptions.push_back(tle.name);
 
         // Updates on registry updates
@@ -18,11 +19,12 @@ namespace satdump
                                                      {
                                                             upcoming_satellite_passes_mtx.lock();
 
-                                                            if (general_tle_registry.size() > 0)
+                                                            auto tle_registry = general_tle_registry;
+                                                            if (tle_registry->size() > 0)
                                                                 has_tle = true;
 
                                                             satoptions.clear();
-                                                            for (auto &tle : general_tle_registry)
+                                                            for (auto &tle : *tle_registry)
                                                                 satoptions.push_back(tle.name);
                                                                 
                                                             upcoming_satellite_passes_mtx.unlock(); });
@@ -86,7 +88,14 @@ namespace satdump
                 }
 
                 if (update)
+                {
                     updateAutotrackPasses(curr_time);
+                    TrackedObject obj;
+                    for (auto &v : enabled_satellites)
+                        if (v.norad == upcoming_satellite_passes_sel[0].norad)
+                            obj = v;
+                    eng_callback(autotrack_cfg, upcoming_satellite_passes_sel[0], obj);
+                }
             }
             else
             {
@@ -181,7 +190,7 @@ namespace satdump
 
         // for (auto ppp : upcoming_satellite_passes_sel)
         // logger->debug("Pass of %s at AOS %s LOS %s elevation %.2f",
-        //               general_tle_registry.get_from_norad(ppp.norad).value().name.c_str(),
+        //               general_tle_registry->get_from_norad(ppp.norad).value().name.c_str(),
         //               timestamp_to_string(ppp.aos_time).c_str(),
         //               timestamp_to_string(ppp.los_time).c_str(),
         //               ppp.max_elevation);

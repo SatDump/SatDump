@@ -23,6 +23,8 @@
 #define DAY_OFFSET 17453
 #define SEC_OFFSET 3600 * 9 - 60 * 10
 
+#define CAL_LIMIT 5000
+
 namespace noaa_metop
 {
     namespace mhs
@@ -35,7 +37,7 @@ namespace noaa_metop
                 std::array<uint16_t, 3> PRT_calib;
                 std::array<uint16_t, 5> PRT_readings;
                 std::array<uint8_t, 39> HK;
-                std::array<std::array<uint16_t, 2>, 5> calibration_views;
+                std::array<std::array<uint16_t, 2>, 5> calibration_views; // space 0, warm 1
             };
 
         private:
@@ -54,6 +56,9 @@ namespace noaa_metop
             nlohmann::json calib;
             std::vector<calib_line> calib_lines;
             std::vector<uint8_t> PIE_buff;
+            double last_Tw = 0;
+
+            uint16_t limits[2][2] = {{1500, 28000}, {20000, 64881}};
 
             // calib functions
             std::array<uint8_t, SCI_PACKET_SIZE> get_SCI_packet(int PKT);

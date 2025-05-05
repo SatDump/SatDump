@@ -15,12 +15,18 @@ namespace cpp_compos
     image::Image underlay_with_clouds(satdump::ImageProducts *img_pro,
                                       std::vector<image::Image> &inputChannels,
                                       std::vector<std::string> channelNumbers,
-                                      std::string cpp_id,
+                                      std::string /* cpp_id */,
                                       nlohmann::json vars,
                                       nlohmann::json offsets_cfg,
                                       std::vector<double> *final_timestamps = nullptr,
                                       float *progress = nullptr)
     {
+        if (!img_pro->has_proj_cfg())
+        {
+            logger->error("This composite requires projection info");
+            return image::Image();
+        }
+
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
         image::Image img_background;
@@ -47,19 +53,16 @@ namespace cpp_compos
         image::equalize(ch_equal);
         float val = 0;
 
-        float proj_x_scale = 1.0;
-        if (proj_cfg.contains("width"))
-            proj_x_scale = proj_cfg["width"].get<double>() / double(rgb_output.width());
+        float proj_scale = 1.0f;
+        if (proj_cfg.contains("image_width"))
+            proj_scale = proj_cfg["image_width"].get<double>() / double(rgb_output.width());
 
-        float proj_y_scale = 1.0;
-        if (proj_cfg.contains("height"))
-            proj_y_scale = proj_cfg["height"].get<double>() / double(rgb_output.height());
 
         for (size_t x = 0; x < rgb_output.width(); x++)
         {
             for (size_t y = 0; y < rgb_output.height(); y++)
             {
-                if (!projFunc->get_position(x * proj_x_scale, y * proj_y_scale, coords))
+                if (!projFunc->get_position(x * proj_scale, y * proj_scale, coords))
                 {
                     equp.forward(coords.lon, coords.lat, map_x, map_y);
 

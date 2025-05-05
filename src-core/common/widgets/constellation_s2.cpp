@@ -1,6 +1,6 @@
 #include "constellation_s2.h"
 #include <cstring>
-#include "core/module.h"
+#include "core/style.h"
 #include "common/dsp/block.h"
 
 namespace widgets
@@ -51,15 +51,16 @@ namespace widgets
     void ConstellationViewerDVBS2::draw()
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                 ImVec2(ImGui::GetCursorScreenPos().x + d_constellation_size * ui_scale, ImGui::GetCursorScreenPos().y + d_constellation_size * ui_scale),
-                                 style::theme.widget_bg);
+        ImVec2 rect_min = ImGui::GetCursorScreenPos();
+        ImVec2 rect_max = { rect_min.x + d_constellation_size * ui_scale, rect_min.y + d_constellation_size * ui_scale };
+        draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
+        draw_list->PushClipRect(rect_min, rect_max);
 
         // Draw PLHeader
         for (int i = 0; i < CONST_SIZE / 4; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + ((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].real * (d_constellation_size / 2) * d_hscale * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + ((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_plheader[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
                                        style::theme.red);
         }
@@ -67,8 +68,8 @@ namespace widgets
         // Draw Slots
         for (int i = 0; i < CONST_SIZE; i++)
         {
-            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
-                                              ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
+            draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + ((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale),
+                                              ImGui::GetCursorScreenPos().y + ((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_slots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale)),
                                        2 * ui_scale * (d_constellation_size / 200.0f),
                                        style::theme.constellation);
         }
@@ -78,13 +79,14 @@ namespace widgets
             // Draw Pilots
             for (int i = 0; i < CONST_SIZE; i++)
             {
-                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale), d_constellation_size * ui_scale),
-                                                  ImGui::GetCursorScreenPos().y + dsp::branchless_clip(((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale), d_constellation_size * ui_scale)),
+                draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + ((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].real * (d_constellation_size / 2) * d_hscale * ui_scale),
+                                                  ImGui::GetCursorScreenPos().y + ((d_constellation_size / 2) * ui_scale + sample_buffer_complex_float_pilots[i].imag * (d_constellation_size / 2) * d_vscale * ui_scale)),
                                            2 * ui_scale * (d_constellation_size / 200.0f),
                                            style::theme.red);
             }
         }
 
+        draw_list->PopClipRect();
         ImGui::Dummy(ImVec2(d_constellation_size * ui_scale + 3, d_constellation_size * ui_scale + 3));
     }
 }

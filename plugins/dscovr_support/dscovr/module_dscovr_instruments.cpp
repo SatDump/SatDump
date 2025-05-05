@@ -1,11 +1,11 @@
 #include "module_dscovr_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 
@@ -41,7 +41,7 @@ namespace dscovr
                 data_in.read((char *)&cadu, 1264);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 uint8_t *payload = &cadu[18];
 

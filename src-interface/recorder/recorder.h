@@ -80,7 +80,7 @@ namespace satdump
 
         uint64_t frequency_hz = 100000000;
         bool show_waterfall = true;
-        bool is_started = false, is_recording = false, is_processing = false;
+        bool is_started = false, is_recording = false, is_processing = false, is_stopping_processing = false;
 
         double xconverter_frequency = 0;
 
@@ -101,8 +101,9 @@ namespace satdump
         float panel_ratio = 0.2;
         float last_width = -1.0f;
 
+        std::string recording_path;
         std::string recorder_filename;
-        int select_sample_format = 0;
+        dsp::BasebandType baseband_format;
 
         widgets::TimedMessage sdr_error;
         widgets::TimedMessage error;
@@ -121,6 +122,9 @@ namespace satdump
         std::string sdr_select_string;
 
         bool processing_modules_floating_windows = false;
+        int remaining_disk_space_time = 0;
+        uint64_t disk_available = 0;
+        bool been_warned = false;
 
         bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
@@ -133,14 +137,9 @@ namespace satdump
         uint64_t current_samplerate = 1e6;
         int current_decimation = 1;
 
-        // #ifdef BUILD_ZIQ
-        int ziq_bit_depth;
-        // #endif
-
         nlohmann::json serialize_config();
         void deserialize_config(nlohmann::json in);
         void try_load_sdr_settings();
-        void set_output_sample_format();
 
         TrackingWidget *tracking_widget = nullptr;
         bool show_tracking = false;
@@ -158,7 +157,7 @@ namespace satdump
             double freq;
 
             //// Live
-            int pipeline_id = -1;
+            Pipeline selected_pipeline;
             nlohmann::json pipeline_params;
             std::string output_dir;
             std::shared_ptr<ctpl::thread_pool> lpool;
@@ -172,7 +171,7 @@ namespace satdump
         std::mutex vfos_mtx;
         std::vector<VFOInfo> vfo_list;
 
-        void add_vfo_live(std::string id, std::string name, double freq, int vpipeline_id, nlohmann::json vpipeline_params);
+        void add_vfo_live(std::string id, std::string name, double freq, Pipeline vpipeline, nlohmann::json vpipeline_params);
         void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
         void del_vfo(std::string id);
 
@@ -185,6 +184,7 @@ namespace satdump
 
         void start_recording();
         void stop_recording();
+        void load_rec_path_data();
 
         void try_init_tracking_widget();
 

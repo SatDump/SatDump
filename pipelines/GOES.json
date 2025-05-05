@@ -113,17 +113,23 @@
                 "name": "Fill Missing Data",
                 "description": "Corrects black lines caused by\ninterference or signal drop-outs"
             },
-            "write_dcs": {
+            "parse_dcs": {
                 "type": "bool",
                 "value": false,
-                "name": "Save DCS LRIT",
-                "description": "Save DCS LRIT for processing\nin another program"
+                "name": "Parse DCS",
+                "description": "Process DCS data and save it as json"
             },
             "write_lrit": {
                 "type": "bool",
                 "value": false,
                 "name": "Save All LRIT",
                 "description": "Save all unprocessed LRIT files"
+            },
+            "tracked_addresses": {
+                "type": "string",
+                "value": "",
+                "name": "Tracked DCS Addresses",
+                "description": "Only process DCS messages from the specified addresses (comma separated).\n\nExample: DE4CB498, DE4704BE"
             }
         },
         "work": {
@@ -156,6 +162,7 @@
                     "write_images": true,
                     "write_emwin": true,
                     "write_messages": true,
+                    "write_dcs": false,
                     "write_unknown": false
                 }
             }
@@ -272,7 +279,7 @@
         }
     },
     "goesr_cda": {
-        "name": "GOES-R CDA",
+        "name": "GOES-R CDA (40k)",
         "live": true,
         "live_cfg": [
             [
@@ -297,6 +304,49 @@
                 "psk_demod": {
                     "constellation": "bpsk",
                     "symbolrate": 40e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.02,
+                    "max_sps": 3
+                }
+            },
+            "cadu": {
+                "ccsds_simple_psk_decoder": {
+                    "constellation": "bpsk",
+                    "cadu_size": 2048,
+                    "nrzm": true,
+                    "rs_i": 1,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
+    },
+    "goesr_cda_4k": {
+        "name": "GOES-R CDA (4k)",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "CDA",
+                1693e6
+            ]
+        ],
+        "samplerate": 1e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "bpsk",
+                    "symbolrate": 4e3,
                     "rrc_alpha": 0.5,
                     "pll_bw": 0.02,
                     "max_sps": 3

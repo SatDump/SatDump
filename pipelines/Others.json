@@ -1,11 +1,11 @@
 {
-    "nat2pro": {
+    "off2pro": {
         "name": "Data Stores / Archives Formats (NOAA/EUMETSAT/CMA/NASA), Experimental",
         "live": false,
         "work": {
             "file": {},
             "products": {
-                "nat2pro": {}
+                "off2pro": {}
             }
         }
     },

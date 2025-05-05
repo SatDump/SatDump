@@ -75,7 +75,7 @@ namespace noaa_apt
 
         // Buffers to wav
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
-        int final_data_size = 0;
+        uint64_t final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
         if (save_wav || output_data_type == DATA_FILE)
             wave_writer.write_header(d_symbolrate, 1);
@@ -111,7 +111,7 @@ namespace noaa_apt
                     qua->output_stream->readBuf[i] = -1.0f;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 65535 * 0.68, dat_size);
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)qua->output_stream->readBuf, 32767, dat_size);
 
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);
@@ -143,7 +143,10 @@ namespace noaa_apt
 
         // Finish up WAV
         if (save_wav || output_data_type == DATA_FILE)
+        {
             wave_writer.finish_header(final_data_size);
+            data_out.close();
+        }
         delete[] output_wav_buffer;
 
         logger->info("Demodulation finished");
@@ -161,9 +164,6 @@ namespace noaa_apt
             nr->stop();
         qua->stop();
         qua->output_stream->stopReader();
-
-        if (save_wav || output_data_type == DATA_FILE)
-            data_out.close();
     }
 
     void NOAAAPTDemodModule::drawUI(bool window)

@@ -7,4 +7,4 @@ add_library(stereo_support SHARED ${stereo_support_CPPS})
 target_link_libraries(stereo_support PUBLIC satdump_core)
 target_include_directories(stereo_support PUBLIC src)
 
-install(TARGETS stereo_support DESTINATION lib/satdump/plugins)
+install(TARGETS stereo_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

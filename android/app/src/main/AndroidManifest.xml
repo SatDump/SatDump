@@ -3,6 +3,7 @@
 
     <application
         android:label="SatDump"
+        android:icon="@mipmap/ic_launcher_round"
         android:allowBackup="true"
         android:hasCode="true"
         android:extractNativeLibs="true">
@@ -19,6 +20,7 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -27,4 +29,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.hardware.usb.host" />
+    <uses-permission android:name="android.permission.USB_PERMISSION" />
+    <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+        android:resource="@xml/device_filter" />
+    <uses-permission android:name="libusb.android.USB_PERMISSION" />
 </manifest>

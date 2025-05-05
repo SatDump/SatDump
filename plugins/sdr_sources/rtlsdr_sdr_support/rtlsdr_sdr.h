@@ -22,8 +22,14 @@ protected:
     widgets::NotatedNum<int> ppm_widget;
 
     int gain = 0;
+    int last_ppm = 0;
+    float display_gain = 0.0f;
+    float gain_step = 1.0f;
+    std::vector<int> available_gains = { 0, 496 };
+    bool changed_agc = true;
     bool bias_enabled = false;
     bool lna_agc_enabled = false;
+    bool tuner_agc_enabled = false;
 
     void set_gains();
     void set_bias();

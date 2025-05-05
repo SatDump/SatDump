@@ -1,11 +1,11 @@
 #include "module_goesr_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
@@ -31,8 +31,8 @@ namespace goes
             uint8_t cadu[1024];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid1(884, true, 0);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid2(884, true, 0);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid1(884, true, 0);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid2(884, true, 0);
 
             // Setup readers
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
@@ -50,7 +50,7 @@ namespace goes
                 data_in.read((char *)&cadu, 1024);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.vcid == 1) // ABI
                 {

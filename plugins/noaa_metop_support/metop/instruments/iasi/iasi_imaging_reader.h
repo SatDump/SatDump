@@ -2,6 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include "common/image/image.h"
+#include "nlohmann/json.hpp"
 
 namespace metop
 {
@@ -11,6 +12,8 @@ namespace metop
         {
         private:
             uint16_t iasi_buffer[64 * 64];
+            double last_bbt = 0;
+            nlohmann::json calib;
 
         public:
             int lines;
@@ -21,7 +24,9 @@ namespace metop
             IASIIMGReader();
             ~IASIIMGReader();
             void work(ccsds::CCSDSPacket &packet);
+            void work_calib(ccsds::CCSDSPacket &packet);
             image::Image getIRChannel();
+            nlohmann::json getCalib();
         };
     } // namespace iasi
 } // namespace metop

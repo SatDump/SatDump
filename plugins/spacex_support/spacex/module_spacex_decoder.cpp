@@ -104,20 +104,20 @@ namespace spacex
             }
 
             // Deframe that! (Integrated derand)
-            std::vector<std::array<uint8_t, ccsds::ccsds_standard::CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
+            std::vector<std::array<uint8_t, ccsds::ccsds_tm::CADU_SIZE>> frameBuffer = deframer.work(finalBuffer, (BUFFER_SIZE / 8));
 
             // If we found frames, write them out
             if (frameBuffer.size() > 0)
             {
-                for (std::array<uint8_t, ccsds::ccsds_standard::CADU_SIZE> cadu : frameBuffer)
+                for (std::array<uint8_t, ccsds::ccsds_tm::CADU_SIZE> cadu : frameBuffer)
                 {
                     // RS Correction
                     rs.decode_interlaved(&cadu[4], true, 5, errors);
 
-                    derand_ccsds(&cadu[4], ccsds::ccsds_standard::CADU_SIZE - 4);
+                    derand_ccsds(&cadu[4], ccsds::ccsds_tm::CADU_SIZE - 4);
 
                     if (errors[0] > -1 && errors[1] > -1 && errors[2] > -1 && errors[3] > -1 && errors[4] > -1)
-                        data_out.write((char *)&cadu, ccsds::ccsds_standard::CADU_SIZE);
+                        data_out.write((char *)&cadu, ccsds::ccsds_tm::CADU_SIZE);
                 }
             }
 
@@ -144,9 +144,10 @@ namespace spacex
             // Constellation
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
-                draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                         ImVec2(ImGui::GetCursorScreenPos().x + 200 * ui_scale, ImGui::GetCursorScreenPos().y + 200 * ui_scale),
-                                         style::theme.widget_bg);
+                ImVec2 rect_min = ImGui::GetCursorScreenPos();
+                ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
+                draw_list->PushClipRect(rect_min, rect_max);
 
                 for (int i = 0; i < 2048; i++)
                 {
@@ -156,6 +157,7 @@ namespace spacex
                                                style::theme.constellation);
                 }
 
+                draw_list->PopClipRect();
                 ImGui::Dummy(ImVec2(200 * ui_scale + 3, 200 * ui_scale + 3));
             }
         }

@@ -6,4 +6,4 @@ add_library(bochum_support SHARED ${bochum_support_CPPS})
 target_link_libraries(bochum_support PUBLIC satdump_core satdump_interface)
 target_include_directories(bochum_support PUBLIC src-core src-interface)
 
-install(TARGETS bochum_support DESTINATION lib/satdump/plugins)
+install(TARGETS bochum_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

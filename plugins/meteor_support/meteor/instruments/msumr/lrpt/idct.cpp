@@ -6,8 +6,6 @@ namespace meteor
     {
         namespace lrpt
         {
-            const int blockSize = 64; // A DCT block is 8x8.
-
             const int w1 = 2841; // 2048*sqrt(2)*cos(1*pi/16)
             const int w2 = 2676; // 2048*sqrt(2)*cos(2*pi/16)
             const int w3 = 2408; // 2048*sqrt(2)*cos(3*pi/16)

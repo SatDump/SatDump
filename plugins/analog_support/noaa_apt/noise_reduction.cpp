@@ -16,10 +16,10 @@ namespace dsp
             // Allocate and clear delay buffer
             buffer = dsp::create_volk_buffer<complex_t>(STREAM_BUFFER_SIZE + 64000);
             bufferStart = &buffer[_bins - 1];
-            // buffer::clear(buffer, _bins - 1);
 
             // Clear backward FFT input since only one value is changed and reset at a time
-            // buffer::clear(backFFTIn, _bins);
+            for (int i = 0; i < _bins; i++)
+                backFFTIn[i].imag = backFFTIn[i].real = 0;
 
             // Allocate amplitude buffer
             ampBuf = dsp::create_volk_buffer<float>(_bins);

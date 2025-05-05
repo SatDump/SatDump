@@ -1,19 +1,20 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "tle.h"
-#include <fstream>
 #include "common/utils.h"
 #include "logger.h"
 #include "core/config.h"
-#include <filesystem>
 #include "core/plugin.h"
 #include <thread>
 #include "nlohmann/json_utils.h"
+#include <fstream>
+#include <filesystem>
+#include <curl/curl.h>
 
 namespace satdump
 {
-    TLERegistry general_tle_registry;
+    std::shared_ptr<TLERegistry> general_tle_registry = std::make_shared<TLERegistry>();
 
-    int parseTLEStream(std::istream &inputStream, TLERegistry &new_registry)
+    int parseTLEStream(std::istream &inputStream, std::shared_ptr<TLERegistry> new_registry)
     {
         std::string this_line;
         std::deque<std::string> tle_lines;
@@ -68,27 +69,24 @@ namespace satdump
                     continue;
                 }
 
-                new_registry.push_back({norad, tle_lines[0], tle_lines[1], tle_lines[2]});
+                new_registry->push_back({norad, tle_lines[0], tle_lines[1], tle_lines[2]});
                 tle_lines.clear();
                 total_lines++;
             }
         }
 
         // Sort and remove duplicates
-        sort(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+        sort(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
              { return a.name < b.name; });
-        new_registry.erase(std::unique(new_registry.begin(), new_registry.end(), [](TLE &a, TLE &b)
+        new_registry->erase(std::unique(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
                                        { return a.norad == b.norad; }),
-                           new_registry.end());
+                           new_registry->end());
 
         return total_lines;
     }
 
     void updateTLEFile(std::string path)
     {
-        std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
-        std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
-
         try
         {
             if (!std::filesystem::exists(std::filesystem::path(path).parent_path()))
@@ -100,23 +98,15 @@ namespace satdump
             return;
         }
 
+        std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
+        std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
         bool success = true;
-        TLERegistry new_registry;
-
-        for (int norad : norads_to_fetch)
-        {
-            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
-            while (url_str.find("%NORAD%") != std::string::npos)
-                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
-            urls_to_fetch.push_back(url_str);
-        }
+        std::shared_ptr<TLERegistry> new_registry = std::make_shared<TLERegistry>();
 
         for (auto &url_str : urls_to_fetch)
         {
-
             logger->info(url_str);
             std::string result;
-
             int http_res = 1, trials = 0;
             while (http_res == 1 && trials < 10)
             {
@@ -142,60 +132,116 @@ namespace satdump
             }
         }
 
-        if (success)
+        if (!success)
         {
-            std::ofstream outfile(path, std::ios::trunc);
-            for (TLE &tle : new_registry)
-                outfile << tle.name << std::endl
-                        << tle.line1 << std::endl
-                        << tle.line2 << std::endl
-                        << std::endl;
-            outfile.close();
-            general_tle_registry = new_registry;
-            config::main_cfg["user"]["tles_last_updated"] = time(NULL);
-            config::saveUserConfig();
-            logger->info("%zu TLEs loaded!", new_registry.size());
-            eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
-        }
-        else
             logger->error("Error updating TLEs. Not updated.");
+            return;
+        }
+
+        for (int norad : norads_to_fetch)
+        {
+            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
+            while (url_str.find("%NORAD%") != std::string::npos)
+                url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
+
+            logger->info(url_str);
+            std::string result;
+            int http_res = 1, trials = 0;
+            while (http_res == 1 && trials < 10)
+            {
+                if ((http_res = perform_http_request(url_str, result)) != 1)
+                {
+                    std::istringstream tle_stream(result);
+                    success = parseTLEStream(tle_stream, new_registry) > 0;
+                }
+                else
+                    success = false;
+                trials++;
+                if (!success)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    logger->info("Failed getting TLEs. Retrying...");
+                }
+            }
+
+            if (!success)
+            {
+                std::optional<TLE> old_tle = general_tle_registry->get_from_norad(norad);
+                if (old_tle.has_value())
+                {
+                    logger->warn("Error updating TLE for %d. Using old record", norad);
+                    new_registry->push_back(old_tle.value());
+                }
+                else
+                    logger->error("Error updating TLE for %d. Ignoring!", norad);
+            }
+        }
+
+        std::ofstream outfile(path, std::ios::trunc);
+        for (TLE &tle : *new_registry)
+            outfile << tle.name << std::endl
+                    << tle.line1 << std::endl
+                    << tle.line2 << std::endl
+                    << std::endl;
+        outfile.close();
+        general_tle_registry = new_registry;
+        config::main_cfg["user"]["tles_last_updated"] = time(NULL);
+        config::saveUserConfig();
+        logger->info("%zu TLEs loaded!", new_registry->size());
+        eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
     void autoUpdateTLE(std::string path)
     {
         std::string update_setting = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_update_interval"]["value"], "1 day");
-        time_t next_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+        time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
         bool honor_setting = true;
+        time_t update_interval;
+
         if (update_setting == "Never")
             honor_setting = false;
         else if (update_setting == "4 hours")
-            next_update += 14400;
+            update_interval = 14400;
         else if (update_setting == "1 day")
-            next_update += 86400;
+            update_interval = 86400;
         else if (update_setting == "3 days")
-            next_update += 259200;
+            update_interval = 259200;
         else if (update_setting == "7 days")
-            next_update += 604800;
+            update_interval = 604800;
         else if (update_setting == "14 days")
-            next_update += 1209600;
+            update_interval = 1209600;
         else
         {
             logger->error("Invalid TLE Auto-update interval: %s", update_setting.c_str());
             honor_setting = false;
         }
 
-        if ((honor_setting && time(NULL) > next_update) || satdump::general_tle_registry.size() == 0)
+        // Update now, if needed
+        time_t now = time(NULL);
+        if ((honor_setting && now > last_update + update_interval) || satdump::general_tle_registry->size() == 0)
+        {
             updateTLEFile(path);
+            last_update = now;
+        }
+
+        // Schedule updates while running
+        if (honor_setting)
+        {
+            eventBus->register_handler<AutoUpdateTLEsEvent>([](AutoUpdateTLEsEvent evt) { updateTLEFile(evt.path); });
+            std::shared_ptr<AutoUpdateTLEsEvent> evt = std::make_shared<AutoUpdateTLEsEvent>();
+            evt->path = path;
+            taskScheduler->add_task<AutoUpdateTLEsEvent>("auto_tle_update", evt, last_update, update_interval);
+        }
     }
 
     void loadTLEFileIntoRegistry(std::string path)
     {
         logger->info("Loading TLEs from " + path);
         std::ifstream tle_file(path);
-        TLERegistry new_registry;
+        std::shared_ptr<TLERegistry> new_registry = std::make_shared<TLERegistry>();
         parseTLEStream(tle_file, new_registry);
         tle_file.close();
-        logger->info("%zu TLEs loaded!", new_registry.size());
+        logger->info("%zu TLEs loaded!", new_registry->size());
         general_tle_registry = new_registry;
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
@@ -249,6 +295,40 @@ namespace satdump
             return get_from_norad(norad);
 
         // Otherwise, request on Space-Track's archive
+        logger->trace("Pulling historical TLE from Space Track...");
+        CURL *curl;
+        CURLcode res;
+        curl_global_init(CURL_GLOBAL_ALL);
+        curl = curl_easy_init();
+
+        if (!curl)
+        {
+            logger->warn("Failed to pull historical TLE due to internal curl failure! Using current TLE");
+            curl_global_cleanup();
+            return get_from_norad(norad);
+        }
+
+        // Get the cookie
+        std::string post_fields = "identity=" + sc_login + "&password=" + sc_passw;
+        curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "");
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string)"SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.space-track.org/ajaxauth/login");
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_fields.c_str());
+
+#ifdef CURLSSLOPT_NATIVE_CA
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+        {
+            logger->warn("Failed to authenticate to Space Track! Using current TLE");
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return get_from_norad(norad);
+        }
+
+        // Get the actual TLE
         std::string timestamp_day, timestamp_daytime;
         {
             if (timestamp < 0)
@@ -263,23 +343,61 @@ namespace satdump
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
 
-        std::string post_request = "identity=" + sc_login +
-                                   "&password=" + sc_passw +
-                                   "&query=https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) +
-                                   "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
-        std::string url = "https://www.space-track.org/ajaxauth/login";
-
         std::string result;
-        if (perform_http_request_post(url, result, post_request) != 1)
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, NULL);
+        curl_easy_setopt(curl, CURLOPT_POST, 0);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+        curl_easy_setopt(curl, CURLOPT_URL, std::string("https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" +
+            std::to_string(norad) + "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show").c_str());
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
         {
-            printf("___ %s ___\n", result.c_str());
-            nlohmann::json res = nlohmann::json::parse(result)[0];
+            logger->warn("Failed to download TLE from Space Track! Using built-in TLE");
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return get_from_norad(norad);
+        }
+
+        // Log out and clean up
+        std::string logout_result;
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &logout_result);
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.space-track.org/ajaxauth/logout");
+        curl_easy_perform(curl); // We do not care about the result
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+
+        // Parse the downloaded TLE
+        try
+        {
+            bool parsed = true;
+            nlohmann::json res;
+            try
+            {
+                res = nlohmann::json::parse(result)[0];
+            }
+            catch (std::exception &)
+            {
+                parsed = false;
+            }
+            if (!parsed || !res.contains("TLE_LINE0") || !res.contains("TLE_LINE1") || !res.contains("TLE_LINE2"))
+            {
+                logger->warn("Error pulling TLE from Space-Track! Returned data: %s", result.c_str());
+                return get_from_norad(norad);
+            }
+
             TLE tle;
             tle.norad = norad;
             tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
             tle.line1 = res["TLE_LINE1"].get<std::string>();
             tle.line2 = res["TLE_LINE2"].get<std::string>();
             return tle;
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Could not get TLE from Space-Track : %s", e.what());
+            return get_from_norad(norad);
         }
 
         return std::optional<TLE>();

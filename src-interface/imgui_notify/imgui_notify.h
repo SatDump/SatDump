@@ -100,8 +100,6 @@ public:
 	{
 		switch (type)
 		{
-		case ImGuiToastType_None:
-			return {255, 255, 255, 255}; // White
 		case ImGuiToastType_Success:
 			return {0, 255, 0, 255}; // Green
 		case ImGuiToastType_Warning:
@@ -110,6 +108,9 @@ public:
 			return {255, 0, 0, 255}; // Red
 		case ImGuiToastType_Info:
 			return {0, 157, 255, 255}; // Blue
+		case ImGuiToastType_None:
+		default:
+			return { 255, 255, 255, 255 }; // White
 		}
 		assert(false);
 	}
@@ -118,8 +119,6 @@ public:
 	{
 		switch (type)
 		{
-		case ImGuiToastType_None:
-			return nullptr;
 		case ImGuiToastType_Success:
 			return ICON_FA_CHECK_CIRCLE;
 		case ImGuiToastType_Warning:
@@ -128,6 +127,9 @@ public:
 			return ICON_FA_TIMES_CIRCLE;
 		case ImGuiToastType_Info:
 			return ICON_FA_INFO_CIRCLE;
+		case ImGuiToastType_None:
+		default:
+			return nullptr;
 		}
 		assert(false);
 	}

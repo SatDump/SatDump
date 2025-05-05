@@ -179,12 +179,12 @@ namespace noaa_apt
                 if (is_stereo)
                 {
                     for (int i = 0; i < buffer_size / 2; i++)
-                        input_stream->writeBuf[i] = s16_buf[i * 2] / 65535.0;
+                        input_stream->writeBuf[i] = s16_buf[i * 2] / 32767.0f;
                     input_stream->swap(buffer_size / 2);
                 }
                 else
                 {
-                    volk_16i_s32f_convert_32f_u((float *)input_stream->writeBuf, (const int16_t *)s16_buf, 65535, buffer_size);
+                    volk_16i_s32f_convert_32f_u((float *)input_stream->writeBuf, (const int16_t *)s16_buf, 32767, buffer_size);
                     input_stream->swap(buffer_size);
                 }
 
@@ -619,8 +619,10 @@ namespace noaa_apt
                 }
             }
 
-            space_av /= validl1;
-            space_bv /= validl2;
+            if(validl1 > 0)
+                space_av /= validl1;
+            if(validl2 > 0)
+                space_bv /= validl2;
         }
         else
         {
@@ -762,7 +764,10 @@ namespace noaa_apt
                 sat_name = "NOAA-19";
             }
 
-            satellite_tle = satdump::general_tle_registry.get_from_norad(norad);
+            if(d_parameters.contains("start_timestamp"))
+                satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, d_parameters["start_timestamp"]);
+            else
+                satellite_tle = satdump::general_tle_registry->get_from_norad(norad);
 
             // SATELLITE ID
             {
@@ -1143,7 +1148,7 @@ namespace noaa_apt
             }
 
             /////////////////////////////////////
-            int min_diff = 5000;
+            int min_diff = MAX_STDDEV_VALID;
             int best_wedge = 0;
 
             if (wed.std_dev[15] <= MAX_STDDEV_VALID)

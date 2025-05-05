@@ -1,11 +1,11 @@
 #include "module_mats_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
 
@@ -29,7 +29,7 @@ namespace mats
             uint8_t cadu[1279];
 
             // Demuxers
-            ccsds::ccsds_standard::Demuxer demuxer_vcid1(1103, false);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid1(1103, false);
 
             // std::ofstream output("file.ccsds");
 
@@ -41,7 +41,7 @@ namespace mats
                 data_in.read((char *)&cadu, 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+                ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);

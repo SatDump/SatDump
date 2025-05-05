@@ -62,12 +62,7 @@ namespace proba
 
             int &currentFrameCount = currentOuts[timestamp].first;
             std::vector<uint8_t> &currentOutVec = currentOuts[timestamp].second.second;
-
-            if (currentFrameCount == 0)
-                currentOutVec.insert(currentOutVec.end(), &packet.payload[14 + 78], &packet.payload[14 + 78 + 65530 - 14]);
-            else
-                currentOutVec.insert(currentOutVec.end(), &packet.payload[14], &packet.payload[14 + 65530 - 14]);
-
+            currentOutVec.insert(currentOutVec.end(), &packet.payload[currentFrameCount == 0 ? 14 + 78 : 14], &packet.payload.back());
             currentFrameCount++;
         }
 
@@ -108,8 +103,8 @@ namespace proba
                     for (size_t i = 0; i < img.height() * img.width(); i++)
                     {
                         // This was checked against official Proba-2 data
-                        img.set(i, std::max<float>(0, img.get(i) - adc_mask.get(i) * 2.8)); // ADC Bias correction
-                        img.set(i, std::max<float>(0, img.get(i) - ffc_mask.get(i) * 2.8)); // Flat field correction
+                        img.setf(i, std::max<float>(0, img.getf(i) - adc_mask.getf(i) * 2.8)); // ADC Bias correction
+                        img.setf(i, std::max<float>(0, img.getf(i) - ffc_mask.getf(i) * 2.8)); // Flat field correction
                     }
                 }
 

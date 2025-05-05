@@ -52,7 +52,7 @@ namespace spino
         uint32_t def_shifter = 0;
         bool def_in_frame = false;
         int def_bitn = 0;
-        uint8_t def_bytshift;
+        uint8_t def_bytshift = 0;
         std::vector<uint8_t> wip_frame;
 
         codings::crc::GenericCRC crc_ccitt(16, 0x1021, 0x0000, 0x0000, false, false);

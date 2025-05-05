@@ -9,10 +9,11 @@ class NoaaMHSCalibrator : public satdump::ImageProducts::CalibratorBase
 private:
     nlohmann::json perLine_perChannel;
     nlohmann::json perChannel;
-    double crossover[2];
 
     double calc_rad(int channel, int pos_y, int px_val)
     {
+        if (px_val == 0 || perLine_perChannel[pos_y][channel]["a0"].get<double>() == -999.99)
+            return CALIBRATION_INVALID_VALUE;
         return perLine_perChannel[pos_y][channel]["a0"].get<double>() + perLine_perChannel[pos_y][channel]["a1"].get<double>() * px_val + perLine_perChannel[pos_y][channel]["a2"].get<double>() * px_val * px_val;
         // return out_rad;
     }
@@ -35,7 +36,7 @@ public:
         {
             return calc_rad(channel, pos_y, px_val);
         }
-        catch (std::exception &e)
+        catch (std::exception &)
         {
             return 0;
         }

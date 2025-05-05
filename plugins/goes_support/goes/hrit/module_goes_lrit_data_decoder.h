@@ -1,9 +1,14 @@
 #pragma once
 
 #include "core/module.h"
+#include "dcs/dcs_decoder.h"
 #include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
 #include "common/lrit/lrit_productizer.h"
+#include "goes/crc32.h"
+
+#include <set>
+#include <deque>
 
 extern "C"
 {
@@ -22,8 +27,9 @@ namespace goes
 
             bool write_images;
             bool write_emwin;
-            bool write_messages;
+            bool parse_dcs;
             bool write_dcs;
+            bool write_messages;
             bool write_unknown;
             bool write_lrit;
 
@@ -33,6 +39,17 @@ namespace goes
             std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
 
             std::string directory;
+
+            bool is_gui = false;
+            CRC32 dcs_crc32;
+            std::mutex ui_dcs_mtx;
+            std::shared_ptr<DCSMessage> focused_dcs_message = nullptr;
+            std::deque<std::shared_ptr<DCSMessage>> ui_dcs_messages;
+            std::set<uint32_t> filtered_dcps;
+
+            inline static std::map<std::string, std::string> shef_codes;
+            inline static std::map<uint32_t, std::shared_ptr<DCP>> dcp_list;
+            inline static std::mutex dcp_mtx;
 
             enum CustomFileParams
             {
@@ -55,8 +72,14 @@ namespace goes
 
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
+            void initDCS();
             void processLRITFile(::lrit::LRITFile &file);
             void saveLRITFile(::lrit::LRITFile &file, std::string path);
+
+            static void loadDCPs();
+
+            bool processDCS(uint8_t *data, size_t size);
+            void drawDCSUI();
 
             ::lrit::LRITProductizer productizer;
 
@@ -71,6 +94,12 @@ namespace goes
             std::vector<ModuleDataType> getOutputTypes();
 
         public:
+            struct DCPUpdateEvent
+            {
+            };
+
+            static void updateDCPs(DCPUpdateEvent);
+
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
             static std::vector<std::string> getParameters();

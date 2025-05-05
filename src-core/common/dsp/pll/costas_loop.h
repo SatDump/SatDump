@@ -18,11 +18,13 @@ namespace dsp
         float loop_bw;
         float alpha, beta;
 
+        float freq_limit_min, freq_limit_max;
+
         complex_t tmp_val;
         void work();
 
     public:
-        CostasLoopBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, unsigned int order);
+        CostasLoopBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, unsigned int order, float freq_limit = 1.0);
 
         float getFreq() { return freq; }
     };

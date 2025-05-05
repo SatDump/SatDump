@@ -1,0 +1,19 @@
+{
+    "type": "normal_single_xy_line",
+    "scan_angle_x": 18.43,
+    "scan_angle_y": 21.508, //18.4,
+    "roll_offset": 0.11,
+    "pitch_offset": -1.60,
+    "yaw_offset": 90,
+    "timestamp_offset": 0,
+    "image_width": 3834,
+    "image_height": 4482,
+    "gcp_spacing_x": 50,
+    "gcp_spacing_y": 50,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.2,
+        "max_diff": 1.0
+    }
+}

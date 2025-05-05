@@ -1,11 +1,17 @@
 #pragma once
 
+/**
+ * @file  ccsds.h
+ */
+
 #include <cstdint>
 #include <vector>
 
 namespace ccsds
 {
-    // Struct representing a CCSDS Header
+    /**
+     * @brief Struct representing a CCSDS Space Packet header
+     */
     struct CCSDSHeader
     {
         uint8_t raw[6];
@@ -25,7 +31,9 @@ namespace ccsds
         CCSDSHeader &operator=(const CCSDSHeader &v) noexcept;
     };
 
-    // Struct representing
+    /**
+     * @brief Struct representing a CCSDS Space Packet
+     */
     struct CCSDSPacket
     {
         CCSDSHeader header;
@@ -38,6 +46,10 @@ namespace ccsds
         CCSDSPacket &operator=(const CCSDSPacket &v) noexcept;
     };
 
-    // Parse CCSDS header
+    /**
+     * @brief Parse a CCSDS Header
+     *
+     * @param header pointer to a CCSDS header in a buffer
+     */
     CCSDSHeader parseCCSDSHeader(uint8_t *header);
 } // namespace ccsds

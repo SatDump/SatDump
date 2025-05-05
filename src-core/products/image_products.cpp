@@ -86,7 +86,7 @@ namespace satdump
                 image::save_img(images[c].image, directory + "/" + images[c].filename);
         }
 
-        if (save_as_matrix)
+        if (save_as_matrix && !images.empty())
         {
             int size = ceil(sqrt(images.size()));
             logger->debug("Using size %d", size);
@@ -447,6 +447,10 @@ namespace satdump
         std::string str_to_find_channels = cfg.equation;
         if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
             str_to_find_channels = cfg.channels;
+
+        // Malformed composite
+        if (str_to_find_channels.size() == 0)
+            return false;
 
         std::vector<std::string> channels_present;
 

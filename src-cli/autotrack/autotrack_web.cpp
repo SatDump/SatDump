@@ -33,7 +33,7 @@ void AutoTrackApp::setup_webserver()
                 {
                     auto &pos = p["vfos"][vfo.id];
                     pos["frequency"] = vfo.freq;
-                    if (vfo.pipeline_id != -1)
+                    if (vfo.selected_pipeline.name != "")
                     {
                         vfo.live_pipeline->updateModuleStats();
                         pos["live_pipeline"] = vfo.live_pipeline->stats;
@@ -113,14 +113,14 @@ void AutoTrackApp::setup_webserver()
 
                 if (status["next_event_is_aos"].get<bool>() == true)
                 {
-                    aos_in = "(in <span class=\"fakeinput\">" +
+                    aos_in = " (in <span class=\"fakeinput\">" +
                              std::to_string((int)(status["next_event_in"].get<double>())) +
                              "</span> seconds)";
                     los_in = "";
                 }
                 else
                 {
-                    los_in = "(in <span class=\"fakeinput\">" +
+                    los_in = " (in <span class=\"fakeinput\">" +
                              std::to_string((int)(status["next_event_in"].get<double>())) +
                              "</span> seconds)";
                     aos_in = "";
@@ -145,12 +145,12 @@ void AutoTrackApp::setup_webserver()
                                    "<h2>Object Tracker</h2>" +
                                    "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(cache_buster) + "\" width=256 height=256/></div>" +
                                    "<p>Next AOS time: <span class=\"fakeinput\">" +
-                                   timestamp_to_string(status["next_aos_time"].get<double>()) +
+                                   timestamp_to_string(status["next_aos_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
                                    "</span>" +
                                    aos_in +
                                    "</p>" +
                                    "<p>Next LOS time: <span class=\"fakeinput\">" +
-                                   timestamp_to_string(status["next_los_time"].get<double>()) +
+                                   timestamp_to_string(status["next_los_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
                                    "</span>" +
                                    los_in +
                                    "</p>" +

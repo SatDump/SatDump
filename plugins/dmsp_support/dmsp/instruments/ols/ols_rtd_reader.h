@@ -26,6 +26,8 @@ namespace dmsp
             int offset_ir = 0;
             int offset_vis = 0;
 
+            int tag_bit_override = 0;
+
         public:
             OLSRTDReader();
             ~OLSRTDReader();
@@ -41,6 +43,11 @@ namespace dmsp
             {
                 offset_ir = i;
                 offset_vis = v;
+            }
+
+            void set_tag_bit(int t)
+            {
+                tag_bit_override = t;
             }
         };
     } // namespace avhrr

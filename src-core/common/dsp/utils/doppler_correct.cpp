@@ -13,7 +13,7 @@ namespace dsp
         : Block(input), d_samplerate(samplerate), d_alpha(alpha), d_signal_frequency(signal_frequency)
     {
         // Init sat object
-        auto tle = satdump::general_tle_registry.get_from_norad(norad).value();
+        auto tle = satdump::general_tle_registry->get_from_norad(norad).value();
         satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
 
         // Init obs object

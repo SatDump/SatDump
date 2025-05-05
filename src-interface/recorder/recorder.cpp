@@ -7,6 +7,7 @@
 #include "core/pipeline.h"
 #include "common/widgets/stepped_slider.h"
 #include "common/widgets/frequency_input.h"
+#include <math.h>
 
 #include "main_ui.h"
 
@@ -21,11 +22,12 @@ namespace satdump
     RecorderApplication::RecorderApplication()
         : Application("recorder"), pipeline_selector(true)
     {
-        dsp::registerAllSources();
-
         automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
+        remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
+        load_rec_path_data();
+        dsp::registerAllSources();
         sources = dsp::getAllAvailableSources();
 
         for (dsp::SourceDescriptor src : sources)
@@ -145,7 +147,7 @@ namespace satdump
         if (config::main_cfg["user"].contains("recorder_state"))
             deserialize_config(config::main_cfg["user"]["recorder_state"]);
 
-        set_output_sample_format();
+        file_sink->set_output_sample_type(baseband_format);
         fft_plot->set_size(fft_size);
         waterfall_plot->set_size(fft_size);
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
@@ -343,16 +345,24 @@ namespace satdump
                     if (current_decimation < 1)
                         current_decimation = 1;
 
+                    
+                    bool disableLO = config::main_cfg["user_interface"]["lock_xconverter_input"]["value"];
+                    if (assume_started && !disableLO)
+                        style::endDisabled();
+
                     bool pushed_color_xconv = xconverter_frequency != 0;
                     if (pushed_color_xconv)
                         ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
+
                     if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
                         set_frequency(frequency_hz);
+                    
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
 
-                    if (assume_started)
+                    if (assume_started && disableLO)
                         style::endDisabled();
+
 
                     ImGui::Spacing();
                     ImGui::Separator();
@@ -434,8 +444,8 @@ namespace satdump
                         waterfall_plot->set_rate(fft_rate, waterfall_rate);
                         logger->info("Set FFT rate to %d", fft_rate);
                     }
-                    widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -150, 150);
-                    widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -150, 150);
+                    widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -160, 150);
+                    widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -160, 150);
                     widgets::SteppedSliderFloat("Avg Num", &fft->avg_num, 1, 500, 1);
                     if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                         waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
@@ -473,21 +483,20 @@ namespace satdump
                         style::endDisabled();
 
                     // Preset Menu
-                    Pipeline selected_pipeline = pipelines[pipeline_selector.pipeline_id];
-                    if (selected_pipeline.preset.frequencies.size() > 0)
+                    if (pipeline_selector.selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
                         {
-                            for (int n = 0; n < (int)selected_pipeline.preset.frequencies.size(); n++)
+                            for (int n = 0; n < (int)pipeline_selector.selected_pipeline.preset.frequencies.size(); n++)
                             {
                                 const bool is_selected = (pipeline_preset_id == n);
-                                if (ImGui::Selectable(selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))
+                                if (ImGui::Selectable(pipeline_selector.selected_pipeline.preset.frequencies[n].first.c_str(), is_selected))
                                 {
                                     pipeline_preset_id = n;
 
-                                    if (selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
+                                    if (pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second != 0)
                                     {
-                                        frequency_hz = selected_pipeline.preset.frequencies[pipeline_preset_id].second;
+                                        frequency_hz = pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second;
                                         set_frequency(frequency_hz);
                                     }
                                 }
@@ -502,15 +511,23 @@ namespace satdump
                     if (!assume_started)
                         style::beginDisabled();
 
+                    bool assume_stopping_processing = is_stopping_processing;
                     if (!assume_processing)
                     {
                         if (ImGui::Button("Start###startprocessing"))
                             start_processing();
                     }
+                    else if (assume_stopping_processing)
+                    {
+                        style::beginDisabled();
+                        ImGui::Button("Stopping...##stoppingprocessing");
+                        style::endDisabled();
+                    }
                     else
                     {
                         if (ImGui::Button("Stop##stopprocessing"))
-                            stop_processing();
+                            ui_thread_pool.push([=](int)
+                                                { stop_processing(); });
                     }
 
                     error.draw();
@@ -524,32 +541,72 @@ namespace satdump
                     bool assume_recording = is_recording;
                     if (assume_recording)
                         style::beginDisabled();
-                    if (ImGui::Combo("Format", &select_sample_format, "cf32\0"
-                                                                      "cs16\0"
-                                                                      "cs8\0"
-                                                                      "wav16\0"
-#ifdef BUILD_ZIQ
-                                                                      "ziq cs8\0"
-                                                                      "ziq cs16\0"
-                                                                      "ziq cf32\0"
-#endif
-#ifdef BUILD_ZIQ2
-                                                                      "ziq2 cs8 (WIP)\0"
-                                                                      "ziq2 cs16 (WIP)\0"
-#endif
-                                     ))
-                        set_output_sample_format();
+
+                    if (baseband_format.draw_record_combo("Format##basebandrecordformat"))
+                        file_sink->set_output_sample_type(baseband_format);
 
                     if (assume_recording)
                         style::endDisabled();
 
-                    if (file_sink->get_written() < 1e9)
-                        ImGui::Text("Size : %.2f MB", file_sink->get_written() / 1e6);
+                    uint64_t file_written = file_sink->get_written();
+                    uint64_t estimated_available = 0;
+                    if(file_written <= disk_available)
+                        estimated_available = disk_available - file_written;
+
+                    if (file_written < 1e9)
+                        ImGui::Text("Size : %.2f MB", file_written / 1e6);
                     else
-                        ImGui::Text("Size : %.2f GB", file_sink->get_written() / 1e9);
+                        ImGui::Text("Size : %.2f GB", file_written / 1e9);
+
+                    ImGui::Text("Free Space: %.2f GB", estimated_available / pow(1024, 3));
+
+                    int timeleft;
+                    switch (baseband_format)
+                    {
+                    case dsp::CF_32: case dsp::CS_32:
+                        timeleft = estimated_available / (8 * get_samplerate());
+                        break;
+                    case dsp::CS_16: case dsp::WAV_16:
+                        timeleft = estimated_available / (4 * get_samplerate());
+                        break;
+                    case dsp::CS_8: case dsp::CU_8:
+                        timeleft = estimated_available / (2 * get_samplerate());
+                        break;
+                    default:
+                        // Silence GCC warns
+                        timeleft = 0;
+                        break;
+                    }
+#ifdef BUILD_ZIQ
+                    if (baseband_format != dsp::ZIQ)
+#endif
+                    {
+#ifdef BUILD_ZIQ2
+                        if (baseband_format != dsp::ZIQ2)
+#endif
+                        {
+                            if (is_recording && remaining_disk_space_time > timeleft && !been_warned)
+                            {
+                                logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
+                                been_warned = true;
+                            }
+
+                            int day = timeleft / (24 * 3600);
+
+                            timeleft = timeleft % (24 * 3600);
+                            int hour = timeleft / 3600;
+
+                            timeleft %= 3600;
+                            int minutes = timeleft / 60;
+
+                            timeleft %= 60;
+                            int seconds = timeleft;
+                            ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
+                        }
+                    }
 
 #ifdef BUILD_ZIQ
-                    if (select_sample_format == 4 || select_sample_format == 5 || select_sample_format == 6)
+                    if (baseband_format == dsp::ZIQ)
                     {
                         if (file_sink->get_written_raw() < 1e9)
                             ImGui::Text("Size (raw) : %.2f MB", file_sink->get_written_raw() / 1e6);
@@ -606,9 +663,9 @@ namespace satdump
                             ImGui::SeparatorText(vfo.name.c_str());
                             ImGui::PopStyleColor();
                             ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
-                            if (vfo.pipeline_id != -1)
+                            if (vfo.selected_pipeline.name != "")
                             {
-                                ImGui::BulletText("Pipeline: %s", pipelines[vfo.pipeline_id].readable_name.c_str());
+                                ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.readable_name.c_str());
                                 ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
                             }
                             else if (vfo.file_sink)
@@ -738,7 +795,7 @@ namespace satdump
                 {
                     if (ImGui::BeginTabItem(vfo.name.c_str()))
                     {
-                        if (vfo.pipeline_id != -1)
+                        if (vfo.selected_pipeline.name != "")
                         {
                             float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                             float live_width = recorder_size.x + 16 * ui_scale;

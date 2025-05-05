@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "core/config.h"
+#include "common/dsp_source_sink/format_notated.h"
 
 namespace demod
 {
@@ -94,7 +95,7 @@ namespace demod
 
         // Init DSP Blocks
         if (input_data_type == DATA_FILE)
-            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, dsp::basebandTypeFromString(d_parameters["baseband_format"]), d_buffer_size, d_iq_swap);
+            file_source = std::make_shared<dsp::FileSourceBlock>(d_input_file, d_parameters["baseband_format"].get<std::string>(), d_buffer_size, d_iq_swap);
 
         if (d_dc_block)
             dc_blocker = std::make_shared<dsp::CorrectIQBlock<complex_t>>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
@@ -223,7 +224,7 @@ namespace demod
         if (input_data_type == DATA_FILE && d_dump_intermediate != "")
         {
             intermediate_file_sink->start();
-            intermediate_file_sink->set_output_sample_type(dsp::basebandTypeFromString(d_dump_intermediate));
+            intermediate_file_sink->set_output_sample_type(d_dump_intermediate);
             std::string int_file = d_output_file_hint + "_" + std::to_string((uint64_t)d_samplerate) + "_intermediate_iq";
             logger->trace("Recording intermediate to " + int_file);
             intermediate_file_sink->start_recording(int_file, d_samplerate);
@@ -278,7 +279,7 @@ namespace demod
             {
                 ImGui::Text("Freq : ");
                 ImGui::SameLine();
-                ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
+                ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz", 4).c_str());
             }
             snr_plot.draw(snr, peak_snr);
             if (!streamingInput)
@@ -345,11 +346,11 @@ namespace demod
         {
             ImGuiStyle &style = ImGui::GetStyle();
             ImVec2 cur_pos = ImGui::GetCursorPos();
-            cur_pos.x = ImGui::GetWindowSize().x - ImGui::CalcTextSize("Abort").x - style.FramePadding.x * 2.0f - style.WindowPadding.x;
+            cur_pos.x = ImGui::GetContentRegionMax().x - ImGui::CalcTextSize("Abort").x - style.FramePadding.x * 2.0f;
             cur_pos.y -= 20.0f * ui_scale + style.ItemSpacing.y;
             ImGui::SetCursorPos(cur_pos);
             ImGui::PushStyleColor(ImGuiCol_Button, style::theme.red.Value);
-            if (ImGui::Button("Abort##demodstop", ImVec2(0, 20)))
+            if (ImGui::Button("Abort##demodstop", ImVec2(0.0f, 20.0f * ui_scale)))
                 demod_should_stop = true;
             ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())

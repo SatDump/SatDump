@@ -13,6 +13,8 @@
 #include "common/geodetic/vincentys_calculations.h"
 #include "common/image/io.h"
 
+#include "common/projection/warp/warp_bkd.h"
+
 geodetic::geodetic_coords_t calculate_center_of_points(std::vector<geodetic::geodetic_coords_t> points)
 {
     double x_total = 0;
@@ -61,9 +63,10 @@ int main(int /*argc*/, char *argv[])
     rgb_cfg.equation = "ch3,ch2,ch1"; //"(ch7421+ch7422+ch7423+ch7242)/4";
     //    rgb_cfg.equation = "1-ch37";
     // rgb_cfg.equation = "1-ch33,1-ch34,1-ch35"; //"(ch3 * 0.4 + ch2 * 0.6) * 2.2 - 0.15, ch2 * 2.2 - 0.15, ch1 * 2.2 - 0.15";
-    rgb_cfg.individual_equalize = true;
+    rgb_cfg.equalize = true;
     // rgb_cfg.white_balance = true;
     // rgb_cfg.normalize = true;
+    // rgb_cfg.apply_lut = true;
 
     // img_pro.images[0].image.equalize();
     // img_pro.images[0].image.to_rgb();
@@ -73,22 +76,30 @@ int main(int /*argc*/, char *argv[])
     satdump::warp::WarpOperation operation_t;
     std::vector<double> final_tt;
     nlohmann::json final_mtd;
-    operation_t.input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
-    operation_t.input_image = operation_t.input_image.to16bits();
+    image::Image input_image = satdump::make_composite_from_product(img_pro, rgb_cfg, nullptr, &final_tt, &final_mtd);
+    input_image = input_image.to16bits();
+    operation_t.input_image = &input_image;
     // operation_t.input_image.median_blur();
-    nlohmann::json proj_cfg = /* img_pro.get_proj_cfg(); */ loadJsonFile(argv[2]);
+    nlohmann::json proj_cfg = img_pro.get_proj_cfg(); // loadJsonFile(argv[2]);
     proj_cfg["metadata"] = final_mtd;
     proj_cfg["metadata"]["tle"] = img_pro.get_tle();
     proj_cfg["metadata"]["timestamps"] = final_tt;
     printf("%s\n", final_mtd.dump(4).c_str());
     operation_t.ground_control_points = satdump::gcp_compute::compute_gcps(proj_cfg,
-                                                                           operation_t.input_image.width(),
-                                                                           operation_t.input_image.height());
-    operation_t.output_width = 2048 * 10;  // 10;
-    operation_t.output_height = 1024 * 10; // 10;
+                                                                           operation_t.input_image->width(),
+                                                                           operation_t.input_image->height());
+    operation_t.output_width = 2048 * 2;  // 10;
+    operation_t.output_height = 1024 * 2; // 10;
     operation_t.output_rgba = true;
 
+#if 0
     auto warp_result = satdump::warp::performSmartWarp(operation_t);
+#else
+    satdump::warp::ImageWarper warper;
+    warper.op = operation_t;
+    warper.update();
+    auto warp_result = warper.warp();
+#endif
 
     logger->info("Wrapped!");
     geodetic::projection::EquirectangularProjection projector_final;
@@ -119,10 +130,10 @@ int main(int /*argc*/, char *argv[])
                 return {x, y};
             });
     }
-#if 0
+#if 1
     {
 
-        unsigned short color[4] = {0, 0, 65535, 65535};
+        std::vector<double> color = {0, 0, 1, 1};
 
         map::drawProjectedMapLatLonGrid(warp_result.output_image,
                                         color,

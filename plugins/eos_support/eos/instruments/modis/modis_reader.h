@@ -77,13 +77,13 @@ namespace eos
             void processDayPacket(ccsds::CCSDSPacket &packet, MODISHeader &header);
             void processNightPacket(ccsds::CCSDSPacket &packet, MODISHeader &header);
 
-            void processEng1Packet(ccsds::CCSDSPacket &packet, MODISHeader &header);
-            void processEng2Packet(ccsds::CCSDSPacket &packet, MODISHeader &header);
+            void processEng1Packet(ccsds::CCSDSPacket &packet);
+            void processEng2Packet(ccsds::CCSDSPacket &packet);
 
             uint16_t compute_crc(uint16_t *data, int size);
 
             nlohmann::json d_calib;
-            void fillCalib(ccsds::CCSDSPacket &packet, MODISHeader &header);
+            void fillCalib(MODISHeader &header);
 
             uint16_t last_obc_bb_temp[12] = {0};
             uint16_t last_rct_mir_temp[2] = {0};

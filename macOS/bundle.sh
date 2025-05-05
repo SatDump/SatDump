@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -Eeo pipefail
 if [[ -z "$GITHUB_WORKSPACE" ]]
 then
     GITHUB_WORKSPACE=".."

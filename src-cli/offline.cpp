@@ -2,7 +2,6 @@
 #include "common/detect_header.h"
 #include "init.h"
 #include "common/cli_utils.h"
-#include "core/module.h"
 #include "core/pipeline.h"
 #include <filesystem>
 #include "nlohmann/json.hpp"
@@ -14,7 +13,7 @@ int main_offline(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " [pipeline_id] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/s16/s8/u8] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs16/cs8/cu8] --dc_block --iq_swap");
         logger->error("Sample command :");
         logger->error("./satdump metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format s16");
         return 1;
@@ -52,13 +51,13 @@ int main_offline(int argc, char *argv[])
 
     if (pipeline.has_value())
     {
-        try
+      //  try
         {
             pipeline.value().run(input_file, output_file, parameters, input_level);
         }
-        catch (std::exception &e)
+    //    catch (std::exception &e)
         {
-            logger->error("Fatal error running pipeline : " + std::string(e.what()));
+     //       logger->error("Fatal error running pipeline : " + std::string(e.what()));
             return 1;
         }
     }

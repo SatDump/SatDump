@@ -79,20 +79,23 @@ namespace satdump
 
             logger->trace("First OpenCL context request. Initializing...");
 
-            if (clGetPlatformIDs(100, platforms_ids, &platforms_cnt) != CL_SUCCESS)
-                throw satdump_exception("Could not get OpenCL platform IDs!");
+            err = clGetPlatformIDs(100, platforms_ids, &platforms_cnt);
+            if (err != CL_SUCCESS)
+                throw satdump_exception("Could not get OpenCL platform IDs! Code " + std::to_string(err));
 
             if (platforms_cnt == 0)
                 throw satdump_exception("No platforms found. Check OpenCL installation!");
 
             cl_platform_id platform = platforms_ids[platform_id];
-            if (clGetPlatformInfo(platform, CL_PLATFORM_NAME, 200, device_platform_name, &device_platform_name_len) == CL_SUCCESS)
+            err = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 200, device_platform_name, &device_platform_name_len);
+            if (err == CL_SUCCESS)
                 logger->info("Using platform: %s", std::string(&device_platform_name[0], &device_platform_name[device_platform_name_len]).c_str());
             else
-                logger->error("Could not get platform name!");
+                logger->error("Could not get platform name! Code %d", err);
 
-            if (clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 100, devices_ids, &devices_cnt) != CL_SUCCESS)
-                throw satdump_exception("Could not get OpenCL devices IDs!");
+            err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 100, devices_ids, &devices_cnt);
+            if (err != CL_SUCCESS)
+                throw satdump_exception("Could not get OpenCL devices IDs! Code " + std::to_string(err));
 
             if (devices_cnt == 0)
                 throw satdump_exception("No devices found. Check OpenCL installation!");
@@ -103,7 +106,7 @@ namespace satdump
 
             ocl_context = clCreateContext(NULL, 1, &ocl_device, NULL, NULL, &err);
             if (err != CL_SUCCESS)
-                throw satdump_exception("Could not init OpenCL context!");
+                throw satdump_exception("Could not init OpenCL context! Code " + std::to_string(err));
 
             context_is_init = true;
         }
@@ -115,13 +118,13 @@ namespace satdump
                 context_is_init = false;
                 for (auto &kernel : cached_kernels)
                 {
-                    int ret = clReleaseProgram(kernel.second);
+                    cl_int ret = clReleaseProgram(kernel.second);
                     if (ret != CL_SUCCESS)
                         logger->error("Could not release CL program! Code %d", ret);
                 }
 
                 cached_kernels.clear();
-                int ret = clReleaseContext(ocl_context);
+                cl_int ret = clReleaseContext(ocl_context);
                 if (ret != CL_SUCCESS)
                     logger->error("Could not release old context! Code %d", ret);
             }
@@ -153,18 +156,25 @@ namespace satdump
             const char *srcs[1] = {kernel_src.c_str()};
             const size_t lens[1] = {kernel_src.length()};
             cl_int err = 0;
-            char error_msg[100000];
-            size_t error_len = 0;
 
             cl_program prg = clCreateProgramWithSource(ocl_context, 1, srcs, lens, &err);
             err = clBuildProgram(prg, 1, &ocl_device, NULL, NULL, NULL);
 
             if (err != CL_SUCCESS)
             {
+                char* error_msg = new char[100000];
+                size_t error_len = 0;
                 if (clGetProgramBuildInfo(prg, ocl_device, CL_PROGRAM_BUILD_LOG, 100000, error_msg, &error_len) == CL_SUCCESS)
-                    throw satdump_exception((std::string) "Error building: " + std::string(&error_msg[0], &error_msg[error_len]));
+                {
+                    std::string err_str = std::string(&error_msg[0], &error_msg[error_len]);
+                    delete[] error_msg;
+                    throw satdump_exception((std::string)"Error building: " + err_str);
+                }
                 else
+                {
+                    delete[] error_msg;
                     throw satdump_exception("Error building, and could not read error log!");
+                }
             }
 
             if (use_cache)                              // If cache enabled...

@@ -11,6 +11,8 @@
 
 #include "meteor/module_meteor_qpsk_kmss_decoder.h"
 
+#include "meteor/instruments/msumr/msumr_calibrator.h"
+
 class MeteorSupport : public satdump::Plugin
 {
 public:
@@ -22,6 +24,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
     static void registerPluginsHandler(const RegisterModulesEvent &evt)
@@ -34,6 +37,12 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::instruments::MeteorXBandInstrumentsDecoderModule);
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteor::MeteorQPSKKmssDecoderModule);
+    }
+
+    static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
+    {
+        if (evt.id == "meteor_msumr")
+            evt.calibrators.push_back(std::make_shared<MeteorMsuMrCalibrator>(evt.calib, evt.products));
     }
 };
 

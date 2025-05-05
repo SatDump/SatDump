@@ -2,7 +2,6 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "core/module.h"
 #include "common/utils.h"
 #include "core/style.h"
 #include "common/tracking/tle.h"
@@ -155,7 +154,7 @@ namespace satdump
                                    (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" +
                                    (seconds < 10 ? "0" : "") + std::to_string(seconds);
 
-            auto& style = ImGui::GetStyle();
+            auto &style = ImGui::GetStyle();
             ImVec2 cur = ImGui::GetCursorPos();
             ImVec2 curs = ImGui::GetCursorScreenPos();
             std::string obj_name = "None";
@@ -275,7 +274,7 @@ namespace satdump
             }
 
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("NORAD ID %d", general_tle_registry[current_satellite_id].norad);
+                ImGui::SetTooltip("NORAD ID %d", (*general_tle_registry)[current_satellite_id].norad);
         }
 
         if (backend_needs_update)

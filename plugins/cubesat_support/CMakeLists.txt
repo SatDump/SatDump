@@ -7,4 +7,4 @@ add_library(cubesat_support SHARED ${cubesat_support_CPPS})
 target_link_libraries(cubesat_support PUBLIC satdump_core)
 target_include_directories(cubesat_support PUBLIC src .)
 
-install(TARGETS cubesat_support DESTINATION lib/satdump/plugins)
+install(TARGETS cubesat_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)

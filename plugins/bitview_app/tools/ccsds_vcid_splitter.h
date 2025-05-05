@@ -4,8 +4,8 @@
 #include "imgui/imgui_stdlib.h"
 #include <fstream>
 #include "core/style.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include <map>
 
 namespace satdump
@@ -69,9 +69,9 @@ namespace satdump
 
                 int vcid = 0;
                 if (cadu_mode == 0)
-                    vcid = ccsds::ccsds_weather::parseVCDU(ptr_pos).vcid;
+                    vcid = ccsds::ccsds_aos::parseVCDU(ptr_pos).vcid;
                 else if (cadu_mode == 1)
-                    vcid = ccsds::ccsds_standard::parseVCDU(ptr_pos).vcid;
+                    vcid = ccsds::ccsds_tm::parseVCDU(ptr_pos).vcid;
 
                 if (output_files.count(vcid) == 0)
                 {

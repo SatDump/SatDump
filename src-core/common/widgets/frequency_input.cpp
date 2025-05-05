@@ -3,7 +3,6 @@
 #include "core/backend.h"
 #include "frequency_input.h"
 #include "imgui/imgui_internal.h"
-#include "core/module.h"
 
 namespace widgets
 {
@@ -16,6 +15,7 @@ namespace widgets
 			x -= dot_width;
 		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
 	}
+
 	inline void helper_right(int &i, ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, bool &top)
 	{
 		if (i == 0)
@@ -25,6 +25,7 @@ namespace widgets
 			x += dot_width;
 		backend::setMousePos(x, screen_pos.y + (top ? digit_size.y * 0.75 : digit_size.y / 4));
 	}
+
 	inline void digit_helper(int &i, uint64_t *frequency_hz, int64_t &change_by,
 							 ImVec2 &digit_size, ImVec2 &screen_pos, float &dot_width, float &rounding, bool top, bool allow_mousewheel)
 	{
@@ -69,7 +70,7 @@ namespace widgets
 			// Draw rect
 			ImDrawList *draw_list = ImGui::GetWindowDrawList();
 			draw_list->AddRectFilled(screen_pos, ImVec2(screen_pos.x + digit_size.x, screen_pos.y + (digit_size.y / 2)),
-				                     style::theme.freq_highlight, rounding);
+									 style::theme.freq_highlight, rounding);
 		}
 	}
 
@@ -225,7 +226,12 @@ namespace widgets
 		if ((int64_t)(*frequency_hz) + change_by < 0 || *frequency_hz + change_by > 1e12)
 			change_by = 0;
 
-		*frequency_hz += change_by;
-		return change_by != 0;
+		if (change_by != 0)
+		{
+			*frequency_hz += change_by;
+			return true;
+		}
+		else
+			return false;
 	}
 }

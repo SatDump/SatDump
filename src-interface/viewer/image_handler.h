@@ -49,7 +49,7 @@ namespace satdump
         bool white_balance_image = false;
         bool manual_brightness_contrast = false;
         float manual_brightness_contrast_brightness = 0.0;
-        float manual_brightness_contrast_constrast = 0.0;
+        float manual_brightness_contrast_contrast = 0.0;
 
         // GUI
         bool range_window = false;
@@ -63,7 +63,9 @@ namespace satdump
         bool is_temp = false;
         bool show_scale = false;
         image::Image scale_image; // 512x25
-        ImageViewWidget scale_view;
+        unsigned int scale_texture_id = 0;
+        uint32_t *scale_buffer = nullptr;
+        bool scale_has_update = false;
 
         // LUT
         bool using_lut = false;

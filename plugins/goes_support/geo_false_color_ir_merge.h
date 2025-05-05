@@ -15,7 +15,7 @@ namespace goes
     image::Image goesFalseColorIRMergeCompositor(satdump::ImageProducts *img_pro,
                                                   std::vector<image::Image> &inputChannels,
                                                   std::vector<std::string> channelNumbers,
-                                                  std::string cpp_id,
+                                                  std::string /* cpp_id */,
                                                   nlohmann::json vars,
                                                   nlohmann::json offsets_cfg,
                                                   std::vector<double> *final_timestamps = nullptr,
@@ -23,13 +23,13 @@ namespace goes
     {
         image::compo_cfg_t f = image::get_compo_cfg(inputChannels, channelNumbers, offsets_cfg);
 
-        std::string lut_path = vars.contains("lut") ? vars["lut"].get<std::string>() : std::string("goes/abi/wxstar/lut.png");
+        std::string lut_path = vars.contains("lut") ? vars["lut"].get<std::string>() : std::string("lut/goes/abi/wxstar/lut.png");
 
         // Load the lut and curve
         image::Image img_lut;
         image::Image img_curve;
         load_png(img_lut, resources::getResourcePath(lut_path));
-        load_png(img_curve, resources::getResourcePath("goes/abi/wxstar/ch2_curve.png"));
+        load_png(img_curve, resources::getResourcePath("lut/goes/abi/wxstar/ch2_curve.png"));
         size_t lut_width = img_lut.width();
 
         if (img_lut.width() != 256 || img_lut.height() != 256 || img_lut.channels() < 3)

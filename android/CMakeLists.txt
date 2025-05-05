@@ -53,12 +53,8 @@ set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/de
 # include_directories(deps/jpeg/jni)
 
 # MBed-TLS
-add_library(mbedtls STATIC IMPORTED)
-set_target_properties(mbedtls PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedtls.a)
-add_library(mbedtlscrypto STATIC IMPORTED)
-set_target_properties(mbedtlscrypto PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedcrypto.a)
-add_library(mbedtlsx509 STATIC IMPORTED)
-set_target_properties(mbedtlsx509 PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libmbedx509.a)
+add_library(wolfssl STATIC IMPORTED)
+set_target_properties(wolfssl PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libwolfssl.a)
 
 # NNG
 add_library(nng STATIC IMPORTED)
@@ -145,6 +141,8 @@ add_library(android_imgui SHARED
 )
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
 
 target_compile_definitions(android_imgui PRIVATE IMGUI_IMPL_OPENGL_ES3)
 

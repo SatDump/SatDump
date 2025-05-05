@@ -2,7 +2,8 @@
 
 namespace dsp
 {
-    CostasLoopBlock::CostasLoopBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, unsigned int order) : Block(input), order(order), loop_bw(loop_bw)
+    CostasLoopBlock::CostasLoopBlock(std::shared_ptr<dsp::stream<complex_t>> input, float loop_bw, unsigned int order, float freq_limit)
+        : Block(input), order(order), loop_bw(loop_bw), freq_limit_min(-freq_limit), freq_limit_max(freq_limit)
     {
         float damping = sqrtf(2.0f) / 2.0f;
         float denom = (1.0 + 2.0 * damping * loop_bw + loop_bw * loop_bw);
@@ -57,10 +58,10 @@ namespace dsp
                 phase += 2 * M_PI;
 
             // Clamp freq
-            if (freq > 1.0)
-                freq = 1.0;
-            if (freq < -1.0)
-                freq = -1.0;
+            if (freq > freq_limit_max)
+                freq = freq_limit_max;
+            if (freq < freq_limit_min)
+                freq = freq_limit_min;
         }
 
         input_stream->flush();

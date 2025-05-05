@@ -1,18 +1,5 @@
 #include "lime_sdr.h"
 
-#ifdef __ANDROID__
-#include "common/dsp_source_sink/android_usb_backend.h"
-
-const std::vector<DevVIDPID> LIMESDR_USB_VID_PID = {{0x0403, 0x601f}, {0x0403, 0x6108}};
-
-// Closing the connection on Android crashes.
-// So we cache it and never close it, which is
-// not an issue as we should never have 2 Limes
-// on Android.
-lime::LMS7_Device *limeDevice_android = nullptr;
-lime::StreamChannel *limeStreamID_android = nullptr;
-#endif
-
 void LimeSDRSource::set_gains()
 {
     if (!is_started)
@@ -110,7 +97,6 @@ void LimeSDRSource::start()
 
     if (!is_started)
     {
-#ifndef __ANDROID__
         lms_info_str_t found_devices[256];
         LMS_GetDeviceList(found_devices);
 
@@ -128,54 +114,8 @@ void LimeSDRSource::start()
 
         if (err)
             throw satdump_exception("Could not open LimeSDR Device!");
-#else
-        lime::ConnectionHandle handle;
-        int vid, pid;
-        std::string path;
-        int fd = getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path);
-        if (limeDevice_android == nullptr)
-        {
-            limeDevice_android = lime::LMS7_Device::CreateDevice_fd(handle, fd, pid == 0x6108);
-            limeDevice_android->Init();
-        }
-        limeDevice = limeDevice_android;
-
-        if (limeDevice == NULL)
-            throw satdump_exception("Could not open LimeSDR Device!");
-#endif
     }
 
-#ifdef __ANDROID__
-    limeDevice->EnableChannel(false, 0, true);
-    limeDevice->SetPath(false, 0, path_id);
-
-    limeConfig.align = false;
-    limeConfig.isTx = false;
-    limeConfig.performanceLatency = 0.5;
-    limeConfig.bufferLength = 0; // auto
-    limeConfig.format = lime::StreamConfig::FMT_FLOAT32;
-    limeConfig.channelID = 0;
-
-    logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
-    limeDevice->SetRate(current_samplerate, 0);
-    limeDevice->SetLPF(false, 0, true, current_samplerate);
-
-    is_started = true;
-
-    set_frequency(d_frequency);
-
-    set_gains();
-
-    if (limeStreamID_android == nullptr)
-        limeStreamID_android = limeDevice->SetupStream(limeConfig);
-    limeStreamID = limeStreamID_android;
-
-    if (limeStreamID == 0)
-        throw satdump_exception("Could not open LimeSDR device stream!");
-
-    limeStream = limeStreamID;
-    limeStream->Start();
-#else
     LMS_EnableChannel(limeDevice, false, channel_id, true);
     LMS_SetAntenna(limeDevice, false, channel_id, path_id);
 
@@ -199,7 +139,6 @@ void LimeSDRSource::start()
     LMS_SetupStream(limeDevice, &limeStream);
 
     LMS_StartStream(&limeStream);
-#endif
 
     thread_should_run = true;
     work_thread = std::thread(&LimeSDRSource::mainThread, this);
@@ -218,14 +157,10 @@ void LimeSDRSource::stop()
     logger->info("Thread stopped");
     if (is_started)
     {
-#ifndef __ANDROID__
         LMS_StopStream(&limeStream);
         LMS_DestroyStream(limeDevice, &limeStream);
         LMS_EnableChannel(limeDevice, false, channel_id, false);
         LMS_Close(limeDevice);
-#else
-        limeStream->Stop();
-#endif
     }
     is_started = false;
 }
@@ -239,11 +174,9 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
 {
     if (is_started)
     {
-#ifndef __ANDROID__
+
         LMS_SetLOFrequency(limeDevice, false, channel_id, frequency);
-#else
-        limeDevice->SetFrequency(false, channel_id, frequency);
-#endif
+
         logger->debug("Set LimeSDR frequency to %d", frequency);
     }
     DSPSampleSource::set_frequency(frequency);
@@ -319,7 +252,6 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-#ifndef __ANDROID__
     lms_info_str_t devices[256];
     int cnt = LMS_GetDeviceList(devices);
 
@@ -334,12 +266,6 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
         LMS_Close(device);
         results.push_back({"limesdr", "LimeSDR " + ss.str(), std::to_string(i)});
     }
-#else
-    int vid, pid;
-    std::string path;
-    if (getDeviceFD(vid, pid, LIMESDR_USB_VID_PID, path) != -1)
-        results.push_back({"limesdr", "LimeSDR USB", "0"});
-#endif
 
     return results;
 }

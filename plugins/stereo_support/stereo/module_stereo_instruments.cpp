@@ -1,11 +1,11 @@
 #include "module_stereo_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_standard/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 #include "common/image/io.h"
@@ -90,7 +90,7 @@ namespace stereo
             data_in.read((char *)&cadu, 1119);
 
             // Parse this transport frame
-            ccsds::ccsds_standard::VCDU vcdu = ccsds::ccsds_standard::parseVCDU(cadu);
+            ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
             // logger->info(pkt.header.apid);
             // logger->info(vcdu.vcid);

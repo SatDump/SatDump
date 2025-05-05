@@ -136,7 +136,7 @@ namespace goes
             images.image4.clear();
 
             // If we can, generate false color
-            if (resources::resourceExists("goes/gvar/lut.png"))
+            if (resources::resourceExists("lut/goes/gvar/lut.png"))
             {
                 logger->trace("Scale Ch1 to 8-bits...");
                 image::Image channel1(8, images.image5.width(), images.image5.height(), 1);
@@ -155,12 +155,12 @@ namespace goes
 
                 logger->trace("Loading LUT...");
                 image::Image lutImage;
-                image::load_png(lutImage, resources::getResourcePath("goes/gvar/lut.png").c_str());
+                image::load_png(lutImage, resources::getResourcePath("lut/goes/gvar/lut.png").c_str());
                 lutImage.resize(256, 256);
 
                 logger->trace("Loading correction curve...");
                 image::Image curveImage;
-                image::load_png(curveImage, resources::getResourcePath("goes/gvar/curve_goesn.png").c_str());
+                image::load_png(curveImage, resources::getResourcePath("lut/goes/gvar/curve_goesn.png").c_str());
 
                 image::Image compoImage(8, channel1.width(), channel1.height(), 3);
 
@@ -189,7 +189,7 @@ namespace goes
             }
             else
             {
-                logger->warn("goes/gvar/lut.png LUT is missing! False Color will not be generated");
+                logger->warn("lut/goes/gvar/lut.png LUT is missing! False Color will not be generated");
             }
         }
 

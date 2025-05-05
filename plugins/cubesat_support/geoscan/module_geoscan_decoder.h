@@ -14,6 +14,8 @@ namespace geoscan
     {
     protected:
         int8_t *input_buffer;
+        int d_frame_length;
+        int d_thresold;
 
         std::ifstream data_in;
         std::ofstream data_out;
@@ -31,6 +33,7 @@ namespace geoscan
         GEOSCANDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         ~GEOSCANDecoderModule();
         void process();
+        const uint8_t* PN9_MASK_Generator();
         void drawUI(bool window);
         std::vector<ModuleDataType> getInputTypes();
         std::vector<ModuleDataType> getOutputTypes();

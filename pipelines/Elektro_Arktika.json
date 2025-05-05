@@ -107,7 +107,7 @@
                     "constellation": "bpsk",
                     "symbolrate": 294000,
                     "rrc_alpha": 0.5,
-                    "pll_bw": 0.02,
+                    "pll_bw": 0.0145,
                     "max_sps": 3
                 }
             },
@@ -199,8 +199,8 @@
             }
         }
     },
-    "elektro_tlm": {
-        "name": "ELEKTRO-L L-Band TLM",
+    "elektro_ggak": {
+        "name": "ELEKTRO-L GGAK",
         "live": true,
         "live_cfg": [
             [
@@ -239,8 +239,8 @@
             }
         }
     },
-    "arktika_tlm": {
-        "name": "ARKTIKA-M L-Band TLM",
+    "arktika_ggak": {
+        "name": "ARKTIKA-M GGAK",
         "live": true,
         "live_cfg": [
             [

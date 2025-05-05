@@ -22,11 +22,11 @@
             "samplerate": {
                 "value": 3e6
             },
-            "start_timestamp": {
-                "type": "timestamp",
+            "year_override": {
+                "type": "int",
                 "value": -1,
-                "name": "Start Timestamp",
-                "description": "Unix timestamp of the start of the file provided.\nRequired in case you are not\nprocessing your file on the same Mocow day."
+                "name": "Year Override",
+                "description": "Override of the year used for timestamps.\nRequired when you are processing your file\nin a different year than the data was created."
             }
         },
         "work": {
@@ -73,6 +73,19 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
             },
             "fill_missing": {
                 "type": "bool",
@@ -131,6 +144,19 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
             },
             "rs_usecheck": {
                 "type": "bool",
@@ -206,6 +232,19 @@
         "parameters": {
             "samplerate": {
                 "value": 1e6
+            },
+            "satellite_number": {
+                "type": "options",
+                "value": "Auto",
+                "name": "METEOR Satellite",
+                "options": [
+                    "Auto",
+                    "M2",
+                    "M2-2",
+                    "M2-3",
+                    "M2-4"
+                ],
+                "description": "Overrides the transmitted satellite ID"
             },
             "fill_missing": {
                 "type": "bool",

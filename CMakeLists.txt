@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(MSVC OR BUILD_MSVC)
+    set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
+endif()
+
 project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
@@ -17,6 +21,7 @@ option(BUILD_ZIQ2 "Build support for the custom ZIQ2 format (Very WIP)" OFF)
 option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
+option(BUILD_DOCS "Build with Doxygen Documentation" OFF)
 option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 
 if(ANDROID)
@@ -25,7 +30,8 @@ if(ANDROID)
     set(OPENCL_FOUND 1)
 endif()
 
-# Set default install prefix to /usr
+# Set default install prefix
+include(GNUInstallDirs) #Retruns good defaults on non-GNU systems as well
 if(UNIX)
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         if(APPLE)
@@ -52,6 +58,10 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
+    endif()
+
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
         if(APPLE)
@@ -62,7 +72,7 @@ if(UNIX)
 
     find_package(ZSTD)
 
-    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND(NOT ANDROID))
+    if((NOT ZSTD_FOUND) AND BUILD_ZIQ AND (NOT ANDROID))
         message("ZIQ Was enabled but libzstd was not found!")
         set(BUILD_ZIQ OFF)
     endif()
@@ -73,13 +83,25 @@ else()
 endif()
 
 if(MSVC OR BUILD_MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
+    add_compile_definitions(
+        _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+        _USE_MATH_DEFINES
+        _CRT_SECURE_NO_WARNINGS
+        _WINSOCK_DEPRECATED_NO_WARNINGS
+        _CRT_NONSTDC_NO_WARNINGS
+    )
 
     if(BUILD_OPENMP)
         message("Compiling with OpenMP support!")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /openmp")
     endif()
+
+    # This should be the default, but sometimes it isn't apparently
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
 
     # Speed up this to object-level, Suppress type conversion warnings, suppress
     # POSIX function warnings, suppress warnings about DLL-exported functions, and
@@ -93,11 +115,11 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286,4217")
 
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    include_directories(vcpkg/installed/x64-windows/include)
-    link_directories(vcpkg/installed/x64-windows/lib)
+    include_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/include)
+    link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
-project(SatDump VERSION "1.2.1")
+project(SatDump VERSION "1.2.3")
 
 # Check if the current commit has a tag
 execute_process(
@@ -125,23 +147,21 @@ else()
 endif()
 add_compile_definitions(SATDUMP_VERSION="${SATDUMP_VERSION}")
 
+# Used for error messages
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_compile_definitions(SOURCE_PATH_SIZE=${SOURCE_PATH_SIZE})
+
 if(ANDROID)
     add_compile_definitions(ANDROID_ABI_LIB="${ANDROID_ABI}")
 endif()
 
 # Check we have OpenCL
-if(MSVC)
-    set(OPENCL_FOUND 1)
-    set(OpenCL_LIBRARY OpenCL.dll)
-    set(OpenCL_LIBRARIES OpenCL.dll)
-elseif(NOT ANDROID)
+if(NOT ANDROID)
     find_package(OpenCL)
 endif()
 
 if(OPENCL_FOUND AND BUILD_OPENCL)
     message("OpenCL Found! SatDump will support accelerated GPU computing.")
-
-# add_compile_definitions(USE_OPENCL="1") # This does NOT work with MSVC. Kept anyway for now.
 else()
     message("OpenCL NOT found or disabled!")
     set(BUILD_OPENCL OFF)
@@ -153,7 +173,7 @@ if(BUILD_ZIQ)
 endif()
 
 if(BUILD_ZIQ2)
-    message("Building with ZIQ Support")
+    message("Building with ZIQ2 Support")
 endif()
 
 # If in debug, set the macro
@@ -220,8 +240,8 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
     set(CPACK_PACKAGE_VENDOR "SatDump")
     set(CPACK_PACKAGE_CONTACT "Aang23")
-    
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1")
+
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1, libportaudiocpp0, libhdf5-hl-100t64 | libhdf5-hl-100 | libhdf5-103 | libhdf5-100")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libomp5-14, ocl-icd-libopencl1, intel-opencl-icd, mesa-opencl-icd")
 
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
@@ -257,7 +277,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         set(CPACK_NSIS_MODIFY_PATH ON)
         set(CPACK_NSIS_BRANDING_TEXT "SatDump - General Purpose Satellite Data Processor")
         set(CPACK_NSIS_MUI_HEADERIMAGE "${PROJECT_SOURCE_DIR}\\\\windows\\\\installer-header.bmp")
-        set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\windows\\\\icon.ico")
+        set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}\\\\windows\\\\icon.ico")
         if(BUILD_GUI)
             set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\satdump-ui.exe")
             set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump-ui" "SatDump")
@@ -267,8 +287,23 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
         if(PLUGIN_REMOTE_SDR_SUPPORT)
             set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump_sdr_server" "SatDump SDR Server")
         endif()
-        file(GLOB_RECURSE SATDUMP_WINDOWS_DEPENDENCIES ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/bin/*.dll)
-        install(FILES ${SATDUMP_WINDOWS_DEPENDENCIES} DESTINATION bin)
+
+        install(RUNTIME_DEPENDENCY_SET satdump_deps
+            PRE_EXCLUDE_REGEXES
+                "api-ms-.*"
+                "ext-ms-.*"
+                "^hvsifiletrust\\.dll$"
+                "^pdmutilities\\.dll$"
+                "^vc.*"
+                "^msvcp.*"
+                "^concrt.*"
+                "satdump_core.dll"
+                "satdump_interface.dll"
+            POST_EXCLUDE_REGEXES
+            ".*system32/.*\\.dll"
+            DIRECTORIES
+            "${PROJECT_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/bin"
+        )
     else()
         set(CPACK_GENERATOR DEB)
         #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
@@ -279,4 +314,24 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
     include(CPack)
+endif()
+
+# Doxygen configuration
+if((CMAKE_BUILD_TYPE MATCHES "^[Rr]elease") AND BUILD_DOCS)
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+        message("-- Doxygen build enabled!")
+
+        add_custom_target(docs_doxygen ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM)
+    else(DOXYGEN_FOUND)
+        message("Doxygen need to be installed to generate the doxygen documentation")
+    endif(DOXYGEN_FOUND)
 endif()

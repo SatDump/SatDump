@@ -71,7 +71,7 @@ namespace lrit
     }
 
     // This will most probably get moved over to each
-    inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string satellite, std::string instrument_id)
+    inline void addCalibrationInfoFunc(satdump::ImageProducts &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
     {
         if (image_data_function_record)
         {
@@ -98,7 +98,7 @@ namespace lrit
                 if (std::stoi(channel) > 1)
                     pro.set_calibration_default_radiance_range(pro.images.size() - 1, goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][0], goesn_imager_radiance_ranges_table[std::stoi(channel) - 1][1]);
             }
-            else if (instrument_id == "abi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
+            else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
                 const float goes_abi_wavelength_table[16] = {
                     470,
@@ -486,11 +486,13 @@ namespace lrit
                             saveJsonFile(file_for_cache, filecache);
 
                         delete pro;
+                        pro = nullptr;
                     }
                 }
                 catch (std::exception &e)
                 {
                     logger->error("Error trying to autogen composites! %s", e.what());
+                    delete pro;
                 }
             }
             else
@@ -600,7 +602,7 @@ namespace lrit
                             pro->set_proj_cfg(proj_cfg);
                 }
 
-                addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
+                addCalibrationInfoFunc(*pro, image_data_function_record, channel, instrument_id);
 
                 pro->save(directory_path);
             }
@@ -623,7 +625,7 @@ namespace lrit
                 }
                 pro->images.push_back({filename, channel, image::Image()});
 
-                addCalibrationInfoFunc(*pro, image_data_function_record, channel, satellite, instrument_id);
+                addCalibrationInfoFunc(*pro, image_data_function_record, channel, instrument_id);
 
                 pro->save(directory_path);
             }

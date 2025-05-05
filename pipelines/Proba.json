@@ -269,5 +269,101 @@
                 }
             }
         }
+    },
+    "proba3_dump_pm": {
+        "name": "Proba-3 Dump PM",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2256.22e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "symbolrate": 220e3,
+                    "agc_rate": 0.001,
+                    "pll_bw": 0.01,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.6,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                // "satellite": "proba3"
+            }
+        }
+    },
+    "proba3_dump_qpsk": {
+        "name": "Proba-3 Dump QPSK",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2256.22e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "qpsk",
+                    "symbolrate": 425e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "ccsds_conv_concat_decoder": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {
+                // "satellite": "proba3"
+            }
+        }
     }
 }

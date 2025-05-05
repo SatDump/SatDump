@@ -20,7 +20,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "8psk_demod": {
+                "psk_demod": {
+                    "constellation": "8psk",
                     "symbolrate": 9000000,
                     "agc_rate": 0.00001,
                     "rrc_alpha": 0.5,

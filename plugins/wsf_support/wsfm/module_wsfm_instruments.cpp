@@ -5,8 +5,8 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "products/image_products.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "products/dataset.h"
 #include "resources.h"
 #include "nlohmann/json_utils.h"
@@ -29,7 +29,7 @@ namespace wsfm
 
         logger->info("Demultiplexing and deframing...");
 
-        ccsds::ccsds_weather::Demuxer demuxer_vcid35(1010, true, 0);
+        ccsds::ccsds_aos::Demuxer demuxer_vcid35(1010, true, 0);
 
         std::vector<uint8_t> wsfm_scids;
 
@@ -39,7 +39,7 @@ namespace wsfm
             data_in.read((char *)cadu, 1024);
 
             // Parse this transport frame
-            ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+            ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
             // if (vcdu.spacecraft_id == METOP_A_SCID ||
             //     vcdu.spacecraft_id == METOP_B_SCID ||
@@ -83,7 +83,7 @@ namespace wsfm
         dataset.satellite_name = sat_name;
         dataset.timestamp = get_median(mwi_reader.timestamps);
 
-        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
+        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
         // Satellite ID
         {

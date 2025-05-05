@@ -1,7 +1,7 @@
 #include "module_cryosat_siral.h"
 #include <fstream>
-#include "common/ccsds/ccsds_standard/demuxer.h"
-#include "common/ccsds/ccsds_standard/vcdu.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
@@ -41,7 +41,7 @@ namespace cryosat
             uint8_t buffer[1279];
 
             // CCSDS Demuxer
-            ccsds::ccsds_standard::Demuxer ccsdsDemuxer(1101, false, 2, 4);
+            ccsds::ccsds_tm::Demuxer ccsdsDemuxer(1101, false, 2, 4);
 
             logger->info("Demultiplexing and deframing...");
 
@@ -64,7 +64,7 @@ namespace cryosat
                 // Read buffer
                 data_in.read((char *)buffer, 1279);
 
-                int vcid = ccsds::ccsds_standard::parseVCDU(buffer).vcid;
+                int vcid = ccsds::ccsds_tm::parseVCDU(buffer).vcid;
 
                 // std::cout << "VCID " << vcid << std::endl;
 

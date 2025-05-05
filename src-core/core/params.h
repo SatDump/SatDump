@@ -1,6 +1,7 @@
 #pragma once
 #include "nlohmann/json.hpp"
 #include "imgui/pfd/widget.h"
+#include "common/dsp/io/baseband_type.h"
 #include "common/widgets/datetime.h"
 #include "common/widgets/notated_num.h"
 
@@ -25,6 +26,8 @@ namespace satdump
             PARAM_TIMESTAMP,
             PARAM_NOTATED_INT,
             PARAM_COLOR,
+            PARAM_BASEBAND_TYPE,
+            PARAM_LABELED_OPTIONS
         };
 
         class EditableParameter
@@ -42,6 +45,7 @@ namespace satdump
             double p_float;
             bool p_bool;
             float p_color[4] = {0, 0, 0, 0};
+            dsp::BasebandType baseband_type;
             std::shared_ptr<FileSelectWidget> file_select;
             std::shared_ptr<widgets::DateTimePicker> date_time_picker;
             std::shared_ptr<widgets::NotatedNum<int64_t>> notated_int;
@@ -49,6 +53,7 @@ namespace satdump
             int d_option;
             std::string d_options_str;
             std::vector<std::string> d_options;
+            std::vector<std::pair<std::string, std::string>> d_labeled_opts;
 
         public:
             EditableParameter(nlohmann::json p_json);

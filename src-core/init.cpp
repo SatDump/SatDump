@@ -4,13 +4,13 @@
 #include "core/module.h"
 #include "core/pipeline.h"
 #include <filesystem>
-// #include "tle.h"
 #include "core/plugin.h"
 #include "satdump_vars.h"
 #include "core/config.h"
 
 #include "common/tracking/tle.h"
 #include "products/products.h"
+#include "imgui/pfd/portable-file-dialogs.h"
 
 #include "core/opencl.h"
 
@@ -22,7 +22,7 @@ namespace satdump
     SATDUMP_DLL std::string tle_file_override = "";
     SATDUMP_DLL bool tle_do_update_on_init = true;
 
-    void initSatdump()
+    void initSatdump(bool is_gui)
     {
         logger->info("   _____       __  ____                      ");
         logger->info("  / ___/____ _/ /_/ __ \\__  ______ ___  ____ ");
@@ -44,10 +44,21 @@ namespace satdump
         user_path = std::string(getenv("HOME")) + "/.config/satdump";
 #endif
 
-        if (std::filesystem::exists("satdump_cfg.json"))
-            config::loadConfig("satdump_cfg.json", user_path);
-        else
-            config::loadConfig(satdump::RESPATH + "satdump_cfg.json", user_path);
+        try
+        {
+            if (std::filesystem::exists("satdump_cfg.json"))
+                config::loadConfig("satdump_cfg.json", user_path);
+            else
+                config::loadConfig(satdump::RESPATH + "satdump_cfg.json", user_path);
+        }
+        catch (std::exception &e)
+        {
+            logger->critical("Error loading SatDump config! SatDump will now exit. Error:\n%s", e.what());
+            if(is_gui)
+                pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" +
+                    std::string(e.what()), pfd::choice::ok, pfd::icon::error);
+            exit(1);
+        }
 
         if (config::main_cfg["satdump_general"].contains("log_to_file"))
         {

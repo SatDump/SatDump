@@ -8,10 +8,11 @@ namespace satdump
 {
     ObjectTracker::ObjectTracker(bool is_gui) : is_gui(is_gui)
     {
-        if (general_tle_registry.size() > 0)
+        auto tle_registry = general_tle_registry;
+        if (tle_registry->size() > 0)
             has_tle = true;
 
-        for (auto &tle : general_tle_registry)
+        for (auto &tle : *tle_registry)
             satoptions.push_back(tle.name);
 
         satellite_observer_station = predict_create_observer("Main", 0, 0, 0);
@@ -21,11 +22,12 @@ namespace satdump
                                                      {
                                                             general_mutex.lock();
 
-                                                            if (general_tle_registry.size() > 0)
+                                                            auto tle_registry = general_tle_registry;
+                                                            if (tle_registry->size() > 0)
                                                                 has_tle = true;
 
                                                             satoptions.clear();
-                                                            for (auto &tle : general_tle_registry)
+                                                            for (auto &tle : *tle_registry)
                                                                 satoptions.push_back(tle.name);
                                                                 
                                                             general_mutex.unlock(); });
@@ -85,9 +87,10 @@ namespace satdump
         }
         else if (mode == TRACKING_SATELLITE)
         {
+            auto tle_registry = general_tle_registry;
             for (int i = 0; i < (int)satoptions.size(); i++)
             {
-                if (general_tle_registry[i].norad == objid)
+                if ((*tle_registry)[i].norad == objid)
                 {
                     tracking_mode = TRACKING_SATELLITE;
                     current_satellite_id = i;

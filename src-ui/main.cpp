@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     {
         logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
         logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [f32/i16/i8/w8] --dc_block --iq_swap");
+        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/wav16] --dc_block --iq_swap");
     }
     else
         satdump::processing::is_processing = true;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
     // Init SatDump
     satdump::tle_do_update_on_init = false;
-    satdump::initSatdump();
+    satdump::initSatdump(true);
 
     // Check if we need to start a pipeline
     std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);

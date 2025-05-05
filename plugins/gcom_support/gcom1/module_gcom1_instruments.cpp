@@ -1,11 +1,11 @@
 #include "module_gcom1_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
 #include "products/dataset.h"
 #include "products/image_products.h"
@@ -30,7 +30,7 @@ namespace gcom1
             uint8_t cadu[1264];
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid17(1092, false);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid17(1092, false);
 
             while (!data_in.eof())
             {
@@ -38,7 +38,7 @@ namespace gcom1
                 data_in.read((char *)&cadu, 1264);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 // logger->info(pkt.header.apid);
                 // logger->info(vcdu.vcid);

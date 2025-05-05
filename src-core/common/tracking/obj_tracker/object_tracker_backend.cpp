@@ -72,7 +72,7 @@ namespace satdump
                     if (satellite_object != nullptr)
                         predict_destroy_orbital_elements(satellite_object);
 
-                    auto &tle = general_tle_registry[current_satellite_id];
+                    auto &tle = (*general_tle_registry)[current_satellite_id];
 
                     satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
                     updateNextPass(current_time);
@@ -93,6 +93,8 @@ namespace satdump
         upcoming_pass_points.clear();
         next_aos_time = 0;
         next_los_time = 0;
+        northbound_cross = false;
+        southbound_cross = false;
 
         if (tracking_mode == TRACKING_HORIZONS)
         {
@@ -117,7 +119,7 @@ namespace satdump
                     {
                         next_aos_time = horizons_data[i].timestamp;
                         sat_next_aos_pos.az = horizons_data[i].az;
-                        sat_next_aos_pos.el = horizons_data[i].el;
+                        sat_next_aos_pos.el = 0;
                         break;
                     }
                 }
@@ -140,7 +142,7 @@ namespace satdump
                     {
                         next_aos_time = horizons_data[i].timestamp;
                         sat_next_aos_pos.az = horizons_data[i].az;
-                        sat_next_aos_pos.el = horizons_data[i].el;
+                        sat_next_aos_pos.el = 0;
                         aos_iter = i;
                         break;
                     }
@@ -200,7 +202,36 @@ namespace satdump
             next_aos_time = predict_from_julian(next_aos.time);
 
             sat_next_aos_pos.az = next_aos.azimuth * RAD_TO_DEG;
-            sat_next_aos_pos.el = next_aos.elevation * RAD_TO_DEG;
+            sat_next_aos_pos.el = 0;
+            sat_next_los_pos.az = next_los.azimuth * RAD_TO_DEG;
+            sat_next_los_pos.el = next_los.elevation * RAD_TO_DEG;
+
+            if (meridian_flip_correction)
+            {
+                // Determine pass direction
+                predict_position satellite_orbit2;
+                predict_observation observation_pos_cur;
+                predict_observation observation_pos_prev;
+                double currTime = next_aos_time;
+                predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
+                predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_prev);
+                currTime += 1.0;
+                do
+                {
+                    predict_orbit(satellite_object, &satellite_orbit2, predict_to_julian_double(currTime));
+                    predict_observe_orbit(satellite_observer_station, &satellite_orbit2, &observation_pos_cur);
+
+                    if (std::abs(observation_pos_prev.azimuth - observation_pos_cur.azimuth) > (180 * DEG_TO_RAD))
+                    {
+                        if (next_los.azimuth > (90 * DEG_TO_RAD) && next_los.azimuth < (270 * DEG_TO_RAD))
+                            southbound_cross = true;
+                        else
+                            northbound_cross = true;
+                    }
+                    currTime += 1.0;
+                    observation_pos_prev = observation_pos_cur;
+                } while (next_los_time > currTime);
+            }
 
             if (true) //(is_gui)
             {

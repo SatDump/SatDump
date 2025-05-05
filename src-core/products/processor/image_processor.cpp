@@ -1,20 +1,20 @@
-#include "processor.h"
+﻿#include "processor.h"
 
 #include "logger.h"
 #include "../dataset.h"
 #include "../image_products.h"
 #include "core/config.h"
-
 #include "resources.h"
+
 #include "common/projection/reprojector.h"
 #include "common/map/map_drawer.h"
 #include "common/utils.h"
-
 #include "common/overlay_handler.h"
-
 #include "common/image/meta.h"
 #include "common/image/processing.h"
 #include "common/image/io.h"
+
+#include <regex>
 
 namespace satdump
 {
@@ -33,36 +33,36 @@ namespace satdump
         //        if (!op.target_prj_info.contains("br_lat"))
         //            op.target_prj_info["br_lat"] = -90;
 
-        op.img = img;
+        op.img = &img;
         proj_cfg["metadata"] = metadata;
         proj_cfg["metadata"]["tle"] = img_products.get_tle();
         proj_cfg["metadata"]["timestamps"] = timestamps;
 
-        image::set_metadata_proj_cfg(op.img, proj_cfg);
+        image::set_metadata_proj_cfg(*op.img, proj_cfg);
 
         if (op.target_prj_info.contains("auto") && op.target_prj_info["auto"].get<bool>())
         {
-            auto bounds = reprojection::determineProjectionBounds(op.img);
+            auto bounds = reprojection::determineProjectionBounds(*op.img);
             logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
             reprojection::tryAutoTuneProjection(bounds, op.target_prj_info);
             logger->debug("%d, %d\n%s", op.output_width, op.output_height, op.target_prj_info.dump(4).c_str());
         }
 
-        if (!proj_settings.contains("width") || !proj_settings.contains("height"))
+        if (!op.target_prj_info.contains("width") || !op.target_prj_info.contains("height"))
         {
             logger->error("No width or height defined for projection!");
             return image::Image();
         }
 
-        op.output_width = proj_settings["width"].get<int>();
-        op.output_height = proj_settings["height"].get<int>();
+        op.output_width = op.target_prj_info["width"].get<int>();
+        op.output_height = op.target_prj_info["height"].get<int>();
 
         if (proj_settings.contains("old_algo"))
             op.use_old_algorithm = proj_settings["old_algo"];
 
         if (proj_settings.contains("equalize"))
             if (proj_settings["equalize"].get<bool>())
-                image::equalize(op.img);
+                image::equalize(*op.img);
 
         image::Image retimg = reprojection::reproject(op);
 
@@ -87,8 +87,8 @@ namespace satdump
         // Overlay stuff
         OverlayHandler overlay_handler;
         OverlayHandler corrected_overlay_handler;
-        std::function<std::pair<int, int>(double, double, int, int)> proj_func;
-        std::function<std::pair<int, int>(double, double, int, int)> corr_proj_func;
+        std::function<std::pair<int, int>(double, double, double, double)> proj_func;
+        std::function<std::pair<int, int>(double, double, double, double)> corr_proj_func;
         size_t last_width = 0, last_height = 0, last_corr_width = 0, last_corr_height = 0;
         nlohmann::json last_proj_cfg;
 
@@ -117,6 +117,8 @@ namespace satdump
                     std::string initial_name = compo.key();
                     std::replace(initial_name.begin(), initial_name.end(), ' ', '_');
                     std::replace(initial_name.begin(), initial_name.end(), '/', '_');
+                    initial_name = std::regex_replace(initial_name, std::regex(u8"\u00B5"), u8"u");
+                    initial_name = std::regex_replace(initial_name, std::regex(u8"\u03BB="), u8"");
                     ImageCompositeCfg cfg = compo.value().get<ImageCompositeCfg>();
                     if (!check_composite_from_product_can_be_made(*img_products, cfg))
                     {
@@ -152,12 +154,11 @@ namespace satdump
                             geo_correct = false;
                             corrected_stuff.clear();
                         }
+
+                        image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
                     }
 
                     image::save_img(rgb_image, product_path + "/" + name);
-                    if (geo_correct)
-                        image::save_img(rgb_image_corr, product_path + "/" + name + "_corrected");
-
                     overlay_handler.set_config(compo.value());
                     corrected_overlay_handler.set_config(compo.value());
                     if (overlay_handler.enabled())
@@ -213,6 +214,10 @@ namespace satdump
                         }
                     }
 
+                    // Free memory
+                    if (geo_correct)
+                        rgb_image_corr.clear();
+
                     if (compo.value().contains("project") && img_products->has_proj_cfg())
                     {
                         logger->debug("Reprojecting composite %s", name.c_str());
@@ -222,8 +227,8 @@ namespace satdump
                                                          final_timestamps,
                                                          *img_products);
                         std::string fmt = "";
-                        if (compo.value()["project"]["config"].contains("img_format"))
-                            fmt += compo.value()["project"]["config"]["img_format"].get<std::string>();
+                        if (compo.value()["project"].contains("img_format"))
+                            fmt += compo.value()["project"]["img_format"].get<std::string>();
                         image::save_img(retimg, product_path + "/rgb_" + name + "_projected" + fmt);
                     }
 
@@ -275,8 +280,8 @@ namespace satdump
                                                      img_products->get_timestamps(chanid),
                                                      *img_products);
                     std::string fmt = "";
-                    if (instrument_viewer_settings["project_channels"]["config"].contains("img_format"))
-                        fmt += instrument_viewer_settings["project_channels"]["config"]["img_format"].get<std::string>();
+                    if (instrument_viewer_settings["project_channels"].contains("img_format"))
+                        fmt += instrument_viewer_settings["project_channels"]["img_format"].get<std::string>();
                     image::save_img(retimg, product_path + "/channel_" + img.channel_name + "_projected" + fmt);
                 }
                 catch (std::exception &e)

@@ -150,6 +150,14 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
 
     rotator_handler = std::make_shared<rotator::RotctlHandler>();
 
+    if (settings["tracking"].contains("rotator_type"))
+    {
+        auto options = rotator::getRotatorHandlerOptions();
+        for (auto &opt : options)
+            if (opt.name == settings["tracking"]["rotator_type"].get<std::string>())
+                rotator_handler = opt.construct();
+    }
+
     if (rotator_handler)
     {
         try
@@ -246,20 +254,20 @@ void AutoTrackApp::setup_schedular_callbacks()
                 {
                     std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
                     std::string name = std::to_string(obj.norad);
-                    if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
-                        name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                    if (satdump::general_tle_registry->get_from_norad(obj.norad).has_value())
+                        name = satdump::general_tle_registry->get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
-                    add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->pipeline_id, dl.pipeline_selector->getParameters());
+                    add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
                 }
 
                 if (dl.record)
                 {
                     std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
                     std::string name = std::to_string(obj.norad);
-                    if (satdump::general_tle_registry.get_from_norad(obj.norad).has_value())
-                        name = satdump::general_tle_registry.get_from_norad(obj.norad)->name;
+                    if (satdump::general_tle_registry->get_from_norad(obj.norad).has_value())
+                        name = satdump::general_tle_registry->get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
-                    add_vfo_reco(id, name, dl.frequency, dsp::basebandTypeFromString(dl.baseband_format), dl.baseband_decimation);
+                    add_vfo_reco(id, name, dl.frequency, dl.baseband_format, dl.baseband_decimation);
                 }
             }
         }
@@ -289,13 +297,13 @@ void AutoTrackApp::setup_schedular_callbacks()
             if (obj.downlinks[0].live)
             {
                 pipeline_params = obj.downlinks[0].pipeline_selector->getParameters();
-                pipeline_id = obj.downlinks[0].pipeline_selector->pipeline_id;
+                selected_pipeline = obj.downlinks[0].pipeline_selector->selected_pipeline;
                 start_processing();
             }
 
             if (obj.downlinks[0].record)
             {
-                file_sink->set_output_sample_type(dsp::basebandTypeFromString(obj.downlinks[0].baseband_format));
+                file_sink->set_output_sample_type(obj.downlinks[0].baseband_format);
                 start_recording();
             }
         }

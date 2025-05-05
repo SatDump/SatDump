@@ -214,7 +214,7 @@ void USRPSource::drawControlUI()
     if (is_started)
         RImGui::beginDisabled();
 
-    if (RImGui::Combo("Channel", &channel, channel_option_str.c_str()))
+    if (RImGui::Combo("Channel", &channel, channel_option_str.c_str()) && is_open)
     {
         open_sdr();
         open_channel();
@@ -239,8 +239,13 @@ void USRPSource::drawControlUI()
         RImGui::endDisabled();
 
     // Gain settings
-    if (RImGui::SteppedSliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
-        set_gains();
+    if (is_open)
+    {
+        if (RImGui::SteppedSliderFloat("Gain", &gain, gain_range.start(), gain_range.stop()))
+            set_gains();
+    }
+    else // Defaults for using UI when device is not attached (config export)
+        RImGui::SteppedSliderFloat("Gain", &gain, 0, 60);
 }
 
 void USRPSource::set_samplerate(uint64_t samplerate)

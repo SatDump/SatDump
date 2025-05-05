@@ -1,13 +1,13 @@
 #include "module_jpss_instruments.h"
 #include <fstream>
-#include "common/ccsds/ccsds_weather/vcdu.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "jpss.h"
 #include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_weather/demuxer.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
 #include "products/products.h"
 #include "products/image_products.h"
 #include "products/dataset.h"
@@ -40,11 +40,11 @@ namespace jpss
             int insert_zone_size = npp_mode ? 0 : 9;
 
             // Demuxers
-            ccsds::ccsds_weather::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
-            ccsds::ccsds_weather::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid0(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid1(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid6(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid11(mpdu_size, true, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid16(mpdu_size, true, insert_zone_size);
 
             std::vector<uint8_t> jpss_scids;
 
@@ -54,7 +54,7 @@ namespace jpss
                 data_in.read((char *)&cadu, npp_mode ? 1024 : 1279);
 
                 // Parse this transport frame
-                ccsds::ccsds_weather::VCDU vcdu = ccsds::ccsds_weather::parseVCDU(cadu);
+                ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == SNPP_SCID ||
                     vcdu.spacecraft_id == JPSS1_SCID ||
@@ -166,7 +166,7 @@ namespace jpss
             dataset.satellite_name = sat_name;
             dataset.timestamp = get_median(atms_reader.timestamps);
 
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry.get_from_norad_time(norad, dataset.timestamp);
+            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {
@@ -301,7 +301,6 @@ namespace jpss
                 satdump::ImageProducts viirs_products;
                 viirs_products.instrument_name = "viirs";
                 viirs_products.has_timestamps = true;
-                viirs_products.needs_correlation = true;
                 viirs_products.set_tle(satellite_tle);
                 viirs_products.bit_depth = 16;
                 viirs_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
@@ -321,7 +320,6 @@ namespace jpss
                 satdump::ImageProducts viirs_dnb_products;
                 viirs_dnb_products.instrument_name = "viirs_dnb";
                 viirs_dnb_products.has_timestamps = true;
-                viirs_dnb_products.needs_correlation = true;
                 viirs_dnb_products.set_tle(satellite_tle);
                 viirs_dnb_products.bit_depth = 16;
                 viirs_dnb_products.timestamp_type = satdump::ImageProducts::TIMESTAMP_MULTIPLE_LINES;
@@ -492,8 +490,102 @@ namespace jpss
             ImGui::End();
         }
 
+        inline bool vectorContains(std::vector<double> v, double f)
+        {
+            for (auto &c : v)
+                if (c == f)
+                    return true;
+            return false;
+        }
+
         void JPSSInstrumentsDecoderModule::process_viirs_channels()
         {
+            {
+                std::vector<double> timestamps;
+                for (int i = 0; i < 5; i++)
+                    for (auto &seg : viirs_reader_imaging[i].segments)
+                        if (!vectorContains(timestamps, seg.timestamp))
+                            timestamps.push_back(seg.timestamp);
+                for (int i = 0; i < 16; i++)
+                    for (auto &seg : viirs_reader_moderate[i].segments)
+                        if (!vectorContains(timestamps, seg.timestamp))
+                            timestamps.push_back(seg.timestamp);
+                for (int i = 0; i < 3; i++)
+                    for (auto &seg : viirs_reader_dnb[i].segments)
+                        if (!vectorContains(timestamps, seg.timestamp))
+                            timestamps.push_back(seg.timestamp);
+                std::sort(timestamps.begin(), timestamps.end());
+
+                for (int i = 0; i < 5; i++)
+                {
+                    auto &r = viirs_reader_imaging[i];
+                    std::vector<viirs::VIIRS_Segment> oldSegments = r.segments;
+                    r.segments.clear();
+
+                    for (auto &time : timestamps)
+                    {
+                        bool contains = false;
+                        for (auto &seg : oldSegments)
+                        {
+                            if (seg.timestamp == time)
+                            {
+                                r.segments.push_back(seg);
+                                contains = true;
+                            }
+                        }
+
+                        if (!contains)
+                            r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
+                    }
+                }
+
+                for (int i = 0; i < 16; i++)
+                {
+                    auto &r = viirs_reader_moderate[i];
+                    std::vector<viirs::VIIRS_Segment> oldSegments = r.segments;
+                    r.segments.clear();
+
+                    for (auto &time : timestamps)
+                    {
+                        bool contains = false;
+                        for (auto &seg : oldSegments)
+                        {
+                            if (seg.timestamp == time)
+                            {
+                                r.segments.push_back(seg);
+                                contains = true;
+                            }
+                        }
+
+                        if (!contains)
+                            r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
+                    }
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    auto &r = viirs_reader_dnb[i];
+                    std::vector<viirs::VIIRS_Segment> oldSegments = r.segments;
+                    r.segments.clear();
+
+                    for (auto &time : timestamps)
+                    {
+                        bool contains = false;
+                        for (auto &seg : oldSegments)
+                        {
+                            if (seg.timestamp == time)
+                            {
+                                r.segments.push_back(seg);
+                                contains = true;
+                            }
+                        }
+
+                        if (!contains)
+                            r.segments.push_back(viirs::VIIRS_Segment(r.channelSettings));
+                    }
+                }
+            }
+
             // Differential decoding for M5, M3, M2, M1
             logger->info("Diff M5...");
             viirs_reader_moderate[5 - 1].differentialDecode(viirs_reader_moderate[4 - 1], 1);
