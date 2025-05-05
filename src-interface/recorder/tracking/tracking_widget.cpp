@@ -45,6 +45,12 @@ namespace satdump
         object_tracker.setQTH(qth_lon, qth_lat, qth_alt);
         object_tracker.setRotator(rotator_handler);
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
+        object_tracker.rotator_target_pos_updated_callback = [this](double az, double el) {
+            sat_finder.setTarget(az, el);
+        };
+
+        // Init Sat finder
+        sat_finder.setQTH(qth_lon, qth_lat, qth_alt);
 
         // Init scheduler
         auto_scheduler.eng_callback = [this](AutoTrackCfg, SatellitePass, TrackedObject obj)
@@ -141,8 +147,11 @@ namespace satdump
         ImGui::TextColored(auto_scheduler.getEngaged() ? style::theme.green : style::theme.red, "%s", is_engaged.c_str());
         if (ImGui::Button("Schedule and Config", ImVec2(width_available, 0.0f)))
             config_window_was_asked = show_window_config = true;
+        if (ImGui::Button("Satellite finder", ImVec2(width_available, 0.0f)))
+            show_satellite_finder_window = satellite_finder_was_asked = true;
         ImGui::Spacing();
         renderConfig();
+        renderSatfinder();
     }
 
     void TrackingWidget::renderConfig()
@@ -190,6 +199,20 @@ namespace satdump
             if (config_window_was_asked)
                 ImGuiUtils_BringCurrentWindowToFront();
             config_window_was_asked = false;
+
+            ImGui::End();
+        }
+    }
+
+    void TrackingWidget::renderSatfinder() {
+        if(show_satellite_finder_window) {
+            ImGui::Begin("Satellite finder", &show_satellite_finder_window);
+            ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
+            if (satellite_finder_was_asked)
+                ImGuiUtils_BringCurrentWindowToFront();
+            satellite_finder_was_asked = false;
+
+            sat_finder.render();
 
             ImGui::End();
         }
