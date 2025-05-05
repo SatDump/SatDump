@@ -37,7 +37,7 @@ namespace satdump
                 sats_in_sight.clear();
 
                 if(observer_station != nullptr && target_az >= 0 && target_el >= 0) {
-                    for(const auto &tle : general_tle_registry) {
+                    for(const auto &tle : *general_tle_registry) {
                         if(!containsSubstring(tle.name, blacklist.begin(), blacklist.end())) {
                             predict_orbital_elements_t* satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
                             if(satellite_object) {
