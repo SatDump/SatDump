@@ -37,7 +37,7 @@ namespace satdump
             struct DragDropWip
             {
                 std::shared_ptr<Handler> drag;
-                std::function<void(std::shared_ptr<Handler>)> del;
+                Handler *hdel;
             };
 
             tree_local.start();
@@ -47,8 +47,7 @@ namespace satdump
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
 
-                if (ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler)) |
-                    tree_local.node(handler->handler_tree_icon))
+                if (ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler)) | tree_local.node(handler->handler_tree_icon))
                 {
                     if (ImGui::IsItemClicked())
                         h = handler;
@@ -57,15 +56,9 @@ namespace satdump
                         ImGui::SetTooltip("%s", handler->getName().c_str());
 
                     // TODOREWORK CLEANUP
-                    if (handler_can_subhandlers_be_dragged && handler->handler_can_be_dragged &&
-                        ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                    if (handler_can_subhandlers_be_dragged && handler->handler_can_be_dragged && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
-                        auto del = [this](std::shared_ptr<Handler> handler)
-                        {
-                            logger->error("Delete!!!! " + handler->getName());
-                            delSubHandler(handler);
-                        };
-                        DragDropWip d({handler, del});
+                        DragDropWip d({handler, this});
                         ImGui::SetDragDropPayload("VIEWER_HANDLER", &d, sizeof(DragDropWip));
 
                         ImGui::Text("%s", handler->getName().c_str());
@@ -78,12 +71,11 @@ namespace satdump
                         {
                             IM_ASSERT(payload->DataSize == sizeof(DragDropWip));
                             const DragDropWip *payload_n = (const DragDropWip *)payload->Data;
-                            logger->info("Handler " + handler->getName() + " got drag of " +
-                                         payload_n->drag->getName());
+                            logger->info("Handler " + handler->getName() + " got drag of " + payload_n->drag->getName());
                             if (!isParent(payload_n->drag, handler))
                             {
                                 handler->addSubHandler(payload_n->drag);
-                                payload_n->del(payload_n->drag);
+                                payload_n->hdel->delSubHandler(payload_n->drag);
                             }
                             else
                             {
