@@ -27,6 +27,9 @@ public:
 
     static void registerDevs(const satdump::ndsp::RequestDeviceListEvent &evt)
     {
+        if (evt.m == satdump::ndsp::DeviceBlock::MODE_SINGLE_TX)
+            return;
+
         auto d = satdump::ndsp::AirspyDevBlock::listDevs();
         evt.i.insert(evt.i.end(), d.begin(), d.end());
     }

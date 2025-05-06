@@ -55,9 +55,10 @@ namespace satdump
         struct RequestDeviceListEvent
         {
             std::vector<DeviceInfo> &i;
+            DeviceBlock::device_mode_t m;
         };
 
-        std::vector<DeviceInfo> getDeviceList();
+        std::vector<DeviceInfo> getDeviceList(DeviceBlock::device_mode_t m);
 
         struct RequestDeviceInstanceEvent
         {

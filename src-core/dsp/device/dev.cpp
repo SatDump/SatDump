@@ -6,11 +6,11 @@ namespace satdump
 {
     namespace ndsp
     {
-        std::vector<DeviceInfo> getDeviceList()
+        std::vector<DeviceInfo> getDeviceList(DeviceBlock::device_mode_t m)
         {
             std::vector<DeviceInfo> l;
 
-            eventBus->fire_event<RequestDeviceListEvent>({l});
+            eventBus->fire_event<RequestDeviceListEvent>({l, m});
 
             logger->trace("Device list :");
             for (auto &d : l)

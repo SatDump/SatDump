@@ -6,6 +6,7 @@
 #include "init.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
+#include "probe.h"
 #include "satdump_vars.h"
 
 #include "core/pipeline.h"
@@ -58,8 +59,14 @@ int main(int argc, char *argv[])
         //      sub_p->add_flag("--" + ep.key());
     }
 
-    std::map<std::string, std::map<std::string, std::shared_ptr<std::string>>> pipeline_opts;
+    CLI::App *sub_probe = app.add_subcommand("probe", "Probe for SDR Devices");
+    auto sub_probe_group = sub_probe->add_option_group("--tx,--rx");
+    sub_probe_group->add_flag("--tx", "Only list devices with at least 1 TX Channel");
+    sub_probe_group->add_flag("--rx", "Only list devices with at least 1 RX Channel");
+    sub_probe_group->require_option(0, 1);
+    sub_probe->add_flag("--params", "Dump full device parameters");
 
+    std::map<std::string, std::map<std::string, std::shared_ptr<std::string>>> pipeline_opts;
     CLI::App *sub_pipeline = app.add_subcommand("pipeline", "Run a pipeline");
     for (auto &p : satdump::pipelines)
     {
@@ -140,6 +147,13 @@ int main(int argc, char *argv[])
         {
             std::string script = subcom->get_option("script")->as<std::string>();
             satdump::runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));
+        }
+        else if (subcom->get_name() == "probe")
+        {
+            bool tx = subcom->count("--tx");
+            bool rx = subcom->count("--rx");
+            bool pa = subcom->count("--params");
+            satdump::probeDevices(tx, rx, pa);
         }
     }
 }

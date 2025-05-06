@@ -10,11 +10,11 @@ namespace satdump
     {
         NewRecHandler::NewRecHandler()
         {
-            auto devs = ndsp::getDeviceList();
+            auto devs = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
 
             for (auto &d : devs)
             {
-                if (d.type == "bladerf")
+                if (d.type == "rtlsdr")
                 {
                     dev = ndsp::getDeviceInstanceFromInfo(d, ndsp::DeviceBlock::MODE_SINGLE_RX);
                     options_displayer_test.add_options(dev->get_cfg_list());
