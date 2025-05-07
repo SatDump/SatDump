@@ -20,11 +20,12 @@ namespace satdump
 {
     namespace ndsp
     {
-        /** @brief Just remove a DC spike with a moving average
-         * respecting each stream type
-         * @param alpha
-         * @param beta
-         * @param acc
+        /** @brief It just removes a DC spike using
+         * the a moving average,
+         * respecting each stream type.
+         * @param alpha 0.0001
+         * @param beta 0
+         * @param acc 0
          */
         template <typename T>
         class CorrectIQBlock : public BlockSimple<T, T>
