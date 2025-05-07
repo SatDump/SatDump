@@ -186,11 +186,12 @@ namespace goes
 
                 if (isImageInProgress)
                 {
-                    // No image block headers passed CRC!
+                    // Checks if time is set
                     if (image_time != 0)
                     {
                         logger->debug("Using time from imagery frames");
                     }
+                    // No image block headers passed CRC!
                     else
                     {
                         // Did we get any valid Block 0 headers we can use instead?
@@ -732,11 +733,12 @@ namespace goes
 
                 logger->debug(std::to_string(image_time));
 
-                // No image block headers passed CRC!
+                // Checks if time is set
                 if (image_time != 0)
                 {
                     logger->debug("Using time from imagery frames");
                 }
+                // No image block headers passed CRC!
                 else
                 {
                     // Did we get any valid Block 0 headers we can use instead?
