@@ -19,7 +19,11 @@
 #include "dsp/const/const_disp.h"
 #include "dsp/pll/costas.h"
 
+#include "dsp/utils/correct_iq.h"
+#include "dsp/utils/delay_one_imag.h"
+
 #include "nlohmann/json_utils.h"
+#include <memory>
 
 // #include "dsp/device/airspy/airspy_dev.h"
 
@@ -103,7 +107,13 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"cyclostationary_analysis_cf",
-                 {"Cyclostationary/Cyclostationary Analysis", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CyclostationaryAnalysis>()); }}});
+                 {"Utils/Cyclostationary Analysis", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CyclostationaryAnalysis>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"delay_one_imag_cc", {"Utils/Delay One Imag", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::DelayOneImagBlock>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"correct_iq_cc", {"Utils/Correct IQ", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CorrectIQBlock<complex_t>>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
