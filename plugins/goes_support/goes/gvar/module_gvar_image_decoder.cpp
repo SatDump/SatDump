@@ -379,7 +379,7 @@ namespace goes
                                     (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
                                     (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
                                     (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
-            
+
             // Get stats. This is done over a lot of data to allow decoding at low SNR
             int sat_number = images.sat_number;
             int vis_width = images.vis_width;
@@ -432,7 +432,6 @@ namespace goes
             images.image3.crop(0, 0, ir1_width, ir1_height);
             images.image4.crop(0, 0, ir1_width, ir1_height);
 
-  
             image::save_img(images.image5, std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "1")).c_str(), false);
             image::save_img(images.image1, std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "2")).c_str());
             image::save_img(images.image2, std::string(disk_folder + "/" + getGvarFilename(sat_number, &timeReadable, "3")).c_str());
