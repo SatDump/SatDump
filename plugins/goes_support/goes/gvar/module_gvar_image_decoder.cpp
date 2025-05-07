@@ -239,6 +239,10 @@ namespace goes
                         isSavingInProgress = false;
                     }
 
+                    // Resets image times
+                    image_time = 0;
+                    block_zero_timestamps.clear();
+
                     scid_stats.clear();
                     vis_width_stats.clear();
                     ir_width_stats.clear();
