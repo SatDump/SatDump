@@ -1,9 +1,7 @@
 #pragma once
 
 #include "core/module.h"
-#include <complex>
 #include <fstream>
-#include "libs/ctpl/ctpl_stl.h"
 #include "image/infrared1_reader.h"
 #include "image/infrared2_reader.h"
 #include "image/visible_reader.h"
@@ -23,6 +21,7 @@ namespace goes
             image::Image image5;
             int sat_number;
             int vis_width;
+            time_t image_time;
         };
         struct Block
             {
@@ -79,15 +78,19 @@ namespace goes
             std::mutex imageVectorMutex;
             std::vector<GVARImages> imagesVector;
             void writeImages(GVARImages &images, std::string directory);
-            void writeSounder();
+            void writeSounder(time_t image_time);
             void writeImagesThread();
 
             int imageFrameCount;
+            
+            // Time when processing was started
+            time_t image_time_fallback;
 
             // Stats
             std::vector<int> scid_stats;
             std::vector<int> vis_width_stats, ir_width_stats;
-
+            std::vector<time_t> block_zero_timestamps;
+            
             // UI Stuff
             unsigned int textureID = 0;
             uint32_t *textureBuffer;
@@ -97,7 +100,7 @@ namespace goes
             ~GVARImageDecoderModule();
             static std::string getGvarFilename(int sat_number, std::tm *timeReadable, std::string channel);
             void process();
-            void process_frame_buffer(std::vector<Block> &frame_buffer);
+            void process_frame_buffer(std::vector<Block> &frame_buffer, time_t &image_time);
             void drawUI(bool window);
             std::vector<ModuleDataType> getInputTypes();
             std::vector<ModuleDataType> getOutputTypes();

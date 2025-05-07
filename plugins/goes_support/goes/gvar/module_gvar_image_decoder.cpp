@@ -1,18 +1,16 @@
 #include "module_gvar_image_decoder.h"
-#include "logger.h"
-#include "common/codings/differential/nrzs.h"
-#include "imgui/imgui.h"
-#include "gvar_deframer.h"
-#include "gvar_derand.h"
-#include "imgui/imgui_image.h"
-#include <filesystem>
-#include "gvar_headers.h"
-#include "common/utils.h"
-#include "resources.h"
-#include "common/image/hue_saturation.h"
 #include "common/image/brightness_contrast.h"
-#include "common/thread_priority.h"
+#include "common/image/hue_saturation.h"
 #include "common/image/io.h"
+#include "common/thread_priority.h"
+#include "common/utils.h"
+#include "crc_table.h"
+#include "gvar_headers.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_image.h"
+#include "logger.h"
+#include "resources.h"
+#include <filesystem>
 
 #define FRAME_SIZE 32786
 
@@ -35,141 +33,192 @@ namespace goes
             return utc_filename;
         }
 
-    /**
-     *  Gets the triple redundant header while applying majority law
-     */
-    PrimaryBlockHeader get_header(uint8_t *frame) {
-
-        uint8_t *result = (uint8_t *)malloc(30 * sizeof(uint8_t));
-
-        // Every header is 30 bytes long
-        uint8_t a[30];
-        uint8_t b[30];
-        uint8_t c[30];
-
-        // Transmitted right after each other
-        memcpy(a, frame + 8, 30);
-        memcpy(b, frame + 38, 30);
-        memcpy(c, frame + 68, 30);
-
-        // First four bits are never 1, mask 'em
-        a[0] &= 0xF;
-        b[0] &= 0xF;
-        c[0] &= 0xF;
-        
-
-        // Process each byte
-        for (int byteIndex = 0; byteIndex < 30; ++byteIndex) {
-            uint8_t majority = 0;
-
-            // Process each bit in the byte
-            for (int bitIndex = 0; bitIndex < 8; ++bitIndex) {
-                // Extract bits from each byte
-                uint8_t bit_a = (a[byteIndex] >> bitIndex) & 1;
-                uint8_t bit_b = (b[byteIndex] >> bitIndex) & 1;
-                uint8_t bit_c = (c[byteIndex] >> bitIndex) & 1;
-
-                // Count the number of 1s
-                int count_ones = bit_a + bit_b + bit_c;
-
-                // Majority rule: if at least two are 1, set the result bit
-                if (count_ones >= 2) {
-                    majority |= (1 << bitIndex);
-                }
-            }
-
-            // Store the majority byte
-            result[byteIndex] = majority;
-        }
-
-    return *((PrimaryBlockHeader *)result);
-}
-
-    /**
-     * Gets the most common counter using majority law at the bit level from a vector of counters
-     */
-    uint32_t parse_counters(const std::vector<Block>& frame_buffer) {
-        uint32_t result = 0;
-        std::vector<uint32_t> counters;
-
-        for (size_t i = 0; i < frame_buffer.size(); ++i) {
-            counters.push_back(frame_buffer[i].original_counter & 0x7FF);
-        }
-
-        const size_t majority_threshold = (counters.size() / 2) + 1;
-
-        for (int bit = 0; bit < 11; ++bit) {
-            size_t count_ones = 0;
-            for (size_t i = 0; i < counters.size(); ++i) {
-                if (counters[i] & (1 << bit)) {
-                    ++count_ones;
-                }
-            }
-            if (count_ones >= majority_threshold) {
-                result |= (1 << bit);
-            }
-        }
-
-        return result;
-    }
-
-
-    /**
-     * Checks if the spare (Always 0) has more than 5 mismatched bits, returns true if not
-     * This helps ensure we are looking at valid data and not junk
-     */
-    bool blockIsActualData(PrimaryBlockHeader cur_block_header)
-    {  
-        uint32_t spare = cur_block_header.spare2;
-        int errors = 0;
-        for (int i = 31; i >= 0; i--)
+        /**
+         *  Gets the triple redundant header while applying majority law
+         */
+        PrimaryBlockHeader get_header(uint8_t *frame)
         {
-            bool markerBit, testBit;
-            markerBit = getBit<uint32_t>(spare, i);
-            uint32_t zero = 0;
-            testBit = getBit<uint32_t>(zero, i);
-            if (markerBit != testBit)
-                errors++;
+
+            uint8_t *result = (uint8_t *)malloc(30 * sizeof(uint8_t));
+
+            // Every header is 30 bytes long
+            uint8_t a[30];
+            uint8_t b[30];
+            uint8_t c[30];
+
+            // Transmitted right after each other
+            memcpy(a, frame + 8, 30);
+            memcpy(b, frame + 38, 30);
+            memcpy(c, frame + 68, 30);
+
+            // First four bits are never 1, mask 'em
+            a[0] &= 0xF;
+            b[0] &= 0xF;
+            c[0] &= 0xF;
+
+            // Process each byte
+            for (int byteIndex = 0; byteIndex < 30; ++byteIndex)
+            {
+                uint8_t majority = 0;
+
+                // Process each bit in the byte
+                for (int bitIndex = 0; bitIndex < 8; ++bitIndex)
+                {
+                    // Extract bits from each byte
+                    uint8_t bit_a = (a[byteIndex] >> bitIndex) & 1;
+                    uint8_t bit_b = (b[byteIndex] >> bitIndex) & 1;
+                    uint8_t bit_c = (c[byteIndex] >> bitIndex) & 1;
+
+                    // Count the number of 1s
+                    int count_ones = bit_a + bit_b + bit_c;
+
+                    // Majority rule: if at least two are 1, set the result bit
+                    if (count_ones >= 2)
+                    {
+                        majority |= (1 << bitIndex);
+                    }
+                }
+
+                // Store the majority byte
+                result[byteIndex] = majority;
+            }
+
+            return *((PrimaryBlockHeader *)result);
         }
-        // This can be adjusted to allow the spare to be more degraded than usual
-        // >5 bits should be incredibly rare after bit-level majority law, at that point
-        // the block ID is almost guaranteed to be incorrect messing the frame up anyways
-        if (errors > 5) {
-            return false;
-        } else {
-            return true;
+
+        /**
+         * Gets the most common counter using majority law at the bit level from a vector of counters
+         */
+        uint32_t parse_counters(const std::vector<Block> &frame_buffer)
+        {
+            uint32_t result = 0;
+            std::vector<uint32_t> counters;
+
+            for (size_t i = 0; i < frame_buffer.size(); ++i)
+            {
+                counters.push_back(frame_buffer[i].original_counter & 0x7FF);
+            }
+
+            const size_t majority_threshold = (counters.size() / 2) + 1;
+
+            for (int bit = 0; bit < 11; ++bit)
+            {
+                size_t count_ones = 0;
+                for (size_t i = 0; i < counters.size(); ++i)
+                {
+                    if (counters[i] & (1 << bit))
+                    {
+                        ++count_ones;
+                    }
+                }
+                if (count_ones >= majority_threshold)
+                {
+                    result |= (1 << bit);
+                }
+            }
+
+            return result;
         }
-    }
+
+        /**
+         * Checks if the spare (Always 0) has more than 5 mismatched bits, returns true if not
+         * This helps ensure we are looking at valid data and not junk
+         */
+        bool blockIsActualData(PrimaryBlockHeader cur_block_header)
+        {
+            uint32_t spare = cur_block_header.spare2;
+            int errors = 0;
+            for (int i = 31; i >= 0; i--)
+            {
+                bool markerBit, testBit;
+                markerBit = getBit<uint32_t>(spare, i);
+                uint32_t zero = 0;
+                testBit = getBit<uint32_t>(zero, i);
+                if (markerBit != testBit)
+                    errors++;
+            }
+            // This can be adjusted to allow the spare to be more degraded than usual
+            // >5 bits should be incredibly rare after bit-level majority law, at that point
+            // the block ID is almost guaranteed to be incorrect messing the frame up anyways
+            if (errors > 5)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /**
+         * CRC Implementation from LRIT-Missin-Specific-Document.pdf
+         */
+        uint16_t computeCRC(const uint8_t *data, int size)
+        {
+            uint16_t crc = 0xffff;
+            for (int i = 0; i < size; i++)
+                crc = (crc << 8) ^ crc_table[(crc >> 8) ^ (uint16_t)data[i]];
+            return crc;
+        }
+        uint8_t computeXOR(const uint8_t *data, int size)
+        {
+            uint8_t crc = 0;
+            for (int i = 0; i < size; i++)
+                crc = crc ^ data[i];
+            return crc;
+        }
 
         /**
          * Decodes imagery from the frame buffer while attempting block ID recovery and counter correction
          */
-        void GVARImageDecoderModule::process_frame_buffer(std::vector<Block> &frame_buffer) {
+        void GVARImageDecoderModule::process_frame_buffer(std::vector<Block> &frame_buffer, time_t &image_time)
+        {
             // The most common counter from this series
             uint32_t final_counter = parse_counters(frame_buffer);
 
             // Are we decoding a new image?
-            // If this series is 1, or 1 wasn't decoded and we are at 2, save the image
-            if (final_counter == 1 || (imageFrameCount > 2 && final_counter == 2)) { 
+            // If this series' counter is 1, or 1 wasn't decoded and we are at 2, save the current image
+            if (final_counter == 1 || (imageFrameCount > 2 && final_counter == 2))
+            {
                 logger->info("Image start detected!");
 
                 imageFrameCount = 0;
 
                 if (isImageInProgress)
                 {
+                    // No image block headers passed CRC!
+                    if (image_time != 0)
+                    {
+                        logger->debug("Using time from imagery frames");
+                    }
+                    else
+                    {
+                        // Did we get any valid Block 0 headers we can use instead?
+                        if (block_zero_timestamps.size() != 0)
+                        {
+                            logger->debug("Using time from satellite info block");
+                            image_time = most_common(block_zero_timestamps.begin(), block_zero_timestamps.end(), 0);
+                        }
+                        // There were no valid Block 0s received, use fallback
+                        else
+                        {
+                            logger->warn("Signal was too weak to get the timestamp! Using current system time instead");
+                            image_time = image_time_fallback;
+                        }
+                    }
+
+                    // Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
+                    image_time_fallback = time(0);
+
                     if (writeImagesAync)
                     {
                         logger->debug("Saving Async...");
                         isImageInProgress = false;
                         isSavingInProgress = true;
                         imageVectorMutex.lock();
-                        imagesVector.push_back({infraredImageReader1.getImage1(),
-                                                infraredImageReader1.getImage2(),
-                                                infraredImageReader2.getImage1(),
-                                                infraredImageReader2.getImage2(),
-                                                visibleImageReader.getImage(),
-                                                most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                                most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)});
+                        imagesVector.push_back({infraredImageReader1.getImage1(), infraredImageReader1.getImage2(), infraredImageReader2.getImage1(), infraredImageReader2.getImage2(),
+                                                visibleImageReader.getImage(), most_common(scid_stats.begin(), scid_stats.end(), 0), most_common(vis_width_stats.begin(), vis_width_stats.end(), 0),
+                                                image_time});
                         imageVectorMutex.unlock();
                         isSavingInProgress = false;
                     }
@@ -179,12 +228,13 @@ namespace goes
                         isImageInProgress = false;
                         isSavingInProgress = true;
                         GVARImages images = {infraredImageReader1.getImage1(),
-                                            infraredImageReader1.getImage2(),
-                                            infraredImageReader2.getImage1(),
-                                            infraredImageReader2.getImage2(),
-                                            visibleImageReader.getImage(),
-                                            most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                            most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
+                                             infraredImageReader1.getImage2(),
+                                             infraredImageReader2.getImage1(),
+                                             infraredImageReader2.getImage2(),
+                                             visibleImageReader.getImage(),
+                                             most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                             most_common(vis_width_stats.begin(), vis_width_stats.end(), 0),
+                                             image_time};
                         writeImages(images, directory);
                         isSavingInProgress = false;
                     }
@@ -198,9 +248,9 @@ namespace goes
                     infraredImageReader2.startNewFullDisk();
                     visibleImageReader.startNewFullDisk();
                 }
-
             }
-            else {
+            else
+            {
                 imageFrameCount++;
 
                 // Minimum of 10 block series to write (80 VIS pixels)
@@ -209,38 +259,40 @@ namespace goes
             }
 
             // Processes all frames
-            for (size_t i = 0; i < frame_buffer.size(); i++) {
+            for (size_t i = 0; i < frame_buffer.size(); i++)
+            {
 
                 uint8_t *current_frame = frame_buffer[i].frame;
                 PrimaryBlockHeader cur_block_header = get_header(current_frame);
 
-
                 // Tries to recover the block ID in case it is damaged within a series
                 // Junk will never pass through this, as those frames are thrown out before
                 // being added to the frame buffer
-                if (i > 1 && i < 10 ) {
-                    uint32_t prev_counter = frame_buffer[i-1].block_id;
-                    uint32_t next_counter = frame_buffer[i+1].block_id;
+                if (i > 1 && i < 10)
+                {
+                    uint32_t prev_counter = frame_buffer[i - 1].block_id;
+                    uint32_t next_counter = frame_buffer[i + 1].block_id;
 
-                    if (next_counter-prev_counter == 2) {
+                    if (next_counter - prev_counter == 2)
+                    {
                         // The previous and next blocks suggest we should be inbetween them
-                        cur_block_header.block_id = (frame_buffer[i-1].block_id)+1;
+                        cur_block_header.block_id = (frame_buffer[i - 1].block_id) + 1;
                     }
                 }
-                
+
                 // Is this imagery? Blocks 1 to 10 are imagery
                 if (cur_block_header.block_id >= 1 && cur_block_header.block_id <= 10)
                 {
                     // This is imagery, so we can parse the line information header
                     LineDocumentationHeader line_header(&current_frame[8 + 30 * 3]);
 
-
                     // SCID Stats
                     scid_stats.push_back(line_header.sc_id);
 
                     // Ensures the final counter correction didn't break, if it did, don't use it
                     // (This should NEVER be 0)
-                    if (final_counter == 0) {
+                    if (final_counter == 0)
+                    {
                         // Masks first five bits, because they are NEVER 1 (Max = 1974 = 0b0000011110110110)
                         final_counter = (line_header.relative_scan_count &= 0x7ff);
                     }
@@ -258,8 +310,6 @@ namespace goes
 
                         // Push into decoder
                         visibleImageReader.pushFrame(current_frame, cur_block_header.block_id, final_counter);
-
-                        
                     }
                     // Is this IR?
                     else if (cur_block_header.block_id == 1 || cur_block_header.block_id == 2)
@@ -287,14 +337,18 @@ namespace goes
                 }
             }
 
-            frame_buffer.clear();  
-
+            // Clear buffer out so new frames can be appended
+            frame_buffer.clear();
         }
 
-        void GVARImageDecoderModule::writeSounder()
+        /**
+         * Writes the sounder imagery
+         * The image_time has to be passed as there is no Sounder object that gets created
+         * that could have it saved instead, the scan time *should* be the same
+         */
+        void GVARImageDecoderModule::writeSounder(time_t image_time)
         {
-            const time_t timevalue = time(0);
-            std::tm *timeReadable = gmtime(&timevalue);
+            std::tm *timeReadable = gmtime(&image_time);
             std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                     (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
                                     (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
@@ -317,7 +371,7 @@ namespace goes
 
         void GVARImageDecoderModule::writeImages(GVARImages &images, std::string directory)
         {
-            const time_t timevalue = time(0);
+            const time_t timevalue = images.image_time;
             std::tm *timeReadable = gmtime(&timevalue);
             std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                     (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
@@ -464,15 +518,9 @@ namespace goes
             imageFrameCount = 0;
         }
 
-        std::vector<ModuleDataType> GVARImageDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
+        std::vector<ModuleDataType> GVARImageDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-        std::vector<ModuleDataType> GVARImageDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE};
-        }
+        std::vector<ModuleDataType> GVARImageDecoderModule::getOutputTypes() { return {DATA_FILE}; }
 
         GVARImageDecoderModule::~GVARImageDecoderModule()
         {
@@ -533,13 +581,17 @@ namespace goes
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
-            time_t lastTime = 0;
+            time_t last_frame_time = 0;
+            time_t image_time = 0;
+            // Time when processing started, used as a backup if no other time is decoded
+            image_time_fallback = time(0);
 
-            int last_val = 0;
+            // Used to check if the block header's time is valid
+            bool crc_valid = false;
+            int last_sounder_pos = 0;
 
             // Series of consecutive imagery blocks are saved here
             std::vector<Block> frame_buffer;
-
 
             while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
             {
@@ -549,11 +601,23 @@ namespace goes
                 else
                     input_fifo->read((uint8_t *)frame, FRAME_SIZE);
 
-
                 PrimaryBlockHeader block_header = get_header(frame);
 
+                // Gets the time from the header if it passes a CRC check
+                block_header.header_crc = ~block_header.header_crc;
+                crc_valid = (computeCRC((uint8_t *)&block_header, 30) == 0);
+
+                // If this header passed CRC but had no image date set, we use the time from the header.
+                // This is a fallback in case no Block 0's are found.
+                if (crc_valid && image_time == 0)
+                {
+                    tm time = block_header.time_code_bcd;
+                    image_time = mktime(&time) + time.tm_gmtoff;
+                }
+
                 // Ensures we aren't looking at junk
-                if (!blockIsActualData(block_header)) {
+                if (!blockIsActualData(block_header))
+                {
                     continue;
                 }
 
@@ -568,11 +632,32 @@ namespace goes
                         int x_pos = frame[6120] << 8 | frame[6121];
                         if (sad_header[3])
                         {
-                            if (x_pos != last_val)
-                                writeSounder();
-                            last_val = x_pos;
+                            if (x_pos != last_sounder_pos)
+                                writeSounder(image_time); // Image time has to be passed manually, see func docstring
+                            last_sounder_pos = x_pos;
                         }
                         sounderReader.pushFrame(frame, 0);
+                    }
+                }
+                else if (block_header.block_id == 0)
+                {
+                    Block0Header block_header0 = *((Block0Header *)&frame[8 + 30 * 3]);
+
+                    // Basic XOR passed. Will only detect single bit errors. Not foolproof.
+                    if (computeXOR((uint8_t *)&block_header0, 278) == 0xff)
+                    {
+                        tm block0_current_time = block_header0.TCURR;
+                        tm block0_image_time = block_header0.CIFST;
+                        time_t current_time = mktime(&block0_current_time);
+                        time_t image_time = mktime(&block0_image_time);
+                        float time_diff = difftime(current_time, image_time);
+
+                        // Image start time and current header time is within one hour, set image time.
+                        // Just a sanity check.
+                        if (time_diff < 3600 && time_diff > -60)
+                        {
+                            block_zero_timestamps.push_back(mktime(&block0_image_time) + block0_image_time.tm_gmtoff);
+                        }
                     }
                 }
 
@@ -581,12 +666,12 @@ namespace goes
                 // OR if the last frame we looked at was 10 (the last one)
                 if (frame_buffer.size() > 9 || (!frame_buffer.empty() && frame_buffer.back().block_id == 10))
                 {
-                    process_frame_buffer(frame_buffer);             
+                    process_frame_buffer(frame_buffer, image_time);
                 }
 
-
                 // Saves imagery blocks for processing
-                if (block_header.block_id >= 1 && block_header.block_id <= 10) {
+                if (block_header.block_id >= 1 && block_header.block_id <= 10)
+                {
                     LineDocumentationHeader line_header(&frame[8 + 30 * 3]);
 
                     Block current_block;
@@ -594,12 +679,9 @@ namespace goes
                     current_block.original_counter = line_header.relative_scan_count;
                     current_block.frame = new uint8_t[FRAME_SIZE];
                     std::memcpy(current_block.frame, frame, FRAME_SIZE);
-                    
-                    frame_buffer.push_back(
-                        current_block
-                    );
-                }
 
+                    frame_buffer.push_back(current_block);
+                }
 
                 if (input_data_type == DATA_FILE)
                     progress = data_in.tellg();
@@ -607,26 +689,27 @@ namespace goes
                 // Update module stats
                 module_stats["full_disk_progress"] = approx_progess;
 
-                    
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL)) {
-                    lastTime = time(NULL);
+                if (time(NULL) % 10 == 0 && last_frame_time != time(NULL))
+                {
+                    last_frame_time = time(NULL);
                     logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) +
-                                "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
+                                 "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
                 }
-
             }
 
             // Ensures we don't leave frames behind
-            if (!frame_buffer.empty()) {
-                process_frame_buffer(frame_buffer);
+            if (!frame_buffer.empty())
+            {
+                process_frame_buffer(frame_buffer, image_time);
             }
-
 
             if (input_data_type == DATA_FILE)
                 data_in.close();
 
-            //TODO: Maybe don't write the sounder if it's empty?
-            writeSounder();
+            // TODO: Maybe don't write the sounder if it's empty?
+
+            // Image time has to be passed manually, see func docstring
+            writeSounder(image_time);
 
             if (writeImagesAync)
             {
@@ -641,15 +724,40 @@ namespace goes
             {
                 isImageInProgress = false;
                 isSavingInProgress = true;
+
+                logger->debug(std::to_string(image_time));
+
+                // No image block headers passed CRC!
+                if (image_time != 0)
+                {
+                    logger->debug("Using time from imagery frames");
+                }
+                else
+                {
+                    // Did we get any valid Block 0 headers we can use instead?
+                    if (block_zero_timestamps.size() != 0)
+                    {
+                        logger->debug("Using time from satellite info block");
+                        image_time = most_common(block_zero_timestamps.begin(), block_zero_timestamps.end(), 0);
+                    }
+                    // There were no valid Block 0s received, use fallback
+                    else
+                    {
+                        logger->warn("Signal was too weak to get the timestamp! Using current system time instead");
+                        image_time = image_time_fallback;
+                    }
+                }
+
                 // Backup images
                 GVARImages images = {infraredImageReader1.getImage1(),
-                                    infraredImageReader1.getImage2(),
-                                    infraredImageReader2.getImage1(),
-                                    infraredImageReader2.getImage2(),
-                                    visibleImageReader.getImage(),
-                                    most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                    most_common(vis_width_stats.begin(), vis_width_stats.end(), 0)};
-                // Write those
+                                     infraredImageReader1.getImage2(),
+                                     infraredImageReader2.getImage1(),
+                                     infraredImageReader2.getImage2(),
+                                     visibleImageReader.getImage(),
+                                     most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                     most_common(vis_width_stats.begin(), vis_width_stats.end(), 0),
+                                     image_time};
+
                 writeImages(images, directory);
             }
         }
@@ -697,19 +805,13 @@ namespace goes
             ImGui::End();
         }
 
-        std::string GVARImageDecoderModule::getID()
-        {
-            return "goes_gvar_image_decoder";
-        }
+        std::string GVARImageDecoderModule::getID() { return "goes_gvar_image_decoder"; }
 
-        std::vector<std::string> GVARImageDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::vector<std::string> GVARImageDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> GVARImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GVARImageDecoderModule>(input_file, output_file_hint, parameters);
         }
-    }
-}
+    } // namespace gvar
+} // namespace goes
