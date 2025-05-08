@@ -4,6 +4,9 @@
 #include "common/utils.h"
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 #include <stdint.h>
 
 #ifdef _WIN32
@@ -136,21 +139,19 @@ public:
     // Transparently cast to tm
     operator tm() const
     {
-#ifdef _WIN32
-        tm r = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-#else
-        tm r = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#endif
+        std::tm r;
+        memset(&r, 0, sizeof(tm));
+
         r.tm_hour = be_val_.HOURS10 * 10 + be_val_.HOURS1;
         r.tm_min = be_val_.MINUTES10 * 10 + be_val_.MINUTES1;
         r.tm_sec = be_val_.SECONDS10 * 10 + be_val_.SECONDS1;
         r.tm_year = (be_val_.YEAR1000 * 1000 + be_val_.YEAR100 * 100 + be_val_.YEAR10 * 10 + be_val_.YEAR1) - 1900;
-        r.tm_yday = (be_val_.DOY100 * 100 + be_val_.DOY10 * 10 + be_val_.DOY1) - 1;
+        /*r.tm_yday*/ int yday = (be_val_.DOY100 * 100 + be_val_.DOY10 * 10 + be_val_.DOY1);
         //        r.tm_zone = "GMT";
         // Now to get day/month
-        char d[30];
-        strftime(d, 30, "%Y-%j %H:%M:%S %Z", &r);
-        strptime(d, "%Y-%j %H:%M:%S %Z", &r);
+        time_t tt = timegm(&r) + yday * 3600 * 24;
+        printf("%s\n", timestamp_to_string(tt).c_str());
+        r = *gmtime(&tt);
 
         return r;
     }
