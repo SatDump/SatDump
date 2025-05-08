@@ -6,9 +6,13 @@
 #include <cstdint>
 #include <stdint.h>
 
+#ifdef _WIN32
+#include "libs/others/strptime.h"
+#endif
+
 enum gvar_product_id
 {
-    NO_DATA,
+    GVAR_NO_DATA,
     AAA_IR_DATA,
     AAA_VISIBLE_DATA,
     GVAR_IMAGER_DOCUMENATION,
@@ -132,13 +136,17 @@ public:
     // Transparently cast to tm
     operator tm() const
     {
+#ifdef _WIN32
+        tm r = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+#else
         tm r = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#endif
         r.tm_hour = be_val_.HOURS10 * 10 + be_val_.HOURS1;
         r.tm_min = be_val_.MINUTES10 * 10 + be_val_.MINUTES1;
         r.tm_sec = be_val_.SECONDS10 * 10 + be_val_.SECONDS1;
         r.tm_year = (be_val_.YEAR1000 * 1000 + be_val_.YEAR100 * 100 + be_val_.YEAR10 * 10 + be_val_.YEAR1) - 1900;
         r.tm_yday = (be_val_.DOY100 * 100 + be_val_.DOY10 * 10 + be_val_.DOY1) - 1;
-        r.tm_zone = "GMT";
+        //        r.tm_zone = "GMT";
         // Now to get day/month
         char d[30];
         strftime(d, 30, "%Y-%j %H:%M:%S %Z", &r);

@@ -618,7 +618,7 @@ namespace goes
                 if (crc_valid && image_time == 0)
                 {
                     tm time = block_header.time_code_bcd;
-                    image_time = mktime(&time) + time.tm_gmtoff;
+                    image_time = mktime(&time); // + time.tm_gmtoff;
                 }
 
                 // Ensures we aren't looking at junk
@@ -662,7 +662,7 @@ namespace goes
                         // Just a sanity check.
                         if (time_diff < 3600 && time_diff > -60)
                         {
-                            block_zero_timestamps.push_back(mktime(&block0_image_time) + block0_image_time.tm_gmtoff);
+                            block_zero_timestamps.push_back(mktime(&block0_image_time) /*+ block0_image_time.tm_gmtoff*/);
                         }
                     }
                 }
