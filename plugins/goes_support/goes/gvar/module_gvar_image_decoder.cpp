@@ -731,8 +731,6 @@ namespace goes
                 isImageInProgress = false;
                 isSavingInProgress = true;
 
-                logger->debug(std::to_string(image_time));
-
                 // Checks if time is set
                 if (image_time != 0)
                 {
